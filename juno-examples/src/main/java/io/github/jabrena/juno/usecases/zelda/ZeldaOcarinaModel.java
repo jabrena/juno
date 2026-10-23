@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.zelda;
 
 import io.github.jabrena.juno.hardware.audio.Audio;
-import io.github.jabrena.juno.usecases.zelda.theme.ZeldaOcarinaTheme;
+import io.github.jabrena.juno.usecases.zelda.theme.ZeldaSoundtrackThemes;
 
 /** State shared by the Zelda views and the playback task. */
 public final class ZeldaOcarinaModel {
@@ -18,6 +18,7 @@ public final class ZeldaOcarinaModel {
     private int repeat;
     private int note;
     private int remainingMillis;
+    private int selectedTheme;
     private int state = STOPPED;
     private boolean themeSelected;
 
@@ -34,7 +35,19 @@ public final class ZeldaOcarinaModel {
         return themeSelected;
     }
 
-    public void selectTheme() {
+    public int selectedTheme() {
+        return selectedTheme;
+    }
+
+    public String themeTitle() {
+        return ZeldaSoundtrackThemes.title(selectedTheme);
+    }
+
+    public void selectTheme(int theme) {
+        if (theme < 0 || theme >= ZeldaSoundtrackThemes.COUNT) {
+            return;
+        }
+        selectedTheme = theme;
         themeSelected = true;
     }
 
@@ -74,10 +87,10 @@ public final class ZeldaOcarinaModel {
         remainingMillis = remainingMillis - elapsedMillis;
         while (remainingMillis <= 0 && isPlaying()) {
             note = note + 1;
-            if (note == ZeldaOcarinaTheme.noteCount()) {
+            if (note == ZeldaSoundtrackThemes.noteCount(selectedTheme)) {
                 note = 0;
                 repeat = repeat + 1;
-                if (repeat == ZeldaOcarinaTheme.repeatCount()) {
+                if (repeat == ZeldaSoundtrackThemes.repeatCount(selectedTheme)) {
                     audio.stop();
                     state = FINISHED;
                     return true;
@@ -96,9 +109,9 @@ public final class ZeldaOcarinaModel {
     }
 
     private void playCurrentNote() {
-        int frequency = ZeldaOcarinaTheme.frequencyHz(note);
-        int duration = ZeldaOcarinaTheme.toneMillis(note);
-        remainingMillis = ZeldaOcarinaTheme.stepMillis(note);
+        int frequency = ZeldaSoundtrackThemes.frequencyHz(selectedTheme, note);
+        int duration = ZeldaSoundtrackThemes.toneMillis(selectedTheme, note);
+        remainingMillis = ZeldaSoundtrackThemes.stepMillis(selectedTheme, note);
         if (frequency > 0) {
             audio.tone(frequency, duration);
         }

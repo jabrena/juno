@@ -59,10 +59,11 @@ public final class PlayThemeView implements KeyboardView, Task {
     }
 
     private void drawThemeTitle() {
-        display.setTextSize(2);
+        String title = model.themeTitle();
+        display.setTextSize(title.length() > 16 ? 1 : 2);
         display.setTextColor(Display.YELLOW, Display.BLACK);
         display.setCursor(8, 39);
-        display.println("ZELDA THEME");
+        display.println(title);
     }
 
     private void drawStatus() {

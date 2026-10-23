@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.usecases.zelda.KeyboardView;
 import io.github.jabrena.juno.usecases.zelda.ZeldaOcarinaModel;
+import io.github.jabrena.juno.usecases.zelda.theme.ZeldaSoundtrackThemes;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
 /** Theme selection screen for the Cardputer Zelda fan app. */
@@ -14,12 +15,15 @@ public final class ThemeSelectorView implements KeyboardView {
     private static final int CARDPUTER_ESCAPE = '`';
     private static final int UP = ';';
     private static final int DOWN = '.';
-    private static final String[] THEME_LABELS = {"1. ZELDA TITLE THEME"};
+    private static final int VISIBLE_ROWS = 5;
+    private static final int FIRST_ROW_Y = 37;
+    private static final int ROW_HEIGHT = 14;
 
     private final Navigator navigator;
     private final Display display;
     private final ZeldaOcarinaModel model;
     private int selectedThemeIndex;
+    private int firstVisibleIndex;
     private boolean themeSelected;
 
     public ThemeSelectorView(Navigator navigator, Display display, ZeldaOcarinaModel model) {
@@ -30,8 +34,9 @@ public final class ThemeSelectorView implements KeyboardView {
 
     @Override
     public void enter() {
-        selectedThemeIndex = 0;
-        themeSelected = false;
+        selectedThemeIndex = model.selectedTheme();
+        firstVisibleIndex = selectedThemeIndex / VISIBLE_ROWS * VISIBLE_ROWS;
+        themeSelected = true;
         draw();
     }
 
@@ -49,16 +54,24 @@ public final class ThemeSelectorView implements KeyboardView {
         display.setCursor(8, 9);
         display.println("Select the theme");
 
-        for (int index = 0; index < THEME_LABELS.length; index++) {
+        int lastVisibleIndex = firstVisibleIndex + VISIBLE_ROWS;
+        if (lastVisibleIndex > ZeldaSoundtrackThemes.COUNT) {
+            lastVisibleIndex = ZeldaSoundtrackThemes.COUNT;
+        }
+        for (int index = firstVisibleIndex; index < lastVisibleIndex; index++) {
             display.setTextColor(themeSelected && index == selectedThemeIndex ? Display.YELLOW : Display.WHITE, Display.BLACK);
-            display.setCursor(12, 45 + index * 16);
-            display.println(THEME_LABELS[index]);
+            display.setCursor(12, FIRST_ROW_Y + (index - firstVisibleIndex) * ROW_HEIGHT);
+            display.println(ZeldaSoundtrackThemes.label(index));
         }
         display.setTextColor(Display.CYAN, Display.BLACK);
-        display.setCursor(224, 40);
-        display.println("^");
-        display.setCursor(224, 56);
-        display.println("v");
+        if (firstVisibleIndex > 0) {
+            display.setCursor(224, 34);
+            display.println("^");
+        }
+        if (lastVisibleIndex < ZeldaSoundtrackThemes.COUNT) {
+            display.setCursor(224, 92);
+            display.println("v");
+        }
 
         display.fillRect(0, 107, 240, 28, Display.BLUE);
         display.fillRect(0, 107, 240, 2, Display.YELLOW);
@@ -81,7 +94,7 @@ public final class ThemeSelectorView implements KeyboardView {
             return;
         }
         if (key == Keyboard.ENTER && themeSelected) {
-            model.selectTheme();
+            model.selectTheme(selectedThemeIndex);
             navigator.show(PLAY_VIEW);
         } else if (key == ESCAPE || key == CARDPUTER_ESCAPE) {
             navigator.show(COVER_VIEW);
@@ -93,16 +106,18 @@ public final class ThemeSelectorView implements KeyboardView {
     }
 
     private void moveSelection(int direction) {
-        if (THEME_LABELS.length == 0) {
-            return;
-        }
         int nextIndex = selectedThemeIndex + direction;
         if (nextIndex < 0) {
             nextIndex = 0;
-        } else if (nextIndex >= THEME_LABELS.length) {
-            nextIndex = THEME_LABELS.length - 1;
+        } else if (nextIndex >= ZeldaSoundtrackThemes.COUNT) {
+            nextIndex = ZeldaSoundtrackThemes.COUNT - 1;
         }
         selectedThemeIndex = nextIndex;
+        if (selectedThemeIndex < firstVisibleIndex) {
+            firstVisibleIndex = selectedThemeIndex;
+        } else if (selectedThemeIndex >= firstVisibleIndex + VISIBLE_ROWS) {
+            firstVisibleIndex = selectedThemeIndex - VISIBLE_ROWS + 1;
+        }
         themeSelected = true;
         draw();
     }
