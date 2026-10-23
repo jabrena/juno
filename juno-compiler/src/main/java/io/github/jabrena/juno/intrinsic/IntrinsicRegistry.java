@@ -187,6 +187,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.M5_DISPLAY_SET_TEXT_COLOR),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDisplay", "setTextSize", "(I)V"),
                     Intrinsic.M5_DISPLAY_SET_TEXT_SIZE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDisplay", "print", "(C)V"),
+                    Intrinsic.M5_DISPLAY_PRINT_CHAR),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDisplay", "print",
                     "(Ljava/lang/String;)V"), Intrinsic.M5_DISPLAY_PRINT_STRING),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDisplay", "println",

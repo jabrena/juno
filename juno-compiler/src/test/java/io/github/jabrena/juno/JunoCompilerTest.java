@@ -155,6 +155,7 @@ class JunoCompilerTest {
                             display.setCursor(8, 10);
                             display.setTextColor(Display.GREEN, Display.BLACK);
                             display.setTextSize(2);
+                            display.print('x');
                             display.println("Hello, Juno!");
                             display.width();
                             display.height();
@@ -176,6 +177,7 @@ class JunoCompilerTest {
                     "call8 juno_m5_display_set_cursor",
                     "call8 juno_m5_display_set_text_color",
                     "call8 juno_m5_display_set_text_size",
+                    "call8 juno_m5_display_print_char",
                     "call8 juno_m5_display_println",
                     "call8 juno_m5_display_width",
                     "call8 juno_m5_display_height");
@@ -183,6 +185,7 @@ class JunoCompilerTest {
                     "#include <M5Cardputer.h>",
                     "M5Cardputer.begin(keyboard)",
                     "M5Cardputer.Display.fillScreen",
+                    "M5Cardputer.Display.print(static_cast<char>(",
                     "M5Cardputer.Display.println");
         }
 

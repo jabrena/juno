@@ -41,6 +41,8 @@ public interface Display {
 
     void setTextSize(int size);
 
+    void print(char character);
+
     void print(String text);
 
     void println(String text);

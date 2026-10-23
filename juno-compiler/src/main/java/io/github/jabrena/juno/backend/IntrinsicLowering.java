@@ -534,6 +534,8 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1)), ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_SET_TEXT_SIZE, "juno_m5_display_set_text_size", Result.NONE, List.of(arg(0)),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
+        shim(Intrinsic.M5_DISPLAY_PRINT_CHAR, "juno_m5_display_print_char", Result.NONE, List.of(arg(0)),
+                ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_PRINT_STRING, "juno_m5_display_print", Result.NONE, List.of(STRING_ARGUMENT),
                 ShimFeature.M5_DEVICE, ShimFeature.M5_DISPLAY);
         shim(Intrinsic.M5_DISPLAY_PRINTLN_STRING, "juno_m5_display_println", Result.NONE, List.of(STRING_ARGUMENT),
