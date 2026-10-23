@@ -212,6 +212,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.M5_DISPLAY)) {
             shim.append(runtimeSource.load("common/m5-display.cpp"));
         }
+        if (uses(ShimFeature.M5_KEYBOARD)) {
+            shim.append(runtimeSource.load("common/m5-keyboard.cpp"));
+        }
         if (uses(ShimFeature.MOUSE)) {
             shim.append(shimLibraries.mouseHelpers());
         }

@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
+import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import org.junit.jupiter.api.DisplayName;
@@ -52,5 +53,12 @@ class M5Test {
         assertThat(Display.color(255, 0, 0)).isEqualTo(Display.RED);
         assertThat(Display.color(0, 255, 0)).isEqualTo(Display.GREEN);
         assertThat(Display.color(0, 0, 255)).isEqualTo(Display.BLUE);
+    }
+
+    @Test
+    @DisplayName("The Cardputer's keyboard is one shared instance")
+    void shouldHandOutOneKeyboardInstance() {
+        // When & Then
+        assertThat(M5.getKeyboard()).isSameAs(M5.getKeyboard()).isSameAs(NativeKeyboard.INSTANCE);
     }
 }
