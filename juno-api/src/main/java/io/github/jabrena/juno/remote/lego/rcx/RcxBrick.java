@@ -3,7 +3,7 @@ package io.github.jabrena.juno.remote.lego.rcx;
 /**
  * The RCX's direct commands that answer back, the protocol under {@link RemoteRcx}'s motors, sensors, display, sound
  * and battery (as LeJOS builds {@code RemoteNXT} on {@code NXTCommand}); use {@link RemoteRcx} in a program, and this
- * class to share the commands with another brick of the family, as {@code ScoutRemote} does. Set up the link with
+ * class to share the commands with another brick of the family, as {@code RemoteScout} does. Set up the link with
  * {@link RemoteRcx#begin} or {@link RcxLink#begin} first, with both the IR LED and the IR receiver module wired. Plain
  * Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
  *
@@ -38,6 +38,9 @@ public final class RcxBrick {
     private static final int OPCODE_ON_OFF_FLOAT = 0x21;
     private static final int OPCODE_OUTPUT_DIRECTION = 0xE1;
     private static final int OPCODE_OUTPUT_POWER = 0x13;
+    private static final int OPCODE_GLOBAL_OUTPUT_POWER = 0xA3;
+    private static final int OPCODE_GLOBAL_OUTPUT_MODE = 0x67;
+    private static final int OPCODE_GLOBAL_OUTPUT_DIRECTION = 0x77;
     private static final int OPCODE_CLEAR_SENSOR = 0xD1;
     private static final int MODE_ON = 0x80;
     private static final int MODE_OFF = 0x40;
@@ -158,6 +161,33 @@ public final class RcxBrick {
         link.command(OPCODE_OUTPUT_POWER, outputs & 0x7, SOURCE_CONSTANT, limited, 3);
     }
 
+    /** Turns the outputs on with the global output command implemented by RCX 2.0, Scout and Spybot firmware. */
+    public void globalMotorOn(int outputs) {
+        setGlobalMotorMode(outputs, MODE_ON);
+    }
+
+    /** Brakes the outputs with the global output command implemented by RCX 2.0, Scout and Spybot firmware. */
+    public void globalMotorOff(int outputs) {
+        setGlobalMotorMode(outputs, MODE_OFF);
+    }
+
+    /** Lets the outputs coast with the global output command implemented by RCX 2.0, Scout and Spybot firmware. */
+    public void globalMotorFloat(int outputs) {
+        setGlobalMotorMode(outputs, MODE_FLOAT);
+    }
+
+    /** Sets global output direction using the command implemented by RCX 2.0, Scout and Spybot firmware. */
+    public void setGlobalMotorDirection(int outputs, boolean forward) {
+        link.command(OPCODE_GLOBAL_OUTPUT_DIRECTION,
+                (forward ? DIRECTION_FORWARD : DIRECTION_BACKWARD) | (outputs & 0x7), 0, 0, 1);
+    }
+
+    /** Sets the maximum output power with the command implemented by RCX 2.0, Scout and Spybot firmware. */
+    public void setMaxMotorPower(int outputs, int level) {
+        int limited = level < 0 ? 0 : level > RcxMotor.MAX_POWER ? RcxMotor.MAX_POWER : level;
+        link.command(OPCODE_GLOBAL_OUTPUT_POWER, outputs & 0x7, SOURCE_CONSTANT, limited, 3);
+    }
+
     /**
      * Runs the outputs at {@code speed}, {@code -7..7}: the sign is the direction, the size the power level, and
      * {@code 0} brakes them. That is up to four commands, each waiting for the brick's acknowledgement when the
@@ -171,6 +201,10 @@ public final class RcxBrick {
         setMotorDirection(outputs, speed > 0);
         setMotorPower(outputs, speed > 0 ? speed : -speed);
         motorOn(outputs);
+    }
+
+    private void setGlobalMotorMode(int outputs, int mode) {
+        link.command(OPCODE_GLOBAL_OUTPUT_MODE, mode | (outputs & 0x7), 0, 0, 1);
     }
 
     private boolean configureSensor(int input, int type, int mode) {

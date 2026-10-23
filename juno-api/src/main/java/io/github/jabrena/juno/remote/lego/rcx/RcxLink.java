@@ -3,11 +3,11 @@ package io.github.jabrena.juno.remote.lego.rcx;
 import io.github.jabrena.juno.hardware.Arduino;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
+import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * The RCX family's infrared framing, shared by {@link RemoteRcx} and {@link ScoutRemote}: a message is
+ * The RCX family's infrared framing, shared by {@link RemoteRcx} and {@link RemoteScout}: a message is
  * {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each byte followed by its
  * complement. Plain Java on top of {@link Infrared}.
  */
@@ -120,7 +120,7 @@ public final class RcxLink {
 
     /** Transmits a remote-control command with {@code buttonMask}, {@code RemoteRcx}'s button bits, as the RCX Remote Control does. */
     public void sendButtons(int buttonMask) {
-        send(OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 2);
+        sendFrame(OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 0, 2);
     }
 
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
@@ -132,6 +132,10 @@ public final class RcxLink {
     void send(int opcode, int first, int second, int third, int arguments) {
         toggle = !toggle;
         int code = toggle ? opcode | OPCODE_TOGGLE : opcode;
+        sendFrame(code, first, second, third, arguments);
+    }
+
+    private void sendFrame(int code, int first, int second, int third, int arguments) {
         int sum = code;
         Infrared.writeByte(0x55);
         Infrared.writeByte(0xFF);

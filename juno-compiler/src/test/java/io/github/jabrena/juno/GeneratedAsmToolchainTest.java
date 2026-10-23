@@ -988,7 +988,7 @@ class GeneratedAsmToolchainTest {
 
     @Test
     @DisplayName("A LEGO Scout remote program's shim writes bytes through the library-free IR path")
-    void shouldCompileAScoutRemoteProgramsShimWithACppCompiler() throws Exception {
+    void shouldCompileARemoteScoutProgramsShimWithACppCompiler() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
@@ -996,13 +996,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
-                import io.github.jabrena.juno.remote.lego.scout.ScoutRemote;
-                public final class AsmScoutRemote {
+                import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
+                public final class AsmRemoteScout {
                     public static void main(String[] args) {
-                        ScoutRemote scout = new ScoutRemote();
+                        RemoteScout scout = new RemoteScout();
                         scout.begin(-1, 3);
                         scout.ping();
-                        scout.setMode(ScoutRemote.MODE_POWER);
+                        scout.setMode(RemoteScout.MODE_POWER);
                         scout.playSound(2);
                         scout.selectProgram(3);
                         scout.sendButtons(RemoteRcx.A_FORWARD);
@@ -1011,14 +1011,14 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmScoutRemote", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmRemoteScout", source);
 
         // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmScoutRemote");
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmRemoteScout");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_ir_write_byte").doesNotContain("ArduinoBLE.h");
-        Path shim = temporaryDirectory.resolve("AsmScoutRemoteShim.cpp");
+        Path shim = temporaryDirectory.resolve("AsmRemoteScoutShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
         syntaxCheckCpp(compiler, shim);
     }

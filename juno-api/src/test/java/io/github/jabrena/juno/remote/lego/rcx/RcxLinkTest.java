@@ -82,6 +82,21 @@ class RcxLinkTest {
     }
 
     @Test
+    @DisplayName("Remote-control frames always use the fixed 0xD2 opcode")
+    void shouldNotToggleTheRemoteControlOpcode() {
+        // When
+        link.sendButtons(RemoteRcx.SOUND);
+        int first = Infrared.written.get(3);
+        Infrared.written.clear();
+        link.sendButtons(RemoteRcx.SOUND);
+        int second = Infrared.written.get(3);
+
+        // Then
+        assertThat(first).isEqualTo(0xD2);
+        assertThat(second).isEqualTo(0xD2);
+    }
+
+    @Test
     @DisplayName("Receive reads a frame and reports it as received")
     void shouldReadAFrameAndReportItAsReceived() {
         // Given

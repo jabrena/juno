@@ -18,7 +18,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
  * {@link #sendButtons} transmits it, so the brick in remote-control mode drives its motors with no firmware commands
  * at all, and {@link #message()} and {@link #sendMessage} carry RCX {@code message} values. It is plain Java on top of
  * {@link Infrared}, which carries the 2400 baud bytes; see there for the wiring. For the Scout brick, see
- * {@code ScoutRemote}.
+ * {@code RemoteScout}.
  *
  * <p>Every message is {@code 55 FF 00} followed by each byte and its complement: the opcode,
  * its arguments and a checksum. The remote sends opcode {@code 0xD2} with a 16-bit

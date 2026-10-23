@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-/** A temperature sensor plugged into an RCX input, e.g. {@code new RcxTemperatureSensor(rcx.getSensor1())}. */
+/** A temperature sensor plugged into an RCX or Scout input, e.g. {@code new RcxTemperatureSensor(remote.getSensor1())}. */
 public final class RcxTemperatureSensor {
     private final RcxSensor port;
 
-    /** A temperature sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
+    /** A temperature sensor on {@code port}. Create it once, at startup, and call {@link #begin} after the remote's {@code begin}. */
     public RcxTemperatureSensor(RcxSensor port) {
         this.port = port;
     }

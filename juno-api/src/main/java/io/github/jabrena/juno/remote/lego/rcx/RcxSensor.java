@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.remote.lego.scout.RemoteScout;
+
 /**
- * One of an RCX brick's three sensor inputs, as LeJOS's {@code SensorPort}: get it from {@link RemoteRcx#getSensor1()},
- * {@link RemoteRcx#getSensor2()} or {@link RemoteRcx#getSensor3()} and hand it to the sensor plugged into it, an
+ * One of an RCX-family brick's sensor inputs, as LeJOS's {@code SensorPort}: get it from {@link RemoteRcx#getSensor1()},
+ * {@link RemoteRcx#getSensor2()}, {@link RemoteRcx#getSensor3()} or {@link RemoteScout#getSensor1()} and hand it to the sensor plugged into it, an
  * {@link RcxTouchSensor}, {@link RcxLightSensor}, {@link RcxTemperatureSensor} or {@link RcxRotationSensor}, created
  * once, at startup. Every read is a request and a reply, about 100 ms, and needs the IR receiver module wired.
  */
@@ -10,7 +12,8 @@ public final class RcxSensor {
     private final RcxBrick brick;
     private final int input;
 
-    RcxSensor(RcxBrick brick, int input) {
+    /** A sensor input on {@code brick}; normally obtained from {@link RemoteRcx} or {@link RemoteScout}. */
+    public RcxSensor(RcxBrick brick, int input) {
         this.brick = brick;
         this.input = input;
     }

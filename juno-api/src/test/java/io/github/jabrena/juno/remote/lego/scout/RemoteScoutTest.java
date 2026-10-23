@@ -2,7 +2,10 @@ package io.github.jabrena.juno.remote.lego.scout;
 
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.remote.lego.rcx.RcxFrames;
+import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTemperatureSensor;
+import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,14 +15,14 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("LEGO Scout remote")
-class ScoutRemoteTest {
-    private ScoutRemote scout;
+class RemoteScoutTest {
+    private RemoteScout scout;
 
     @BeforeEach
     void startWithAnEmptyLink() {
         Wire.resetBoard();
         Infrared.reset();
-        scout = new ScoutRemote(new RcxLink(SimulatedTime.clock()));
+        scout = new RemoteScout(new RcxLink(SimulatedTime.clock()));
         scout.begin(-1, 3);
     }
 
@@ -57,7 +60,7 @@ class ScoutRemoteTest {
     @DisplayName("Set mode carries its argument")
     void shouldSendTheModeArgument() {
         // When
-        scout.setMode(ScoutRemote.MODE_POWER);
+        scout.setMode(RemoteScout.MODE_POWER);
 
         // Then
         assertThat(Infrared.written).containsSubsequence(1, 0xFE);
@@ -67,10 +70,24 @@ class ScoutRemoteTest {
     @DisplayName("Play sound carries its argument")
     void shouldSendTheSoundArgument() {
         // When
-        scout.playSound(3);
+        scout.playSound(RemoteScout.SOUND_REMOTE);
 
         // Then
-        assertThat(Infrared.written).containsSubsequence(3, 0xFC);
+        assertThat(Infrared.written).containsSubsequence(RemoteScout.SOUND_REMOTE, 0xF9);
+    }
+
+    @Test
+    @DisplayName("Scout sound controls use mute, sound-group and unmute opcodes")
+    void shouldControlTheScoutSpeakerAndSoundSet() {
+        // When
+        scout.unmuteSound();
+        scout.selectSoundSet(RemoteScout.SOUND_SET_SCIENCE);
+        scout.muteSound();
+
+        // Then
+        assertThat(Infrared.written).containsSubsequence(0xE8, 0x17)
+                .containsSubsequence(0x57, 0xA8, RemoteScout.SOUND_SET_SCIENCE, 0xFA)
+                .containsSubsequence(0xD8, 0x27);
     }
 
     @Test
@@ -104,6 +121,72 @@ class ScoutRemoteTest {
     }
 
     @Test
+    @DisplayName("Scout motors use the Scout-compatible global output commands")
+    void shouldDriveScoutMotorWithGlobalCommands() {
+        // When
+        scout.getMotorA().drive(3);
+
+        // Then
+        assertThat(Infrared.written).hasSize(31).containsSubsequence(0xAB, 0x54, 0x01, 0xFE, 0x02, 0xFD, 0x03, 0xFC)
+                .containsSubsequence(0x77, 0x88, 0x81, 0x7E)
+                .containsSubsequence(0x6F, 0x90, 0x81, 0x7E);
+    }
+
+    @Test
+    @DisplayName("Scout sensor handles configure and read the selected input")
+    void shouldConfigureAndReadAScoutSensor() {
+        // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x2A, 0x00));
+
+        // When
+        RcxLightSensor sensor = new RcxLightSensor(scout.getSensor2());
+        boolean configured = sensor.begin();
+        int value = sensor.lightPercent();
+
+        // Then
+        assertThat(configured).isTrue();
+        assertThat(value).isEqualTo(42);
+    }
+
+    @Test
+    @DisplayName("RCX touch sensor adapter connects to a Scout input")
+    void shouldReadTouchSensorThroughTheRcxSensorAdapter() {
+        // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x01, 0x00));
+        RcxTouchSensor sensor = new RcxTouchSensor(scout.getSensor1());
+
+        // When
+        boolean configured = sensor.begin();
+        boolean pressed = sensor.isPressed();
+
+        // Then
+        assertThat(configured).isTrue();
+        assertThat(pressed).isTrue();
+    }
+
+    @Test
+    @DisplayName("RCX temperature sensor adapter connects to a Scout input")
+    void shouldReadTemperatureSensorThroughTheRcxSensorAdapter() {
+        // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0xEB, 0x00));
+        RcxTemperatureSensor sensor = new RcxTemperatureSensor(scout.getSensor2());
+
+        // When
+        boolean configured = sensor.begin();
+        int temperatureTenths = sensor.temperatureTenths();
+
+        // Then
+        assertThat(configured).isTrue();
+        assertThat(temperatureTenths).isEqualTo(235);
+    }
+
+    @Test
     @DisplayName("Setting the touch sensor on the brick succeeds")
     void shouldConfigureTheTouchSensorOnTheBrick() {
         // Given
@@ -111,7 +194,7 @@ class ScoutRemoteTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x42));
 
         // When
-        boolean configured = scout.setTouchSensor(ScoutRemote.INPUT_1);
+        boolean configured = scout.setTouchSensor(RemoteScout.INPUT_1);
 
         // Then
         assertThat(configured).isTrue();
@@ -124,7 +207,7 @@ class ScoutRemoteTest {
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0x01, 0x00));
 
         // When
-        boolean pressed = scout.isPressed(ScoutRemote.INPUT_1);
+        boolean pressed = scout.isPressed(RemoteScout.INPUT_1);
 
         // Then
         assertThat(pressed).isTrue();
@@ -143,16 +226,4 @@ class ScoutRemoteTest {
         assertThat(millivolts).isEqualTo(0x1234);
     }
 
-    @Test
-    @DisplayName("Playing a tone succeeds when the brick acknowledges it")
-    void shouldPlayAToneWhenTheBrickAcknowledgesIt() {
-        // Given
-        Infrared.replies.addAll(RcxFrames.replyTo(0x23));
-
-        // When
-        boolean played = scout.playTone(440, 10);
-
-        // Then
-        assertThat(played).isTrue();
-    }
 }
