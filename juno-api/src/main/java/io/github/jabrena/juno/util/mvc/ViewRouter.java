@@ -77,6 +77,7 @@ public final class ViewRouter implements Navigator {
      * loses only what it overruns, and a long stall (a view drawing its whole screen or loading data) restarts the
      * schedule rather than rushing to catch up.
      */
+    @SuppressWarnings("java:S2189")
     public void run() {
         int next = clock.millis();
         while (true) {

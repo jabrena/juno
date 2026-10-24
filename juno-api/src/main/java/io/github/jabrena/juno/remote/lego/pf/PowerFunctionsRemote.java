@@ -50,7 +50,7 @@ public final class PowerFunctionsRemote {
     private static final int PWM_FLOAT = 0x0;
     private static final int PWM_BRAKE = 0x8;
 
-    private static int toggle;
+    private static int toggleBit;
 
     /** Configures {@code transmitPin} for the IR LED. */
     public static void begin(int transmitPin) {
@@ -84,8 +84,8 @@ public final class PowerFunctionsRemote {
     }
 
     private static void sendSingle(int channel, int output, int pwm) {
-        send(toggle | (channel & 0x3), MODE_SINGLE_OUTPUT | (output & 0x1), pwm);
-        toggle = toggle ^ TOGGLE;
+        send(toggleBit | (channel & 0x3), MODE_SINGLE_OUTPUT | (output & 0x1), pwm);
+        toggleBit = toggleBit ^ TOGGLE;
     }
 
     /** Maps a speed to the protocol's PWM nibble: 1..7 forward, 15..9 backward, 0 float. */
