@@ -1,9 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.games.common.PilotMenu;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.util.Delay;
 
 /**
  * The touch panel: the pilot screen, then in flight the crosshair. Drag moves the crosshair; a short
@@ -11,17 +9,9 @@ import io.github.jabrena.juno.util.Delay;
  * the CPU or back.
  */
 final class Controls {
-    private static final Clock CLOCK = ArduinoOne.getClock();
     /** A touch this short (in frames) that barely moved is a tap, and fires on release. */
     private static final int TAP_FRAMES = 8;
     private static final int DRAG_PIXELS = 20;
-
-    // The HUMAN and CPU buttons of the pilot screen.
-    private static final int CHOICE_X = 20;
-    private static final int CHOICE_Y = 104;
-    private static final int CHOICE_WIDTH = 130;
-    private static final int CHOICE_HEIGHT = 72;
-    private static final int CHOICE_GAP = 20;
 
     static int crossX = Camera.CENTER_X;
     static int crossY = Camera.CENTER_Y;
@@ -90,72 +80,26 @@ final class Controls {
         drawChoice(0, "HUMAN", "You steer and fire", false);
         drawChoice(1, "CPU", "Autopilot plays", false);
         Hud.showCentered("Tap the header in game to switch", 206, 1, SceneRenderer.STAR);
-        int choice = -1;
-        while (choice < 0) {
-            if (TftTouchShield.readTouch()) {
-                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
-            }
-            Delay.millis(10);
-        }
+        int choice = PilotMenu.waitForChoice();
         autopilot = choice == 1;
         touching = false;
         drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You steer and fire" : "Autopilot plays",
                 true);
-        waitForRelease();
+        PilotMenu.waitForRelease();
     }
 
     /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
     static int choiceAt(int x, int y) {
-        if (y < CHOICE_Y || y >= CHOICE_Y + CHOICE_HEIGHT) {
-            return -1;
-        }
-        for (int index = 0; index < 2; index++) {
-            int left = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
-            if (x >= left && x < left + CHOICE_WIDTH) {
-                return index;
-            }
-        }
-        return -1;
+        return PilotMenu.choiceAt(x, y);
     }
 
     private static void drawChoice(int index, String label, String hint, boolean chosen) {
-        int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
-        int color = chosen ? SceneRenderer.HUD : 0x2124;
-        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
-        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT,
-                chosen ? TftTouchShield.WHITE : SceneRenderer.SNOW);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
-        TftTouchShield.print(hint);
+        PilotMenu.drawChoice(index, label, hint, chosen, SceneRenderer.HUD, 0x2124,
+                TftTouchShield.WHITE, SceneRenderer.SNOW, TftTouchShield.YELLOW, TftTouchShield.WHITE);
     }
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
     static boolean waitForTap(int timeoutMillis) {
-        int start = CLOCK.millis();
-        while (!TftTouchShield.readTouch()) {
-            if (CLOCK.millis() - start >= timeoutMillis) {
-                return false;
-            }
-            Delay.millis(10);
-        }
-        waitForRelease();
-        return true;
-    }
-
-    private static void waitForRelease() {
-        int misses = 0;
-        while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
-                misses = 0;
-            } else {
-                misses = misses + 1;
-            }
-            Delay.millis(10);
-        }
+        return PilotMenu.waitForTap(timeoutMillis);
     }
 }

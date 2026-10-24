@@ -19,7 +19,7 @@ final class Interludes {
 
     static void opening(short[] lines) {
         TftTouchShield.fillScreen(DisplayList.SKY);
-        DisplayList.shown = 0;
+        DisplayList.forget();
         Camera.bankCos = 1024;
         Camera.bankSin = 0;
         Hud.showCentered("CONTACT!", 28, 2, TftTouchShield.YELLOW);
@@ -59,13 +59,13 @@ final class Interludes {
         Delay.millis(200);
         takeOff(lines);
         TftTouchShield.fillScreen(DisplayList.SKY);
-        DisplayList.shown = 0;
+        DisplayList.forget();
         Delay.millis(250);
     }
 
     private static void takeOff(short[] lines) {
         TftTouchShield.fillScreen(DisplayList.SKY);
-        DisplayList.shown = 0;
+        DisplayList.forget();
         int pitch = 0;
         int travel = 0;
         for (int f = 0; f < TAKEOFF_FRAMES; f++) {
