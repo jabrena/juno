@@ -51,35 +51,35 @@ public final class NanoSntpTimeSD {
             Serial.println("SD card initialization failed");
             return;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return;
-        }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
 
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return;
-        }
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return;
+            }
 
-        SntpClock.configure(properties);
-        WIFI.begin(ssid, password);
-        int attempts = 0;
-        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
-            Delay.millis(1000);
-            attempts = attempts + 1;
-        }
+            SntpClock.configure(properties);
+            WIFI.begin(ssid, password);
+            int attempts = 0;
+            while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+                Delay.millis(1000);
+                attempts = attempts + 1;
+            }
 
-        LocalDateTime current = LocalDateTime.now();
-        if (current.equals(LocalDateTime.MIN)) {
-            Serial.println("Internet time unavailable");
-        } else {
-            Serial.println(current.toString());
+            LocalDateTime current = LocalDateTime.now();
+            if (current.equals(LocalDateTime.MIN)) {
+                Serial.println("Internet time unavailable");
+            } else {
+                Serial.println(current.toString());
+            }
         }
     }
 

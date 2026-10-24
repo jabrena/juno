@@ -77,26 +77,26 @@ public final class SdFileOperations {
     }
 
     private static void readBack() throws IOException {
-        InputStream file = SD_CARD.open(PATH);
-        if (file == null) {
-            Serial.println("  (could not open)");
-            return;
-        }
-        StringBuilder line = new StringBuilder(32);
-        while (true) {
-            int value = file.read();
-            if (value == -1) {
-                break;
+        try (InputStream file = SD_CARD.open(PATH)) {
+            if (file == null) {
+                Serial.println("  (could not open)");
+                return;
             }
-            char next = (char) value;
-            if (next == '\n') {
-                Serial.print("  ");
-                Serial.println(line.toString());
-                line = new StringBuilder(32);
-            } else if (next != '\r') {
-                line.append(next);
+            StringBuilder line = new StringBuilder(32);
+            while (true) {
+                int value = file.read();
+                if (value == -1) {
+                    break;
+                }
+                char next = (char) value;
+                if (next == '\n') {
+                    Serial.print("  ");
+                    Serial.println(line.toString());
+                    line = new StringBuilder(32);
+                } else if (next != '\r') {
+                    line.append(next);
+                }
             }
         }
-        file.close();
     }
 }

@@ -104,21 +104,21 @@ public final class NanoHttpServerSD {
             Serial.println("SD card initialization failed");
             return null;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+            return new Credentials(ssid, password);
         }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return null;
-        }
-        return new Credentials(ssid, password);
     }
 
     private record Credentials(String ssid, String password) {

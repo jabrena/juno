@@ -82,29 +82,29 @@ public final class NanoSmtpStarttlsSD {
             Serial.println("SD card initialization failed");
             return null;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            String host = properties.getProperty("smtp.host");
+            String username = properties.getProperty("smtp.username");
+            String smtpPassword = properties.getProperty("smtp.password");
+            String from = properties.getProperty("smtp.from");
+            String to = properties.getProperty("smtp.to");
+            String subject = properties.getProperty("smtp.subject");
+            String body = properties.getProperty("smtp.body");
+            if (ssid == null || password == null || host == null || username == null || smtpPassword == null
+                    || from == null || to == null || subject == null || body == null) {
+                Serial.println("a wifi.* or smtp.* entry is missing");
+                return null;
+            }
+            return new Mail(ssid, password, host, username, smtpPassword, from, to, subject, body);
         }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        String host = properties.getProperty("smtp.host");
-        String username = properties.getProperty("smtp.username");
-        String smtpPassword = properties.getProperty("smtp.password");
-        String from = properties.getProperty("smtp.from");
-        String to = properties.getProperty("smtp.to");
-        String subject = properties.getProperty("smtp.subject");
-        String body = properties.getProperty("smtp.body");
-        if (ssid == null || password == null || host == null || username == null || smtpPassword == null
-                || from == null || to == null || subject == null || body == null) {
-            Serial.println("a wifi.* or smtp.* entry is missing");
-            return null;
-        }
-        return new Mail(ssid, password, host, username, smtpPassword, from, to, subject, body);
     }
 
     private record Mail(String ssid, String password, String host, String username, String smtpPassword,

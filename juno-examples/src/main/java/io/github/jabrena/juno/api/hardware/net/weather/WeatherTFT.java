@@ -167,28 +167,28 @@ public final class WeatherTFT {
             Serial.println("SD card initialization failed");
             return false;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return false;
-        }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return false;
-        }
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return false;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return false;
+            }
 
-        WIFI.begin(ssid, password);
-        int attempts = 0;
-        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
-            Delay.millis(1000);
-            attempts = attempts + 1;
+            WIFI.begin(ssid, password);
+            int attempts = 0;
+            while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
+                Delay.millis(1000);
+                attempts = attempts + 1;
+            }
+            return WIFI.status() == Wifi.STATUS_CONNECTED;
         }
-        return WIFI.status() == Wifi.STATUS_CONNECTED;
     }
 
     /**

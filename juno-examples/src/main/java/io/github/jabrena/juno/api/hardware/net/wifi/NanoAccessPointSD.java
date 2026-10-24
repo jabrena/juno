@@ -73,17 +73,17 @@ public final class NanoAccessPointSD {
             Serial.println("SD card unavailable; starting open JunoAP");
             return DEFAULT_ACCESS_POINT;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found; starting open JunoAP");
-            return DEFAULT_ACCESS_POINT;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found; starting open JunoAP");
+                return DEFAULT_ACCESS_POINT;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("ap.ssid", Wifi.DEFAULT_ACCESS_POINT_SSID);
+            String password = properties.getProperty("ap.password", Wifi.DEFAULT_ACCESS_POINT_PASSWORD);
+            return new AccessPoint(ssid, password);
         }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("ap.ssid", Wifi.DEFAULT_ACCESS_POINT_SSID);
-        String password = properties.getProperty("ap.password", Wifi.DEFAULT_ACCESS_POINT_PASSWORD);
-        return new AccessPoint(ssid, password);
     }
 
     private record AccessPoint(String ssid, String password) {

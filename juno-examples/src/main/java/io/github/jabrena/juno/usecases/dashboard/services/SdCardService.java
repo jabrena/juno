@@ -57,15 +57,13 @@ public final class SdCardService {
             Serial.println("WiFi settings unavailable without SD card");
             return null;
         }
-        try {
-            InputStream file = sdCard.open("application.properties");
+        try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");
                 return null;
             }
             Properties properties = new Properties();
             properties.load(file);
-            file.close();
             String ssid = properties.getProperty("wifi.ssid");
             String password = properties.getProperty("wifi.password");
             if (ssid == null || password == null) {

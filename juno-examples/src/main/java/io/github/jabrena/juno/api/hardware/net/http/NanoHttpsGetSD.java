@@ -117,23 +117,23 @@ public final class NanoHttpsGetSD {
             Serial.println("SD card initialization failed");
             return null;
         }
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            String host = properties.getProperty("https.host");
+            String path = properties.getProperty("https.path");
+            if (ssid == null || password == null || host == null || path == null) {
+                Serial.println("wifi.ssid, wifi.password, https.host or https.path is missing");
+                return null;
+            }
+            return new Settings(ssid, password, host, path);
         }
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        String host = properties.getProperty("https.host");
-        String path = properties.getProperty("https.path");
-        if (ssid == null || password == null || host == null || path == null) {
-            Serial.println("wifi.ssid, wifi.password, https.host or https.path is missing");
-            return null;
-        }
-        return new Settings(ssid, password, host, path);
     }
 
     private record Settings(String ssid, String password, String host, String path) {
