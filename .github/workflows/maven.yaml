@@ -449,7 +449,7 @@ jobs:
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
 
   arduino-java:
-    name: Compile Java (${{ matrix.group }})
+    name: Compile Java (${{ matrix.board }})
     needs: [changes, arduino-cli-image, integration-build]
     if: needs.changes.outputs.java == 'true'
     runs-on: ubuntu-latest
@@ -460,12 +460,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - group: AVR
-            boards: arduino-one-r3,arduino-one-r3-wifi-rev2
-          - group: R4 and Nano
-            boards: arduino-one-r4-wifi,arduino-nano-esp32
-          - group: Q and Cardputer
-            boards: arduino-one-q,m5stack-cardputer
+          - board: UNO R3
+            board_id: arduino-one-r3
+          - board: UNO WiFi Rev2
+            board_id: arduino-one-r3-wifi-rev2
+          - board: UNO R4 WiFi
+            board_id: arduino-one-r4-wifi
+          - board: Nano ESP32
+            board_id: arduino-nano-esp32
+          - board: UNO Q
+            board_id: arduino-one-q
+          - board: M5Stack Cardputer
+            board_id: m5stack-cardputer
     steps:
       - uses: actions/checkout@v7
         with:
@@ -501,7 +507,7 @@ jobs:
           failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
           -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.language=java
-          -Djuno.arduinoCliBoards=${{ matrix.boards }}
+          -Djuno.arduinoCliBoards=${{ matrix.board_id }}
           -Djuno.arduinoCliParallelism=4
           -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
