@@ -1,0 +1,51 @@
+package io.github.jabrena.juno.games.doom.services;
+
+import io.github.jabrena.juno.games.doom.commons.DoomState;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.mvc.Task;
+
+/**
+ * Owns Doom's startup I/O. The controller advances it one short step per frame, on the main thread, while it
+ * catalogs DOOM1.WAD a block at a time. Views consume only the results published in the model, and the map loader
+ * waits for {@link DoomState#startupComplete()} before it touches the card.
+ */
+public final class DoomStartupService implements Task {
+    private final DoomState model;
+    private final SdCard sdCard;
+    private final DoomWadCatalog catalog = new DoomWadCatalog();
+    private boolean done;
+
+    public DoomStartupService(DoomState model, SdCard sdCard) {
+        this.model = model;
+        this.sdCard = sdCard;
+    }
+
+    /** Initializes the SD card before the first frame; without it, startup completes at once. */
+    public void begin() {
+        boolean ready = sdCard.begin();
+        model.publishCardReady(ready);
+        if (!ready) {
+            model.publishEpisodesInWad(0);
+            Serial.println("Doom: SD card unavailable");
+            finish();
+        }
+    }
+
+    @Override
+    public void step() {
+        if (done) {
+            return;
+        }
+        catalog.step();
+        if (catalog.complete()) {
+            model.publishEpisodesInWad(catalog.episodes());
+            finish();
+        }
+    }
+
+    private void finish() {
+        done = true;
+        model.publishStartupComplete();
+    }
+}

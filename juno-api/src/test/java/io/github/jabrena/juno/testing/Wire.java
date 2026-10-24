@@ -32,11 +32,11 @@ public final class Wire {
     /**
      * The one-wire reply of a DHT-family sensor to a start pulse: the sensor's 80 us low and 80 us high
      * acknowledgement, then 40 bits, each a 50 us low followed by a high of 26 us for a zero or 70 us for a one, MSB
-     * first. The host's 20 ms start pulse and 40 us release come first and are never sampled, so they are only
-     * padding here.
+     * first. The script begins when the host starts sampling; its real JVM delays are therefore not part of this
+     * simulated signal.
      */
     public static Wire dhtReply(int... bytes) {
-        Wire wire = new Wire().hold(true, 20_040).hold(false, 80).hold(true, 80);
+        Wire wire = new Wire().hold(false, 80).hold(true, 80);
         for (int bit = 0; bit < bytes.length * 8; bit++) {
             boolean one = ((bytes[bit / 8] >> (7 - (bit % 8))) & 1) != 0;
             wire.hold(false, 50).hold(true, one ? 70 : 26);

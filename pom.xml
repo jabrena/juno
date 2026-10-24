@@ -500,41 +500,6 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Clears the surefire-cached-extension's (.mvn/extensions.xml) result cache before a clean build, so a
-             run that would otherwise report a cache hit (no tests executed, no jacoco.exec written) actually
-             re-runs the tests: ./mvnw clean -PclearTestCache verify. The cache lives outside the reactor, keyed
-             by groupId, so this clears it for every module in one place rather than per module. -->
-        <profile>
-            <id>clearTestCache</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <!-- Profiles are inherited by every child POM; without this, each reactor module would
-                             run its own copy of this execution. -->
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>clear-surefire-cache</id>
-                                <phase>clean</phase>
-                                <goals>
-                                    <goal>clean</goal>
-                                </goals>
-                                <configuration>
-                                    <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                                    <filesets>
-                                        <fileset>
-                                            <directory>${settings.localRepository}/../test-cache/surefire-cached/io.github.jabrena</directory>
-                                        </fileset>
-                                    </filesets>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
         <!-- Mutation testing: ./mvnw verify -Ppitest (reports in <module>/target/pit-reports). Runs in every module
              that has unit tests and fails below ${coverage.level}% mutation score or line coverage. juno-site and
              juno-examples opt out with skipPitest, and the Docker-based *IT suites are not unit tests. -->

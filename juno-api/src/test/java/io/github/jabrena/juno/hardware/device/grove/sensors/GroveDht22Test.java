@@ -57,7 +57,7 @@ class GroveDht22Test {
     @DisplayName("Keeps the previous reading when the sensor stays silent")
     void shouldKeepThePreviousReadingWhenTheSensorStaysSilent() {
         // Given
-        new Wire().hold(true, 20_040).hold(true, 400).install(pins);
+        new Wire().hold(true, 400).install(pins);
         int[] reading = {42, 44};
         int[] frame = new int[5];
 

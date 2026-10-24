@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +29,7 @@ class TftTouchShieldTest {
         pins = mock(Gpio.class);
         TftPins.use(pins);
         ParallelBus.reset();
-        TftTouchShield.begin();
+        ImmediateDelay.run(TftTouchShield::begin);
         ParallelBus.bytes.clear();
         ParallelBus.runs.clear();
     }

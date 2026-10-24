@@ -38,7 +38,7 @@ final class Interludes {
      */
     static void warpIntro(int[] stars) {
         TftTouchShield.fillScreen(SPACE);
-        DisplayList.shown = 0;
+        DisplayList.forget();
         for (int i = 0; i < INTRO_STARS; i++) {
             placeStar(stars, i * S_STRIDE, Random.nextInt(64, INTRO_DEPTH));
         }

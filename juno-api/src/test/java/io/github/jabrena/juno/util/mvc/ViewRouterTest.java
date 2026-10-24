@@ -4,9 +4,9 @@ import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
 import io.github.jabrena.juno.hardware.device.tft.TftPins;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
-import io.github.jabrena.juno.testing.SimulatedTime;
+import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
-import io.github.jabrena.juno.util.Delay;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,27 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("View router frame loop")
 class ViewRouterTest {
+    private static final class FrameClock implements Clock {
+        private static final int FRAME_MILLIS = 10;
+
+        private int nowMillis;
+
+        @Override
+        public int millis() {
+            nowMillis += FRAME_MILLIS;
+            return nowMillis;
+        }
+
+        @Override
+        public int micros() {
+            return nowMillis * 1_000;
+        }
+
+        void advance(int milliseconds) {
+            nowMillis += milliseconds;
+        }
+    }
+
     /** Thrown from a view's render once its script is exhausted, which is how a test leaves the never-ending frame loop. */
     private static final class Stop extends RuntimeException {
         private static final long serialVersionUID = 1L;
@@ -35,6 +56,7 @@ class ViewRouterTest {
     private final Gpio pins = mock(Gpio.class);
     private final List<String> log = new ArrayList<>();
     private final Deque<Consumer<ViewRouter>> script = new ArrayDeque<>();
+    private final FrameClock clock = new FrameClock();
     private ViewRouter router;
 
     @BeforeEach
@@ -42,8 +64,8 @@ class ViewRouterTest {
         Wire.resetBoard();
         ParallelBus.reset();
         TftPins.use(pins);
-        TftTouchShield.begin();
-        router = new ViewRouter(10, SimulatedTime.clock());
+        ImmediateDelay.run(TftTouchShield::begin);
+        router = new ViewRouter(10, clock);
         for (int id = 0; id < 4; id++) {
             router.register(id, new Recorder(id));
         }
@@ -169,7 +191,7 @@ class ViewRouterTest {
     @DisplayName("A frame that overruns its schedule restarts instead of rushing to catch up")
     void shouldRestartAFrameThatOverrunsTheScheduleInsteadOfRushing() {
         // Given
-        script.add(r -> Delay.millis(500));
+        script.add(r -> clock.advance(500));
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });
 

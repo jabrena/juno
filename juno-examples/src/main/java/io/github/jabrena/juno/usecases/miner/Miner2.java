@@ -26,7 +26,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
 import java.util.UUID;
 
 /**
- * A leaderless, Bitcoin-style proof-of-work miner, built model-view-controller like Doom2: the chain, its packets and
+ * A leaderless, Bitcoin-style proof-of-work miner, built model-view-controller like Doom: the chain, its packets and
  * the miner are in {@code chain}, the peer table and node identities in {@code peers}. A {@link ViewRouter} runs the
  * frame loop; a cover (the Java logo, an
  * Arduino board, then the title and PLAY) leads to the BLOCKS, CHAIN, PEERS and NET tabs, which are views of one

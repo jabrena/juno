@@ -10,11 +10,6 @@
   </extension>
   <extension>
     <groupId>com.github.seregamorph</groupId>
-    <artifactId>surefire-cached-extension</artifactId>
-    <version>0.31</version>
-  </extension>
-  <extension>
-    <groupId>com.github.seregamorph</groupId>
     <artifactId>maven-timeline-extension</artifactId>
     <version>0.8</version>
   </extension>
