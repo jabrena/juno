@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "sonarqube": {
+      "command": "sh",
+      "args": ["./scripts/sonar.sh", "mcp"],
+      "env": {
+        "SONAR_CREDENTIALS_FILE": ".sonar/sonar.env",
+        "SONARQUBE_URL": "http://host.docker.internal:9000"
+      }
+    },
+    "javadocs": {
+      "type": "http",
+      "url": "https://www.javadocs.dev/mcp"
+    }
+  }
+}
