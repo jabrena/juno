@@ -104,12 +104,31 @@ public final class AvrShimThunks {
         String[] declarations = trimmed.split(",");
         for (String declaration : declarations) {
             String parameter = declaration.strip();
-            // The type is everything before the parameter's name.
-            Matcher name = Pattern.compile("^(.*?)\\s*\\b\\w+$").matcher(parameter);
-            String type = name.matches() && !name.group(1).isBlank() ? name.group(1).strip() : parameter;
+            String type = parameterType(parameter);
             parameters.add(new Parameter(type, kind(function, type)));
         }
         return parameters;
+    }
+
+    /** Returns a declaration's type by removing its final identifier without regex backtracking. */
+    private String parameterType(String parameter) {
+        int end = parameter.length();
+        while (end > 0 && Character.isWhitespace(parameter.charAt(end - 1))) {
+            end--;
+        }
+        int nameStart = end;
+        while (nameStart > 0) {
+            char character = parameter.charAt(nameStart - 1);
+            if (!Character.isLetterOrDigit(character) && character != '_') {
+                break;
+            }
+            nameStart--;
+        }
+        if (nameStart == 0 || nameStart == end) {
+            return parameter;
+        }
+        String type = parameter.substring(0, nameStart).strip();
+        return type.isEmpty() ? parameter : type;
     }
 
     private Kind kind(String function, String type) {

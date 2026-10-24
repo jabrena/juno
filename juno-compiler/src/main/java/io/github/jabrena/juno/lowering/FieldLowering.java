@@ -5,6 +5,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.FieldInfo;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
@@ -122,14 +123,15 @@ final class FieldLowering implements InstructionLowering {
     }
 
     private void pushBigConstant(BigNumberSupport.Constant constant) {
-        if (constant.intrinsic().isEmpty()) {
+        Optional<Intrinsic> intrinsic = constant.intrinsic();
+        if (intrinsic.isEmpty()) {
             stack.pushInt(constant.value());
             return;
         }
         Value which = values.int32();
         context.emit(new IrInstruction.Const(which, constant.value()));
         Value handle = values.int32();
-        context.emit(new IrInstruction.IntrinsicCall(Optional.of(handle), constant.intrinsic().get(),
+        context.emit(new IrInstruction.IntrinsicCall(Optional.of(handle), intrinsic.get(),
                 Optional.empty(), List.of(which), List.of()));
         stack.push(handle);
     }

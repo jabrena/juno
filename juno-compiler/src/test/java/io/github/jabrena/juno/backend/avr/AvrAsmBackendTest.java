@@ -805,6 +805,19 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Parses spaced pointer parameter declarations")
+    void shouldParseSpacedPointerParameterDeclarations() {
+        // Given
+        String shim = "extern \"C\" void juno_pointer_spacing(const uint8_t *value) {\n}\n";
+
+        // When
+        String thunks = avrShimThunks.generate(shim, Set.of("juno_pointer_spacing"));
+
+        // Then
+        assertThat(thunks).contains("reinterpret_cast<const uint8_t *>(static_cast<uintptr_t>(juno_avr_args[0]))");
+    }
+
+    @Test
     @DisplayName("Refuses a thunk whose prototype has no extern C definition")
     void shouldRefuseAThunkWhoseNameHasNoExternCDefinition() {
         // When & Then
