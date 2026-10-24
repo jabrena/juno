@@ -26,6 +26,7 @@ public final class SleepAndYield {
         Serial.println(result == 1);
     }
 
+    @SuppressWarnings("java:S2276")
     int verify() throws InterruptedException {
         Thread contender;
         boolean enteredWhileOwned;

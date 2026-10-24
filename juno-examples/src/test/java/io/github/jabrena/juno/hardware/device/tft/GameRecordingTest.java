@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /** Writes fresh emulator frames on demand; ffmpeg turns them into documentation media. */
 class GameRecordingTest {
     @Test
@@ -26,6 +28,7 @@ class GameRecordingTest {
         clearFrames(output);
         List<BufferedImage> frames = TftEmulator.record(
                 "io.github.jabrena.juno." + game, duration, interval, taps(script));
+        assertThat(frames).as("recording should contain at least one frame").isNotEmpty();
         for (int index = 0; index < frames.size(); index++) {
             ImageIO.write(frames.get(index), "png", output.resolve("frame-%05d.png".formatted(index)).toFile());
         }

@@ -22,6 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Writes the frames of a whole Solo bout on demand, for documentation media: the player's screen exactly as
  * {@link SoloFlow} draws it, from the countdown until the victory or defeat shows. ffmpeg turns the frames into a
@@ -108,6 +110,8 @@ class SoloRecordingTest {
         for (int frame = 0; frame < TITLE_FRAMES; frame++) {
             write(output, written++);
         }
+        assertThat(duel.match().phase()).as("solo bout should reach its result phase").isEqualTo(Match.OVER);
+        assertThat(written).as("recording should contain at least one frame").isPositive();
         System.out.println("SOLO-RECORDING " + (duel.match().winner() == 0 ? "VICTORY" : "DEFEAT") + " "
                 + profile.displayName() + " vs " + opponent.displayName());
     }

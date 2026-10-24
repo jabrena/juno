@@ -24,6 +24,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
  * Writes the frames of a whole Gladiator match on demand, for documentation media: the arena's screen and both
  * gladiators' first-person screens side by side, as the three boards would show them. One AGGRESSIVE and one AMBUSH
@@ -83,6 +85,7 @@ class GladiatorRecordingTest {
                 ImageIO.write(image, "png", output.resolve("frame-%05d.png".formatted(frame++)).toFile());
             }
         }
+        assertThat(frame).as("recording should contain at least one frame").isPositive();
     }
 
     /** One 40 ms frame of the arena and both boards. */
