@@ -3,6 +3,9 @@ package io.github.jabrena.juno.usecases.supabase.dashboard.intro;
 import io.github.jabrena.juno.hardware.ArduinoOne;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.image.ArduinoOneBoardImage;
+import io.github.jabrena.juno.util.image.Drawable;
+import io.github.jabrena.juno.util.image.JavaLogoImage;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
 
@@ -18,7 +21,7 @@ public final class IntroView implements View {
     private final Navigator navigator;
     private final int nextViewId;
     private final Drawable javaLogo = new JavaLogoImage();
-    private final Drawable arduinoBoard = new ArduinoBoardImage();
+    private final Drawable arduinoBoard = new ArduinoOneBoardImage();
     private int shownStep;
     private int shownAt;
 

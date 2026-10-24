@@ -27,9 +27,10 @@ HANDOFF.md
 
 juno-site/node_modules/
 
-# Game data from commercial WADs (e.g. DOOM1.WAD) is never committed
+# Game data from commercial WADs is ignored, except for the committed Doom fixture.
 *.wad
 *.WAD
+!juno-examples/src/main/java/io/github/jabrena/juno/games/doom/DOOM1.WAD
 
 .lsp
 .clj-kondo
