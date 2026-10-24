@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * using {@code LedCanvas}.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixCircles {
     private static final int CENTER_X = 5;
     private static final int CENTER_Y = 3;

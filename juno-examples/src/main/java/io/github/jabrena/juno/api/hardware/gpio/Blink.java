@@ -9,6 +9,7 @@ import io.github.jabrena.juno.util.Delay;
  * milliseconds, one complete blink cycle per second.
  *
  */
+@SuppressWarnings("java:S2189")
 public class Blink {
 
     public static void main(String[] args) {

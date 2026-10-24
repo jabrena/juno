@@ -31,6 +31,7 @@ import java.io.InputStream;
  * }</pre>
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoNanoEsp32Board.class})
+@SuppressWarnings("java:S2189")
 public final class SdFileOperations {
     private static final String PATH = "juno-sd-demo.txt";
     private static final SdCard SD_CARD = sdCard();

@@ -19,6 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * reply round trips with the brick, so a bump is noticed a fraction of a second late.
  * Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class RcxBumpAndGo {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int RECEIVE_PIN = 2;

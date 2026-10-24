@@ -35,6 +35,7 @@ import io.github.jabrena.juno.util.Random;
  * class only orchestrates the game loop.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class MissileCommand {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 20;

@@ -10,6 +10,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Prints DHT22-format temperature and humidity from the Grove module on D4. */
 @Board({ArduinoOneR3WiFiRev2Board.class})
+@SuppressWarnings("java:S2189")
 public final class GroveDht22Monitor {
     private GroveDht22Monitor() {
     }

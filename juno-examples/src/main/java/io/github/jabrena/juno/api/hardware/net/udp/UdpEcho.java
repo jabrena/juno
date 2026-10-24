@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * at 115200 baud. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}); from a
  * computer on the same network, {@code nc -u <board-ip> 4210} sends packets and shows the echoes.
  */
+@SuppressWarnings("java:S2189")
 public final class UdpEcho {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

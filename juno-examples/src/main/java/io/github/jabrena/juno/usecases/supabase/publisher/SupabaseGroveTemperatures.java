@@ -34,7 +34,7 @@ import java.time.LocalDateTime;
  * UNO R4 WiFi and UNO Q.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S1845")
+@SuppressWarnings({"java:S1845", "java:S2189"})
 public final class SupabaseGroveTemperatures {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

@@ -18,6 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>Only acknowledged bytes count as progress. Missing replies are retried with a quiet gap; if the boot ROM
  * loses its block sequence, the download starts again with smaller blocks. Five sessions bound recovery time.
  */
+@SuppressWarnings("java:S2189")
 public final class RcxFirmwareDownload {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

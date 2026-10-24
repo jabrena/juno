@@ -22,6 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * re-enumerates when the program starts, so it waits two seconds before starting.
  */
 @Board(ArduinoNanoEsp32Board.class)
+@SuppressWarnings("java:S2189")
 public final class SerialThreads {
     private static final int LIMIT = 300;
     private static final int SLICE = LIMIT / 3;

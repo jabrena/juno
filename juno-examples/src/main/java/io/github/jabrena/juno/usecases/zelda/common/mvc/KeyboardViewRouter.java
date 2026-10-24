@@ -8,6 +8,7 @@ import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.Task;
 
 /** The controller for a keyboard-driven board program using {@link KeyboardView} screens. */
+@SuppressWarnings("java:S2189")
 public final class KeyboardViewRouter implements Navigator {
     /** How many views a program can register. */
     public static final int MAX_VIEWS = 8;

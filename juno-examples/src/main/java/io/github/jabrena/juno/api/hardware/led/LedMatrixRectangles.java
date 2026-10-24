@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * built-in LED matrix using {@code LedCanvas}.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixRectangles {
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoOne.getLedMatrix();

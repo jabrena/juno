@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * works and the software 38 kHz carrier is accepted by the demodulator. Both boards send 2400 baud
  * RCX-style frames. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class InfraredLoopback {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

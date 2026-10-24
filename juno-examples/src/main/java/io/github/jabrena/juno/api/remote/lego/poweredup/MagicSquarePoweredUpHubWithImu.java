@@ -19,6 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * port and values follow the community protocol documentation; run {@code PoweredUpHubImuMonitor} to see
  * them on your hub. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class MagicSquarePoweredUpHubWithImu {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final Clock CLOCK = ArduinoOne.getClock();

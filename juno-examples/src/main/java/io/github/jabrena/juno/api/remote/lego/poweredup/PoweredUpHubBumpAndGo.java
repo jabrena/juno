@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * The hub connects over Bluetooth LE, so no IR LED is needed.
  * Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class PoweredUpHubBumpAndGo {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int LEFT_BUMPER_PIN = 4;

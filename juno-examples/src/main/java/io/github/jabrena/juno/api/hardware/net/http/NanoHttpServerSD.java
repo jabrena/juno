@@ -29,6 +29,7 @@ import java.util.Properties;
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
+@SuppressWarnings("java:S2189")
 public final class NanoHttpServerSD {
     private static final Wifi WIFI = ArduinoNano.getWifi();
     private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();

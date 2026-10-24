@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
+@SuppressWarnings("java:S2189")
 public final class NanoPoweredUpHubInfo {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int REPORT_INTERVAL_MS = 2000;

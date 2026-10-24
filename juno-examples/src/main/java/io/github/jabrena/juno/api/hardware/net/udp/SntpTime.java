@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
  * (default {@code pool.ntp.org}) and {@code JUNO_SNTP_PORT} (default 123). Small enough for a UNO R3 with the Arduino
  * WiFi Shield (build it with {@code -Djuno.Xmx=512}).
  */
+@SuppressWarnings("java:S2189")
 public final class SntpTime {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

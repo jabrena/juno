@@ -14,6 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * uppercase A-Z, then lowercase a-z, then the punctuation/symbol characters, in that order.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixAsciiScroll {
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoOne.getLedMatrix();

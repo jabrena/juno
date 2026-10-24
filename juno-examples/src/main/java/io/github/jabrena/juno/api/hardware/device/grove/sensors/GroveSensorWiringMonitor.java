@@ -15,6 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * or an analog gas sensor on D7 cannot be read correctly; move those plugs before running.
  */
 @Board({ArduinoOneR3WiFiRev2Board.class})
+@SuppressWarnings("java:S2189")
 public final class GroveSensorWiringMonitor {
     private GroveSensorWiringMonitor() {
     }

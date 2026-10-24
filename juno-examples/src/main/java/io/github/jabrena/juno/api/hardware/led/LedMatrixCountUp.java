@@ -14,6 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * drawn as two digits side by side, since 5 + 1 gap + 5 = 11 fits within the 12-column matrix.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixCountUp {
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoOne.getLedMatrix();

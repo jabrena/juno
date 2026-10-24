@@ -20,6 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public final class I2cScanner {
     private static final int FIRST_ADDRESS = 1;
     private static final int LAST_ADDRESS = 127;

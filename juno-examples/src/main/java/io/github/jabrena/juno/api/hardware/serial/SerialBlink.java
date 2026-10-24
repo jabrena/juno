@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * giving a serial monitor time to reattach.
  */
 @Board(ArduinoNanoEsp32Board.class)
+@SuppressWarnings("java:S2189")
 public final class SerialBlink {
     /**
      * Opens the serial port and blinks the built-in LED indefinitely, printing each state with a cycle counter.

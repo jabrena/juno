@@ -11,6 +11,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * also logged to Serial with both its screen coordinates and raw readings, which is what
  * {@link TftTouchShield#calibrateTouch} needs if a panel reports offset or mirrored positions.
  */
+@SuppressWarnings("java:S2189")
 public final class TouchPaintTFT {
     private static final int PALETTE_SIZE = 40;
     private static final int PALETTE_COLORS = 6;

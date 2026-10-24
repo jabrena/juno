@@ -15,6 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * bit index) instead of an (x, y) pair.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixSnake {
     private static final int HEIGHT = 8;
     private static final int MAX_LENGTH = 16;

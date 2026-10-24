@@ -38,6 +38,7 @@ import java.util.Properties;
  * are used only by the UNO R4 WiFi.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class WeatherTFT {
     private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();

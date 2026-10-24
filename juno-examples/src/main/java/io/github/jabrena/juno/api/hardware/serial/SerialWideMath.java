@@ -16,6 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * giving a serial monitor time to reattach.
  */
 @Board(ArduinoNanoEsp32Board.class)
+@SuppressWarnings("java:S2189")
 public final class SerialWideMath {
     /**
      * Opens the serial port and prints the same block of results indefinitely, with a round counter.

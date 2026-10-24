@@ -26,6 +26,7 @@ import java.util.Properties;
  * <p>Unlike the LCD Keypad Shield, this shield shares no pins with its SD socket, so no rewiring
  * is needed.
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatusSDTFT {
     private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();

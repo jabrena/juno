@@ -27,6 +27,7 @@ import java.util.Properties;
  * chip select. Electrically isolate or reroute the LCD backlight's D10 connection before stacking
  * the shields. This program never changes the LCD backlight after SD-card initialization.
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatusSDLcd {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

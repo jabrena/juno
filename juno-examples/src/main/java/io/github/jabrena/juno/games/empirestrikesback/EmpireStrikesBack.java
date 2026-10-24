@@ -48,6 +48,7 @@ import io.github.jabrena.juno.util.Random;
  * and is the one place that dispatches on the {@link Round}.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class EmpireStrikesBack {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 40;

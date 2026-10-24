@@ -42,6 +42,7 @@ import static io.github.jabrena.juno.games.battleship.SceneRenderer.showStatus2;
  * fleet rules, targeting, controls, rendering and interludes from this game-loop orchestrator.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Battleship {
     private static final Clock CLOCK = ArduinoOne.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;

@@ -31,6 +31,7 @@ import io.github.jabrena.juno.util.Delay;
  * board, or replace the sketch to stop it.
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class RatonLocoTFT {
     private static final int LED = 13;
     private static final int MOVE_DELAY = 1000;

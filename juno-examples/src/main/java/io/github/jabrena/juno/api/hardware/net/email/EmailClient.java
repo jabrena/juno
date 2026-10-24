@@ -25,6 +25,7 @@ import io.github.jabrena.juno.util.Delay;
  * back to the Inbox submenu).
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class EmailClient {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

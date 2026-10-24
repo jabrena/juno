@@ -48,6 +48,7 @@ import io.github.jabrena.juno.util.Random;
  * plays for. All roles use UDP port {@link GladiatorProtocol#PORT}; see {@link GladiatorProtocol} for the packets.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Gladiator {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

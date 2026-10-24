@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * brick does not hear the transmitter or the receiver does not hear the reply (aim, distance, wiring, or the
  * brick off). Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class RcxPing {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

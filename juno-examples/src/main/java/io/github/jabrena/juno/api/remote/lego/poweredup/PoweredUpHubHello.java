@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * Arduino connects to the first hub it finds.
  * Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class PoweredUpHubHello {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int COLOR_MILLIS = 600;
