@@ -15,7 +15,7 @@ import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -36,7 +36,7 @@ import io.github.jabrena.juno.util.Delay;
  * the gladius. CPU/HUMAN in the status bar switches between the two at any time; MENU returns to the role menu.
  */
 public final class FighterFlow {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int JOIN_MILLIS = 1000;
     private static final int STATE_MILLIS = 100;

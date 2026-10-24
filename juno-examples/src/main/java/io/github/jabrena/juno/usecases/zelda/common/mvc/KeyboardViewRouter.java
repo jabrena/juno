@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.zelda.common.mvc;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -8,7 +8,6 @@ import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.Task;
 
 /** The controller for a keyboard-driven board program using {@link KeyboardView} screens. */
-@SuppressWarnings("java:S2189")
 public final class KeyboardViewRouter implements Navigator {
     /** How many views a program can register. */
     public static final int MAX_VIEWS = 8;
@@ -29,7 +28,7 @@ public final class KeyboardViewRouter implements Navigator {
 
     /** A router using the board clock. */
     public KeyboardViewRouter(int framePeriodMs, Keyboard keyboard) {
-        this(framePeriodMs, keyboard, ArduinoOne.getClock());
+        this(framePeriodMs, keyboard, ArduinoUno.getClock());
     }
 
     /** A router using {@code clock}, which can be mocked in a unit test. */

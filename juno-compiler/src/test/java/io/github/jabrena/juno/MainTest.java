@@ -171,11 +171,11 @@ class MainTest {
     private void compileFixture() throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Fixture {
                     public static void main(String[] args) {
-                        ArduinoOne.getGpio().pinMode(13, Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
                     }
                 }
                 """;

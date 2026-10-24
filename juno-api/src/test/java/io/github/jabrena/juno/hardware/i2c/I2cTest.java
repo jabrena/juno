@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.i2c;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ class I2cTest {
     @DisplayName("The board's I2C bus is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(ArduinoOne.getI2c()).isSameAs(ArduinoOne.getI2c()).isSameAs(NativeI2c.INSTANCE);
+        assertThat(ArduinoUno.getI2c()).isSameAs(ArduinoUno.getI2c()).isSameAs(NativeI2c.INSTANCE);
     }
 
     @Test
@@ -28,7 +28,7 @@ class I2cTest {
 
         // Then
         try {
-            assertThat(ArduinoOne.getI2c()).isSameAs(replacement);
+            assertThat(ArduinoUno.getI2c()).isSameAs(replacement);
         } finally {
             NativeI2c.setI2c(NativeI2c.INSTANCE);
         }

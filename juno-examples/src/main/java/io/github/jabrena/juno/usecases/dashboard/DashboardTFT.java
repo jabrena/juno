@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -36,7 +36,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  * <p>Put {@code application.properties}, containing {@code wifi.ssid} and {@code wifi.password}, in the SD-card
  * root. At startup the example creates or appends to {@code STATUS.TXT}.
  */
-@Board(ArduinoOneQBoard.class)
+@Board(ArduinoUnoQBoard.class)
 public final class DashboardTFT {
     private static final int FRAME_PERIOD_MS = 50;
 

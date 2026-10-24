@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.net;
 
 /**
- * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.ArduinoOne#getWifi()} is the board's own radio, which the
+ * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.ArduinoUno#getWifi()} is the board's own radio, which the
  * compiler lowers to the Arduino board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code WiFiNINA} on UNO WiFi
  * Rev2, {@code Arduino_RouterBridge} on UNO Q); the UNO R3 has no radio of its own, so it gets its Wi-Fi from
  * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} (the retired Arduino WiFi Shield's

@@ -17,7 +17,7 @@ class ArduinoCliBoardsTest {
 
     @Test
     void includesOnlyTheSelectedBoards() {
-        ArduinoCliBoards boards = ArduinoCliBoards.parse(" arduino-one-r3, arduino-one-r3-wifi-rev2 ");
+        ArduinoCliBoards boards = ArduinoCliBoards.parse(" arduino-uno-r3, arduino-uno-r3-wifi-rev2 ");
 
         assertThat(boards.includes(Board.UNO_R3)).isTrue();
         assertThat(boards.includes(Board.UNO_R3_WIFI_REV2)).isTrue();
@@ -26,7 +26,7 @@ class ArduinoCliBoardsTest {
 
     @Test
     void rejectsAnUnsupportedBoard() {
-        assertThatThrownBy(() -> ArduinoCliBoards.parse("arduino-one-r4-wifi,unknown"))
+        assertThatThrownBy(() -> ArduinoCliBoards.parse("arduino-uno-r4-wifi,unknown"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unsupported juno.arduinoCliBoards")
                 .hasMessageContaining("expected comma-separated values from:");
@@ -34,7 +34,7 @@ class ArduinoCliBoardsTest {
 
     @Test
     void rejectsAnEmptyBoardWithinTheSelection() {
-        assertThatThrownBy(() -> ArduinoCliBoards.parse("arduino-one-r4-wifi,"))
+        assertThatThrownBy(() -> ArduinoCliBoards.parse("arduino-uno-r4-wifi,"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unsupported juno.arduinoCliBoards");
     }

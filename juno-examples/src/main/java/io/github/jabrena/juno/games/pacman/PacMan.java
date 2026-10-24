@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.pacman;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -36,10 +36,9 @@ import io.github.jabrena.juno.util.Random;
  * own the header/footer and the non-gameplay screens. This class only orchestrates the game loop.
  * Pac-Man targets the <b>Arduino UNO Q</b>.
  */
-@Board(ArduinoOneQBoard.class)
-@SuppressWarnings("java:S2189")
+@Board(ArduinoUnoQBoard.class)
 public final class PacMan {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int COVER_TIMEOUT_MILLIS = 60_000;
 
     private PacMan() {

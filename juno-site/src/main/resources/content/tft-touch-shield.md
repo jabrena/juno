@@ -143,7 +143,7 @@ attempts). Confirmed running on a real UNO R4 WiFi with this shield.
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
-  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
 ```
 
 [`Chess`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/chess/Chess.java) plays you
@@ -157,13 +157,13 @@ insufficient material are not detected. The engine is a 3-ply negamax search wit
 pruning and a material plus piece-placement evaluation; each of its moves and its thinking time are
 logged to Serial. Its move generator matches the standard perft reference counts (start position,
 "Kiwipete", and endgame positions), apart from the under-promotions it deliberately omits. Chess
-declares both boards (`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`), so `-Djuno.board` is
+declares both boards (`@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`), so `-Djuno.board` is
 required.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
-  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
 ```
 
 [`Blackjack`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/blackjack/Blackjack.java) plays
@@ -172,15 +172,15 @@ or `DBL` (double down on your first two cards). The dealer stands on all 17s, bl
 and ties push; splitting and insurance are not offered. You start with 100 chips (refilled when you
 run out), and a single 52-card deck is reshuffled when fewer than 15 cards remain. Suit symbols are
 9x9 bitmaps, since the display font has no ♠♥♦♣ glyphs. Blackjack declares both boards
-(`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`), so `-Djuno.board` is required.
+(`@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`), so `-Djuno.board` is required.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
-  -Djuno.board=arduino-one-q   # or arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-q   # or arduino-uno-r4-wifi
 ```
 
-[`Battleship`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/battleship/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks. Battleship declares both boards (`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`), so `-Djuno.board` is required.
+[`Battleship`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/battleship/Battleship.java) — Battleship against the computer on 10x10 grids with randomly placed fleets (5, 4, 3, 3, 2): tap the large enemy grid to fire, while your own fleet and the computer's shots show in the small grid below. The computer hunts on a checkerboard pattern and follows lines of hits until a ship sinks. Battleship declares both boards (`@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`), so `-Djuno.board` is required.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \

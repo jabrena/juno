@@ -10,22 +10,22 @@ closed-world linking on the development machine, and emits Assembly.
 <table>
   <tr>
     <td align="center" width="50%">
-      <strong>Arduino One Q</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-q.png" alt="Arduino One Q">
+      <strong>Arduino UNO Q</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-q.png" alt="Arduino UNO Q">
     </td>
     <td align="center" width="50%">
-      <strong>Arduino One R4 WiFi</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r4-wifi.png" alt="Arduino One R4 WiFi">
+      <strong>Arduino UNO R4 WiFi</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi">
     </td>
   </tr>
   <tr>
     <td align="center" width="50%">
-      <strong>Arduino One R3 WiFi Rev2</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3-wifi-rev2.png" alt="Arduino One WiFi Rev2">
+      <strong>Arduino UNO R3 WiFi Rev2</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2">
     </td>
     <td align="center" width="50%">
-      <strong>Arduino One R3</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-one-r3.png" alt="Arduino One R3">
+      <strong>Arduino UNO R3</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3">
     </td>
   </tr>
   <tr>
@@ -81,7 +81,7 @@ closed-world linking on the development machine, and emits Assembly.
   <tr>
     <td><strong>Arduino WiFi Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
-    <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the One R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
+    <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
   </tr>
   <tr>
     <td><strong>Arduino Nano Connector Carrier</strong></td>
@@ -130,7 +130,7 @@ supported board. Its built-in LED alternates on and off every 500 ms (one full c
 ```java
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -138,7 +138,7 @@ public final class Blink {
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(ArduinoOne.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();
@@ -157,7 +157,7 @@ The project provides a `Maven plugin` to help the user with the common operation
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 Select another supported board with `-Djuno.board`. The plugin auto-detects the port when exactly one matching board is
@@ -205,33 +205,33 @@ add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when the 
     <tr>
       <td><code>juno:compile</code></td>
       <td>Generates the assembly, C++ runtime shim, and Arduino sketch wrapper.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:verify</code></td>
       <td>Generates the sketch and compiles it with Arduino CLI without using physical hardware.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:upload</code></td>
       <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-one-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:monitor</code></td>
       <td>Opens the serial monitor for the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-one-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
   </tbody>
 </table>
 
-For example, verify the Grove Temperature and Humidity Sensor Pro monitor for a One WiFi Rev2
+For example, verify the Grove Temperature and Humidity Sensor Pro monitor for a UNO WiFi Rev2
 without uploading it:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveDht22Monitor \
-  -Djuno.board=arduino-one-r3-wifi-rev2
+  -Djuno.board=arduino-uno-r3-wifi-rev2
 ```
 
 ## Supported Java subset
@@ -276,13 +276,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
 - **LocalDateTime:** `now()`, `MIN`, the date and time getters, `equals` and ISO-8601 `toString`. `now()`
   gets UTC from an SNTP server once Wi-Fi is up (`JUNO_SNTP_HOST`, default `pool.ntp.org`;
   `JUNO_SNTP_PORT`, default `123`) and returns `LocalDateTime.MIN` while it is unavailable. Works on every
-  Wi-Fi board, including the One R3 with the Arduino WiFi Shield. See
+  Wi-Fi board, including the UNO R3 with the Arduino WiFi Shield. See
   [`SntpTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and
   [`SntpTimeSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java)
   (server read from the SD card).
 - **UUID:** `java.util.UUID` construction, parsing, formatting, comparison and 16-byte conversion through
-  `UuidCodec`. `UUID.randomUUID()` uses the board's hardware random source on the One R4 WiFi, One WiFi
-  Rev2 and One Q; the One R3 has none, so it is rejected there.
+  `UuidCodec`. `UUID.randomUUID()` uses the board's hardware random source on the UNO R4 WiFi, UNO WiFi Rev2
+  and UNO Q; the UNO R3 has none, so it is rejected there.
 - **Objects and interfaces:** simple enums, records, final closed-world classes, constructors, instance
   fields, and directly implemented interfaces with closed-world dispatch through an interface reference.
   Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative garbage
@@ -326,9 +326,9 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
   [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) (SD card).
 - **Shields:** stack a shield on the board as designed, with no rewiring, and use it through Juno's APIs;
-  a combination whose shields share pins, such as the LCD Keypad Shield on a One R3 with the Arduino WiFi
+  a combination whose shields share pins, such as the LCD Keypad Shield on a UNO R3 with the Arduino WiFi
   Shield, is rejected at compile time. The [Grove Base Shield](https://jabrena.github.io/juno/grove) brings
-  Grove connectors on the One pin map, as shown by
+  Grove connectors on the UNO pin map, as shown by
   [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java).
   The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
   backlight) is shown in
@@ -339,7 +339,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java).
   The [AZDelivery Data Logger Shield](https://jabrena.github.io/juno/storage) provides the SD card for
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java).
-  The Arduino WiFi Shield brings Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock to the One R3, as shown by
+  The Arduino WiFi Shield brings Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock to the UNO R3, as shown by
   [`UdpEcho`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java) and
   [`PlainHttpWeather`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java).
 

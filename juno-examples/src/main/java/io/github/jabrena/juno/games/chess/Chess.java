@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.chess;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -49,10 +49,9 @@ import static io.github.jabrena.juno.games.chess.SceneRenderer.showStatus;
  * <p>The package separates orchestration, search, move generation and attack rules, controls,
  * rendering, interludes and the six piece bitmaps into focused collaborators.
  */
-@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Chess {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SEARCH_DEPTH = 3;
 

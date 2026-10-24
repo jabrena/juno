@@ -461,15 +461,15 @@ jobs:
       matrix:
         include:
           - board: UNO R3
-            board_id: arduino-one-r3
+            board_id: arduino-uno-r3
           - board: UNO WiFi Rev2
-            board_id: arduino-one-r3-wifi-rev2
+            board_id: arduino-uno-r3-wifi-rev2
           - board: UNO R4 WiFi
-            board_id: arduino-one-r4-wifi
+            board_id: arduino-uno-r4-wifi
           - board: Nano ESP32
             board_id: arduino-nano-esp32
           - board: UNO Q
-            board_id: arduino-one-q
+            board_id: arduino-uno-q
           - board: M5Stack Cardputer
             board_id: m5stack-cardputer
     steps:

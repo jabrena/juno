@@ -5,7 +5,7 @@ layout: page
 ---
 
 [`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
-(`io.github.jabrena.juno.hardware.time`) reads the board's monotonic uptime clock. `ArduinoOne.getClock()` reads
+(`io.github.jabrena.juno.hardware.time`) reads the board's monotonic uptime clock. `ArduinoUno.getClock()` reads
 the real timer: its calls compile to the Arduino core's `millis()`/`micros()` with no extra call in
 between. `port` reads any
 [`Clock`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java)
@@ -15,7 +15,7 @@ Create a program's clocks once, at startup, as you would any other object.
 ```java
 import io.github.jabrena.juno.hardware.time.Clock;
 
-private static final Clock CLOCK = ArduinoOne.getClock();
+private static final Clock CLOCK = ArduinoUno.getClock();
 
 int uptimeMillis = CLOCK.millis();
 int uptimeMicros = CLOCK.micros();
@@ -42,21 +42,21 @@ the classic single-LED blink.
 ## Example: non-blocking periodic action
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
-@Board(ArduinoOneR4WiFiBoard.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class ClockBlink {
     private static final int LED_PIN = 13;
     private static final int BUTTON_PIN = 2;
     private static final int BLINK_INTERVAL_MILLIS = 500;
 
     public static void main(String[] args) {
-        Clock clock = ArduinoOne.getClock();
-        Gpio gpio = ArduinoOne.getGpio();
+        Clock clock = ArduinoUno.getClock();
+        Gpio gpio = ArduinoUno.getGpio();
         DigitalOutput led = DigitalOutput.of(LED_PIN);
         gpio.pinMode(BUTTON_PIN, Gpio.getInputPullup());
 

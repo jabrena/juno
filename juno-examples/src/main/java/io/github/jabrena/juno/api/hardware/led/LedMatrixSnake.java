@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.util.Delay;
 
@@ -14,8 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * food. Each cell is a single packed {@code y * width + x} position (matching the LED matrix's own
  * bit index) instead of an (x, y) pair.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixSnake {
     private static final int HEIGHT = 8;
     private static final int MAX_LENGTH = 16;
@@ -37,7 +36,7 @@ public final class LedMatrixSnake {
         int foodPos = packPos(9, 2);
         int rngState = 12345;
 
-        ArduinoOne.getLedMatrix().begin();
+        ArduinoUno.getLedMatrix().begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {

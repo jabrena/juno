@@ -1,18 +1,18 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 
 /** The onboard LED matrix: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q; raw frames and the width-aware canvas. */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixApi {
     public static void main(String[] args) {
-        LedMatrix matrix = ArduinoOne.getLedMatrix();
+        LedMatrix matrix = ArduinoUno.getLedMatrix();
         matrix.begin();
         matrix.loadFrame(0x3184a444, 0x44042081, 0x100a0, 0);
         Delay.millis(10);

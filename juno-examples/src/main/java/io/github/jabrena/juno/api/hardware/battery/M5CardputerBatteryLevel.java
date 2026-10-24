@@ -10,7 +10,6 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Prints the Cardputer's estimated battery level over USB serial once per second. */
 @Board(M5StackCardputerBoard.class)
-@SuppressWarnings("java:S2189")
 public final class M5CardputerBatteryLevel {
     private static final Battery BATTERY = M5StackCardputer.getBattery();
 

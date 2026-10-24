@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
 
@@ -45,12 +45,12 @@ public final class RcxFirmware {
 
     /** A firmware loader on the board's own infrared link and timer. Create it once, at startup. */
     public RcxFirmware() {
-        this(new RcxLink(), ArduinoOne.getClock());
+        this(new RcxLink(), ArduinoUno.getClock());
     }
 
     /** A firmware loader on a link shared with other RCX classes, so they share one toggle bit. */
     public RcxFirmware(RcxLink link) {
-        this(link, ArduinoOne.getClock());
+        this(link, ArduinoUno.getClock());
     }
 
     /** A firmware loader on {@code link}, timing its waits on {@code clock}: a simulated clock in a unit test. */

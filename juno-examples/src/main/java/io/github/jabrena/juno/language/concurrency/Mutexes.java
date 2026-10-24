@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language.concurrency;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>The spin lock takes an {@link AtomicBoolean} with {@code compareAndSet} and releases it with {@code set}. Both
  * locks yield while they wait, so the other thread can run. Each total must equal {@code 2 * ROUNDS}.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class Mutexes {
     private static final int ROUNDS = 200;
 

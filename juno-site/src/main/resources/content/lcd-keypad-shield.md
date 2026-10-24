@@ -53,12 +53,12 @@ example below does.
 ## Example: showing which button is pressed
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 
-@Board(ArduinoOneR4WiFiBoard.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
         LcdKeypadShield lcd = new LcdKeypadShield();
@@ -115,7 +115,7 @@ completion — a good reference for a multi-screen, button-driven program built 
 
 ## Notes
 
-- It cannot be stacked with the [Arduino WiFi Shield](../arduino-one-r3) on a UNO R3: both shields use D4, D7 and D10
+- It cannot be stacked with the [Arduino WiFi Shield](../arduino-uno-r3) on a UNO R3: both shields use D4, D7 and D10
   (this shield's LCD data and backlight, that one's SD-card chip select, handshake line and Wi-Fi chip select).
   The compiler rejects a UNO R3 program that uses `LcdKeypadShield` together with `Wifi`, `Udp`, `Tcp`,
   `HttpClient` or `LocalDateTime.now()`. The UNO R4 WiFi, UNO Q and UNO WiFi Rev2 reach their radio without

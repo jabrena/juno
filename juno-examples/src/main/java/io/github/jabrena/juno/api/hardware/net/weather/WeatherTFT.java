@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -37,13 +37,12 @@ import java.util.Properties;
  * On UNO Q, Linux must already be connected to Wi-Fi; the credentials loaded from the SD card
  * are used only by the UNO R4 WiFi.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class WeatherTFT {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
-    private final Clock clock = ArduinoOne.getClock();
+    private final Clock clock = ArduinoUno.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;
     private static final int RETRY_MILLIS = 60 * 1000;

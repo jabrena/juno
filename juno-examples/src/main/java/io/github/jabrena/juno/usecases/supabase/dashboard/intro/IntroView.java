@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.intro;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.util.image.ArduinoOneBoardImage;
+import io.github.jabrena.juno.util.image.ArduinoUnoBoardImage;
 import io.github.jabrena.juno.util.image.Drawable;
 import io.github.jabrena.juno.util.image.JavaLogoImage;
 import io.github.jabrena.juno.util.mvc.Navigator;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Dashboard-owned startup intro: Java, then Arduino, before handing control to the gathering view. */
 public final class IntroView implements View {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     /** How long each image stays on screen after it has been drawn, so slow drawing does not eat into it. */
     static final int STEP_MILLIS = 3000;
     static final int NONE = -1;
@@ -21,7 +21,7 @@ public final class IntroView implements View {
     private final Navigator navigator;
     private final int nextViewId;
     private final Drawable javaLogo = new JavaLogoImage();
-    private final Drawable arduinoBoard = new ArduinoOneBoardImage();
+    private final Drawable arduinoBoard = new ArduinoUnoBoardImage();
     private int shownStep;
     private int shownAt;
 

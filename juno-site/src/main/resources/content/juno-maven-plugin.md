@@ -53,7 +53,7 @@ many programs, so every `compile`, `verify` or `upload` names one, for example
 | `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
-| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-one-r4-wifi`, `arduino-one-q`, `arduino-one-r3`, `arduino-one-r3-wifi-rev2`, `arduino-nano-esp32`, `m5stack-cardputer`). |
+| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`, `arduino-nano-esp32`, `m5stack-cardputer`). |
 | `juno.arduinoCli` | `verify`, `upload`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
@@ -72,16 +72,16 @@ always wins for a given run.
 # Compile and check with arduino-cli
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Flash it to a connected board
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-one-r4-wifi   # or arduino-one-q
+  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
 
 # Watch its Serial output
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 `upload` and `monitor` auto-detect the port when exactly one matching board is connected;
@@ -117,7 +117,7 @@ the full explanation, including the `--add-opens` JVM flags this goal needs (alr
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an
   override changes the effective target.
 - **"@Board declares multiple boards ...; pass the target board explicitly":** the entry point's
-  `@Board` lists more than one board (e.g. `@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})`);
+  `@Board` lists more than one board (e.g. `@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`);
   add `-Djuno.board=<id>` naming one of them, as printed in the error.
 - **`.env` values aren't visible to `System.getenv` at compile time:** confirm the module's build
   actually runs `juno:env` (an `<execution>` with goal `env`) before `process-classes`, and that

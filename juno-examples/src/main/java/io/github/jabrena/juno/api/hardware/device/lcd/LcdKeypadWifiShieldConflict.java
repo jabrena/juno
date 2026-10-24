@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.device.lcd;
 
-import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
@@ -18,15 +18,14 @@ import io.github.jabrena.juno.util.Delay;
  * <pre>
  * ./mvnw -f juno-examples/pom.xml compile juno:compile \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.device.lcd.LcdKeypadWifiShieldConflict \
- *   -Djuno.board=arduino-one-r3
+ *   -Djuno.board=arduino-uno-r3
  * # LcdKeypadShield cannot be used with the Arduino WiFi Shield on UNO R3: both shields are wired to D4, D7 and D10 ...
  * </pre>
  *
  * <p>The same source builds for the UNO R4 WiFi, whose radio does not use those pins. The credentials are
  * placeholders: on the UNO R3 the program never gets built.
  */
-@Board({ArduinoOneR3Board.class, ArduinoOneR4WiFiBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class LcdKeypadWifiShieldConflict {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

@@ -1,11 +1,11 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.Callable;
@@ -20,11 +20,11 @@ import java.util.concurrent.StructuredTaskScope;
  * ran. Then a subtask is cancelled while its request is on the worker, and the next request must still work.
  * BridgeWhileWaiting.expected holds the output by hand.
  */
-@Board(ArduinoOneQBoard.class)
+@Board(ArduinoUnoQBoard.class)
 public final class BridgeWhileWaiting {
     static final int BODY = 32;
     static final int HEADERS = 64;
-    static final Clock CLOCK = ArduinoOne.getClock();
+    static final Clock CLOCK = ArduinoUno.getClock();
     static volatile boolean stop;
     static volatile boolean waiting;
     static volatile int started;
@@ -59,9 +59,9 @@ public final class BridgeWhileWaiting {
         Thread watcher = Thread.startVirtualThread(BridgeWhileWaiting::watch);
 
         begin();
-        ArduinoOne.getWifi().begin("juno", "secret");
+        ArduinoUno.getWifi().begin("juno", "secret");
         String bridge = verdict();
-        Serial.println((ArduinoOne.getWifi().status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
+        Serial.println((ArduinoUno.getWifi().status() == Wifi.STATUS_CONNECTED ? "bridge up: " : "bridge down: ") + bridge);
 
         begin();
         int length = HttpClient.get("https://example.com/", body, BODY, headers, HEADERS, status);

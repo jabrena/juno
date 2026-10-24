@@ -11,7 +11,6 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Shows keyboard transitions on the Cardputer display and reports keys and modifiers over USB serial. */
 @Board(M5StackCardputerBoard.class)
-@SuppressWarnings("java:S2189")
 public final class M5CardputerKeyboard {
     private static final int TEXT_CAPACITY = 72;
 

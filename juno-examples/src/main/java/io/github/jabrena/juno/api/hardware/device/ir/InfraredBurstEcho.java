@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.ir;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -19,9 +19,8 @@ import io.github.jabrena.juno.util.Delay;
  * receiver (aim, distance or the transmitter's wiring); hits as high as the noise means the receiver is
  * reporting interference, not the transmitter. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class InfraredBurstEcho {
-    private final Clock clock = ArduinoOne.getClock();
+    private final Clock clock = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BAUD = 2400;

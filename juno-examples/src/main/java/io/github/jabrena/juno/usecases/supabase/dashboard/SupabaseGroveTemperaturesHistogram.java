@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -42,7 +42,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k -Djuno.maxThreads=3} so its two task
  * stacks fit beside the WiFi and TFT runtimes.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class SupabaseGroveTemperaturesHistogram {
     private static final int INTRO_VIEW = 0;
     private static final int GATHERING_VIEW = 1;

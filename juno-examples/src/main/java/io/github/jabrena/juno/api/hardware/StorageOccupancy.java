@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.api.hardware;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
-import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -24,14 +24,13 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoOneR3Board.class, ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class StorageOccupancy {
     private StorageOccupancy() {
     }
 
     public static void main(String[] args) {
-        final BoardMemory memory = ArduinoOne.getBoardMemory();
+        final BoardMemory memory = ArduinoUno.getBoardMemory();
         final SdCard sdCard = new DataLoggerShield().getSdCard();
         final int reportPeriodMs = 2000;
 

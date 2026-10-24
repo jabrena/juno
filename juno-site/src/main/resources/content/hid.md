@@ -6,7 +6,7 @@ layout: page
 
 [`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/hid/Mouse.java)
 (`io.github.jabrena.juno.hardware.hid`) lets a Juno program act as a USB HID mouse, moving the
-pointer of whatever computer the board's USB port is plugged into. `ArduinoOne.getMouse()` hands out the
+pointer of whatever computer the board's USB port is plugged into. `ArduinoUno.getMouse()` hands out the
 board's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library; a unit
 test passes `mock(Mouse.class)` instead (see [Injectable APIs](../apis)). Get it once, at startup,
 and pass it to the code that moves the pointer.
@@ -28,10 +28,10 @@ and pass it to the code that moves the pointer.
 ## API
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 
-Mouse mouse = ArduinoOne.getMouse();
+Mouse mouse = ArduinoUno.getMouse();
 mouse.begin();
 mouse.move(10, -5);   // relative move: (x, y) pixels from the current pointer position
 ```
@@ -43,20 +43,20 @@ arguments within that range — a larger value wraps around instead of clamping.
 ## Example: moving the pointer in a square
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 
-@Board(ArduinoOneR4WiFiBoard.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class MouseSquare {
     private static final int STEP = 50;
     private static final int STEPS_PER_SIDE = 5;
     private static final int MOVE_DELAY = 1000;
 
     public static void main(String[] args) {
-        Mouse mouse = ArduinoOne.getMouse();
+        Mouse mouse = ArduinoUno.getMouse();
         mouse.begin();
 
         while (true) {

@@ -38,6 +38,29 @@ class FrameLayoutTest {
     }
 
     @Test
+    @DisplayName("Handles identity and unrelated-object comparisons")
+    void shouldHandleIdentityAndUnrelatedObjectComparisons() {
+        // Given
+        FrameLayout frame = new FrameLayout(8, new int[] {0, 4}, new int[] {8, -1}, Map.of());
+
+        // When & Then
+        assertThat(frame.equals(frame)).isTrue();
+        assertThat(frame.equals("not a frame")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Rejects access to an unused local slot")
+    void shouldRejectAnUnusedLocalSlot() {
+        // Given
+        Value stored = Value.int32(0);
+        Value loaded = Value.int32(1);
+        FrameLayout frame = FrameLayout.of(sequentialMethod(stored, loaded));
+
+        // When & Then
+        assertThatIllegalStateException().isThrownBy(() -> frame.localOffset(1));
+    }
+
+    @Test
     @DisplayName("Shows offset arrays in its string form")
     void shouldShowOffsetArraysInToString() {
         // Given

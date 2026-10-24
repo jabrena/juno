@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.ir;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -15,9 +15,8 @@ import io.github.jabrena.juno.util.Delay;
  * gets no power or its output is not on pin 2; one that is high even in the dark means noise, e.g. a missing
  * ground. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class InfraredReceiverProbe {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int NO_PIN = -1;
     private static final int BAUD = 2400;

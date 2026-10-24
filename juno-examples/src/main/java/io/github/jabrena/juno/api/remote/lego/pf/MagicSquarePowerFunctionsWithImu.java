@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,10 +18,9 @@ import io.github.jabrena.juno.util.Delay;
  * timing calibration ({@code TURN_TIMEOUT_MILLIS} is only a safety stop). Keep the vehicle still while
  * the sensor starts. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class MagicSquarePowerFunctionsWithImu {
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int CHANNEL = PowerFunctionsRemote.CHANNEL_1;
     private static final int SPEED = 5;

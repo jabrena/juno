@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.miner.network;
 
 import io.github.jabrena.juno.games.blockchain.GameScreen;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.commons.Miner2Header;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.mvc.View;
  * refreshes them once a second rather than on every change.
  */
 public final class NetworkView implements View {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     static final int REFRESH_MILLIS = 1000;
 
     private final Navigator navigator;

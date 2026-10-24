@@ -1,13 +1,13 @@
 package io.github.jabrena.juno.games.missilecommand;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /** Touch input and pilot selection; the CPU player itself lives in {@link AutopilotMissileCommand}. */
 final class Controls {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int CHOICE_WIDTH = 100;
     private static final int CHOICE_HEIGHT = 60;
     private static final int CHOICE_GAP = 16;

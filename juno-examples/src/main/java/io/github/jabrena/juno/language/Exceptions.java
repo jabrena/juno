@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.language.Exceptions.SensorException;
  * {@code ArithmeticException("/ by zero")}. An exception that no handler catches prints
  * {@code Exception in thread "main" <class>: <message>} and halts the board.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public class Exceptions {
 
     public static void main(String[] args) {
@@ -97,7 +97,6 @@ public class Exceptions {
         }
     }
 
-    @SuppressWarnings("java:S3518")
     private void dividingByZero() {
         Serial.println("Dividing by zero");
         int total = 250;

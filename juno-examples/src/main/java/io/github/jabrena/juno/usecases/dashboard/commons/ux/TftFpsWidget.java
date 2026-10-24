@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.commons.ux;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
  * the rate is recomputed and printed over serial; the label is redrawn only when the number changes.
  */
 public final class TftFpsWidget {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int WINDOW_MS = 1000;
     private static final int UNSHOWN = -1;
 

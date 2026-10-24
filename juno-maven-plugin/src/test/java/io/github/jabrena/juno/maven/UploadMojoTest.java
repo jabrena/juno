@@ -30,7 +30,7 @@ class UploadMojoTest extends AbstractMojoTestCase {
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
                 .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
-                .set("board", "arduino-one-r4-wifi")
+                .set("board", "arduino-uno-r4-wifi")
                 .set("outputDirectory", "target/juno-mojo-test/upload")
                 .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .build());

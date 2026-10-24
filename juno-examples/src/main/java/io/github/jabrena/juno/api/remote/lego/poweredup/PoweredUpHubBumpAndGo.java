@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -17,7 +17,6 @@ import io.github.jabrena.juno.util.Delay;
  * The hub connects over Bluetooth LE, so no IR LED is needed.
  * Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class PoweredUpHubBumpAndGo {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int LEFT_BUMPER_PIN = 4;
@@ -40,7 +39,7 @@ public class PoweredUpHubBumpAndGo {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo(ArduinoOne.getGpio(), ArduinoOne.getClock());
+        PoweredUpHubBumpAndGo app = new PoweredUpHubBumpAndGo(ArduinoUno.getGpio(), ArduinoUno.getClock());
         app.gpio.pinMode(LEFT_BUMPER_PIN, Gpio.getInputPullup());
         app.gpio.pinMode(RIGHT_BUMPER_PIN, Gpio.getInputPullup());
         Serial.println("Waiting for a Powered Up hub...");

@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
@@ -16,8 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * clips anything outside the frame, so characters simply appear at the right edge and disappear
  * off the left edge as the offset shrinks.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixScrollingText {
     private static final String MESSAGE = "Juno, Java for Arduino ONE R4";
     // MESSAGE.length() is not a Java compile-time constant, so keep this synchronized with MESSAGE.
@@ -28,7 +27,7 @@ public final class LedMatrixScrollingText {
     private static final int END_OFFSET = -MESSAGE_WIDTH;
 
     public static void main(String[] args) {
-        LedMatrix matrix = ArduinoOne.getLedMatrix();
+        LedMatrix matrix = ArduinoUno.getLedMatrix();
         matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

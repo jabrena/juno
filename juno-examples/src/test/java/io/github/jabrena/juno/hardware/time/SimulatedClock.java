@@ -5,7 +5,7 @@ import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * The board's clock for whole-program tests: a {@link Clock} that {@code ArduinoOne.getClock()} returns once
+ * The board's clock for whole-program tests: a {@link Clock} that {@code ArduinoUno.getClock()} returns once
  * {@link #install()} has run, with simulated time that only moves when the program waits ({@link Delay}) or reads the
  * clock. Each reading costs {@link #millisPerReading} (one millisecond unless a test changes it), so busy-waiting
  * frame loops and time-budgeted searches still make progress, and every run of a program is exactly repeatable.
@@ -24,7 +24,7 @@ public final class SimulatedClock implements Clock {
     private SimulatedClock() {
     }
 
-    /** Makes {@code ArduinoOne.getClock()} from now on return this simulated time instead of the board's timer. */
+    /** Makes {@code ArduinoUno.getClock()} from now on return this simulated time instead of the board's timer. */
     public static void install() {
         NativeClock.setClock(INSTANCE);
     }

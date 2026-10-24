@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.storage;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows; the SD row reads the model. */
 public final class TftDashboardStorageView implements View {
-    private static final BoardMemory MEMORY = ArduinoOne.getBoardMemory();
+    private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
     private static final int FIRST_ROW_Y = 44;
     private static final int ROW_HEIGHT = 52;
 

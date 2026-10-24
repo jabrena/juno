@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -24,10 +24,9 @@ import io.github.jabrena.juno.util.Delay;
  * Pop3Client#readSubject}, {@link #LIST_PAGE_SIZE} per screen, UP/DOWN to page and SELECT to go
  * back to the Inbox submenu).
  */
-@Board(ArduinoOneR4WiFiBoard.class)
-@SuppressWarnings("java:S2189")
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class EmailClient {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;
@@ -271,7 +270,7 @@ public final class EmailClient {
 
     private void aboutView() {
         lcd.clear();
-        lcd.print("Arduino One R4");
+        lcd.print("Arduino UNO R4");
         lcd.setCursor(0, 1);
         lcd.print("Email Client");
 

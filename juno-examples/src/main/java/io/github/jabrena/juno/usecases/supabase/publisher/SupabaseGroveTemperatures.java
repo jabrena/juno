@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.supabase.publisher;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
@@ -33,13 +33,12 @@ import java.time.LocalDateTime;
  * Wi-Fi, TLS and the sensor drivers together exceed the UNO WiFi Rev2's 48 KiB of flash, so the program targets the
  * UNO R4 WiFi and UNO Q.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings({"java:S1845", "java:S2189"})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class SupabaseGroveTemperatures {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private static final GroveBaseShield SHIELD = new GroveBaseShield();
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int DHT22_PIN = SHIELD.getD4();
     private static final int DHT11_PIN = SHIELD.getD2();
     private static final int THERMISTOR_PIN = SHIELD.getA0();

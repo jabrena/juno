@@ -78,7 +78,7 @@ Run the dedicated monitor with:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.board=arduino-one-r3-wifi-rev2 \
+  -Djuno.board=arduino-uno-r3-wifi-rev2 \
   -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveSensorBatchMonitor
 ```
 
@@ -95,7 +95,7 @@ are not reported as measurements.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.board=arduino-one-r3-wifi-rev2 \
+  -Djuno.board=arduino-uno-r3-wifi-rev2 \
   -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveDht22Monitor
 ```
 
@@ -119,7 +119,7 @@ turning ADC readings into concentrations or alarm thresholds.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.board=arduino-one-r3-wifi-rev2 \
+  -Djuno.board=arduino-uno-r3-wifi-rev2 \
   -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveSensorWiringMonitor
 ```
 
@@ -157,6 +157,6 @@ UNO WiFi Rev2's flash, so this example targets the UNO R4 WiFi and UNO Q:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.board=arduino-one-r4-wifi \
+  -Djuno.board=arduino-uno-r4-wifi \
   -Djuno.main=io.github.jabrena.juno.usecases.supabase.publisher.SupabaseGroveTemperatures
 ```

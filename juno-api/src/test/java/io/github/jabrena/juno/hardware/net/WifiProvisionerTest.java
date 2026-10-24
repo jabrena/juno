@@ -18,12 +18,21 @@ class WifiProvisionerTest {
 
     /** Advances one connection timeout per reading so failed joins stay deterministic and fast. */
     private static final class DeadlineClock implements Clock {
+        private final int increment;
         private int nowMillis;
+
+        private DeadlineClock() {
+            this(CONNECT_TIMEOUT_MS);
+        }
+
+        private DeadlineClock(int increment) {
+            this.increment = increment;
+        }
 
         @Override
         public int millis() {
             int reading = nowMillis;
-            nowMillis += CONNECT_TIMEOUT_MS;
+            nowMillis += increment;
             return reading;
         }
 
@@ -191,6 +200,22 @@ class WifiProvisionerTest {
     }
 
     @Test
+    @DisplayName("Waits between failed connection attempts until the timeout expires")
+    void shouldWaitUntilTheConnectionTimeoutExpires() {
+        // Given
+        WifiProvisioner.clock = new DeadlineClock(10_000);
+        wifi.joinOutcomes.add(false);
+        wifi.joinOutcomes.add(true);
+        script(post("/connect", FORM_BODY), post("/connect", FORM_BODY));
+
+        // When
+        WifiProvisioner.run("Juno-Setup", "juno1234");
+
+        // Then
+        assertThat(wifi.joins).hasSize(2);
+    }
+
+    @Test
     @DisplayName("Does not join when the board is already on the network")
     void shouldNotJoinWhenTheBoardIsAlreadyOnTheNetwork() {
         // Given
@@ -236,6 +261,24 @@ class WifiProvisionerTest {
         assertThat(elapsedNanos)
                 .as("one 200 ms wait: the loop reads the status twice per pass, so both warm-up reads take one pass")
                 .isGreaterThanOrEqualTo(190_000_000L);
+    }
+
+    @Test
+    @DisplayName("Reports when the access point has no address")
+    void shouldReportAnUnavailableAccessPointAddress() {
+        // Given
+        wifi.accessPointAddress[0] = 0;
+        wifi.accessPointAddress[1] = 0;
+        wifi.accessPointAddress[2] = 0;
+        wifi.accessPointAddress[3] = 0;
+        wifi.joinOutcomes.add(true);
+        script(post("/connect", FORM_BODY));
+
+        // When
+        WifiProvisioner.run("Juno-Setup", "juno1234");
+
+        // Then
+        assertThat(Serial.output).contains("Access point address unavailable from this board\n");
     }
 
     @Test

@@ -37,11 +37,11 @@ class AvrAsmBackendTest {
         String simpleName = className.substring(className.lastIndexOf('.') + 1);
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 %s
-                @Board(ArduinoOneR3WiFiRev2Board.class)
+                @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -56,11 +56,11 @@ class AvrAsmBackendTest {
         String simpleName = className.substring(className.lastIndexOf('.') + 1);
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 %s
-                @Board(ArduinoOneR3Board.class)
+                @Board(ArduinoUnoR3Board.class)
                 public final class %s {
                     public static void main(String[] args) {
                 %s
@@ -123,8 +123,8 @@ class AvrAsmBackendTest {
         Board board = Board.fromId(R3WIFIREV2);
 
         // When & Then
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoOneR3WiFiRev2Board")).isEqualTo(board);
-        assertThat(board.annotationArgument()).isEqualTo("ArduinoOneR3WiFiRev2Board.class");
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3WiFiRev2Board.class");
     }
 
     @Test
@@ -155,8 +155,8 @@ class AvrAsmBackendTest {
         Board board = Board.fromId(R3);
 
         // When & Then
-        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoOneR3Board")).isEqualTo(board);
-        assertThat(board.annotationArgument()).isEqualTo("ArduinoOneR3Board.class");
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoUnoR3Board")).isEqualTo(board);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoUnoR3Board.class");
     }
 
     @Test
@@ -173,8 +173,8 @@ class AvrAsmBackendTest {
     void shouldCompileBasicGpioForTheClassicUnoR3() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoOne.getGpio().pinMode(ArduinoOne.getGpio().getBuiltinLed(), Gpio.getOutput());
-                        ArduinoOne.getGpio().digitalWrite(ArduinoOne.getGpio().getBuiltinLed(), true);
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -192,8 +192,8 @@ class AvrAsmBackendTest {
     void shouldOmitWifiSdSoftSpiAndContextSwitchFromTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoOne.getGpio().pinMode(ArduinoOne.getGpio().getBuiltinLed(), Gpio.getOutput());
-                        ArduinoOne.getGpio().digitalWrite(ArduinoOne.getGpio().getBuiltinLed(), true);
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -209,8 +209,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinAndDigitalWriteCallsInTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoOne.getGpio().pinMode(ArduinoOne.getGpio().getBuiltinLed(), Gpio.getOutput());
-                        ArduinoOne.getGpio().digitalWrite(ArduinoOne.getGpio().getBuiltinLed(), true);
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -229,10 +229,10 @@ class AvrAsmBackendTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                @Board(ArduinoOneR3Board.class)
+                @Board(ArduinoUnoR3Board.class)
                 public final class R3Length {
                     static int length(byte[] values) {
                         return values.length + values[0];
@@ -259,7 +259,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects features that do not fit the classic UNO R3")
     void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "ArduinoOne.getLedMatrix().begin();", ""))
+        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "ArduinoUno.getLedMatrix().begin();", ""))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard LED matrix");
     }
@@ -377,10 +377,10 @@ class AvrAsmBackendTest {
         CompilationResult result = compile("demo.Rev2LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
                         lcd.begin();
-                        ArduinoOne.getWifi().begin("ssid", "password");
+                        ArduinoUno.getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 """);
 
@@ -392,10 +392,10 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and goes through the WiFi Shield")
     void shouldRejectOnboardWifiOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "ArduinoOne.getWifi().begin(\"ssid\", \"password\");",
+        assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "ArduinoUno.getWifi().begin(\"ssid\", \"password\");",
                 "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("ArduinoOne.getWifi requires @Board(")
+                .hasMessageContaining("ArduinoUno.getWifi requires @Board(")
                 .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio")
                 .hasMessageContaining("new ArduinoWifiShield().getWifi()");
     }
@@ -481,7 +481,7 @@ class AvrAsmBackendTest {
     @DisplayName("Enables and refreshes the classic UNO R3 watchdog in the assembly")
     void shouldEnableAndRefreshTheClassicUnoR3WatchdogInTheAssembly() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoOneR3Board", R3, 3000);
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3Board", R3, 3000);
 
         // When & Then
         assertThat(result.assembly())
@@ -493,7 +493,7 @@ class AvrAsmBackendTest {
     @DisplayName("The classic UNO R3 watchdog shim uses the AVR wdt API")
     void shouldUseTheAvrWdtApiForTheClassicUnoR3WatchdogShim() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoOneR3Board", R3, 3000);
+        CompilationResult result = compileWatchdog("demo.R3Watchdog", "ArduinoUnoR3Board", R3, 3000);
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
@@ -507,7 +507,7 @@ class AvrAsmBackendTest {
     @DisplayName("Enables and refreshes the UNO WiFi Rev2 watchdog in the assembly")
     void shouldEnableAndRefreshTheUnoWifiRev2WatchdogInTheAssembly() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 3000);
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2Board", R3WIFIREV2, 3000);
 
         // When & Then
         assertThat(result.assembly())
@@ -519,7 +519,7 @@ class AvrAsmBackendTest {
     @DisplayName("The UNO WiFi Rev2 watchdog shim uses the megaAVR WDT registers")
     void shouldUseTheMegaAvrWdtRegistersForTheUnoWifiRev2WatchdogShim() throws Exception {
         // Given
-        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 3000);
+        CompilationResult result = compileWatchdog("demo.Rev2Watchdog", "ArduinoUnoR3WiFiRev2Board", R3WIFIREV2, 3000);
 
         // When & Then
         assertThat(result.runtimeShim()).contains(
@@ -533,7 +533,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a classic UNO R3 watchdog timeout outside its chip range")
     void shouldRejectAClassicUnoR3WatchdogTimeoutOutsideItsChipRange() {
         // When & Then
-        assertThatThrownBy(() -> compileWatchdog("demo.R3WatchdogTooLong", "ArduinoOneR3Board", R3, 8001))
+        assertThatThrownBy(() -> compileWatchdog("demo.R3WatchdogTooLong", "ArduinoUnoR3Board", R3, 8001))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8000 on UNO R3");
     }
@@ -542,7 +542,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a UNO WiFi Rev2 watchdog timeout outside its chip range")
     void shouldRejectAUnoWifiRev2WatchdogTimeoutOutsideItsChipRange() {
         // When & Then
-        assertThatThrownBy(() -> compileWatchdog("demo.Rev2WatchdogTooLong", "ArduinoOneR3WiFiRev2Board", R3WIFIREV2, 8201))
+        assertThatThrownBy(() -> compileWatchdog("demo.Rev2WatchdogTooLong", "ArduinoUnoR3WiFiRev2Board", R3WIFIREV2, 8201))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("timeoutMillis must be between 1 and 8200 on UNO WiFi Rev2");
     }
@@ -609,7 +609,7 @@ class AvrAsmBackendTest {
     void shouldLowerIntBitwiseAndMultiplyByAConstant() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -624,7 +624,7 @@ class AvrAsmBackendTest {
     void shouldLowerMultiplyByAPowerOfTwoConstantAsAShift() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -640,7 +640,7 @@ class AvrAsmBackendTest {
     void shouldLowerConstantShiftsWithoutTheVariableShiftHelpers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -658,7 +658,7 @@ class AvrAsmBackendTest {
     void shouldLowerTheConstantShiftsToRotateSequences() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -675,7 +675,7 @@ class AvrAsmBackendTest {
     void shouldLowerNarrowingCastsToByteCharAndShort() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrNarrowing", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         Serial.println((byte) value);
                         Serial.println((char) value);
                         Serial.println((short) value);
@@ -693,7 +693,7 @@ class AvrAsmBackendTest {
     void shouldCompareWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrCompare", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
+                        int value = ArduinoUno.getGpio().analogRead(0);
                         if (value > 10) {
                             Serial.println("big");
                         }
@@ -713,21 +713,21 @@ class AvrAsmBackendTest {
     void shouldLowerLongAndFloatingPointWideOperationsOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrWide", """
-                        long left = ArduinoOne.getGpio().analogRead(0);
-                        long right = ArduinoOne.getGpio().analogRead(1);
+                        long left = ArduinoUno.getGpio().analogRead(0);
+                        long right = ArduinoUno.getGpio().analogRead(1);
                         Serial.println(-left);
                         Serial.println(left > right);
                         int narrowed = (int) left;
                         long widened = narrowed;
                         Serial.println(widened);
 
-                        float fa = ArduinoOne.getGpio().analogRead(2);
-                        float fb = ArduinoOne.getGpio().analogRead(3);
+                        float fa = ArduinoUno.getGpio().analogRead(2);
+                        float fb = ArduinoUno.getGpio().analogRead(3);
                         Serial.println(fa + fb);
                         Serial.println(fa == fb);
                         Serial.println((int) fa);
 
-                        double da = ArduinoOne.getGpio().analogRead(4);
+                        double da = ArduinoUno.getGpio().analogRead(4);
                         Serial.println(-da);
                         Serial.println(da == fb);
                         Serial.println((float) da);
@@ -818,6 +818,26 @@ class AvrAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Parses float and unnamed word parameter declarations")
+    void shouldParseFloatAndUnnamedWordParameterDeclarations() {
+        // Given
+        String shim = """
+                extern "C" void juno_float_parameter(float value   ) {
+                }
+                extern "C" void juno_unnamed_parameter(uint32_t) {
+                }
+                """;
+
+        // When
+        String thunks = avrShimThunks.generate(shim, Set.of("juno_float_parameter", "juno_unnamed_parameter"));
+
+        // Then
+        assertThat(thunks)
+                .contains("juno_float_parameter(juno_avr_arg_float(0));")
+                .contains("juno_unnamed_parameter(static_cast<uint32_t>(juno_avr_args[0]));");
+    }
+
+    @Test
     @DisplayName("Refuses a thunk whose prototype has no extern C definition")
     void shouldRefuseAThunkWhoseNameHasNoExternCDefinition() {
         // When & Then
@@ -830,8 +850,8 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects capabilities the board lacks")
     void shouldRejectCapabilitiesTheBoardLacks() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMatrix", "ArduinoOne.getLedMatrix().begin();",
-                "import io.github.jabrena.juno.hardware.ArduinoOne;"))
+        assertThatThrownBy(() -> compile("demo.AvrMatrix", "ArduinoUno.getLedMatrix().begin();",
+                "import io.github.jabrena.juno.hardware.ArduinoUno;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO WiFi Rev2 has no onboard LED matrix");
     }
@@ -850,7 +870,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects Mouse on a board without a native USB port")
     void shouldRejectMouseOnABoardWithoutANativeUsbPort() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMouse", "ArduinoOne.getMouse().begin();",
+        assertThatThrownBy(() -> compile("demo.AvrMouse", "ArduinoUno.getMouse().begin();",
                 "import io.github.jabrena.juno.hardware.hid.Mouse;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no native USB port");
@@ -864,13 +884,13 @@ class AvrAsmBackendTest {
                         byte[] body = new byte[32];
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
-                        ArduinoOne.getWifi().begin("ssid", "password");
+                        ArduinoUno.getWifi().begin("ssid", "password");
                         Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         Serial.println(Udp.listen(4210));
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import io.github.jabrena.juno.hardware.net.udp.Udp;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 """);
@@ -961,7 +981,7 @@ class AvrAsmBackendTest {
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoOneR4WiFiBoard.class or ArduinoNanoEsp32Board.class)")
+                .hasMessageContaining("Smtp.send (STARTTLS) requires @Board(ArduinoUnoR4WiFiBoard.class or ArduinoNanoEsp32Board.class)")
                 .hasMessageContaining("use Smtp.sendTls with implicit TLS, usually port 465");
     }
 
@@ -1302,8 +1322,8 @@ class AvrAsmBackendTest {
     void shouldReachTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoOne.getGpio().pinMode(ArduinoOne.getGpio().getBuiltinLed(), Gpio.getOutput());
-                        ArduinoOne.getGpio().digitalWrite(ArduinoOne.getGpio().getBuiltinLed(), true);
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -1324,8 +1344,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinModeCallWithAPinModeCastInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoOne.getGpio().pinMode(ArduinoOne.getGpio().getBuiltinLed(), Gpio.getOutput());
-                        ArduinoOne.getGpio().digitalWrite(ArduinoOne.getGpio().getBuiltinLed(), true);
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;

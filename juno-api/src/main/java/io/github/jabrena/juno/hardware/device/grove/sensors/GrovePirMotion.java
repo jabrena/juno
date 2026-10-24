@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 /**
@@ -12,7 +12,7 @@ public final class GrovePirMotion {
 
     /** A sensor on the board's own pins. Create it once, at startup. */
     public GrovePirMotion() {
-        this(ArduinoOne.getGpio());
+        this(ArduinoUno.getGpio());
     }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */

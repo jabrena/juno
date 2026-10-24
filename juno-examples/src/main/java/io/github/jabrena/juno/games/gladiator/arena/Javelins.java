@@ -9,7 +9,6 @@ import io.github.jabrena.juno.util.Random;
  * up again. A javelin the victim did not see coming does double damage, and a scutum or a helmet takes its share
  * ({@link Arms}), like a blade's.
  */
-@SuppressWarnings("java:S1845")
 public final class Javelins {
     public static final int COUNT = 2;
     public static final int DAMAGE = 20;

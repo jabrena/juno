@@ -12,7 +12,7 @@ public final class MonitorMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.baudRate", defaultValue = "115200", required = true)
     private int baudRate;
 
-    /** Board whose port to attach to, e.g. {@code arduino-one-q}; required. */
+    /** Board whose port to attach to, e.g. {@code arduino-uno-q}; required. */
     @Parameter(property = "juno.board")
     private @Nullable String board;
 

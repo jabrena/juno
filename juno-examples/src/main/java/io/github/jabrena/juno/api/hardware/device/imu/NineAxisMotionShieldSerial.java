@@ -28,7 +28,6 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public final class NineAxisMotionShieldSerial {
     private final NineAxisMotionShield imu = new NineAxisMotionShield();
     private static final int PRINT_MILLIS = 200;

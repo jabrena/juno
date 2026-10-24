@@ -16,7 +16,6 @@ import java.util.Properties;
 
 /** Connects to the Wi-Fi network configured on the Cardputer's SD card and shows its status on the built-in display. */
 @Board(M5StackCardputerBoard.class)
-@SuppressWarnings("java:S2189")
 public final class M5CardputerWifiStatusSD {
     private static final Wifi WIFI = M5StackCardputer.getWifi();
     private static final SdCard SD_CARD = M5StackCardputer.getSd();

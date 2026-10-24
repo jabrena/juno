@@ -42,7 +42,7 @@ class MonitorMojoTest extends AbstractMojoTestCase {
         MonitorMojo mojo = lookupEmptyMojo("monitor", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
-                .set("board", "arduino-one-q")
+                .set("board", "arduino-uno-q")
                 .set("baudRate", "115200")
                 .build());
         mojo.setLog(new RecordingLog());

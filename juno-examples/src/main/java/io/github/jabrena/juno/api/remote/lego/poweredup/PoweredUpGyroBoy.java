@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -28,11 +28,10 @@ import io.github.jabrena.juno.util.Delay;
  * {@code MIN_POWER}; if it creeps in one direction, raise {@code KI}. The numbers are starting points,
  * not verified on a particular chassis. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class PoweredUpGyroBoy {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
 

@@ -21,7 +21,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.hardware.ArduinoOne.getWifi().begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.ArduinoUno.getWifi().begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -54,7 +54,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.hardware.ArduinoOne.getWifi().begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.ArduinoUno.getWifi().begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -82,7 +82,7 @@ class LocalDateTimeTest {
         // Given
         CompilationResult result = compile("""
                 public static void main() {
-                    io.github.jabrena.juno.hardware.ArduinoOne.getWifi().begin("ssid", "password");
+                    io.github.jabrena.juno.hardware.ArduinoUno.getWifi().begin("ssid", "password");
                     java.time.LocalDateTime value = java.time.LocalDateTime.now();
                     boolean offline = value.equals(java.time.LocalDateTime.MIN);
                     int year = value.getYear();
@@ -202,9 +202,9 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoOneR3Board.class)
+                @Board(ArduinoUnoR3Board.class)
                 public final class ShieldClock {
                     public static void main() {
                         java.time.LocalDateTime value = java.time.LocalDateTime.now();
@@ -228,10 +228,10 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.time.LocalDateTime;
-                @Board(ArduinoOneR3WiFiRev2Board.class)
+                @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class WifiRev2Clock {
                     public static void main() {
                         LocalDateTime value = LocalDateTime.now();
@@ -254,10 +254,10 @@ class LocalDateTimeTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.time.LocalDateTime;
-                @Board(ArduinoOneR3WiFiRev2Board.class)
+                @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class WifiRev2Clock {
                     public static void main() {
                         LocalDateTime value = LocalDateTime.now();
@@ -275,9 +275,9 @@ class LocalDateTimeTest {
     private CompilationResult compile(String members) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                @Board(ArduinoOneR4WiFiBoard.class)
+                @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class Tasks {
                 %s
                 }

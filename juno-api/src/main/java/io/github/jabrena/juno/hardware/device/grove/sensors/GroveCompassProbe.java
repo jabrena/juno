@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.util.Delay;
 
@@ -30,7 +30,7 @@ public final class GroveCompassProbe {
 
     /** A probe on the board's own I2C bus. Create it once, at startup. */
     public GroveCompassProbe() {
-        this(ArduinoOne.getI2c());
+        this(ArduinoUno.getI2c());
     }
 
     /** A probe that talks to the compass through {@code i2c}: a mocked one in a unit test. */

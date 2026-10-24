@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.games.lunarlander;
 
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -12,10 +12,9 @@ import io.github.jabrena.juno.util.Random;
  * Lunar Lander for the ELEGOO TFT shield. Land upright and slowly on a marked pad before fuel runs
  * out. The package separates flight physics, terrain, rendering, controls, and interludes.
  */
-@Board(ArduinoOneR4WiFiBoard.class)
-@SuppressWarnings("java:S2189")
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class LunarLander {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int START_FUEL = 1500;
     private static final int CPU_START_FUEL = 3000;
     private static final int CRASH_PENALTY = 250;

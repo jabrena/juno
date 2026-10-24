@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -19,9 +19,8 @@ import io.github.jabrena.juno.util.Delay;
  * reply round trips with the brick, so a bump is noticed a fraction of a second late.
  * Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class RcxBumpAndGo {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BACK_MILLIS = 1000;

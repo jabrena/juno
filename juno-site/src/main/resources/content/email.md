@@ -32,10 +32,10 @@ This is a basic client, not a full mail library:
 Both APIs need an UNO R4 WiFi entry point and an active `Wifi` connection:
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 
-@Board(ArduinoOneR4WiFiBoard.class)
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class EmailExample {
     // ...
 }

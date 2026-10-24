@@ -14,8 +14,8 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 /**
  * Stands the emulated TFT shield, the simulated clock, an UNO Q board model, the emulated arena, an UNO Q LED
  * matrix, an always-connected Wi-Fi radio and an SD card in for the board before any test class runs, so example code that gets
- * its own {@code ArduinoOne.getGpio()}, {@code ArduinoOne.getClock()}, {@code ArduinoOne.getBoardModel()}, {@code ArduinoOne.getBoardMemory()},
- * {@code ArduinoOne.getLedMatrix()}, {@code ArduinoOne.getWifi()} or a shield's {@code getSdCard()}
+ * its own {@code ArduinoUno.getGpio()}, {@code ArduinoUno.getClock()}, {@code ArduinoUno.getBoardModel()}, {@code ArduinoUno.getBoardMemory()},
+ * {@code ArduinoUno.getLedMatrix()}, {@code ArduinoUno.getWifi()} or a shield's {@code getSdCard()}
  * (a game's real classes, run whole) meets them instead of the native ports. Registered for every test through JUnit's extension auto-detection; a unit test that
  * wants a mock passes {@code mock} explicitly instead.
  */

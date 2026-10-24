@@ -23,7 +23,6 @@ import io.github.jabrena.juno.util.Delay;
  * Servo YELLOW -> channel 0 PWM
  * }</pre>
  */
-@SuppressWarnings("java:S2189")
 public final class PwmServoShieldDemo {
     private static final int SERVO_COUNT = 1;
     private static final int STEP_DEGREES = 1;

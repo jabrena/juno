@@ -9,7 +9,6 @@ import io.github.jabrena.juno.util.Delay;
  * Prints a header on row 0 of the LCD Keypad Shield's screen, then shows which of its 5 buttons
  * (if any) is currently held on row 1, updating only when the pressed button changes.
  */
-@SuppressWarnings("java:S2189")
 public final class LcdKeypadDemo {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
