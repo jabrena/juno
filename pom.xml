@@ -285,6 +285,10 @@
                 <sonar.host.url>http://localhost:9000</sonar.host.url>
                 <sonar.projectKey>juno</sonar.projectKey>
                 <sonar.projectName>Java for Arduino</sonar.projectName>
+                <!-- Board examples and their tests are excluded from Sonar analysis; they are validated by
+                     their dedicated compiler, Arduino CLI, and hardware-oriented test workflows. -->
+                <sonar.exclusions>juno-examples/**</sonar.exclusions>
+                <sonar.test.exclusions>juno-examples/**</sonar.test.exclusions>
                 <!-- SonarQube imports JaCoCo XML; coverage-aggregator creates this aggregate
                      report during verify and writes the merged execution data used by its check
                      to coverage-aggregator/target/jacoco-merged.exec. -->
