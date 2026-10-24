@@ -10,8 +10,8 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Wi-Fi setup from a phone instead of build-time credentials: the board opens the access point
- * {@value #AP_SSID} (passphrase {@value #AP_PASSWORD}), and {@link WifiProvisioner} serves a form at
- * {@code http://192.168.4.1/} and joins the network the user submits, printing the new address over
+ * {@value #AP_SSID} (passphrase {@value #AP_PASSWORD}), and {@link WifiProvisioner} serves a form at the
+ * native access-point address and joins the network the user submits, printing the new address over
  * Serial at 115200 baud. On UNO Q the hotspot must be started on the Linux side first; see
  * {@link WifiProvisioner} for what each board does with the submitted credentials.
  */

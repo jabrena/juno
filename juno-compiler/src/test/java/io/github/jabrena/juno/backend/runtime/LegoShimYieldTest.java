@@ -13,7 +13,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LegoShimYieldTest {
     private final ShimLibraries shimLibraries = new ShimLibraries();
 
-    private static final Pattern PUBLIC_ENTRY = Pattern.compile("extern \"C\" [^\n]*juno_lego_hub_\\w+\\([^\n]*\\) \\{");
     private static final Pattern GUARD = Pattern.compile("JunoLegoGuard juno_lego_guard;");
 
     @Test
@@ -58,7 +57,7 @@ class LegoShimYieldTest {
         String shim = shimLibraries.legoPoweredUpHelpers(true);
 
         // When
-        int entries = count(PUBLIC_ENTRY, shim);
+        int entries = countPublicEntries(shim);
 
         // Then
         assertThat(entries).isGreaterThan(20).isEqualTo(count(GUARD, shim));
@@ -94,5 +93,24 @@ class LegoShimYieldTest {
             count++;
         }
         return count;
+    }
+
+    private static int countPublicEntries(String text) {
+        int count = 0;
+        for (String line : text.lines().toList()) {
+            if (isPublicEntry(line)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    private static boolean isPublicEntry(String line) {
+        String declaration = line.strip();
+        int nameStart = declaration.indexOf("juno_lego_hub_");
+        int openParenthesis = nameStart < 0 ? -1 : declaration.indexOf('(', nameStart);
+        return declaration.startsWith("extern \"C\" ")
+                && declaration.endsWith(") {")
+                && openParenthesis > nameStart;
     }
 }

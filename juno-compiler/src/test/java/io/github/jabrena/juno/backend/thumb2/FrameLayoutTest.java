@@ -27,6 +27,27 @@ class FrameLayoutTest {
     private static final MethodRef METHOD = new MethodRef("demo.Frame", "work", "()I");
 
     @Test
+    @DisplayName("Compares offset arrays by content")
+    void shouldCompareOffsetArraysByContent() {
+        // Given
+        FrameLayout first = new FrameLayout(8, new int[] {0, 4}, new int[] {8, -1}, Map.of());
+        FrameLayout second = new FrameLayout(8, new int[] {0, 4}, new int[] {8, -1}, Map.of());
+
+        // Then
+        assertThat(first).isEqualTo(second).hasSameHashCodeAs(second);
+    }
+
+    @Test
+    @DisplayName("Shows offset arrays in its string form")
+    void shouldShowOffsetArraysInToString() {
+        // Given
+        FrameLayout frame = new FrameLayout(8, new int[] {0, 4}, new int[] {8, -1}, Map.of());
+
+        // Then
+        assertThat(frame).hasToString("FrameLayout[frameSize=8, valueOffsets=[0, 4], localOffsets=[8, -1], constants={}]");
+    }
+
+    @Test
     @DisplayName("Sequential values share one word")
     void shouldGiveSequentialValuesTheSameWord() {
         // Given

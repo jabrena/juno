@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -190,8 +191,9 @@ public final class Inliner implements CompilerPass {
                         new IrTerminator.Jump(Objects.requireNonNull(calleeBlocks.get(callee.blocks().getFirst().start())))));
                 copyCallee(callee, calleeBlocks, continuation);
                 segment = new ArrayList<>();
-                if (call.target().isPresent()) {
-                    segment.add(new IrInstruction.LoadLocal(call.target().get(), window + callee.maxLocals()));
+                Optional<Value> target = call.target();
+                if (target.isPresent()) {
+                    segment.add(new IrInstruction.LoadLocal(target.get(), window + callee.maxLocals()));
                 }
                 start = continuation;
             }

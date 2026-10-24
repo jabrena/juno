@@ -4,14 +4,15 @@ import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.Value;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Every value/local's fixed stack offset, and the total (8-byte-aligned) frame size to reserve. A value defined by
  * exactly one {@link IrInstruction.Const} is rematerialized instead: it has no slot, and every use loads its
  * immediate (or folds it into the instruction), so the constant is never stored and reloaded.
  */
-// The offset arrays are read by index; equals/hashCode on them is identity-based and nothing relies on it.
 @SuppressWarnings("ArrayRecordComponent")
 public record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets, Map<Integer, Integer> constants) {
     /** Bytes of one Java word on every target: an {@code int}, a reference, half a {@code long}/{@code double}. */
@@ -41,6 +42,33 @@ public record FrameLayout(int frameSize, int[] valueOffsets, int[] localOffsets,
             throw new IllegalStateException("local slot " + local + " is never loaded or stored and has no stack word");
         }
         return localOffsets[local];
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof FrameLayout that)) {
+            return false;
+        }
+        return frameSize == that.frameSize
+                && Arrays.equals(valueOffsets, that.valueOffsets)
+                && Arrays.equals(localOffsets, that.localOffsets)
+                && constants.equals(that.constants);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(frameSize, constants);
+        result = 31 * result + Arrays.hashCode(valueOffsets);
+        return 31 * result + Arrays.hashCode(localOffsets);
+    }
+
+    @Override
+    public String toString() {
+        return "FrameLayout[frameSize=" + frameSize + ", valueOffsets=" + Arrays.toString(valueOffsets)
+                + ", localOffsets=" + Arrays.toString(localOffsets) + ", constants=" + constants + "]";
     }
 
     public static FrameLayout of(IrMethod method) {

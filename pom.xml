@@ -285,6 +285,10 @@
                 <sonar.host.url>http://localhost:9000</sonar.host.url>
                 <sonar.projectKey>juno</sonar.projectKey>
                 <sonar.projectName>Java for Arduino</sonar.projectName>
+                <!-- SonarQube imports JaCoCo XML; coverage-aggregator creates this aggregate
+                     report during verify and writes the merged execution data used by its check
+                     to coverage-aggregator/target/jacoco-merged.exec. -->
+                <sonar.coverage.jacoco.xmlReportPaths>coverage-aggregator/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
             </properties>
             <build>
                 <plugins>

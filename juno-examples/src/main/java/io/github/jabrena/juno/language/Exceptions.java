@@ -97,6 +97,7 @@ public class Exceptions {
         }
     }
 
+    @SuppressWarnings("java:S3518")
     private void dividingByZero() {
         Serial.println("Dividing by zero");
         int total = 250;

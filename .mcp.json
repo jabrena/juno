@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sonarqube": {
+      "command": "sh",
+      "args": ["./scripts/sonar.sh", "mcp"]
+    },
+    "javadocs": {
+      "type": "http",
+      "url": "https://www.javadocs.dev/mcp"
+    }
+  }
+}

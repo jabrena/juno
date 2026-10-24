@@ -109,8 +109,9 @@ class WifiProvisionerTest {
 
         // Then
         assertThat(Serial.output).containsSubsequence("Access point ready: ", "Juno-Setup\n",
+                "Open http://", "192", ".", "168", ".", "4", ".", "1", "/\n",
                 "Credentials received for: ", "Home Net\n",
-                "Connected. IP: ", "192", ".", "168", ".", "1", ".", "42\n");
+                "Connected. IP: ", "192", ".", "168", ".", "1", ".", "42", "\n");
     }
 
     @Test

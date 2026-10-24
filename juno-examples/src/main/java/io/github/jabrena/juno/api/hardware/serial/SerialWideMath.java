@@ -22,6 +22,7 @@ public final class SerialWideMath {
      *
      * @param args ignored; Juno programs do not receive command-line arguments
      */
+    @SuppressWarnings("java:S3518")
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);

@@ -204,9 +204,23 @@ final class FrameAllocator {
         return type.isWide() ? 8 : FrameLayout.WORD;
     }
 
-    // Private holders built and read only in this class; the arrays are never compared or hashed.
-    @SuppressWarnings("ArrayRecordComponent")
-    private record BlockIntervals(int[] first, int[] last) {
+    // Private holders built and read only in this class; array identity is intentional.
+    private static final class BlockIntervals {
+        private final int[] first;
+        private final int[] last;
+
+        private BlockIntervals(int[] first, int[] last) {
+            this.first = first;
+            this.last = last;
+        }
+
+        private int[] first() {
+            return first;
+        }
+
+        private int[] last() {
+            return last;
+        }
     }
 
     private record Interval(Value value, int first, int last) {
@@ -215,8 +229,22 @@ final class FrameAllocator {
     private record ActiveInterval(int last, int word, int widthWords) {
     }
 
-    @SuppressWarnings("ArrayRecordComponent")
-    private record ValueStorage(int[] offsets, int bytes) {
+    private static final class ValueStorage {
+        private final int[] offsets;
+        private final int bytes;
+
+        private ValueStorage(int[] offsets, int bytes) {
+            this.offsets = offsets;
+            this.bytes = bytes;
+        }
+
+        private int[] offsets() {
+            return offsets;
+        }
+
+        private int bytes() {
+            return bytes;
+        }
     }
 
     private int roundUp(int value, int multiple) {

@@ -20,7 +20,8 @@ final class FakeWifi implements Wifi {
     int warmupReads;
     String accessPointSsid;
     int status;
-    final int[] address = {192, 168, 1, 42};
+    final int[] accessPointAddress = {192, 168, 4, 1};
+    final int[] stationAddress = {192, 168, 1, 42};
 
     @Override
     public void begin(String ssid, String password) {
@@ -49,6 +50,7 @@ final class FakeWifi implements Wifi {
 
     @Override
     public void localIP(int[] octets) {
+        int[] address = status == STATUS_AP_LISTENING ? accessPointAddress : stationAddress;
         System.arraycopy(address, 0, octets, 0, address.length);
     }
 

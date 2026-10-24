@@ -129,7 +129,7 @@ class BigNumberRuntimeTest {
             for (int index = 0; index < statements.size(); index++) {
                 String statement = statements.get(index);
                 // Safe: the first statement holds nothing yet, and a return ends the operation with the call.
-                if (index == 0 || statement.matches("(if \\(.*\\) )?return .*")) {
+                if (index == 0 || isReturnStatement(statement)) {
                     continue;
                 }
                 for (String callee : collecting) {
@@ -141,6 +141,11 @@ class BigNumberRuntimeTest {
         });
         // Then
         assertThat(violations).isEmpty();
+    }
+
+    private static boolean isReturnStatement(String statement) {
+        return statement.startsWith("return ")
+                || (statement.startsWith("if (") && statement.contains(") return "));
     }
 
     /** Exception messages differ between JDK code paths, so only the class is compared. */

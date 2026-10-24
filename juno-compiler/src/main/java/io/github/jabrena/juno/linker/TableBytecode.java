@@ -13,9 +13,22 @@ final class TableBytecode {
     private static final int NEWARRAY = 188;
 
     /** An initializer's element values (raw bits), and the index of the {@code putstatic} storing the array. */
-    // The values array is read once by the table builder and never compared or hashed.
-    @SuppressWarnings("ArrayRecordComponent")
-    record Initializer(long[] values, int putstatic) {
+    static final class Initializer {
+        private final long[] values;
+        private final int putstatic;
+
+        Initializer(long[] values, int putstatic) {
+            this.values = values;
+            this.putstatic = putstatic;
+        }
+
+        long[] values() {
+            return values;
+        }
+
+        int putstatic() {
+            return putstatic;
+        }
     }
 
 

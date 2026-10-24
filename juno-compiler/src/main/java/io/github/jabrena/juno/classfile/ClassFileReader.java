@@ -149,10 +149,37 @@ public final class ClassFileReader {
     }
 
     /** A method's {@code Code} attribute; {@link #ABSENT} for abstract and native methods. */
-    // The code array is read once into a JavaMethod and never compared or hashed.
-    @SuppressWarnings("ArrayRecordComponent")
-    private record CodeAttribute(int maxStack, int maxLocals, byte @Nullable [] code, List<ExceptionHandler> exceptionHandlers) {
+    private static final class CodeAttribute {
         private static final CodeAttribute ABSENT = new CodeAttribute(0, 0, null, List.of());
+
+        private final int maxStack;
+        private final int maxLocals;
+        private final byte @Nullable [] code;
+        private final List<ExceptionHandler> exceptionHandlers;
+
+        private CodeAttribute(int maxStack, int maxLocals, byte @Nullable [] code,
+                              List<ExceptionHandler> exceptionHandlers) {
+            this.maxStack = maxStack;
+            this.maxLocals = maxLocals;
+            this.code = code;
+            this.exceptionHandlers = exceptionHandlers;
+        }
+
+        private int maxStack() {
+            return maxStack;
+        }
+
+        private int maxLocals() {
+            return maxLocals;
+        }
+
+        private byte @Nullable [] code() {
+            return code;
+        }
+
+        private List<ExceptionHandler> exceptionHandlers() {
+            return exceptionHandlers;
+        }
     }
 
     /** Reads a {@code Code} attribute body, just past its name and length. */

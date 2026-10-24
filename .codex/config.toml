@@ -1,0 +1,11 @@
+[mcp_servers.sonarqube]
+command = "sh"
+args = ["./scripts/sonar.sh", "mcp"]
+startup_timeout_sec = 60
+
+[mcp_servers.sonarqube.env]
+SONAR_CREDENTIALS_FILE = ".sonar/sonar.env"
+SONARQUBE_URL = "http://host.docker.internal:9000"
+
+[mcp_servers.javadocs]
+url = "https://www.javadocs.dev/mcp"

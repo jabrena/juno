@@ -4,7 +4,6 @@ target/
 .sonar/
 .idea/
 .vscode/
-.cursor/
 .agents/
 .claude/*
 !.claude/settings.json

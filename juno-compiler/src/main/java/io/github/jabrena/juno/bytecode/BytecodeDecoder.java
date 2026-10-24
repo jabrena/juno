@@ -2,6 +2,7 @@ package io.github.jabrena.juno.bytecode;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.classfile.JavaMethod;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -87,10 +88,10 @@ public final class BytecodeDecoder {
             Map.entry(198, "ifnull"), Map.entry(199, "ifnonnull"));
 
     public List<Instruction> decode(JavaMethod method) {
-        if (method.code() == null) {
+        byte @Nullable [] code = method.code();
+        if (code == null) {
             throw error(method, 0, "method has no bytecode");
         }
-        byte[] code = method.code();
         List<Instruction> instructions = new ArrayList<>();
         for (int offset = 0; offset < code.length; ) {
             int opcode = unsigned(code[offset]);
