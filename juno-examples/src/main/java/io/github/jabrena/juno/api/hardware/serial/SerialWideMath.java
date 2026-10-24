@@ -60,6 +60,7 @@ public final class SerialWideMath {
             Serial.println((long) (ratio * 1e10f));
             Serial.print("l2f ");
             Serial.println((float) big);
+            @SuppressWarnings("java:S3518")
             float nan = 0f / 0f;
             Serial.print("nan ");
             Serial.println((nan < 1f ? 1 : 0) + (nan > 1f ? 2 : 0) + (int) nan);
