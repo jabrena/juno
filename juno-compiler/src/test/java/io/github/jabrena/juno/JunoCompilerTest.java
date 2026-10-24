@@ -350,6 +350,31 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Lowers the JVM-backed Delay methods directly to board timing intrinsics")
+        void shouldLowerTheJvmBackedDelayMethodsToBoardTimingIntrinsics() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.util.Delay;
+                    public final class TimedProgram {
+                        public static void main(String[] args) {
+                            Delay.millis(2);
+                            Delay.micros(3);
+                            Delay.seconds(0);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.TimedProgram", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TimedProgram");
+
+            // Then
+            assertThat(result.assembly()).contains("bl delay", "bl delayMicroseconds");
+            assertThat(result.runtimeShim()).doesNotContain("juno_thread_sleep");
+        }
+
+        @Test
         @DisplayName("Allocates a non-final class that nothing extends")
         void shouldAllocateANonFinalClassThatNothingExtends() throws Exception {
             // Given
