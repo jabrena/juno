@@ -76,6 +76,81 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles programs against the board-independent motor contracts")
+        void shouldCompileBoardIndependentMotorContracts() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.drive.DifferentialDrive;
+                    import io.github.jabrena.juno.hardware.drive.DifferentialDriveOdometry;
+                    import io.github.jabrena.juno.hardware.drive.DriveGeometry;
+                    import io.github.jabrena.juno.hardware.drive.HeadingHoldController;
+                    import io.github.jabrena.juno.hardware.drive.Pose;
+                    import io.github.jabrena.juno.hardware.imu.Imu;
+                    import io.github.jabrena.juno.hardware.imu.ImuSample;
+                    import io.github.jabrena.juno.hardware.motor.Encoder;
+                    import io.github.jabrena.juno.hardware.motor.RegulatedMotor;
+                    import io.github.jabrena.juno.util.Delay;
+                    public final class MotorContracts {
+                        static final class TestMotor implements RegulatedMotor {
+                            public void setPower(int percent) { }
+                            public void forward() { }
+                            public void backward() { }
+                            public void coast() { }
+                            public void brake() { }
+                            public void stop() { }
+                            public void setSpeed(int degreesPerSecond) { }
+                            public void setAcceleration(int degreesPerSecondSquared) { }
+                            public int speed() { return 0; }
+                            public void rotate(int degrees) { }
+                            public void rotate(int degrees, boolean immediateReturn) { }
+                            public void rotateTo(int limitAngle) { }
+                            public void rotateTo(int limitAngle, boolean immediateReturn) { }
+                            public int tachoCount() { return 7; }
+                            public void resetTachoCount() { }
+                            public boolean isMoving() { return false; }
+                            public boolean isStalled() { return false; }
+                            public void waitComplete() { }
+                        }
+                        static final class TestEncoder implements Encoder {
+                            public int positionDegrees() { return 12; }
+                            public void reset() { }
+                        }
+                        static final class TestImu implements Imu {
+                            public boolean begin() { return true; }
+                            public boolean read(ImuSample sample) {
+                                sample.update(0, 0, 0, 0, 3);
+                                return true;
+                            }
+                        }
+                        public static void main(String[] args) {
+                            RegulatedMotor motor = new TestMotor();
+                            Encoder encoder = new TestEncoder();
+                            Imu imu = new TestImu();
+                            DifferentialDrive drive = new DifferentialDrive(motor, motor);
+                            drive.drive(motor.tachoCount(), encoder.positionDegrees());
+                            Pose pose = new Pose();
+                            DriveGeometry geometry = new DriveGeometry(56, 120, 360, 360);
+                            DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
+                                    encoder, encoder, imu, geometry, pose);
+                            odometry.update();
+                            HeadingHoldController heading = new HeadingHoldController(drive, pose, 20, 30);
+                            heading.captureCurrentHeading();
+                            heading.holdHeading(20);
+                            Delay.millis(motor.tachoCount() + encoder.positionDegrees() + pose.headingMillidegrees());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.MotorContracts", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MotorContracts");
+
+            // Then
+            assertThat(result.assembly()).contains("bl delay");
+        }
+
+        @Test
         @DisplayName("Compiles Cardputer Wi-Fi access through the M5StackCardputer facade")
         void shouldCompileCardputerWifiThroughM5StackCardputer() throws Exception {
             // Given
