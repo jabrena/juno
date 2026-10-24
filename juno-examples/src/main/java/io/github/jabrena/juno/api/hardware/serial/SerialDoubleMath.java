@@ -23,6 +23,7 @@ public final class SerialDoubleMath {
      *
      * @param args ignored; Juno programs do not receive command-line arguments
      */
+    @SuppressWarnings("java:S3518")
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
@@ -49,7 +50,6 @@ public final class SerialDoubleMath {
             Serial.println((long) ((double) (9_007_199_254_740_993L + round) / 2));
             Serial.print("f2d ");
             Serial.println((long) ((double) (float) x * 1e9));
-            @SuppressWarnings("java:S3518")
             double nan = 0.0 / 0.0;
             Serial.print("nan ");
             Serial.println((nan < 1.0 ? 1 : 0) + (nan > 1.0 ? 2 : 0) + (int) nan);

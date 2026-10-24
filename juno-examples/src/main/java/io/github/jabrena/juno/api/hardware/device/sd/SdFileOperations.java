@@ -83,8 +83,11 @@ public final class SdFileOperations {
             return;
         }
         StringBuilder line = new StringBuilder(32);
-        int value;
-        while ((value = file.read()) != -1) {
+        while (true) {
+            int value = file.read();
+            if (value == -1) {
+                break;
+            }
             char next = (char) value;
             if (next == '\n') {
                 Serial.print("  ");
