@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -9,7 +9,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Sends the RCX firmware-independent alive packet and prints the raw reply. */
 public class RcxRawSoundProbe {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BAUD = 2400;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.lcd.pomodoro;
 
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -15,8 +15,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * then returns to {@link ConfigurePomodoroView} so another session can begin without rebooting the
  * board.
  */
-@Board(ArduinoOneR4WiFiBoard.class)
-@SuppressWarnings("java:S2189")
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class Pomodoro {
     /** The program's one LCD shield, shared by every Pomodoro view. */
     static final LcdKeypadShield LCD_SHIELD = new LcdKeypadShield();

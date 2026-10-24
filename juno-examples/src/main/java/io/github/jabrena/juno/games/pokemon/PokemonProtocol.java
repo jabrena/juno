@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.games.pokemon;
 
 /** Fixed-size wire protocol and battle rules shared by both boards. */
-@SuppressWarnings("java:S1845")
 final class PokemonProtocol {
     static final int PIKACHU = 1;
     static final int CHARMANDER = 2;

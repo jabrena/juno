@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -19,10 +19,9 @@ import io.github.jabrena.juno.util.Delay;
  * port and values follow the community protocol documentation; run {@code PoweredUpHubImuMonitor} to see
  * them on your hub. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class MagicSquarePoweredUpHubWithImu {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;
     private static final int RIGHT = PoweredUpHubRemote.PORT_B;
     private static final int TILT = PoweredUpHubRemote.PORT_TECHNIC_TILT;

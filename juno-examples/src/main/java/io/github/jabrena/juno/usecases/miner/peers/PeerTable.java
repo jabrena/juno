@@ -15,7 +15,6 @@ import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
  *
  * <p>Times are {@code int} milliseconds compared by subtraction, so a clock that wraps around does not matter.
  */
-@SuppressWarnings("java:S1845")
 public final class PeerTable {
     public static final int CAPACITY = 8;
     /** How often a node broadcasts its heartbeat. */

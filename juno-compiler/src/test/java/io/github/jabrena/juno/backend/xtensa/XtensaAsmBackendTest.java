@@ -33,7 +33,7 @@ class XtensaAsmBackendTest {
     private static final String NANO_ESP32 = Board.NANO_ESP32.id();
 
     private static final String BLINK = """
-                    DigitalOutput led = DigitalOutput.of(ArduinoOne.getGpio().getBuiltinLed());
+                    DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
                     led.high();
                     Delay.millis(500);
                     led.low();
@@ -58,9 +58,9 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String LONGS = """
-                    long value = ArduinoOne.getGpio().analogRead(0);
-                    long other = ArduinoOne.getGpio().analogRead(1) + 1L;
-                    int shift = ArduinoOne.getGpio().analogRead(2);
+                    long value = ArduinoUno.getGpio().analogRead(0);
+                    long other = ArduinoUno.getGpio().analogRead(1) + 1L;
+                    int shift = ArduinoUno.getGpio().analogRead(2);
                     long mixed = value * value + other - value / other + value % other;
                     mixed = (mixed & other) | (mixed ^ value);
                     mixed = (mixed << shift) + (mixed >> shift) + (mixed >>> shift) - mixed;
@@ -70,7 +70,7 @@ class XtensaAsmBackendTest {
                     Serial.println((int) (mixed + 5_000_000_000L));
             """;
     private static final String FLOATS = """
-                    int raw = ArduinoOne.getGpio().analogRead(3);
+                    int raw = ArduinoUno.getGpio().analogRead(3);
                     float reading = raw;
                     float volts = reading * 1.5f + 0.25f - reading / 3f + reading % 2f;
                     if (volts > 2.0f) {
@@ -82,7 +82,7 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String DOUBLES = """
-                    double sample = ArduinoOne.getGpio().analogRead(4);
+                    double sample = ArduinoUno.getGpio().analogRead(4);
                     double mixed = sample * 0.1 + 2.5 - sample / 3.0 + sample % 2.0;
                     if (mixed > 2.0) {
                         mixed = -mixed;
@@ -141,7 +141,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoOne;
+            import io.github.jabrena.juno.hardware.ArduinoUno;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoThreads {
@@ -164,7 +164,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) throws InterruptedException {
-                    int limit = ArduinoOne.getGpio().analogRead(0);
+                    int limit = ArduinoUno.getGpio().analogRead(0);
                     Total total = new Total();
                     Thread first = Thread.startVirtualThread(new Counter(total, limit));
                     Thread second = Thread.startVirtualThread(new Counter(total, limit));
@@ -180,7 +180,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoOne;
+            import io.github.jabrena.juno.hardware.ArduinoUno;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoWide {
@@ -191,7 +191,7 @@ class XtensaAsmBackendTest {
                     return a <= 0 ? f + g * 3 + h * 5 + b + c + d + e : mixed(a - 1, b, c, d, e, f, g, h);
                 }
                 public static void main(String[] args) {
-                    int raw = ArduinoOne.getGpio().analogRead(0);
+                    int raw = ArduinoUno.getGpio().analogRead(0);
                     Serial.println(sum(raw, 1, 2, 3, 4, 5, 6));
                     Serial.println(mixed(raw, raw + 1, 2, 3, 4, raw * 1000L, raw + 7, raw + 8));
                 }
@@ -202,7 +202,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoOne;
+            import io.github.jabrena.juno.hardware.ArduinoUno;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoShapes {
@@ -240,7 +240,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int value = ArduinoOne.getGpio().analogRead(0);
+                    int value = ArduinoUno.getGpio().analogRead(0);
                     byte[] bytes = new byte[4];
                     char[] chars = new char[4];
                     short[] shorts = new short[4];
@@ -274,7 +274,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 %s
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class %s {
@@ -354,7 +354,7 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoAnalog", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        Serial.println(ArduinoOne.getGpio().analogRead(Gpio.getA0()));
+                        Serial.println(ArduinoUno.getGpio().analogRead(Gpio.getA0()));
                 """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.gpio.Gpio;\n");
 
         // When & Then
@@ -397,7 +397,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoCalls {
@@ -405,7 +405,7 @@ class XtensaAsmBackendTest {
                         return a <= 0 ? b - c : mix(a - 1, a * b, c);
                     }
                     public static void main(String[] args) {
-                        Serial.println(mix(ArduinoOne.getGpio().analogRead(0), 7, 2));
+                        Serial.println(mix(ArduinoUno.getGpio().analogRead(0), 7, 2));
                     }
                 }
                 """;
@@ -423,8 +423,8 @@ class XtensaAsmBackendTest {
     void shouldGuardDivisionByMinusOne() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoDivide", """
-                        int value = ArduinoOne.getGpio().analogRead(0);
-                        int divisor = ArduinoOne.getGpio().analogRead(1);
+                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int divisor = ArduinoUno.getGpio().analogRead(1);
                         Serial.println(value / divisor);
                         Serial.println(value % divisor);
                         Serial.println(value >> divisor);
@@ -443,7 +443,7 @@ class XtensaAsmBackendTest {
     void shouldFoldEveryBoardModelQueryToFalse() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoModel", """
-                        Serial.println(ArduinoOne.getBoardModel().isR4() ? 1 : 0);
+                        Serial.println(ArduinoUno.getBoardModel().isR4() ? 1 : 0);
                 """, SERIAL_IMPORTS);
 
         // When & Then
@@ -455,9 +455,9 @@ class XtensaAsmBackendTest {
     void shouldLowerOnboardWifi() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoWifi", """
-                        ArduinoOne.getWifi().begin("net", "secret");
-                        Serial.println(ArduinoOne.getWifi().status());
-                """, "import io.github.jabrena.juno.hardware.ArduinoOne; import io.github.jabrena.juno.hardware.serial.Serial;"
+                        ArduinoUno.getWifi().begin("net", "secret");
+                        Serial.println(ArduinoUno.getWifi().status());
+                """, "import io.github.jabrena.juno.hardware.ArduinoUno; import io.github.jabrena.juno.hardware.serial.Serial;"
                 + " import io.github.jabrena.juno.hardware.serial.BaudRate;");
 
         // Then
@@ -575,8 +575,8 @@ class XtensaAsmBackendTest {
     void shouldLowerAccessPointOnTheSoftAp() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoAp", """
-                        ArduinoOne.getWifi().beginAP("juno-ap", "secret123");
-                """, "import io.github.jabrena.juno.hardware.ArduinoOne;");
+                        ArduinoUno.getWifi().beginAP("juno-ap", "secret123");
+                """, "import io.github.jabrena.juno.hardware.ArduinoUno;");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap(", "WiFi.softAP(ssid, password)");
@@ -702,7 +702,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoWideCalls {
@@ -715,7 +715,7 @@ class XtensaAsmBackendTest {
                         return value * scale;
                     }
                     public static void main(String[] args) {
-                        int raw = ArduinoOne.getGpio().analogRead(0);
+                        int raw = ArduinoUno.getGpio().analogRead(0);
                         total = twice(raw, raw * 1000L);
                         Serial.println((int) (total >>> 3));
                         Serial.println((int) scaled(raw));
@@ -751,7 +751,7 @@ class XtensaAsmBackendTest {
     void shouldLowerDoublePrecisionMath() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoMath", """
-                        double angle = ArduinoOne.getGpio().analogRead(0) / 100.0;
+                        double angle = ArduinoUno.getGpio().analogRead(0) / 100.0;
                         Serial.println(Math.sin(angle) + Math.sqrt(angle) + Math.pow(angle, 3) + Math.atan2(angle, 2));
                 """, SERIAL_IMPORTS);
 

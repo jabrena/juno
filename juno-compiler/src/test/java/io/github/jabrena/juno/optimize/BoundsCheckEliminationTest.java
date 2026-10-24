@@ -34,13 +34,13 @@ class BoundsCheckEliminationTest {
                         """),
                 arguments("a masked or remainder index removes its check", 0, """
                         int[] values = new int[16];
-                        int seed = ArduinoOne.getGpio().analogRead(0);
+                        int seed = ArduinoUno.getGpio().analogRead(0);
                         values[seed & 15] = 1;
                         values[(seed & 0x7FFF) % 16] = 2;
                         """),
                 arguments("the same index read then written keeps one check", 1, """
                         int[] values = new int[16];
-                        int k = ArduinoOne.getGpio().analogRead(0);
+                        int k = ArduinoUno.getGpio().analogRead(0);
                         values[k] = values[k] + 1;
                         """),
                 arguments("a loop running one past the end keeps its check", 1, """
@@ -53,12 +53,12 @@ class BoundsCheckEliminationTest {
                         """),
                 arguments("an unknown loop bound keeps its check", 1, """
                         int[] values = new int[16];
-                        int count = ArduinoOne.getGpio().analogRead(0);
+                        int count = ArduinoUno.getGpio().analogRead(0);
                         for (int i = 0; i < count; i++) values[i] = i;
                         """),
                 arguments("index arithmetic that can overflow keeps its check", 1, """
                         int[] values = new int[16];
-                        int big = ArduinoOne.getGpio().analogRead(0) | 0x7FFFFFF0;
+                        int big = ArduinoUno.getGpio().analogRead(0) | 0x7FFFFFF0;
                         values[big + 20] = 1;
                         """));
     }
@@ -79,13 +79,13 @@ class BoundsCheckEliminationTest {
     private int runtimeChecks(String body) throws Exception {
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Ranges {
                     public static void main(String[] args) {
                         int total = 0;
                 %s
-                        ArduinoOne.getGpio().pinMode(total, Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(total, Gpio.getOutput());
                     }
                 }
                 """.formatted(body.indent(8));

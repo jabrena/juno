@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.maven.fixture;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
@@ -11,7 +11,7 @@ public final class TinyProgram {
     }
 
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(ArduinoOne.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
         while (true) {
             led.high();
             Delay.millis(500);

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -15,9 +15,8 @@ import io.github.jabrena.juno.util.Delay;
  * receiver. The turn spins the vehicle on the spot for {@code TURN_MILLIS}, which you tune for your
  * vehicle. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class MagicSquarePowerFunctions {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final int CHANNEL = PowerFunctionsRemote.CHANNEL_1;
     private static final int SPEED = 5;

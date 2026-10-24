@@ -17,7 +17,6 @@ import io.github.jabrena.juno.util.Delay;
  * re-enumerates when the program starts, so it waits two seconds before the first line.
  */
 @Board(ArduinoNanoEsp32Board.class)
-@SuppressWarnings("java:S2189")
 public final class SerialManyArguments {
     /** An operation over eight words: the receiver, six {@code int}s and one more on the stack. */
     interface Weigher {

@@ -35,8 +35,8 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                 compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .S file (default: build/juno/<Main>/<Main>.S)
-                  --board <id>              Target board (arduino-one-r3, arduino-one-r4-wifi, arduino-one-q,
-                                            arduino-one-r3-wifi-rev2); required when the entry point has no
+                  --board <id>              Target board (arduino-uno-r3, arduino-uno-r4-wifi, arduino-uno-q,
+                                            arduino-uno-r3-wifi-rev2); required when the entry point has no
                                             @Board annotation or when @Board declares more than one board
                   --gc-log                  Have the generated garbage collector print one Serial
                                             line per collection (arena bytes used before/after),
@@ -51,13 +51,13 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board), or from the required --board option when the
                 class has no annotation. @Board may declare more than one board (e.g.
-                @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})), in which case --board picks which one
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})), in which case --board picks which one
                 this build compiles for.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
-                  --board <id>              Target board (arduino-one-r3, arduino-one-r4-wifi, arduino-one-q,
-                                            arduino-one-r3-wifi-rev2); required when the entry point has no
+                  --board <id>              Target board (arduino-uno-r3, arduino-uno-r4-wifi, arduino-uno-q,
+                                            arduino-uno-r3-wifi-rev2); required when the entry point has no
                                             @Board annotation or when @Board declares more than one board
                   --ir                      Print the lowered/optimized Juno IR per reachable method
                   --cfg                     Print each reachable method's basic-block control flow graph

@@ -20,7 +20,6 @@ import io.github.jabrena.juno.util.Delay;
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
-@SuppressWarnings("java:S2189")
 public final class NanoCarrierGroveSensors {
     private NanoCarrierGroveSensors() {
     }

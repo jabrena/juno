@@ -120,17 +120,17 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.udp.SntpClock;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.time.LocalDateTime;
                 import java.util.Properties;
-                @Board(ArduinoOneR4WiFiBoard.class)
+                @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class AsmLocalDateTime {
                     public static void main(String[] args) {
-                        ArduinoOne.getWifi().begin("ssid", "password");
+                        ArduinoUno.getWifi().begin("ssid", "password");
                         Properties properties = new Properties();
                         SntpClock.configure(properties);
                         LocalDateTime value = LocalDateTime.now();
@@ -153,7 +153,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "a UUID program's shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoOneR3Board", "ArduinoOneR3WiFiRev2Board", "ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR3Board", "ArduinoUnoR3WiFiRev2Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("A UUID program's shim is valid C++ on every board")
     void shouldCompileAUuidProgramsShimWithACppCompiler(String board) throws Exception {
         // Given
@@ -187,7 +187,7 @@ class GeneratedAsmToolchainTest {
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         // Then
-        if (board.equals("ArduinoOneR3Board") || board.equals("ArduinoOneR3WiFiRev2Board")) {
+        if (board.equals("ArduinoUnoR3Board") || board.equals("ArduinoUnoR3WiFiRev2Board")) {
             assertThat(result.runtimeShim()).contains(
                     "juno_uuid_new", "juno_avr_thunk_juno_uuid_new",
                     "juno_avr_thunk_juno_uuid_get_most_significant_bits");
@@ -197,7 +197,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "random UUID shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoOneR3WiFiRev2Board", "ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR3WiFiRev2Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("Random UUID shims compile for boards with native entropy")
     void shouldCompileRandomUuidShimsForBoardsWithNativeEntropy(String board) throws Exception {
         // Given
@@ -224,7 +224,7 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.assembly()).contains("juno_uuid_random");
-        if (board.equals("ArduinoOneR3WiFiRev2Board")) {
+        if (board.equals("ArduinoUnoR3WiFiRev2Board")) {
             assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
         } else {
             Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
@@ -241,7 +241,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.util.Random;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -250,16 +250,16 @@ class GeneratedAsmToolchainTest {
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
-                        Gpio gpio = ArduinoOne.getGpio();
+                        Gpio gpio = ArduinoUno.getGpio();
                         gpio.pinMode(Gpio.getD13(), Gpio.getOutput());
                         gpio.digitalWrite(Gpio.getD13(), mix(4) != 0);
                         Delay.millis(10);
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
                         gpio.digitalWrite(12, randomValue > 0);
-                        ArduinoOne.getLedMatrix().begin();
-                        ArduinoOne.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                        ArduinoOne.getLedMatrix().clear();
+                        ArduinoUno.getLedMatrix().begin();
+                        ArduinoUno.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                        ArduinoUno.getLedMatrix().clear();
                         Serial.begin(BaudRate.BAUD_9600);
                         Serial.print(randomValue > 0);
                         Serial.println(randomValue <= 0);
@@ -398,7 +398,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class AsmInterfaces {
@@ -413,7 +413,7 @@ class GeneratedAsmToolchainTest {
                         return add ? new Add() : new Multiply();
                     }
                     public static void main(String[] args) {
-                        Operation operation = choose(ArduinoOne.getGpio().analogRead(0) > 0);
+                        Operation operation = choose(ArduinoUno.getGpio().analogRead(0) > 0);
                         Delay.millis(operation.apply(5));
                     }
                 }
@@ -680,11 +680,11 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.http.Json;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
-                        ArduinoOne.getWifi().begin("ssid", "password");
+                        ArduinoUno.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -724,15 +724,15 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                @Board(ArduinoOneQBoard.class)
+                @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
-                        ArduinoOne.getWifi().begin("ssid", "password");
+                        ArduinoUno.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -759,10 +759,10 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.led.LedCanvas;
-                @Board(ArduinoOneQBoard.class)
+                @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLedMatrix {
                     public static void main(String[] args) {
                         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
@@ -790,11 +790,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
-                @Board(ArduinoOneQBoard.class)
+                @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQEmail {
                     public static void main(String[] args) {
                         Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
@@ -822,11 +822,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.udp.Udp;
-                @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class AsmUdp {
                     public static void main(String[] args) {
                         byte[] payload = new byte[12];
@@ -866,11 +866,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-                import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
-                @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class AsmKasa {
                     public static void main(String[] args) {
                         int[] endpoint = new int[5];
@@ -998,7 +998,7 @@ class GeneratedAsmToolchainTest {
     @Test
     @DisplayName("A ParallelBus program's shim writes the UNO Q GPIO port API and is valid C++")
     void shouldCompileAnUnoQParallelBusProgramsShimWithACppCompiler() throws Exception {
-        assertParallelBusShimCompiles("@io.github.jabrena.juno.annotations.Board(io.github.jabrena.juno.annotations.ArduinoOneQBoard.class)",
+        assertParallelBusShimCompiles("@io.github.jabrena.juno.annotations.Board(io.github.jabrena.juno.annotations.ArduinoUnoQBoard.class)",
                 "AsmUnoQParallelBus", "gpio_port_set_clr_bits_raw");
     }
 
@@ -1372,11 +1372,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
-                @Board(ArduinoOneQBoard.class)
+                @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
                         PoweredUpHubRemote hub = new PoweredUpHubRemote();
@@ -1408,7 +1408,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -1426,7 +1426,7 @@ class GeneratedAsmToolchainTest {
                         file.close();
                         String ssid = properties.getProperty("wifi.ssid");
                         String password = properties.getProperty("wifi.password");
-                        if (ssid != null && password != null) ArduinoOne.getWifi().begin(ssid, password);
+                        if (ssid != null && password != null) ArduinoUno.getWifi().begin(ssid, password);
                     }
                 }
                 """;
@@ -1449,15 +1449,15 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStorageOccupancy {
                     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                     public static void main(String[] args) {
-                        Serial.println(ArduinoOne.getBoardMemory().flashUsedBytes());
-                        Serial.println(ArduinoOne.getBoardMemory().flashCapacityBytes());
+                        Serial.println(ArduinoUno.getBoardMemory().flashUsedBytes());
+                        Serial.println(ArduinoUno.getBoardMemory().flashCapacityBytes());
                         if (!SD_CARD.begin()) return;
                         Serial.println(SD_CARD.totalKiB());
                         Serial.println(SD_CARD.freeKiB());
@@ -1561,7 +1561,7 @@ class GeneratedAsmToolchainTest {
 
     /** AP mode plus the server on both boards: WiFiS3's WiFiServer on the R4, BridgeTCPServer on the UNO Q. */
     @ParameterizedTest(name = "access point provisioning shim is valid C++ for {0}")
-    @ValueSource(strings = {"ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("An access-point provisioning shim is valid C++ on both boards")
     void shouldCompileAnAccessPointProvisioningShimForBothBoardsWithACppCompiler(String board) throws Exception {
         // Given
@@ -1572,13 +1572,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
-                        ArduinoOne.getWifi().beginAP("juno-setup", "junosetup");
+                        ArduinoUno.getWifi().beginAP("juno-setup", "junosetup");
                         HttpServer.begin(80);
                         byte[] body = new byte[64];
                         if (HttpServer.accept(body, body.length) >= 0) {
@@ -1601,7 +1601,7 @@ class GeneratedAsmToolchainTest {
 
     /** The pure-Java provisioning helper links against both boards' intrinsics and produces a valid shim. */
     @ParameterizedTest(name = "Wi-Fi provisioner shim is valid C++ for {0}")
-    @ValueSource(strings = {"ArduinoOneR4WiFiBoard", "ArduinoOneQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("The Wi-Fi provisioner produces a valid shim on both boards")
     void shouldCompileTheWifiProvisionerForBothBoardsWithACppCompiler(String board) throws Exception {
         // Given
@@ -1633,7 +1633,7 @@ class GeneratedAsmToolchainTest {
 
     private static final String EXCEPTIONS = """
             package demo;
-            import io.github.jabrena.juno.hardware.ArduinoOne;
+            import io.github.jabrena.juno.hardware.ArduinoUno;
             import io.github.jabrena.juno.hardware.time.Clock;
             import io.github.jabrena.juno.hardware.serial.Serial;
             public final class AsmExceptions {
@@ -1645,7 +1645,7 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int reading = ArduinoOne.getClock().millis();
+                    int reading = ArduinoUno.getClock().millis();
                     try {
                         if (reading < 0) throw new SensorException("offline", 7);
                         if (reading > 1000) throw new IllegalStateException();
@@ -1722,14 +1722,14 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoOne;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.time.Clock;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
-                        String state = ArduinoOne.getClock().millis() > 0 ? "on" : null;
-                        boolean active = ArduinoOne.getClock().millis() > 0;
-                        int count = ArduinoOne.getClock().millis();
+                        String state = ArduinoUno.getClock().millis() > 0 ? "on" : null;
+                        boolean active = ArduinoUno.getClock().millis() > 0;
+                        int count = ArduinoUno.getClock().millis();
                         long total = 7L;
                         float ratio = 1.5f;
                         double precise = 2.5;
@@ -2249,12 +2249,12 @@ class GeneratedAsmToolchainTest {
     /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */
     private static final String MATH_EVERYTHING = """
             package demo;
-            import io.github.jabrena.juno.hardware.ArduinoOne;
+            import io.github.jabrena.juno.hardware.ArduinoUno;
             import io.github.jabrena.juno.hardware.time.Clock;
             import io.github.jabrena.juno.hardware.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
-                    int i = ArduinoOne.getClock().millis() % 2 == 0 ? 3 : -7;
+                    int i = ArduinoUno.getClock().millis() % 2 == 0 ? 3 : -7;
                     long l = i * 1000000000000L;
                     float f = i / 2.0f;
                     double d = i / 4.0;

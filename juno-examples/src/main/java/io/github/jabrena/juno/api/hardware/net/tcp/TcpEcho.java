@@ -16,7 +16,6 @@ import io.github.jabrena.juno.util.Delay;
  * port, which the UNO R3's WiFi Shield picks at random. Small enough for a UNO R3 with the Arduino WiFi Shield (build it
  * with {@code -Djuno.Xmx=512}).
  */
-@SuppressWarnings("java:S2189")
 public final class TcpEcho {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

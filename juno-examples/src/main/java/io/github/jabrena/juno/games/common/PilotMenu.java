@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.common;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -13,7 +13,7 @@ public final class PilotMenu {
     public static final int CHOICE_HEIGHT = 72;
     public static final int CHOICE_GAP = 20;
 
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
 
     private PilotMenu() {
     }

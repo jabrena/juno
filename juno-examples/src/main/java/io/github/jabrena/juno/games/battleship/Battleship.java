@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.games.battleship;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -41,10 +41,9 @@ import static io.github.jabrena.juno.games.battleship.SceneRenderer.showStatus2;
  * targeting strategy for both fleets, and either result returns to the cover. The package splits
  * fleet rules, targeting, controls, rendering and interludes from this game-loop orchestrator.
  */
-@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Battleship {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int SIZE = 10;
     static final int CELLS = SIZE * SIZE;

@@ -2,13 +2,19 @@ package io.github.jabrena.juno.backend.h8300;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("H8 image")
 class H8ImageTest {
+    @TempDir
+    Path temporaryDirectory;
+
 
     @Test
     @DisplayName("Writes header, data and entry records with checksums")
@@ -54,5 +60,30 @@ class H8ImageTest {
         assertThat(first).isEqualTo(second);
         assertThat(first.hashCode()).isEqualTo(second.hashCode());
         assertThat(first).hasToString("H8Image[origin=32768, entry=32768, bytes=[1, 2, 3]]");
+    }
+
+    @Test
+    @DisplayName("Handles identity and unrelated-object comparisons")
+    void shouldHandleIdentityAndUnrelatedObjectComparisons() {
+        // Given
+        H8Image image = new H8Image(0x8000, 0x8000, new byte[] {1, 2, 3});
+
+        // When & Then
+        assertThat(image.equals(image)).isTrue();
+        assertThat(image.equals("not an image")).isFalse();
+    }
+
+    @Test
+    @DisplayName("Writes S-records to a file")
+    void shouldWriteSrecordsToAFile() throws Exception {
+        // Given
+        H8Image image = new H8Image(0x8000, 0x8000, new byte[] {1, 2, 3});
+        Path output = temporaryDirectory.resolve("firmware.srec");
+
+        // When
+        image.writeSrecords(output, "firmware");
+
+        // Then
+        assertThat(Files.readString(output)).isEqualTo(image.srecords("firmware"));
     }
 }

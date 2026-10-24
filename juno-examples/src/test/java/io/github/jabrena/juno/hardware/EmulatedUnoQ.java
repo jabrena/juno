@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
 
 /**
  * The board the screenshot emulator models, for whole-program tests: a {@link BoardModel} that
- * {@code ArduinoOne.getBoardModel()} returns once {@link #install()} has run. The emulator models an UNO Q, the board with
+ * {@code ArduinoUno.getBoardModel()} returns once {@link #install()} has run. The emulator models an UNO Q, the board with
  * room for every TFT game.
  */
 public final class EmulatedUnoQ implements BoardModel {
@@ -13,7 +13,7 @@ public final class EmulatedUnoQ implements BoardModel {
     private EmulatedUnoQ() {
     }
 
-    /** Makes {@code ArduinoOne.getBoardModel()} from now on answer as an UNO Q instead of asking the board. */
+    /** Makes {@code ArduinoUno.getBoardModel()} from now on answer as an UNO Q instead of asking the board. */
     public static void install() {
         NativeBoardModel.setBoardModel(INSTANCE);
     }

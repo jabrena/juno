@@ -12,7 +12,6 @@ import io.github.jabrena.juno.usecases.miner.peers.PeerTable;
  * <p>The board also keeps the nodes it has heard of: each one's color, one of {@link #COLORS} that the nodes keep
  * unique between them, and the length it claims. Arrays are allocated once, here.
  */
-@SuppressWarnings("java:S1845")
 public final class BitBoard {
     public static final int FIRST = BlockFormat.MIN_BOUNTY_BITS;
     public static final int LAST = BlockFormat.MAX_BOUNTY_BITS;

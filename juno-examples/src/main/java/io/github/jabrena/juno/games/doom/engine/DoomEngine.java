@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom.engine;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -13,9 +13,9 @@ import io.github.jabrena.juno.util.Random;
  * WAD-sized tables.
  */
 public final class DoomEngine {
-    private static final BoardMemory MEMORY = ArduinoOne.getBoardMemory();
+    private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
     /** The engine's clock, shared with {@link Loading} and Doom's views so the program allocates one. */
-    public static final Clock CLOCK = ArduinoOne.getClock();
+    public static final Clock CLOCK = ArduinoUno.getClock();
     public static final int PLAYING = 0;
     public static final int WON = 1;
     public static final int DIED = 2;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -26,9 +26,8 @@ import java.util.Properties;
  * <p>Unlike the LCD Keypad Shield, this shield shares no pins with its SD socket, so no rewiring
  * is needed.
  */
-@SuppressWarnings("java:S2189")
 public final class WifiStatusSDTFT {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;

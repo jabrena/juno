@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.games.doom;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.games.doom.commons.DoomState;
 import io.github.jabrena.juno.games.doom.commons.DoomViews;
@@ -29,7 +29,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  * the next map loads, and a death returns to the cover. Everything runs on the main thread: the engine's tables leave no room on the UNO Q for
  * thread stacks. The WAD maps need the engine's arena: build with {@code -Djuno.Xmx=92k}.
  */
-@Board(ArduinoOneQBoard.class)
+@Board(ArduinoUnoQBoard.class)
 public final class Doom {
     private static final int FRAME_MILLIS = 40;
 

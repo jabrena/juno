@@ -18,7 +18,6 @@ import java.util.UUID;
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
-@SuppressWarnings("java:S2189")
 public final class SerialUuids {
     private static final int INTERVAL_MS = 2000;
 

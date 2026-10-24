@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -33,10 +33,9 @@ import io.github.jabrena.juno.util.Delay;
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class MadridWeather {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 

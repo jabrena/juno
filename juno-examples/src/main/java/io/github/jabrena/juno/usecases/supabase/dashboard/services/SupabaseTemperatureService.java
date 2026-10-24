@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -20,9 +20,9 @@ import java.util.concurrent.StructuredTaskScope;
  * preference, avoiding a standalone count request.
  */
 public final class SupabaseTemperatureService implements Task {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     public static final int PAGE_ROWS = 50;
 
     private static final int WIFI_ATTEMPTS = 30;
@@ -139,7 +139,6 @@ public final class SupabaseTemperatureService implements Task {
     }
 
     // Task.step() cannot propagate checked interruption, and the board Thread subset has no interrupt-status API.
-    @SuppressWarnings("java:S2142")
     private boolean executePagePair() {
         try (var scope = StructuredTaskScope.open()) {
             var pageTask = scope.fork(() -> supabase.execute());

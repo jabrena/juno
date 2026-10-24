@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.usecases.miner.peers.PeerTable;
  * slices, so it shares the pool with the miner without a lock.
  */
 final class NetworkService {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     /** Packets served per step; a step comes once a frame, so this is several hundred a second. */
     private static final int PACKETS_PER_STEP = 16;

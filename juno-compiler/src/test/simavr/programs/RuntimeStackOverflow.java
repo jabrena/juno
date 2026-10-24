@@ -1,9 +1,9 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import java.util.concurrent.StructuredTaskScope;
@@ -15,13 +15,13 @@ import java.util.concurrent.StructuredTaskScope;
  * stack would push further into other memory; the runtime must still stop with its overflow message instead of
  * resetting the board. RuntimeStackOverflow.expected holds the output by hand.
  */
-@Board(ArduinoOneR3WiFiRev2Board.class)
+@Board(ArduinoUnoR3WiFiRev2Board.class)
 public final class RuntimeStackOverflow {
     static final int BODY = 32;
     static final int HEADERS = 32;
 
     public static void main(String[] args) throws Exception {
-        ArduinoOne.getWifi().begin("juno", "secret");
+        ArduinoUno.getWifi().begin("juno", "secret");
         byte[] path = {'/', 'r', 'e', 'a', 'd', 'i', 'n', 'g', 's'};
         byte[] body = new byte[BODY];
         byte[] headers = new byte[HEADERS];

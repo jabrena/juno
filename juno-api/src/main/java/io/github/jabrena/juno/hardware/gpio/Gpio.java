@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.gpio;
 
 /**
- * The board's GPIO pins. {@link io.github.jabrena.juno.hardware.ArduinoOne#getGpio()} is the board's own pins, which the compiler lowers to the Arduino core
+ * The board's GPIO pins. {@link io.github.jabrena.juno.hardware.ArduinoUno#getGpio()} is the board's own pins, which the compiler lowers to the Arduino core
  * calls; a unit test passes {@code mock(Gpio.class)} instead. Pin numbers and modes come from the static getters
  * ({@link #getD13()}, {@link #getOutput()}): portable pin identifiers, D0-D13 as 0-13 and A0-A5 as 14-19.
  * The runtime translates these identifiers to the linked board's pins and modes; they are not raw MCU GPIO

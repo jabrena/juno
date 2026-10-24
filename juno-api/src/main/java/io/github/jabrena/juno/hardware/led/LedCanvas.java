@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.led;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 
 /**
  * A pixel buffer for the board's built-in LED matrix (12x8 on the UNO R4 WiFi, 13x8 on the UNO Q), plus
@@ -21,7 +21,7 @@ public final class LedCanvas {
 
     /** The matrix width of the board this program is compiled for: 12 on the UNO R4 WiFi, 13 on the UNO Q. */
     public static int width() {
-        return ArduinoOne.getLedMatrix().columns();
+        return ArduinoUno.getLedMatrix().columns();
     }
 
     public static boolean inBounds(int x, int y) {
@@ -64,11 +64,11 @@ public final class LedCanvas {
     }
 
     /**
-     * Packs {@code frame} and loads it onto {@link ArduinoOne#getLedMatrix()} via
+     * Packs {@code frame} and loads it onto {@link ArduinoUno#getLedMatrix()} via
      * {@link LedMatrix#loadFrame(int, int, int, int)}.
      */
     public static void show(boolean[][] frame) {
-        ArduinoOne.getLedMatrix().loadFrame(packWord(frame, 0), packWord(frame, 1), packWord(frame, 2), packWord(frame, 3));
+        ArduinoUno.getLedMatrix().loadFrame(packWord(frame, 0), packWord(frame, 1), packWord(frame, 2), packWord(frame, 3));
     }
 
     /**

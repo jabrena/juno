@@ -15,7 +15,6 @@ import io.github.jabrena.juno.util.Delay;
  * <p>Wiring: the IR transmitter module's DAT to pin 3 and the IR receiver module's OUT to pin 2, both with
  * VCC on 5V and GND, pointed at the RCX's IR window. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class RcxRotationSensorExample {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -16,9 +16,8 @@ import io.github.jabrena.juno.util.Delay;
  * brick; the remote-control commands get no answer, so the receiver is not needed. The turn spins the vehicle on the spot for
  * {@code TURN_MILLIS}, which you tune for your vehicle. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class MagicSquareRcx {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int STRAIGHT_MILLIS = 3000;

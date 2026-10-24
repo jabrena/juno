@@ -16,7 +16,7 @@ import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
- * The Arduino One board's microcontroller unit (MCU): its {@link Gpio} pins, its {@link I2c} bus, its USB {@link Mouse}, its
+ * The Arduino UNO board's microcontroller unit (MCU): its {@link Gpio} pins, its {@link I2c} bus, its USB {@link Mouse}, its
  * built-in {@link LedMatrix}, its onboard {@link Wifi}, its {@link Clock}, which board it is ({@link BoardModel}) and its
  * arena and flash figures ({@link BoardMemory}). Each getter returns the same instance every call, backed by the
  * compiler's intrinsics. Get them once, at startup, and pass them to the classes that need them; a unit test passes
@@ -24,8 +24,8 @@ import io.github.jabrena.juno.hardware.time.Clock;
  * {@code mock(Wifi.class)}, {@code mock(Clock.class)}, {@code mock(BoardModel.class)} or
  * {@code mock(BoardMemory.class)} instead.
  */
-public final class ArduinoOne {
-    private ArduinoOne() {
+public final class ArduinoUno {
+    private ArduinoUno() {
     }
 
     /** The board's pins. */
@@ -49,7 +49,7 @@ public final class ArduinoOne {
     }
 
     /**
-     * The Arduino One board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none, so the compiler
+     * The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none, so the compiler
      * rejects this call there: stack the Arduino WiFi Shield and use
      * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} instead.
      */

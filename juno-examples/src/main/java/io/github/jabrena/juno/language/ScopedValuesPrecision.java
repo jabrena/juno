@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -17,7 +17,7 @@ import java.util.concurrent.StructuredTaskScope;
  * receiving the precision as a parameter. A nested binding can lower the precision for its own extent, but
  * {@code Math.min} against the outer value means it can never raise it above what its owner allows.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class ScopedValuesPrecision {
     private static final int MAX_DIGITS = 40;
     private static final int CONSTANTS = 3;
@@ -64,7 +64,6 @@ public final class ScopedValuesPrecision {
     }
 
     /** Forks one approximation per constant (a scope holds at most three subtasks), then prints and combines them. */
-    @SuppressWarnings("java:S2142")
     private void report(String title) {
         Serial.println("== " + title);
         BigDecimal sqrt2;

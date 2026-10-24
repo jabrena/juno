@@ -17,7 +17,6 @@ import io.github.jabrena.juno.util.Delay;
  * is several commands, so a step takes a few hundred milliseconds by itself. Pick the board with
  * {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class RcxDirectDrive {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

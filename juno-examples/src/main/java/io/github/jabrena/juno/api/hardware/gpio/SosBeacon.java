@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Delay;
 
@@ -8,7 +8,6 @@ import io.github.jabrena.juno.util.Delay;
  * Flashes SOS in Morse on the built-in LED, forever. {@link MorseLed} is handed the board's {@link Gpio}, which is
  * what lets {@code MorseLedTest} hand it a mocked one and check the timing off the board.
  */
-@SuppressWarnings("java:S2189")
 public final class SosBeacon {
     private static final int UNIT_MILLIS = 200;
 
@@ -20,7 +19,7 @@ public final class SosBeacon {
     };
 
     public static void main(String[] args) {
-        Gpio gpio = ArduinoOne.getGpio();
+        Gpio gpio = ArduinoUno.getGpio();
         MorseLed led = new MorseLed(gpio, gpio.getBuiltinLed(), SOS);
 
         while (true) {

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.dashboard.services;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.dashboard.commons.TftDashboardState;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * credentials the SD-card service reads, and never touches the card itself.
  */
 public final class WifiService {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 10;
 
@@ -29,7 +29,6 @@ public final class WifiService {
     }
 
     // The board Thread subset has no interrupt-status API; this example publishes interruption as a Wi-Fi failure.
-    @SuppressWarnings("java:S2142")
     private void run() {
         try {
             model.publishWifiStatus(connect(model.awaitCredentials()));

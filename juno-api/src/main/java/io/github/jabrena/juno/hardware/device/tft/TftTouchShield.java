@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -34,7 +34,7 @@ public final class TftTouchShield {
      * The pins the whole driver drives, {@code TftTouch} and {@code TftBus} included; a unit test in this package swaps
      * in {@code mock}.
      */
-    static Gpio gpio = ArduinoOne.getGpio();
+    static Gpio gpio = ArduinoUno.getGpio();
 
     /** Native (portrait) width in pixels. */
     public static final int NATIVE_WIDTH = 240;

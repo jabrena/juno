@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware;
 
 /**
  * Read-only introspection into Juno's arena allocator and the program's flash footprint.
- * {@link ArduinoOne#getBoardMemory()} is the board's own answer, which the compiler lowers to its runtime shim; a unit test
+ * {@link ArduinoUno#getBoardMemory()} is the board's own answer, which the compiler lowers to its runtime shim; a unit test
  * passes {@code mock(BoardMemory.class)} instead. The arena figures are useful for a health-check heartbeat over
  * {@link io.github.jabrena.juno.hardware.serial.Serial}: a value that keeps climbing and never comes back down across
  * many collection cycles indicates something is holding references it shouldn't (an unintended leak), whereas one

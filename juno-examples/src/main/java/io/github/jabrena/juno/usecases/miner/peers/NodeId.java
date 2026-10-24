@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.miner.peers;
 
 import io.github.jabrena.juno.games.blockchain.Bytes;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -16,9 +16,9 @@ import io.github.jabrena.juno.util.Random;
  * never draw the same sequence, however close their boot times are.
  */
 public final class NodeId {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
     public static final int SIZE = 16;
 
     private static final String HEX = "0123456789abcdef";

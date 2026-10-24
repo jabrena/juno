@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.i2c;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -20,7 +20,6 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public final class I2cScanner {
     private static final int FIRST_ADDRESS = 1;
     private static final int LAST_ADDRESS = 127;
@@ -37,7 +36,7 @@ public final class I2cScanner {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
-        I2c i2c = ArduinoOne.getI2c();
+        I2c i2c = ArduinoUno.getI2c();
         i2c.begin();
 
         while (true) {

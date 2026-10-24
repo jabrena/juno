@@ -34,10 +34,10 @@ class GeneratedImageTest {
         return Stream.of(
                 arguments("Java logo", new JavaLogoImage(), JavaLogoImage.WIDTH, JavaLogoImage.HEIGHT, 5_872),
                 arguments(
-                        "Arduino One board",
-                        new ArduinoOneBoardImage(),
-                        ArduinoOneBoardImage.WIDTH,
-                        ArduinoOneBoardImage.HEIGHT,
+                        "Arduino UNO board",
+                        new ArduinoUnoBoardImage(),
+                        ArduinoUnoBoardImage.WIDTH,
+                        ArduinoUnoBoardImage.HEIGHT,
                         46_190));
     }
 

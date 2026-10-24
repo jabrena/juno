@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.led;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,7 +16,7 @@ class LedMatrixTest {
     @DisplayName("The board's LED matrix is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(ArduinoOne.getLedMatrix()).isSameAs(ArduinoOne.getLedMatrix()).isSameAs(NativeLedMatrix.INSTANCE);
+        assertThat(ArduinoUno.getLedMatrix()).isSameAs(ArduinoUno.getLedMatrix()).isSameAs(NativeLedMatrix.INSTANCE);
     }
 
     @Test
@@ -30,7 +30,7 @@ class LedMatrixTest {
 
         // Then
         try {
-            assertThat(ArduinoOne.getLedMatrix()).isSameAs(replacement);
+            assertThat(ArduinoUno.getLedMatrix()).isSameAs(replacement);
         } finally {
             NativeLedMatrix.setLedMatrix(NativeLedMatrix.INSTANCE);
         }

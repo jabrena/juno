@@ -18,7 +18,6 @@ import io.github.jabrena.juno.util.Delay;
  * VCC on 5V and GND, pointed at the RCX's IR window. The brick acknowledges each command through the
  * receiver, so a move takes a few hundred milliseconds to set up. Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class RcxDriveAC {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;

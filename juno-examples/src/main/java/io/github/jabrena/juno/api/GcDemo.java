@@ -51,7 +51,6 @@ import io.github.jabrena.juno.util.Delay;
  * because its current Arduino Zephyr firmware does not enable the watchdog subsystem.
  */
 @Watchdog(timeoutMillis = 3000)
-@SuppressWarnings("java:S2189")
 public final class GcDemo {
     private static final int INTS_PER_TICK = 100;
     private static final int RETAIN_FROM_TICK = 1000;

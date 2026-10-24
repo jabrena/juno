@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -10,7 +10,7 @@ import io.github.jabrena.juno.util.Random;
 
 /** Demonstrates seeding and generating pseudorandom values within bounded ranges. */
 public final class RandomNumbers {
-    private static final Clock CLOCK = ArduinoOne.getClock();
+    private static final Clock CLOCK = ArduinoUno.getClock();
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

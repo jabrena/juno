@@ -21,7 +21,6 @@ import io.github.jabrena.juno.util.Delay;
  * Arduino {@code Servo} library's standard 0-180 degree range — the remaining 90 degrees of
  * physical travel are unreachable through this API.
  */
-@SuppressWarnings("java:S2189")
 public final class ServoSweep {
     private static final int MIN_ANGLE = 0;
     private static final int MAX_ANGLE = 180;

@@ -12,7 +12,6 @@ import io.github.jabrena.juno.util.Delay;
  * range on your hub before a program relies on them, which the library documents but has not verified.
  * Pick the board with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class PoweredUpHubImuMonitor {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int REPORT_MILLIS = 500;

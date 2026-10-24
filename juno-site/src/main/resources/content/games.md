@@ -24,8 +24,8 @@ Then flash a game by its class name. Every game in this page lists its own comma
 `juno:upload` finds the board by itself, or takes `-Djuno.port=<PORT>`. To check that a game builds without touching any hardware, use `juno:verify` instead of `juno:upload`.
 
 Most games target one board, so that single command is all they need. A few, like Tempest, declare
-`@Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})` because they use nothing board-specific — for
-those, add `-Djuno.board=<id>` (`arduino-one-q` or `arduino-one-r4-wifi`) to say which one to build for; omitting it
+`@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})` because they use nothing board-specific — for
+those, add `-Djuno.board=<id>` (`arduino-uno-q` or `arduino-uno-r4-wifi`) to say which one to build for; omitting it
 when more than one board is declared fails with the list of choices instead of guessing.
 
 The screenshots were rendered on a desktop by running each game's unmodified code, including the real `TftTouchShield` driver and its font, against an emulation of the shield's ILI9341 display controller (see [Testing without the board](#testing-without-the-board)). The real panel's colors vary slightly.
@@ -73,14 +73,14 @@ Move a claw around the rim of a tube and shoot the enemies climbing up it. Play 
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.tempest.Tempest \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Star Wars
@@ -169,14 +169,14 @@ Play White against a 3-ply chess engine, or watch it play itself. Runs on both t
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.chess.Chess \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Battleship
@@ -189,14 +189,14 @@ Sink the enemy fleet on a grid before it sinks yours. Play it yourself or watch 
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.battleship.Battleship \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Cards and casino
@@ -213,14 +213,14 @@ Beat the dealer to 21 with chips. Play it yourself or watch an automated player.
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.blackjack.Blackjack \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ### Texas Hold'em
@@ -233,14 +233,14 @@ No-limit Texas Hold'em against three CPU opponents. Play a seat yourself or watc
 # Arduino UNO Q
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.texasholdem.TexasHoldem \
-  -Djuno.board=arduino-one-q
+  -Djuno.board=arduino-uno-q
 ```
 
 ```bash
 # Arduino UNO R4 WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.texasholdem.TexasHoldem \
-  -Djuno.board=arduino-one-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Network
@@ -278,14 +278,14 @@ Build it with a 10 KB arena (the default is 8 KB) for each board. Solo is enable
 # Arduino UNO Q, for the ARENA
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
-  -Djuno.board=arduino-one-q -Djuno.Xmx=10k
+  -Djuno.board=arduino-uno-q -Djuno.Xmx=10k
 ```
 
 ```bash
 # Arduino UNO R4 WiFi, for a gladiator
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.games.gladiator.Gladiator \
-  -Djuno.board=arduino-one-r4-wifi -Djuno.Xmx=10k
+  -Djuno.board=arduino-uno-r4-wifi -Djuno.Xmx=10k
 ```
 
 The boards talk over UDP port 4211. An UNO R4 WiFi joins the network named in `application.properties` on the shield's microSD card; without the file it says so and goes back to the menu. The UNO Q uses the connection configured on its Linux side.
@@ -302,7 +302,7 @@ The emulator runs one board at a time with no network, so the picture above come
 ## Testing without the board
 
 `./mvnw test` plays every game on an emulated shield, on any machine and in CI. Before any test
-runs, `EmulatedBoardExtension` points every `ArduinoOne.getGpio()` and `ArduinoOne.getClock()` at plain Java ports
+runs, `EmulatedBoardExtension` points every `ArduinoUno.getGpio()` and `ArduinoUno.getClock()` at plain Java ports
 instead of the board's (the `juno:compile`/`juno:upload` goals still use the real ones). The other
 `native` hardware classes are replaced by test doubles that come first on the test classpath:
 

@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
@@ -13,11 +13,10 @@ import io.github.jabrena.juno.util.Delay;
  * the built-in LED matrix using {@code LedCanvas.drawChar}: digits 0-9, then
  * uppercase A-Z, then lowercase a-z, then the punctuation/symbol characters, in that order.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
-@SuppressWarnings("java:S2189")
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixAsciiScroll {
     public static void main(String[] args) {
-        LedMatrix matrix = ArduinoOne.getLedMatrix();
+        LedMatrix matrix = ArduinoUno.getLedMatrix();
         matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

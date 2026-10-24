@@ -12,7 +12,6 @@ import io.github.jabrena.juno.util.Delay;
  * the vehicle on the spot for {@code TURN_MILLIS}, which you tune for your vehicle. Pick the board
  * with {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class MagicSquarePoweredUpHub {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final int LEFT = PoweredUpHubRemote.PORT_A;

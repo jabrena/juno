@@ -14,7 +14,6 @@ import io.github.jabrena.juno.util.Delay;
  * {@link InfraredReceiverProbe} on a second board, the bursts are counted there too. Pick the board with
  * {@code -Djuno.board}.
  */
-@SuppressWarnings("java:S2189")
 public class InfraredSenderBlink {
     private static final int NO_PIN = -1;
     private static final int TRANSMIT_PIN = 3;

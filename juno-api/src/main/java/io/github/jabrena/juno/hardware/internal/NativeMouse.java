@@ -11,7 +11,7 @@ public final class NativeMouse implements Mouse {
     public static final NativeMouse INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.ArduinoOne#getMouse()} returns: the board's mouse, unless a
+     * What {@link io.github.jabrena.juno.hardware.ArduinoUno#getMouse()} returns: the board's mouse, unless a
      * whole-program emulator in a test replaced it.
      */
     private static Mouse mouse;
@@ -24,13 +24,13 @@ public final class NativeMouse implements Mouse {
     private NativeMouse() {
     }
 
-    /** The mouse {@link io.github.jabrena.juno.hardware.ArduinoOne#getMouse()} hands out. */
+    /** The mouse {@link io.github.jabrena.juno.hardware.ArduinoUno#getMouse()} hands out. */
     public static Mouse mouse() {
         return mouse;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.ArduinoOne#getMouse()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.ArduinoUno#getMouse()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setMouse(Mouse replacement) {

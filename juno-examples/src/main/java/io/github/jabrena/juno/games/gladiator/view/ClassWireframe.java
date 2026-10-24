@@ -4,7 +4,6 @@ import io.github.jabrena.juno.games.gladiator.arena.GladiatorClass;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /** A rotating 3D line model with class-specific helmet, shield and weapons, built into a {@link ViewList}. */
-@SuppressWarnings("java:S1845")
 public final class ClassWireframe {
     private static final int CENTER_X = 94;
     private static final int GROUND_Y = 194;

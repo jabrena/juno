@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * and trigonometry. Double-precision libm is only on the UNO R4 WiFi and UNO Q toolchains, so the other boards cannot
  * build it; {@link MathFunctionsSinglePrecision} covers the rest.
  */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class MathFunctionsDoublePrecision {
 
     public static void main(String[] args) {

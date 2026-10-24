@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,9 +13,8 @@ import io.github.jabrena.juno.util.Delay;
  * has not yet reached {@link Wifi#STATUS_CONNECTED} (unlike {@code MadridWeather}, which prints
  * nothing until connected).
  */
-@SuppressWarnings("java:S2189")
 public final class WifiStatus {
-    private static final Wifi WIFI = ArduinoOne.getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

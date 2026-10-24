@@ -1,5 +1,5 @@
 /**
- * The board's own hardware and program-wide introspection: {@link io.github.jabrena.juno.hardware.ArduinoOne} and
+ * The board's own hardware and program-wide introspection: {@link io.github.jabrena.juno.hardware.ArduinoUno} and
  * {@link io.github.jabrena.juno.hardware.ArduinoNano} hand out
  * the board's pins, I2C bus, USB mouse, LED matrix, clock, {@link io.github.jabrena.juno.hardware.BoardModel} (which
  * board the program was compiled for) and {@link io.github.jabrena.juno.hardware.BoardMemory} (Juno's arena and

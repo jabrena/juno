@@ -1,32 +1,32 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoOneQBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR4WiFiBoard;
-import io.github.jabrena.juno.annotations.ArduinoOneR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.net.tcp.Tcp;
 import io.github.jabrena.juno.hardware.net.udp.Udp;
-import io.github.jabrena.juno.hardware.ArduinoOne;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 
 /** Joining a network, then a UDP exchange and a TCP exchange. */
-@Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class WifiUdpApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        ArduinoOne.getWifi().begin("ci-ssid", "ci-password");
+        ArduinoUno.getWifi().begin("ci-ssid", "ci-password");
 
-        if (ArduinoOne.getWifi().status() == Wifi.STATUS_CONNECTED) {
+        if (ArduinoUno.getWifi().status() == Wifi.STATUS_CONNECTED) {
             int[] address = new int[4];
-            ArduinoOne.getWifi().localIP(address);
+            ArduinoUno.getWifi().localIP(address);
             Serial.println(address[3]);
-            ArduinoOne.getWifi().gatewayIP(address);
+            ArduinoUno.getWifi().gatewayIP(address);
             Serial.println(address[3]);
             int[] mac = new int[6];
-            ArduinoOne.getWifi().macAddress(mac);
+            ArduinoUno.getWifi().macAddress(mac);
             Serial.println(mac[5]);
             byte[] payload = new byte[8];
             Udp.listen(4210);

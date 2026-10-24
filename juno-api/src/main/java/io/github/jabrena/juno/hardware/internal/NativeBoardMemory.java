@@ -11,7 +11,7 @@ public final class NativeBoardMemory implements BoardMemory {
     public static final NativeBoardMemory INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.ArduinoOne#getBoardMemory()} returns: the board's figures, unless a
+     * What {@link io.github.jabrena.juno.hardware.ArduinoUno#getBoardMemory()} returns: the board's figures, unless a
      * whole-program emulator in a test replaced them.
      */
     private static BoardMemory boardMemory;
@@ -24,13 +24,13 @@ public final class NativeBoardMemory implements BoardMemory {
     private NativeBoardMemory() {
     }
 
-    /** The board memory {@link io.github.jabrena.juno.hardware.ArduinoOne#getBoardMemory()} hands out. */
+    /** The board memory {@link io.github.jabrena.juno.hardware.ArduinoUno#getBoardMemory()} hands out. */
     public static BoardMemory boardMemory() {
         return boardMemory;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.ArduinoOne#getBoardMemory()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.ArduinoUno#getBoardMemory()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setBoardMemory(BoardMemory replacement) {

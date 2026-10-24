@@ -5,7 +5,7 @@
     <artifactId>java-for-arduino</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Java for Arduino One</name>
+    <name>Java for Arduino UNO</name>
     <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
 
     <modules>
