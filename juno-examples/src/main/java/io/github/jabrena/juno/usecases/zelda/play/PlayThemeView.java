@@ -3,8 +3,8 @@ package io.github.jabrena.juno.usecases.zelda.play;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.usecases.zelda.ZeldaOcarinaModel;
-import io.github.jabrena.juno.usecases.zelda.common.mvc.KeyboardView;
 import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
+import io.github.jabrena.juno.util.mvc.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.Task;
 

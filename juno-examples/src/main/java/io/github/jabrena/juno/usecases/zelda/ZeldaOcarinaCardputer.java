@@ -7,7 +7,6 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.usecases.zelda.common.mvc.KeyboardViewRouter;
 import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
 import io.github.jabrena.juno.usecases.zelda.common.ux.OptionList;
 import io.github.jabrena.juno.usecases.zelda.cover.CoverView;
@@ -15,6 +14,7 @@ import io.github.jabrena.juno.usecases.zelda.play.PlayThemeView;
 import io.github.jabrena.juno.usecases.zelda.selector.ThemeSelectorView;
 import io.github.jabrena.juno.usecases.zelda.theme.ZeldaThemeOptions;
 import io.github.jabrena.juno.util.Delay;
+import io.github.jabrena.juno.util.mvc.KeyboardViewRouter;
 
 /** Zelda fan app for the Cardputer: cover, theme selection, and ocarina playback screens. */
 @Board(M5StackCardputerBoard.class)
