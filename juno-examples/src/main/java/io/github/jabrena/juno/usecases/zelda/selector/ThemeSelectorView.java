@@ -2,9 +2,9 @@ package io.github.jabrena.juno.usecases.zelda.selector;
 
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.usecases.zelda.ZeldaOcarinaModel;
-import io.github.jabrena.juno.usecases.zelda.common.mvc.KeyboardView;
 import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
 import io.github.jabrena.juno.usecases.zelda.common.ux.OptionList;
+import io.github.jabrena.juno.util.mvc.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
 /** Theme selection screen for the Cardputer Zelda fan app. */
