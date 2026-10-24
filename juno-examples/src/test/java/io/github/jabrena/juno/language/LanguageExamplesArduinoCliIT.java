@@ -53,7 +53,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * pass {@code -Djuno.arduinoCliImage=<image>}. Pass {@code -Djuno.language=java|kotlin|scala|clojure} to compile only
  * that language; the default is all languages. Pass {@code -Djuno.arduinoCliBoardScope=representative} to compile
  * unannotated examples for UNO R4 WiFi only; explicitly {@code @Board}-annotated examples retain all their declared
- * targets. Skipped when Docker is not available.
+ * targets. Pass {@code -Djuno.arduinoCliBoards=<board-id>,<board-id>} to restrict either kind of example to a pipeline
+ * shard. Skipped when Docker is not available.
  *
  * <p>The sketches compile concurrently in the one container; {@code arduino-cli} caches each board's precompiled core
  * and reuses it, so the first sketch of a board compiles alone and the others wait for that archive.
@@ -72,6 +73,7 @@ class LanguageExamplesArduinoCliIT {
     private static final String MAIN_DESCRIPTOR = "([Ljava/lang/String;)V";
     private static final String XTENSA_NOT_YET = "The Xtensa assembly backend (Nano ESP32) does not support this yet";
     private static final ArduinoCliBoardScope BOARD_SCOPE = ArduinoCliBoardScope.configured();
+    private static final ArduinoCliBoards BOARDS = ArduinoCliBoards.configured();
 
     private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
     private static final Set<Board> CORE_CACHED = ConcurrentHashMap.newKeySet();
@@ -123,7 +125,9 @@ class LanguageExamplesArduinoCliIT {
         ExampleLanguage language = ExampleLanguage.configured();
         for (Example example : examples(EXAMPLE_CLASSES.resolve(LANGUAGE_PACKAGE), language)) {
             for (Board board : example.boards()) {
-                arguments.add(Arguments.of(example, board));
+                if (BOARDS.includes(board)) {
+                    arguments.add(Arguments.of(example, board));
+                }
             }
         }
         return arguments.stream();

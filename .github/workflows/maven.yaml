@@ -28,6 +28,7 @@ jobs:
       scala: ${{ steps.select.outputs.scala }}
       clojure: ${{ steps.select.outputs.clojure }}
       arduino: ${{ steps.select.outputs.arduino }}
+      other_arduino: ${{ steps.select.outputs.other_arduino }}
       board_scope: ${{ steps.select.outputs.board_scope }}
       arduino_languages: ${{ steps.select.outputs.arduino_languages }}
     steps:
@@ -81,18 +82,25 @@ jobs:
             scala=true
             clojure=true
             board_scope=all
-            arduino_languages='["full","java","kotlin","scala","clojure"]'
+            other_arduino=true
+            arduino_languages='["full","kotlin","scala","clojure"]'
           else
             board_scope=representative
             arduino_languages='['
             separator=''
-            for language in java kotlin scala clojure; do
+            for language in kotlin scala clojure; do
               if [[ "${!language}" == true ]]; then
                 arduino_languages+="${separator}\"$language\""
                 separator=,
               fi
             done
             arduino_languages+=']'
+            if [[ -n "$separator" ]]; then
+              other_arduino=true
+            else
+              other_arduino=false
+              arduino_languages='["none"]'
+            fi
           fi
 
           arduino=false
@@ -107,6 +115,7 @@ jobs:
             echo "scala=$scala"
             echo "clojure=$clojure"
             echo "arduino=$arduino"
+            echo "other_arduino=$other_arduino"
             echo "board_scope=$board_scope"
             echo "arduino_languages=$arduino_languages"
           } >> "$GITHUB_OUTPUT"
@@ -268,7 +277,7 @@ jobs:
 
   build:
     name: Build
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
+    needs: [changes]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -346,7 +355,7 @@ jobs:
 
   integration-build:
     name: Prepare integration build outputs
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
+    needs: [changes]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -382,8 +391,8 @@ jobs:
 
   arduino:
     name: Compile ${{ matrix.language }}
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image, integration-build]
-    if: needs.changes.outputs.arduino == 'true'
+    needs: [changes, arduino-cli-image, integration-build]
+    if: needs.changes.outputs.other_arduino == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -435,5 +444,70 @@ jobs:
           failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
           -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.language=${{ matrix.language }}
+          -Djuno.arduinoCliParallelism=6
+          -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
+
+  arduino-java:
+    name: Compile Java (${{ matrix.board }})
+    needs: [changes, arduino-cli-image, integration-build]
+    if: needs.changes.outputs.java == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - board: UNO R3
+            board_id: arduino-one-r3
+          - board: UNO WiFi Rev2
+            board_id: arduino-one-r3-wifi-rev2
+          - board: UNO R4 WiFi
+            board_id: arduino-one-r4-wifi
+          - board: Nano ESP32
+            board_id: arduino-nano-esp32
+          - board: UNO Q
+            board_id: arduino-one-q
+          - board: M5Stack Cardputer
+            board_id: m5stack-cardputer
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 27
+          cache: maven
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull Arduino CLI image
+        run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
+      - uses: actions/download-artifact@v8
+        with:
+          name: integration-build-${{ github.sha }}
+      - name: Restore integration build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .ci
+          tar -xzf integration-build.tar.gz -C .ci
+          cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
+          for module in juno-compiler juno-examples; do
+            cp -a ".ci/integration-build/$module/target" "$module/"
+          done
+      - name: Compile Java examples
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          -Djuno.language=java
+          -Djuno.arduinoCliBoards=${{ matrix.board_id }}
+          -Djuno.arduinoCliParallelism=4
           -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
