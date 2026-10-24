@@ -3,6 +3,7 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
+import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -59,5 +60,11 @@ class M5Test {
     @DisplayName("The Cardputer's speaker is one shared instance")
     void shouldHandOutOneAudioInstance() {
         assertThat(M5StackCardputer.getAudio()).isSameAs(M5StackCardputer.getAudio()).isSameAs(NativeAudio.INSTANCE);
+    }
+
+    @Test
+    @DisplayName("The Cardputer's battery is one shared instance")
+    void shouldHandOutOneBatteryInstance() {
+        assertThat(M5StackCardputer.getBattery()).isSameAs(M5StackCardputer.getBattery()).isSameAs(NativeBattery.INSTANCE);
     }
 }

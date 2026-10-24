@@ -67,7 +67,9 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),
                 arguments(Board.NANO_ESP32, Capability.M5_KEYBOARD, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_AUDIO, true),
-                arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false));
+                arguments(Board.M5_CARDPUTER, Capability.M5_BATTERY, true),
+                arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false),
+                arguments(Board.NANO_ESP32, Capability.M5_BATTERY, false));
     }
 
     @Test
@@ -577,7 +579,8 @@ class BoardTest {
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
-                        && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO)
+                        && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
+                        && capability != Capability.M5_BATTERY)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

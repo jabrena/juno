@@ -36,6 +36,12 @@ public enum Capability {
             return board.displayName() + " has no M5Stack Cardputer speaker";
         }
     },
+    M5_BATTERY("M5StackCardputer.getBattery") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no M5Stack Cardputer battery";
+        }
+    },
     WIFI("Wifi") {
         @Override
         public String unsupportedReason(Board board) {
