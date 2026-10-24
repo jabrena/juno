@@ -13,6 +13,17 @@ public final class JavaLogoImage implements Drawable {
     /** The palette index of white: those runs are left to the white screen behind the image. */
     private static final int BACKGROUND = 0;
     private static final int[] PALETTE = {0xFFFF, 0x1338, 0xF206, 0xD73D, 0x9E1B, 0xF513, 0x5C99, 0xF698};
+
+    @Override
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    @Override
+    public int getHeight() {
+        return HEIGHT;
+    }
+
     //TODO Unify criteria for this cases.
     private static final byte[] DATA = {
                 0, -56, 0, -56, 0, -56, 0, -56, 0, -56, 0, -56, 0, -56, 0, -56,
@@ -227,6 +238,11 @@ public final class JavaLogoImage implements Drawable {
     /** Draws the image centred over the current TFT viewport. */
     @Override
     public void draw() {
+        draw(0, 0, TftTouchShield.width() - 1, TftTouchShield.height() - 1);
+    }
+
+    @Override
+    public void draw(int clipLeft, int clipTop, int clipRight, int clipBottom) {
         int left = (TftTouchShield.width() - WIDTH) / 2;
         int top = (TftTouchShield.height() - HEIGHT) / 2;
         int x = 0;
@@ -234,8 +250,13 @@ public final class JavaLogoImage implements Drawable {
         for (int i = 0; i < LENGTH; i += 2) {
             int index = byteAt(i);
             int length = byteAt(i + 1);
-            if (index != BACKGROUND) {
-                TftTouchShield.drawHorizontalLine(left + x, top + y, length, PALETTE[index]);
+            int screenX = left + x;
+            int screenY = top + y;
+            int screenRight = screenX + length - 1;
+            if (index != BACKGROUND && screenY >= clipTop && screenY <= clipBottom && screenRight >= clipLeft && screenX <= clipRight) {
+                int drawLeft = Math.max(screenX, clipLeft);
+                int drawRight = Math.min(screenRight, clipRight);
+                TftTouchShield.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
             }
             x = x + length;
             if (x >= WIDTH) {

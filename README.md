@@ -158,25 +158,24 @@ The project provides a `Maven plugin` to help the user with the common operation
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-q
+# Alternative board IDs:
+# -Djuno.board=arduino-uno-r4-wifi
+# -Djuno.board=arduino-uno-r3-wifi-rev2
+# -Djuno.board=arduino-uno-r3
+# -Djuno.board=arduino-nano-esp32
+# -Djuno.board=m5stack-cardputer
 ```
 
 Select another supported board with `-Djuno.board`. The plugin auto-detects the port when exactly one matching board is
 connected; otherwise, specify it with `-Djuno.port=<PORT>`.
 
-After uploading [`M5CardputerBatteryLevel`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java),
-open the serial monitor with:
+After uploading the program, you could monitor what happen in the board using the following command:
 
 ```bash
-./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=m5stack-cardputer
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-q
 ```
 
-It prints the estimated battery level once per second:
-
-```text
-Battery level: 100%
-Battery level: 100%
-Battery level: 100%
-```
 ## Maven plugin
 
 The `juno` Maven plugin provides these goals. The commands below run them from the examples module;
