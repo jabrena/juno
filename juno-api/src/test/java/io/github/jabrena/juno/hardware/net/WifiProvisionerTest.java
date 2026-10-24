@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.net;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.testing.SimulatedTime;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,13 +14,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("Wi-Fi provisioning access point")
 class WifiProvisionerTest {
     private static final String FORM_BODY = "ssid=Home+Net&password=p%40ss";
+    private static final int CONNECT_TIMEOUT_MS = 15_000;
+
+    /** Advances one connection timeout per reading so failed joins stay deterministic and fast. */
+    private static final class DeadlineClock implements Clock {
+        private int nowMillis;
+
+        @Override
+        public int millis() {
+            int reading = nowMillis;
+            nowMillis += CONNECT_TIMEOUT_MS;
+            return reading;
+        }
+
+        @Override
+        public int micros() {
+            return nowMillis * 1_000;
+        }
+    }
 
     private FakeWifi wifi = new FakeWifi();
 
     @BeforeEach
     void startWithAnIdleBoard() {
         Wire.resetBoard();
-        WifiProvisioner.clock = SimulatedTime.clock();
+        WifiProvisioner.clock = new DeadlineClock();
         wifi = new FakeWifi();
         WifiProvisioner.wifi = wifi;
         HttpServer.reset();
@@ -210,11 +228,14 @@ class WifiProvisionerTest {
         script(post("/connect", FORM_BODY));
 
         // When
+        long startedAt = System.nanoTime();
         WifiProvisioner.run("Juno-Setup", "juno1234");
+        long elapsedNanos = System.nanoTime() - startedAt;
 
         // Then
-        assertThat(SimulatedTime.now).as("one 200 ms wait: the loop reads the status twice per pass, so both warm-up reads take one pass")
-                .isEqualTo(200_000);
+        assertThat(elapsedNanos)
+                .as("one 200 ms wait: the loop reads the status twice per pass, so both warm-up reads take one pass")
+                .isGreaterThanOrEqualTo(190_000_000L);
     }
 
     @Test

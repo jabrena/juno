@@ -3,7 +3,6 @@ package io.github.jabrena.juno.remote.lego.rcx;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
-import io.github.jabrena.juno.util.Delay;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,7 +67,7 @@ class RemoteRcxTest {
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x01, 0x80));
         remote.buttons();
-        Delay.millis(400);
+        SimulatedTime.now += 400_000;
 
         // When
         int buttons = remote.buttons();

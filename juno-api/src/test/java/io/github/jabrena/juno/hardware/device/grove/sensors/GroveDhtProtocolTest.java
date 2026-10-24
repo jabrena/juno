@@ -70,7 +70,7 @@ class GroveDhtProtocolTest {
     @DisplayName("Gives up when the sensor does not answer the start pulse")
     void shouldGiveUpWhenTheSensorDoesNotAnswerTheStartPulse() {
         // Given
-        new Wire().hold(true, 20_040).hold(true, 400).install(pins);
+        new Wire().hold(true, 400).install(pins);
 
         // When
         boolean read = protocol.read(2, new int[5], 5);
@@ -83,7 +83,7 @@ class GroveDhtProtocolTest {
     @DisplayName("Gives up when a bit never goes high")
     void shouldGiveUpWhenABitNeverGoesHigh() {
         // Given
-        new Wire().hold(true, 20_040).hold(false, 80).hold(true, 80).hold(false, 5_000).install(pins);
+        new Wire().hold(false, 80).hold(true, 80).hold(false, 5_000).install(pins);
 
         // When
         boolean read = protocol.read(2, new int[5], 5);
@@ -96,7 +96,7 @@ class GroveDhtProtocolTest {
     @DisplayName("Gives up when a bit never goes low")
     void shouldGiveUpWhenABitNeverGoesLow() {
         // Given
-        new Wire().hold(true, 20_040).hold(false, 80).hold(true, 80).hold(false, 50).hold(true, 5_000).install(pins);
+        new Wire().hold(false, 80).hold(true, 80).hold(false, 50).hold(true, 5_000).install(pins);
 
         // When
         boolean read = protocol.read(2, new int[5], 5);

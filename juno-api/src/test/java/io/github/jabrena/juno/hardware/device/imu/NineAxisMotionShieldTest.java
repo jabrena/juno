@@ -2,6 +2,7 @@ package io.github.jabrena.juno.hardware.device.imu;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,7 +43,7 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
 
         // When
-        imu.begin();
+        ImmediateDelay.run(imu::begin);
 
         // Then
         InOrder order = inOrder(pins);
@@ -58,7 +59,7 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
 
         // When
-        boolean begun = imu.begin();
+        boolean begun = ImmediateDelay.get(imu::begin);
 
         // Then
         assertThat(begun).isTrue();
@@ -71,7 +72,7 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
 
         // When
-        imu.begin();
+        ImmediateDelay.run(imu::begin);
 
         // Then
         InOrder order = inOrder(bus);
@@ -88,7 +89,7 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(device, 0x00)).thenReturn(0x32);
 
         // When
-        boolean begun = imu.begin();
+        boolean begun = ImmediateDelay.get(imu::begin);
 
         // Then
         assertThat(begun).isFalse();
@@ -101,7 +102,7 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(device, 0x00)).thenReturn(0x32);
 
         // When
-        imu.begin();
+        ImmediateDelay.run(imu::begin);
 
         // Then
         verify(bus, never()).writeRegister(anyInt(), anyInt(), anyInt());
