@@ -3,6 +3,8 @@ package io.github.jabrena.juno.hardware.device.imu;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.imu.Imu;
+import io.github.jabrena.juno.hardware.imu.ImuSample;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -28,13 +30,15 @@ import io.github.jabrena.juno.util.Delay;
  *
  * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
-public final class NineAxisMotionShield {
+public final class NineAxisMotionShield implements Imu {
     private static final int ADDRESS_DEFAULT = 0x28;
     private static final int ADDRESS_ALTERNATE = 0x29;
 
     private static final int CHIP_ID = 0x00;
     private static final int GYRO_X = 0x14;
+    private static final int GYRO_Z = 0x18;
     private static final int EULER_HEADING = 0x1A;
+    private static final int EULER_ROLL = 0x1C;
     private static final int EULER_PITCH = 0x1E;
     private static final int CALIBRATION_STATUS = 0x35;
     private static final int UNIT_SELECTION = 0x3B;
@@ -80,6 +84,7 @@ public final class NineAxisMotionShield {
     }
 
     /** Starts the sensor at {@link #ADDRESS_DEFAULT}; see {@link #begin(int)}. */
+    @Override
     public boolean begin() {
         return begin(ADDRESS_DEFAULT);
     }
@@ -139,6 +144,39 @@ public final class NineAxisMotionShield {
      */
     public int gyroXRaw() {
         return signed(i2c.readRegister16(address, GYRO_X));
+    }
+
+    /** The angular rate about the Z axis in sixteenths of a degree per second, signed. */
+    public int gyroZRaw() {
+        return signed(i2c.readRegister16(address, GYRO_Z));
+    }
+
+    /**
+     * Reads the navigation fields into a caller-owned sample. The BNO055's sixteen-units-per-degree
+     * values are converted to milli-degrees for the device-independent contract.
+     */
+    @Override
+    public boolean read(ImuSample sample) {
+        int heading = headingRaw();
+        int roll = signed(i2c.readRegister16(address, EULER_ROLL));
+        int pitch = signed(i2c.readRegister16(address, EULER_PITCH));
+        int yawRate = gyroZRaw();
+        int calibration = calibration();
+        if (heading < 0 || roll == Short.MIN_VALUE || pitch == Short.MIN_VALUE || yawRate == Short.MIN_VALUE || calibration < 0) {
+            sample.invalidate();
+            return false;
+        }
+        sample.update(
+                toMillidegrees(heading),
+                toMillidegrees(yawRate),
+                toMillidegrees(pitch),
+                toMillidegrees(roll),
+                calibration);
+        return true;
+    }
+
+    private static int toMillidegrees(int sixteenthsOfADegree) {
+        return sixteenthsOfADegree * 1000 / UNITS_PER_DEGREE;
     }
 
     /** Turns a register word {@code 0..65535} into a signed value, keeping the {@code -1} failure as {@link Short#MIN_VALUE}. */

@@ -2,6 +2,7 @@ package io.github.jabrena.juno.hardware.device.imu;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.imu.ImuSample;
 import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -233,5 +234,49 @@ class NineAxisMotionShieldTest {
 
         // Then
         assertThat(calibration).isEqualTo(255);
+    }
+
+    @Test
+    @DisplayName("Reads a device-independent navigation sample")
+    void shouldReadADeviceIndependentNavigationSample() {
+        // Given
+        when(bus.readRegister16(device, 0x1A)).thenReturn(90 * 16);
+        when(bus.readRegister16(device, 0x18)).thenReturn(16);
+        when(bus.readRegister16(device, 0x1E)).thenReturn(-1);
+        when(bus.readRegister16(device, 0x1C)).thenReturn(8);
+        when(bus.readRegister(device, 0x35)).thenReturn(0xFF);
+        ImuSample sample = new ImuSample();
+
+        // When
+        boolean read = imu.read(sample);
+
+        // Then
+        assertThat(read).isFalse();
+        assertThat(sample.valid()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Converts a valid navigation sample to milli-degrees")
+    void shouldConvertAValidNavigationSampleToMillidegrees() {
+        // Given
+        when(bus.readRegister16(device, 0x1A)).thenReturn(90 * 16);
+        when(bus.readRegister16(device, 0x18)).thenReturn(16);
+        when(bus.readRegister16(device, 0x1E)).thenReturn(0xFFF0);
+        when(bus.readRegister16(device, 0x1C)).thenReturn(8);
+        when(bus.readRegister(device, 0x35)).thenReturn(0xFF);
+        ImuSample sample = new ImuSample();
+
+        // When
+        boolean read = imu.read(sample);
+
+        // Then
+        assertThat(read).isTrue();
+        assertThat(new int[] {
+                sample.headingMillidegrees(),
+                sample.yawRateMillidegreesPerSecond(),
+                sample.pitchMillidegrees(),
+                sample.rollMillidegrees(),
+                sample.calibration()})
+                .containsExactly(90_000, 1_000, -1_000, 500, 0xFF);
     }
 }
