@@ -158,12 +158,10 @@ The project provides a `Maven plugin` to help the user with the common operation
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-q
-# Alternative board IDs:
 # -Djuno.board=arduino-uno-r4-wifi
 # -Djuno.board=arduino-uno-r3-wifi-rev2
 # -Djuno.board=arduino-uno-r3
 # -Djuno.board=arduino-nano-esp32
-# -Djuno.board=m5stack-cardputer
 ```
 
 Select another supported board with `-Djuno.board`. The plugin auto-detects the port when exactly one matching board is
