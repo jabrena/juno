@@ -13,6 +13,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 import java.time.Duration;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
@@ -107,7 +108,7 @@ public final class ParallelHttpsGet {
     }
 
     /** Both requests must succeed; a failing request cancels its still-running sibling. */
-    private void allSuccessful() {
+    private void allSuccessful() throws InterruptedException {
         int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow())) {
             var firstTask = scope.fork(() -> first.execute());
@@ -120,13 +121,13 @@ public final class ParallelHttpsGet {
             printRound("all-successful", scope.isCancelled(), startedAt);
             first.print();
             second.print();
-        } catch (Exception failure) {
+        } catch (ExecutionException failure) {
             printFailure("all-successful", failure.getMessage());
         }
     }
 
     /** The first successful request wins and the other request is cancelled. */
-    private void anySuccessful() {
+    private void anySuccessful() throws InterruptedException {
         int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
             scope.fork(() -> first.execute());
@@ -135,13 +136,13 @@ public final class ParallelHttpsGet {
             Serial.print("any-successful winner=");
             Serial.println(winner);
             printRound("any-successful", scope.isCancelled(), startedAt);
-        } catch (Exception failure) {
+        } catch (ExecutionException failure) {
             printFailure("any-successful", failure.getMessage());
         }
     }
 
     /** This request must succeed before the 20-second scope timeout expires. */
-    private void awaitAllSuccessfulWithTimeout() {
+    private void awaitAllSuccessfulWithTimeout() throws InterruptedException {
         int startedAt = clock.millis();
         try (var scope = StructuredTaskScope.open(
                 StructuredTaskScope.Joiner.<String>awaitAllSuccessfulOrThrow(),
@@ -152,7 +153,7 @@ public final class ParallelHttpsGet {
             Serial.println(firstTask.get());
             printRound("await-all-successful", scope.isCancelled(), startedAt);
             first.print();
-        } catch (Exception failure) {
+        } catch (ExecutionException failure) {
             printFailure("await-all-successful", failure.getMessage());
         }
     }

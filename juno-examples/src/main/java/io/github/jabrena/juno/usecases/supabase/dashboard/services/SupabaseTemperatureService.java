@@ -138,6 +138,8 @@ public final class SupabaseTemperatureService implements Task {
         }
     }
 
+    // Task.step() cannot propagate checked interruption, and the board Thread subset has no interrupt-status API.
+    @SuppressWarnings("java:S2142")
     private boolean executePagePair() {
         try (var scope = StructuredTaskScope.open()) {
             var pageTask = scope.fork(() -> supabase.execute());
@@ -147,7 +149,6 @@ public final class SupabaseTemperatureService implements Task {
             nextPageTask.get();
             return true;
         } catch (InterruptedException | ExecutionException failed) {
-            // Task.step() cannot propagate interruption, and Juno intentionally exposes no currentThread() handle.
             Serial.println("Parallel Supabase gathering stopped");
             failRead();
             return false;

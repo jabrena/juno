@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  */
 final class BoardListJsonParser {
     private static final Pattern JSON_STRING_FIELD = Pattern.compile(
-            "\"(?<name>[^\"]+)\"\\s*:\\s*\"(?<value>(?:\\\\.|[^\"\\\\])*)\"");
+            "\"(?<name>[^\"]+)\"\\s*:\\s*\"(?<value>(?:\\\\.|[^\"\\\\])*+)\"");
 
     List<DetectedPort> parse(String json) {
         int field = json.indexOf("\"detected_ports\"");

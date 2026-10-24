@@ -35,7 +35,7 @@ public final class TftTextWidget {
 
     /** Shows {@code text} in {@code color}, redrawing only if it differs from what is already shown. */
     public void set(String text, int color) {
-        if (text == shownText && shownNumber == NOTHING_SHOWN && color == shownColor) {
+        if (text.equals(shownText) && shownNumber == NOTHING_SHOWN && color == shownColor) {
             return;
         }
         shownText = text;
@@ -46,7 +46,7 @@ public final class TftTextWidget {
 
     /** Shows {@code number} followed by {@code suffix}, redrawing only if it differs from what is already shown. */
     public void set(int number, String suffix, int color) {
-        if (number == shownNumber && suffix == shownText && color == shownColor) {
+        if (number == shownNumber && suffix.equals(shownText) && color == shownColor) {
             return;
         }
         shownText = suffix;

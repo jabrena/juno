@@ -46,6 +46,7 @@ public final class LostUpdates {
         second.join();
     }
 
+    @SuppressWarnings("java:S3078")
     private void increment() {
         for (int i = 0; i < INCREMENTS; i++) {
             plainCounter++;
