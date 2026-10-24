@@ -15,7 +15,8 @@
  *       {@link io.github.jabrena.juno.hardware.ArduinoUno}: general-purpose I/O ({@code hardware.gpio},
  *       {@link io.github.jabrena.juno.hardware.gpio.Gpio}, {@link io.github.jabrena.juno.hardware.gpio.DigitalOutput}),
  *       I2C ({@code hardware.i2c}), serial port I/O ({@code hardware.serial}), USB HID mouse control
- *       ({@code hardware.hid}), the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and
+ *       ({@code hardware.hid}), device-independent inertial sensing ({@code hardware.imu}), board-independent motor contracts
+ *       ({@code hardware.motor}), two-motor drive coordination ({@code hardware.drive}), the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and
  *       bitmap fonts ({@code hardware.led}), and program-wide introspection: arena and flash usage
  *       ({@link io.github.jabrena.juno.hardware.BoardMemory}) and the board the program was compiled for
  *       ({@link io.github.jabrena.juno.hardware.BoardModel}), the Wi-Fi/UDP/HTTP/JSON/email networking stack
