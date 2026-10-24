@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * off the left edge as the offset shrinks.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixScrollingText {
     private static final String MESSAGE = "Juno, Java for Arduino ONE R4";
     // MESSAGE.length() is not a Java compile-time constant, so keep this synchronized with MESSAGE.

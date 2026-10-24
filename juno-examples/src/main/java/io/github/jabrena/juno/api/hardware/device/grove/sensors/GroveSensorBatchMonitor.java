@@ -16,6 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * and light v1.2 on A2.
  */
 @Board({ArduinoOneR3WiFiRev2Board.class})
+@SuppressWarnings("java:S2189")
 public final class GroveSensorBatchMonitor {
     private static final GroveBaseShield SHIELD = new GroveBaseShield();
     private static final int DHT11_PIN = SHIELD.getD4();

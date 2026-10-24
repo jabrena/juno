@@ -19,6 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * receiver (aim, distance or the transmitter's wiring); hits as high as the noise means the receiver is
  * reporting interference, not the transmitter. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class InfraredBurstEcho {
     private final Clock clock = ArduinoOne.getClock();
     private static final int RECEIVE_PIN = 2;

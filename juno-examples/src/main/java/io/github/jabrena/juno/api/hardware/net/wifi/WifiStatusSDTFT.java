@@ -26,6 +26,7 @@ import java.util.Properties;
  * <p>Unlike the LCD Keypad Shield, this shield shares no pins with its SD socket, so no rewiring
  * is needed.
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatusSDTFT {
     private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = TftTouchShield.getSdCard();
@@ -205,24 +206,24 @@ public final class WifiStatusSDTFT {
             return null;
         }
 
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+
+            Properties properties = new Properties();
+            properties.load(file);
+
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+
+            return new WifiCredentials(ssid, password);
         }
-
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return null;
-        }
-
-        return new WifiCredentials(ssid, password);
     }
 
     private record WifiCredentials(String ssid, String password) {

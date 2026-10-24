@@ -28,6 +28,7 @@ import java.util.Properties;
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
+@SuppressWarnings("java:S2189")
 public final class NanoWifiStatusSD {
     private static final Wifi WIFI = ArduinoNano.getWifi();
     private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
@@ -75,24 +76,24 @@ public final class NanoWifiStatusSD {
             return null;
         }
 
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+
+            Properties properties = new Properties();
+            properties.load(file);
+
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+
+            return new WifiCredentials(ssid, password);
         }
-
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return null;
-        }
-
-        return new WifiCredentials(ssid, password);
     }
 
     private record WifiCredentials(String ssid, String password) {

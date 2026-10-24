@@ -5,6 +5,7 @@ package io.github.jabrena.juno.usecases.supabase.dashboard.commons;
  * the median-temperature histogram. Temperatures are stored as integer tenths of a degree, and all storage is
  * allocated once at startup.
  */
+@SuppressWarnings("java:S1845")
 public final class TemperatureDashboardState {
     public static final int CONNECTING = 0;
     public static final int READING = 1;

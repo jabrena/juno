@@ -16,6 +16,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * board.
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class Pomodoro {
     /** The program's one LCD shield, shared by every Pomodoro view. */
     static final LcdKeypadShield LCD_SHIELD = new LcdKeypadShield();

@@ -16,6 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * each side.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LedMatrixDecimalCountUp {
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoOne.getLedMatrix();

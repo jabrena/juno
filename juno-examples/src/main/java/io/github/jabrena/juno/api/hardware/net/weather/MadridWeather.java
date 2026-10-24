@@ -34,6 +34,7 @@ import io.github.jabrena.juno.util.Delay;
  * exactly rather than being subject to binary-floating-point rounding.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class MadridWeather {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

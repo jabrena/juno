@@ -20,6 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  * Serial.
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class InboxCount {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

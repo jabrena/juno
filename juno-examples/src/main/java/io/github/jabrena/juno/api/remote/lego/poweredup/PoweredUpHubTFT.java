@@ -50,6 +50,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
  * </ul>
  * Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class PoweredUpHubTFT {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final Clock CLOCK = ArduinoOne.getClock();

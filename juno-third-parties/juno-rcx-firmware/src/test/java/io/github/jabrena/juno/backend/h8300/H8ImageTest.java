@@ -42,4 +42,17 @@ class H8ImageTest {
         assertThat(image.containsBefore("knock", 0x8002)).isFalse();
         assertThat(image.containsBefore("byte", 0x9000)).isFalse();
     }
+
+    @Test
+    @DisplayName("Compares image byte contents in record methods")
+    void shouldCompareImageByteContents() {
+        // Given
+        H8Image first = new H8Image(0x8000, 0x8000, new byte[] {1, 2, 3});
+        H8Image second = new H8Image(0x8000, 0x8000, new byte[] {1, 2, 3});
+
+        // When & Then
+        assertThat(first).isEqualTo(second);
+        assertThat(first.hashCode()).isEqualTo(second.hashCode());
+        assertThat(first).hasToString("H8Image[origin=32768, entry=32768, bytes=[1, 2, 3]]");
+    }
 }

@@ -26,6 +26,28 @@ public record H8Image(int origin, int entry, byte[] bytes) {
         return bytes.clone();
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof H8Image image)) {
+            return false;
+        }
+        return origin == image.origin && entry == image.entry && Arrays.equals(bytes, image.bytes);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 31 * Integer.hashCode(origin) + Integer.hashCode(entry);
+        return 31 * result + Arrays.hashCode(bytes);
+    }
+
+    @Override
+    public String toString() {
+        return "H8Image[origin=" + origin + ", entry=" + entry + ", bytes=" + Arrays.toString(bytes) + "]";
+    }
+
     /** Whether {@code text} appears in the image as ASCII and starts before {@code limit}. */
     public boolean containsBefore(String text, int limit) {
         byte[] wanted = text.getBytes(StandardCharsets.US_ASCII);

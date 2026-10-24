@@ -45,6 +45,7 @@ import io.github.jabrena.juno.util.Random;
  * {@link BridgeView} and {@link DisplayList} draw the vector views. This class runs the game.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class StarTrek {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 40;

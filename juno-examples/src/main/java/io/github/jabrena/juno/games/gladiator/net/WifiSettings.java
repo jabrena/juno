@@ -33,25 +33,23 @@ public record WifiSettings(String ssid, String password) {
             Serial.println("No SD card");
             return null;
         }
-        InputStream file = sdCard.open(FILE);
-        if (file == null) {
-            Serial.println("No application.properties");
-            return null;
-        }
-        Properties properties = new Properties();
-        try {
+        try (InputStream file = sdCard.open(FILE)) {
+            if (file == null) {
+                Serial.println("No application.properties");
+                return null;
+            }
+            Properties properties = new Properties();
             properties.load(file);
-            file.close();
+            String network = properties.getProperty(SSID_KEY);
+            String secret = properties.getProperty(PASSWORD_KEY);
+            if (network == null || secret == null) {
+                Serial.println("Missing wifi.ssid or password");
+                return null;
+            }
+            return new WifiSettings(network, secret);
         } catch (IOException e) {
             Serial.println("Unreadable settings file");
             return null;
         }
-        String network = properties.getProperty(SSID_KEY);
-        String secret = properties.getProperty(PASSWORD_KEY);
-        if (network == null || secret == null) {
-            Serial.println("Missing wifi.ssid or password");
-            return null;
-        }
-        return new WifiSettings(network, secret);
     }
 }

@@ -33,6 +33,7 @@ public final class StructuredRace {
     }
 
     /** The first successful subtask is the winner, and the slower one is cancelled. */
+    @SuppressWarnings("java:S2142")
     private void firstSuccessWins() throws InterruptedException {
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>anySuccessfulOrThrow())) {
             scope.fork(() -> sleepThen(SLOW_MS, "slow"));
@@ -46,6 +47,7 @@ public final class StructuredRace {
     }
 
     /** One failing subtask makes the join throw, and the subtask still running is cancelled. */
+    @SuppressWarnings("java:S2142")
     private void oneFailureCancelsTheRest() throws InterruptedException {
         try (var scope = StructuredTaskScope.open(StructuredTaskScope.Joiner.<String>allSuccessfulOrThrow())) {
             Subtask<String> slow = scope.fork(() -> sleepThen(SLOW_MS, "slow"));

@@ -29,6 +29,7 @@ import io.github.jabrena.juno.util.Delay;
  * also prints request count and {@link Memory#arenaUsedBytes} over Serial, for spotting a leak
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
+@SuppressWarnings("java:S2189")
 public final class HttpServerStatus {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

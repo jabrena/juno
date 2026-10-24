@@ -12,6 +12,7 @@ import io.github.jabrena.juno.util.Random;
  * <p>State lives in two short arrays: {@code STRIDE} values per monster and {@code SHOT_STRIDE} per
  * fireball.
  */
+@SuppressWarnings("java:S1845")
 final class Monsters {
     static final int STRIDE = 8;
     static final int X = 0;

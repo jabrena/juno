@@ -37,6 +37,7 @@ import io.github.jabrena.juno.util.Random;
  * Pac-Man targets the <b>Arduino UNO Q</b>.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class PacMan {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int COVER_TIMEOUT_MILLIS = 60_000;

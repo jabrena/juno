@@ -15,6 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * every ten seconds, at 115200 baud. The temperature is read straight from the bytes, since {@code Json} does not fit
  * the R3's 32 KB of flash next to the WiFi library.
  */
+@SuppressWarnings("java:S2189")
 public final class PlainHttpWeather {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

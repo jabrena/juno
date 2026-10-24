@@ -64,6 +64,7 @@ public final class ScopedValuesPrecision {
     }
 
     /** Forks one approximation per constant (a scope holds at most three subtasks), then prints and combines them. */
+    @SuppressWarnings("java:S2142")
     private void report(String title) {
         Serial.println("== " + title);
         BigDecimal sqrt2;

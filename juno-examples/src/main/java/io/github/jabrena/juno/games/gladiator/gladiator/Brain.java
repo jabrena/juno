@@ -13,6 +13,7 @@ import io.github.jabrena.juno.games.gladiator.screen.Opening;
  * it is in sight; after that it remembers where it saw it last. Each frame {@link #drive} decides how far to turn
  * and walk, and whether to swing the gladius; its {@link Senses} decide about javelin and net.
  */
+@SuppressWarnings("java:S1845")
 public final class Brain {
     public static final int AGGRESSIVE = 1;
     public static final int AMBUSH = 2;

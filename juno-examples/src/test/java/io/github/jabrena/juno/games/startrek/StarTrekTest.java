@@ -222,6 +222,7 @@ class StarTrekTest {
         set(Session.class, "sector", sector);
         set(Controls.class, "autopilot", true);
         call(Sector.class, "start", (Object) ents);
+        boolean cleared = false;
         for (int frame = 0; frame < 9000; frame++) {
             set(Session.class, "frame", frame);
             call(AutopilotST.class, "fly", (Object) ents);
@@ -232,10 +233,11 @@ class StarTrekTest {
                 set(Enterprise.class, "shields", 100);
             }
             if (callBoolean(Sector.class, "isCleared", (Object) ents)) {
-                return;
+                cleared = true;
+                break;
             }
         }
-        throw new AssertionError("sector " + sector + " not cleared");
+        assertThat(cleared).as("sector %d should be cleared by the CPU pilot", sector).isTrue();
     }
 
     @Test

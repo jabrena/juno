@@ -26,6 +26,7 @@ import io.github.jabrena.juno.util.Delay;
  * placeholders: on the UNO R3 the program never gets built.
  */
 @Board({ArduinoOneR3Board.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class LcdKeypadWifiShieldConflict {
     private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
 

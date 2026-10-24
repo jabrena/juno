@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates closed-world interface dispatch with two reachable implementations. */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Interfaces {
 
     public static void main(String[] args) {

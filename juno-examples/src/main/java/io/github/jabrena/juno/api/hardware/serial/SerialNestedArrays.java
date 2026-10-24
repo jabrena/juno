@@ -22,6 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board(ArduinoNanoEsp32Board.class)
 @Watchdog(timeoutMillis = 3000)
+@SuppressWarnings("java:S2189")
 public final class SerialNestedArrays {
     private static final int PANIC_ROUND = 5;
 

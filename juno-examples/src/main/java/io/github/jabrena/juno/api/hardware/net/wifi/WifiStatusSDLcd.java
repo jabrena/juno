@@ -27,6 +27,7 @@ import java.util.Properties;
  * chip select. Electrically isolate or reroute the LCD backlight's D10 connection before stacking
  * the shields. This program never changes the LCD backlight after SD-card initialization.
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatusSDLcd {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 
@@ -90,24 +91,24 @@ public final class WifiStatusSDLcd {
             return null;
         }
 
-        InputStream file = sdCard.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = sdCard.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+
+            Properties properties = new Properties();
+            properties.load(file);
+
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+
+            return new WifiCredentials(ssid, password);
         }
-
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return null;
-        }
-
-        return new WifiCredentials(ssid, password);
     }
 
     private record WifiCredentials(String ssid, String password) {

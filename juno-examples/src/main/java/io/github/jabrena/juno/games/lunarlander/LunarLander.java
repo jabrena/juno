@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Random;
  * out. The package separates flight physics, terrain, rendering, controls, and interludes.
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class LunarLander {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int START_FUEL = 1500;

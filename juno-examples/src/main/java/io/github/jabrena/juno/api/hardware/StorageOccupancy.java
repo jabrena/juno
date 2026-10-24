@@ -25,6 +25,7 @@ import io.github.jabrena.juno.util.Delay;
  * }</pre>
  */
 @Board({ArduinoOneR3Board.class, ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class, ArduinoOneR3WiFiRev2Board.class})
+@SuppressWarnings("java:S2189")
 public final class StorageOccupancy {
     private StorageOccupancy() {
     }

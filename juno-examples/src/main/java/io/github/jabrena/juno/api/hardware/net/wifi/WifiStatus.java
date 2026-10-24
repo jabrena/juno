@@ -13,6 +13,7 @@ import io.github.jabrena.juno.util.Delay;
  * has not yet reached {@link Wifi#STATUS_CONNECTED} (unlike {@code MadridWeather}, which prints
  * nothing until connected).
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatus {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

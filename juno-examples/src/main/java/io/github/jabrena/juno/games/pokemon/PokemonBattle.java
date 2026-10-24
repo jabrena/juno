@@ -28,6 +28,7 @@ import io.github.jabrena.juno.util.Delay;
  * apply an attack twice or permanently stall the match.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class PokemonBattle {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

@@ -42,6 +42,7 @@ import io.github.jabrena.juno.util.Random;
  * {@code -Djuno.board=arduino-one-r4-wifi}.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Tempest {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 25;

@@ -21,6 +21,7 @@ import java.util.Properties;
  * that the UNO R4 WiFi is connected to the network using the credentials loaded from the card.
  * Everything is reported over Serial at 115200 baud.
  */
+@SuppressWarnings("java:S2189")
 public final class WifiStatusSD {
     private static final Wifi WIFI = ArduinoOne.getWifi();
     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
@@ -65,24 +66,24 @@ public final class WifiStatusSD {
             return null;
         }
 
-        InputStream file = SD_CARD.open("application.properties");
-        if (file == null) {
-            Serial.println("application.properties not found");
-            return null;
+        try (InputStream file = SD_CARD.open("application.properties")) {
+            if (file == null) {
+                Serial.println("application.properties not found");
+                return null;
+            }
+
+            Properties properties = new Properties();
+            properties.load(file);
+
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+            if (ssid == null || password == null) {
+                Serial.println("WiFi credentials are missing");
+                return null;
+            }
+
+            return new WifiCredentials(ssid, password);
         }
-
-        Properties properties = new Properties();
-        properties.load(file);
-        file.close();
-
-        String ssid = properties.getProperty("wifi.ssid");
-        String password = properties.getProperty("wifi.password");
-        if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
-            return null;
-        }
-
-        return new WifiCredentials(ssid, password);
     }
 
     private record WifiCredentials(String ssid, String password) {

@@ -18,6 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * timing calibration ({@code TURN_TIMEOUT_MILLIS} is only a safety stop). Keep the vehicle still while
  * the sensor starts. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class MagicSquarePowerFunctionsWithImu {
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
     private static final Clock CLOCK = ArduinoOne.getClock();

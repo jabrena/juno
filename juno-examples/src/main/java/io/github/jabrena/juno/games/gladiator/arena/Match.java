@@ -16,6 +16,7 @@ import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
  * <p>Two {@link Javelins} lie on the sand, the {@link Braziers} smoke and the {@link Lion} hunts on the fight's
  * clock, all on its {@link Coliseum}.
  */
+@SuppressWarnings("java:S1845")
 public final class Match {
     public static final int WAITING = 0;
     public static final int COUNTDOWN = 1;

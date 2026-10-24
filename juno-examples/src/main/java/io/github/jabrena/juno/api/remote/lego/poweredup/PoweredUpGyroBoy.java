@@ -28,6 +28,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@code MIN_POWER}; if it creeps in one direction, raise {@code KI}. The numbers are starting points,
  * not verified on a particular chassis. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class PoweredUpGyroBoy {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();

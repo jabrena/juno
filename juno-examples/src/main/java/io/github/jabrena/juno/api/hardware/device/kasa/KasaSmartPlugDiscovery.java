@@ -20,6 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  * while the board joins Wi-Fi or reopens discovery, and its three fixed buttons toggle the first three plugs found.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S2189")
 public final class KasaSmartPlugDiscovery {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

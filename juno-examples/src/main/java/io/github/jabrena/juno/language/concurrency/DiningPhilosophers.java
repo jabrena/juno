@@ -20,6 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>The three forks are fields rather than an array, which keeps the lock lookup to a simple switch.
  */
 @Board({ArduinoOneR4WiFiBoard.class, ArduinoOneQBoard.class})
+@SuppressWarnings("java:S1845")
 public final class DiningPhilosophers {
     private static final int PHILOSOPHERS = 3;
     private static final int MEALS = 20;

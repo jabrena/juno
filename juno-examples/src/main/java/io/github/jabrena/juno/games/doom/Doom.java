@@ -33,6 +33,7 @@ import io.github.jabrena.juno.util.Random;
  * only what changed. {@link FrameStats} reports what each frame costs over the serial port.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class Doom {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 40;

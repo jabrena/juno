@@ -23,6 +23,7 @@ import io.github.jabrena.juno.util.Delay;
  * the switched-on RCX from 10 to 50 cm; the brick needs its firmware (see {@link RcxFirmware}). Pick the board
  * with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class RcxFurElise {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int RECEIVE_PIN = 2;

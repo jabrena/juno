@@ -36,6 +36,7 @@ import static io.github.jabrena.juno.games.blackjack.SceneRenderer.showMessage;
  * collaborators; this class owns the session loop and shared scalar state.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Blackjack {
     static final int COVER_TIMEOUT_MILLIS = 60_000;
     static final int START_BANK = 100;

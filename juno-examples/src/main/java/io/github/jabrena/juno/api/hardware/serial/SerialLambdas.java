@@ -17,6 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * to reattach.
  */
 @Board(ArduinoNanoEsp32Board.class)
+@SuppressWarnings("java:S2189")
 public final class SerialLambdas {
     @FunctionalInterface
     interface IntOperation {

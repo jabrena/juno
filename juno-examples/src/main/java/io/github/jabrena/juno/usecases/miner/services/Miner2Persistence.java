@@ -48,13 +48,11 @@ public final class Miner2Persistence {
         if (!ready || !sdCard.exists(COLOR_FILE)) {
             return -1;
         }
-        java.io.InputStream file = sdCard.open(COLOR_FILE);
-        if (file == null) {
-            return -1;
-        }
-        try {
+        try (java.io.InputStream file = sdCard.open(COLOR_FILE)) {
+            if (file == null) {
+                return -1;
+            }
             int digit = hex(file.read());
-            file.close();
             return digit >= 0 && digit < colors ? digit : -1;
         } catch (IOException failed) {
             return -1;
@@ -112,11 +110,10 @@ public final class Miner2Persistence {
         if (!sdCard.exists(ID_FILE)) {
             return null;
         }
-        java.io.InputStream file = sdCard.open(ID_FILE);
-        if (file == null) {
-            return null;
-        }
-        try {
+        try (java.io.InputStream file = sdCard.open(ID_FILE)) {
+            if (file == null) {
+                return null;
+            }
             int count = 0;
             int value;
             long mostSignificantBits = 0L;
@@ -132,7 +129,6 @@ public final class Miner2Persistence {
                     count++;
                 }
             }
-            file.close();
             return count == NodeId.SIZE * 2 ? new UUID(mostSignificantBits, leastSignificantBits) : null;
         } catch (IOException failed) {
             return null;

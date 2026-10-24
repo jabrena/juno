@@ -50,6 +50,7 @@ import io.github.jabrena.juno.util.Random;
  * one place that dispatches on the {@link Phase}.
  */
 @Board(ArduinoOneQBoard.class)
+@SuppressWarnings("java:S2189")
 public final class StarWars {
     private static final Clock CLOCK = ArduinoOne.getClock();
     private static final int FRAME_MILLIS = 30;

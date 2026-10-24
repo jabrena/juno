@@ -50,6 +50,7 @@ import static io.github.jabrena.juno.games.chess.SceneRenderer.showStatus;
  * rendering, interludes and the six piece bitmaps into focused collaborators.
  */
 @Board({ArduinoOneQBoard.class, ArduinoOneR4WiFiBoard.class})
+@SuppressWarnings("java:S2189")
 public final class Chess {
     private static final Clock CLOCK = ArduinoOne.getClock();
     static final int COVER_TIMEOUT_MILLIS = 60_000;

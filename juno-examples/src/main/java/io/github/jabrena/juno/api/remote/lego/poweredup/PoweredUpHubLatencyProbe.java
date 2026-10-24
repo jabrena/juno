@@ -20,6 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  * Roughly, a balance loop needs 50 reports and commands per second or more, with the motion delay well
  * under 50 ms. Pick the board with {@code -Djuno.board}.
  */
+@SuppressWarnings("java:S2189")
 public class PoweredUpHubLatencyProbe {
     private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
     private static final Clock CLOCK = ArduinoOne.getClock();

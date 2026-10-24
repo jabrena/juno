@@ -19,6 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * }</pre>
  */
 @Board(ArduinoOneR4WiFiBoard.class)
+@SuppressWarnings("java:S2189")
 public final class SerialCounter {
     /**
      * Initializes USB serial output and prints an incrementing counter indefinitely.

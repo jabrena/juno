@@ -28,6 +28,8 @@ public final class WifiService {
         Thread.startVirtualThread(this::run);
     }
 
+    // The board Thread subset has no interrupt-status API; this example publishes interruption as a Wi-Fi failure.
+    @SuppressWarnings("java:S2142")
     private void run() {
         try {
             model.publishWifiStatus(connect(model.awaitCredentials()));

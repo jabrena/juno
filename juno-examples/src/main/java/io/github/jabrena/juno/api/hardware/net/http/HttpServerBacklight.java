@@ -27,6 +27,7 @@ import io.github.jabrena.juno.util.Delay;
  * behavior (usage that stays flat, since neither response body here is built at runtime — both
  * are compile-time literals).
  */
+@SuppressWarnings("java:S2189")
 public final class HttpServerBacklight {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 
