@@ -12,6 +12,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * never waiting. Once it is up, a step still polls the link now and then, so the header's Wi-Fi icon follows a link
  * that drops. Credentials are the build-time {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, as in {@code NodeIo}.
  */
+@SuppressWarnings("java:S1845")
 final class WifiLink {
     private static final Wifi WIFI = ArduinoOne.getWifi();
 

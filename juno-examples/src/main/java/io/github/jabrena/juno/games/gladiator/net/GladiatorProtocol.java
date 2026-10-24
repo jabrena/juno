@@ -18,6 +18,7 @@ import io.github.jabrena.juno.games.gladiator.arena.Javelins;
  *       opponent, whose position is filled in only when the recipient's eyes see it.</li>
  * </ul>
  */
+@SuppressWarnings("java:S1845")
 public final class GladiatorProtocol {
     public static final int JOIN = 1;
     public static final int MAP = 2;

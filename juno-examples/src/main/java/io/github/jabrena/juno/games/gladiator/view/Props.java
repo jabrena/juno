@@ -11,6 +11,7 @@ import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
  * lying on the sand or in the air, and the lion, each drawn as straight lines between points of the arena and hidden
  * behind any nearer pillar.
  */
+@SuppressWarnings("java:S1845")
 public final class Props {
     public static final int SMOKE = 0x9494;
     public static final int LION = 0xFC00;
