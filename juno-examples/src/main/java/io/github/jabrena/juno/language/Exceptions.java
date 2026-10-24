@@ -103,6 +103,7 @@ public class Exceptions {
         int samples = 0;
         try {
             // Integer division by zero raises ArithmeticException, just like on the JVM.
+            @SuppressWarnings("java:S3518")
             int average = total / samples;
             Serial.println(average);
         } catch (ArithmeticException e) {

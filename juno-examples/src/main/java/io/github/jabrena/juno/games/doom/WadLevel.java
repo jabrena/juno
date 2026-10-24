@@ -281,6 +281,9 @@ final class WadLevel {
                 sumY = sumY + World.vertexY[v1] + World.vertexY[v2];
                 touching = touching + 2;
             }
+            if (touching == 0) {
+                continue;
+            }
             World.doorTop[door] = (short) (lowest - 4);
             World.doorX[door] = (short) (sumX / touching);
             World.doorY[door] = (short) (sumY / touching);
