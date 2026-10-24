@@ -17,6 +17,7 @@ extern "C" int32_t juno_wifi_status() {
 }
 
 extern "C" void juno_wifi_local_ip(int32_t* octets) {
+  // WiFiS3.localIP() returns the active interface address in station and access-point modes.
   auto ip = WiFi.localIP();
   octets[0] = ip[0];
   octets[1] = ip[1];

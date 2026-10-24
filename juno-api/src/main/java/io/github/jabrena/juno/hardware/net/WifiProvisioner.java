@@ -14,8 +14,8 @@ import io.github.jabrena.juno.util.Delay;
  * does not call it). {@link #run} opens an access point, serves an HTML form on port 80 and joins
  * the network the user submits. The caller must have started {@link Serial} first.
  *
- * <p>On <b>UNO R4 WiFi</b> the whole flow runs on the board: join the access point, open
- * {@code http://192.168.4.1/}, enter the SSID and password, and the board drops the access point,
+ * <p>On <b>UNO R4 WiFi</b> the whole flow runs on the board: join the access point, open the
+ * native access-point address printed over Serial, enter the SSID and password, and the board drops the access point,
  * joins that network and prints its address over {@link Serial}. If the connection fails within
  * {@value #CONNECT_TIMEOUT_MS} ms the access point comes back so the form can be submitted again.
  * The credentials live only in RAM.
@@ -58,9 +58,9 @@ public final class WifiProvisioner {
      * is a WPA2 passphrase of at least 8 characters, or empty for an open access point.
      */
     public static void run(String apSsid, String apPassword) {
-        startAccessPoint(apSsid, apPassword);
+        int[] address = new int[4];
+        startAccessPoint(apSsid, apPassword, address);
         HttpServer.begin(80);
-        Serial.println("Open http://192.168.4.1/ after joining the setup network");
 
         byte[] body = new byte[128];
         while (true) {
@@ -72,10 +72,10 @@ public final class WifiProvisioner {
             String path = HttpServer.path();
             if (method.equals(HttpMethod.POST) && path.equals("/connect")) {
                 HttpServer.respond(HttpStatus.OK, "text/html", CONNECTING);
-                if (provision(body, bodyLength)) {
+                if (provision(body, bodyLength, address)) {
                     return;
                 }
-                startAccessPoint(apSsid, apPassword);
+                startAccessPoint(apSsid, apPassword, address);
             } else if (method.equals(HttpMethod.GET) && path.equals("/")) {
                 HttpServer.respond(HttpStatus.OK, "text/html", FORM);
             } else {
@@ -84,17 +84,23 @@ public final class WifiProvisioner {
         }
     }
 
-    private static void startAccessPoint(String apSsid, String apPassword) {
+    private static void startAccessPoint(String apSsid, String apPassword, int[] address) {
         wifi.beginAP(apSsid, apPassword);
         while (wifi.status() != Wifi.STATUS_AP_LISTENING && wifi.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(200);
         }
+        int status = wifi.status();
         Serial.print("Access point ready: ");
         Serial.println(apSsid);
+        if (status == Wifi.STATUS_AP_LISTENING) {
+            printAccessPointAddress(address);
+        } else {
+            Serial.println("Access point address unavailable from this board");
+        }
     }
 
     /** Joins the network submitted in {@code ssid=...&password=...}; returns whether the board is now connected. */
-    private static boolean provision(byte[] body, int length) {
+    private static boolean provision(byte[] body, int length, int[] address) {
         StringBuilder ssid = new StringBuilder(32);
         StringBuilder password = new StringBuilder(32);
         int next = skipPast(body, length, 0, '=');
@@ -122,8 +128,33 @@ public final class WifiProvisioner {
             Serial.println("Connection failed, reopening the setup network");
             return false;
         }
-        printLocalIP();
+        printLocalIP(address);
         return true;
+    }
+
+    private static void printAccessPointAddress(int[] address) {
+        wifi.localIP(address);
+        if (isUnset(address)) {
+            Serial.println("Access point address unavailable from this board");
+            return;
+        }
+        Serial.print("Open http://");
+        printAddress(address);
+        Serial.println("/");
+    }
+
+    private static boolean isUnset(int[] address) {
+        return address[0] == 0 && address[1] == 0 && address[2] == 0 && address[3] == 0;
+    }
+
+    private static void printAddress(int[] address) {
+        Serial.print(address[0]);
+        Serial.print(".");
+        Serial.print(address[1]);
+        Serial.print(".");
+        Serial.print(address[2]);
+        Serial.print(".");
+        Serial.print(address[3]);
     }
 
     /** Index just after the next {@code marker} at or beyond {@code from}, or {@code length} when there is none. */
@@ -169,16 +200,10 @@ public final class WifiProvisioner {
         return 0;
     }
 
-    private static void printLocalIP() {
-        int[] ip = new int[4];
-        wifi.localIP(ip);
+    private static void printLocalIP(int[] address) {
+        wifi.localIP(address);
         Serial.print("Connected. IP: ");
-        Serial.print(ip[0]);
-        Serial.print(".");
-        Serial.print(ip[1]);
-        Serial.print(".");
-        Serial.print(ip[2]);
-        Serial.print(".");
-        Serial.println(ip[3]);
+        printAddress(address);
+        Serial.println("");
     }
 }

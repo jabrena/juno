@@ -45,8 +45,8 @@ public interface Wifi {
      * Starts the board as a Wi-Fi access point named {@code ssid}, so a phone or laptop can join it
      * directly (typically to serve a provisioning page through {@link
      * io.github.jabrena.juno.hardware.net.http.HttpServer}). On UNO R4 WiFi, {@code password} is a WPA2
-     * passphrase of at least 8 characters, or empty for an open network; the board is reachable at
-     * {@code 192.168.4.1} once {@link #status} reports {@link #STATUS_AP_LISTENING}. On UNO Q the
+     * passphrase of at least 8 characters, or empty for an open network; call {@link #localIP} after
+     * {@link #status} reports {@link #STATUS_AP_LISTENING} to obtain the access point's address. On UNO Q the
      * MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running
      * ({@code nmcli device wifi hotspot ssid <ssid> password <password>}); this method only
      * initializes the MCU-to-Linux bridge, ignores both arguments, and {@link #status} reports
@@ -59,8 +59,9 @@ public interface Wifi {
     /**
      * Writes the board's current IPv4 address into {@code octets} (caller-owned, at least 4
      * entries), one byte value (0-255) per element, most significant first — e.g. {@code 192, 168,
-     * 1, 45}. Only meaningful once {@link #status} reports {@link #STATUS_CONNECTED}; UNO Q's
-     * current router API does not expose this address and writes four zeroes. Juno has no
+     * 1, 45}. When {@link #status} reports {@link #STATUS_AP_LISTENING}, this is the access point's
+     * address; when it reports {@link #STATUS_CONNECTED}, it is the station address. UNO Q's
+     * current router API does not expose either address and writes four zeroes. Juno has no
      * heap, so there is no {@code String}-returning form here — print each octet with {@link
      * io.github.jabrena.juno.hardware.serial.Serial#print(int)} and a literal {@code "."} between them.
      */
