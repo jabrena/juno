@@ -268,7 +268,7 @@ jobs:
 
   build:
     name: Build
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
+    needs: [changes]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -346,7 +346,7 @@ jobs:
 
   integration-build:
     name: Prepare integration build outputs
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image]
+    needs: [changes]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -382,7 +382,7 @@ jobs:
 
   arduino:
     name: Compile ${{ matrix.language }}
-    needs: [changes, arduino-cli-image, qemu-image, simavr-image, integration-build]
+    needs: [changes, arduino-cli-image, integration-build]
     if: needs.changes.outputs.arduino == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -435,5 +435,6 @@ jobs:
           failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
           -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.language=${{ matrix.language }}
+          -Djuno.arduinoCliParallelism=6
           -Djuno.arduinoCliBoardScope=${{ needs.changes.outputs.board_scope }}
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
