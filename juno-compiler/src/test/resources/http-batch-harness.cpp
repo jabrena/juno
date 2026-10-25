@@ -15,12 +15,14 @@ class RpcClient {
   size_t buffered = 0;
 public:
   int polls = 0;
+  int writes = 0;
+  bool keepOpen = false;
   explicit RpcClient(std::string response) : response(response) {}
   int connect(const char*, uint16_t) { return 1; }
   template<typename T> void print(T) {}
-  void write(const uint8_t*, size_t) {}
+  void write(const uint8_t*, size_t) { writes++; }
   void stop() {}
-  bool connected() { return cursor < response.size(); }
+  bool connected() { return keepOpen || cursor < response.size(); }
   int available() {
     now += 10;
     polls++;
@@ -52,10 +54,27 @@ static void check(const std::string& response, const std::string& expected, int 
   assert(std::memcmp(body, expected.data(), expectedLength) == 0);
   assert(!client.connected()); // A small caller buffer must still drain the response.
   assert(client.polls < 20);
+  assert(client.writes == 1); // A small request leaves in one write, not one TCP segment per piece.
   assert(now < 5000);
 }
 
+// A server that keeps the connection open after an empty response must not hold the request until the deadline.
+static void checkEmptyBody() {
+  now = 0;
+  RpcClient client("HTTP/1.1 204 \r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+  client.keepOpen = true;
+  uint8_t body[16] = {};
+  uint8_t headers[64] = {};
+  int32_t status[2] = {};
+  int length = juno_http_request(client, "DELETE", "example.test", 80, "/x", nullptr,
+      nullptr, 0, nullptr, -1, body, sizeof(body), headers, sizeof(headers), status);
+  assert(status[0] == 204);
+  assert(length == 0);
+  assert(now < 1000);
+}
+
 int main() {
+  checkEmptyBody();
   std::string body(3424, 'x');
   std::string headers = "HTTP/1.1 200 OK\r\nX-Padding: " + std::string(800, 'h') + "\r\n";
   std::string chunked = headers + "Transfer-Encoding: chunked\r\n\r\n"
