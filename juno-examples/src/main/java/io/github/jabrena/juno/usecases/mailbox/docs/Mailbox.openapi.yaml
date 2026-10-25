@@ -15,8 +15,27 @@ servers:
 tags:
   - name: Mailbox
     description: Create, list, retrieve, and delete mailbox messages
+  - name: Actuator
+    description: Information about the service itself
 security: []
 paths:
+  /actuator/info:
+    get:
+      operationId: getActuatorInfo
+      tags: [Actuator]
+      summary: Identify the service
+      responses:
+        "200":
+          description: The name of the service running on the board.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActuatorInfo"
+              example:
+                info: Juno Mailbox
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+
   /api/v1/mailbox/:
     get:
       operationId: listMailboxMessages
@@ -121,6 +140,15 @@ components:
       example: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
 
   schemas:
+    ActuatorInfo:
+      type: object
+      required: [info]
+      properties:
+        info:
+          type: string
+          description: The service name.
+          example: Juno Mailbox
+
     MailboxMessage:
       type: object
       required: [uuid, title, body, createAt]

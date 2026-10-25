@@ -1,0 +1,46 @@
+info:
+  name: Identify the service
+  type: http
+  seq: 1
+  tags:
+    - Actuator
+
+http:
+  method: GET
+  url: "{{baseUrl}}/actuator/info"
+  auth: inherit
+
+runtime:
+  assertions:
+    - expression: res.status
+      operator: eq
+      value: "200"
+    - expression: res.body.info
+      operator: eq
+      value: '"Juno Mailbox"'
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+examples:
+  - name: 200 Response
+    description: The name of the service running on the board.
+    request:
+      url: "{{baseUrl}}/actuator/info"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "info": "Juno Mailbox"
+          }
