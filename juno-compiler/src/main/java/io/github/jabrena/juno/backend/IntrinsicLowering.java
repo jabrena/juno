@@ -470,8 +470,14 @@ public final class IntrinsicLowering {
     private void registerStorage() {
         shim(Intrinsic.SD_BEGIN, "juno_sd_begin", Result.WORD, List.of(arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_EXISTS, "juno_sd_exists", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_CREATE_DIRECTORY, "juno_sd_create_directory", Result.WORD,
+                List.of(new Parameter(0, List.of(0))), ShimFeature.SD);
         shim(Intrinsic.SD_SIZE, "juno_sd_size", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.SD_OPEN, "juno_sd_open", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_OPEN_FILE, "juno_sd_open_file", Result.WORD,
+                parameters(List.of(0, 1), 0, 1), ShimFeature.SD);
+        shim(Intrinsic.SD_LIST, "juno_sd_list", Result.WORD,
+                parameters(List.of(0), 0, 1, 2, 3), ShimFeature.SD);
         shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.SD);
         shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
@@ -479,7 +485,11 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_APPEND_LINE, "juno_sd_file_append_line", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
                 ShimFeature.SD);
+        shim(Intrinsic.SD_APPEND_FILE_TEXT, "juno_sd_file_append_file_text", Result.WORD,
+                parameters(List.of(0, 1, 2), 0, 1, 2), ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_REMOVE_FILE, "juno_sd_remove_file", Result.WORD,
+                parameters(List.of(0, 1), 0, 1), ShimFeature.SD);
         shim(Intrinsic.SD_TOTAL_KIB, "juno_sd_total_kib", Result.WORD, List.of(), ShimFeature.SD,
                 ShimFeature.SD_CAPACITY);
         shim(Intrinsic.SD_FREE_KIB, "juno_sd_free_kib", Result.WORD, List.of(), ShimFeature.SD,
@@ -702,6 +712,12 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
                         arg(9), arg(10), arg(11), arg(12), arg(13)),
                 ShimFeature.HTTPS, ShimFeature.HTTPS_REQUEST_BUFFER);
+        shim(Intrinsic.HTTP_REQUEST_BUFFER, "juno_http_request_buffer", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
+                        arg(9), arg(10), arg(11), arg(12), arg(13)),
+                ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
+        shim(Intrinsic.HTTP_SET_TIMEOUT, "juno_http_set_timeout", Result.NONE, List.of(arg(0)),
+                ShimFeature.HTTP_TIMEOUT);
     }
 
     private void registerEmail() {
@@ -731,6 +747,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTP_SERVER_ACCEPT, "juno_http_server_accept", Result.WORD, List.of(arg(0), arg(1)), server);
         shim(Intrinsic.HTTP_SERVER_METHOD, "juno_http_server_method", Result.WORD, List.of(), server);
         shim(Intrinsic.HTTP_SERVER_PATH, "juno_http_server_path", Result.WORD, List.of(), server);
+        shim(Intrinsic.HTTP_SERVER_CONTENT_LENGTH, "juno_http_server_content_length", Result.WORD, List.of(), server);
         // body (the second argument) may be a literal's address or a runtime pooled string's address
         // (see IntrinsicRegistry#requiresLiteralStringArgument) — both are plain null-terminated
         // const char* to the shim, so both flow the same way.

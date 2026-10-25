@@ -1,0 +1,58 @@
+info:
+  name: List mailbox messages
+  type: http
+  seq: 1
+  tags:
+    - Mailbox
+
+http:
+  method: GET
+  url: "{{baseUrl}}/api/v1/mailbox/"
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+examples:
+  - name: 200 Response
+    description: The current messages in the mailbox.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: GET
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61"
+            }
+          ]
+  - name: 405 Response
+    description: The HTTP method is not supported for this resource.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: GET
+    response:
+      status: 405
+      statusText: Method Not Allowed
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }

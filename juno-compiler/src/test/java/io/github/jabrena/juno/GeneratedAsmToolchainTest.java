@@ -113,6 +113,25 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    @DisplayName("The HTTP server reads segmented requests whole and drops cut-off ones")
+    void shouldReadSegmentedRequestsWholeAndDropCutOffOnes() throws Exception {
+        // Given
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-server.cpp"));
+        String accept = runtime.substring(0, runtime.indexOf("struct JunoHttpServerRespondJob"));
+        String harness = Files.readString(Path.of("src/test/resources/http-server-harness.cpp"));
+
+        // When
+        Process run = compileAndStart(compiler, harness.replace("// HTTP_SERVER_ACCEPT", accept), "http-server-runtime");
+
+        // Then
+        assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
+    @Test
     @DisplayName("An internet-backed LocalDateTime shim compiles with a C++ compiler")
     void shouldCompileAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
         // Given
@@ -1596,6 +1615,11 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
+        if (board.equals("ArduinoUnoQBoard")) {
+            // A bridge read must fit the 256-byte RPC reply even when every byte is >= 0x80 (MessagePack 2 bytes).
+            assertThat(result.runtimeShim()).contains("JUNO_HTTP_SERVER_BUFFER = 112",
+                    "using JunoHttpClient = BridgeTCPClient<JUNO_HTTP_SERVER_BUFFER>;");
+        }
         syntaxCheckCpp(compiler, shim);
     }
 

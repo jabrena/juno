@@ -20,6 +20,72 @@ static bool juno_http_has_content_type(const uint8_t* headers, int32_t length) {
   return false;
 }
 
+// How long a request waits to connect (on ESP32 cores, whose clients take a connect timeout) and then for its
+// response, in milliseconds. HttpClient.setTimeout changes it for every later request.
+static uint32_t juno_http_timeout_ms = 5000u;
+
+extern "C" void juno_http_set_timeout(int32_t millisToWait) {
+  if (millisToWait > 0) {
+    juno_http_timeout_ms = static_cast<uint32_t>(millisToWait);
+  }
+}
+
+#if defined(__AVR__)
+static constexpr int32_t JUNO_HTTP_REQUEST_CHUNK_BYTES = 64;
+#else
+static constexpr int32_t JUNO_HTTP_REQUEST_CHUNK_BYTES = 512;
+#endif
+
+// Collects the request into chunks so a small request leaves in one write: a print per piece becomes a TCP segment
+// per piece on some cores (the ESP32's among them), and a server that reads slowly can see the request cut short.
+template <typename Client>
+class JunoHttpRequestWriter {
+  Client& client;
+  uint8_t chunk[JUNO_HTTP_REQUEST_CHUNK_BYTES];
+  int32_t used = 0;
+
+public:
+  explicit JunoHttpRequestWriter(Client& target) : client(target) {}
+
+  void bytes(const uint8_t* value, int32_t length) {
+    for (int32_t index = 0; index < length; index++) {
+      if (used == JUNO_HTTP_REQUEST_CHUNK_BYTES) flush();
+      chunk[used++] = value[index];
+    }
+  }
+
+  void text(const char* value) {
+    bytes(reinterpret_cast<const uint8_t*>(value), static_cast<int32_t>(strlen(value)));
+  }
+
+  void number(uint32_t value) {
+    char digits[11];
+    int32_t count = 0;
+    do {
+      digits[count++] = static_cast<char>('0' + value % 10u);
+      value /= 10u;
+    } while (value != 0u);
+    while (count > 0) {
+      const uint8_t digit = static_cast<uint8_t>(digits[--count]);
+      bytes(&digit, 1);
+    }
+  }
+
+  void flush() {
+    if (used > 0) client.write(chunk, static_cast<size_t>(used));
+    used = 0;
+  }
+};
+
+template <typename Client>
+static bool juno_http_connect(Client& client, const char* host, int32_t port) {
+#if defined(ARDUINO_ARCH_ESP32)
+  return client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms));
+#else
+  return client.connect(host, static_cast<uint16_t>(port));
+#endif
+}
+
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
@@ -28,38 +94,40 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                   int32_t* statusAndHeadersLength) {
-  if (!client.connect(host, static_cast<uint16_t>(port))) {
+  if (!juno_http_connect(client, host, port)) {
     statusAndHeadersLength[0] = 0;
     statusAndHeadersLength[1] = 0;
     return -1;
   }
-  client.print(method);
-  client.print(' ');
-  client.print(path);
-  client.print(" HTTP/1.1\r\nHost: ");
-  client.print(host);
-  client.print("\r\nConnection: close\r\n");
+  JunoHttpRequestWriter<Client> request(client);
+  request.text(method);
+  request.text(" ");
+  request.text(path);
+  request.text(" HTTP/1.1\r\nHost: ");
+  request.text(host);
+  request.text("\r\nConnection: close\r\n");
   if (requestHeadersBuffer != nullptr && requestHeadersLength > 0) {
-    client.write(requestHeadersBuffer, static_cast<size_t>(requestHeadersLength));
+    request.bytes(requestHeadersBuffer, requestHeadersLength);
   }
   if (body != nullptr || requestBodyLength >= 0) {
     const int32_t bodyLength = body != nullptr ? static_cast<int32_t>(strlen(body)) : requestBodyLength;
     if (!juno_http_has_content_type(requestHeadersBuffer, requestHeadersLength)) {
-      client.print("Content-Type: application/json\r\n");
+      request.text("Content-Type: application/json\r\n");
     }
-    client.print("Content-Length: ");
-    client.print(static_cast<unsigned long>(bodyLength));
-    client.print("\r\n\r\n");
+    request.text("Content-Length: ");
+    request.number(static_cast<uint32_t>(bodyLength));
+    request.text("\r\n\r\n");
     if (body != nullptr) {
-      client.print(body);
+      request.text(body);
     } else if (bodyLength > 0) {
-      client.write(requestBodyBuffer, static_cast<size_t>(bodyLength));
+      request.bytes(requestBodyBuffer, bodyLength);
     }
   } else {
-    client.print("\r\n");
+    request.text("\r\n");
   }
+  request.flush();
 
-  const unsigned long deadline = millis() + 5000;
+  const unsigned long deadline = millis() + juno_http_timeout_ms;
   // The status line ("HTTP/1.1 200 OK\r\n") is parsed for its numeric status code
   // only; everything else on it (the HTTP version and the reason phrase) is skipped.
   bool inStatusLine = true;
@@ -148,6 +216,8 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
       }
       if (headersWritten < headersBufferLength) headersBuffer[headersWritten] = static_cast<uint8_t>(c);
       headersWritten++;
+      // An empty body (a 204, say) is complete at the blank line; do not wait for the server to close.
+      if (inBody && !chunked && hasContentLength && contentLength == 0) break;
       continue;
     }
 

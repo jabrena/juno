@@ -1,0 +1,185 @@
+info:
+  name: Add a message to the mailbox
+  type: http
+  seq: 2
+  tags:
+    - Mailbox
+
+http:
+  method: POST
+  url: "{{baseUrl}}/api/v1/mailbox/"
+  headers:
+    - name: Content-Length
+      value: "0"
+  body:
+    type: json
+    data: |-
+      {
+        "title": "Hello",
+        "body": "Detail of the message"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: before-request
+      code: |-
+        // The board rejects a body larger than it accepts (413) by this declared size, so send the exact byte count
+        // of the body as it goes on the wire.
+        const body = req.getBody({ raw: true });
+        const text = typeof body === "string" ? body : JSON.stringify(body);
+        req.setHeader("Content-Length", String(Buffer.byteLength(text, "utf8")));
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+examples:
+  - name: 201 Response
+    description: The message was created.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61",
+            "title": "Hello",
+            "body": "Detail of the message",
+            "createAt": "2026-10-25T11:10:00"
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: Content-Type
+          value: application/json
+      body:
+        type: json
+        data: |-
+          {
+            "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61",
+            "title": "Hello",
+            "body": "Detail of the message",
+            "createAt": "2026-10-25T11:10:00"
+          }
+  - name: 400 Response
+    description: The request body is malformed or contains invalid field types.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61",
+            "title": "Hello",
+            "body": "Detail of the message",
+            "createAt": "2026-10-25T11:10:00"
+          }
+    response:
+      status: 400
+      statusText: Bad Request
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }
+  - name: 405 Response
+    description: The HTTP method is not supported for this resource.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61",
+            "title": "Hello",
+            "body": "Detail of the message",
+            "createAt": "2026-10-25T11:10:00"
+          }
+    response:
+      status: 405
+      statusText: Method Not Allowed
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }
+  - name: 413 Response
+    description: The request body, title or body is larger than the mailbox accepts.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "title": "Hello",
+            "body": "A body longer than 512 bytes..."
+          }
+    response:
+      status: 413
+      statusText: Content Too Large
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "Request body is larger than the mailbox accepts",
+            "status": 413
+          }
+  - name: 409 Response
+    description: The mailbox already contains four messages.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/"
+      method: POST
+      body:
+        type: json
+        data: |-
+          {
+            "uuid": "6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61",
+            "title": "Hello",
+            "body": "Detail of the message",
+            "createAt": "2026-10-25T11:10:00"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }
+
+docs: |
+  Creates a message and returns the stored representation. If uuid or createAt is omitted or null,
+  the board generates the value. The board currently keeps at most four messages.
+  The title may be up to 64 bytes and the body up to 512 bytes (UTF-8). The request declares its size in
+  Content-Length (set by the before-request script); a larger request is rejected with 413 before it is parsed.

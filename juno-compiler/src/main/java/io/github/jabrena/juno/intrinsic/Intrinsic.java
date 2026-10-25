@@ -149,14 +149,19 @@ public enum Intrinsic {
     TCP_CLOSE,
     SD_BEGIN,
     SD_EXISTS,
+    SD_CREATE_DIRECTORY,
     SD_OPEN,
+    SD_OPEN_FILE,
+    SD_LIST,
     SD_FILE_AVAILABLE,
     SD_FILE_READ,
     SD_FILE_CLOSE,
     SD_SIZE,
     SD_APPEND_LINE,
     SD_APPEND_TEXT,
+    SD_APPEND_FILE_TEXT,
     SD_REMOVE,
+    SD_REMOVE_FILE,
     SD_TOTAL_KIB,
     SD_FREE_KIB,
     RAF_OPEN,
@@ -187,6 +192,9 @@ public enum Intrinsic {
     HTTPS_PATCH,
     HTTPS_QUERY,
     HTTPS_REQUEST_BUFFER,
+    HTTP_REQUEST_BUFFER,
+    /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
+    HTTP_SET_TIMEOUT,
     HTTP_GET_PATH_BUFFER,
     /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
     HTTP_URL_GET,
@@ -202,6 +210,7 @@ public enum Intrinsic {
     HTTP_SERVER_ACCEPT,
     HTTP_SERVER_METHOD,
     HTTP_SERVER_PATH,
+    HTTP_SERVER_CONTENT_LENGTH,
     HTTP_SERVER_RESPOND,
     HTTP_SERVER_RESPOND_BUILDER,
     MEMORY_ARENA_USED,
@@ -455,8 +464,9 @@ public enum Intrinsic {
      * read the card object they are called on (only its Java {@code begin()} reads the chip select it holds), but they
      * wait on the card, so they do not inline either.
      */
-    private static final Set<Intrinsic> SD_CARD_OPERATIONS = EnumSet.of(SD_BEGIN, SD_EXISTS, SD_SIZE, SD_OPEN,
-            SD_APPEND_LINE, SD_APPEND_TEXT, SD_REMOVE, SD_TOTAL_KIB, SD_FREE_KIB);
+    private static final Set<Intrinsic> SD_CARD_OPERATIONS = EnumSet.of(SD_BEGIN, SD_EXISTS, SD_CREATE_DIRECTORY, SD_SIZE,
+            SD_OPEN, SD_OPEN_FILE, SD_LIST, SD_APPEND_LINE, SD_APPEND_TEXT, SD_APPEND_FILE_TEXT, SD_REMOVE, SD_REMOVE_FILE,
+            SD_TOTAL_KIB, SD_FREE_KIB);
 
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {

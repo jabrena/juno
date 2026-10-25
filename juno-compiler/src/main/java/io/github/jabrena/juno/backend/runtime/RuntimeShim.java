@@ -279,6 +279,8 @@ public final class RuntimeShim {
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
             shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), core.httpsClientType(),
                     ioRuntime.usesWorker(core, features)));
+        } else if (uses(ShimFeature.HTTP_TIMEOUT)) {
+            shim.append(networkShimLibraries.httpTimeoutStub());
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),

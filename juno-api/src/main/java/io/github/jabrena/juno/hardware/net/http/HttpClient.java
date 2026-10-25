@@ -22,12 +22,19 @@ package io.github.jabrena.juno.hardware.net.http;
  * returns the number of body bytes written, or {@code -1} if the connection, TLS setup or certificate validation
  * failed. {@code statusAndHeadersLength} (a caller-owned {@code int[2]}, allocated once outside any loop like the
  * buffers) receives the HTTP status code at index 0 ({@code 0} if no status line arrived) and the number of bytes
- * written into {@code headersBuffer} at index 1. A request that doesn't complete within a fixed 5-second timeout is
- * abandoned and returns whatever was captured so far.
+ * written into {@code headersBuffer} at index 1. A request that doesn't complete within the timeout (5 seconds unless
+ * {@link #setTimeout} changed it) is abandoned and returns whatever was captured so far.
  */
 public final class HttpClient {
     /** A reasonable default size for a caller's body/headers buffer, in bytes. */
     public static final int DEFAULT_RESPONSE_BUFFER_SIZE = 1024;
+
+    /**
+     * Sets how long every later request waits, in milliseconds: on ESP32 boards (Nano ESP32, M5Stack Cardputer) to
+     * connect and then again for the response, elsewhere for the response only, as those boards' WiFi clients take no
+     * connect timeout. A value of {@code 0} or less is ignored; the default is 5000. Call it once at startup.
+     */
+    public static native void setTimeout(int millis);
 
     private HttpClient() {
     }
@@ -105,6 +112,19 @@ public final class HttpClient {
      * a request-header block of 1024 bytes or more return {@code -1} without connecting.
      */
     public static native int requestHttps(String host, int port, String method,
+            byte[] pathBuffer, int pathLength,
+            byte[] requestHeadersBuffer, int requestHeadersLength,
+            byte[] requestBodyBuffer, int requestBodyLength,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
+
+    /**
+     * Sends a plain-HTTP request whose host, path, request headers, and optional body are held in caller-owned
+     * storage. This is the plain-HTTP counterpart of {@link #requestHttps}; it is useful for local devices whose
+     * address is entered at runtime. The same length and response-buffer rules apply.
+     */
+    public static native int requestHttp(String host, int port, String method,
             byte[] pathBuffer, int pathLength,
             byte[] requestHeadersBuffer, int requestHeadersLength,
             byte[] requestBodyBuffer, int requestBodyLength,

@@ -1,0 +1,10 @@
+info:
+  name: Actuator
+  type: folder
+
+request:
+  auth: inherit
+
+docs:
+  content: Information about the service itself
+  type: text/markdown

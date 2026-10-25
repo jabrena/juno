@@ -324,6 +324,8 @@ public final class Linker {
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
                 Intrinsic.HTTPS_QUERY,
                 Intrinsic.HTTPS_REQUEST_BUFFER);
+        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER);
+        require(required, Capability.WIFI, Intrinsic.HTTP_SET_TIMEOUT);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,
@@ -354,8 +356,8 @@ public final class Linker {
                 Intrinsic.MATH_ASIN, Intrinsic.MATH_ACOS, Intrinsic.MATH_ATAN, Intrinsic.MATH_ATAN2, Intrinsic.MATH_EXP,
                 Intrinsic.MATH_LOG, Intrinsic.MATH_LOG10, Intrinsic.MATH_POW, Intrinsic.MATH_CBRT, Intrinsic.MATH_HYPOT);
         require(required, Capability.HTTP_SERVER, Intrinsic.HTTP_SERVER_BEGIN, Intrinsic.HTTP_SERVER_ACCEPT,
-                Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH, Intrinsic.HTTP_SERVER_RESPOND,
-                Intrinsic.HTTP_SERVER_RESPOND_BUILDER);
+                Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH, Intrinsic.HTTP_SERVER_CONTENT_LENGTH,
+                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
                 Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR, Intrinsic.LEGO_HUB_HOLD_MOTOR,
                 Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,

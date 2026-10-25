@@ -2056,6 +2056,46 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_remove(const char* path)");
         }
 
+        @Test
+        @DisplayName("Lowers folder creation and folder file operations with runtime names")
+        void shouldLowerFolderCreationAndFolderFileOperations() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                    import java.io.InputStream;
+                    public final class MailboxStorage {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
+                        public static void main(String[] args) throws Exception {
+                            SD_CARD.begin();
+                            String directory = "mailbox/20261025";
+                            String fileStem = "5500e840-e29b-41d4-a716-446655440000";
+                            SD_CARD.createDirectory(directory);
+                            SD_CARD.appendText(directory, fileStem, "message");
+                            InputStream file = SD_CARD.open(directory, fileStem);
+                            if (file != null) file.close();
+                            SD_CARD.remove(directory, fileStem);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.MailboxStorage", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MailboxStorage");
+
+            // Then
+            assertThat(result.assembly()).contains(
+                    "bl juno_sd_create_directory", "bl juno_sd_file_append_file_text",
+                    "bl juno_sd_open_file", "bl juno_sd_remove_file");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_sd_create_directory(const char* path)",
+                    "extern \"C\" int32_t juno_sd_file_append_file_text(const char* directory, const char* fileStem, const char* text)",
+                    "extern \"C\" int32_t juno_sd_open_file(const char* directory, const char* fileStem)",
+                    "extern \"C\" int32_t juno_sd_remove_file(const char* directory, const char* fileStem)",
+                    "memcpy(target + directoryLength + 1u + stemLength, \".txt\", 5u)");
+        }
+
         /**
          * {@code java.io.RandomAccessFile} reads an SD card file at any offset, the way a WAD directory is walked: seek,
          * fill a local buffer, skip, and every failure surfaces as the JDK's own exception in the program's handlers.
@@ -2527,10 +2567,98 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("bl juno_https_request_buffer");
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_https_request_buffer(",
-                    "client.write(requestHeadersBuffer, static_cast<size_t>(requestHeadersLength))",
-                    "client.write(requestBodyBuffer, static_cast<size_t>(bodyLength))",
+                    "request.bytes(requestHeadersBuffer, requestHeadersLength)",
+                    "request.bytes(requestBodyBuffer, bodyLength)",
                     "using JunoHttpsClient = WiFiSSLClient;")
                     .doesNotContain("juno_http_get(");
+        }
+
+        @Test
+        @DisplayName("Lowers a buffered plain HTTP request with a runtime host")
+        void shouldLowerBufferedHttpRequestWithRuntimeHost() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class BufferedHttpDemo {
+                        public static void main(String[] args) {
+                            byte[] path = new byte[32];
+                            path[0] = '/';
+                            byte[] requestHeaders = new byte[32];
+                            byte[] requestBody = new byte[32];
+                            byte[] responseBody = new byte[256];
+                            byte[] responseHeaders = new byte[128];
+                            int[] status = new int[2];
+                            HttpClient.requestHttp("192.168.1.47", 80, "GET", path, 1,
+                                    requestHeaders, 0, requestBody, -1,
+                                    responseBody, responseBody.length, responseHeaders, responseHeaders.length, status);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedHttpDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedHttpDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_request_buffer");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_http_request_buffer(",
+                    "juno_http_run<WiFiClient>(method, host, port, path, nullptr");
+        }
+
+        @Test
+        @DisplayName("Lowers HttpClient.setTimeout to the shared connect and response timeout")
+        void shouldLowerHttpTimeoutToSharedRequestTimeout() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTimeoutDemo {
+                        public static void main(String[] args) {
+                            byte[] body = new byte[64];
+                            byte[] headers = new byte[64];
+                            int[] status = new int[2];
+                            HttpClient.setTimeout(15000);
+                            HttpClient.get("http://192.168.1.47/", body, body.length, headers, headers.length, status);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_set_timeout");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" void juno_http_set_timeout(int32_t millisToWait) {",
+                    "client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms))",
+                    "const unsigned long deadline = millis() + juno_http_timeout_ms;");
+        }
+
+        @Test
+        @DisplayName("Backs HttpClient.setTimeout with a no-op when the program makes no request")
+        void shouldStubHttpTimeoutWithoutRequests() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTimeoutOnlyDemo {
+                        public static void main(String[] args) {
+                            HttpClient.setTimeout(15000);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutOnlyDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutOnlyDemo");
+
+            // Then
+            assertThat(result.runtimeShim())
+                    .contains("extern \"C\" void juno_http_set_timeout(int32_t) {")
+                    .doesNotContain("juno_http_timeout_ms");
         }
 
         @Test
@@ -2780,7 +2908,9 @@ class JunoCompilerTest {
                             if (bodyLength >= 0) {
                                 String method = HttpServer.method();
                                 String path = HttpServer.path();
-                                if (method.equals("GET") && path.equals("/status")) {
+                                if (HttpServer.contentLength() > body.length) {
+                                    HttpServer.respond(413, "application/json", "{}");
+                                } else if (method.equals("GET") && path.equals("/status")) {
                                     HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
                                 } else {
                                     StringBuilder json = new StringBuilder(32);
@@ -2800,16 +2930,22 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains(".asciz \"GET\"", ".asciz \"/status\"",
                     ".asciz \"application/json\"", ".asciz \"{\\\"ok\\\":true}\"",
                     "bl juno_http_server_begin", "bl juno_http_server_accept", "bl juno_http_server_method",
-                    "bl juno_http_server_path", "bl juno_string_equals", "bl juno_http_server_respond",
+                    "bl juno_http_server_path", "bl juno_http_server_content_length", "bl juno_string_equals",
+                    "bl juno_http_server_respond",
                     "bl juno_http_server_respond_builder");
             assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <new>",
                     "extern \"C\" void juno_http_server_begin(int32_t port)",
                     "extern \"C\" int32_t juno_http_server_accept(",
                     "extern \"C\" int32_t juno_http_server_method()",
                     "extern \"C\" int32_t juno_http_server_path()",
+                    "extern \"C\" int32_t juno_http_server_content_length()",
+                    "if (hasContentLength) juno_http_server_content_length_value = contentLength;",
                     "extern \"C\" void juno_http_server_respond(",
                     "extern \"C\" void juno_http_server_respond_builder(",
-                    "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)");
+                    "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)",
+                    "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
+            // A path longer than a runtime-string slot (e.g. /api/v1/mailbox/<uuid>) must not become null.
+            assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
         }
 
         /**

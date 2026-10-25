@@ -1,6 +1,8 @@
 
 static char juno_http_server_method_buf[8];
 static char juno_http_server_path_buf[96];
+static int32_t juno_http_server_content_length_value = -1;
+static constexpr int32_t JUNO_HTTP_SERVER_DISCONNECTED_POLLS = 3;
 
 // Cancelled while it waits for a request: drop the client, so the next accept() starts afresh.
 static void juno_http_server_abort(void*) {
@@ -31,6 +33,7 @@ extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBuff
 static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
   if (!juno_http_server_next_client()) return -1;
   JunoHttpClient& client = juno_http_server_client;
+  juno_http_server_content_length_value = -1;
 
   int32_t methodLength = 0;
   int32_t pathLength = 0;
@@ -44,16 +47,25 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
   int32_t contentLengthMatch = 0;
   const char* contentLengthMarker = "content-length:";
   int32_t written = 0;
+  bool complete = false;
+  int32_t disconnectedPolls = 0;
 
+  // A client may send its request in several TCP segments, and on the UNO R4 WiFi available(), connected() and read()
+  // are each a round trip to the WiFi module that can fail once without the peer having gone. So a gap in the data, a
+  // failed read or a single "not connected" only waits for more; the peer counts as gone after several in a row.
   const unsigned long deadline = millis() + 5000;
   while (millis() < deadline) {
     if (!client.available()) {
-      if (!client.connected()) break;
+      if (!client.connected() && ++disconnectedPolls >= JUNO_HTTP_SERVER_DISCONNECTED_POLLS) break;
       juno_io_wait(1);
       continue;
     }
     int value = client.read();
-    if (value < 0) break;
+    if (value < 0) {
+      juno_io_wait(1);
+      continue;
+    }
+    disconnectedPolls = 0;
     char c = static_cast<char>(value);
 
     if (!gotRequestLine) {
@@ -71,6 +83,9 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
         }
       } else if (c == '\n') {
         gotRequestLine = true;
+        // The request line's CRLF starts the blank-line match, so a request with no headers ends too.
+        recent[2] = '\r';
+        recent[3] = '\n';
       }
       continue;
     }
@@ -96,37 +111,49 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
       recent[3] = c;
       if (recent[0] == '\r' && recent[1] == '\n' && recent[2] == '\r' && recent[3] == '\n') {
         inBody = true;
-        if (!hasContentLength) break;
+        if (!hasContentLength || contentLength <= 0) {
+          complete = true;
+          break;
+        }
       }
       continue;
     }
 
     if (written < bodyBufferLength) bodyBuffer[written] = static_cast<uint8_t>(c);
     written++;
-    if (written >= contentLength) break;
+    if (written >= contentLength) {
+      complete = true;
+      break;
+    }
+  }
+  if (!complete) {
+    // A request cut off before its headers (or declared body) ended must not reach the program: its partial path
+    // would be answered as if the client had asked for it, e.g. a 404 for a uuid that does exist.
+    client.stop();
+    juno_http_server_release();
+    juno_http_server_method_buf[0] = '\0';
+    juno_http_server_path_buf[0] = '\0';
+    return -1;
   }
   juno_http_server_method_buf[methodLength] = '\0';
   juno_http_server_path_buf[pathLength] = '\0';
+  if (hasContentLength) juno_http_server_content_length_value = contentLength;
   return written < bodyBufferLength ? written : bodyBufferLength;
 }
 
-static int32_t juno_http_server_pool_copy(const char* text, int32_t length) {
-  if (length < 0 || static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) return 0;
-  char* slot = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
-  for (int32_t i = 0; i < length; i++) slot[i] = text[i];
-  slot[length] = '\0';
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
+extern "C" int32_t juno_http_server_content_length() {
+  return juno_http_server_content_length_value;
 }
 
+// The request buffers are already null-terminated and outlive the call, so they are returned as-is:
+// copying into a runtime-string slot would turn any path of JUNO_STRING_SLOT_SIZE bytes or more
+// (e.g. /api/v1/mailbox/<uuid>) into null and panic the caller before it could respond.
 extern "C" int32_t juno_http_server_method() {
-  return juno_http_server_pool_copy(juno_http_server_method_buf,
-      static_cast<int32_t>(strlen(juno_http_server_method_buf)));
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_method_buf));
 }
 
 extern "C" int32_t juno_http_server_path() {
-  return juno_http_server_pool_copy(juno_http_server_path_buf,
-      static_cast<int32_t>(strlen(juno_http_server_path_buf)));
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));
 }
 
 struct JunoHttpServerRespondJob {

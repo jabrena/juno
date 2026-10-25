@@ -1,0 +1,254 @@
+openapi: 3.0.3
+info:
+  title: Juno Mailbox API
+  version: 1.0.0
+  description: |
+    An SD-backed mailbox served by the Juno Mailbox example on an Arduino UNO Q or UNO R4 WiFi.
+    The in-memory index is limited to four messages; message JSON is stored on the SD card.
+servers:
+  - url: http://{host}
+    description: The board serving the mailbox
+    variables:
+      host:
+        default: board.local
+        description: Board IP address or resolvable host name
+tags:
+  - name: Mailbox
+    description: Create, list, retrieve, and delete mailbox messages
+  - name: Actuator
+    description: Information about the service itself
+security: []
+paths:
+  /actuator/info:
+    get:
+      operationId: getActuatorInfo
+      tags: [Actuator]
+      summary: Identify the service
+      responses:
+        "200":
+          description: The name of the service running on the board.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActuatorInfo"
+              example:
+                info: Juno Mailbox
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+
+  /api/v1/mailbox/:
+    get:
+      operationId: listMailboxMessages
+      tags: [Mailbox]
+      summary: List mailbox messages
+      responses:
+        "200":
+          description: The current messages in the mailbox.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MailboxMessageId"
+              example:
+                - uuid: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+    post:
+      operationId: createMailboxMessage
+      tags: [Mailbox]
+      summary: Add a message to the mailbox
+      description: |
+        Creates a message and returns the stored representation. If uuid or createAt is omitted or null,
+        the board generates the value. The board currently keeps at most four messages. The request must
+        declare its size in Content-Length; a body over 1280 bytes is rejected with 413 before it is parsed.
+      parameters:
+        - name: Content-Length
+          in: header
+          required: true
+          description: Size of the request body in bytes. At most 1280.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 1280
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateMailboxMessageRequest"
+            example:
+              uuid: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+              title: Hello
+              body: Detail of the message
+              createAt: "2026-10-25T11:10:00"
+      responses:
+        "201":
+          description: The message was created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailboxMessage"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "409":
+          $ref: "#/components/responses/MailboxFull"
+        "413":
+          $ref: "#/components/responses/ContentTooLarge"
+
+  /api/v1/mailbox/{uuid}:
+    parameters:
+      - $ref: "#/components/parameters/MessageUuid"
+    get:
+      operationId: getMailboxMessage
+      tags: [Mailbox]
+      summary: Retrieve one mailbox message
+      responses:
+        "200":
+          description: The requested message.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MailboxMessage"
+        "404":
+          $ref: "#/components/responses/MessageNotFound"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+    delete:
+      operationId: deleteMailboxMessage
+      tags: [Mailbox]
+      summary: Delete one mailbox message
+      responses:
+        "204":
+          description: The message was deleted.
+        "404":
+          $ref: "#/components/responses/MessageNotFound"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+
+components:
+  parameters:
+    MessageUuid:
+      name: uuid
+      in: path
+      required: true
+      description: The exact uuid value returned in a mailbox message.
+      schema:
+        type: string
+      example: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+
+  schemas:
+    ActuatorInfo:
+      type: object
+      required: [info]
+      properties:
+        info:
+          type: string
+          description: The service name.
+          example: Juno Mailbox
+
+    MailboxMessage:
+      type: object
+      required: [uuid, title, body, createAt]
+      properties:
+        uuid:
+          type: string
+          description: Message identifier. Generated by the board when omitted from the request.
+          example: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+        title:
+          type: string
+          description: Message title.
+          example: Hello
+        body:
+          type: string
+          description: Message detail.
+          example: Detail of the message
+        createAt:
+          type: string
+          description: Local date-time in ISO-8601 local form, without a timezone offset.
+          example: "2026-10-25T11:10:00"
+
+    MailboxMessageId:
+      type: object
+      required: [uuid]
+      properties:
+        uuid:
+          type: string
+          description: Message identifier used to retrieve or delete the message.
+          example: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+
+    CreateMailboxMessageRequest:
+      type: object
+      required: [title, body]
+      properties:
+        uuid:
+          type: string
+          nullable: true
+          description: Optional message identifier. The board generates one when omitted or null.
+          example: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+        title:
+          type: string
+          maxLength: 64
+          description: Message title, at most 64 UTF-8 bytes.
+          example: Hello
+        body:
+          type: string
+          maxLength: 512
+          description: Message detail, at most 512 UTF-8 bytes.
+          example: Detail of the message
+        createAt:
+          type: string
+          nullable: true
+          description: Optional local date-time. The board generates one when omitted or null.
+          example: "2026-10-25T11:10:00"
+
+    ProblemDetails:
+      type: object
+      required: [type, title, status]
+      properties:
+        type:
+          type: string
+          example: about:blank
+        title:
+          type: string
+          description: Human-readable error detail returned by the example.
+          example: No mailbox message at /api/v1/mailbox/unknown
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+          example: 404
+
+  responses:
+    BadRequest:
+      description: The request body is malformed or contains invalid field types.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    MessageNotFound:
+      description: No message exists with the requested uuid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    ContentTooLarge:
+      description: The request body, its title or its body is larger than the mailbox accepts.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    MailboxFull:
+      description: The mailbox already contains four messages.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+    MethodNotAllowed:
+      description: The HTTP method is not supported for this resource.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"

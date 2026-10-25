@@ -62,6 +62,7 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.ONBOARD_WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI_ACCESS_POINT, true),
+                arguments(Board.M5_CARDPUTER, Capability.HTTP_CLIENT, true),
                 arguments(Board.M5_CARDPUTER, Capability.M5_DISPLAY, true),
                 arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),

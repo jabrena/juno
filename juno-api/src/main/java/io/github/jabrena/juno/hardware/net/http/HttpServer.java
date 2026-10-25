@@ -48,8 +48,18 @@ public final class HttpServer {
     /** The HTTP method ({@code "GET"}, {@code "POST"}, ...) of the request from the most recent {@link #accept}. */
     public static native String method();
 
-    /** The request path (e.g. {@code "/status"}) of the request from the most recent {@link #accept}. */
+    /**
+     * The request path (e.g. {@code "/status"}) of the request from the most recent {@link #accept}, up to 95
+     * characters; the next {@code accept} overwrites it.
+     */
     public static native String path();
+
+    /**
+     * The {@code Content-Length} header of the request from the most recent {@link #accept}, or {@code -1} when it
+     * had none. It is the size the client declared, so a server can reject a body larger than its buffer (which
+     * {@code accept} silently truncates) before parsing it.
+     */
+    public static native int contentLength();
 
     /** Replies with {@code body} (a literal or a runtime {@code String}), then closes the connection. */
     public static native void respond(int status, String contentType, String body);
