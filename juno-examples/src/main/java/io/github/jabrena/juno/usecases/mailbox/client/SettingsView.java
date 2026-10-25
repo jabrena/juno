@@ -21,17 +21,11 @@ public final class SettingsView implements KeyboardView {
     private final char[] host = new char[HOST_CAPACITY];
     private int hostLength;
 
-    public SettingsView(Navigator navigator, Display display, MailboxClient client, Footer footer, String initialHost) {
+    public SettingsView(Navigator navigator, Display display, MailboxClient client, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.client = client;
         this.footer = footer;
-        if (initialHost != null) {
-            hostLength = Math.min(initialHost.length(), host.length);
-            for (int index = 0; index < hostLength; index++) {
-                host[index] = initialHost.charAt(index);
-            }
-        }
     }
 
     @Override

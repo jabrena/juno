@@ -7,6 +7,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
@@ -28,6 +29,8 @@ public final class MailboxCardputer {
     private static final int WIFI_ATTEMPTS = 30;
     private static final int MESSAGE_BODY_TOP = 32;
     private static final int MESSAGE_BODY_HEIGHT = 74;
+    /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
+    private static final int HTTP_TIMEOUT_MILLIS = 30000;
     private static final Wifi WIFI = M5StackCardputer.getWifi();
 
     private MailboxCardputer() {
@@ -47,18 +50,19 @@ public final class MailboxCardputer {
             return;
         }
 
+        HttpClient.setTimeout(HTTP_TIMEOUT_MILLIS);
         MailboxModel model = new MailboxModel();
-        MailboxClient client = new MailboxClient(model, settings.host());
+        MailboxClient client = new MailboxClient(model);
         KeyboardViewRouter router = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
         Footer footer = new Footer(display);
         NumberedList messages = new NumberedList(display, model);
-        router.register(SETTINGS_VIEW, new SettingsView(router, display, client, footer, settings.host()));
+        router.register(SETTINGS_VIEW, new SettingsView(router, display, client, footer));
         router.register(INBOX_VIEW, new InboxView(router, display, model, client, messages, footer));
         ScrollingText body = new ScrollingText(display, MESSAGE_BODY_TOP, MESSAGE_BODY_HEIGHT);
         router.register(2, new MessageView(router, display, keyboard, model, client, body, footer));
         router.register(3, new ComposeView(router, display, keyboard, client, footer));
         router.background(client);
-        router.start(settings.host() == null || settings.host().length() == 0 ? SETTINGS_VIEW : INBOX_VIEW);
+        router.start(SETTINGS_VIEW);
         router.run();
     }
 
@@ -82,7 +86,23 @@ public final class MailboxCardputer {
             return false;
         }
         Serial.println("Mailbox client: WiFi connected");
+        int[] octets = new int[4];
+        WIFI.localIP(octets);
+        printAddress("Mailbox client: IP ", octets);
+        WIFI.gatewayIP(octets);
+        printAddress("Mailbox client: gateway ", octets);
         return true;
+    }
+
+    private static void printAddress(String label, int[] octets) {
+        Serial.print(label);
+        for (int index = 0; index < octets.length; index++) {
+            if (index > 0) {
+                Serial.print(".");
+            }
+            Serial.print(octets[index]);
+        }
+        Serial.println("");
     }
 
     private static MailboxSettings loadSettings() {
@@ -104,13 +124,13 @@ public final class MailboxCardputer {
                 Serial.println("Mailbox client: wifi.ssid/password missing");
                 return null;
             }
-            return new MailboxSettings(ssid, password, properties.getProperty("mailbox.host"));
+            return new MailboxSettings(ssid, password);
         } catch (IOException exception) {
             Serial.println("Mailbox client: could not read settings");
             return null;
         }
     }
 
-    private record MailboxSettings(String ssid, String password, String host) {
+    private record MailboxSettings(String ssid, String password) {
     }
 }

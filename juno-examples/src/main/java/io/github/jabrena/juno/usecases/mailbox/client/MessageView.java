@@ -16,7 +16,7 @@ public final class MessageView implements KeyboardView {
     private static final int DOWN = '.';
     private static final int HEADER_HEIGHT = 28;
     private static final int HEADER_COLUMNS = 18;
-    private static final String LEGEND = "Esc:back  Ctrl+C:new  Ctrl+D:delete";
+    private static final String LEGEND = "Esc | Ctrl+c | Ctrl+d";
 
     private final Navigator navigator;
     private final Display display;
@@ -98,7 +98,7 @@ public final class MessageView implements KeyboardView {
         if (client.delete(uuid, uuidLength)) {
             navigator.back();
         } else {
-            footer.draw("Delete failed | Esc:back");
+            footer.draw("Delete failed | Esc");
         }
     }
 
@@ -110,7 +110,7 @@ public final class MessageView implements KeyboardView {
         display.setCursor(8, 6);
         if (messageIndex < 0) {
             display.print("MESSAGE");
-            footer.draw("Esc:back  Ctrl+C:new");
+            footer.draw("Esc | Ctrl+c");
             return;
         }
         drawTitle();

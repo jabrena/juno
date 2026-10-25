@@ -30,13 +30,13 @@ public final class MailboxClient implements Task {
     private int nextRefresh;
     private boolean refreshNow;
 
-    public MailboxClient(MailboxModel model, String host) {
-        this(model, host, ArduinoUno.getClock());
+    /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
+    public MailboxClient(MailboxModel model) {
+        this(model, ArduinoUno.getClock());
     }
 
-    MailboxClient(MailboxModel model, String host, Clock clock) {
+    MailboxClient(MailboxModel model, Clock clock) {
         this.model = model;
-        this.host = host;
         this.clock = clock;
         refreshNow = true;
     }
@@ -66,7 +66,9 @@ public final class MailboxClient implements Task {
             model.status("Set mailbox IP in Settings");
             return false;
         }
-        Serial.println("Mailbox client: GET /api/v1/mailbox/");
+        Serial.print("Mailbox client: GET host [");
+        Serial.print(host);
+        Serial.println("]");
         int listLength = getPath("/api/v1/mailbox/", 16);
         Serial.print("Mailbox client: list status ");
         Serial.print(statusAndHeadersLength[0]);
