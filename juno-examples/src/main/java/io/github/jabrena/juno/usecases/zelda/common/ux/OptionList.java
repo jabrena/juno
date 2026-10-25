@@ -19,7 +19,7 @@ public final class OptionList {
 
     private final Display display;
     private final OptionListItems items;
-    private final int itemCount;
+    private int itemCount;
     private int selectedIndex = -1;
     private int firstVisibleIndex;
     private int marqueeFrameCounter;
@@ -30,19 +30,21 @@ public final class OptionList {
     public OptionList(Display display, OptionListItems items) {
         this.display = display;
         this.items = items;
-        this.itemCount = items.count();
+        itemCount = items.count();
     }
 
     public void select(int index) {
+        itemCount = items.count();
         if (itemCount == 0) {
             selectedIndex = -1;
             firstVisibleIndex = 0;
+            drawEmpty();
         } else {
             selectedIndex = index < 0 ? 0 : index >= itemCount ? itemCount - 1 : index;
             firstVisibleIndex = selectedIndex / VISIBLE_ROWS * VISIBLE_ROWS;
+            draw();
         }
         resetMarquee();
-        draw();
     }
 
     public boolean hasSelection() {
@@ -54,6 +56,7 @@ public final class OptionList {
     }
 
     public void move(int direction) {
+        itemCount = items.count();
         if (selectedIndex < 0) {
             return;
         }
@@ -77,6 +80,23 @@ public final class OptionList {
     }
 
     public void render() {
+        int currentItemCount = items.count();
+        if (currentItemCount != itemCount) {
+            itemCount = currentItemCount;
+            if (itemCount == 0) {
+                selectedIndex = -1;
+                firstVisibleIndex = 0;
+                drawEmpty();
+                return;
+            }
+            if (selectedIndex < 0 || selectedIndex >= itemCount) {
+                selectedIndex = 0;
+            }
+            if (firstVisibleIndex >= itemCount) {
+                firstVisibleIndex = Math.max(0, itemCount - VISIBLE_ROWS);
+            }
+            draw();
+        }
         if (selectedIndex < 0) {
             return;
         }
@@ -86,8 +106,7 @@ public final class OptionList {
         }
         marqueeFrameCounter = 0;
 
-        String title = items.title(selectedIndex);
-        int maximumOffset = title.length() * CHARACTER_WIDTH - (TEXT_RIGHT - TEXT_LEFT);
+        int maximumOffset = items.titleLength(selectedIndex) * CHARACTER_WIDTH - (TEXT_RIGHT - TEXT_LEFT);
         if (maximumOffset <= 0) {
             return;
         }
@@ -120,24 +139,34 @@ public final class OptionList {
         drawNavigationIndicators(lastVisibleIndex);
     }
 
+    private void drawEmpty() {
+        display.fillRect(0, 0, DISPLAY_WIDTH, CONTENT_HEIGHT, Display.BLACK);
+        display.setTextSize(2);
+        display.setTextColor(Display.CYAN, Display.BLACK);
+        display.setCursor(TEXT_LEFT, 42);
+        display.print("No messages");
+    }
+
     private void drawRow(int index) {
         int y = FIRST_ROW_Y + (index - firstVisibleIndex) * ROW_HEIGHT;
         if (index == selectedIndex) {
             display.setTextColor(Display.YELLOW, Display.BLACK);
-            drawScrollingTitle(items.title(index), y);
+            drawScrollingTitle(index, y);
             return;
         }
         display.setTextColor(Display.WHITE, Display.BLACK);
         display.setCursor(TEXT_LEFT, y);
-        display.println(items.label(index));
+        for (int position = 0; position < items.labelLength(index); position++) {
+            display.print(items.labelCharacter(index, position));
+        }
     }
 
-    private void drawScrollingTitle(String title, int y) {
-        for (int index = 0; index < title.length(); index++) {
-            int x = TEXT_LEFT + index * CHARACTER_WIDTH - marqueeOffset;
+    private void drawScrollingTitle(int itemIndex, int y) {
+        for (int position = 0; position < items.titleLength(itemIndex); position++) {
+            int x = TEXT_LEFT + position * CHARACTER_WIDTH - marqueeOffset;
             if (x > -CHARACTER_WIDTH && x < TEXT_RIGHT) {
                 display.setCursor(x, y);
-                display.print(title.charAt(index));
+                display.print(items.titleCharacter(itemIndex, position));
             }
         }
     }

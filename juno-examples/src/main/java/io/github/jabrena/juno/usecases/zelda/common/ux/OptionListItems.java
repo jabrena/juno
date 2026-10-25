@@ -4,7 +4,11 @@ package io.github.jabrena.juno.usecases.zelda.common.ux;
 public interface OptionListItems {
     int count();
 
-    String label(int index);
+    int labelLength(int index);
 
-    String title(int index);
+    char labelCharacter(int index, int position);
+
+    int titleLength(int index);
+
+    char titleCharacter(int index, int position);
 }

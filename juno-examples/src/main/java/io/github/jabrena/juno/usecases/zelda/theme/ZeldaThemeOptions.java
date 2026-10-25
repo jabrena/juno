@@ -10,12 +10,22 @@ public final class ZeldaThemeOptions implements OptionListItems {
     }
 
     @Override
-    public String label(int index) {
-        return ZeldaSoundtrackThemes.label(index);
+    public int labelLength(int index) {
+        return ZeldaSoundtrackThemes.label(index).length();
     }
 
     @Override
-    public String title(int index) {
-        return ZeldaSoundtrackThemes.title(index);
+    public char labelCharacter(int index, int position) {
+        return ZeldaSoundtrackThemes.label(index).charAt(position);
+    }
+
+    @Override
+    public int titleLength(int index) {
+        return ZeldaSoundtrackThemes.title(index).length();
+    }
+
+    @Override
+    public char titleCharacter(int index, int position) {
+        return ZeldaSoundtrackThemes.title(index).charAt(position);
     }
 }
