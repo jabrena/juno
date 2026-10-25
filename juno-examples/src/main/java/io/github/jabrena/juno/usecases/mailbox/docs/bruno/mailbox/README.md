@@ -22,7 +22,8 @@ wifi.ssid=your-network
 wifi.password=your-password
 ```
 
-The collection contains requests for listing, creating, retrieving, and deleting messages. The list request returns only
+The collection contains requests for listing, creating, retrieving, and deleting messages, plus `GET /actuator/info`,
+which identifies the service. The list request returns only
 message UUIDs; use one returned by the create or list request in the retrieve and delete requests.
 
 ## CLI commands
@@ -30,6 +31,9 @@ message UUIDs; use one returned by the create or list request in the retrieve an
 Run these commands from this `mailbox` collection directory. Set `host` to the board address when needed.
 
 ```bash
+# Identify the service: {"info":"Juno Mailbox"}
+npx --yes @usebruno/cli run "Actuator/Identify the service.yml" --env local
+
 # List all messages
 npx --yes @usebruno/cli run "Mailbox/List mailbox messages.yml" --env local
 

@@ -22,7 +22,7 @@ public final class MessageView implements KeyboardView {
     private final Display display;
     private final Keyboard keyboard;
     private final MailboxModel model;
-    private final MailboxClient client;
+    private final MailboxApi client;
     private final ScrollingText body;
     private final Footer footer;
     private final byte[] uuid = new byte[MailboxModel.UUID_LENGTH];
@@ -31,7 +31,7 @@ public final class MessageView implements KeyboardView {
     private int renderedRevision;
 
     public MessageView(Navigator navigator, Display display, Keyboard keyboard, MailboxModel model,
-            MailboxClient client, ScrollingText body, Footer footer) {
+            MailboxApi client, ScrollingText body, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.keyboard = keyboard;

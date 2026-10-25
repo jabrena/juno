@@ -19,18 +19,26 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/** Mailbox client for the M5Stack Cardputer: settings, inbox, detail, and tweet-sized composition. */
+/**
+ * Mailbox client for the M5Stack Cardputer: a cover, mailbox discovery, settings, inbox, detail, and tweet-sized
+ * composition. Wi-Fi joins in the background from the first frame, so the cover and settings respond while it connects;
+ * the mailbox is then found by its {@code /actuator/info}, and the settings are only needed when it is not.
+ *
+ * <p>Its startup objects outgrow the default 8 KiB arena; the Cardputer has RAM to spare, so build it with
+ * {@code -Djuno.Xmx=12k}.
+ */
 @Board(M5StackCardputerBoard.class)
 public final class MailboxCardputer {
     private static final String APPLICATION_PROPERTIES = "application.properties";
     private static final int SETTINGS_VIEW = 0;
     private static final int INBOX_VIEW = 1;
+    private static final int DETAIL_VIEW = 2;
+    private static final int COMPOSE_VIEW = 3;
+    private static final int COVER_VIEW = 4;
+    private static final int DISCOVERY_VIEW = 5;
     private static final int FRAME_MILLIS = 50;
-    private static final int WIFI_ATTEMPTS = 30;
     private static final int MESSAGE_BODY_TOP = 32;
     private static final int MESSAGE_BODY_HEIGHT = 74;
-    /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
-    private static final int HTTP_TIMEOUT_MILLIS = 30000;
     private static final Wifi WIFI = M5StackCardputer.getWifi();
 
     private MailboxCardputer() {
@@ -45,64 +53,30 @@ public final class MailboxCardputer {
         Keyboard keyboard = M5StackCardputer.getKeyboard();
         keyboard.begin();
 
+        // The join starts right away: the SSID and password are runtime Strings, which must not be kept for later.
         MailboxSettings settings = loadSettings();
-        if (settings == null || !connectWifi(settings.ssid(), settings.password(), display)) {
-            return;
+        if (settings != null) {
+            WIFI.begin(settings.ssid(), settings.password());
         }
+        MailboxConnection connection = new MailboxConnection(WIFI, settings != null);
 
-        HttpClient.setTimeout(HTTP_TIMEOUT_MILLIS);
+        HttpClient.setTimeout(MailboxClient.REQUEST_TIMEOUT_MILLIS);
         MailboxModel model = new MailboxModel();
-        MailboxClient client = new MailboxClient(model);
+        MailboxClient client = new MailboxClient(model, connection);
         KeyboardViewRouter router = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
         Footer footer = new Footer(display);
         NumberedList messages = new NumberedList(display, model);
-        router.register(SETTINGS_VIEW, new SettingsView(router, display, client, footer));
-        router.register(INBOX_VIEW, new InboxView(router, display, model, client, messages, footer));
+        router.register(COVER_VIEW, new CoverView(router, display));
+        SettingsView settingsView = new SettingsView(router, display, keyboard, client, connection, footer);
+        router.register(SETTINGS_VIEW, settingsView);
+        router.register(DISCOVERY_VIEW, new DiscoveryView(router, display, connection, client, settingsView, footer));
+        router.register(INBOX_VIEW, new InboxView(router, display, keyboard, model, client, messages, footer));
         ScrollingText body = new ScrollingText(display, MESSAGE_BODY_TOP, MESSAGE_BODY_HEIGHT);
-        router.register(2, new MessageView(router, display, keyboard, model, client, body, footer));
-        router.register(3, new ComposeView(router, display, keyboard, client, footer));
+        router.register(DETAIL_VIEW, new MessageView(router, display, keyboard, model, client, body, footer));
+        router.register(COMPOSE_VIEW, new ComposeView(router, display, keyboard, client, footer));
         router.background(client);
-        router.start(SETTINGS_VIEW);
+        router.start(COVER_VIEW);
         router.run();
-    }
-
-    private static boolean connectWifi(String ssid, String password, Display display) {
-        display.fillScreen(Display.BLACK);
-        display.setTextColor(Display.YELLOW, Display.BLACK);
-        display.setTextSize(2);
-        display.setCursor(8, 30);
-        display.print("Connecting WiFi");
-        WIFI.begin(ssid, password);
-        int attempts = 0;
-        while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < WIFI_ATTEMPTS) {
-            Delay.millis(1000);
-            attempts = attempts + 1;
-        }
-        if (WIFI.status() != Wifi.STATUS_CONNECTED) {
-            display.setTextColor(Display.RED, Display.BLACK);
-            display.setCursor(8, 65);
-            display.print("WiFi failed");
-            Serial.println("Mailbox client: WiFi failed");
-            return false;
-        }
-        Serial.println("Mailbox client: WiFi connected");
-        int[] octets = new int[4];
-        WIFI.localIP(octets);
-        printAddress("Mailbox client: IP ", octets);
-        WIFI.gatewayIP(octets);
-        printAddress("Mailbox client: gateway ", octets);
-        return true;
-    }
-
-    private static void printAddress(String label, int[] octets) {
-        Serial.print(label);
-        for (int index = 0; index < octets.length; index++) {
-            if (index > 0) {
-                Serial.print(".");
-            }
-            Serial.print(octets[index]);
-        }
-        Serial.println("");
     }
 
     private static MailboxSettings loadSettings() {

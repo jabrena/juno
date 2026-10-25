@@ -9,6 +9,8 @@ import java.util.UUID;
 /** The mailbox HTTP controller: translates requests into model operations and renders HTTP responses. */
 public final class MailboxController {
     private static final String MAILBOX_PATH = "/api/v1/mailbox/";
+    private static final String INFO_PATH = "/actuator/info";
+    private static final String INFO = "{\"info\":\"Juno Mailbox\"}";
     private static final String JSON = "application/json";
     private static final String PROBLEM_JSON = "application/problem+json";
 
@@ -24,6 +26,14 @@ public final class MailboxController {
         // accept() truncates a body larger than its buffer; the declared Content-Length reveals it before parsing.
         if (contentLength > requestBody.length) {
             respondProblem(HttpStatus.CONTENT_TOO_LARGE, "Request body is larger than the mailbox accepts");
+            return;
+        }
+        if (path.equals(INFO_PATH)) {
+            if (method.equals(HttpMethod.GET)) {
+                HttpServer.respond(HttpStatus.OK, JSON, INFO);
+            } else {
+                methodNotAllowed();
+            }
             return;
         }
         if (path.equals(MAILBOX_PATH)) {

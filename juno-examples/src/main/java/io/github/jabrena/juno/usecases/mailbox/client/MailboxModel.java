@@ -33,8 +33,12 @@ public final class MailboxModel implements OptionListItems {
         return status;
     }
 
+    /** A new status counts as a change, so the inbox redraws it even when no message changed. */
     public void status(String message) {
-        status = message;
+        if (!message.equals(status)) {
+            status = message;
+            revision = revision + 1;
+        }
     }
 
     public void clear() {

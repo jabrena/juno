@@ -20,6 +20,9 @@ public final class NumberedList {
     private static final int ITEM_GAP = 3;
     private static final int PREFIX_COLUMNS = 3;
     private static final int TEXT_COLUMNS = (TEXT_RIGHT - TEXT_LEFT) / CHARACTER_WIDTH - PREFIX_COLUMNS;
+    private static final String EMPTY_TEXT = "No messages";
+    private static final int EMPTY_TEXT_SIZE = 3;
+    private static final int EMPTY_Y = 22;
 
     private final Display display;
     private final OptionListItems items;
@@ -169,10 +172,10 @@ public final class NumberedList {
 
     private void drawEmpty() {
         display.fillRect(0, 0, DISPLAY_WIDTH, CONTENT_HEIGHT, Display.BLACK);
-        display.setTextSize(TEXT_SIZE);
+        display.setTextSize(EMPTY_TEXT_SIZE);
         display.setTextColor(Display.CYAN, Display.BLACK);
-        display.setCursor(TEXT_LEFT, 42);
-        display.print("No messages");
+        display.setCursor((DISPLAY_WIDTH - EMPTY_TEXT.length() * 6 * EMPTY_TEXT_SIZE) / 2, EMPTY_Y);
+        display.print(EMPTY_TEXT);
     }
 
     private void drawNavigationIndicators(int lastVisibleIndex) {

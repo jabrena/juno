@@ -4,7 +4,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The mailbox TFT view, in portrait: a flat blue mailbox with a letter dropping into its slot, above the message
- * count, IP address and SD-card state. The cover is drawn once; later changes redraw only their own status line.
+ * count and IP address, and a settings gear that opens a status screen with the SD-card and Wi-Fi state. Later
+ * changes redraw only their own row on the cover, or the whole status screen while it is shown.
  */
 public final class MailboxView {
     private static final int BLUE = 0x3C1E;
@@ -16,6 +17,7 @@ public final class MailboxView {
     private static final int ENVELOPE_FLAP = 0xED46;
     private static final int MOTION = 0x5ACB;
     private static final int TEXT = 0x19D1;
+    private static final int DARK_GREEN = 0x0400;
 
     /** The mailbox drawing's origin: the body's left edge and the top of its dome. */
     private static final int MAILBOX_X = 55;
@@ -27,84 +29,240 @@ public final class MailboxView {
     private static final int BODY_BOTTOM = 175;
     private static final int LEG_HEIGHT = 18;
 
-    private static final int STATUS_X = 54;
-    private static final int COUNT_X = STATUS_X + 10 * 12;
-    private static final int COUNT_Y = 238;
-    private static final int IP_Y = 266;
-    private static final int SD_Y = 282;
-    private static final int INTERNET_Y = 298;
-    private static final int STATUS_WIDTH = 240 - STATUS_X;
+    /** The cover's two status rows (message count, then IP address) share text size 2 and are each centered. */
+    private static final int SCREEN_WIDTH = 240;
+    private static final int STATUS_TEXT_SIZE = 2;
+    private static final int STATUS_CHAR_WIDTH = STATUS_TEXT_SIZE * TftTouchShield.CHAR_WIDTH;
+    private static final int STATUS_ROW_HEIGHT = STATUS_TEXT_SIZE * TftTouchShield.CHAR_HEIGHT;
+    private static final int COUNT_Y = 232;
+    private static final int IP_Y = 256;
+    private static final String MESSAGES_LABEL = "MESSAGES: ";
+    private static final String IP_HINT = "SET q.ip IN application.properties";
+    private static final int IP_CAPACITY = 16;
+
+    /** The settings gear in the bottom-right corner; a tap near it opens the status screen. */
+    private static final int GEAR_X = 214;
+    private static final int GEAR_Y = 296;
+    private static final int GEAR_RADIUS = 11;
+    private static final int GEAR_TOOTH_RADIUS = 4;
+    private static final int[] GEAR_TOOTH_X = {0, 9, 13, 9, 0, -9, -13, -9};
+    private static final int[] GEAR_TOOTH_Y = {-13, -9, 0, 9, 13, 9, 0, -9};
+    private static final int GEAR_TOUCH_LEFT = 160;
+    private static final int GEAR_TOUCH_TOP = 248;
+
+    private static final int HEADER_HEIGHT = 44;
+    private static final int LABEL_X = 16;
+    private static final int VALUE_X = 88;
+    private static final int FIRST_ROW_Y = 72;
+    private static final int ROW_GAP = 34;
+    private static final int BACK_Y = 292;
+
+    private boolean storageReady;
+    private int messageCount;
+    private String internetState = "CONNECTING";
+    private int internetColor = TftTouchShield.ORANGE;
+    // The IP is kept as text bytes, not as the String it came in: a runtime String's slot is reused later.
+    private final byte[] ip = new byte[IP_CAPACITY];
+    private int ipLength;
+    private boolean ipMissing;
+    private boolean statusShown;
 
     public void drawCover(boolean storageReady, int messageCount) {
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        TftTouchShield.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
-        TftTouchShield.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
-        drawMailbox();
-
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(STATUS_X, COUNT_Y);
-        TftTouchShield.print("MESSAGES:");
-        drawMessageCount(messageCount);
-        drawIpLabel();
-        TftTouchShield.print("CONNECTING");
-        TftTouchShield.setTextColor(storageReady ? TftTouchShield.GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(STATUS_X, SD_Y);
-        TftTouchShield.print(storageReady ? "SD READY" : "SD UNAVAILABLE");
-        drawInternetConnecting();
+        this.storageReady = storageReady;
+        this.messageCount = messageCount;
+        ipLength = copy("CONNECTING");
+        drawCoverScreen();
     }
 
     public void drawInternetConnecting() {
-        drawInternet("INTERNET: CONNECTING", TftTouchShield.ORANGE);
+        drawInternet("CONNECTING", TftTouchShield.ORANGE);
     }
 
     /** The board joined the network and was given an address. */
     public void drawInternetOnline() {
-        drawInternet("INTERNET: ONLINE", TftTouchShield.GREEN);
+        drawInternet("ONLINE", DARK_GREEN);
     }
 
     public void drawInternetOffline() {
-        drawInternet("INTERNET: OFFLINE", TftTouchShield.RED);
-    }
-
-    private void drawInternet(String status, int color) {
-        TftTouchShield.fillRect(STATUS_X, INTERNET_Y, STATUS_WIDTH, TftTouchShield.CHAR_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(color, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(STATUS_X, INTERNET_Y);
-        TftTouchShield.print(status);
+        drawInternet("OFFLINE", TftTouchShield.RED);
     }
 
     public void drawMessageCount(int messageCount) {
-        TftTouchShield.fillRect(COUNT_X, COUNT_Y, 240 - COUNT_X, 16, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
+        this.messageCount = messageCount;
+        if (statusShown) {
+            drawStatusScreen();
+        } else {
+            drawCountRow();
+        }
+    }
+
+    public void drawIp(int[] octets) {
+        ipMissing = false;
+        ipLength = 0;
+        for (int index = 0; index < octets.length; index++) {
+            if (index > 0) {
+                appendIp('.');
+            }
+            appendIpNumber(octets[index]);
+        }
+        redrawIp();
+    }
+
+    /** The UNO Q's address from {@code q.ip}, or {@code null} when it is not configured. */
+    public void drawIp(String address) {
+        ipMissing = address == null || address.length() > IP_CAPACITY;
+        ipLength = ipMissing ? 0 : copy(address);
+        redrawIp();
+    }
+
+    /** A tap on the cover's gear opens the status screen; any tap on the status screen goes back to the cover. */
+    public void touch(int x, int y) {
+        if (statusShown) {
+            statusShown = false;
+            drawCoverScreen();
+        } else if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
+            statusShown = true;
+            drawStatusScreen();
+        }
+    }
+
+    private void drawInternet(String state, int color) {
+        internetState = state;
+        internetColor = color;
+        if (statusShown) {
+            drawStatusScreen();
+        }
+    }
+
+    private void redrawIp() {
+        if (statusShown) {
+            drawStatusScreen();
+        } else {
+            drawIpRow();
+        }
+    }
+
+    private void drawCoverScreen() {
+        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+        TftTouchShield.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
+        TftTouchShield.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
+        drawMailbox();
+        drawCountRow();
+        drawIpRow();
+        drawGear();
+    }
+
+    private void drawCountRow() {
+        startRow(COUNT_Y, MESSAGES_LABEL.length() + digits(messageCount));
+        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+        TftTouchShield.print(MESSAGES_LABEL);
         TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(COUNT_X, COUNT_Y);
         TftTouchShield.print(messageCount);
     }
 
-    public void drawIp(int[] ip) {
-        drawIpLabel();
-        TftTouchShield.print(ip[0]);
-        TftTouchShield.print(".");
-        TftTouchShield.print(ip[1]);
-        TftTouchShield.print(".");
-        TftTouchShield.print(ip[2]);
-        TftTouchShield.print(".");
-        TftTouchShield.print(ip[3]);
-    }
-
-    public void drawIp(String ip) {
-        drawIpLabel();
-        TftTouchShield.print(ip);
-    }
-
-    private void drawIpLabel() {
-        TftTouchShield.fillRect(STATUS_X, IP_Y, STATUS_WIDTH, TftTouchShield.CHAR_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
+    /** The hint for a missing {@code q.ip} is too long for the row, so it falls back to the small font. */
+    private void drawIpRow() {
+        if (ipMissing) {
+            TftTouchShield.fillRect(0, IP_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
+            TftTouchShield.setTextSize(1);
+            TftTouchShield.setCursor((SCREEN_WIDTH - IP_HINT.length() * TftTouchShield.CHAR_WIDTH) / 2,
+                    IP_Y + TftTouchShield.CHAR_HEIGHT / 2);
+            TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+            TftTouchShield.print(IP_HINT);
+            return;
+        }
+        startRow(IP_Y, ipLength);
         TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(STATUS_X, IP_Y);
-        TftTouchShield.print("IP: ");
+        TftTouchShield.print(ip, ipLength);
+    }
+
+    private void drawGear() {
+        for (int tooth = 0; tooth < GEAR_TOOTH_X.length; tooth++) {
+            TftTouchShield.fillCircle(GEAR_X + GEAR_TOOTH_X[tooth], GEAR_Y + GEAR_TOOTH_Y[tooth], GEAR_TOOTH_RADIUS,
+                    TEXT);
+        }
+        TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_RADIUS, TEXT);
+        TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
+    }
+
+    /** SD card, Wi-Fi, IP and message count, one labelled row each, above a "tap to go back" hint. */
+    private void drawStatusScreen() {
+        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor((SCREEN_WIDTH - 6 * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
+        TftTouchShield.print("STATUS");
+
+        statusLabel("SD", 0);
+        TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
+        TftTouchShield.print(storageReady ? "READY" : "UNAVAILABLE");
+        statusLabel("WIFI", 1);
+        TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
+        TftTouchShield.print(internetState);
+        statusLabel("IP", 2);
+        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
+        if (ipMissing) {
+            TftTouchShield.print("SET q.ip");
+        } else {
+            TftTouchShield.print(ip, ipLength);
+        }
+        statusLabel("MAIL", 3);
+        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
+        TftTouchShield.print(messageCount);
+
+        startRow(BACK_Y, "TAP TO GO BACK".length());
+        TftTouchShield.setTextColor(MOTION, TftTouchShield.WHITE);
+        TftTouchShield.print("TAP TO GO BACK");
+    }
+
+    private void statusLabel(String label, int row) {
+        int y = FIRST_ROW_Y + row * ROW_GAP;
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
+        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+        TftTouchShield.setCursor(LABEL_X, y);
+        TftTouchShield.print(label);
+        TftTouchShield.setCursor(VALUE_X, y);
+    }
+
+    /** Clears a status row and puts the cursor where {@code characters} at the status size end up centered. */
+    private void startRow(int y, int characters) {
+        TftTouchShield.fillRect(0, y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
+        TftTouchShield.setCursor(Math.max(0, (SCREEN_WIDTH - characters * STATUS_CHAR_WIDTH) / 2), y);
+    }
+
+    private int copy(String text) {
+        int length = Math.min(text.length(), IP_CAPACITY);
+        for (int index = 0; index < length; index++) {
+            ip[index] = (byte) text.charAt(index);
+        }
+        return length;
+    }
+
+    private void appendIpNumber(int value) {
+        if (value >= 100) {
+            appendIp((char) ('0' + value / 100));
+        }
+        if (value >= 10) {
+            appendIp((char) ('0' + value / 10 % 10));
+        }
+        appendIp((char) ('0' + value % 10));
+    }
+
+    private void appendIp(char character) {
+        if (ipLength < IP_CAPACITY) {
+            ip[ipLength] = (byte) character;
+            ipLength = ipLength + 1;
+        }
+    }
+
+    private int digits(int value) {
+        int count = value < 0 ? 2 : 1;
+        for (int rest = Math.abs(value); rest >= 10; rest /= 10) {
+            count++;
+        }
+        return count;
     }
 
     private void drawMailbox() {

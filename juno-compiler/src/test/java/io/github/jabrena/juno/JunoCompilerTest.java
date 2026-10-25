@@ -2567,8 +2567,8 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("bl juno_https_request_buffer");
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_https_request_buffer(",
-                    "client.write(requestHeadersBuffer, static_cast<size_t>(requestHeadersLength))",
-                    "client.write(requestBodyBuffer, static_cast<size_t>(bodyLength))",
+                    "request.bytes(requestHeadersBuffer, requestHeadersLength)",
+                    "request.bytes(requestBodyBuffer, bodyLength)",
                     "using JunoHttpsClient = WiFiSSLClient;")
                     .doesNotContain("juno_http_get(");
         }

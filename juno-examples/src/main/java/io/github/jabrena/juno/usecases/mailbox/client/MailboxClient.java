@@ -9,9 +9,21 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.mvc.Task;
 
 /** Allocation-free, retrying HTTP client for the mailbox API. */
-public final class MailboxClient implements Task {
+public final class MailboxClient implements MailboxApi, Task {
+    /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
+    public static final int REQUEST_TIMEOUT_MILLIS = 30000;
+    /**
+     * How long a probe waits for one address. The first connection to a host on the network needs an ARP lookup and a
+     * TCP handshake, which with both boards' Wi-Fi power saving took 619 ms to the R4 (400 ms missed it). An absent
+     * address usually fails sooner than this, once its ARP lookup does.
+     */
+    private static final int PROBE_TIMEOUT_MILLIS = 2000;
+    private static final String SERVICE_NAME = "Juno Mailbox";
+    /** One byte longer than {@link #SERVICE_NAME}, so a longer "info" value is told apart from it. */
+    private static final int INFO_CAPACITY = 13;
     private static final int HTTP_PORT = 80;
     private static final int REFRESH_MILLIS = 5 * 60 * 1000;
+    private static final int RETRY_MILLIS = 5 * 1000;
     private static final int RESPONSE_CAPACITY = 1536;
     private static final int HEADERS_CAPACITY = 256;
     private static final int PATH_CAPACITY = 256;
@@ -19,6 +31,7 @@ public final class MailboxClient implements Task {
     private static final int UUID_LENGTH = 36;
 
     private final MailboxModel model;
+    private final MailboxConnection connection;
     private final Clock clock;
     private final byte[] path = new byte[PATH_CAPACITY];
     private final byte[] requestHeaders = new byte[1];
@@ -26,37 +39,49 @@ public final class MailboxClient implements Task {
     private final byte[] response = new byte[RESPONSE_CAPACITY];
     private final byte[] headers = new byte[HEADERS_CAPACITY];
     private final int[] statusAndHeadersLength = new int[2];
+    private final byte[] info = new byte[INFO_CAPACITY];
     private String host;
     private int nextRefresh;
     private boolean refreshNow;
 
     /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
-    public MailboxClient(MailboxModel model) {
-        this(model, ArduinoUno.getClock());
+    public MailboxClient(MailboxModel model, MailboxConnection connection) {
+        this(model, connection, ArduinoUno.getClock());
     }
 
-    MailboxClient(MailboxModel model, Clock clock) {
+    MailboxClient(MailboxModel model, MailboxConnection connection, Clock clock) {
         this.model = model;
+        this.connection = connection;
         this.clock = clock;
         refreshNow = true;
     }
 
+    @Override
     public void host(String value) {
         host = value;
         requestRefresh();
     }
 
+    @Override
     public void requestRefresh() {
         refreshNow = true;
     }
 
+    /** Follows the Wi-Fi join first; refreshes wait for it, so a refresh asked for meanwhile runs once it is up. */
     @Override
     public void step() {
+        connection.step();
+        if (!connection.isConnected()) {
+            boolean configured = connection.state() != MailboxConnection.NO_SETTINGS;
+            model.status(configured ? "Waiting for WiFi" : "No WiFi settings on SD");
+            return;
+        }
         int now = clock.millis();
         if (refreshNow || now - nextRefresh >= 0) {
             refreshNow = false;
-            nextRefresh = now + REFRESH_MILLIS;
-            refresh();
+            // A failed refresh leaves the inbox empty, so it is retried soon rather than at the next periodic refresh.
+            boolean refreshed = refresh();
+            nextRefresh = clock.millis() + (refreshed ? REFRESH_MILLIS : RETRY_MILLIS);
         }
     }
 
@@ -145,7 +170,38 @@ public final class MailboxClient implements Task {
         return true;
     }
 
-    /** Deletes the message with this uuid and refreshes the inbox when the board confirms it. */
+    @Override
+    public boolean probe(String candidate) {
+        int pathLength = copyPath("/actuator/info");
+        int started = clock.millis();
+        HttpClient.setTimeout(PROBE_TIMEOUT_MILLIS);
+        int length = HttpClient.requestHttp(candidate, HTTP_PORT, "GET", path, pathLength,
+                requestHeaders, 0, null, -1, response, response.length,
+                headers, headers.length, statusAndHeadersLength);
+        HttpClient.setTimeout(REQUEST_TIMEOUT_MILLIS);
+        Serial.print("Mailbox client: probe result ");
+        Serial.print(length);
+        Serial.print(" status ");
+        Serial.print(statusAndHeadersLength[0]);
+        Serial.print(" ms ");
+        Serial.println(clock.millis() - started);
+        if (length < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
+            return false;
+        }
+        int infoLength = Json.getString(response, length, "info", info, info.length);
+        if (infoLength != SERVICE_NAME.length()) {
+            return false;
+        }
+        for (int index = 0; index < infoLength; index++) {
+            if (info[index] != SERVICE_NAME.charAt(index)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Also refreshes the inbox once the board confirms the delete. */
+    @Override
     public boolean delete(byte[] uuid, int uuidLength) {
         if (host == null || host.length() == 0) {
             model.status("Set mailbox IP in Settings");
@@ -166,6 +222,7 @@ public final class MailboxClient implements Task {
         return deleted;
     }
 
+    @Override
     public boolean send(char[] title, int titleLength, char[] body, int bodyLength) {
         if (host == null || host.length() == 0) {
             model.status("Set mailbox IP in Settings");

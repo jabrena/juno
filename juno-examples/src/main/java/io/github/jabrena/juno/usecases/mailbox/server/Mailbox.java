@@ -10,6 +10,7 @@ import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
@@ -25,9 +26,14 @@ import java.util.Properties;
  * display, because the Q's network address is assigned by its Linux side; it is read at runtime, so no board needs a
  * build-time environment variable.
  *
- * <p>The mailbox is available at {@code /api/v1/mailbox/}. Messages are stored as
- * {@code /mailbox/YYYYMMDDHHMMSS/<uuid>.txt}; files outside that timestamp-folder layout are ignored.
- * Only the small index is kept in the 8 KiB board arena.
+ * <p>The mailbox is available at {@code /api/v1/mailbox/}, and {@code GET /actuator/info} identifies the service.
+ * Messages are stored as {@code /mailbox/YYYYMMDDHHMMSS/<uuid>.txt}; files outside that timestamp-folder layout are
+ * ignored.
+ * Only the small index is kept in the board arena.
+ *
+ * <p>Serving one message builds a response of about 1.3 KiB, which the default 8 KiB arena cannot fit beside the
+ * startup objects: on the UNO R4 WiFi the first {@code GET /api/v1/mailbox/<uuid>} ran out of memory and froze the
+ * board. Build it with {@code -Djuno.Xmx=11k}, close to the most the R4 links with (12k overlaps its stack).
  */
 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Mailbox {
@@ -38,6 +44,7 @@ public final class Mailbox {
     private static final Wifi WIFI = ArduinoUno.getWifi();
     private static final int ADDRESS_POLL_MILLIS = 250;
     private static final int ADDRESS_POLLS = 80;
+    private static final int TOUCH_POLL_MILLIS = 100;
 
     private Mailbox() {
     }
@@ -68,9 +75,8 @@ public final class Mailbox {
         }
         connectWifi(settings);
         if (ArduinoUno.getBoardModel().isQ()) {
-            String ip = settings.qIp() != null ? settings.qIp() : "SET q.ip IN application.properties";
-            view.drawIp(ip);
-            printLocalIP(ip);
+            view.drawIp(settings.qIp());
+            printLocalIP(settings.qIp() != null ? settings.qIp() : "q.ip is not set");
         } else {
             int[] ip = new int[4];
             if (!waitForAddress(ip)) {
@@ -87,11 +93,29 @@ public final class Mailbox {
 
         MailboxController controller = new MailboxController(model, view);
         byte[] requestBody = new byte[MailboxModel.MAX_REQUEST_BYTES];
+        Clock clock = ArduinoUno.getClock();
+        int nextTouchPoll = clock.millis();
+        boolean touched = false;
         while (true) {
             int bodyLength = HttpServer.accept(requestBody, requestBody.length);
             if (bodyLength >= 0) {
                 controller.handle(HttpServer.method(), HttpServer.path(), HttpServer.contentLength(), requestBody,
                         bodyLength);
+            }
+            // accept() returns at once when no client waits, so the screen is polled between requests; a tap counts
+            // once, when the press starts.
+            int now = clock.millis();
+            if (now - nextTouchPoll >= 0) {
+                nextTouchPoll = now + TOUCH_POLL_MILLIS;
+                boolean pressed = TftTouchShield.readTouch();
+                if (pressed && !touched) {
+                    Serial.print("Touch ");
+                    Serial.print(TftTouchShield.touchX());
+                    Serial.print(",");
+                    Serial.println(TftTouchShield.touchY());
+                    view.touch(TftTouchShield.touchX(), TftTouchShield.touchY());
+                }
+                touched = pressed;
             }
         }
     }
