@@ -283,7 +283,8 @@ public final class RuntimeShim {
             shim.append(networkShimLibraries.httpTimeoutStub());
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
-            shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),
+            shim.append(networkShimLibraries.httpServerHelpers(
+                    uses(ShimFeature.HTTPS_SERVER) ? core.httpsServerTransport() : core.httpServerTransport(),
                     ioRuntime.usesWorker(core, features)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {

@@ -39,10 +39,12 @@ class BoardTest {
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_R4_WIFI, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_R4_WIFI, Capability.USB_HID, true),
+                arguments(Board.UNO_R4_WIFI, Capability.HTTPS_SERVER, false),
                 arguments(Board.UNO_Q, Capability.WIFI, true),
                 arguments(Board.UNO_Q, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_Q, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_Q, Capability.HTTP_SERVER, true),
+                arguments(Board.UNO_Q, Capability.HTTPS_SERVER, false),
                 arguments(Board.UNO_Q, Capability.SMTP_STARTTLS, false),
                 arguments(Board.UNO_Q, Capability.WATCHDOG, false),
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
@@ -53,6 +55,7 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.HTTP_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTPS_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_SERVER, true),
+                arguments(Board.NANO_ESP32, Capability.HTTPS_SERVER, true),
                 arguments(Board.NANO_ESP32, Capability.TLS_EMAIL, true),
                 arguments(Board.NANO_ESP32, Capability.SMTP_STARTTLS, true),
                 arguments(Board.NANO_ESP32, Capability.SECURE_ENTROPY, true),
@@ -63,6 +66,8 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.ONBOARD_WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.M5_CARDPUTER, Capability.HTTP_CLIENT, true),
+                arguments(Board.M5_CARDPUTER, Capability.HTTP_SERVER, true),
+                arguments(Board.M5_CARDPUTER, Capability.HTTPS_SERVER, true),
                 arguments(Board.M5_CARDPUTER, Capability.M5_DISPLAY, true),
                 arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),
@@ -576,12 +581,12 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer-specific hardware")
+    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware and the ESP32-only TLS server")
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
-                        && capability != Capability.M5_BATTERY)
+                        && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

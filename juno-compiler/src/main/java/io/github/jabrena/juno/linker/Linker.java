@@ -357,7 +357,8 @@ public final class Linker {
                 Intrinsic.MATH_LOG, Intrinsic.MATH_LOG10, Intrinsic.MATH_POW, Intrinsic.MATH_CBRT, Intrinsic.MATH_HYPOT);
         require(required, Capability.HTTP_SERVER, Intrinsic.HTTP_SERVER_BEGIN, Intrinsic.HTTP_SERVER_ACCEPT,
                 Intrinsic.HTTP_SERVER_METHOD, Intrinsic.HTTP_SERVER_PATH, Intrinsic.HTTP_SERVER_CONTENT_LENGTH,
-                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER);
+                Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
+        require(required, Capability.HTTPS_SERVER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
                 Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR, Intrinsic.LEGO_HUB_HOLD_MOTOR,
                 Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,

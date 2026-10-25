@@ -454,6 +454,8 @@ public final class IntrinsicRegistry {
                     "([BII)Ljava/lang/String;"), Intrinsic.STRING_FROM_BYTES),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "begin", "(I)V"),
                     Intrinsic.HTTP_SERVER_BEGIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "beginTls", "(I[BI[BI)Z"),
+                    Intrinsic.HTTP_SERVER_BEGIN_TLS),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "accept", "([BI)I"),
                     Intrinsic.HTTP_SERVER_ACCEPT),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "method", "()Ljava/lang/String;"),

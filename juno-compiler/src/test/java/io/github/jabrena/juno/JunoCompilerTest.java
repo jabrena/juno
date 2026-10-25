@@ -2948,6 +2948,29 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
         }
 
+        @Test
+        @DisplayName("Rejects HttpServer.beginTls on the UNO R4 WiFi, which has no TLS server")
+        void shouldRejectHttpServerBeginTlsOnTheUnoR4Wifi() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    public final class HttpsServerOnR4 {
+                        public static void main(String[] args) {
+                            byte[] certificate = new byte[64];
+                            byte[] key = new byte[64];
+                            HttpServer.beginTls(443, certificate, 64, key, 64);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsServerOnR4", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsServerOnR4"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("UNO R4 WiFi cannot run a TLS server session");
+        }
+
         /**
          * {@code HttpServer.respond(int, String, String)}'s {@code body} is the one intrinsic {@code
          * String} parameter in all of Juno exempt from the compile-time-literal requirement (see

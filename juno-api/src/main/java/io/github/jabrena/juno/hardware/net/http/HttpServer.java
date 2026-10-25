@@ -5,8 +5,8 @@ package io.github.jabrena.juno.hardware.net.http;
  * the Arduino {@code WiFiS3} library's {@code WiFiServer} on UNO R4 WiFi and by {@code
  * BridgeTCPServer} (a listener in {@code arduino-router} on Linux) on UNO Q. Requires an active
  * {@link io.github.jabrena.juno.hardware.net.Wifi#begin} or {@link io.github.jabrena.juno.hardware.net.Wifi#beginAP}
- * connection. Plain HTTP only — there is no TLS-server equivalent of {@link HttpClient}'s {@code https://}
- * requests.
+ * connection. {@link #begin(int)} serves plain HTTP on every board; {@link #beginTls} serves HTTPS on the ESP32
+ * boards (Nano ESP32, M5Stack Cardputer) only.
  *
  * <p>{@link #begin(int)} starts listening once. From then on, call {@link #accept} once per
  * {@code loop()} iteration: it returns immediately with {@code -1} when no client is currently
@@ -35,6 +35,18 @@ public final class HttpServer {
 
     /** Starts listening on {@code port}. Call once, typically right after {@link io.github.jabrena.juno.hardware.net.Wifi#begin} succeeds. */
     public static native void begin(int port);
+
+    /**
+     * Starts listening for HTTPS on {@code port} (usually 443), presenting {@code certificate} and proving it with
+     * {@code privateKey}: both PEM text, typically a self-signed pair read from the SD card, so clients must trust the
+     * certificate themselves (e.g. {@code curl --cacert server.crt}, or {@code -k}). The buffers are parsed here and
+     * can be reused afterwards. On success the rest of the API is unchanged: {@link #accept} completes the TLS
+     * handshake before it reads the request. Returns {@code false} when the certificate or key does not parse.
+     * ESP32 boards only (Nano ESP32, M5Stack Cardputer), one connection at a time; call it once, instead of
+     * {@link #begin(int)}.
+     */
+    public static native boolean beginTls(int port, byte[] certificate, int certificateLength, byte[] privateKey,
+            int privateKeyLength);
 
     /**
      * Returns immediately with {@code -1} when no client is currently waiting. Otherwise reads
