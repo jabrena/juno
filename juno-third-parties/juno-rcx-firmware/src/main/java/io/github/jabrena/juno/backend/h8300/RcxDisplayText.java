@@ -66,8 +66,8 @@ final class RcxDisplayText {
             lit = FONT.getOrDefault(Character.toUpperCase(character), "");
         }
         int mask = 0;
-        for (char segment : lit.toCharArray()) {
-            mask |= 1 << SEGMENTS.indexOf(segment);
+        for (int index = 0; index < lit.length(); index++) {
+            mask |= 1 << SEGMENTS.indexOf(lit.charAt(index));
         }
         return mask;
     }

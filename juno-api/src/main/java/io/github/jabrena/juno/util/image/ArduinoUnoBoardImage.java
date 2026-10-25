@@ -58,18 +58,13 @@ public final class ArduinoUnoBoardImage implements Drawable {
 
     private static int byteAt(int offset) {
         int inChunk = offset % CHUNK_SIZE;
-        switch (offset / CHUNK_SIZE) {
-            case 0:
-                return Chunk0.DATA[inChunk] & 0xFF;
-            case 1:
-                return Chunk1.DATA[inChunk] & 0xFF;
-            case 2:
-                return Chunk2.DATA[inChunk] & 0xFF;
-            case 3:
-                return Chunk3.DATA[inChunk] & 0xFF;
-            default:
-                return 0;
-        }
+        return switch (offset / CHUNK_SIZE) {
+            case 0 -> Chunk0.DATA[inChunk] & 0xFF;
+            case 1 -> Chunk1.DATA[inChunk] & 0xFF;
+            case 2 -> Chunk2.DATA[inChunk] & 0xFF;
+            case 3 -> Chunk3.DATA[inChunk] & 0xFF;
+            default -> 0;
+        };
     }
 
     //TODO Unify criteria for this cases.
