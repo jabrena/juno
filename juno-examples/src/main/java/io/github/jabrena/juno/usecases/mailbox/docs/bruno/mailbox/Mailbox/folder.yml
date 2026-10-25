@@ -1,0 +1,10 @@
+info:
+  name: Mailbox
+  type: folder
+
+request:
+  auth: inherit
+
+docs:
+  content: Create, list, retrieve, and delete mailbox messages
+  type: text/markdown

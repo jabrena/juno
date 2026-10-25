@@ -1,0 +1,89 @@
+info:
+  name: Delete one mailbox message
+  type: http
+  seq: 4
+  tags:
+    - Mailbox
+
+http:
+  method: DELETE
+  url: "{{baseUrl}}/api/v1/mailbox/:uuid"
+  params:
+    - name: uuid
+      value: "{{uuid}}"
+      type: path
+      description: The exact uuid value returned in a mailbox message.
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 10000
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: true
+
+examples:
+  - name: 204 Response
+    description: The message was deleted.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/:uuid"
+      method: DELETE
+      params:
+        - name: uuid
+          value: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+          type: path
+          description: The exact uuid value returned in a mailbox message.
+    response:
+      status: 204
+      statusText: No Content
+      body:
+        type: text
+        data: ""
+  - name: 404 Response
+    description: No message exists with the requested uuid.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/:uuid"
+      method: DELETE
+      params:
+        - name: uuid
+          value: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+          type: path
+          description: The exact uuid value returned in a mailbox message.
+    response:
+      status: 404
+      statusText: Not Found
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }
+  - name: 405 Response
+    description: The HTTP method is not supported for this resource.
+    request:
+      url: "{{baseUrl}}/api/v1/mailbox/:uuid"
+      method: DELETE
+      params:
+        - name: uuid
+          value: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+          type: path
+          description: The exact uuid value returned in a mailbox message.
+    response:
+      status: 405
+      statusText: Method Not Allowed
+      headers:
+        - name: Content-Type
+          value: application/problem+json
+      body:
+        type: json
+        data: |-
+          {
+            "type": "about:blank",
+            "title": "No mailbox message at /api/v1/mailbox/unknown",
+            "status": 404
+          }
