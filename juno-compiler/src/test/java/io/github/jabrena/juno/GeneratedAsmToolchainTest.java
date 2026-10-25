@@ -1596,6 +1596,11 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
+        if (board.equals("ArduinoUnoQBoard")) {
+            // A bridge read must fit the 256-byte RPC reply even when every byte is >= 0x80 (MessagePack 2 bytes).
+            assertThat(result.runtimeShim()).contains("JUNO_HTTP_SERVER_BUFFER = 112",
+                    "using JunoHttpClient = BridgeTCPClient<JUNO_HTTP_SERVER_BUFFER>;");
+        }
         syntaxCheckCpp(compiler, shim);
     }
 
