@@ -83,6 +83,15 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/http-server-transport.cpp");
     }
 
+    /**
+     * The same {@code WiFiServer}, each accepted client wrapped in an mbedTLS server session; both of the core's
+     * mbedTLS generations (2.x in {@code arduino:esp32} 2.0, 3.x in the 3.x cores such as the Cardputer's) are handled.
+     */
+    @Override
+    public String httpsServerTransport() {
+        return runtimeSource.load("esp32/https-server-transport.cpp");
+    }
+
     @Override
     public String udpDeclaration() {
         return "static WiFiUDP juno_udp;";

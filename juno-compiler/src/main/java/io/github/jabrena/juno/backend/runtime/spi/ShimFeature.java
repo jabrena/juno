@@ -92,5 +92,7 @@ public enum ShimFeature {
     /** {@code AtomicInteger}/{@code AtomicBoolean}/{@code AtomicLong} cells in the arena. */
     ATOMICS,
     /** AVR only: {@code int} multiply, divide, remainder and variable shifts, which have no 32-bit instruction there. */
-    AVR_INT_HELPERS
+    AVR_INT_HELPERS,
+    /** {@code HttpServer.beginTls}: the HTTP server's connections wrapped in a TLS server session. */
+    HTTPS_SERVER
 }

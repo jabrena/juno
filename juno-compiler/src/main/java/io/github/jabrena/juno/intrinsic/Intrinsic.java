@@ -213,6 +213,8 @@ public enum Intrinsic {
     HTTP_SERVER_CONTENT_LENGTH,
     HTTP_SERVER_RESPOND,
     HTTP_SERVER_RESPOND_BUILDER,
+    /** {@code HttpServer.beginTls}: the HTTPS listener, with a PEM certificate and private key. */
+    HTTP_SERVER_BEGIN_TLS,
     MEMORY_ARENA_USED,
     MEMORY_ARENA_CAPACITY,
     MEMORY_FLASH_USED,

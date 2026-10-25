@@ -755,6 +755,9 @@ public final class IntrinsicLowering {
                 List.of(arg(0), literal(0), arg(1)), server);
         shim(Intrinsic.HTTP_SERVER_RESPOND_BUILDER, "juno_http_server_respond_builder", Result.NONE,
                 List.of(arg(0), literal(0), arg(1)), server);
+        shim(Intrinsic.HTTP_SERVER_BEGIN_TLS, "juno_http_server_begin_tls", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.HTTP_SERVER, ShimFeature.HTTPS_SERVER,
+                ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER);
     }
 
     private Operand arg(int index) {

@@ -520,7 +520,31 @@ class XtensaAsmBackendTest {
         // Then
         assertThat(result.runtimeShim()).contains("juno_http_server_begin(", "WiFiServer(static_cast<uint16_t>(port))",
                 "#include <new>");
-        assertThat(result.runtimeShim()).doesNotContain("BridgeTCPServer");
+        assertThat(result.runtimeShim()).doesNotContain("BridgeTCPServer", "mbedtls", "juno_http_server_begin_tls");
+    }
+
+    @Test
+    @DisplayName("Lowers HttpServer.beginTls to an mbedTLS server session over the WiFiServer")
+    void shouldLowerHttpServerBeginTlsToAnMbedTlsServerSession() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoHttpsServer", """
+                        byte[] certificate = new byte[1024];
+                        byte[] key = new byte[512];
+                        byte[] body = new byte[64];
+                        if (HttpServer.beginTls(443, certificate, 900, key, 240)) {
+                            if (HttpServer.accept(body, body.length) >= 0) {
+                                HttpServer.respond(200, "text/plain", "secure");
+                            }
+                        }
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpServer;");
+
+        // Then
+        assertThat(result.assembly()).contains("juno_http_server_begin_tls", "juno_http_server_accept");
+        assertThat(result.runtimeShim()).contains("#include <mbedtls/ssl.h>",
+                "extern \"C\" int32_t juno_http_server_begin_tls(int32_t port, const uint8_t* certificate,",
+                "MBEDTLS_SSL_IS_SERVER", "class JunoHttpsServerClient",
+                "using JunoHttpClient = JunoHttpsServerClient;", "return juno_http_server_client.open(client);",
+                "#if MBEDTLS_VERSION_MAJOR >= 3", "extern \"C\" int32_t juno_http_server_accept(");
     }
 
     @Test

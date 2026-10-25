@@ -49,25 +49,26 @@ public enum Board {
     /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
      * access-point modes, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root
-     * certificates), an HTTP server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and POP3), Bluetooth
-     * LE for {@code PoweredUpHubRemote}, the hardware random-number generator behind {@code UUID.randomUUID()},
-     * {@code java.math}, the double-precision libm its newlib toolchain ships, and structured concurrency over FreeRTOS
-     * tasks; the other optional capabilities are not wired to its core yet.
+     * certificates), an HTTP and HTTPS server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and
+     * POP3), Bluetooth LE for {@code PoweredUpHubRemote}, the hardware random-number generator behind
+     * {@code UUID.randomUUID()}, {@code java.math}, the double-precision libm its newlib toolchain ships, and
+     * structured concurrency over FreeRTOS tasks; the other optional capabilities are not wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board", "arduino-nano-esp32", "Nano ESP32",
             "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
             EnumSet.of(Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
-                    Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.BIG_NUMBERS,
-                    Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY, Capability.WATCHDOG)),
+                    Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE,
+                    Capability.BIG_NUMBERS, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
+                    Capability.WATCHDOG)),
     /**
-     * M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, onboard Wi-Fi, plain HTTP, color display,
-     * keyboard, speaker, and battery.
+     * M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, onboard Wi-Fi, plain HTTP, an HTTP and
+     * HTTPS server, color display, keyboard, speaker, and battery.
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO,
             EnumSet.of(Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
-                    Capability.HTTP_CLIENT,
+                    Capability.HTTP_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO, Capability.M5_BATTERY));
 
     private final String apiClassName;

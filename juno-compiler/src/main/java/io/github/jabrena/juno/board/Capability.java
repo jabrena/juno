@@ -92,6 +92,13 @@ public enum Capability {
             return board.displayName() + " does not provide a TCP server stack";
         }
     },
+    HTTPS_SERVER("HttpServer.beginTls") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " cannot run a TLS server session (HTTPS needs an ESP32 board: Nano ESP32 "
+                    + "or M5Stack Cardputer); use HttpServer.begin for plain HTTP";
+        }
+    },
     SMTP_STARTTLS("Smtp.send (STARTTLS)") {
         @Override
         public String unsupportedReason(Board board) {

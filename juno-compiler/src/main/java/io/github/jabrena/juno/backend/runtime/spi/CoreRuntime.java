@@ -75,6 +75,15 @@ public interface CoreRuntime {
      */
     String httpServerTransport();
 
+    /**
+     * {@link #httpServerTransport()} for a program that calls {@code HttpServer.beginTls}: the same contract, plus
+     * {@code juno_http_server_begin_tls}, with each accepted connection wrapped in a TLS server session. Only cores
+     * whose boards declare the {@code HTTPS_SERVER} capability provide it; the linker rejects the call elsewhere first.
+     */
+    default String httpsServerTransport() {
+        throw new IllegalStateException("This core has no TLS server; the linker should have rejected beginTls");
+    }
+
     /** Declaration of the core's single UDP transport instance. */
     String udpDeclaration();
 
