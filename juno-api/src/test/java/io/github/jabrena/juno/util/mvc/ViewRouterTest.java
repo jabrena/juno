@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
 import io.github.jabrena.juno.hardware.device.tft.TftPins;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
-import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.testing.FrameClock;
 import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,27 +23,6 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("View router frame loop")
 class ViewRouterTest {
-    private static final class FrameClock implements Clock {
-        private static final int FRAME_MILLIS = 10;
-
-        private int nowMillis;
-
-        @Override
-        public int millis() {
-            nowMillis += FRAME_MILLIS;
-            return nowMillis;
-        }
-
-        @Override
-        public int micros() {
-            return nowMillis * 1_000;
-        }
-
-        void advance(int milliseconds) {
-            nowMillis += milliseconds;
-        }
-    }
-
     /** Thrown from a view's render once its script is exhausted, which is how a test leaves the never-ending frame loop. */
     private static final class Stop extends RuntimeException {
         private static final long serialVersionUID = 1L;

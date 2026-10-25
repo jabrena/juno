@@ -15,9 +15,24 @@ public final class ArduinoUnoBoardImage implements Drawable {
     private static final int CHUNK_SIZE = 4096;
     private static final int[] PALETTE = {0xFFFF, 0x03B0, 0x0000, 0x9D14, 0xC638, 0x8BCC, 0x0209, 0x5411, 0x2103, 0xED40, 0x5A68, 0x32EC, 0xACA7, 0x33F0, 0x8471, 0x6CF4};
 
+    @Override
+    public int getWidth() {
+        return WIDTH;
+    }
+
+    @Override
+    public int getHeight() {
+        return HEIGHT;
+    }
+
     /** Draws the image centred over the current TFT viewport. */
     @Override
     public void draw() {
+        draw(0, 0, TftTouchShield.width() - 1, TftTouchShield.height() - 1);
+    }
+
+    @Override
+    public void draw(int clipLeft, int clipTop, int clipRight, int clipBottom) {
         int left = (TftTouchShield.width() - WIDTH) / 2;
         int top = (TftTouchShield.height() - HEIGHT) / 2;
         int x = 0;
@@ -25,8 +40,13 @@ public final class ArduinoUnoBoardImage implements Drawable {
         for (int i = 0; i < LENGTH; i += 2) {
             int index = byteAt(i);
             int length = byteAt(i + 1);
-            if (index != BACKGROUND) {
-                TftTouchShield.drawHorizontalLine(left + x, top + y, length, PALETTE[index]);
+            int screenX = left + x;
+            int screenY = top + y;
+            int screenRight = screenX + length - 1;
+            if (index != BACKGROUND && screenY >= clipTop && screenY <= clipBottom && screenRight >= clipLeft && screenX <= clipRight) {
+                int drawLeft = Math.max(screenX, clipLeft);
+                int drawRight = Math.min(screenRight, clipRight);
+                TftTouchShield.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
             }
             x = x + length;
             if (x >= WIDTH) {
@@ -38,18 +58,13 @@ public final class ArduinoUnoBoardImage implements Drawable {
 
     private static int byteAt(int offset) {
         int inChunk = offset % CHUNK_SIZE;
-        switch (offset / CHUNK_SIZE) {
-            case 0:
-                return Chunk0.DATA[inChunk] & 0xFF;
-            case 1:
-                return Chunk1.DATA[inChunk] & 0xFF;
-            case 2:
-                return Chunk2.DATA[inChunk] & 0xFF;
-            case 3:
-                return Chunk3.DATA[inChunk] & 0xFF;
-            default:
-                return 0;
-        }
+        return switch (offset / CHUNK_SIZE) {
+            case 0 -> Chunk0.DATA[inChunk] & 0xFF;
+            case 1 -> Chunk1.DATA[inChunk] & 0xFF;
+            case 2 -> Chunk2.DATA[inChunk] & 0xFF;
+            case 3 -> Chunk3.DATA[inChunk] & 0xFF;
+            default -> 0;
+        };
     }
 
     //TODO Unify criteria for this cases.
