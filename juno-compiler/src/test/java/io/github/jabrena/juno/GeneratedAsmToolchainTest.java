@@ -113,6 +113,25 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    @DisplayName("The HTTP server reads segmented requests whole and drops cut-off ones")
+    void shouldReadSegmentedRequestsWholeAndDropCutOffOnes() throws Exception {
+        // Given
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-server.cpp"));
+        String accept = runtime.substring(0, runtime.indexOf("struct JunoHttpServerRespondJob"));
+        String harness = Files.readString(Path.of("src/test/resources/http-server-harness.cpp"));
+
+        // When
+        Process run = compileAndStart(compiler, harness.replace("// HTTP_SERVER_ACCEPT", accept), "http-server-runtime");
+
+        // Then
+        assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
+    }
+
+    @Test
     @DisplayName("An internet-backed LocalDateTime shim compiles with a C++ compiler")
     void shouldCompileAnInternetBackedLocalDateTimeShimWithACppCompiler() throws Exception {
         // Given
