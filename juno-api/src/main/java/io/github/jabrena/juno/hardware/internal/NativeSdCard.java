@@ -58,10 +58,19 @@ public final class NativeSdCard implements SdCard {
     public native boolean exists(String path);
 
     @Override
+    public native boolean createDirectory(String path);
+
+    @Override
     public native int size(String path);
 
     @Override
     public native InputStream open(String path);
+
+    @Override
+    public native InputStream open(String directory, String fileStem);
+
+    @Override
+    public native int list(String directory, int index, byte[] name, int capacity);
 
     @Override
     public native boolean appendLine(String path, String line);
@@ -70,7 +79,13 @@ public final class NativeSdCard implements SdCard {
     public native boolean appendText(String path, String text);
 
     @Override
+    public native boolean appendText(String directory, String fileStem, String text);
+
+    @Override
     public native boolean remove(String path);
+
+    @Override
+    public native boolean remove(String directory, String fileStem);
 
     @Override
     public native int totalKiB();

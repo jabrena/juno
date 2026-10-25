@@ -2056,6 +2056,46 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_sd_remove(const char* path)");
         }
 
+        @Test
+        @DisplayName("Lowers folder creation and folder file operations with runtime names")
+        void shouldLowerFolderCreationAndFolderFileOperations() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                    import java.io.InputStream;
+                    public final class MailboxStorage {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
+                        public static void main(String[] args) throws Exception {
+                            SD_CARD.begin();
+                            String directory = "mailbox/20261025";
+                            String fileStem = "5500e840-e29b-41d4-a716-446655440000";
+                            SD_CARD.createDirectory(directory);
+                            SD_CARD.appendText(directory, fileStem, "message");
+                            InputStream file = SD_CARD.open(directory, fileStem);
+                            if (file != null) file.close();
+                            SD_CARD.remove(directory, fileStem);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.MailboxStorage", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MailboxStorage");
+
+            // Then
+            assertThat(result.assembly()).contains(
+                    "bl juno_sd_create_directory", "bl juno_sd_file_append_file_text",
+                    "bl juno_sd_open_file", "bl juno_sd_remove_file");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_sd_create_directory(const char* path)",
+                    "extern \"C\" int32_t juno_sd_file_append_file_text(const char* directory, const char* fileStem, const char* text)",
+                    "extern \"C\" int32_t juno_sd_open_file(const char* directory, const char* fileStem)",
+                    "extern \"C\" int32_t juno_sd_remove_file(const char* directory, const char* fileStem)",
+                    "memcpy(target + directoryLength + 1u + stemLength, \".txt\", 5u)");
+        }
+
         /**
          * {@code java.io.RandomAccessFile} reads an SD card file at any offset, the way a WAD directory is walked: seek,
          * fill a local buffer, skip, and every failure surfaces as the JDK's own exception in the program's handlers.

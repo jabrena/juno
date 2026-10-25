@@ -15,15 +15,17 @@ import java.io.InputStream;
  * {@code mock(SdCard.class)} instead.
  *
  * <p>Call {@link #begin()} for the chip-select pin of the socket the card came from, or {@link #begin(int)} for
- * custom wiring, before opening or writing files. Every {@code path} must currently be a compile-time
- * string literal and use the SD card's root as its base. {@link #open(String)} is read-only; the three writers,
- * {@link #appendLine(String, String)} (adds a line) and {@link #appendText(String, String)} (adds raw text),
- * each open the file, write, and close it again rather than keeping a writable handle open. To replace a file,
- * {@link #remove(String)} it first.
+ * custom wiring, before opening or writing files. A root-level {@code path} uses the SD card's root as its base and
+ * must be a compile-time string literal. The folder-aware overloads accept runtime directory and file-stem strings;
+ * they are intended for bounded dynamic layouts such as {@code /mailbox/YYYYMMDD/<uuid>.txt}. {@link #open(String)}
+ * is read-only; the writers, {@link #appendLine(String, String)} (adds a line) and
+ * {@link #appendText(String, String)} (adds raw text), each open the file, write, and close it again rather than
+ * keeping a writable handle open. To replace a file, {@link #remove(String)} it first.
  *
  * <p>Limits:
  * <ul>
- *   <li>Paths are compile-time string literals, so their length is not limited by the runtime.</li>
+   *   <li>Root-level paths are compile-time string literals, so their length is not limited by the runtime. Folder-aware
+   *       directory and file-stem strings each fit in a runtime string slot; the native SD layer combines them.</li>
  *   <li>A literal {@code line} passed to {@link #appendLine(String, String)} has no length limit either, but a
  *       {@code line} built while the program runs ({@code String.valueOf}, concatenation,
  *       {@code StringBuilder.toString()}) lives in a runtime-string slot of
@@ -50,6 +52,9 @@ public interface SdCard {
     /** Returns whether {@code path} exists on the card. */
     boolean exists(String path);
 
+    /** Creates {@code path} and its missing parent directories. Returns whether the operation succeeded. */
+    boolean createDirectory(String path);
+
     /**
      * Returns the size of {@code path} in bytes, or {@code -1} when it does not exist or cannot be opened. A
      * file over {@link Integer#MAX_VALUE} bytes reports {@code Integer.MAX_VALUE}. Use it to tell whether a log
@@ -60,6 +65,16 @@ public interface SdCard {
 
     /** Opens {@code path} for reading, or returns {@code null} when it cannot be opened. */
     InputStream open(String path);
+
+    /** Opens {@code directory}/{@code fileStem}.txt for reading, or returns {@code null} when it cannot be opened. */
+    InputStream open(String directory, String fileStem);
+
+    /**
+     * Copies the name of the direct child at {@code index} in {@code directory} into {@code name}. Returns the number
+     * of bytes copied, zero when there are no more children, or a negative value when the directory cannot be read or
+     * the buffer is too small.
+     */
+    int list(String directory, int index, byte[] name, int capacity);
 
     /**
      * Appends {@code line} plus a newline to {@code path}, creating the file first if it does not
@@ -76,8 +91,14 @@ public interface SdCard {
      */
     boolean appendText(String path, String text);
 
+    /** Appends {@code text} to {@code directory}/{@code fileStem}.txt, creating the file when needed. */
+    boolean appendText(String directory, String fileStem, String text);
+
     /** Deletes {@code path} from the card. Returns whether it was removed. */
     boolean remove(String path);
+
+    /** Deletes {@code directory}/{@code fileStem}.txt from the card. Returns whether it was removed. */
+    boolean remove(String directory, String fileStem);
 
     /**
      * The card volume's total capacity in KiB, or {@code -1} before a successful {@link #begin()}. Reads only the

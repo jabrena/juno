@@ -38,6 +38,10 @@ extern "C" int32_t juno_sd_exists(const char* path) {
   return juno_sd.exists(path) ? 1 : 0;
 }
 
+extern "C" int32_t juno_sd_create_directory(const char* path) {
+  return juno_sd.exists(path) || juno_sd.mkdir(path, true) ? 1 : 0;
+}
+
 extern "C" int32_t juno_sd_size(const char* path) {
   File32 file = juno_sd.open(path, O_RDONLY);
   if (!file) return -1;
@@ -55,6 +59,48 @@ extern "C" int32_t juno_sd_open(const char* path) {
       return i + 1;
     }
   }
+  return 0;
+}
+
+// File stems keep a long mailbox path out of Juno's 32-byte runtime-string slots.
+static bool juno_sd_file_path(char* target, size_t capacity, const char* directory, const char* fileStem) {
+  size_t directoryLength = strlen(directory);
+  size_t stemLength = strlen(fileStem);
+  size_t required = directoryLength + 1u + stemLength + 4u + 1u;
+  if (required > capacity) return false;
+  memcpy(target, directory, directoryLength);
+  target[directoryLength] = '/';
+  memcpy(target + directoryLength + 1u, fileStem, stemLength);
+  memcpy(target + directoryLength + 1u + stemLength, ".txt", 5u);
+  return true;
+}
+
+extern "C" int32_t juno_sd_open_file(const char* directory, const char* fileStem) {
+  char path[96];
+  if (!juno_sd_file_path(path, sizeof(path), directory, fileStem)) return 0;
+  return juno_sd_open(path);
+}
+
+extern "C" int32_t juno_sd_list(const char* directory, int32_t index, uint8_t* name, int32_t capacity) {
+  if (index < 0 || name == nullptr || capacity < 2) return -1;
+  File32 parent = juno_sd.open(directory, O_RDONLY);
+  if (!parent || !parent.isDir()) return -1;
+  File32 entry;
+  for (int32_t current = 0; current <= index; current++) {
+    if (!entry.openNext(&parent, O_RDONLY)) {
+      parent.close();
+      return 0;
+    }
+    if (current < index) {
+      entry.close();
+      continue;
+    }
+    size_t length = entry.getName(reinterpret_cast<char*>(name), static_cast<size_t>(capacity));
+    entry.close();
+    parent.close();
+    return length == 0 ? -1 : static_cast<int32_t>(length);
+  }
+  parent.close();
   return 0;
 }
 
@@ -89,8 +135,20 @@ extern "C" int32_t juno_sd_file_append_text(const char* path, const char* text) 
   return 1;
 }
 
+extern "C" int32_t juno_sd_file_append_file_text(const char* directory, const char* fileStem, const char* text) {
+  char path[96];
+  if (!juno_sd_file_path(path, sizeof(path), directory, fileStem)) return 0;
+  return juno_sd_file_append_text(path, text);
+}
+
 extern "C" int32_t juno_sd_remove(const char* path) {
   return juno_sd.remove(path) ? 1 : 0;
+}
+
+extern "C" int32_t juno_sd_remove_file(const char* directory, const char* fileStem) {
+  char path[96];
+  if (!juno_sd_file_path(path, sizeof(path), directory, fileStem)) return 0;
+  return juno_sd_remove(path);
 }
 
 struct JunoPropertyEntry {

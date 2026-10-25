@@ -25,6 +25,9 @@ public:
   void println(const char*) {}
   void print(const char*) {}
   void close() {}
+  bool isDir() const { return true; }
+  bool openNext(File32*, int) { return false; }
+  size_t getName(char*, size_t) { return 0; }
   operator bool() const { return true; }
 };
 
@@ -37,6 +40,7 @@ class SdFat32 {
 public:
   bool begin(int32_t) { return true; }
   bool exists(const char*) { return true; }
+  bool mkdir(const char*, bool) { return true; }
   File32 open(const char*, int) { return File32(); }
   bool remove(const char*) { return true; }
   uint8_t fatType() const { return 32; }
