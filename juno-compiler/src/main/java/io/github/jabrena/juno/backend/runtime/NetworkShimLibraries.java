@@ -51,6 +51,9 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.HTTPS_REQUEST_BUFFER)) {
             helpers.append(runtimeSource.load("common/https-request-buffer.cpp"));
         }
+        if (features.contains(ShimFeature.HTTP_REQUEST_BUFFER)) {
+            helpers.append(runtimeSource.load("common/http-request-buffer.cpp"));
+        }
         return helpers.toString().replace("${JUNO_HTTP_CLIENT_TYPE}", httpClientType)
                 .replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """

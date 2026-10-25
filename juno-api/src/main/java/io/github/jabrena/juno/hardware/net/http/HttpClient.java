@@ -111,4 +111,17 @@ public final class HttpClient {
             byte[] bodyBuffer, int bodyBufferLength,
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);
+
+    /**
+     * Sends a plain-HTTP request whose host, path, request headers, and optional body are held in caller-owned
+     * storage. This is the plain-HTTP counterpart of {@link #requestHttps}; it is useful for local devices whose
+     * address is entered at runtime. The same length and response-buffer rules apply.
+     */
+    public static native int requestHttp(String host, int port, String method,
+            byte[] pathBuffer, int pathLength,
+            byte[] requestHeadersBuffer, int requestHeadersLength,
+            byte[] requestBodyBuffer, int requestBodyLength,
+            byte[] bodyBuffer, int bodyBufferLength,
+            byte[] headersBuffer, int headersBufferLength,
+            int[] statusAndHeadersLength);
 }

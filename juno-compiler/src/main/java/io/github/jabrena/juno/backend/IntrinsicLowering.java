@@ -712,6 +712,10 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
                         arg(9), arg(10), arg(11), arg(12), arg(13)),
                 ShimFeature.HTTPS, ShimFeature.HTTPS_REQUEST_BUFFER);
+        shim(Intrinsic.HTTP_REQUEST_BUFFER, "juno_http_request_buffer", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
+                        arg(9), arg(10), arg(11), arg(12), arg(13)),
+                ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
     }
 
     private void registerEmail() {

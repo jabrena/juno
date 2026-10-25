@@ -2574,6 +2574,40 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Lowers a buffered plain HTTP request with a runtime host")
+        void shouldLowerBufferedHttpRequestWithRuntimeHost() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class BufferedHttpDemo {
+                        public static void main(String[] args) {
+                            byte[] path = new byte[32];
+                            path[0] = '/';
+                            byte[] requestHeaders = new byte[32];
+                            byte[] requestBody = new byte[32];
+                            byte[] responseBody = new byte[256];
+                            byte[] responseHeaders = new byte[128];
+                            int[] status = new int[2];
+                            HttpClient.requestHttp("192.168.1.47", 80, "GET", path, 1,
+                                    requestHeaders, 0, requestBody, -1,
+                                    responseBody, responseBody.length, responseHeaders, responseHeaders.length, status);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedHttpDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedHttpDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_request_buffer");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_http_request_buffer(",
+                    "juno_http_run<WiFiClient>(method, host, port, path, nullptr");
+        }
+
+        @Test
         @DisplayName("Lowers HTTPS through the Router Bridge on the UNO Q")
         void shouldLowerHttpsThroughRouterBridgeOnUnoQ() throws Exception {
             // Given
