@@ -193,6 +193,8 @@ public enum Intrinsic {
     HTTPS_QUERY,
     HTTPS_REQUEST_BUFFER,
     HTTP_REQUEST_BUFFER,
+    /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
+    HTTP_SET_TIMEOUT,
     HTTP_GET_PATH_BUFFER,
     /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
     HTTP_URL_GET,

@@ -288,6 +288,8 @@ public final class AvrRuntimeShim {
             String httpsClientType = uses(ShimFeature.HTTPS) ? core.httpsClientType() : "";
             shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), httpsClientType,
                     ioRuntime.usesWorker(core, features)));
+        } else if (uses(ShimFeature.HTTP_TIMEOUT)) {
+            shim.append(networkShimLibraries.httpTimeoutStub());
         }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
         if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {

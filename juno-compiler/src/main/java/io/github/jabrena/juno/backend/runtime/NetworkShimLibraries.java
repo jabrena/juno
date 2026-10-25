@@ -24,6 +24,18 @@ final class NetworkShimLibraries {
     }
 
     /**
+     * Backs {@code HttpClient.setTimeout} in a program that makes no HTTP/HTTPS request: there is nothing to time out,
+     * so the call does nothing. A program with requests gets the real setter from {@link #httpHelpers}.
+     */
+    String httpTimeoutStub() {
+        return """
+
+                extern "C" void juno_http_set_timeout(int32_t) {
+                }
+                """;
+    }
+
+    /**
      * Backs the HTTP/HTTPS APIs with a shared HTTP/1.1 codec over plain or TLS WiFi clients. Each request is a job
      * for {@code juno_io_offload} (see {@link IoRuntime}): run in place, or on the I/O worker while the caller is
      * parked, in which case the request's text is copied first and the caller holds one HTTP lease.

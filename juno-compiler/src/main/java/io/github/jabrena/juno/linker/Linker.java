@@ -325,6 +325,7 @@ public final class Linker {
                 Intrinsic.HTTPS_QUERY,
                 Intrinsic.HTTPS_REQUEST_BUFFER);
         require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER);
+        require(required, Capability.WIFI, Intrinsic.HTTP_SET_TIMEOUT);
         // A URL-based request needs Wi-Fi whatever its scheme; whether it also needs plain HTTP or TLS is only known
         // from the URL literal, which the lowering checks against the board (HttpUrlCall).
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,

@@ -448,6 +448,8 @@ public final class IntrinsicRegistry {
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpClient", "requestHttp",
                     "(Ljava/lang/String;ILjava/lang/String;[BI[BI[BI[BI[BI[I)I"),
                     Intrinsic.HTTP_REQUEST_BUFFER),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpClient", "setTimeout", "(I)V"),
+                    Intrinsic.HTTP_SET_TIMEOUT),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/Json", "rawText",
                     "([BII)Ljava/lang/String;"), Intrinsic.STRING_FROM_BYTES),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "begin", "(I)V"),

@@ -2608,6 +2608,60 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Lowers HttpClient.setTimeout to the shared connect and response timeout")
+        void shouldLowerHttpTimeoutToSharedRequestTimeout() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTimeoutDemo {
+                        public static void main(String[] args) {
+                            byte[] body = new byte[64];
+                            byte[] headers = new byte[64];
+                            int[] status = new int[2];
+                            HttpClient.setTimeout(15000);
+                            HttpClient.get("http://192.168.1.47/", body, body.length, headers, headers.length, status);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_set_timeout");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" void juno_http_set_timeout(int32_t millisToWait) {",
+                    "client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms))",
+                    "const unsigned long deadline = millis() + juno_http_timeout_ms;");
+        }
+
+        @Test
+        @DisplayName("Backs HttpClient.setTimeout with a no-op when the program makes no request")
+        void shouldStubHttpTimeoutWithoutRequests() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTimeoutOnlyDemo {
+                        public static void main(String[] args) {
+                            HttpClient.setTimeout(15000);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutOnlyDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutOnlyDemo");
+
+            // Then
+            assertThat(result.runtimeShim())
+                    .contains("extern \"C\" void juno_http_set_timeout(int32_t) {")
+                    .doesNotContain("juno_http_timeout_ms");
+        }
+
+        @Test
         @DisplayName("Lowers HTTPS through the Router Bridge on the UNO Q")
         void shouldLowerHttpsThroughRouterBridgeOnUnoQ() throws Exception {
             // Given

@@ -20,6 +20,25 @@ static bool juno_http_has_content_type(const uint8_t* headers, int32_t length) {
   return false;
 }
 
+// How long a request waits to connect (on ESP32 cores, whose clients take a connect timeout) and then for its
+// response, in milliseconds. HttpClient.setTimeout changes it for every later request.
+static uint32_t juno_http_timeout_ms = 5000u;
+
+extern "C" void juno_http_set_timeout(int32_t millisToWait) {
+  if (millisToWait > 0) {
+    juno_http_timeout_ms = static_cast<uint32_t>(millisToWait);
+  }
+}
+
+template <typename Client>
+static bool juno_http_connect(Client& client, const char* host, int32_t port) {
+#if defined(ARDUINO_ARCH_ESP32)
+  return client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms));
+#else
+  return client.connect(host, static_cast<uint16_t>(port));
+#endif
+}
+
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
@@ -28,7 +47,7 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                   int32_t* statusAndHeadersLength) {
-  if (!client.connect(host, static_cast<uint16_t>(port))) {
+  if (!juno_http_connect(client, host, port)) {
     statusAndHeadersLength[0] = 0;
     statusAndHeadersLength[1] = 0;
     return -1;
@@ -59,7 +78,7 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
     client.print("\r\n");
   }
 
-  const unsigned long deadline = millis() + 5000;
+  const unsigned long deadline = millis() + juno_http_timeout_ms;
   // The status line ("HTTP/1.1 200 OK\r\n") is parsed for its numeric status code
   // only; everything else on it (the HTTP version and the reason phrase) is skipped.
   bool inStatusLine = true;
