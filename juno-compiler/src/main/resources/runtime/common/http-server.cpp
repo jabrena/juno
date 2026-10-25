@@ -1,6 +1,7 @@
 
 static char juno_http_server_method_buf[8];
 static char juno_http_server_path_buf[96];
+static int32_t juno_http_server_content_length_value = -1;
 
 // Cancelled while it waits for a request: drop the client, so the next accept() starts afresh.
 static void juno_http_server_abort(void*) {
@@ -31,6 +32,7 @@ extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBuff
 static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
   if (!juno_http_server_next_client()) return -1;
   JunoHttpClient& client = juno_http_server_client;
+  juno_http_server_content_length_value = -1;
 
   int32_t methodLength = 0;
   int32_t pathLength = 0;
@@ -107,26 +109,23 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
   }
   juno_http_server_method_buf[methodLength] = '\0';
   juno_http_server_path_buf[pathLength] = '\0';
+  if (hasContentLength) juno_http_server_content_length_value = contentLength;
   return written < bodyBufferLength ? written : bodyBufferLength;
 }
 
-static int32_t juno_http_server_pool_copy(const char* text, int32_t length) {
-  if (length < 0 || static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) return 0;
-  char* slot = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
-  for (int32_t i = 0; i < length; i++) slot[i] = text[i];
-  slot[length] = '\0';
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
+extern "C" int32_t juno_http_server_content_length() {
+  return juno_http_server_content_length_value;
 }
 
+// The request buffers are already null-terminated and outlive the call, so they are returned as-is:
+// copying into a runtime-string slot would turn any path of JUNO_STRING_SLOT_SIZE bytes or more
+// (e.g. /api/v1/mailbox/<uuid>) into null and panic the caller before it could respond.
 extern "C" int32_t juno_http_server_method() {
-  return juno_http_server_pool_copy(juno_http_server_method_buf,
-      static_cast<int32_t>(strlen(juno_http_server_method_buf)));
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_method_buf));
 }
 
 extern "C" int32_t juno_http_server_path() {
-  return juno_http_server_pool_copy(juno_http_server_path_buf,
-      static_cast<int32_t>(strlen(juno_http_server_path_buf)));
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));
 }
 
 struct JunoHttpServerRespondJob {

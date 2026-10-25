@@ -2820,7 +2820,9 @@ class JunoCompilerTest {
                             if (bodyLength >= 0) {
                                 String method = HttpServer.method();
                                 String path = HttpServer.path();
-                                if (method.equals("GET") && path.equals("/status")) {
+                                if (HttpServer.contentLength() > body.length) {
+                                    HttpServer.respond(413, "application/json", "{}");
+                                } else if (method.equals("GET") && path.equals("/status")) {
                                     HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
                                 } else {
                                     StringBuilder json = new StringBuilder(32);
@@ -2840,16 +2842,22 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains(".asciz \"GET\"", ".asciz \"/status\"",
                     ".asciz \"application/json\"", ".asciz \"{\\\"ok\\\":true}\"",
                     "bl juno_http_server_begin", "bl juno_http_server_accept", "bl juno_http_server_method",
-                    "bl juno_http_server_path", "bl juno_string_equals", "bl juno_http_server_respond",
+                    "bl juno_http_server_path", "bl juno_http_server_content_length", "bl juno_string_equals",
+                    "bl juno_http_server_respond",
                     "bl juno_http_server_respond_builder");
             assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <new>",
                     "extern \"C\" void juno_http_server_begin(int32_t port)",
                     "extern \"C\" int32_t juno_http_server_accept(",
                     "extern \"C\" int32_t juno_http_server_method()",
                     "extern \"C\" int32_t juno_http_server_path()",
+                    "extern \"C\" int32_t juno_http_server_content_length()",
+                    "if (hasContentLength) juno_http_server_content_length_value = contentLength;",
                     "extern \"C\" void juno_http_server_respond(",
                     "extern \"C\" void juno_http_server_respond_builder(",
-                    "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)");
+                    "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)",
+                    "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
+            // A path longer than a runtime-string slot (e.g. /api/v1/mailbox/<uuid>) must not become null.
+            assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
         }
 
         /**
