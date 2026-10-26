@@ -3,13 +3,13 @@ info:
   title: Juno Mailbox API
   version: 1.0.0
   description: |
-    An SD-backed mailbox served by the Juno Mailbox example on an Arduino UNO Q or UNO R4 WiFi.
+    An SD-backed mailbox served by the Juno Mailbox example on an Arduino UNO Q.
     The in-memory index is limited to four messages; message JSON is stored on the SD card.
     Every mailbox request carries the board's API key in the Mailbox-API-Key header; it starts as 1234567890 and
-    is changed on the board's Security screen. The board serves plain HTTP, so the key keeps out casual callers on
-    the network, not someone reading its traffic.
+    is changed on the board's Security screen. The board serves HTTPS on port 443; clients must trust the certificate
+    configured when the sketch is built.
 servers:
-  - url: http://{host}
+  - url: https://{host}
     description: The board serving the mailbox
     variables:
       host:

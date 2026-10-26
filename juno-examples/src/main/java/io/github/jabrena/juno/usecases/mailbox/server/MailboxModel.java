@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.server;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,7 +49,11 @@ public final class MailboxModel {
     }
 
     void begin() {
-        storageReady = sdCard.begin() && sdCard.createDirectory(SD_MAILBOX_DIRECTORY);
+        boolean cardReady = sdCard.begin();
+        Serial.println(cardReady ? "SD begin ok" : "SD begin failed");
+        boolean directoryReady = cardReady && sdCard.createDirectory(SD_MAILBOX_DIRECTORY);
+        Serial.println(directoryReady ? "SD directory ok" : "SD directory failed");
+        storageReady = directoryReady;
         if (storageReady) {
             restoreMessages();
         }
