@@ -20,11 +20,11 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Mailbox client for the M5Stack Cardputer: a cover, mailbox discovery, settings, inbox, detail, and tweet-sized
- * composition. Wi-Fi joins in the background from the first frame, so the cover and settings respond while it connects;
- * the mailbox is then found by its {@code /actuator/info}, and the settings are only needed when it is not. Mailbox
- * requests carry the API key from Settings (stored in {@code /api-key.txt} on the SD card, {@code 1234567890} until
- * then) in a {@code Mailbox-API-Key} header; a board that rejects it shows "Wrong API key" in the inbox.
+ * Mailbox client for the M5Stack Cardputer: a cover, settings, mailbox discovery, inbox, detail, and tweet-sized
+ * composition. Wi-Fi joins in the background from the first frame, so the cover and settings respond while it connects.
+ * The cover opens the settings: first the API key (stored in {@code /api-key.txt} on the SD card, {@code 1234567890}
+ * until then), then the mailbox IP, which Ctrl+s scans the network for by its {@code /actuator/info}. Mailbox requests
+ * carry the key in a {@code Mailbox-API-Key} header; a board that rejects it shows "Wrong API key" in the inbox.
  *
  * <p>Its startup objects outgrow the default 8 KiB arena; the Cardputer has RAM to spare, so build it with
  * {@code -Djuno.Xmx=12k}.

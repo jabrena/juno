@@ -8,12 +8,11 @@ import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
  * Finds the mailbox on the local network without typing its IP: asks each address of the Cardputer's own /24 for
- * {@code /actuator/info}, in order from .1 to .254. One address is probed per frame, so Esc still reaches the manual
- * settings at any time.
+ * {@code /actuator/info}, in order from .1 to .254, then goes back to the settings with the address it found filled in.
+ * One address is probed per frame, so Esc goes back to the settings at any time.
  */
 public final class DiscoveryView implements KeyboardView {
     private static final int SETTINGS_VIEW = 0;
-    private static final int INBOX_VIEW = 1;
     private static final int ESCAPE = 27;
     private static final int CARDPUTER_ESCAPE = '`';
     private static final int HEADER_HEIGHT = 28;
@@ -55,7 +54,7 @@ public final class DiscoveryView implements KeyboardView {
         display.setTextSize(TEXT_SIZE);
         display.setCursor(8, 6);
         display.print("FIND MAILBOX");
-        footer.draw("Esc: enter the IP by hand");
+        footer.draw("Esc: back to settings");
     }
 
     @Override
@@ -86,8 +85,7 @@ public final class DiscoveryView implements KeyboardView {
             Serial.print("Mailbox client: found mailbox at ");
             Serial.println(candidate);
             settings.found(candidate);
-            client.host(candidate);
-            navigator.show(INBOX_VIEW);
+            navigator.show(SETTINGS_VIEW);
         }
     }
 

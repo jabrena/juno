@@ -8,20 +8,21 @@ import io.github.jabrena.juno.util.mvc.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
- * Runtime editor for the mailbox IP and API key, used before the first inbox request; Tab moves between the two
- * fields. It also follows the background Wi-Fi join.
+ * Runtime editor for the mailbox API key and IP, opened from the cover before the first inbox request: the key first,
+ * then the IP, which Ctrl+s scans the network for; Tab moves between the two fields. It also follows the background
+ * Wi-Fi join.
  */
 public final class SettingsView implements KeyboardView {
     private static final int INBOX_VIEW = 1;
     private static final int DISCOVERY_VIEW = 5;
-    private static final String LEGEND = "Enter: save | Tab: field | Ctrl+f: find";
+    private static final String LEGEND = "Enter: save | Tab: field | Ctrl+s: scan";
     private static final int HOST_CAPACITY = 16;
     private static final int SETTINGS_TEXT_SIZE = 2;
     private static final int ESCAPE = 27;
     private static final int CARDPUTER_ESCAPE = '`';
     /** Each field is a small label beside a size-2 value; the value starts at {@link #VALUE_X} so 16 characters fit. */
-    private static final int HOST_Y = 34;
-    private static final int KEY_Y = 54;
+    private static final int KEY_Y = 34;
+    private static final int HOST_Y = 54;
     private static final int VALUE_X = 30;
     private static final int WIFI_Y = 74;
     private static final int MESSAGE_Y = 96;
@@ -37,9 +38,10 @@ public final class SettingsView implements KeyboardView {
     private int hostLength;
     private final char[] keyText = new char[MailboxKey.MAX_KEY_CHARS];
     private int keyLength;
-    private boolean editingKey;
+    private boolean editingKey = true;
     private int drawnConnection = -1;
     private boolean notFound;
+    private boolean justFound;
 
     public SettingsView(Navigator navigator, Display display, Keyboard keyboard, MailboxApi client,
             MailboxConnection connection, MailboxKey apiKey, Footer footer) {
@@ -50,21 +52,26 @@ public final class SettingsView implements KeyboardView {
         this.connection = connection;
         this.apiKey = apiKey;
         this.footer = footer;
+        // Copied once, so a key typed but not yet saved survives a scan.
+        keyLength = apiKey.copy(keyText);
     }
 
     @Override
     public void enter() {
-        keyLength = apiKey.copy(keyText);
         if (notFound) {
-            drawError("Mailbox not found; enter its IP");
+            drawNote("Mailbox not found; enter its IP", Display.RED);
+        } else if (justFound) {
+            drawNote("Mailbox found; Enter: save", Display.GREEN);
         } else {
             draw();
         }
     }
 
-    /** Discovery found the mailbox here; the field shows it in case the user later opens the settings. */
+    /** A scan found the mailbox here; the IP field shows it, ready to save. */
     public void found(String value) {
         notFound = false;
+        justFound = true;
+        editingKey = false;
         hostLength = 0;
         for (int index = 0; index < value.length() && index < host.length; index++) {
             host[index] = value.charAt(index);
@@ -75,6 +82,7 @@ public final class SettingsView implements KeyboardView {
     /** Discovery asked every address and none answered as the mailbox. */
     public void notFound() {
         notFound = true;
+        justFound = false;
     }
 
     @Override
@@ -87,8 +95,9 @@ public final class SettingsView implements KeyboardView {
     @Override
     public void key(int key, boolean fnPressed) {
         notFound = false;
+        justFound = false;
         if (keyboard.isControlPressed()) {
-            if (key == 'f' || key == 'F') {
+            if (key == 's' || key == 'S') {
                 navigator.show(DISCOVERY_VIEW);
             }
         } else if (key == Keyboard.TAB) {
@@ -133,11 +142,11 @@ public final class SettingsView implements KeyboardView {
 
     private void save() {
         if (hostLength == 0) {
-            drawError("Enter a mailbox IP");
+            drawNote("Enter a mailbox IP", Display.RED);
             return;
         }
         if (keyLength == 0) {
-            drawError("Enter the mailbox API key");
+            drawNote("Enter the mailbox API key", Display.RED);
             return;
         }
         if (!apiKey.change(keyText, keyLength)) {
@@ -217,10 +226,10 @@ public final class SettingsView implements KeyboardView {
         display.print((char) ('0' + value % 10));
     }
 
-    private void drawError(String message) {
+    private void drawNote(String message, int color) {
         draw();
         display.setTextSize(1);
-        display.setTextColor(Display.RED, Display.BLACK);
+        display.setTextColor(color, Display.BLACK);
         display.setCursor(8, MESSAGE_Y);
         display.print(message);
     }
