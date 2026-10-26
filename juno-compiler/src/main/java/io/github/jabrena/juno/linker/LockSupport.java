@@ -30,9 +30,10 @@ public final class LockSupport {
     }
 
     public void validateMethod(JavaMethod method) {
-        if (method.isSynchronized()) {
-            throw new CompileException("Juno's restricted synchronization subset does not support synchronized "
-                    + "methods: " + method.reference().displayName() + "; use a synchronized (lock) block instead");
+        if (method.isSynchronized() && method.isStatic()) {
+            throw new CompileException("Juno's restricted synchronization subset supports instance synchronized "
+                    + "methods only: " + method.reference().displayName()
+                    + "; use a synchronized (lock) block for a static method");
         }
     }
 }

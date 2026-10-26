@@ -161,8 +161,8 @@ class SynchronizationTest {
     }
 
     @Test
-    @DisplayName("Synchronized methods are rejected instead of silently running unlocked")
-    void shouldRejectSynchronizedMethodsInsteadOfRunningUnlocked() throws Exception {
+    @DisplayName("Synchronized instance methods use the reentrant runtime monitor")
+    void shouldUseAReentrantRuntimeMonitorForSynchronizedMethods() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -178,11 +178,11 @@ class SynchronizationTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.SynchronizedMethod", source);
 
-        // When & Then
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedMethod"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("synchronized methods")
-                .hasMessageContaining("synchronized (lock)");
+        // When
+        String assembly = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SynchronizedMethod").assembly();
+
+        // Then
+        assertThat(assembly).contains("bl juno_monitor_enter", "bl juno_monitor_exit");
     }
 
     @Test

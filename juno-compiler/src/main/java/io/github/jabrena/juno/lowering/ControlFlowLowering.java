@@ -65,6 +65,9 @@ final class ControlFlowLowering implements OpcodeGroup {
     }
 
     private void terminate(IrTerminator terminator) {
+        if (terminator instanceof IrTerminator.Return) {
+            context.exitSynchronized();
+        }
         context.code().terminate(terminator);
     }
 
