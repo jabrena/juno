@@ -1,7 +1,9 @@
 package io.github.jabrena.juno.maven;
 
+import io.github.jabrena.juno.thirdparty.bearssl.BearSslLibrary;
 import org.jspecify.annotations.Nullable;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ final class ArduinoCli {
     private final String executable;
     private final CommandExecutor executor;
     private final Consumer<String> output;
+    private final BearSslLibrary bearSsl;
     private final BoardListJsonParser boardListParser = new BoardListJsonParser();
 
     ArduinoCli(String executable, Consumer<String> output) {
@@ -26,9 +29,14 @@ final class ArduinoCli {
     }
 
     ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output) {
+        this(executable, executor, output, new BearSslLibrary());
+    }
+
+    ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output, BearSslLibrary bearSsl) {
         this.executable = requireText(executable, "Arduino CLI executable");
         this.executor = executor;
         this.output = output;
+        this.bearSsl = bearSsl;
     }
 
     void installCore(String platform) {
@@ -50,10 +58,24 @@ final class ArduinoCli {
         if (UNO_R3_WIFI_REV2_FQBN.equals(requiredFqbn)) {
             arguments.addAll(List.of("--build-property", SDFAT_SOFTWARE_SPI));
         } else if (UNO_Q_FQBN.equals(requiredFqbn)) {
-            arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL));
+            // The Zephyr core has no TLS server, so HttpServer.beginTls compiles against the bundled BearSSL.
+            arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL,
+                    "--library", absolute(bundledBearSsl(sketchDirectory))));
         }
         arguments.add(absolute(sketchDirectory));
         run(captured(arguments.toArray(String[]::new)));
+    }
+
+    /** Installs BearSSL beside the generated sketches ({@code target/juno/libraries}), once per version. */
+    private Path bundledBearSsl(Path sketchDirectory) {
+        Path sketches = sketchDirectory.toAbsolutePath().normalize().getParent();
+        Path libraries = (sketches != null ? sketches : sketchDirectory.toAbsolutePath()).resolve("libraries");
+        try {
+            return bearSsl.installInto(libraries);
+        } catch (IOException exception) {
+            throw new ArduinoCliException("Could not install " + BearSslLibrary.NAME + " into " + libraries,
+                    exception);
+        }
     }
 
     void upload(String fqbn, String port, Path sketchDirectory) {

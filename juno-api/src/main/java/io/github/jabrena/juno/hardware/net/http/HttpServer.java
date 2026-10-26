@@ -6,7 +6,7 @@ package io.github.jabrena.juno.hardware.net.http;
  * BridgeTCPServer} (a listener in {@code arduino-router} on Linux) on UNO Q. Requires an active
  * {@link io.github.jabrena.juno.hardware.net.Wifi#begin} or {@link io.github.jabrena.juno.hardware.net.Wifi#beginAP}
  * connection. {@link #begin(int)} serves plain HTTP on every board; {@link #beginTls} serves HTTPS on the ESP32
- * boards (Nano ESP32, M5Stack Cardputer) only.
+ * boards (Nano ESP32, M5Stack Cardputer) and on the UNO Q, whose MCU runs the TLS session over the bridge.
  *
  * <p>{@link #begin(int)} starts listening once. From then on, call {@link #accept} once per
  * {@code loop()} iteration: it returns immediately with {@code -1} when no client is currently
@@ -42,7 +42,7 @@ public final class HttpServer {
      * certificate themselves (e.g. {@code curl --cacert server.crt}, or {@code -k}). The buffers are parsed here and
      * can be reused afterwards. On success the rest of the API is unchanged: {@link #accept} completes the TLS
      * handshake before it reads the request. Returns {@code false} when the certificate or key does not parse.
-     * ESP32 boards only (Nano ESP32, M5Stack Cardputer), one connection at a time; call it once, instead of
+     * ESP32 boards (Nano ESP32, M5Stack Cardputer) and UNO Q only, one connection at a time; call it once, instead of
      * {@link #begin(int)}.
      */
     public static native boolean beginTls(int port, byte[] certificate, int certificateLength, byte[] privateKey,

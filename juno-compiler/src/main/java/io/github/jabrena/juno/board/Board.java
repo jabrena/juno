@@ -35,8 +35,8 @@ public enum Board {
             ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI,
                     Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
-                    Capability.HTTP_SERVER, Capability.BLUETOOTH_LE, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS,
-                    Capability.DOUBLE_MATH)),
+                    Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE,
+                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     /**
      * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), and the
      * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.

@@ -21,5 +21,6 @@
 
     <modules>
         <module>juno-rcx-firmware</module>
+        <module>juno-bearssl</module>
     </modules>
 </project>

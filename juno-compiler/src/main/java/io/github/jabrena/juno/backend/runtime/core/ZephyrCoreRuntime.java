@@ -106,6 +106,13 @@ final class ZephyrCoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String httpsServerTransport() {
+        // The router only listens for plain TCP, so the TLS server session runs on the MCU with BearSSL (the JunoBearSSL
+        // library from juno-third-parties) over the same bridge connection.
+        return runtimeSource.load("zephyr/https-server-transport.cpp");
+    }
+
+    @Override
     public String udpDeclaration() {
         // Keep the bridge buffer bounded; Juno's UDP payloads are caller-sized and streamed over RPC.
         return "static BridgeUDP<512> juno_udp(Bridge);";

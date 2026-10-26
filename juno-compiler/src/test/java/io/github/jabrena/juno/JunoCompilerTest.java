@@ -3008,6 +3008,41 @@ class JunoCompilerTest {
                     .hasMessageContaining("UNO R4 WiFi cannot run a TLS server session");
         }
 
+        @Test
+        @DisplayName("Lowers HttpServer.beginTls on the UNO Q to a BearSSL server session over the bridge listener")
+        void shouldLowerHttpServerBeginTlsOnTheUnoQ() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    public final class HttpsServerOnQ {
+                        public static void main(String[] args) {
+                            byte[] certificate = new byte[64];
+                            byte[] key = new byte[64];
+                            byte[] body = new byte[16];
+                            if (HttpServer.beginTls(443, certificate, 64, key, 64)) {
+                                if (HttpServer.accept(body, 16) >= 0) {
+                                    HttpServer.respond(200, "text/plain", "online");
+                                }
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsServerOnQ", source);
+
+            // When
+            CompilationResult result = new JunoCompiler().compile(CompilerTestSupport.classpath(temporaryDirectory),
+                    "demo.HttpsServerOnQ", false, Optional.of(Board.UNO_Q.id()));
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_server_begin_tls");
+            assertThat(result.runtimeShim()).contains("#include <bearssl.h>",
+                    "static br_ssl_server_context juno_https_server;",
+                    "BridgeTCPServer<JUNO_HTTP_SERVER_BUFFER>",
+                    "extern \"C\" int32_t juno_http_server_begin_tls(")
+                    .doesNotContain("mbedtls", "WiFiServer", "ESP_SSLClient");
+        }
+
         /**
          * {@code HttpServer.respond(int, String, String)}'s {@code body} is the one intrinsic {@code
          * String} parameter in all of Juno exempt from the compile-time-literal requirement (see
