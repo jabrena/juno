@@ -33,6 +33,10 @@ public final class MailboxClient implements MailboxApi, Task {
     private static final int UUID_LENGTH = 36;
 
     private static final String WRONG_KEY = "Wrong API key; check Settings";
+    /** {@link #readList()} failed; the periodic refresh retries soon. */
+    private static final int FAILED = -1;
+    /** {@link #readList()} was answered 401: the inbox shows the wrong key and retrying cannot help. */
+    private static final int REJECTED = -2;
 
     private final MailboxModel model;
     private final MailboxConnection connection;
@@ -93,9 +97,27 @@ public final class MailboxClient implements MailboxApi, Task {
 
     /** Reads the list and then every message so the inbox can display titles immediately. */
     public boolean refresh() {
+        int count = readList();
+        if (count == REJECTED) {
+            return true;
+        }
+        if (count < 0) {
+            return false;
+        }
+        for (int index = 0; index < count; index++) {
+            if (!readMessage(index)) {
+                return false;
+            }
+        }
+        finishRefresh(count);
+        return true;
+    }
+
+    @Override
+    public int readList() {
         if (host == null || host.length() == 0) {
             model.status("Set mailbox IP in Settings");
-            return false;
+            return FAILED;
         }
         Serial.print("Mailbox client: GET host [");
         Serial.print(host);
@@ -111,12 +133,12 @@ public final class MailboxClient implements MailboxApi, Task {
             model.clear();
             model.status(WRONG_KEY);
             model.finishRefresh();
-            return true;
+            return REJECTED;
         }
         if (listLength < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
             Serial.println("Mailbox client: list request failed");
             model.status("Mailbox unavailable; retrying");
-            return false;
+            return FAILED;
         }
         int count = Json.arraySize(response, listLength, "");
         Serial.print("Mailbox client: list count ");
@@ -124,7 +146,7 @@ public final class MailboxClient implements MailboxApi, Task {
         if (count < 0 || count > MailboxModel.MAX_MESSAGES) {
             Serial.println("Mailbox client: invalid list response");
             model.status("Invalid mailbox response");
-            return false;
+            return FAILED;
         }
         model.clear();
         // Every detail request reuses the response buffer, so take all the uuids from the list before the first one.
@@ -134,20 +156,16 @@ public final class MailboxClient implements MailboxApi, Task {
                 Serial.print("Mailbox client: invalid UUID length ");
                 Serial.println(uuidLength);
                 model.status("Invalid message UUID; retrying");
-                return false;
+                return FAILED;
             }
         }
-        for (int index = 0; index < count; index++) {
-            if (!readMessage(index)) {
-                Serial.print("Mailbox client: detail request failed for index ");
-                Serial.println(index);
-                model.status("Message read failed; retrying");
-                return false;
-            }
-        }
+        return count;
+    }
+
+    @Override
+    public void finishRefresh(int count) {
         model.status(count == 0 ? "Mailbox is empty" : "Updated just now");
         model.finishRefresh();
-        return true;
     }
 
     /** Copies the list's uuid at {@code index} into the model's uuid slot for that message. */
@@ -165,7 +183,8 @@ public final class MailboxClient implements MailboxApi, Task {
         return Json.getString(response, listLength, "[3].uuid", uuid, UUID_LENGTH);
     }
 
-    private boolean readMessage(int index) {
+    @Override
+    public boolean readMessage(int index) {
         byte[] uuid = model.uuid(index);
         int pathLength = copyMessagePath(uuid, UUID_LENGTH);
         int bodyLength = getPath(path, pathLength);
@@ -174,6 +193,9 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.print(" bytes ");
         Serial.println(bodyLength);
         if (bodyLength < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
+            Serial.print("Mailbox client: detail request failed for index ");
+            Serial.println(index);
+            model.status("Message read failed; retrying");
             return false;
         }
         int titleLength = Json.getString(
@@ -214,7 +236,6 @@ public final class MailboxClient implements MailboxApi, Task {
         return true;
     }
 
-    /** Also refreshes the inbox once the board confirms the delete. */
     @Override
     public boolean delete(byte[] uuid, int uuidLength) {
         if (host == null || host.length() == 0) {
@@ -230,9 +251,6 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.println(statusAndHeadersLength[0]);
         boolean deleted = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.NO_CONTENT;
         model.status(deleted ? "Message deleted" : failure(responseLength, "Delete failed"));
-        if (deleted) {
-            requestRefresh();
-        }
         return deleted;
     }
 
@@ -252,10 +270,7 @@ public final class MailboxClient implements MailboxApi, Task {
                 key.header(), key.headerLength(), request.body(), requestLength, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         boolean sent = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.CREATED;
-        model.status(sent ? "Message sent" : failure(responseLength, "Send failed; retrying"));
-        if (sent) {
-            requestRefresh();
-        }
+        model.status(sent ? "Message sent" : failure(responseLength, "Send failed; check IP"));
         return sent;
     }
 

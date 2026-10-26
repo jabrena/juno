@@ -22,7 +22,7 @@ public final class MessageView implements KeyboardView {
     private final Display display;
     private final Keyboard keyboard;
     private final MailboxModel model;
-    private final MailboxApi client;
+    private final ProgressView progress;
     private final ScrollingText body;
     private final Footer footer;
     private final byte[] uuid = new byte[MailboxModel.UUID_LENGTH];
@@ -31,12 +31,12 @@ public final class MessageView implements KeyboardView {
     private int renderedRevision;
 
     public MessageView(Navigator navigator, Display display, Keyboard keyboard, MailboxModel model,
-            MailboxApi client, ScrollingText body, Footer footer) {
+            ProgressView progress, ScrollingText body, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.keyboard = keyboard;
         this.model = model;
-        this.client = client;
+        this.progress = progress;
         this.body = body;
         this.footer = footer;
     }
@@ -78,7 +78,7 @@ public final class MessageView implements KeyboardView {
             if (key == 'c' || key == 'C') {
                 navigator.show(COMPOSE_VIEW);
             } else if ((key == 'd' || key == 'D') && messageIndex >= 0) {
-                delete();
+                progress.delete(uuid, uuidLength);
             }
         } else if (key == ESCAPE || key == CARDPUTER_ESCAPE) {
             navigator.back();
@@ -91,15 +91,6 @@ public final class MessageView implements KeyboardView {
 
     @Override
     public void touch(int x, int y) {
-    }
-
-    private void delete() {
-        footer.draw("Deleting...");
-        if (client.delete(uuid, uuidLength)) {
-            navigator.back();
-        } else {
-            footer.draw("Delete failed | Esc");
-        }
     }
 
     private void draw() {

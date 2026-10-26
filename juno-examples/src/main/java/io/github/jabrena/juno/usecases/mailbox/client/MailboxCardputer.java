@@ -38,6 +38,7 @@ public final class MailboxCardputer {
     private static final int COMPOSE_VIEW = 3;
     private static final int COVER_VIEW = 4;
     private static final int DISCOVERY_VIEW = 5;
+    private static final int PROGRESS_VIEW = 6;
     private static final int FRAME_MILLIS = 50;
     private static final int MESSAGE_BODY_TOP = 32;
     private static final int MESSAGE_BODY_HEIGHT = 74;
@@ -74,10 +75,12 @@ public final class MailboxCardputer {
         SettingsView settingsView = new SettingsView(router, display, keyboard, client, connection, key, footer);
         router.register(SETTINGS_VIEW, settingsView);
         router.register(DISCOVERY_VIEW, new DiscoveryView(router, display, connection, client, settingsView, footer));
-        router.register(INBOX_VIEW, new InboxView(router, display, keyboard, model, client, messages, footer));
+        ProgressView progress = new ProgressView(router, display, client, model, footer);
+        router.register(PROGRESS_VIEW, progress);
+        router.register(INBOX_VIEW, new InboxView(router, display, keyboard, model, progress, messages, footer));
         ScrollingText body = new ScrollingText(display, MESSAGE_BODY_TOP, MESSAGE_BODY_HEIGHT);
-        router.register(DETAIL_VIEW, new MessageView(router, display, keyboard, model, client, body, footer));
-        router.register(COMPOSE_VIEW, new ComposeView(router, display, keyboard, client, footer));
+        router.register(DETAIL_VIEW, new MessageView(router, display, keyboard, model, progress, body, footer));
+        router.register(COMPOSE_VIEW, new ComposeView(router, display, keyboard, progress, footer));
         router.background(client);
         router.start(COVER_VIEW);
         router.run();

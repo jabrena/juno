@@ -6,7 +6,7 @@ import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
 import io.github.jabrena.juno.util.mvc.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
-/** The periodically refreshed inbox: open, and with Ctrl compose, refresh, and settings. */
+/** The periodically refreshed inbox: open, and with Ctrl compose, refresh (in the {@link ProgressView}), and settings. */
 public final class InboxView implements KeyboardView {
     private static final int DETAIL_VIEW = 2;
     private static final int COMPOSE_VIEW = 3;
@@ -27,18 +27,18 @@ public final class InboxView implements KeyboardView {
     private final Display display;
     private final Keyboard keyboard;
     private final MailboxModel model;
-    private final MailboxApi client;
+    private final ProgressView progress;
     private final NumberedList messages;
     private final Footer footer;
     private int renderedRevision = -1;
 
-    public InboxView(Navigator navigator, Display display, Keyboard keyboard, MailboxModel model, MailboxApi client,
-            NumberedList messages, Footer footer) {
+    public InboxView(Navigator navigator, Display display, Keyboard keyboard, MailboxModel model,
+            ProgressView progress, NumberedList messages, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.keyboard = keyboard;
         this.model = model;
-        this.client = client;
+        this.progress = progress;
         this.messages = messages;
         this.footer = footer;
     }
@@ -79,9 +79,7 @@ public final class InboxView implements KeyboardView {
         if (key == 'c' || key == 'C') {
             navigator.show(COMPOSE_VIEW);
         } else if (key == 'r' || key == 'R') {
-            footer.draw("Refreshing...");
-            client.requestRefresh();
-            renderedRevision = -1;
+            progress.refresh();
         } else if (key == 's' || key == 'S') {
             navigator.show(SETTINGS_VIEW);
         }
