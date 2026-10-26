@@ -73,6 +73,15 @@ public final class HttpServer {
      */
     public static native int contentLength();
 
+    /**
+     * Copies the value of request header {@code name} from the most recent {@link #accept} into {@code buffer},
+     * truncated to {@code bufferLength}, and returns the number of bytes copied, or {@code -1} when the request has no
+     * such header. The name is matched case-insensitively and must be a string literal, such as
+     * {@code "Mailbox-API-Key"}; spaces around the value are trimmed. Only the first 384 bytes of the request's
+     * header lines are kept, so a header past that reads as absent.
+     */
+    public static native int header(String name, byte[] buffer, int bufferLength);
+
     /** Replies with {@code body} (a literal or a runtime {@code String}), then closes the connection. */
     public static native void respond(int status, String contentType, String body);
 

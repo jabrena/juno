@@ -46,6 +46,7 @@ public enum ShimFeature {
     HTTP_REQUEST_BUFFER,
     HTTP_TIMEOUT,
     HTTP_SERVER,
+    HTTP_SERVER_HEADERS,
     SMTP,
     SMTP_TLS,
     POP3,

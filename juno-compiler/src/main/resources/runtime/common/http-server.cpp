@@ -1,5 +1,5 @@
 
-static char juno_http_server_method_buf[8];
+${JUNO_HTTP_SERVER_HEADER_STATE}static char juno_http_server_method_buf[8];
 static char juno_http_server_path_buf[96];
 static int32_t juno_http_server_content_length_value = -1;
 static constexpr int32_t JUNO_HTTP_SERVER_DISCONNECTED_POLLS = 3;
@@ -33,7 +33,7 @@ extern "C" int32_t juno_http_server_accept(uint8_t* bodyBuffer, int32_t bodyBuff
 static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength) {
   if (!juno_http_server_next_client()) return -1;
   JunoHttpClient& client = juno_http_server_client;
-  juno_http_server_content_length_value = -1;
+${JUNO_HTTP_SERVER_HEADER_RESET}  juno_http_server_content_length_value = -1;
 
   int32_t methodLength = 0;
   int32_t pathLength = 0;
@@ -105,7 +105,7 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
       } else {
         contentLengthMatch = (lower == contentLengthMarker[0]) ? 1 : 0;
       }
-      recent[0] = recent[1];
+${JUNO_HTTP_SERVER_HEADER_CAPTURE}      recent[0] = recent[1];
       recent[1] = recent[2];
       recent[2] = recent[3];
       recent[3] = c;
@@ -141,7 +141,7 @@ static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t body
   return written < bodyBufferLength ? written : bodyBufferLength;
 }
 
-extern "C" int32_t juno_http_server_content_length() {
+${JUNO_HTTP_SERVER_HEADER_LOOKUP}extern "C" int32_t juno_http_server_content_length() {
   return juno_http_server_content_length_value;
 }
 
