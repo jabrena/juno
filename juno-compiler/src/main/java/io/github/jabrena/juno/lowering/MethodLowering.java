@@ -55,10 +55,15 @@ final class MethodLowering {
         // leaves every block's entry depth unchanged; its getstatic reads become ConstantTableRef instead.
         Set<Integer> tableInitializer = context.program().constantTables()
                 .initializerOffsets(method.method().reference());
+        boolean firstBlock = true;
         for (BasicBlock block : method.controlFlowGraph().blocks()) {
             context.enterBlock(block);
             context.code().startBlock(block.start());
             context.stack().startBlock(entryDepths.getOrDefault(block.start(), 0));
+            if (firstBlock) {
+                context.enterSynchronized();
+                firstBlock = false;
+            }
             block.instructions().stream()
                     .filter(instruction -> !tableInitializer.contains(instruction.offset()))
                     .forEach(table::lower);
@@ -67,6 +72,6 @@ final class MethodLowering {
         }
         return IrMethod.withInferredValues(method.method().reference(), method.method().isStatic(),
                 method.method().maxLocals() + method.method().maxStack(), context.values().count(),
-                List.copyOf(context.arrays()), context.code().blocks());
+                List.copyOf(context.arrays()), context.finishBlocks());
     }
 }

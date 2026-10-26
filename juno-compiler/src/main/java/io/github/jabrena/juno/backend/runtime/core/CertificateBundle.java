@@ -77,6 +77,23 @@ final class CertificateBundle {
         return array.append("\n};\n").toString();
     }
 
+    /** A custom PEM trust anchor as a C++ raw string for an ESP32 {@code WiFiClientSecure}. */
+    static String cPem(String name, String pem) {
+        Matcher blocks = PEM_BLOCK.matcher(pem);
+        StringBuilder certificates = new StringBuilder();
+        while (blocks.find()) {
+            certificates.append(blocks.group().stripTrailing()).append('\n');
+        }
+        if (certificates.isEmpty()) {
+            throw new IllegalStateException("A custom TLS CA must contain at least one PEM certificate");
+        }
+        String value = certificates.toString();
+        if (value.contains(")JUNO_CA\"")) {
+            throw new IllegalStateException("A custom TLS CA contains the reserved C++ raw-string delimiter");
+        }
+        return "static const char " + name + "[] = R\"JUNO_CA(\n" + value + ")JUNO_CA\";\n";
+    }
+
     private static void writeLength(ByteArrayOutputStream bundle, int length) {
         if (length > MAX_FIELD) {
             throw new IllegalStateException("A certificate bundle field of " + length + " bytes does not fit 16 bits");

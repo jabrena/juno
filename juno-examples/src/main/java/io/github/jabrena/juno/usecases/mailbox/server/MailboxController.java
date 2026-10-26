@@ -16,12 +16,12 @@ public final class MailboxController {
 
     private final MailboxModel model;
     private final MailboxSecurity security;
-    private final MailboxView view;
+    private final MailboxUiState uiState;
 
-    public MailboxController(MailboxModel model, MailboxSecurity security, MailboxView view) {
+    public MailboxController(MailboxModel model, MailboxSecurity security, MailboxUiState uiState) {
         this.model = model;
         this.security = security;
-        this.view = view;
+        this.uiState = uiState;
     }
 
     void handle(String method, String path, int contentLength, byte[] requestBody, int bodyLength) {
@@ -42,10 +42,12 @@ public final class MailboxController {
             respondProblem(HttpStatus.NOT_FOUND, "No mailbox message at the requested path");
             return;
         }
-        byte[] key = security.candidate();
-        if (!security.matches(HttpServer.header(MailboxSecurity.HEADER, key, key.length))) {
-            respondProblem(HttpStatus.UNAUTHORIZED, "Missing or wrong Mailbox-API-Key header");
-            return;
+        synchronized (security) {
+            byte[] key = security.candidate();
+            if (!security.matches(HttpServer.header(MailboxSecurity.HEADER, key, key.length))) {
+                respondProblem(HttpStatus.UNAUTHORIZED, "Missing or wrong Mailbox-API-Key header");
+                return;
+            }
         }
         if (path.equals(MAILBOX_PATH)) {
             if (method.equals(HttpMethod.GET)) {
@@ -88,7 +90,7 @@ public final class MailboxController {
             respondProblem(status, model.errorMessage());
             return;
         }
-        view.drawMessageCount(model.messageCount());
+        uiState.publishMessageCount(model.messageCount());
         respondWithMessage(status, model.messageCount() - 1);
     }
 
@@ -140,7 +142,7 @@ public final class MailboxController {
             respondProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Could not delete mailbox message");
             return;
         }
-        view.drawMessageCount(model.messageCount());
+        uiState.publishMessageCount(model.messageCount());
         HttpServer.respond(HttpStatus.NO_CONTENT, JSON, "");
     }
 

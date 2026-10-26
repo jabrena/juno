@@ -46,7 +46,7 @@ public final class MailboxSecurity {
     }
 
     /** True while the key is still {@link #DEFAULT_KEY}, so the view can ask for it to be changed. */
-    boolean isDefault() {
+    synchronized boolean isDefault() {
         if (keyLength != DEFAULT_KEY.length()) {
             return false;
         }
@@ -59,7 +59,7 @@ public final class MailboxSecurity {
     }
 
     /** Copies the key into {@code target}, which holds {@link #MAX_KEY_BYTES}, and returns its length. */
-    int copyKey(byte[] target) {
+    synchronized int copyKey(byte[] target) {
         for (int i = 0; i < keyLength; i++) {
             target[i] = key[i];
         }
@@ -67,7 +67,7 @@ public final class MailboxSecurity {
     }
 
     /** The buffer a request's header value is read into before {@link #matches(int)} checks it. */
-    byte[] candidate() {
+    synchronized byte[] candidate() {
         return candidate;
     }
 
@@ -76,7 +76,7 @@ public final class MailboxSecurity {
      * the request has no header. Every byte of both buffers is compared whatever the result, so the time taken does
      * not reveal how much of a guess was right.
      */
-    boolean matches(int length) {
+    synchronized boolean matches(int length) {
         int difference = length == keyLength ? 0 : 1;
         for (int i = 0; i < MAX_KEY_BYTES; i++) {
             int given = i < length ? candidate[i] : 0;
@@ -87,7 +87,7 @@ public final class MailboxSecurity {
     }
 
     /** Replaces the key with the first {@code length} bytes of {@code value} and stores it; false if not stored. */
-    boolean change(byte[] value, int length) {
+    synchronized boolean change(byte[] value, int length) {
         if (length <= 0 || length > MAX_KEY_BYTES) {
             return false;
         }

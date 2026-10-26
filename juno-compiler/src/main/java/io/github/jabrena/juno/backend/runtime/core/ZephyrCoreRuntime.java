@@ -76,10 +76,13 @@ final class ZephyrCoreRuntime implements CoreRuntime {
         return "#include <Arduino_RouterBridge.h>\n";
     }
 
-    /** SdFat on the core's default hardware SPI bus. */
+    /** SdFat on the core's default hardware SPI bus, with D10 restored as the caller-controlled chip select. */
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
-        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes);
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes, "",
+                "(SPI.begin(), pinMode(chipSelectPin, OUTPUT), digitalWrite(chipSelectPin, HIGH), "
+                        + "juno_sd.begin(SdSpiConfig(chipSelectPin, SHARED_SPI | USER_SPI_BEGIN, "
+                        + "SD_SCK_MHZ(25), &SPI)))");
     }
 
     @Override

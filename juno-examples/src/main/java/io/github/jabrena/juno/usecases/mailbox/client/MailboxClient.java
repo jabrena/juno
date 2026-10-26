@@ -9,7 +9,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.mvc.Task;
 
 /**
- * Allocation-free, retrying HTTP client for the mailbox API. Every mailbox request carries the {@link MailboxKey}'s
+ * Allocation-free, retrying HTTPS client for the mailbox API. Every mailbox request carries the {@link MailboxKey}'s
  * header; only the discovery probe of {@code /actuator/info}, which the board leaves open, goes without it.
  */
 public final class MailboxClient implements MailboxApi, Task {
@@ -24,7 +24,7 @@ public final class MailboxClient implements MailboxApi, Task {
     private static final String SERVICE_NAME = "Juno Mailbox";
     /** One byte longer than {@link #SERVICE_NAME}, so a longer "info" value is told apart from it. */
     private static final int INFO_CAPACITY = 13;
-    private static final int HTTP_PORT = 80;
+    private static final int HTTPS_PORT = 443;
     private static final int REFRESH_MILLIS = 5 * 60 * 1000;
     private static final int RETRY_MILLIS = 5 * 1000;
     private static final int RESPONSE_CAPACITY = 1536;
@@ -211,7 +211,7 @@ public final class MailboxClient implements MailboxApi, Task {
         int pathLength = copyPath("/actuator/info");
         int started = clock.millis();
         HttpClient.setTimeout(PROBE_TIMEOUT_MILLIS);
-        int length = HttpClient.requestHttp(candidate, HTTP_PORT, "GET", path, pathLength,
+        int length = HttpClient.requestHttps(candidate, HTTPS_PORT, "GET", path, pathLength,
                 noHeaders, 0, null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         HttpClient.setTimeout(REQUEST_TIMEOUT_MILLIS);
@@ -244,7 +244,7 @@ public final class MailboxClient implements MailboxApi, Task {
         }
         int pathLength = copyMessagePath(uuid, uuidLength);
         Serial.println("Mailbox client: DELETE message");
-        int responseLength = HttpClient.requestHttp(host, HTTP_PORT, "DELETE", path, pathLength,
+        int responseLength = HttpClient.requestHttps(host, HTTPS_PORT, "DELETE", path, pathLength,
                 key.header(), key.headerLength(), null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         Serial.print("Mailbox client: delete status ");
@@ -266,7 +266,7 @@ public final class MailboxClient implements MailboxApi, Task {
             return false;
         }
         int pathLength = copyPath("/api/v1/mailbox/");
-        int responseLength = HttpClient.requestHttp(host, HTTP_PORT, "POST", path, pathLength,
+        int responseLength = HttpClient.requestHttps(host, HTTPS_PORT, "POST", path, pathLength,
                 key.header(), key.headerLength(), request.body(), requestLength, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         boolean sent = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.CREATED;
@@ -280,7 +280,7 @@ public final class MailboxClient implements MailboxApi, Task {
     }
 
     private int getPath(byte[] requestPath, int pathLength) {
-        return HttpClient.requestHttp(host, HTTP_PORT, "GET", requestPath, pathLength,
+        return HttpClient.requestHttps(host, HTTPS_PORT, "GET", requestPath, pathLength,
                 key.header(), key.headerLength(), null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
     }

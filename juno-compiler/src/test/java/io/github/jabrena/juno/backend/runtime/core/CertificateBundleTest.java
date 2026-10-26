@@ -69,6 +69,22 @@ class CertificateBundleTest {
                 .endsWith("\n};\n");
     }
 
+    @Test
+    @DisplayName("Emits a custom trust anchor as PEM for the ESP32 client")
+    void shouldEmitCustomPemTrustAnchor() {
+        // Given
+        String first = PEM.substring(PEM.indexOf("-----BEGIN CERTIFICATE-----"),
+                PEM.indexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".length());
+
+        // When
+        String source = CertificateBundle.cPem("juno_custom_ca", "comment\n" + first + "\n");
+
+        // Then
+        assertThat(source).startsWith("static const char juno_custom_ca[] = R\"JUNO_CA(\n")
+                .contains(first)
+                .endsWith(")JUNO_CA\";\n");
+    }
+
     private static int word(byte[] bytes, int offset) {
         return (bytes[offset] & 0xFF) << 8 | bytes[offset + 1] & 0xFF;
     }

@@ -24,7 +24,8 @@ import java.util.Properties;
  * composition. Wi-Fi joins in the background from the first frame, so the cover and settings respond while it connects.
  * The cover opens the settings: first the API key (stored in {@code /api-key.txt} on the SD card, {@code 1234567890}
  * until then), then the mailbox IP, which Ctrl+s scans the network for by its {@code /actuator/info}. Mailbox requests
- * carry the key in a {@code Mailbox-API-Key} header; a board that rejects it shows "Wrong API key" in the inbox.
+ * carry the key in a {@code Mailbox-API-Key} header over HTTPS; a board that rejects it shows "Wrong API key" in the
+ * inbox.
  *
  * <p>Its startup objects outgrow the default 8 KiB arena; the Cardputer has RAM to spare, so build it with
  * {@code -Djuno.Xmx=12k}.

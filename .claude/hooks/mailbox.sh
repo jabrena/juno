@@ -12,6 +12,8 @@
 # command except `host` and `api-key` exits 0 silently, so the hook is harmless while the board is off.
 # Every mailbox request carries the board's API key in a Mailbox-API-Key header: $MAILBOX_API_KEY, else
 # .claude/mailbox/api-key (git-ignored), else the board's starting key 1234567890.
+# With a CA certificate ($MAILBOX_CA, else .claude/mailbox/ca.crt, git-ignored) requests use HTTPS and verify the
+# board's certificate against it, as the UNO Q's HTTPS-only server needs; without one they use plain HTTP (UNO R4).
 # The board keeps four messages and the UNO Q hangs on non-ASCII bodies, so bodies are ASCII-only, at
 # most 280 characters, and `notify` deletes earlier CLAUDE: messages to leave room for AGENT tasks.
 set -uo pipefail
@@ -20,6 +22,7 @@ ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 STATE="$ROOT/.claude/mailbox"
 HOST_FILE="$STATE/host"
 API_KEY_FILE="$STATE/api-key"
+CA_FILE="$STATE/ca.crt"
 DEFAULT_API_KEY="1234567890"
 IDLE_FLAG="$STATE/idle"
 TEXT="$ROOT/.claude/hooks/MailboxText.java"
@@ -27,7 +30,7 @@ JBANG="$(command -v jbang || echo "$HOME/.sdkman/candidates/jbang/current/bin/jb
 NOTIFY_PREFIX="CLAUDE:"
 TASK_MARKER="AGENT"
 TWEET_MAX=280
-CURL=(curl --silent --show-error --connect-timeout 3 --max-time 8)
+CURL=(curl --silent --show-error --connect-timeout 3 --max-time 15)
 
 host() {
   if [ -n "${MAILBOX_HOST:-}" ]; then
@@ -47,13 +50,25 @@ api_key() {
   fi
 }
 
-# curl for one mailbox request, with the API key header.
+ca() {
+  if [ -n "${MAILBOX_CA:-}" ]; then
+    echo "$MAILBOX_CA"
+  elif [ -s "$CA_FILE" ]; then
+    echo "$CA_FILE"
+  fi
+}
+
+# curl for one mailbox request, with the API key header and, over HTTPS, the board's CA.
 mailbox_curl() {
-  "${CURL[@]}" -H "Mailbox-API-Key: $(api_key)" "$@"
+  local tls=()
+  [ -n "$(ca)" ] && tls=(--cacert "$(ca)")
+  "${CURL[@]}" "${tls[@]}" -H "Mailbox-API-Key: $(api_key)" "$@"
 }
 
 base_url() {
-  echo "http://$(host)/api/v1/mailbox/"
+  local scheme=http
+  [ -n "$(ca)" ] && scheme=https
+  echo "$scheme://$(host)/api/v1/mailbox/"
 }
 
 uuids() {

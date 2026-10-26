@@ -208,6 +208,18 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The Zephyr core restores an SD chip select after SPI pin multiplexing")
+    void shouldRestoreTheSdChipSelectOnZephyr() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
+
+        // When & Then
+        assertThat(runtime.sdHelpers(2, 8, 32, 64, 96))
+                .contains("SPI.begin(), pinMode(chipSelectPin, OUTPUT), digitalWrite(chipSelectPin, HIGH)",
+                        "SHARED_SPI | USER_SPI_BEGIN", "SD_SCK_MHZ(25), &SPI");
+    }
+
+    @Test
     @DisplayName("The classic AVR core has no yield function")
     void shouldHaveNoYieldFunctionOnAvr() {
         // Given

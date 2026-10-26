@@ -3,7 +3,7 @@
 This collection consumes the mailbox API described by
 [`Mailbox.openapi.yaml`](../../Mailbox.openapi.yaml).
 
-Set the board host in `environments/local.yml`, then run the collection with Bruno CLI:
+Set the UNO Q host in `environments/local.yml`, trust its build-time TLS certificate in Bruno, then run the collection:
 
 ```bash
 npx --yes @usebruno/cli run --env local
@@ -19,11 +19,11 @@ To override the host or the key without editing the environment file:
 npx --yes @usebruno/cli run --env local --env-var host=192.168.1.42 --env-var apiKey=24680135
 ```
 
-The mailbox loads Wi-Fi credentials from `application.properties` at the root of the SD card:
+The UNO Q gets its network from Linux, so the address shown on the TFT is set at build time with `JUNO_Q_IP`, the
+Q's `[network]` port in `juno:boards`; the build requires it:
 
-```properties
-wifi.ssid=your-network
-wifi.password=your-password
+```bash
+JUNO_Q_IP=192.168.1.47
 ```
 
 The collection contains requests for listing, creating, retrieving, and deleting messages, plus `GET /actuator/info`,

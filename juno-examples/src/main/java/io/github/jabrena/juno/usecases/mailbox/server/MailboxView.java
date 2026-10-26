@@ -22,7 +22,7 @@ public final class MailboxView {
     private static final int COUNT_Y = 232;
     private static final int IP_Y = 256;
     private static final String MESSAGES_LABEL = "MESSAGES: ";
-    private static final String IP_HINT = "SET q.ip IN application.properties";
+    private static final String IP_HINT = "SET JUNO_Q_IP AT BUILD TIME";
     private static final int IP_CAPACITY = 16;
 
     /** The settings gear in the bottom-right corner; a tap near it opens the status screen. */
@@ -111,7 +111,7 @@ public final class MailboxView {
         redrawIp();
     }
 
-    /** The UNO Q's address from {@code q.ip}, or {@code null} when it is not configured. */
+    /** The UNO Q's address from {@code JUNO_Q_IP}, or {@code null} when it is not configured. */
     public void drawIp(String address) {
         ipMissing = address == null || address.length() > IP_CAPACITY;
         ipLength = ipMissing ? 0 : copy(address);
@@ -187,7 +187,7 @@ public final class MailboxView {
         TftTouchShield.print(messageCount);
     }
 
-    /** The hint for a missing {@code q.ip} is too long for the row, so it falls back to the small font. */
+    /** The hint for a missing {@code JUNO_Q_IP} is too long for the row, so it falls back to the small font. */
     private void drawIpRow() {
         if (ipMissing) {
             TftTouchShield.fillRect(0, IP_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
@@ -212,7 +212,7 @@ public final class MailboxView {
         TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
     }
 
-    /** SD card, Wi-Fi, IP, message count and API key, one labelled row each, above the BACK and SECURITY buttons. */
+    /** SD card, network, IP, message count and API key, one labelled row each, above the BACK and SECURITY buttons. */
     private void drawStatusScreen() {
         TftTouchShield.fillScreen(TftTouchShield.WHITE);
         drawHeader("STATUS");
@@ -220,13 +220,13 @@ public final class MailboxView {
         statusLabel("SD", 0);
         TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
         TftTouchShield.print(storageReady ? "READY" : "UNAVAILABLE");
-        statusLabel("WIFI", 1);
+        statusLabel("NET", 1);
         TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
         TftTouchShield.print(internetState);
         statusLabel("IP", 2);
         TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
         if (ipMissing) {
-            TftTouchShield.print("SET q.ip");
+            TftTouchShield.print("SET JUNO_Q_IP");
         } else {
             TftTouchShield.print(ip, ipLength);
         }

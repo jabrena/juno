@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client;
 
-/** What the views ask of the mailbox board; {@link MailboxClient} answers over HTTP, and a test can mock it. */
+/** What the views ask of the mailbox board; {@link MailboxClient} answers over HTTPS, and a test can mock it. */
 public interface MailboxApi {
     /** Uses the mailbox at {@code value} from now on and refreshes the inbox from it. */
     void host(String value);
