@@ -44,7 +44,7 @@ class BoardTest {
                 arguments(Board.UNO_Q, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_Q, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_Q, Capability.HTTP_SERVER, true),
-                arguments(Board.UNO_Q, Capability.HTTPS_SERVER, false),
+                arguments(Board.UNO_Q, Capability.HTTPS_SERVER, true),
                 arguments(Board.UNO_Q, Capability.SMTP_STARTTLS, false),
                 arguments(Board.UNO_Q, Capability.WATCHDOG, false),
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
@@ -583,7 +583,7 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware and the ESP32-only TLS server")
+    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware and the TLS server")
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY

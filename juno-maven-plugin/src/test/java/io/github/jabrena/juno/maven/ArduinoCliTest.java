@@ -80,7 +80,9 @@ class ArduinoCliTest {
                     Arguments.of(Board.UNO_R3_WIFI_REV2.fqbn(), "WifiStatusTFT",
                             List.of("--build-property", "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3")),
                     Arguments.of(Board.UNO_Q.fqbn(), "DashboardTFT",
-                            List.of("--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0")));
+                            List.of("--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0",
+                                    "--build-property", "compiler.c.extra_flags=-Dasm=__asm__",
+                                    "--build-property", "compiler.c.elf.extra_flags=-Wl,--allow-multiple-definition")));
         }
     }
 

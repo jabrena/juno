@@ -15,6 +15,17 @@ final class ArduinoCli {
     private static final String SDFAT_SOFTWARE_SPI = "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3";
     private static final String SDFAT_WITHOUT_ARDUINO_SERIAL =
             "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0";
+    /**
+     * BearSSL (HttpServer.beginTls on the UNO Q) on the Zephyr core: its Cortex-M inline assembly says {@code asm},
+     * which the core's strict {@code -std=c17} does not know.
+     */
+    private static final String BEARSSL_GNU_ASM = "compiler.c.extra_flags=-Dasm=__asm__";
+    /**
+     * The core's {@code inlines.h} defines {@code delay} in every C file that includes {@code Arduino.h}, as BearSSL's
+     * do; the copies are identical.
+     */
+    private static final String ZEPHYR_C_INLINE_COPIES =
+            "compiler.c.elf.extra_flags=-Wl,--allow-multiple-definition";
 
     private final String executable;
     private final CommandExecutor executor;
@@ -50,7 +61,8 @@ final class ArduinoCli {
         if (UNO_R3_WIFI_REV2_FQBN.equals(requiredFqbn)) {
             arguments.addAll(List.of("--build-property", SDFAT_SOFTWARE_SPI));
         } else if (UNO_Q_FQBN.equals(requiredFqbn)) {
-            arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL));
+            arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL, "--build-property",
+                    BEARSSL_GNU_ASM, "--build-property", ZEPHYR_C_INLINE_COPIES));
         }
         arguments.add(absolute(sketchDirectory));
         run(captured(arguments.toArray(String[]::new)));
