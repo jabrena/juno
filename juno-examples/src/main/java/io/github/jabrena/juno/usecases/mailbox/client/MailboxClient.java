@@ -30,7 +30,6 @@ public final class MailboxClient implements MailboxApi, Task {
     private static final int RESPONSE_CAPACITY = 1536;
     private static final int HEADERS_CAPACITY = 256;
     private static final int PATH_CAPACITY = 256;
-    private static final int REQUEST_CAPACITY = 430;
     private static final int UUID_LENGTH = 36;
 
     private static final String WRONG_KEY = "Wrong API key; check Settings";
@@ -41,7 +40,7 @@ public final class MailboxClient implements MailboxApi, Task {
     private final Clock clock;
     private final byte[] path = new byte[PATH_CAPACITY];
     private final byte[] noHeaders = new byte[1];
-    private final byte[] requestBody = new byte[REQUEST_CAPACITY];
+    private final MessageRequest request = new MessageRequest();
     private final byte[] response = new byte[RESPONSE_CAPACITY];
     private final byte[] headers = new byte[HEADERS_CAPACITY];
     private final int[] statusAndHeadersLength = new int[2];
@@ -243,14 +242,14 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Set mailbox IP in Settings");
             return false;
         }
-        int requestLength = encodeMessage(title, titleLength, body, bodyLength);
+        int requestLength = request.encode(title, titleLength, body, bodyLength);
         if (requestLength < 0) {
             model.status("Message is too large");
             return false;
         }
         int pathLength = copyPath("/api/v1/mailbox/");
         int responseLength = HttpClient.requestHttp(host, HTTP_PORT, "POST", path, pathLength,
-                key.header(), key.headerLength(), requestBody, requestLength, response, response.length,
+                key.header(), key.headerLength(), request.body(), requestLength, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         boolean sent = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.CREATED;
         model.status(sent ? "Message sent" : failure(responseLength, "Send failed; retrying"));
@@ -296,47 +295,5 @@ public final class MailboxClient implements MailboxApi, Task {
             path[index] = (byte) value.charAt(index);
         }
         return value.length();
-    }
-
-    private int encodeMessage(char[] title, int titleLength, char[] body, int bodyLength) {
-        int position = 0;
-        position = appendAscii(position, "{\"title\":\"");
-        position = appendJson(position, title, titleLength);
-        position = appendAscii(position, "\",\"body\":\"");
-        position = appendJson(position, body, bodyLength);
-        position = appendAscii(position, "\"}");
-        return position < 0 ? -1 : position;
-    }
-
-    private int appendJson(int position, char[] value, int length) {
-        for (int index = 0; index < length; index++) {
-            char character = value[index];
-            if (character == '"' || character == '\\') {
-                position = appendByte(position, '\\');
-            } else if (character == '\n') {
-                position = appendAscii(position, "\\n");
-                continue;
-            } else if (character == '\r') {
-                position = appendAscii(position, "\\r");
-                continue;
-            }
-            position = appendByte(position, character);
-        }
-        return position;
-    }
-
-    private int appendAscii(int position, String value) {
-        for (int index = 0; index < value.length(); index++) {
-            position = appendByte(position, value.charAt(index));
-        }
-        return position;
-    }
-
-    private int appendByte(int position, int value) {
-        if (position < 0 || position >= requestBody.length) {
-            return -1;
-        }
-        requestBody[position] = (byte) value;
-        return position + 1;
     }
 }
