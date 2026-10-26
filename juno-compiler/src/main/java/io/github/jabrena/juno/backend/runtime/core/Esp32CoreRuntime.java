@@ -109,10 +109,19 @@ final class Esp32CoreRuntime implements CoreRuntime {
      */
     @Override
     public String httpsHelpers() {
+        String customCa = System.getenv("JUNO_TLS_CA");
+        if (customCa != null && !customCa.isBlank()) {
+            return CertificateBundle.cPem("juno_custom_ca", customCa)
+                    + """
+                    struct JunoEspTlsClient : WiFiClientSecure {
+                      JunoEspTlsClient() { setCACert(juno_custom_ca); }
+                    };
+                    """;
+        }
         return CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem")).cArray("juno_ca_bundle")
                 + """
                 struct JunoEspTlsClient : WiFiClientSecure {
-                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle); }
+                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle)); }
                 };
                 """;
     }
