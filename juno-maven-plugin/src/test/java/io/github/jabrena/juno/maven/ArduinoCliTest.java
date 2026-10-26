@@ -4,10 +4,13 @@ import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +45,33 @@ class ArduinoCliTest {
             expected.addAll(buildProperties);
             expected.add(sketch.toAbsolutePath().normalize().toString());
             assertThat(executor.invocations()).containsExactly(captured(expected));
+        }
+
+        @Test
+        @DisplayName("Installs the bundled BearSSL beside the UNO Q sketch")
+        void shouldInstallTheBundledBearSslBesideTheUnoQSketch(@TempDir Path sketches) {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, "compiled");
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+
+            // When
+            cli.compile(Board.UNO_Q.fqbn(), sketches.resolve("HttpsServer"));
+
+            // Then
+            assertThat(sketches.resolve("libraries/JunoBearSSL/src/bearssl.h")).isRegularFile();
+        }
+
+        @Test
+        @DisplayName("Fails with an Arduino CLI error when BearSSL cannot be installed")
+        void shouldFailWhenBearSslCannotBeInstalled(@TempDir Path sketches) throws IOException {
+            // Given a file where the libraries folder should go
+            Files.writeString(sketches.resolve("libraries"), "not a folder");
+            ArduinoCli cli = new ArduinoCli("arduino-cli", new FakeExecutor().respond(0, "compiled"), ignored -> { });
+
+            // When & Then
+            assertThatThrownBy(() -> cli.compile(Board.UNO_Q.fqbn(), sketches.resolve("HttpsServer")))
+                    .isInstanceOf(ArduinoCliException.class)
+                    .hasMessageContaining("Could not install JunoBearSSL");
         }
 
         @Test
@@ -81,8 +111,8 @@ class ArduinoCliTest {
                             List.of("--build-property", "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3")),
                     Arguments.of(Board.UNO_Q.fqbn(), "DashboardTFT",
                             List.of("--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0",
-                                    "--build-property", "compiler.c.extra_flags=-Dasm=__asm__",
-                                    "--build-property", "compiler.c.elf.extra_flags=-Wl,--allow-multiple-definition")));
+                                    "--library", Path.of("target/juno/libraries/JunoBearSSL").toAbsolutePath()
+                                            .normalize().toString())));
         }
     }
 

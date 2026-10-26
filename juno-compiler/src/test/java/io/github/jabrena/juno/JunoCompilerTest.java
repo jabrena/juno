@@ -3036,11 +3036,11 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.assembly()).contains("bl juno_http_server_begin_tls");
-            assertThat(result.runtimeShim()).contains("#include <ESP_SSLClient.h>",
+            assertThat(result.runtimeShim()).contains("#include <bearssl.h>",
                     "static br_ssl_server_context juno_https_server;",
                     "BridgeTCPServer<JUNO_HTTP_SERVER_BUFFER>",
                     "extern \"C\" int32_t juno_http_server_begin_tls(")
-                    .doesNotContain("mbedtls", "WiFiServer");
+                    .doesNotContain("mbedtls", "WiFiServer", "ESP_SSLClient");
         }
 
         /**

@@ -1,9 +1,9 @@
 
-#include <ESP_SSLClient.h>
+#include <bearssl.h>
 
 // HttpServer.beginTls on the UNO Q. The router's listener on Linux (tcp/listen, tcp/accept) only carries bytes, so the
-// TLS server session runs here on the MCU, with the BearSSL bundled in the ESP_SSLClient library, over the accepted
-// bridge connection.
+// TLS server session runs here on the MCU, with BearSSL 0.6 (the JunoBearSSL library the Maven plugin hands to
+// arduino-cli), over the accepted bridge connection.
 
 // Same bound as the plain transport: a tcp/read reply carries its bytes in the 256-byte RPC buffer, where every byte
 // >= 0x80 takes two, and TLS records are all binary.

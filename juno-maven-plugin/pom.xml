@@ -25,6 +25,11 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-compiler</artifactId>
         </dependency>
+        <!-- BearSSL's sources, handed to arduino-cli for the UNO Q's TLS server. -->
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-bearssl</artifactId>
+        </dependency>
         <!-- Only juno-compiler's transitive compile dependency in production code; declared explicitly, test
              scope, because CompileMojoTest/VerifyMojoTest/UploadMojoTest's fixture entry point imports it
              directly. -->
