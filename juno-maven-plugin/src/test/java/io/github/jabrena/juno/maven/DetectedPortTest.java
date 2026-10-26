@@ -50,6 +50,7 @@ class DetectedPortTest {
 
         // When & Then
         assertThat(port.hosts("m5stack:esp32:m5stack_cardputer")).isTrue();
+        assertThat(port.hosts("m5stack:esp32:m5stack_cardputer:FlashSize=8M,PartitionScheme=default_8MB")).isTrue();
         assertThat(port.hosts(UNO_R4_WIFI)).isFalse();
     }
 }
