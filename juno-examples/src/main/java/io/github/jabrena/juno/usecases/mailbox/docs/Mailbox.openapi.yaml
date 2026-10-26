@@ -5,6 +5,9 @@ info:
   description: |
     An SD-backed mailbox served by the Juno Mailbox example on an Arduino UNO Q or UNO R4 WiFi.
     The in-memory index is limited to four messages; message JSON is stored on the SD card.
+    Every mailbox request carries the board's API key in the Mailbox-API-Key header; it starts as 1234567890 and
+    is changed on the board's Security screen. The board serves plain HTTP, so the key keeps out casual callers on
+    the network, not someone reading its traffic.
 servers:
   - url: http://{host}
     description: The board serving the mailbox
@@ -17,13 +20,16 @@ tags:
     description: Create, list, retrieve, and delete mailbox messages
   - name: Actuator
     description: Information about the service itself
-security: []
+security:
+  - MailboxApiKey: []
 paths:
   /actuator/info:
     get:
       operationId: getActuatorInfo
       tags: [Actuator]
       summary: Identify the service
+      description: Open without the API key, so clients can find the mailbox on the network.
+      security: []
       responses:
         "200":
           description: The name of the service running on the board.
@@ -52,6 +58,8 @@ paths:
                   $ref: "#/components/schemas/MailboxMessageId"
               example:
                 - uuid: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
     post:
@@ -91,6 +99,8 @@ paths:
                 $ref: "#/components/schemas/MailboxMessage"
         "400":
           $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "409":
@@ -114,6 +124,8 @@ paths:
                 $ref: "#/components/schemas/MailboxMessage"
         "404":
           $ref: "#/components/responses/MessageNotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
     delete:
@@ -125,6 +137,8 @@ paths:
           description: The message was deleted.
         "404":
           $ref: "#/components/responses/MessageNotFound"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
 
@@ -221,7 +235,24 @@ components:
           maximum: 599
           example: 404
 
+  securitySchemes:
+    MailboxApiKey:
+      type: apiKey
+      in: header
+      name: Mailbox-API-Key
+      description: The shared secret set on the board's Security screen; 1234567890 until it is changed.
+
   responses:
+    Unauthorized:
+      description: The Mailbox-API-Key header is missing or does not match the board's key.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/ProblemDetails"
+          example:
+            type: about:blank
+            title: Missing or wrong Mailbox-API-Key header
+            status: 401
     BadRequest:
       description: The request body is malformed or contains invalid field types.
       content:

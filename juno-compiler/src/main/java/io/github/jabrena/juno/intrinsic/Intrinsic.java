@@ -211,6 +211,8 @@ public enum Intrinsic {
     HTTP_SERVER_METHOD,
     HTTP_SERVER_PATH,
     HTTP_SERVER_CONTENT_LENGTH,
+    /** {@code HttpServer.header}: one request header's value, copied into a caller-owned buffer. */
+    HTTP_SERVER_HEADER,
     HTTP_SERVER_RESPOND,
     HTTP_SERVER_RESPOND_BUILDER,
     /** {@code HttpServer.beginTls}: the HTTPS listener, with a PEM certificate and private key. */

@@ -27,7 +27,7 @@ public final class ComposeView implements KeyboardView {
     private static final String TITLE_LABEL = "Title:";
     private static final int TITLE_COLUMNS = COLUMNS - TITLE_LABEL.length() - 1;
     private static final char CURSOR = '_';
-    private static final String LEGEND = "Ctrl+S: send | Ctrl+R: reset | Esc: back";
+    private static final String LEGEND = "Esc | Ctrl+s | Ctrl+r";
 
     private final Navigator navigator;
     private final Display display;

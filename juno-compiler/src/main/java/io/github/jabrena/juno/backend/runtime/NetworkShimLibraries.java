@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -10,6 +11,9 @@ import java.util.Set;
  * server, and SMTP/POP3 — each appended by {@link RuntimeShim} only when the lowered program uses it.
  */
 final class NetworkShimLibraries {
+    /** The {@code ${JUNO_HTTP_SERVER_HEADER_<hook>}} placeholders in {@code common/http-server.cpp}. */
+    private static final List<String> HTTP_SERVER_HEADER_HOOKS = List.of("STATE", "RESET", "CAPTURE", "LOOKUP");
+
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
 
@@ -91,10 +95,17 @@ final class NetworkShimLibraries {
      * WiFiClient} held across one {@code accept()}/{@code respond()} pair — this hardware can only
      * meaningfully serve one request at a time, so there is no connection-handle scheme.
      * {@code accept()} mirrors {@link #httpHelpers(Set, String, String, boolean)}'s response-parsing state machine, reversed
-     * to parse a request line and headers instead of a status line.
+     * to parse a request line and headers instead of a status line. With {@code headers}, for {@code HttpServer.header},
+     * it also keeps the request's header lines in a fixed buffer; without it the four hooks expand to nothing, so a
+     * server that never reads a header gets the same shim as before.
      */
-    String httpServerHelpers(String transport, boolean worker) {
-        return transport + runtimeSource.load("common/http-server.cpp").replace("${JUNO_HTTP_SERVER_RESPOND_PREPARE}", worker ? """
+    String httpServerHelpers(String transport, boolean worker, boolean headers) {
+        String server = runtimeSource.load("common/http-server.cpp");
+        String hooks = headers ? runtimeSource.load("common/http-server-headers.cpp") : "";
+        for (String hook : HTTP_SERVER_HEADER_HOOKS) {
+            server = server.replace("${JUNO_HTTP_SERVER_HEADER_" + hook + "}", headerHook(hooks, hook));
+        }
+        return transport + server.replace("${JUNO_HTTP_SERVER_RESPOND_PREPARE}", worker ? """
                   char contentTypeCopy[JUNO_IO_TEXT_COPY_BYTES];
                   char bodyCopy[JUNO_IO_TEXT_COPY_BYTES];
                   job.contentType = juno_io_stable_text(contentType, contentTypeCopy);
@@ -102,6 +113,21 @@ final class NetworkShimLibraries {
                     memcpy(bodyCopy, body, static_cast<size_t>(bodyLength));
                     job.body = bodyCopy;
                   }""" : "");
+    }
+
+    /**
+     * The section of {@code common/http-server-headers.cpp} that follows its {@code // @@ <hook>} marker, up to the next
+     * marker; empty when {@code hooks} is empty, as it is for a server that never reads a header.
+     */
+    private String headerHook(String hooks, String hook) {
+        String marker = "// @@ " + hook + "\n";
+        int start = hooks.indexOf(marker);
+        if (start < 0) {
+            return "";
+        }
+        start += marker.length();
+        int end = hooks.indexOf("// @@ ", start);
+        return end < 0 ? hooks.substring(start) : hooks.substring(start, end);
     }
 
     /**

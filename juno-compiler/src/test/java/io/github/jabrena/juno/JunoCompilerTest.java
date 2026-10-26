@@ -2946,6 +2946,43 @@ class JunoCompilerTest {
                     "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
             // A path longer than a runtime-string slot (e.g. /api/v1/mailbox/<uuid>) must not become null.
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
+            // A server that never reads a header gets neither the header buffer nor a leftover hook.
+            assertThat(result.runtimeShim()).doesNotContain("juno_http_server_headers", "${JUNO_HTTP_SERVER_HEADER");
+        }
+
+        @Test
+        @DisplayName("Lowers HttpServer.header to a case-insensitive lookup in the captured request headers")
+        void shouldLowerHttpServerHeaderLookup() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    public final class HttpServerHeaderDemo {
+                        public static void main(String[] args) {
+                            HttpServer.begin(80);
+                            byte[] body = new byte[64];
+                            byte[] key = new byte[32];
+                            if (HttpServer.accept(body, body.length) >= 0) {
+                                int keyLength = HttpServer.header("Mailbox-API-Key", key, key.length);
+                                HttpServer.respond(keyLength < 0 ? 401 : 200, "application/json", "{}");
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpServerHeaderDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpServerHeaderDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_server_header", ".asciz \"Mailbox-API-Key\"");
+            assertThat(result.runtimeShim()).contains(
+                    "static char juno_http_server_headers_buf[384];",
+                    "  juno_http_server_headers_length = 0;",
+                    "juno_http_server_headers_buf[juno_http_server_headers_length++] = c;",
+                    "extern \"C\" int32_t juno_http_server_header(const char* name, uint8_t* out, int32_t outLength)",
+                    "lines[lineEnd] != '\\n'")
+                    .doesNotContain("${JUNO_HTTP_SERVER_HEADER");
         }
 
         @Test

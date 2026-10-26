@@ -285,7 +285,7 @@ public final class RuntimeShim {
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(
                     uses(ShimFeature.HTTPS_SERVER) ? core.httpsServerTransport() : core.httpServerTransport(),
-                    ioRuntime.usesWorker(core, features)));
+                    ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));

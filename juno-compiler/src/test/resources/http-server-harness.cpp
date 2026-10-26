@@ -120,4 +120,23 @@ int main() {
   length = accept({"POST / HTTP/1.1\r\nContent-Length: 11\r\n\r\n{\"a\""}, false, body, sizeof(body));
   assert(length == -1);
   assert(juno_http_server_client.stopped);
+
+#ifdef JUNO_TEST_HEADERS
+  // A header is found whatever the case of its name, with the spaces around its value trimmed.
+  uint8_t key[16] = {};
+  length = accept({"GET /api/v1/mailbox/ HTTP/1.1\r\nHost: a\r\nmailbox-api-key:  1234567890 \r\n", "\r\n"}, true,
+                  body, sizeof(body));
+  assert(length == 0);
+  assert(juno_http_server_header("Mailbox-API-Key", key, sizeof(key)) == 10);
+  assert(std::memcmp(key, "1234567890", 10) == 0);
+  // A value longer than the caller's buffer is cut to it.
+  assert(juno_http_server_header("Mailbox-API-Key", key, 4) == 4);
+  // A missing header, or a name that is only a prefix of one, reads as absent.
+  assert(juno_http_server_header("Authorization", key, sizeof(key)) == -1);
+  assert(juno_http_server_header("Mailbox-API", key, sizeof(key)) == -1);
+  // The next request starts from its own headers.
+  length = accept({"GET / HTTP/1.1\r\n\r\n"}, false, body, sizeof(body));
+  assert(length == 0);
+  assert(juno_http_server_header("Mailbox-API-Key", key, sizeof(key)) == -1);
+#endif
 }

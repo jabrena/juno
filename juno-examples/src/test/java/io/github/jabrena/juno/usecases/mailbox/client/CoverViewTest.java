@@ -15,7 +15,7 @@ class CoverViewTest {
     private final Clock clock = mock(Clock.class);
 
     @Test
-    void anyKeyStartsLookingForTheMailbox() {
+    void anyKeyOpensTheSettings() {
         // Given
         CoverView cover = new CoverView(navigator, display, clock);
         cover.enter();
@@ -24,7 +24,7 @@ class CoverViewTest {
         cover.key('x', false);
 
         // Then
-        verify(navigator).show(5);
+        verify(navigator).show(0);
     }
 
     @Test

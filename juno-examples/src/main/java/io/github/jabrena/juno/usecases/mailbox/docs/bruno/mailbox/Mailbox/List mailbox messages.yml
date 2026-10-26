@@ -8,6 +8,9 @@ info:
 http:
   method: GET
   url: "{{baseUrl}}/api/v1/mailbox/"
+  headers:
+    - name: Mailbox-API-Key
+      value: "{{apiKey}}"
   auth: inherit
 
 settings:

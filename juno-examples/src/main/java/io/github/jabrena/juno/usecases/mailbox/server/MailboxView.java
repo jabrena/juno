@@ -4,33 +4,18 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The mailbox TFT view, in portrait: a flat blue mailbox with a letter dropping into its slot, above the message
- * count and IP address, and a settings gear that opens a status screen with the SD-card and Wi-Fi state. Later
- * changes redraw only their own row on the cover, or the whole status screen while it is shown.
+ * count and IP address, and a settings gear that opens a status screen with the SD-card, Wi-Fi and API-key state.
+ * From there the Security screen changes the API key on a numeric keypad. Later changes redraw only their own row on
+ * the cover, or the whole status screen while it is shown.
  */
 public final class MailboxView {
-    private static final int BLUE = 0x3C1E;
-    private static final int LIGHT_BLUE = 0x4CBE;
-    private static final int DARK_BLUE = 0x1AD7;
-    private static final int PALE_BLUE = 0xEF9F;
-    private static final int SHADOW = 0xD71E;
-    private static final int ENVELOPE = 0xFE48;
-    private static final int ENVELOPE_FLAP = 0xED46;
-    private static final int MOTION = 0x5ACB;
-    private static final int TEXT = 0x19D1;
-    private static final int DARK_GREEN = 0x0400;
-
-    /** The mailbox drawing's origin: the body's left edge and the top of its dome. */
-    private static final int MAILBOX_X = 55;
-    private static final int MAILBOX_Y = 24;
-    private static final int BODY_WIDTH = 130;
-    private static final int DOME_RADIUS = BODY_WIDTH / 2;
-    private static final int SLOT_Y = 62;
-    private static final int SLOT_HEIGHT = 9;
-    private static final int BODY_BOTTOM = 175;
-    private static final int LEG_HEIGHT = 18;
+    static final int BLUE = 0x3C1E;
+    static final int MOTION = 0x5ACB;
+    static final int TEXT = 0x19D1;
+    static final int DARK_GREEN = 0x0400;
 
     /** The cover's two status rows (message count, then IP address) share text size 2 and are each centered. */
-    private static final int SCREEN_WIDTH = 240;
+    static final int SCREEN_WIDTH = 240;
     private static final int STATUS_TEXT_SIZE = 2;
     private static final int STATUS_CHAR_WIDTH = STATUS_TEXT_SIZE * TftTouchShield.CHAR_WIDTH;
     private static final int STATUS_ROW_HEIGHT = STATUS_TEXT_SIZE * TftTouchShield.CHAR_HEIGHT;
@@ -50,12 +35,22 @@ public final class MailboxView {
     private static final int GEAR_TOUCH_LEFT = 160;
     private static final int GEAR_TOUCH_TOP = 248;
 
-    private static final int HEADER_HEIGHT = 44;
+    static final int HEADER_HEIGHT = 44;
     private static final int LABEL_X = 16;
     private static final int VALUE_X = 88;
     private static final int FIRST_ROW_Y = 72;
     private static final int ROW_GAP = 34;
     private static final int BACK_Y = 292;
+    private static final String DEFAULT_KEY_HINT = "DEFAULT API KEY: TAP THE GEAR";
+    private static final int KEY_HINT_Y = 276;
+
+    private static final int COVER = 0;
+    private static final int STATUS = 1;
+    private static final int SECURITY = 2;
+
+    /** The status screen's two buttons share the bottom row: BACK on the left, SECURITY on the right. */
+    private static final int BUTTON_TOP = 280;
+    private static final int SECURITY_BUTTON_LEFT = 120;
 
     private boolean storageReady;
     private int messageCount;
@@ -65,7 +60,15 @@ public final class MailboxView {
     private final byte[] ip = new byte[IP_CAPACITY];
     private int ipLength;
     private boolean ipMissing;
-    private boolean statusShown;
+    private int screen = COVER;
+    private final MailboxSecurity security;
+    private final MailboxSecurityView securityView;
+    private final MailboxArt art = new MailboxArt();
+
+    public MailboxView(MailboxSecurity security) {
+        this.security = security;
+        this.securityView = new MailboxSecurityView(security);
+    }
 
     public void drawCover(boolean storageReady, int messageCount) {
         this.storageReady = storageReady;
@@ -89,9 +92,9 @@ public final class MailboxView {
 
     public void drawMessageCount(int messageCount) {
         this.messageCount = messageCount;
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
-        } else {
+        } else if (screen == COVER) {
             drawCountRow();
         }
     }
@@ -115,13 +118,27 @@ public final class MailboxView {
         redrawIp();
     }
 
-    /** A tap on the cover's gear opens the status screen; any tap on the status screen goes back to the cover. */
+    /**
+     * A tap on the cover's gear opens the status screen. There, SECURITY opens the Security screen and any other tap
+     * goes back to the cover; on the Security screen the keypad edits the key, and the header goes back to the status
+     * screen without changing it.
+     */
     public void touch(int x, int y) {
-        if (statusShown) {
-            statusShown = false;
-            drawCoverScreen();
-        } else if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
-            statusShown = true;
+        if (screen == COVER) {
+            if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
+                screen = STATUS;
+                drawStatusScreen();
+            }
+        } else if (screen == STATUS) {
+            if (x >= SECURITY_BUTTON_LEFT && y >= BUTTON_TOP) {
+                screen = SECURITY;
+                securityView.show();
+            } else {
+                screen = COVER;
+                drawCoverScreen();
+            }
+        } else if (securityView.touch(x, y)) {
+            screen = STATUS;
             drawStatusScreen();
         }
     }
@@ -129,27 +146,37 @@ public final class MailboxView {
     private void drawInternet(String state, int color) {
         internetState = state;
         internetColor = color;
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
         }
     }
 
     private void redrawIp() {
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
-        } else {
+        } else if (screen == COVER) {
             drawIpRow();
         }
     }
 
     private void drawCoverScreen() {
         TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        TftTouchShield.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
-        TftTouchShield.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
-        drawMailbox();
+        art.draw();
         drawCountRow();
         drawIpRow();
+        drawKeyHint();
         drawGear();
+    }
+
+    /** While the API key is still the default, the cover says so, so changing it is the obvious first step. */
+    private void drawKeyHint() {
+        if (!security.isDefault()) {
+            return;
+        }
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setCursor(8, KEY_HINT_Y);
+        TftTouchShield.setTextColor(TftTouchShield.RED, TftTouchShield.WHITE);
+        TftTouchShield.print(DEFAULT_KEY_HINT);
     }
 
     private void drawCountRow() {
@@ -185,14 +212,10 @@ public final class MailboxView {
         TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
     }
 
-    /** SD card, Wi-Fi, IP and message count, one labelled row each, above a "tap to go back" hint. */
+    /** SD card, Wi-Fi, IP, message count and API key, one labelled row each, above the BACK and SECURITY buttons. */
     private void drawStatusScreen() {
         TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
-        TftTouchShield.setCursor((SCREEN_WIDTH - 6 * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
-        TftTouchShield.print("STATUS");
+        drawHeader("STATUS");
 
         statusLabel("SD", 0);
         TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
@@ -210,10 +233,27 @@ public final class MailboxView {
         statusLabel("MAIL", 3);
         TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
         TftTouchShield.print(messageCount);
+        statusLabel("KEY", 4);
+        TftTouchShield.setTextColor(security.isDefault() ? TftTouchShield.RED : DARK_GREEN, TftTouchShield.WHITE);
+        TftTouchShield.print(security.isDefault() ? "DEFAULT" : "SET");
 
-        startRow(BACK_Y, "TAP TO GO BACK".length());
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
         TftTouchShield.setTextColor(MOTION, TftTouchShield.WHITE);
-        TftTouchShield.print("TAP TO GO BACK");
+        TftTouchShield.setCursor(LABEL_X, BACK_Y);
+        TftTouchShield.print("BACK");
+        TftTouchShield.fillRect(SECURITY_BUTTON_LEFT, BUTTON_TOP, SCREEN_WIDTH - SECURITY_BUTTON_LEFT, 40, BLUE);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor(SECURITY_BUTTON_LEFT + 12, BACK_Y);
+        TftTouchShield.print("SECURITY");
+    }
+
+    /** The blue title bar the status and Security screens share. */
+    static void drawHeader(String title) {
+        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor((SCREEN_WIDTH - title.length() * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
+        TftTouchShield.print(title);
     }
 
     private void statusLabel(String label, int row) {
@@ -263,86 +303,5 @@ public final class MailboxView {
             count++;
         }
         return count;
-    }
-
-    private void drawMailbox() {
-        rect(-10, BODY_BOTTOM + LEG_HEIGHT, BODY_WIDTH + 20, 3, SHADOW);
-        circle(DOME_RADIUS, DOME_RADIUS, DOME_RADIUS, BLUE);
-        circle(DOME_RADIUS, DOME_RADIUS, 47, DARK_BLUE);
-        circle(DOME_RADIUS, DOME_RADIUS, 43, BLUE);
-        rect(32, SLOT_Y, BODY_WIDTH - 64, SLOT_HEIGHT, DARK_BLUE);
-
-        drawEnvelope();
-
-        // The body below the slot is drawn after the envelope, so the letter disappears into the slot.
-        int bodyTop = SLOT_Y + SLOT_HEIGHT;
-        rect(0, bodyTop, BODY_WIDTH, BODY_BOTTOM - bodyTop, BLUE);
-        rect(0, DOME_RADIUS, 10, BODY_BOTTOM + LEG_HEIGHT - DOME_RADIUS, LIGHT_BLUE);
-        rect(10, BODY_BOTTOM, 16, LEG_HEIGHT, BLUE);
-        rect(BODY_WIDTH - 26, BODY_BOTTOM, 26, LEG_HEIGHT, DARK_BLUE);
-
-        TftTouchShield.drawRect(MAILBOX_X + 10, MAILBOX_Y + 98, 110, 40, TftTouchShield.WHITE);
-        TftTouchShield.drawRect(MAILBOX_X + 11, MAILBOX_Y + 99, 108, 38, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
-        TftTouchShield.setCursor(MAILBOX_X + 17, MAILBOX_Y + 110);
-        TftTouchShield.print("MAIL BOX");
-    }
-
-    private void drawEnvelope() {
-        // A 60x40 letter tilted 35 degrees, its lower corner already inside the slot.
-        fillTriangle(34, 39, 83, 4, 106, 37, ENVELOPE);
-        fillTriangle(34, 39, 106, 37, 59, 72, ENVELOPE);
-        fillTriangle(34, 39, 83, 4, 70, 38, ENVELOPE_FLAP);
-        drawMotionLine(110, 6);
-        drawMotionLine(120, 14);
-        drawMotionLine(130, 22);
-    }
-
-    private void rect(int x, int y, int w, int h, int color) {
-        TftTouchShield.fillRect(MAILBOX_X + x, MAILBOX_Y + y, w, h, color);
-    }
-
-    private void circle(int cx, int cy, int r, int color) {
-        TftTouchShield.fillCircle(MAILBOX_X + cx, MAILBOX_Y + cy, r, color);
-    }
-
-    private void drawMotionLine(int x, int y) {
-        for (int i = 0; i < 10; i++) {
-            TftTouchShield.drawPixel(MAILBOX_X + x + i, MAILBOX_Y + y - i, MOTION);
-            TftTouchShield.drawPixel(MAILBOX_X + x + i + 1, MAILBOX_Y + y - i, MOTION);
-        }
-    }
-
-    private void fillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
-        boolean clockwise = edge(x0, y0, x1, y1, x2, y2) > 0;
-        int minX = Math.min(x0, Math.min(x1, x2));
-        int maxX = Math.max(x0, Math.max(x1, x2));
-        int maxY = Math.max(y0, Math.max(y1, y2));
-        for (int y = Math.min(y0, Math.min(y1, y2)); y <= maxY; y++) {
-            int left = -1;
-            int right = -1;
-            for (int x = minX; x <= maxX; x++) {
-                if (inside(edge(x0, y0, x1, y1, x, y), clockwise)
-                        && inside(edge(x1, y1, x2, y2, x, y), clockwise)
-                        && inside(edge(x2, y2, x0, y0, x, y), clockwise)) {
-                    if (left < 0) {
-                        left = x;
-                    }
-                    right = x;
-                }
-            }
-            if (left >= 0) {
-                TftTouchShield.drawHorizontalLine(MAILBOX_X + left, MAILBOX_Y + y, right - left + 1, color);
-            }
-        }
-    }
-
-    private boolean inside(int edge, boolean clockwise) {
-        return clockwise ? edge >= 0 : edge <= 0;
-    }
-
-    private int edge(int ax, int ay, int bx, int by, int px, int py) {
-        return (bx - ax) * (py - ay) - (by - ay) * (px - ax);
     }
 }

@@ -8,10 +8,10 @@ import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
  * The opening screen: a letter flying across a night sky, with twinkling stars and a blinking "press any key" prompt.
- * Wi-Fi joins in the background meanwhile; any key starts looking for the mailbox.
+ * Wi-Fi joins in the background meanwhile; any key opens the settings, where the mailbox is scanned for or typed.
  */
 public final class CoverView implements KeyboardView {
-    private static final int DISCOVERY_VIEW = 5;
+    private static final int SETTINGS_VIEW = 0;
     private static final int WIDTH = 240;
     private static final int HEIGHT = 135;
 
@@ -105,7 +105,7 @@ public final class CoverView implements KeyboardView {
 
     @Override
     public void key(int key, boolean fnPressed) {
-        navigator.show(DISCOVERY_VIEW);
+        navigator.show(SETTINGS_VIEW);
     }
 
     @Override
