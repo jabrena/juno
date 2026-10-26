@@ -41,7 +41,7 @@ it: probing a whole subnet is blocked by the harness and needs the user's explic
    ```
 
    The IP is printed only once, at boot. If the log does not show it, ask the user to press reset while the
-   monitor runs. On the UNO Q the printed value comes from `q.ip` in the SD card's `application.properties`.
+   monitor runs. On the UNO Q the printed value is the required build-time `JUNO_Q_IP`.
 3. If neither works, ask the user for the IP. Do not scan the network.
 
 Then check the connection with the configured mailbox hook or the project-approved HTTP diagnostic, never by
