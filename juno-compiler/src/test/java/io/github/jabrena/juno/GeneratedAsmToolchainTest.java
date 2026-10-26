@@ -112,18 +112,22 @@ class GeneratedAsmToolchainTest {
         assertThat(run.exitValue()).as(diagnostics).isZero();
     }
 
-    @Test
-    @DisplayName("The HTTP server reads segmented requests whole and drops cut-off ones")
-    void shouldReadSegmentedRequestsWholeAndDropCutOffOnes() throws Exception {
+    @ParameterizedTest(name = "with header capture: {0}")
+    @ValueSource(booleans = {false, true})
+    @DisplayName("The HTTP server reads segmented requests whole, drops cut-off ones, and finds request headers")
+    void shouldReadSegmentedRequestsWholeAndDropCutOffOnes(boolean headers) throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-server.cpp"));
+        String runtime = withHeaderHooks(Files.readString(Path.of("src/main/resources/runtime/common/http-server.cpp")),
+                headers ? Files.readString(Path.of("src/main/resources/runtime/common/http-server-headers.cpp")) : "");
         String accept = runtime.substring(0, runtime.indexOf("struct JunoHttpServerRespondJob"));
-        String harness = Files.readString(Path.of("src/test/resources/http-server-harness.cpp"));
+        String harness = (headers ? "#define JUNO_TEST_HEADERS\n" : "")
+                + Files.readString(Path.of("src/test/resources/http-server-harness.cpp"));
 
         // When
-        Process run = compileAndStart(compiler, harness.replace("// HTTP_SERVER_ACCEPT", accept), "http-server-runtime");
+        Process run = compileAndStart(compiler, harness.replace("// HTTP_SERVER_ACCEPT", accept),
+                headers ? "http-server-headers-runtime" : "http-server-runtime");
 
         // Then
         assertThat(run.waitFor(20, TimeUnit.SECONDS)).isTrue();
@@ -2524,6 +2528,24 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(finished, "arm-none-eabi-gcc timed out");
         String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
         assertThat(process.exitValue()).as(diagnostics).isEqualTo(0);
+    }
+
+    /**
+     * Expands {@code http-server.cpp}'s header hooks the way the shim library does: each {@code // @@ <hook>} section of
+     * {@code hooks}, or nothing when {@code hooks} is empty.
+     */
+    private static String withHeaderHooks(String runtime, String hooks) {
+        for (String hook : List.of("STATE", "RESET", "CAPTURE", "LOOKUP")) {
+            String marker = "// @@ " + hook + "\n";
+            int start = hooks.indexOf(marker);
+            String section = "";
+            if (start >= 0) {
+                int end = hooks.indexOf("// @@ ", start + marker.length());
+                section = end < 0 ? hooks.substring(start + marker.length()) : hooks.substring(start + marker.length(), end);
+            }
+            runtime = runtime.replace("${JUNO_HTTP_SERVER_HEADER_" + hook + "}", section);
+        }
+        return runtime;
     }
 
     /** Compiles+links {@code shimSource} natively (like the JSON runtime test) and starts it, unstarted-timeout-free. */

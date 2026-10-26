@@ -464,6 +464,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.HTTP_SERVER_PATH),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "contentLength", "()I"),
                     Intrinsic.HTTP_SERVER_CONTENT_LENGTH),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "header",
+                    "(Ljava/lang/String;[BI)I"), Intrinsic.HTTP_SERVER_HEADER),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "respond",
                     "(ILjava/lang/String;Ljava/lang/String;)V"), Intrinsic.HTTP_SERVER_RESPOND),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "respond",
