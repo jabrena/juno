@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client;
 
+import io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -27,7 +28,8 @@ class DiscoveryViewTest {
     private final MailboxConnection connection = new MailboxConnection(wifi, mock(Clock.class), true);
     private final Footer footer = new Footer(display);
     private final SettingsView settings =
-            new SettingsView(navigator, display, mock(Keyboard.class), api, connection, footer);
+            new SettingsView(navigator, display, mock(Keyboard.class), api, connection,
+                    new MailboxKey(new EmulatedSdCard()), footer);
     private final DiscoveryView view = new DiscoveryView(navigator, display, connection, api, settings, footer);
 
     @Test

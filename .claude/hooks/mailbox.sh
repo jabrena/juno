@@ -2,13 +2,16 @@
 # Talks to the Juno Mailbox example (juno-examples/.../usecases/mailbox) over its REST API.
 #
 #   mailbox.sh host [IP]          print the configured board host, or save IP as the host
+#   mailbox.sh api-key [KEY]      print the API key sent to the board, or save KEY as the key
 #   mailbox.sh notify             Stop hook: post the last reply as a tweet-sized CLAUDE: message
 #   mailbox.sh send TITLE BODY    post one message
 #   mailbox.sh poll               print pending messages whose title contains AGENT or agent (any case), one JSON per line
 #   mailbox.sh delete UUID        delete one message
 #
 # The host comes from $MAILBOX_HOST, else from .claude/mailbox/host (git-ignored). With no host, every
-# command except `host` exits 0 silently, so the hook is harmless while the board is off.
+# command except `host` and `api-key` exits 0 silently, so the hook is harmless while the board is off.
+# Every mailbox request carries the board's API key in a Mailbox-API-Key header: $MAILBOX_API_KEY, else
+# .claude/mailbox/api-key (git-ignored), else the board's starting key 1234567890.
 # The board keeps four messages and the UNO Q hangs on non-ASCII bodies, so bodies are ASCII-only, at
 # most 280 characters, and `notify` deletes earlier CLAUDE: messages to leave room for AGENT tasks.
 set -uo pipefail
@@ -16,6 +19,8 @@ set -uo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "$0")/../.." && pwd)}"
 STATE="$ROOT/.claude/mailbox"
 HOST_FILE="$STATE/host"
+API_KEY_FILE="$STATE/api-key"
+DEFAULT_API_KEY="1234567890"
 IDLE_FLAG="$STATE/idle"
 TEXT="$ROOT/.claude/hooks/MailboxText.java"
 JBANG="$(command -v jbang || echo "$HOME/.sdkman/candidates/jbang/current/bin/jbang")"
@@ -32,20 +37,35 @@ host() {
   fi
 }
 
+api_key() {
+  if [ -n "${MAILBOX_API_KEY:-}" ]; then
+    echo "$MAILBOX_API_KEY"
+  elif [ -s "$API_KEY_FILE" ]; then
+    tr -d '[:space:]' < "$API_KEY_FILE"
+  else
+    echo "$DEFAULT_API_KEY"
+  fi
+}
+
+# curl for one mailbox request, with the API key header.
+mailbox_curl() {
+  "${CURL[@]}" -H "Mailbox-API-Key: $(api_key)" "$@"
+}
+
 base_url() {
   echo "http://$(host)/api/v1/mailbox/"
 }
 
 uuids() {
-  "${CURL[@]}" "$(base_url)" | jq -r '.[].uuid'
+  mailbox_curl "$(base_url)" | jq -r '.[].uuid'
 }
 
 message() {
-  "${CURL[@]}" "$(base_url)$1"
+  mailbox_curl "$(base_url)$1"
 }
 
 delete() {
-  "${CURL[@]}" -o /dev/null -w '%{http_code}\n' -X DELETE "$(base_url)$1"
+  mailbox_curl -o /dev/null -w '%{http_code}\n' -X DELETE "$(base_url)$1"
 }
 
 # Prints stdin as ASCII without markdown, on one line, cut to TWEET_MAX characters.
@@ -59,7 +79,7 @@ send() {
   body="$(printf '%s' "$2" | tweet)"
   [ -n "$body" ] || return 0
   jq -cn --arg title "$title" --arg body "$body" '{title: $title, body: $body}' |
-    "${CURL[@]}" -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/json' \
+    mailbox_curl -o /dev/null -w '%{http_code}\n' -X POST -H 'Content-Type: application/json' \
       --data-binary @- "$(base_url)"
 }
 
@@ -123,6 +143,14 @@ if [ "$command" = "host" ]; then
     echo "$1" > "$HOST_FILE"
   fi
   host
+  exit 0
+fi
+if [ "$command" = "api-key" ]; then
+  if [ -n "${1:-}" ]; then
+    mkdir -p "$STATE"
+    echo "$1" > "$API_KEY_FILE"
+  fi
+  api_key
   exit 0
 fi
 if [ -z "$(host)" ]; then

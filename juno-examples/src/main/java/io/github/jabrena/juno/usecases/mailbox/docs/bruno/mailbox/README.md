@@ -9,10 +9,14 @@ Set the board host in `environments/local.yml`, then run the collection with Bru
 npx --yes @usebruno/cli run --env local
 ```
 
-To override the host without editing the environment file:
+Every mailbox request sends the board's API key in a `Mailbox-API-Key` header, from the `apiKey` environment
+variable. It holds the board's starting key, `1234567890`; once the key is changed on the board's Security screen
+(the gear on the cover, then SECURITY), pass the new one. `GET /actuator/info` needs no key.
+
+To override the host or the key without editing the environment file:
 
 ```bash
-npx --yes @usebruno/cli run --env local --env-var host=192.168.1.42
+npx --yes @usebruno/cli run --env local --env-var host=192.168.1.42 --env-var apiKey=24680135
 ```
 
 The mailbox loads Wi-Fi credentials from `application.properties` at the root of the SD card:

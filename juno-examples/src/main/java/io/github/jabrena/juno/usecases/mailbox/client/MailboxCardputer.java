@@ -22,7 +22,9 @@ import java.util.Properties;
 /**
  * Mailbox client for the M5Stack Cardputer: a cover, mailbox discovery, settings, inbox, detail, and tweet-sized
  * composition. Wi-Fi joins in the background from the first frame, so the cover and settings respond while it connects;
- * the mailbox is then found by its {@code /actuator/info}, and the settings are only needed when it is not.
+ * the mailbox is then found by its {@code /actuator/info}, and the settings are only needed when it is not. Mailbox
+ * requests carry the API key from Settings (stored in {@code /api-key.txt} on the SD card, {@code 1234567890} until
+ * then) in a {@code Mailbox-API-Key} header; a board that rejects it shows "Wrong API key" in the inbox.
  *
  * <p>Its startup objects outgrow the default 8 KiB arena; the Cardputer has RAM to spare, so build it with
  * {@code -Djuno.Xmx=12k}.
@@ -54,7 +56,9 @@ public final class MailboxCardputer {
         keyboard.begin();
 
         // The join starts right away: the SSID and password are runtime Strings, which must not be kept for later.
-        MailboxSettings settings = loadSettings();
+        SdCard sd = M5StackCardputer.getSd();
+        MailboxKey key = new MailboxKey(sd);
+        MailboxSettings settings = loadSettings(sd, key);
         if (settings != null) {
             WIFI.begin(settings.ssid(), settings.password());
         }
@@ -62,12 +66,12 @@ public final class MailboxCardputer {
 
         HttpClient.setTimeout(MailboxClient.REQUEST_TIMEOUT_MILLIS);
         MailboxModel model = new MailboxModel();
-        MailboxClient client = new MailboxClient(model, connection);
+        MailboxClient client = new MailboxClient(model, connection, key);
         KeyboardViewRouter router = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
         Footer footer = new Footer(display);
         NumberedList messages = new NumberedList(display, model);
         router.register(COVER_VIEW, new CoverView(router, display));
-        SettingsView settingsView = new SettingsView(router, display, keyboard, client, connection, footer);
+        SettingsView settingsView = new SettingsView(router, display, keyboard, client, connection, key, footer);
         router.register(SETTINGS_VIEW, settingsView);
         router.register(DISCOVERY_VIEW, new DiscoveryView(router, display, connection, client, settingsView, footer));
         router.register(INBOX_VIEW, new InboxView(router, display, keyboard, model, client, messages, footer));
@@ -79,12 +83,13 @@ public final class MailboxCardputer {
         router.run();
     }
 
-    private static MailboxSettings loadSettings() {
-        SdCard sd = M5StackCardputer.getSd();
+    /** Begins the SD card and reads the Wi-Fi settings and the stored API key from it. */
+    private static MailboxSettings loadSettings(SdCard sd, MailboxKey key) {
         if (!sd.begin()) {
             Serial.println("Mailbox client: SD card unavailable");
             return null;
         }
+        key.begin();
         try (InputStream file = sd.open(APPLICATION_PROPERTIES)) {
             if (file == null) {
                 Serial.println("Mailbox client: application.properties missing");

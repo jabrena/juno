@@ -1,11 +1,13 @@
 package io.github.jabrena.juno.usecases.mailbox.server;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
  * The mailbox TFT view, in portrait: a flat blue mailbox with a letter dropping into its slot, above the message
- * count and IP address, and a settings gear that opens a status screen with the SD-card and Wi-Fi state. Later
- * changes redraw only their own row on the cover, or the whole status screen while it is shown.
+ * count and IP address, and a settings gear that opens a status screen with the SD-card, Wi-Fi and API-key state.
+ * From there the Security screen changes the API key on a numeric keypad. Later changes redraw only their own row on
+ * the cover, or the whole status screen while it is shown.
  */
 public final class MailboxView {
     private static final int BLUE = 0x3C1E;
@@ -56,6 +58,29 @@ public final class MailboxView {
     private static final int FIRST_ROW_Y = 72;
     private static final int ROW_GAP = 34;
     private static final int BACK_Y = 292;
+    private static final String DEFAULT_KEY_HINT = "DEFAULT API KEY: TAP THE GEAR";
+    private static final int KEY_HINT_Y = 276;
+
+    private static final int COVER = 0;
+    private static final int STATUS = 1;
+    private static final int SECURITY = 2;
+
+    /** The status screen's two buttons share the bottom row: BACK on the left, SECURITY on the right. */
+    private static final int BUTTON_TOP = 280;
+    private static final int SECURITY_BUTTON_LEFT = 120;
+
+    /** The Security keypad: digits 1-9, then DEL, 0 and OK, in three columns of four rows. */
+    private static final String[] KEY_LABELS = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "DEL", "0", "OK"};
+    private static final int KEYPAD_LEFT = 16;
+    private static final int KEYPAD_TOP = 116;
+    private static final int KEY_WIDTH = 64;
+    private static final int KEY_HEIGHT = 42;
+    private static final int KEY_GAP = 8;
+    private static final int DELETE_KEY = 9;
+    private static final int ZERO_KEY = 10;
+    private static final int OK_KEY = 11;
+    private static final int KEY_FIELD_Y = 76;
+    private static final int KEY_MESSAGE_Y = 98;
 
     private boolean storageReady;
     private int messageCount;
@@ -65,7 +90,16 @@ public final class MailboxView {
     private final byte[] ip = new byte[IP_CAPACITY];
     private int ipLength;
     private boolean ipMissing;
-    private boolean statusShown;
+    private int screen = COVER;
+    private final MailboxSecurity security;
+    // The key being typed on the Security screen; the stored key changes only on OK.
+    private final byte[] newKey = new byte[MailboxSecurity.MAX_KEY_BYTES];
+    private final byte[] currentKey = new byte[MailboxSecurity.MAX_KEY_BYTES];
+    private int newKeyLength;
+
+    public MailboxView(MailboxSecurity security) {
+        this.security = security;
+    }
 
     public void drawCover(boolean storageReady, int messageCount) {
         this.storageReady = storageReady;
@@ -89,9 +123,9 @@ public final class MailboxView {
 
     public void drawMessageCount(int messageCount) {
         this.messageCount = messageCount;
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
-        } else {
+        } else if (screen == COVER) {
             drawCountRow();
         }
     }
@@ -115,29 +149,46 @@ public final class MailboxView {
         redrawIp();
     }
 
-    /** A tap on the cover's gear opens the status screen; any tap on the status screen goes back to the cover. */
+    /**
+     * A tap on the cover's gear opens the status screen. There, SECURITY opens the Security screen and any other tap
+     * goes back to the cover; on the Security screen the keypad edits the key, and the header goes back to the status
+     * screen without changing it.
+     */
     public void touch(int x, int y) {
-        if (statusShown) {
-            statusShown = false;
-            drawCoverScreen();
-        } else if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
-            statusShown = true;
+        if (screen == COVER) {
+            if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
+                screen = STATUS;
+                drawStatusScreen();
+            }
+        } else if (screen == STATUS) {
+            if (x >= SECURITY_BUTTON_LEFT && y >= BUTTON_TOP) {
+                screen = SECURITY;
+                newKeyLength = 0;
+                drawSecurityScreen();
+            } else {
+                screen = COVER;
+                drawCoverScreen();
+            }
+        } else if (y < HEADER_HEIGHT) {
+            screen = STATUS;
             drawStatusScreen();
+        } else {
+            pressKey(keyAt(x, y));
         }
     }
 
     private void drawInternet(String state, int color) {
         internetState = state;
         internetColor = color;
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
         }
     }
 
     private void redrawIp() {
-        if (statusShown) {
+        if (screen == STATUS) {
             drawStatusScreen();
-        } else {
+        } else if (screen == COVER) {
             drawIpRow();
         }
     }
@@ -149,7 +200,19 @@ public final class MailboxView {
         drawMailbox();
         drawCountRow();
         drawIpRow();
+        drawKeyHint();
         drawGear();
+    }
+
+    /** While the API key is still the default, the cover says so, so changing it is the obvious first step. */
+    private void drawKeyHint() {
+        if (!security.isDefault()) {
+            return;
+        }
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setCursor(8, KEY_HINT_Y);
+        TftTouchShield.setTextColor(TftTouchShield.RED, TftTouchShield.WHITE);
+        TftTouchShield.print(DEFAULT_KEY_HINT);
     }
 
     private void drawCountRow() {
@@ -185,14 +248,10 @@ public final class MailboxView {
         TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
     }
 
-    /** SD card, Wi-Fi, IP and message count, one labelled row each, above a "tap to go back" hint. */
+    /** SD card, Wi-Fi, IP, message count and API key, one labelled row each, above the BACK and SECURITY buttons. */
     private void drawStatusScreen() {
         TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
-        TftTouchShield.setCursor((SCREEN_WIDTH - 6 * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
-        TftTouchShield.print("STATUS");
+        drawHeader("STATUS");
 
         statusLabel("SD", 0);
         TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
@@ -210,10 +269,115 @@ public final class MailboxView {
         statusLabel("MAIL", 3);
         TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
         TftTouchShield.print(messageCount);
+        statusLabel("KEY", 4);
+        TftTouchShield.setTextColor(security.isDefault() ? TftTouchShield.RED : DARK_GREEN, TftTouchShield.WHITE);
+        TftTouchShield.print(security.isDefault() ? "DEFAULT" : "SET");
 
-        startRow(BACK_Y, "TAP TO GO BACK".length());
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
         TftTouchShield.setTextColor(MOTION, TftTouchShield.WHITE);
-        TftTouchShield.print("TAP TO GO BACK");
+        TftTouchShield.setCursor(LABEL_X, BACK_Y);
+        TftTouchShield.print("BACK");
+        TftTouchShield.fillRect(SECURITY_BUTTON_LEFT, BUTTON_TOP, SCREEN_WIDTH - SECURITY_BUTTON_LEFT, 40, BLUE);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor(SECURITY_BUTTON_LEFT + 12, BACK_Y);
+        TftTouchShield.print("SECURITY");
+    }
+
+    private void drawHeader(String title) {
+        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
+        TftTouchShield.setTextSize(3);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor((SCREEN_WIDTH - title.length() * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
+        TftTouchShield.print(title);
+    }
+
+    /** The current key, the new key being typed, and the keypad; tapping the header goes back. */
+    private void drawSecurityScreen() {
+        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+        drawHeader("SECURITY");
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
+        TftTouchShield.setCursor(4, 4);
+        TftTouchShield.print("< BACK");
+
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
+        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+        TftTouchShield.setCursor(LABEL_X, 52);
+        TftTouchShield.print("KEY ");
+        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
+        TftTouchShield.print(currentKey, security.copyKey(currentKey));
+        drawNewKey();
+        drawKeyMessage("TYPE A NEW KEY, THEN OK", TEXT);
+        for (int key = 0; key < KEY_LABELS.length; key++) {
+            int x = KEYPAD_LEFT + key % 3 * (KEY_WIDTH + KEY_GAP);
+            int y = KEYPAD_TOP + key / 3 * (KEY_HEIGHT + KEY_GAP);
+            int color = key == OK_KEY ? DARK_GREEN : key == DELETE_KEY ? TftTouchShield.RED : BLUE;
+            TftTouchShield.fillRect(x, y, KEY_WIDTH, KEY_HEIGHT, color);
+            String label = KEY_LABELS[key];
+            TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
+            TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+            TftTouchShield.setCursor(x + (KEY_WIDTH - label.length() * STATUS_CHAR_WIDTH) / 2,
+                    y + (KEY_HEIGHT - STATUS_ROW_HEIGHT) / 2);
+            TftTouchShield.print(label);
+        }
+    }
+
+    private void drawNewKey() {
+        TftTouchShield.fillRect(0, KEY_FIELD_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
+        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
+        TftTouchShield.setCursor(LABEL_X, KEY_FIELD_Y);
+        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+        TftTouchShield.print("NEW ");
+        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
+        TftTouchShield.print(newKey, newKeyLength);
+        TftTouchShield.print("_");
+    }
+
+    private void drawKeyMessage(String message, int color) {
+        TftTouchShield.fillRect(0, KEY_MESSAGE_Y, SCREEN_WIDTH, TftTouchShield.CHAR_HEIGHT, TftTouchShield.WHITE);
+        TftTouchShield.setTextSize(1);
+        TftTouchShield.setCursor(LABEL_X, KEY_MESSAGE_Y);
+        TftTouchShield.setTextColor(color, TftTouchShield.WHITE);
+        TftTouchShield.print(message);
+    }
+
+    /** The keypad key under the tap, or -1 between keys. */
+    private int keyAt(int x, int y) {
+        int column = (x - KEYPAD_LEFT) / (KEY_WIDTH + KEY_GAP);
+        int row = (y - KEYPAD_TOP) / (KEY_HEIGHT + KEY_GAP);
+        if (x < KEYPAD_LEFT || y < KEYPAD_TOP || column > 2 || row > 3
+                || (x - KEYPAD_LEFT) % (KEY_WIDTH + KEY_GAP) >= KEY_WIDTH
+                || (y - KEYPAD_TOP) % (KEY_HEIGHT + KEY_GAP) >= KEY_HEIGHT) {
+            return -1;
+        }
+        return row * 3 + column;
+    }
+
+    private void pressKey(int key) {
+        if (key == DELETE_KEY) {
+            if (newKeyLength > 0) {
+                newKeyLength = newKeyLength - 1;
+                drawNewKey();
+            }
+        } else if (key == OK_KEY) {
+            saveKey();
+        } else if (key >= 0 && newKeyLength < newKey.length) {
+            newKey[newKeyLength] = (byte) (key == ZERO_KEY ? '0' : '1' + key);
+            newKeyLength = newKeyLength + 1;
+            drawNewKey();
+        }
+    }
+
+    private void saveKey() {
+        if (newKeyLength < MailboxSecurity.MIN_KEY_BYTES) {
+            drawKeyMessage("USE AT LEAST 6 DIGITS", TftTouchShield.RED);
+        } else if (security.change(newKey, newKeyLength)) {
+            Serial.println("Mailbox API key changed");
+            screen = STATUS;
+            drawStatusScreen();
+        } else {
+            drawKeyMessage("COULD NOT SAVE TO THE SD CARD", TftTouchShield.RED);
+        }
     }
 
     private void statusLabel(String label, int row) {

@@ -4,5 +4,7 @@ variables:
     value: http://{{host}}
   - name: host
     value: 192.168.1.47
+  - name: apiKey
+    value: "1234567890"
   - name: uuid
     value: 6f0a6a4b-36b8-4dc9-bc67-8f4a3bfb2d61

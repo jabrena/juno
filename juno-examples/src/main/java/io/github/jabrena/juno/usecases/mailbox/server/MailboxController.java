@@ -15,10 +15,12 @@ public final class MailboxController {
     private static final String PROBLEM_JSON = "application/problem+json";
 
     private final MailboxModel model;
+    private final MailboxSecurity security;
     private final MailboxView view;
 
-    public MailboxController(MailboxModel model, MailboxView view) {
+    public MailboxController(MailboxModel model, MailboxSecurity security, MailboxView view) {
         this.model = model;
+        this.security = security;
         this.view = view;
     }
 
@@ -34,6 +36,15 @@ public final class MailboxController {
             } else {
                 methodNotAllowed();
             }
+            return;
+        }
+        if (!startsWith(path, MAILBOX_PATH)) {
+            respondProblem(HttpStatus.NOT_FOUND, "No mailbox message at the requested path");
+            return;
+        }
+        byte[] key = security.candidate();
+        if (!security.matches(HttpServer.header(MailboxSecurity.HEADER, key, key.length))) {
+            respondProblem(HttpStatus.UNAUTHORIZED, "Missing or wrong Mailbox-API-Key header");
             return;
         }
         if (path.equals(MAILBOX_PATH)) {
@@ -57,6 +68,18 @@ public final class MailboxController {
         } else {
             methodNotAllowed();
         }
+    }
+
+    private boolean startsWith(String path, String prefix) {
+        if (path.length() < prefix.length()) {
+            return false;
+        }
+        for (int i = 0; i < prefix.length(); i++) {
+            if (path.charAt(i) != prefix.charAt(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void createMessage(byte[] requestBody, int bodyLength) {
