@@ -2,6 +2,7 @@ package io.github.jabrena.juno.usecases.mailbox.client;
 
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import org.junit.jupiter.api.Test;
@@ -11,11 +12,15 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ComposeViewTest {
     private final Display display = mock(Display.class);
-    private final ComposeView view = new ComposeView(
-            mock(Navigator.class), display, mock(Keyboard.class), mock(MailboxApi.class), new Footer(display));
+    private final Navigator navigator = mock(Navigator.class);
+    private final Keyboard keyboard = mock(Keyboard.class);
+    private final ProgressView progress = new ProgressView(
+            navigator, display, mock(MailboxApi.class), new MailboxModel(), new Footer(display), mock(Clock.class));
+    private final ComposeView view = new ComposeView(navigator, display, keyboard, progress, new Footer(display));
 
     @Test
     void fnArrowsScrollALongBodyAndMarkTheHiddenRows() {
@@ -52,5 +57,21 @@ class ComposeViewTest {
 
         // Then
         verify(display, never()).print('.');
+    }
+
+    @Test
+    void ctrlSHandsTheMessageToTheProgressView() {
+        // Given a title and a body
+        view.enter();
+        view.key('t', false);
+        view.key(Keyboard.TAB, false);
+        view.key('b', false);
+
+        // When
+        when(keyboard.isControlPressed()).thenReturn(true);
+        view.key('s', false);
+
+        // Then the progress view, registered as view 6, sends it
+        verify(navigator).show(6);
     }
 }

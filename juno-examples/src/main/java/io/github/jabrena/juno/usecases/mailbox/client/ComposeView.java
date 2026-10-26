@@ -7,11 +7,11 @@ import io.github.jabrena.juno.util.mvc.KeyboardView;
 import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
- * Tweet-sized mailbox composer: each field is typed on the row of its label, in large text. Fn with the up and down
+ * Tweet-sized mailbox composer: each field is typed on the row of its label, in large text, and Ctrl+s hands them to
+ * the {@link ProgressView} to send. Fn with the up and down
  * arrows scrolls a body longer than its rows (see {@link ComposeBody}).
  */
 public final class ComposeView implements KeyboardView {
-    private static final int INBOX_VIEW = 1;
     private static final int TITLE_CAPACITY = 64;
     private static final int ESCAPE = 27;
     private static final int CARDPUTER_ESCAPE = '`';
@@ -32,7 +32,7 @@ public final class ComposeView implements KeyboardView {
     private final Navigator navigator;
     private final Display display;
     private final Keyboard keyboard;
-    private final MailboxApi client;
+    private final ProgressView progress;
     private final Footer footer;
     private final ComposeBody body;
     private final char[] title = new char[TITLE_CAPACITY];
@@ -41,11 +41,11 @@ public final class ComposeView implements KeyboardView {
     private boolean footerMessageShown;
 
     public ComposeView(
-            Navigator navigator, Display display, Keyboard keyboard, MailboxApi client, Footer footer) {
+            Navigator navigator, Display display, Keyboard keyboard, ProgressView progress, Footer footer) {
         this.navigator = navigator;
         this.display = display;
         this.keyboard = keyboard;
-        this.client = client;
+        this.progress = progress;
         this.footer = footer;
         body = new ComposeBody(display);
     }
@@ -94,10 +94,8 @@ public final class ComposeView implements KeyboardView {
     private void send() {
         if (titleLength == 0 || body.length() == 0) {
             showFooterMessage("Title and body are required");
-        } else if (client.send(title, titleLength, body.text(), body.length())) {
-            navigator.show(INBOX_VIEW);
         } else {
-            showFooterMessage("Send failed; check IP");
+            progress.send(title, titleLength, body.text(), body.length());
         }
     }
 

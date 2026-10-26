@@ -104,10 +104,19 @@ public final class Mailbox {
         int nextTouchPoll = clock.millis();
         boolean touched = false;
         while (true) {
+            int acceptStarted = clock.millis();
             int bodyLength = HttpServer.accept(requestBody, requestBody.length);
             if (bodyLength >= 0) {
-                controller.handle(HttpServer.method(), HttpServer.path(), HttpServer.contentLength(), requestBody,
-                        bodyLength);
+                // One line per request: the time to read it and the time to answer it, to find where clients wait.
+                int handleStarted = clock.millis();
+                String method = HttpServer.method();
+                controller.handle(method, HttpServer.path(), HttpServer.contentLength(), requestBody, bodyLength);
+                Serial.print("HTTP ");
+                Serial.print(method);
+                Serial.print(" read ms ");
+                Serial.print(handleStarted - acceptStarted);
+                Serial.print(" handle ms ");
+                Serial.println(clock.millis() - handleStarted);
             }
             // accept() returns at once when no client waits, so the screen is polled between requests; a tap counts
             // once, when the press starts.
