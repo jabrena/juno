@@ -22,8 +22,10 @@ import java.util.concurrent.StructuredTaskScope;
  *
  * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. The address
  * shown on the TFT comes from the {@code JUNO_Q_IP} build-time environment variable, the Q's network port in
- * {@code juno:boards}; the Q cannot report it, so the build requires it. The TLS certificate and private key come from the {@code JUNO_TLS_CERT} and {@code JUNO_TLS_KEY} build-time
- * environment variables as PEM text; the certificate must name the same address in its {@code subjectAltName}.
+ * {@code juno:boards}; the Q cannot report it, so the build requires it. The TLS certificate and private key are read
+ * at startup from {@code /server.crt} and {@code /server.key} (PEM) on the SD card, so the firmware image holds no key
+ * and a certificate is replaced without rebuilding (see {@link MailboxCredentials}); the certificate must name the same
+ * address in its {@code subjectAltName}.
  *
  * <p>The mailbox is available at {@code /api/v1/mailbox/}, and {@code GET /actuator/info} identifies the service.
  * Every mailbox request must carry the API key in a {@code Mailbox-API-Key} header, or it is answered {@code 401}; the
@@ -33,10 +35,9 @@ import java.util.concurrent.StructuredTaskScope;
  * ignored.
  * Only the small index is kept in the board arena.
  *
- * <p>Build it with a certificate and key, for example:
+ * <p>Copy {@code server.crt} and {@code server.key} to the SD card's root, then build it, for example:
  * <pre>{@code
- * JUNO_Q_IP=192.168.1.47 JUNO_TLS_CERT="$(cat server.crt)" JUNO_TLS_KEY="$(cat server.key)" \
- *   ./mvnw -f juno-examples/pom.xml compile \
+ * JUNO_Q_IP=192.168.1.47 ./mvnw -f juno-examples/pom.xml compile \
  *   juno:upload -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-uno-q
  * }</pre>
  */
@@ -44,7 +45,6 @@ import java.util.concurrent.StructuredTaskScope;
 public final class Mailbox {
     private static final String APPLICATION_PROPERTIES = "application.properties";
     private static final int HTTPS_PORT = 443;
-    private static final int PEM_CAPACITY = 2048;
     private static final int STORAGE_ATTEMPTS = 5;
     private static final int STORAGE_RETRY_MILLIS = 500;
     private static final int TOUCH_POLL_MILLIS = 100;
@@ -80,18 +80,19 @@ public final class Mailbox {
         view.drawIp(address);
         printLocalIP(address);
 
-        byte[] certificate = new byte[PEM_CAPACITY];
-        byte[] privateKey = new byte[PEM_CAPACITY];
-        int certificateLength = copy(System.getenv("JUNO_TLS_CERT"), certificate);
-        int privateKeyLength = copy(System.getenv("JUNO_TLS_KEY"), privateKey);
-        if (!HttpServer.beginTls(HTTPS_PORT, certificate, certificateLength, privateKey, privateKeyLength)) {
+        MailboxCredentials credentials = new MailboxCredentials(sdCard);
+        if (!credentials.load()) {
+            view.drawInternetOffline();
+            Serial.println("Mailbox stopped: server.crt or server.key is missing from the SD card");
+            return;
+        }
+        if (!HttpServer.beginTls(HTTPS_PORT, credentials.certificate(), credentials.certificateLength(),
+                credentials.privateKey(), credentials.privateKeyLength())) {
             view.drawInternetOffline();
             Serial.println("Mailbox stopped: certificate or key did not parse");
             return;
         }
-        for (int index = 0; index < privateKeyLength; index++) {
-            privateKey[index] = 0;
-        }
+        credentials.wipePrivateKey();
         view.drawInternetOnline();
         Serial.println("Mailbox listening on HTTPS port 443");
 
@@ -167,16 +168,5 @@ public final class Mailbox {
     private static void printLocalIP(String ip) {
         Serial.print("IP: ");
         Serial.println(ip);
-    }
-
-    /** Copies a PEM environment value into {@code target}; its length, or 0 when it is absent or too large. */
-    private static int copy(String pem, byte[] target) {
-        if (pem == null || pem.length() > target.length) {
-            return 0;
-        }
-        for (int index = 0; index < pem.length(); index++) {
-            target[index] = (byte) pem.charAt(index);
-        }
-        return pem.length();
     }
 }
