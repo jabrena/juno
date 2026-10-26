@@ -38,7 +38,10 @@ public final class ArduinoUno {
         return NativeI2c.i2c();
     }
 
-    /** The board acting as a USB HID mouse; only boards with native USB (UNO R4 WiFi) support it. */
+    /**
+     * The board acting as a USB HID mouse; only boards with native USB (UNO R4 WiFi) support it. The Nano ESP32's is
+     * {@link ArduinoNano#getMouse()}.
+     */
     public static Mouse getMouse() {
         return NativeMouse.mouse();
     }

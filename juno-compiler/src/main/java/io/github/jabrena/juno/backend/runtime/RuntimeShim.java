@@ -90,9 +90,10 @@ public final class RuntimeShim {
     private void appendIncludes(StringBuilder shim) {
         // Mouse is an optional library (arduino-cli lib install Mouse), unlike the core-bundled
         // LED matrix/Serial above — only pull it in when the program actually uses it, so every
-        // other generated sketch keeps compiling without that library installed.
+        // other generated sketch keeps compiling without that library installed. A core with its
+        // own HID stack (ESP32's USBHIDMouse) names its headers instead.
         if (uses(ShimFeature.MOUSE)) {
-            shim.append("#include <Mouse.h>\n");
+            shim.append(core.mouseIncludes());
         }
         if (uses(ShimFeature.M5_DEVICE)) {
             shim.append("#include <M5Cardputer.h>\n");
@@ -222,6 +223,7 @@ public final class RuntimeShim {
             shim.append(runtimeSource.load("common/m5-battery.cpp"));
         }
         if (uses(ShimFeature.MOUSE)) {
+            shim.append(core.mouseHelpers());
             shim.append(shimLibraries.mouseHelpers());
         }
         if (uses(ShimFeature.SERVO)) {

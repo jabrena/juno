@@ -221,4 +221,17 @@ public interface CoreRuntime {
     default String bleHelpers() {
         return "";
     }
+
+    /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
+    default String mouseIncludes() {
+        return "#include <Mouse.h>\n";
+    }
+
+    /**
+     * Core-specific {@code Mouse} object the shared {@code juno_mouse_*} bindings call, emitted before them; empty when
+     * the core's {@code Mouse} library provides it.
+     */
+    default String mouseHelpers() {
+        return "";
+    }
 }

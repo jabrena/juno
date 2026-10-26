@@ -18,9 +18,9 @@ import java.util.Map;
  * {@code pinMode}/{@code digitalWrite} and friends into macros translating the printed pin number ({@code D13}) to
  * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
  * {@code juno_*} wrappers compiled with the macros in effect. Threads are FreeRTOS tasks handing a baton (see
- * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers over the core's default SPI pins. Everything
- * else beyond GPIO, delays, serial, threads, SD cards and station-mode Wi-Fi is not wired to this core yet and fails at
- * compile time.
+ * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers over the core's default SPI pins, and the
+ * USB HID mouse is the core's {@code USBHIDMouse} rather than the {@code Mouse} library. A capability the board does
+ * not declare is not wired to this core and fails at compile time.
  */
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
@@ -182,6 +182,17 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public BleNames bleNames() {
         return new BleNames("JunoBLEDevice", "JunoBLECharacteristic", "juno_ble");
+    }
+
+    /** The core's TinyUSB HID mouse, which the adapter below names {@code Mouse}. */
+    @Override
+    public String mouseIncludes() {
+        return "#include <USB.h>\n#include <USBHIDMouse.h>\n";
+    }
+
+    @Override
+    public String mouseHelpers() {
+        return runtimeSource.load("esp32/mouse.cpp");
     }
 
     @Override
