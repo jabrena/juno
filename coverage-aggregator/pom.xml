@@ -34,6 +34,10 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-rcx-firmware</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-bearssl</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -51,6 +55,7 @@
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-compiler</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-maven-plugin</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-rcx-firmware</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-bearssl</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
