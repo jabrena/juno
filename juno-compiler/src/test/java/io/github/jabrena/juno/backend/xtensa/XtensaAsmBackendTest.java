@@ -466,6 +466,24 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Lowers Mouse to the core's TinyUSB USBHIDMouse instead of the Mouse library")
+    void shouldLowerMouseToTheCoreUsbHidMouse() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoMouse", """
+                        Mouse mouse = ArduinoNano.getMouse();
+                        mouse.begin();
+                        mouse.move(50, -50);
+                """, "import io.github.jabrena.juno.hardware.ArduinoNano; import io.github.jabrena.juno.hardware.hid.Mouse;");
+
+        // Then
+        assertThat(result.assembly()).contains("call8 juno_mouse_begin\n", "call8 juno_mouse_move\n");
+        assertThat(result.runtimeShim())
+                .contains("#include <USB.h>\n#include <USBHIDMouse.h>\n", "static JunoUsbMouse Mouse;",
+                        "extern \"C\" void juno_mouse_move(int32_t x, int32_t y)")
+                .doesNotContain("#include <Mouse.h>");
+    }
+
+    @Test
     @DisplayName("Lowers a plain HTTP GET through the shared HTTP codec over the WiFi.h client")
     void shouldLowerPlainHttpOnTheWifiClient() throws Exception {
         // When

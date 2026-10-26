@@ -111,6 +111,12 @@ prints the board's address and answers `GET /status` on port 80.
 `ArduinoNano.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
 join the Nano ESP32 directly, as in
 [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java).
+`ArduinoNano.getMouse()` makes the board a USB HID mouse through the core's TinyUSB `USBHIDMouse`, so no
+`Mouse` library is needed. The board's default USB mode (Normal mode, TinyUSB) puts the mouse and the serial
+console on the same USB port, so `Serial` and `juno:monitor` keep working while the mouse is active.
+[`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java)
+moves the host's pointer around a square and prints each side over Serial. It is not yet confirmed on hardware.
+
 TCP and the other optional capabilities are not wired yet; Juno rejects a program that uses them at
 compile time.
 

@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.hid.Mouse;
 
 /**
  * The board's {@link Mouse}: each method is a USB HID intrinsic the compiler lowers to the Arduino {@code Mouse}
- * library, so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock {@link Mouse} instead.
+ * library (the core's {@code USBHIDMouse} on the Nano ESP32), so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock {@link Mouse} instead.
  */
 public final class NativeMouse implements Mouse {
     /** The board's USB mouse: the only instance. */

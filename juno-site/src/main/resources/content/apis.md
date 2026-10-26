@@ -43,7 +43,7 @@ A `native` method has no body, so a unit test on a desktop JVM can neither run n
 |---|---|---|
 | `ArduinoUno.getGpio()` / `ArduinoNano.getGpio()` | the `Gpio` interface, one shared instance | `hardware.internal.NativeGpio`, whose `native` methods are the GPIO intrinsics; it is created once, in a `static {}` block |
 | `ArduinoUno.getI2c()` / `ArduinoNano.getI2c()` | the `I2c` interface, one shared instance | `hardware.internal.NativeI2c`, whose `native` methods are the I2C register intrinsics over `Wire` |
-| `ArduinoUno.getMouse()` | the `Mouse` interface, one shared instance | `hardware.internal.NativeMouse`, whose `native` methods are the USB HID intrinsics over the `Mouse` library |
+| `ArduinoUno.getMouse()` / `ArduinoNano.getMouse()` | the `Mouse` interface, one shared instance | `hardware.internal.NativeMouse`, whose `native` methods are the USB HID intrinsics over the `Mouse` library (the core's `USBHIDMouse` on the Nano ESP32) |
 | `ArduinoUno.getLedMatrix()` | the `LedMatrix` interface, one shared instance | `hardware.internal.NativeLedMatrix`, whose `native` methods are the LED matrix intrinsics over `Arduino_LED_Matrix` (`columns()` folds to the target board's width) |
 | `ArduinoUno.getWifi()` / `ArduinoNano.getWifi()` | the `Wifi` interface, one shared instance | `hardware.internal.NativeWifi`, whose `native` methods are the Wi-Fi intrinsics over the board's networking library; the UNO R3 has no onboard radio, so the compiler rejects this call there |
 | `new ArduinoWifiShield().getWifi()` | the same `Wifi` interface | the UNO R3's way onto Wi-Fi: the retired [Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/) and its legacy `WiFi` library, through the same `NativeWifi` |
