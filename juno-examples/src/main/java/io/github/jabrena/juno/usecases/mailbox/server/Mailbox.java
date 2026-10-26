@@ -27,13 +27,18 @@ import java.util.Properties;
  * build-time environment variable.
  *
  * <p>The mailbox is available at {@code /api/v1/mailbox/}, and {@code GET /actuator/info} identifies the service.
+ * Every mailbox request must carry the API key in a {@code Mailbox-API-Key} header, or it is answered {@code 401}; the
+ * key starts as {@code 1234567890}, is changed from the Security screen (the cover's gear, then SECURITY) and is kept
+ * in {@code /api-key.txt} on the SD card. The board serves plain HTTP, so the key keeps out casual callers on the
+ * network, not someone reading its traffic.
  * Messages are stored as {@code /mailbox/YYYYMMDDHHMMSS/<uuid>.txt}; files outside that timestamp-folder layout are
  * ignored.
  * Only the small index is kept in the board arena.
  *
  * <p>Serving one message builds a response of about 1.3 KiB, which the default 8 KiB arena cannot fit beside the
  * startup objects: on the UNO R4 WiFi the first {@code GET /api/v1/mailbox/<uuid>} ran out of memory and froze the
- * board. Build it with {@code -Djuno.Xmx=11k}, close to the most the R4 links with (12k overlaps its stack).
+ * board. Build it with {@code -Djuno.Xmx=11008}, close to the most the R4 links with: the API key's request-header
+ * buffer took the room 11k had left, and a larger arena overlaps the stack.
  */
 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class Mailbox {
@@ -58,8 +63,10 @@ public final class Mailbox {
 
         SdCard sdCard = TftTouchShield.getSdCard();
         MailboxModel model = new MailboxModel(sdCard);
-        MailboxView view = new MailboxView();
+        MailboxSecurity security = new MailboxSecurity(sdCard);
+        MailboxView view = new MailboxView(security);
         model.begin();
+        security.begin();
         view.drawCover(model.storageReady(), model.messageCount());
 
         if (!model.storageReady()) {
@@ -91,7 +98,7 @@ public final class Mailbox {
         HttpServer.begin(80);
         Serial.println("Mailbox listening on port 80");
 
-        MailboxController controller = new MailboxController(model, view);
+        MailboxController controller = new MailboxController(model, security, view);
         byte[] requestBody = new byte[MailboxModel.MAX_REQUEST_BYTES];
         Clock clock = ArduinoUno.getClock();
         int nextTouchPoll = clock.millis();

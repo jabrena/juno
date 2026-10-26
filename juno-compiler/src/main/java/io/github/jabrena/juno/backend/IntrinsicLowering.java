@@ -748,6 +748,9 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTP_SERVER_METHOD, "juno_http_server_method", Result.WORD, List.of(), server);
         shim(Intrinsic.HTTP_SERVER_PATH, "juno_http_server_path", Result.WORD, List.of(), server);
         shim(Intrinsic.HTTP_SERVER_CONTENT_LENGTH, "juno_http_server_content_length", Result.WORD, List.of(), server);
+        shim(Intrinsic.HTTP_SERVER_HEADER, "juno_http_server_header", Result.WORD, List.of(literal(0), arg(0), arg(1)),
+                ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_HEADERS, ShimFeature.RUNTIME_STRINGS,
+                ShimFeature.STRING_BUILDER);
         // body (the second argument) may be a literal's address or a runtime pooled string's address
         // (see IntrinsicRegistry#requiresLiteralStringArgument) — both are plain null-terminated
         // const char* to the shim, so both flow the same way.

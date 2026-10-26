@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client;
 
+import io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -27,11 +28,12 @@ class DiscoveryViewTest {
     private final MailboxConnection connection = new MailboxConnection(wifi, mock(Clock.class), true);
     private final Footer footer = new Footer(display);
     private final SettingsView settings =
-            new SettingsView(navigator, display, mock(Keyboard.class), api, connection, footer);
+            new SettingsView(navigator, display, mock(Keyboard.class), api, connection,
+                    new MailboxKey(new EmulatedSdCard()), footer);
     private final DiscoveryView view = new DiscoveryView(navigator, display, connection, api, settings, footer);
 
     @Test
-    void probesTheAddressesInOrderSkippingItsOwnAndOpensTheInboxOnAMatch() {
+    void probesTheAddressesInOrderSkippingItsOwnAndReturnsToTheSettingsWithTheMatch() {
         // Given the Cardputer is 192.168.1.2 and the mailbox answers at .4
         connect(192, 168, 1, 2);
         when(api.probe("192.168.1.4")).thenReturn(true);
@@ -42,12 +44,15 @@ class DiscoveryViewTest {
             view.render();
         }
 
-        // Then .1, .3 and .4 were asked in order, and .4 became the host
+        // Then .1, .3 and .4 were asked in order, and the settings show .4, ready to save
         ArgumentCaptor<String> probed = ArgumentCaptor.forClass(String.class);
         verify(api, atLeastOnce()).probe(probed.capture());
         assertThat(probed.getAllValues()).containsExactly("192.168.1.1", "192.168.1.3", "192.168.1.4");
-        verify(api).host("192.168.1.4");
-        verify(navigator).show(1);
+        verify(navigator).show(0);
+        verify(api, never()).host(anyString());
+        settings.enter();
+        verify(display).print("Mailbox found; Enter: save");
+        verify(display, atLeastOnce()).print('4');
     }
 
     @Test

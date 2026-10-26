@@ -8,7 +8,10 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.mvc.Task;
 
-/** Allocation-free, retrying HTTP client for the mailbox API. */
+/**
+ * Allocation-free, retrying HTTP client for the mailbox API. Every mailbox request carries the {@link MailboxKey}'s
+ * header; only the discovery probe of {@code /actuator/info}, which the board leaves open, goes without it.
+ */
 public final class MailboxClient implements MailboxApi, Task {
     /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
     public static final int REQUEST_TIMEOUT_MILLIS = 30000;
@@ -27,15 +30,17 @@ public final class MailboxClient implements MailboxApi, Task {
     private static final int RESPONSE_CAPACITY = 1536;
     private static final int HEADERS_CAPACITY = 256;
     private static final int PATH_CAPACITY = 256;
-    private static final int REQUEST_CAPACITY = 430;
     private static final int UUID_LENGTH = 36;
+
+    private static final String WRONG_KEY = "Wrong API key; check Settings";
 
     private final MailboxModel model;
     private final MailboxConnection connection;
+    private final MailboxKey key;
     private final Clock clock;
     private final byte[] path = new byte[PATH_CAPACITY];
-    private final byte[] requestHeaders = new byte[1];
-    private final byte[] requestBody = new byte[REQUEST_CAPACITY];
+    private final byte[] noHeaders = new byte[1];
+    private final MessageRequest request = new MessageRequest();
     private final byte[] response = new byte[RESPONSE_CAPACITY];
     private final byte[] headers = new byte[HEADERS_CAPACITY];
     private final int[] statusAndHeadersLength = new int[2];
@@ -45,13 +50,14 @@ public final class MailboxClient implements MailboxApi, Task {
     private boolean refreshNow;
 
     /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
-    public MailboxClient(MailboxModel model, MailboxConnection connection) {
-        this(model, connection, ArduinoUno.getClock());
+    public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key) {
+        this(model, connection, key, ArduinoUno.getClock());
     }
 
-    MailboxClient(MailboxModel model, MailboxConnection connection, Clock clock) {
+    MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, Clock clock) {
         this.model = model;
         this.connection = connection;
+        this.key = key;
         this.clock = clock;
         refreshNow = true;
     }
@@ -99,6 +105,14 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.print(statusAndHeadersLength[0]);
         Serial.print(" bytes ");
         Serial.println(listLength);
+        // Retrying cannot fix a wrong key, so this waits for the periodic refresh; changing the key refreshes at once.
+        if (listLength >= 0 && statusAndHeadersLength[0] == HttpStatus.UNAUTHORIZED) {
+            Serial.println("Mailbox client: API key rejected");
+            model.clear();
+            model.status(WRONG_KEY);
+            model.finishRefresh();
+            return true;
+        }
         if (listLength < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
             Serial.println("Mailbox client: list request failed");
             model.status("Mailbox unavailable; retrying");
@@ -176,7 +190,7 @@ public final class MailboxClient implements MailboxApi, Task {
         int started = clock.millis();
         HttpClient.setTimeout(PROBE_TIMEOUT_MILLIS);
         int length = HttpClient.requestHttp(candidate, HTTP_PORT, "GET", path, pathLength,
-                requestHeaders, 0, null, -1, response, response.length,
+                noHeaders, 0, null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         HttpClient.setTimeout(REQUEST_TIMEOUT_MILLIS);
         Serial.print("Mailbox client: probe result ");
@@ -210,12 +224,12 @@ public final class MailboxClient implements MailboxApi, Task {
         int pathLength = copyMessagePath(uuid, uuidLength);
         Serial.println("Mailbox client: DELETE message");
         int responseLength = HttpClient.requestHttp(host, HTTP_PORT, "DELETE", path, pathLength,
-                requestHeaders, 0, null, -1, response, response.length,
+                key.header(), key.headerLength(), null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         Serial.print("Mailbox client: delete status ");
         Serial.println(statusAndHeadersLength[0]);
         boolean deleted = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.NO_CONTENT;
-        model.status(deleted ? "Message deleted" : "Delete failed");
+        model.status(deleted ? "Message deleted" : failure(responseLength, "Delete failed"));
         if (deleted) {
             requestRefresh();
         }
@@ -228,17 +242,17 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Set mailbox IP in Settings");
             return false;
         }
-        int requestLength = encodeMessage(title, titleLength, body, bodyLength);
+        int requestLength = request.encode(title, titleLength, body, bodyLength);
         if (requestLength < 0) {
             model.status("Message is too large");
             return false;
         }
         int pathLength = copyPath("/api/v1/mailbox/");
         int responseLength = HttpClient.requestHttp(host, HTTP_PORT, "POST", path, pathLength,
-                requestHeaders, 0, requestBody, requestLength, response, response.length,
+                key.header(), key.headerLength(), request.body(), requestLength, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
         boolean sent = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.CREATED;
-        model.status(sent ? "Message sent" : "Send failed; retrying");
+        model.status(sent ? "Message sent" : failure(responseLength, "Send failed; retrying"));
         if (sent) {
             requestRefresh();
         }
@@ -252,8 +266,13 @@ public final class MailboxClient implements MailboxApi, Task {
 
     private int getPath(byte[] requestPath, int pathLength) {
         return HttpClient.requestHttp(host, HTTP_PORT, "GET", requestPath, pathLength,
-                requestHeaders, 0, null, -1, response, response.length,
+                key.header(), key.headerLength(), null, -1, response, response.length,
                 headers, headers.length, statusAndHeadersLength);
+    }
+
+    /** The status to show for a failed request: the board's 401 means the key, anything else {@code otherwise}. */
+    private String failure(int responseLength, String otherwise) {
+        return responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.UNAUTHORIZED ? WRONG_KEY : otherwise;
     }
 
     private int copyMessagePath(byte[] uuid, int uuidLength) {
@@ -276,47 +295,5 @@ public final class MailboxClient implements MailboxApi, Task {
             path[index] = (byte) value.charAt(index);
         }
         return value.length();
-    }
-
-    private int encodeMessage(char[] title, int titleLength, char[] body, int bodyLength) {
-        int position = 0;
-        position = appendAscii(position, "{\"title\":\"");
-        position = appendJson(position, title, titleLength);
-        position = appendAscii(position, "\",\"body\":\"");
-        position = appendJson(position, body, bodyLength);
-        position = appendAscii(position, "\"}");
-        return position < 0 ? -1 : position;
-    }
-
-    private int appendJson(int position, char[] value, int length) {
-        for (int index = 0; index < length; index++) {
-            char character = value[index];
-            if (character == '"' || character == '\\') {
-                position = appendByte(position, '\\');
-            } else if (character == '\n') {
-                position = appendAscii(position, "\\n");
-                continue;
-            } else if (character == '\r') {
-                position = appendAscii(position, "\\r");
-                continue;
-            }
-            position = appendByte(position, character);
-        }
-        return position;
-    }
-
-    private int appendAscii(int position, String value) {
-        for (int index = 0; index < value.length(); index++) {
-            position = appendByte(position, value.charAt(index));
-        }
-        return position;
-    }
-
-    private int appendByte(int position, int value) {
-        if (position < 0 || position >= requestBody.length) {
-            return -1;
-        }
-        requestBody[position] = (byte) value;
-        return position + 1;
     }
 }

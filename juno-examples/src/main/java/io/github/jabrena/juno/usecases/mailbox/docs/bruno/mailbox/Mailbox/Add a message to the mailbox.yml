@@ -11,6 +11,8 @@ http:
   headers:
     - name: Content-Length
       value: "0"
+    - name: Mailbox-API-Key
+      value: "{{apiKey}}"
   body:
     type: json
     data: |-
