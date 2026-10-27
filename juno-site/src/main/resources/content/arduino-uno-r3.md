@@ -127,6 +127,7 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 | `Delay` and `Clock` | Yes | Uses Arduino delay and time functions |
 | `Serial` | Yes | Uses the ATmega16U2 USB-to-serial path |
 | `@Watchdog` | Yes | ATmega328P hardware watchdog; requested timeouts round up to a supported period, at most 8 seconds |
+| `BigInteger`, `BigDecimal`, `MathContext` | Yes, bounded | Uses the shared `java.math` runtime, but the 1 kB arena and 2 kB SRAM limit practical values and program size |
 | `UUID.randomUUID()` | No | The R3 has no board-native cryptographic entropy source; Juno rejects this call at compile time |
 | `PortNoise.collectSeed(...)` | Yes, non-cryptographic | Samples a user-provided physical noise circuit, GPIO and timer jitter; it is unsuitable for secrets or UUID v4 generation |
 | `Mouse` | No | The sketch MCU has no native USB HID support |
@@ -137,8 +138,10 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 | DAC, RTC and CAN | Not applicable | These peripherals are not built into the R3 board |
 
 The most important practical limit is SRAM. Juno limits the R3 arena to 1 kB and rejects APIs that
-need task stacks, arbitrary-precision arithmetic, HTTPS, an LED matrix or native USB HID. A
-sketch passing the Arduino compiler's global-memory report can still overflow at runtime because
+need task stacks, HTTPS, an LED matrix or native USB HID. Arbitrary-precision arithmetic is available
+for small programs. Class inheritance and inherited/default dispatch are available, but can make the generated
+sketch exceed the Arduino linker limits or the 1 kB arena. The full `Types` catalogue does not fit. A sketch passing
+the Arduino compiler's global-memory report can still overflow at runtime because
 that report does not calculate the maximum Juno call stack.
 
 ### Wi-Fi through the Arduino WiFi Shield
