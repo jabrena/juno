@@ -4,6 +4,7 @@ package io.github.jabrena.juno.usecases.lichess;
  * The bounded board state used by a Lichess puzzle. Squares are numbered from a8 to h1 and pieces are signed: white
  * pieces are positive, black pieces negative.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public final class PuzzleBoard {
     static final int EMPTY = 0;
     static final int PAWN = 1;
