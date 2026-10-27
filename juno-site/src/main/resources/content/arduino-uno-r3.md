@@ -140,7 +140,8 @@ Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
 The most important practical limit is SRAM. Juno limits the R3 arena to 1 kB and rejects APIs that
 need task stacks, HTTPS, an LED matrix or native USB HID. Arbitrary-precision arithmetic is available
 for small programs. Class inheritance and inherited/default dispatch are available, but can make the generated
-sketch exceed the Arduino linker limits or the 1 kB arena. The full `Types` catalogue does not fit. A sketch passing
+sketch exceed the Arduino linker limits or the 1 kB arena. A single sketch that combines all type demonstrations does
+not fit. A sketch passing
 the Arduino compiler's global-memory report can still overflow at runtime because
 that report does not calculate the maximum Juno call stack.
 

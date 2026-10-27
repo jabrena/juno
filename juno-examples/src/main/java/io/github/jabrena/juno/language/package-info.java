@@ -5,13 +5,13 @@
  * <ul>
  *   <li>{@link io.github.jabrena.juno.language.HelloWorld} — serial output.</li>
  *   <li>{@link io.github.jabrena.juno.language.PrimitiveTypes} — all eight primitive types and their ranges.</li>
- *   <li>{@link io.github.jabrena.juno.language.Types} — the supported primitive, array, object, UUID, date-time, and
- *       arbitrary-precision number types in one catalogue.</li>
  *   <li>{@link io.github.jabrena.juno.language.Arrays} — primitive arrays, indexing, nested arrays, and array methods.</li>
  *   <li>{@link io.github.jabrena.juno.language.Objects} — constructors, fields, records, enums, and arena allocation.</li>
  *   <li>{@link io.github.jabrena.juno.language.Inheritance} — abstract classes, overriding, {@code super}, and virtual dispatch.</li>
  *   <li>{@link io.github.jabrena.juno.language.Interfaces} — interface dispatch and inherited/default methods.</li>
  *   <li>{@link io.github.jabrena.juno.language.WeakUuid} — a non-cryptographic UUID for the classic UNO R3.</li>
+ *   <li>{@link io.github.jabrena.juno.language.UuidValues} — UUID parsing and formatting on every board.</li>
+ *   <li>{@link io.github.jabrena.juno.language.BigNumberValues} — a small arbitrary-precision calculation for every board.</li>
  *   <li>{@link io.github.jabrena.juno.language.Strings} — literals, {@code length}, {@code charAt}, {@code equals}, concatenation, and {@code StringBuilder}.</li>
  *   <li>{@link io.github.jabrena.juno.language.Lambdas} — lambda expressions and method references.</li>
  *   <li>{@link io.github.jabrena.juno.language.Variables} — constants, fields, local variables, and scope.</li>
