@@ -61,8 +61,8 @@ Supported today:
 - records as arena objects, including parameters/results, canonical and compact constructors, custom
   accessors, and supported primitive/array/reference components. Generated `equals()`/`hashCode()`/
   `toString()` remain unsupported because they require `invokedynamic` and broader object/String support.
-- final closed-world classes with constructors, primitive/reference instance fields, and statically
-  resolvable instance calls. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
+- closed-world classes with constructors, primitive/reference instance fields, inherited methods, overriding, and
+  virtual dispatch over reachable subtypes. Objects come from a fixed 8 KiB zero-filled arena backed by a conservative
   mark/sweep garbage collector: a collection runs automatically when an allocation would otherwise
   exceed the arena, reclaiming any block no longer reachable from reference-valued static fields or
   any live thread stack. This is Boehm-GC
@@ -73,7 +73,8 @@ Supported today:
 - interfaces implemented directly by final closed-world classes, with calls through an interface
   reference (`invokeinterface`). Reachability is based on concrete classes allocated by reachable code:
   one reachable implementation becomes an ordinary direct call; two or more use a deterministic object
-  type id and generated switch. Inherited and default interface implementations remain unsupported.
+  type id and generated switch. Inherited and default interface implementations are supported on every board;
+  the AVR boards have less memory for larger object graphs.
 - lambdas and method references emitted by `javac` through `LambdaMetafactory.metafactory`.
   Non-capturing lambdas/static method references become immutable function references and do not
   allocate. Capturing lambdas and bound instance references become arena closure objects with one
@@ -110,11 +111,10 @@ Supported today:
   canonical `toString`. Parsing accepts exactly the 36-character hyphenated representation, with
   either uppercase or lowercase hexadecimal digits. `UuidCodec.fromBytes` / `toBytes` convert to
   and from the 16-byte, most-significant-byte-first network representation using caller-owned
-  buffers. `UUID.randomUUID()` is available only where Juno can bind a board-native source: the
-  RA4M1 SCE5 TRNG (UNO R4 WiFi), ATECC608 secure-element RNG (UNO WiFi Rev2), or STM32U585
-  Zephyr CSPRNG (UNO Q). It is rejected on classic UNO R3; Arduino's pseudorandom generator is
-  never substituted. `PortNoise.collectSeed` is a separate, explicitly non-cryptographic startup
-  sampler for a user-provided analog noise circuit and digital comparator input.
+  buffers. `UUID.randomUUID()` is available on every board. The UNO R4 WiFi, UNO WiFi Rev2, UNO Q, and Nano ESP32
+  use board-native random sources; the classic UNO R3 and M5Stack Cardputer use a weak, non-cryptographic fallback.
+  Use the fallback only for best-effort node identities, never for secrets, tokens, or authentication. `PortNoise.collectSeed`
+  is a separate, explicitly non-cryptographic startup sampler for a user-provided analog noise circuit and digital comparator input.
 - `java.lang.Math`: `abs`/`min`/`max` (`int`/`long`/`float`/`double`), `clamp` (Java 21 overloads),
   `floorDiv`/`floorMod`, `signum`, `round`, `floor`, `ceil`, `sqrt`, `cbrt`, `pow`, `hypot`, `exp`,
   `log`, `log10`, `sin`/`cos`/`tan`, `asin`/`acos`/`atan`/`atan2`, and `toRadians`/`toDegrees`; `Math.PI`
@@ -270,10 +270,11 @@ Two board examples make the distinction observable:
   (e.g. stored into a live array), reclamation is impossible and it still stops — now on whichever
   iteration first can't fit alongside everything still reachable, rather than always the ninth.
 
-Not yet supported:
+Not yet supported or resource-limited:
 
-- class inheritance/virtual polymorphic dispatch, inherited/default interface implementations, or object
-  arrays with polymorphism
+- object arrays with polymorphism, open-world dispatch, or receiver types supplied from outside the closed world;
+- open-world dispatch, receiver types supplied from outside the linked program, and dynamic loading remain unsupported;
+  large inheritance graphs may exceed the target's flash, SRAM, or arena capacity
 - general string construction, arbitrary-object concatenation, other {@code String} methods,
   reflection, or dynamic loading
 - exception causes, stack traces, suppressed exceptions (`addSuppressed` is accepted and dropped, so a

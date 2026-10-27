@@ -304,13 +304,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`SntpTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and
   [`SntpTimeSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java)
   (server read from the SD card).
-- **UUID:** `java.util.UUID` construction, parsing, formatting, comparison and 16-byte conversion through
-  `UuidCodec`. `UUID.randomUUID()` uses the board's hardware random source on the UNO R4 WiFi, UNO WiFi Rev2
-  and UNO Q; the UNO R3 has none, so it is rejected there.
-- **Objects and interfaces:** simple enums, records, final closed-world classes, constructors, instance
-  fields, and directly implemented interfaces with closed-world dispatch through an interface reference.
-  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative garbage
-  collection. See
+- **UUID:** `java.util.UUID` supports construction, parsing, formatting, comparison, 16-byte conversion through
+  `UuidCodec`, and `randomUUID()` on all boards. On the classic UNO R3, random UUIDs are weak and non-cryptographic;
+  use them only for node identities, as shown by [`WeakUuid`](juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java).
+- **Objects and interfaces:** enums, records, classes, constructors, instance fields, class inheritance, virtual
+  dispatch, and directly implemented interfaces with closed-world dispatch. Inheritance and inherited/default
+  implementations are available on every board, but the AVR boards have much less flash, SRAM and arena space, so
+  the Arduino build or runtime may fail for larger object graphs. See
   [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java) and
   [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java).
 - **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
@@ -423,6 +423,9 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.oracle.com/javase/specs/jls/se25/html/index.html
 - https://docs.oracle.com/en/java/javase/27/docs/api/index.html
 - https://github.com/openjdk/jcstress/tree/master/jcstress-samples
+- https://openjdk.org/
+- https://openjdk.org/groups/conformance/JckAccess/
+- https://github.com/openjdk
 - https://docs.arduino.cc/hardware/uno-q/
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
