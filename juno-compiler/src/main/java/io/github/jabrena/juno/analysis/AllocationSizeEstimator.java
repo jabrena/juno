@@ -10,7 +10,6 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.ThrowableTypes;
-import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -39,10 +38,10 @@ final class AllocationSizeEstimator {
             return allocationUpperBound(array.length() * alignment, alignment);
         }
         if (instruction instanceof IrInstruction.NewObject object) {
-            int size = objectSize(classes.get(object.className()))
+            int size = objectSize(object.className(), classes)
                     + (throwableTypes.isThrowable(object.className(), classes) ? ThrowableTypes.HEADER_BYTES
                     : objectTypeIds.containsKey(object.className()) ? Integer.BYTES : 0);
-            int alignment = objectAlignment(classes.get(object.className()));
+            int alignment = objectAlignment(object.className(), classes);
             return allocationUpperBound(size, alignment);
         }
         if (instruction instanceof IrInstruction.LambdaCreate lambda && lambda.site().isCapturing()) {
@@ -130,11 +129,12 @@ final class AllocationSizeEstimator {
         return Math.addExact(size, alignment - 1);
     }
 
-    private int objectSize(@Nullable JavaClass javaClass) {
+    private int objectSize(String className, Map<String, JavaClass> classes) {
+        JavaClass javaClass = classes.get(className);
         if (javaClass == null) {
             return 1;
         }
-        int offset = 0;
+        int offset = javaClass.superClassName() == null ? 0 : objectSize(javaClass.superClassName(), classes);
         int maximumAlignment = 1;
         for (FieldInfo field : javaClass.fields()) {
             if (field.isStatic()) continue;
@@ -146,12 +146,15 @@ final class AllocationSizeEstimator {
         return Math.max(1, align(offset, maximumAlignment));
     }
 
-    private int objectAlignment(@Nullable JavaClass javaClass) {
+    private int objectAlignment(String className, Map<String, JavaClass> classes) {
+        JavaClass javaClass = classes.get(className);
         if (javaClass == null) return 1;
-        return javaClass.fields().stream()
+        int own = javaClass.fields().stream()
                 .filter(field -> !field.isStatic())
                 .mapToInt(field -> Math.min(descriptorSize(field.descriptor()), 8))
                 .max().orElse(1);
+        return javaClass.superClassName() == null ? own : Math.max(own,
+                objectAlignment(javaClass.superClassName(), classes));
     }
 
     private int elementSize(ArrayElementType type) {

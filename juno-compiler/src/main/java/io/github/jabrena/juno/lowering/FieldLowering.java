@@ -75,7 +75,7 @@ final class FieldLowering implements InstructionLowering {
             case PUTFIELD -> {
                 Value value = stack.pop(instanceFieldType(instruction, field));
                 Value receiver = stack.pop();
-                context.emit(new IrInstruction.StoreField(field, receiver, value));
+                context.emit(new IrInstruction.StoreField(declaredField(field), receiver, value));
             }
             default -> throw new IllegalStateException("Not a field opcode: " + instruction.opcode());
         }
@@ -148,7 +148,7 @@ final class FieldLowering implements InstructionLowering {
             context.emit(new IrInstruction.BoundsCheck(receiver, enumFieldValues.size()));
             context.emit(new IrInstruction.ArrayLoad(target, ArrayElementType.INT, table, receiver));
         } else {
-            context.emit(new IrInstruction.LoadField(target, field, receiver));
+            context.emit(new IrInstruction.LoadField(target, declaredField(field), receiver));
         }
         stack.push(target);
     }
@@ -172,7 +172,26 @@ final class FieldLowering implements InstructionLowering {
 
     private @Nullable FieldInfo declaration(FieldRef field) {
         JavaClass owner = context.classes().get(field.owner());
-        return owner == null ? null : owner.findField(field.name(), field.descriptor());
+        while (owner != null) {
+            FieldInfo declaration = owner.findField(field.name(), field.descriptor());
+            if (declaration != null) {
+                return declaration;
+            }
+            owner = owner.superClassName() == null ? null : context.classes().get(owner.superClassName());
+        }
+        return null;
+    }
+
+    /** Canonicalizes an inherited field reference so every class uses the declaring class's storage slot. */
+    private FieldRef declaredField(FieldRef field) {
+        JavaClass owner = context.classes().get(field.owner());
+        while (owner != null) {
+            if (owner.findField(field.name(), field.descriptor()) != null) {
+                return new FieldRef(owner.name(), field.name(), field.descriptor());
+            }
+            owner = owner.superClassName() == null ? null : context.classes().get(owner.superClassName());
+        }
+        return field;
     }
 
     /** Every reference Juno supports (strings, arrays, handles, program objects) is a 32-bit word. */

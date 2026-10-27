@@ -397,6 +397,16 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The classic AVR core uses the documented weak random UUID provider")
+    void shouldUseWeakRandomUuidProviderOnClassicAvr() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.CLASSIC_AVR);
+
+        // When & Then
+        assertThat(runtime.uuidRandomHelpers()).contains("analogRead(A5)", "randomSeed(seed)", "micros()");
+    }
+
+    @Test
     @DisplayName("The ESP32 core names its own BLE adapter, while the UNO boards keep ArduinoBLE")
     void shouldNameTheEsp32BleAdapter() {
         // Then

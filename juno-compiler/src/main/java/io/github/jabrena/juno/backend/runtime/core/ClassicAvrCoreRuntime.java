@@ -72,7 +72,7 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
 
     @Override
     public String uuidRandomHelpers() {
-        throw unsupported("a cryptographic entropy source");
+        return runtimeSource.load("avr/uuid-random.cpp");
     }
 
     @Override

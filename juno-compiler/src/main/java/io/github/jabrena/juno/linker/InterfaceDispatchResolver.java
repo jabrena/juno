@@ -5,6 +5,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,6 +43,16 @@ final class InterfaceDispatchResolver {
         }
     }
 
+    void validateVirtualCall(LinkedMethod linked, Instruction instruction, MethodRef called,
+                             Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(called.owner());
+        if (owner == null || owner.isInterface()) {
+            throw new CompileException(linked.method().reference().displayName() + " at bytecode offset "
+                    + instruction.offset() + ": invokevirtual owner is not an available class: "
+                    + called.owner().replace('/', '.'));
+        }
+    }
+
     Map<InterfaceCallSite, InterfaceDispatch> resolve(Map<InterfaceCallSite, MethodRef> calls,
             Set<String> instantiatedClasses, java.util.Collection<LambdaSite> lambdaSites,
             Map<String, JavaClass> classes) {
@@ -60,19 +71,23 @@ final class InterfaceDispatchResolver {
     private List<InterfaceDispatch.Target> targets(MethodRef interfaceMethod, Set<String> instantiatedClasses,
                                                     java.util.Collection<LambdaSite> lambdaSites,
                                                     Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(interfaceMethod.owner());
+        boolean interfaceCall = owner == null || owner.isInterface();
         List<InterfaceDispatch.Target> targets = new ArrayList<>();
         for (String className : instantiatedClasses) {
             JavaClass candidate = classes.get(className);
             if (candidate == null || candidate.isInterface()
-                    || !implementsInterface(className, interfaceMethod.owner(), classes, new TreeSet<>())) {
+                    || (interfaceCall
+                    ? !implementsInterface(className, interfaceMethod.owner(), classes, new TreeSet<>())
+                    : !isSubclass(className, interfaceMethod.owner(), classes, new TreeSet<>()))) {
                 continue;
             }
-            JavaMethod implementation = candidate.findMethod(interfaceMethod.name(), interfaceMethod.descriptor());
+            JavaMethod implementation = implementation(className, interfaceMethod, classes, interfaceCall,
+                    new TreeSet<>());
             if (implementation == null || implementation.isAbstract()) {
                 throw new CompileException("Reachable interface implementation " + className.replace('/', '.')
-                        + " must declare concrete method " + interfaceMethod.name()
-                        + interfaceMethod.descriptor() + " directly (inherited/default implementations are "
-                        + "not supported yet)");
+                        + " must provide concrete method " + interfaceMethod.name()
+                        + interfaceMethod.descriptor());
             }
             targets.add(new InterfaceDispatch.Target(className, implementation.reference()));
         }
@@ -82,6 +97,46 @@ final class InterfaceDispatchResolver {
                 .map(InterfaceDispatch.Target::lambda)
                 .forEach(targets::add);
         return targets;
+    }
+
+    private @Nullable JavaMethod implementation(String className, MethodRef call, Map<String, JavaClass> classes,
+                                                boolean interfaceCall, Set<String> visited) {
+        JavaClass type = classes.get(className);
+        if (type == null || !visited.add(className)) {
+            return null;
+        }
+        JavaMethod declared = type.findMethod(call.name(), call.descriptor());
+        if (declared != null) {
+            return declared;
+        }
+        if (type.superClassName() != null) {
+            JavaMethod inherited = implementation(type.superClassName(), call, classes, interfaceCall, visited);
+            if (inherited != null) {
+                return inherited;
+            }
+        }
+        if (interfaceCall) {
+            for (String direct : type.interfaces()) {
+                JavaMethod defaultMethod = implementation(direct, call, classes, true, visited);
+                if (defaultMethod != null) {
+                    return defaultMethod;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isSubclass(String typeName, String expected, Map<String, JavaClass> classes,
+                               Set<String> visited) {
+        if (!visited.add(typeName)) {
+            return false;
+        }
+        if (typeName.equals(expected)) {
+            return true;
+        }
+        JavaClass type = classes.get(typeName);
+        return type != null && type.superClassName() != null
+                && isSubclass(type.superClassName(), expected, classes, visited);
     }
 
     private boolean implementsInterface(String typeName, String interfaceName, Map<String, JavaClass> classes,

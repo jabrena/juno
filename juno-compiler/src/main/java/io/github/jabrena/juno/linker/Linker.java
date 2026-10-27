@@ -114,6 +114,9 @@ public final class Linker {
                 throw new CompileException(threadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
         }
+        if (usesClassInheritance(reachability, classes)) {
+            requireCapability(declaredBoards, Capability.CLASS_INHERITANCE, "");
+        }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
@@ -121,6 +124,39 @@ public final class Linker {
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
                 clojureFunctions);
+    }
+
+    private boolean usesClassInheritance(ReachabilityClosure.Result reachability, Map<String, JavaClass> classes) {
+        if (reachability.instantiatedClasses().stream().anyMatch(className -> hasUserSuperclass(className, classes))) {
+            return true;
+        }
+        return reachability.interfaceDispatches().values().stream()
+                .flatMap(dispatch -> dispatch.targets().stream())
+                .filter(target -> !target.isLambda())
+                .anyMatch(target -> !target.method().owner().equals(target.className())
+                        || isDefaultInterfaceMethod(target.method(), classes));
+    }
+
+    private boolean hasUserSuperclass(String className, Map<String, JavaClass> classes) {
+        JavaClass type = classes.get(className);
+        while (type != null && type.superClassName() != null
+                && !"java/lang/Object".equals(type.superClassName())) {
+            JavaClass parent = classes.get(type.superClassName());
+            if (parent == null) {
+                return false;
+            }
+            if (!parent.name().startsWith("java/")) {
+                return true;
+            }
+            type = parent;
+        }
+        return false;
+    }
+
+    private boolean isDefaultInterfaceMethod(MethodRef method, Map<String, JavaClass> classes) {
+        JavaClass owner = classes.get(method.owner());
+        JavaMethod declaration = owner == null ? null : owner.findMethod(method.name(), method.descriptor());
+        return owner != null && owner.isInterface() && declaration != null && !declaration.isAbstract();
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -195,7 +231,24 @@ public final class Linker {
         for (int index = 0; index < instructions.size(); index++) {
             Instruction instruction = instructions.get(index);
             int opcode = instruction.opcode();
-            if (opcode == 182 || opcode == 183 || opcode == 184) {
+            if (opcode == 182) {
+                MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                threadSupport.registerEntry(called, interfaceCalls);
+                structuredTaskSupport.registerEntry(called, interfaceCalls);
+                scopedValueSupport.registerEntry(called, interfaceCalls);
+                bindClojureFunction(called, linked, index, classes, clojureFunctions, caller, declaredBoards, work);
+                JavaClass calledOwner = classes.get(called.owner());
+                boolean compilerHandled = calledOwner != null && (calledOwner.isEnum()
+                        || throwableTypes.isGetMessage(called, classes)
+                        || throwableTypes.isAddSuppressed(called, classes));
+                if (calledOwner != null && !compilerHandled && !intrinsicRegistry.isIntrinsic(called)
+                        && !ClojureSupport.isLowered(called)) {
+                    interfaceCallRegistration.registerVirtual(linked, instruction, called, classes,
+                            interfaceCalls, interfaceDispatchResolver);
+                } else {
+                    enqueueCall(called, caller, declaredBoards, classes, work);
+                }
+            } else if (opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                 threadSupport.registerEntry(called, interfaceCalls);
                 structuredTaskSupport.registerEntry(called, interfaceCalls);
@@ -296,7 +349,7 @@ public final class Linker {
 
     private static Map<Intrinsic, Capability> requiredCapabilities() {
         Map<Intrinsic, Capability> required = new EnumMap<>(Intrinsic.class);
-        require(required, Capability.SECURE_ENTROPY, Intrinsic.UUID_RANDOM);
+        require(required, Capability.UUID_RANDOM, Intrinsic.UUID_RANDOM);
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
         require(required, Capability.M5_DISPLAY, Intrinsic.M5_DISPLAY_BEGIN, Intrinsic.M5_DISPLAY_WIDTH,

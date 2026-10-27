@@ -6,7 +6,19 @@ package io.github.jabrena.juno.board;
  * for features the target actually has.
  */
 public enum Capability {
-    SECURE_ENTROPY("UUID.randomUUID") {
+    CLASS_INHERITANCE("class inheritance and virtual dispatch") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has too little memory for class inheritance and polymorphic dispatch";
+        }
+    },
+    UUID_RANDOM("UUID.randomUUID") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no UUID random-byte runtime provider";
+        }
+    },
+    SECURE_ENTROPY("secure UUID entropy") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no board-native cryptographic entropy source";
