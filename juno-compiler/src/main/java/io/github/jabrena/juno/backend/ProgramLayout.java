@@ -36,6 +36,7 @@ public final class ProgramLayout {
     private final Map<LambdaSite, String> lambdaFunctionSymbols = new LinkedHashMap<>();
     private final List<String> throwableClasses;
     private final Map<String, Integer> objectTypeIds;
+    private final Map<String, String> superClasses;
 
     /**
      * An object's fields are exactly the ones some {@code LoadField}/{@code StoreField} in the whole
@@ -47,6 +48,7 @@ public final class ProgramLayout {
     public ProgramLayout(IrProgram program) {
         throwableClasses = program.throwableClasses();
         objectTypeIds = program.objectTypeIds();
+        superClasses = program.superClasses();
         Map<String, SortedMap<String, FieldRef>> layouts = new TreeMap<>();
         for (IrMethod method : program.methods()) {
             for (IrBasicBlock block : method.blocks()) {
@@ -56,17 +58,35 @@ public final class ProgramLayout {
             }
         }
         for (Map.Entry<String, SortedMap<String, FieldRef>> layout : layouts.entrySet()) {
-            // A throwable's own fields follow its class-id/message header (see ThrowableTypes).
-            int header = throwableClasses.contains(layout.getKey())
-                    ? ThrowableTypes.HEADER_BYTES
-                    : objectTypeIds.containsKey(layout.getKey()) ? FrameLayout.WORD : 0;
-            int offset = header;
+            int offset = instancePrefix(layout.getKey(), layouts);
             for (FieldRef field : layout.getValue().values()) {
                 fieldOffsets.put(field, offset);
                 offset += fieldWidth(field);
             }
             objectSizes.put(layout.getKey(), Math.max(offset, FrameLayout.WORD));
         }
+    }
+
+    private int instancePrefix(String className, Map<String, SortedMap<String, FieldRef>> layouts) {
+        String parent = superClasses.get(className);
+        int inherited = parent == null ? 0 : instanceSize(parent, layouts);
+        return Math.max(inherited, headerBytes(className));
+    }
+
+    private int instanceSize(String className, Map<String, SortedMap<String, FieldRef>> layouts) {
+        SortedMap<String, FieldRef> fields = layouts.get(className);
+        int size = instancePrefix(className, layouts);
+        if (fields != null) {
+            for (FieldRef field : fields.values()) {
+                size += fieldWidth(field);
+            }
+        }
+        return size;
+    }
+
+    private int headerBytes(String className) {
+        return throwableClasses.contains(className) ? ThrowableTypes.HEADER_BYTES
+                : objectTypeIds.containsKey(className) ? FrameLayout.WORD : 0;
     }
 
     /** Bytes a field occupies: a {@code long}/{@code double} takes two words, everything else one. */
