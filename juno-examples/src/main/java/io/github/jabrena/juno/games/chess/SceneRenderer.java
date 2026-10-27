@@ -3,7 +3,6 @@ package io.github.jabrena.juno.games.chess;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-import static io.github.jabrena.juno.games.chess.Chess.BLACK_PIECE_EDGE;
 import static io.github.jabrena.juno.games.chess.Chess.BOARD_X;
 import static io.github.jabrena.juno.games.chess.Chess.BOARD_Y;
 import static io.github.jabrena.juno.games.chess.Chess.BUTTON_HEIGHT;
@@ -18,7 +17,6 @@ import static io.github.jabrena.juno.games.chess.Chess.FOOTER_Y;
 import static io.github.jabrena.juno.games.chess.Chess.HEADER_BACKGROUND;
 import static io.github.jabrena.juno.games.chess.Chess.LIGHT;
 import static io.github.jabrena.juno.games.chess.Chess.LIGHT_LAST;
-import static io.github.jabrena.juno.games.chess.Chess.PIECE_SIZE;
 import static io.github.jabrena.juno.games.chess.Chess.SELECTED;
 import static io.github.jabrena.juno.games.chess.Chess.TARGET;
 import static io.github.jabrena.juno.games.chess.Chess.UNDO_X;
@@ -26,8 +24,6 @@ import static io.github.jabrena.juno.games.chess.Chess.lastFrom;
 import static io.github.jabrena.juno.games.chess.Chess.lastTo;
 import static io.github.jabrena.juno.games.chess.ChessEngine.isLegalMove;
 import static io.github.jabrena.juno.games.chess.MoveGenerator.generateMoves;
-import static io.github.jabrena.juno.games.chess.PieceSprites.detailRow;
-import static io.github.jabrena.juno.games.chess.PieceSprites.shapeRow;
 
 final class SceneRenderer {
     private SceneRenderer() {
@@ -84,7 +80,8 @@ final class SceneRenderer {
             TftTouchShield.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, SELECTED);
         }
         if (piece != 0) {
-            drawPiece(x + (CELL - PIECE_SIZE) / 2, y + (CELL - PIECE_SIZE) / 2, piece, color);
+            ChessPieceRenderer.draw(x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
+                    y + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2, piece, color);
         }
         if ((decoration & DECO_TARGET) != 0) {
             if (piece != 0) {
@@ -93,40 +90,6 @@ final class SceneRenderer {
             } else {
                 TftTouchShield.fillCircle(x + CELL / 2, y + CELL / 2, 4, TARGET);
             }
-        }
-    }
-
-    static void drawPiece(int x, int y, int piece, int background) {
-        int type = Math.abs(piece);
-        int fill = TftTouchShield.WHITE;
-        int ink = TftTouchShield.BLACK;
-        if (piece < 0) {
-            fill = TftTouchShield.BLACK;
-            ink = BLACK_PIECE_EDGE;
-        }
-        if (!TftTouchShield.beginPixels(x, y, PIECE_SIZE, PIECE_SIZE)) {
-            return;
-        }
-        int above = 0;
-        int shape = shapeRow(type, 0);
-        for (int row = 0; row < PIECE_SIZE; row++) {
-            int below = 0;
-            if (row + 1 < PIECE_SIZE) {
-                below = shapeRow(type, row + 1);
-            }
-            int interior = shape & above & below & (shape << 1) & (shape >> 1);
-            int outline = (shape & ~interior) | detailRow(type, row);
-            for (int column = 0; column < PIECE_SIZE; column++) {
-                int color = background;
-                if (((outline >> column) & 1) != 0) {
-                    color = ink;
-                } else if (((shape >> column) & 1) != 0) {
-                    color = fill;
-                }
-                TftTouchShield.pushPixel(color);
-            }
-            above = shape;
-            shape = below;
         }
     }
 
