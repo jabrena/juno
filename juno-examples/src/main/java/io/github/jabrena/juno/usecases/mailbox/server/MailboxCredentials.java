@@ -67,17 +67,15 @@ public final class MailboxCredentials {
             return -1;
         }
         int length = 0;
-        try {
-            while (file.available() > 0) {
-                int value = file.read();
+        try (InputStream openedFile = file) {
+            while (openedFile.available() > 0) {
+                int value = openedFile.read();
                 if (value < 0 || length == target.length) {
-                    file.close();
                     return -1;
                 }
                 target[length] = (byte) value;
                 length = length + 1;
             }
-            file.close();
         } catch (IOException exception) {
             return -1;
         }

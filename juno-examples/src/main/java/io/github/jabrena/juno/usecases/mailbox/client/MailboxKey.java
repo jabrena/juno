@@ -36,11 +36,10 @@ public final class MailboxKey {
             return;
         }
         int length = 0;
-        try {
-            while (file.available() > 0) {
-                int value = file.read();
+        try (InputStream openedFile = file) {
+            while (openedFile.available() > 0) {
+                int value = openedFile.read();
                 if (value < 0 || length == MAX_KEY_CHARS && value > ' ') {
-                    file.close();
                     useDefault();
                     return;
                 }
@@ -48,7 +47,6 @@ public final class MailboxKey {
                     key[length++] = (char) value;
                 }
             }
-            file.close();
         } catch (IOException exception) {
             useDefault();
             return;
