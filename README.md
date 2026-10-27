@@ -5,7 +5,15 @@ closed-world linking on the development machine, and emits Assembly.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 
-## Arduino boards
+![](./juno-site/src/main/resources/public/images/juno.png)
+
+## Motivation
+
+Traditionally, Java programs require a JVM to run. However, in memory-constrained environments, running Java programs inside a JVM can be difficult. Juno enables developers to create small Java programs for microcontrollers such as Arduino.
+
+## Arduino boards supported
+
+### Arduino Uno Family
 
 <table>
   <tr>
@@ -28,16 +36,9 @@ closed-world linking on the development machine, and emits Assembly.
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3">
     </td>
   </tr>
-  <tr>
-    <td align="center" width="50%">
-      <strong>Arduino Nano ESP32</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
-    </td>
-    <td width="50%"></td>
-  </tr>
 </table>
 
-## Arduino Shields
+## Arduino Uno shields supported
 
 <table>
   <thead>
@@ -74,15 +75,41 @@ closed-world linking on the development machine, and emits Assembly.
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
   </tr>
   <tr>
-    <td><strong>Grove Base Shield</strong></td>
-    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
-    <td>Grove digital, analog, I2C, and UART connectors.</td>
-  </tr>
-  <tr>
     <td><strong>Arduino WiFi Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
     <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
   </tr>
+  <tr>
+    <td><strong>Grove Base Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
+    <td>Grove digital, analog, I2C, and UART connectors.</td>
+  </tr>
+  </tbody>
+</table>
+
+### Arduino Nano Family
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Nano ESP32</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Arduino Nano shields supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Accessory</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
   <tr>
     <td><strong>Arduino Nano Connector Carrier</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
@@ -91,7 +118,7 @@ closed-world linking on the development machine, and emits Assembly.
   </tbody>
 </table>
 
-## M5Stack board
+## M5Stack boards supported
 
 <table>
   <tr>
@@ -409,3 +436,4 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://tinyvm.sourceforge.net/
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html
+- https://bearssl.org/
