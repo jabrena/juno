@@ -106,6 +106,9 @@ target with much less memory than either UNO R4 variant. SRAM is shared by globa
 heap and the call stack. Wireless and IMU libraries also need working memory, reducing the amount
 available to application code.
 
+Class inheritance, inherited methods and default interface methods are available on this AVR target, but the
+smaller arena and 8-bit memory budget make larger object graphs more likely to fail at link time or runtime.
+
 Juno represents supported Java values and generated temporaries as 32-bit integers. On the
 ATmega4809, arithmetic on those values requires multiple 8-bit operations, and every live 32-bit
 local consumes four bytes. Larger generated methods therefore need careful flash, SRAM and stack
