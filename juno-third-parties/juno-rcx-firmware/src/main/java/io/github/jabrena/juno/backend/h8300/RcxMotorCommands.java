@@ -68,6 +68,49 @@ final class RcxMotorCommands {
         assembler.call(APPLY);
     }
 
+    /** Turns the configured tone-indicator output on while a channel tone is playing. */
+    void toneIndicatorOn(int outputAddress) {
+        loadMotorOutput(outputAddress);
+        code.rom().call(RcxRom.CONTROL_MOTOR, Argument.register(H8Register.R5),
+                Argument.constant(RcxRom.MOTOR_FORWARD), Argument.constant(RcxRom.MOTOR_FULL_POWER));
+    }
+
+    /** Floats the configured tone-indicator output once the tone has ended. */
+    void toneIndicatorOff(int outputAddress) {
+        loadMotorOutput(outputAddress);
+        code.rom().call(RcxRom.CONTROL_MOTOR, Argument.register(H8Register.R5),
+                Argument.constant(RcxRom.MOTOR_FLOAT), Argument.constant(RcxRom.MOTOR_FULL_POWER));
+    }
+
+    /** Advances the tone indicator's coarse 0.3-second countdown, shared with the LCD animation tick. */
+    void toneIndicatorTick(int indicatorAddress, int outputAddress) {
+        String done = code.newLabel();
+        String off = code.newLabel();
+        assembler.loadByte(indicatorAddress, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.EQUAL, done);
+        assembler.compareImmediate(30, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.LOWER_OR_SAME, off);
+        assembler.moveImmediate(30, H8ByteRegister.R1L);
+        assembler.moveImmediate(0, H8ByteRegister.R1H);
+        assembler.moveImmediate(0, H8ByteRegister.R0H);
+        assembler.subtract(H8Register.R1, H8Register.R0);
+        assembler.storeByte(H8ByteRegister.R0L, indicatorAddress);
+        assembler.branch(H8Condition.ALWAYS, done);
+        assembler.label(off);
+        toneIndicatorOff(outputAddress);
+        assembler.moveImmediate(0, H8ByteRegister.R0L);
+        assembler.storeByte(H8ByteRegister.R0L, indicatorAddress);
+        assembler.label(done);
+    }
+
+    /** Loads the ROM motor selector for the configured output A, B or C. */
+    private void loadMotorOutput(int outputAddress) {
+        assembler.loadByte(outputAddress, H8ByteRegister.R5L);
+        assembler.moveImmediate(0, H8ByteRegister.R5H);
+        assembler.moveImmediate(RcxRom.MOTOR_A, H8Register.R6);
+        assembler.add(H8Register.R6, H8Register.R5);
+    }
+
     /**
      * Drives the outputs from the remote's button state at {@code buttons} (high byte first), as LEGO's firmware does:
      * an output runs forward or backward at its power while its button is held, and floats once let go; outputs the

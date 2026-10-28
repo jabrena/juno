@@ -18,8 +18,8 @@ import static org.assertj.core.api.Assertions.within;
 class RcxRemoteFirmwareTest {
     private static final int MAX_STEPS = 200_000;
     private static final String BOOT_BEEP = "sound 1";
-    /** Twenty of the downloader's 200-byte blocks: the image downloads in well under a minute. */
-    private static final int TWENTY_DOWNLOAD_BLOCKS = 4000;
+    /** The generated Java image can span two 4 KiB download chunks as the firmware grows. */
+    private static final int GENERATED_IMAGE_CHUNK = 4096;
 
     private final FakeRcx rcx = new FakeRcx();
 
@@ -50,7 +50,7 @@ class RcxRemoteFirmwareTest {
             // When & Then
             assertThat(image.entry()).isEqualTo(RcxRom.FIRMWARE_START);
             assertThat(image.containsBefore(RcxRom.UNLOCK_TEXT, RcxRom.UNLOCK_LIMIT)).isTrue();
-            assertThat(image.bytes().length).isLessThanOrEqualTo(TWENTY_DOWNLOAD_BLOCKS);
+            assertThat(image.bytes().length).isLessThanOrEqualTo(2 * GENERATED_IMAGE_CHUNK);
             assertThat(image.bytes()).isEqualTo(new RcxRemoteFirmware().image().bytes());
         }
 
@@ -96,8 +96,8 @@ class RcxRemoteFirmwareTest {
     class BootAndIdentification {
 
         @Test
-        @DisplayName("Shows Juno when the firmware starts")
-        void shouldShowJunoWhenTheFirmwareStarts() {
+        @DisplayName("Initializes the LCD memory with the startup brand")
+        void shouldInitializeTheLcdMemoryWithTheStartupBrand() {
             // When
             H8Simulator cpu = run();
 
@@ -124,7 +124,7 @@ class RcxRemoteFirmwareTest {
 
             // Then
             assertThat(rcx.replies()).containsExactly(new int[] {0xEF}, new int[] {0xE7});
-            assertThat(rcx.displayed()).as("JUno stays until a number is set").isEqualTo(-1);
+            assertThat(rcx.displayed()).as("the selected channel stays visible").isEqualTo(1);
         }
 
         @Test
@@ -172,7 +172,7 @@ class RcxRemoteFirmwareTest {
             }
             assertThat(rcx.icons()).as("walking figure, A's forward arrow and the IR cone of the last message")
                     .containsExactlyInAnyOrder(RcxRom.LCD_ICONS + 0x07, RcxRom.LCD_ICONS + 0x10, RcxRom.LCD_ICONS + 0x1C);
-            assertThat(rcx.displayed()).isEqualTo(-1);
+            assertThat(rcx.displayed()).isEqualTo(1);
         }
 
         @Test
@@ -207,6 +207,21 @@ class RcxRemoteFirmwareTest {
             assertThat(rcx.replies()).containsExactly(new int[] {0xEF}, new int[] {0x8D}, new int[] {0xE7});
             assertThat(rcx.displayed()).isEqualTo(-42 & 0xFFFF);
             assertThat(rcx.displayStyle()).isEqualTo(RcxRom.LCD_SIGNED);
+        }
+
+        @Test
+        @DisplayName("Keeps the channel in the program digit while a number occupies the main digits")
+        void shouldKeepTheChannelWhileShowingANumber() {
+            // Given
+            rcx.receive(0x72, 42, 0);
+            rcx.idlePolls(3);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.mainDisplayed()).isEqualTo(42);
+            assertThat(rcx.programDisplayed()).isEqualTo(1);
         }
 
         @Test
@@ -439,7 +454,7 @@ class RcxRemoteFirmwareTest {
             run();
 
             // Then
-            assertThat(callsAfterBoot()).containsExactly("sound 2", "tone 440 50");
+            assertThat(callsAfterBoot()).containsExactly("sound 2", "tone 440 50", "motor 2000 1 7");
             assertThat(rcx.replies()).containsExactly(new int[] {0xAE}, new int[] {0xDC});
         }
 
@@ -471,7 +486,7 @@ class RcxRemoteFirmwareTest {
 
             // Then
             assertThat(rcx.replies()).containsExactly(new int[] {0xEF});
-            assertThat(rcx.displayed()).isEqualTo(-1);
+            assertThat(rcx.displayed()).isEqualTo(1);
         }
     }
 
@@ -609,9 +624,152 @@ class RcxRemoteFirmwareTest {
             assertThat(RcxDisplayText.segments('o')).isNotEqualTo(RcxDisplayText.segments('O'));
         }
 
+        @Test
+        @DisplayName("Starts on channel one")
+        void shouldStartOnChannelOne() {
+            // When
+            H8Simulator cpu = run();
+
+            // Then
+            assertThat(cpu.readByte(RcxChannel.ADDRESS)).isEqualTo(1);
+            assertThat(rcx.displayedValues()).containsExactly(1, 1);
+            assertThat(rcx.displayed()).isEqualTo(1);
+            assertThat(rcx.displayStyle()).as("the dedicated program digit right of the minifigure")
+                    .isEqualTo(RcxRom.LCD_PROGRAM);
+        }
+
+        @Test
+        @DisplayName("Advances to the next channel when Prgm is clicked")
+        void shouldAdvanceToTheNextChannelWhenPrgmIsClicked() {
+            // Given
+            rcx.clickBrickButton(RcxBrickButtons.PRGM);
+            rcx.receive(0x10);
+            rcx.idlePolls(2);
+
+            // When
+            H8Simulator cpu = run();
+
+            // Then
+            assertThat(cpu.readByte(RcxChannel.ADDRESS)).isEqualTo(2);
+            assertThat(rcx.displayed()).isEqualTo(2);
+        }
+
+        @Test
+        @DisplayName("Wraps back to channel one after channel five")
+        void shouldWrapBackToChannelOneAfterChannelFive() {
+            // Given
+            for (int click = 0; click < 5; click++) {
+                rcx.clickBrickButton(RcxBrickButtons.PRGM);
+                rcx.clickBrickButton(0);
+            }
+            rcx.receive(0x10);
+            rcx.idlePolls(12);
+
+            // When
+            H8Simulator cpu = run();
+
+            // Then
+            assertThat(cpu.readByte(RcxChannel.ADDRESS)).isEqualTo(1);
+            assertThat(rcx.displayed()).isEqualTo(1);
+        }
+
+        @Test
+        @DisplayName("Plays a channel tone only when its channel opcode matches")
+        void shouldPlayAChannelToneForTheSelectedChannel() {
+            // Given
+            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 10);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.calls()).contains("tone 440 10");
+            assertThat(rcx.calls()).containsSubsequence("tone 440 10", "motor 2000 1 7");
+            assertThat(rcx.icons()).contains(RcxRom.LCD_ICONS + 0x18);
+        }
+
+        @Test
+        @DisplayName("Uses a configured B output for the channel tone indicator")
+        void shouldUseAConfiguredToneIndicatorOutput() {
+            // Given
+            rcx.receive(0x92, 1, 1);
+            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
+            rcx.idlePolls(5);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2001 1 7", "motor 2001 4 7");
+            assertThat(rcx.calls()).doesNotContain("motor 2000 1 7", "motor 2002 1 7");
+        }
+
+        @Test
+        @DisplayName("Uses a configured C output for the channel tone indicator")
+        void shouldUseAConfiguredCOutputForTheToneIndicator() {
+            // Given
+            rcx.receive(0x92, 1, 2);
+            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
+            rcx.idlePolls(5);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2002 1 7", "motor 2002 4 7");
+            assertThat(rcx.calls()).doesNotContain("motor 2000 1 7", "motor 2001 1 7");
+        }
+
+        @Test
+        @DisplayName("Floats the tone indicator after its coarse playback window")
+        void shouldFloatTheToneIndicatorAfterPlayback() {
+            // Given
+            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
+            rcx.idlePolls(5);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2000 1 7", "motor 2000 4 7");
+        }
+
+        @Test
+        @DisplayName("Does not show tone activity for another channel")
+        void shouldIgnoreToneActivityForAnotherChannel() {
+            // Given
+            rcx.receive(0xB3, 440 & 0xFF, 440 >> 8, 10);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.calls()).doesNotContain("tone 440 10");
+            assertThat(rcx.icons()).doesNotContain(RcxRom.LCD_ICONS + 0x18);
+        }
+
+        @Test
+        @DisplayName("Wraps the channel after channel five")
+        void shouldWrapTheChannelAfterChannelFive() {
+            // Given
+            for (int click = 0; click < 6; click++) {
+                rcx.clickBrickButton(RcxBrickButtons.PRGM);
+                rcx.clickBrickButton(0);
+                rcx.receive(0x10);
+                rcx.receive(0x10);
+            }
+
+            // When
+            H8Simulator cpu = run();
+
+            // Then
+            assertThat(cpu.readByte(RcxChannel.ADDRESS)).isEqualTo(2);
+            assertThat(rcx.displayedValues()).contains(1, 2, 3, 4, 5);
+        }
+
         @ParameterizedTest
-        @CsvSource({"0x02, true", "0x04, true", "0x01, true", "0x02, false"})
-        @DisplayName("A click changes nothing on the brick and is handed to one poll")
+        @CsvSource({"0x02, true", "0x01, true", "0x02, false"})
+        @DisplayName("A View or Run click changes nothing on the brick and is handed to one poll")
         void shouldChangeNothingOnAClickAndHandItToOnePoll(int button, boolean withIcons) {
             // Given
             rcx.clickBrickButton(button);
