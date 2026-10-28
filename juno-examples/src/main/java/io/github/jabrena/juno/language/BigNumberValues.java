@@ -11,8 +11,6 @@ import java.math.RoundingMode;
 
 /** Demonstrates a small arbitrary-precision calculation that fits the memory-constrained UNO R3. */
 public final class BigNumberValues {
-    private static final MathContext CONTEXT = new MathContext(8, RoundingMode.HALF_UP);
-
     private BigNumberValues() {
     }
 
@@ -20,8 +18,9 @@ public final class BigNumberValues {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
+        MathContext context = new MathContext(8, RoundingMode.HALF_UP);
         BigInteger integer = BigInteger.valueOf(123456789L);
-        BigDecimal decimal = new BigDecimal("12.50").multiply(BigDecimal.valueOf(2), CONTEXT);
+        BigDecimal decimal = new BigDecimal("12.50").multiply(BigDecimal.valueOf(2), context);
         Serial.println("BigInteger: " + integer.toString());
         Serial.println("BigDecimal: " + decimal.toPlainString());
     }
