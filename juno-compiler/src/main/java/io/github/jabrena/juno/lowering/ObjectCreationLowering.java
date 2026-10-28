@@ -71,10 +71,6 @@ final class ObjectCreationLowering implements InstructionLowering {
                 throw new CompileException(context.at(instruction)
                         + ": object class is not available for closed-world allocation: " + className);
             }
-            if (!allocated.isFinal() && hasSubclass(className)) {
-                throw new CompileException(context.at(instruction) + ": allocated classes must be final or have "
-                        + "no subclass for statically resolved dispatch: " + className.replace('/', '.'));
-            }
             allocate(className);
         }
     }
@@ -151,11 +147,6 @@ final class ObjectCreationLowering implements InstructionLowering {
         context.emit(new IrInstruction.IntrinsicCall(Optional.of(handle), constructor, Optional.empty(), arguments,
                 literals));
         stack.replaceTop(handle);
-    }
-
-    /** Whether another class of the closed world extends {@code className}; one nothing extends dispatches statically. */
-    private boolean hasSubclass(String className) {
-        return context.classes().values().stream().anyMatch(candidate -> className.equals(candidate.superClassName()));
     }
 
     private boolean isRuntimeHandleClass(String className) {

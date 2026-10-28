@@ -54,6 +54,11 @@ public final class Linker {
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
 
+    private final InheritanceSupport inheritanceSupport = new InheritanceSupport();
+
+    private final ReachableBodySupport reachableBodySupport = new ReachableBodySupport(intrinsicRegistry,
+            supportedJdkMethods, throwableTypes);
+
     /** The on-board {@link Capability} each capability-dependent intrinsic needs; every other intrinsic is portable. */
     private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
     /**
@@ -105,7 +110,7 @@ public final class Linker {
                 reference -> linkMethod(classes, reference, reference.equals(entryPoint)),
                 (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
                         work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
-                method -> hasReachableBody(method, classes),
+                method -> reachableBodySupport.hasReachableBody(method, classes),
                 (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
         structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
                 reachability.lambdaSites().values(), classes);
@@ -113,6 +118,9 @@ public final class Linker {
             if (!reachability.interfaceDispatches().containsKey(call.getKey())) {
                 throw new CompileException(threadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
+        }
+        if (inheritanceSupport.usesClassInheritance(reachability, classes)) {
+            requireCapability(declaredBoards, Capability.CLASS_INHERITANCE, "");
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
@@ -195,7 +203,24 @@ public final class Linker {
         for (int index = 0; index < instructions.size(); index++) {
             Instruction instruction = instructions.get(index);
             int opcode = instruction.opcode();
-            if (opcode == 182 || opcode == 183 || opcode == 184) {
+            if (opcode == 182) {
+                MethodRef called = owner.constantPool().methodRef(instruction.operandA());
+                threadSupport.registerEntry(called, interfaceCalls);
+                structuredTaskSupport.registerEntry(called, interfaceCalls);
+                scopedValueSupport.registerEntry(called, interfaceCalls);
+                bindClojureFunction(called, linked, index, classes, clojureFunctions, caller, declaredBoards, work);
+                JavaClass calledOwner = classes.get(called.owner());
+                boolean compilerHandled = calledOwner != null && (calledOwner.isEnum()
+                        || throwableTypes.isGetMessage(called, classes)
+                        || throwableTypes.isAddSuppressed(called, classes));
+                if (calledOwner != null && !compilerHandled && !intrinsicRegistry.isIntrinsic(called)
+                        && !ClojureSupport.isLowered(called)) {
+                    interfaceCallRegistration.registerVirtual(linked, instruction, called, classes,
+                            interfaceCalls, interfaceDispatchResolver);
+                } else {
+                    enqueueCall(called, caller, declaredBoards, classes, work);
+                }
+            } else if (opcode == 183 || opcode == 184) {
                 MethodRef called = owner.constantPool().methodRef(instruction.operandA());
                 threadSupport.registerEntry(called, interfaceCalls);
                 structuredTaskSupport.registerEntry(called, interfaceCalls);
@@ -252,22 +277,9 @@ public final class Linker {
         ClojureSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
             work.addLast(DRAW_CHAR_METHOD);
-        } else if (hasReachableBody(called, classes)) {
+        } else if (reachableBodySupport.hasReachableBody(called, classes)) {
             work.addLast(called);
         }
-    }
-
-    /** Whether {@code called} is an ordinary method whose bytecode must be linked, not one Juno lowers itself. */
-    private boolean hasReachableBody(MethodRef called, Map<String, JavaClass> classes) {
-        return !intrinsicRegistry.isIntrinsic(called)
-                && !ClojureSupport.isLowered(called)
-                && !isRuntimeBaseConstructor(called)
-                && !throwableTypes.isBuiltInConstructor(called)
-                && !throwableTypes.isGetMessage(called, classes)
-                && !throwableTypes.isAddSuppressed(called, classes)
-                && !isEnumOperation(classes, called)
-                && !isCompileTimeGetenv(called)
-                && !supportedJdkMethods.isRequireNonNull(called);
     }
 
     private void enqueueStaticInitializer(FieldRef field, Map<String, JavaClass> classes, Deque<MethodRef> work) {
@@ -296,7 +308,7 @@ public final class Linker {
 
     private static Map<Intrinsic, Capability> requiredCapabilities() {
         Map<Intrinsic, Capability> required = new EnumMap<>(Intrinsic.class);
-        require(required, Capability.SECURE_ENTROPY, Intrinsic.UUID_RANDOM);
+        require(required, Capability.UUID_RANDOM, Intrinsic.UUID_RANDOM);
         require(required, Capability.LED_MATRIX, Intrinsic.LED_MATRIX_BEGIN, Intrinsic.LED_MATRIX_LOAD_FRAME,
                 Intrinsic.LED_MATRIX_COLUMNS, Intrinsic.LED_MATRIX_CLEAR);
         require(required, Capability.M5_DISPLAY, Intrinsic.M5_DISPLAY_BEGIN, Intrinsic.M5_DISPLAY_WIDTH,
@@ -379,16 +391,6 @@ public final class Linker {
     }
 
     /**
-     * {@code System.getenv("NAME")} of a literal environment-variable name is resolved by Juno itself at
-     * compile time (see {@code BytecodeToIr#lowerCompileTimeGetenv}), reading its own build-time
-     * environment rather than the target device's — never a reachable call.
-     */
-    private boolean isCompileTimeGetenv(MethodRef called) {
-        return called.owner().equals("java/lang/System") && called.name().equals("getenv")
-                && called.descriptor().equals("(Ljava/lang/String;)Ljava/lang/String;");
-    }
-
-    /**
      * {@code LedCanvas.drawText(frame, "literal", x, y)} is unrolled by {@code BytecodeToIr} into one
      * {@code LedCanvas.drawChar} call per character at compile time — {@code drawText} itself is
      * native (no body to walk into); {@link #DRAW_CHAR_METHOD} is what's actually reachable.
@@ -421,19 +423,4 @@ public final class Linker {
         }
     }
 
-    private boolean isRuntimeBaseConstructor(MethodRef called) {
-        return called.name().equals("<init>") && called.descriptor().endsWith(")V")
-                && (called.owner().startsWith("java/lang/")
-                        || called.owner().equals("java/lang/Enum"));
-    }
-
-    private boolean isEnumOperation(Map<String, JavaClass> classes, MethodRef called) {
-        JavaClass owner = classes.get(called.owner());
-        if (owner != null && owner.isEnum()) {
-            return (called.name().equals("ordinal") && called.descriptor().equals("()I"))
-                    || (called.name().equals("values") && called.descriptor().startsWith("()[L"));
-        }
-        return called.owner().equals("java/lang/Enum")
-                && called.name().equals("ordinal") && called.descriptor().equals("()I");
-    }
 }

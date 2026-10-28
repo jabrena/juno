@@ -5,7 +5,15 @@ closed-world linking on the development machine, and emits Assembly.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
 
-## Arduino boards
+![](./juno-site/src/main/resources/public/images/juno.png)
+
+## Motivation
+
+Traditionally, Java programs require a JVM to run. However, in memory-constrained environments, running Java programs inside a JVM can be difficult. Juno enables developers to create small Java programs for microcontrollers such as Arduino.
+
+## Arduino boards supported
+
+### Arduino Uno Family
 
 <table>
   <tr>
@@ -28,16 +36,9 @@ closed-world linking on the development machine, and emits Assembly.
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3">
     </td>
   </tr>
-  <tr>
-    <td align="center" width="50%">
-      <strong>Arduino Nano ESP32</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
-    </td>
-    <td width="50%"></td>
-  </tr>
 </table>
 
-## Arduino Shields
+## Arduino Uno shields supported
 
 <table>
   <thead>
@@ -74,15 +75,41 @@ closed-world linking on the development machine, and emits Assembly.
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
   </tr>
   <tr>
-    <td><strong>Grove Base Shield</strong></td>
-    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
-    <td>Grove digital, analog, I2C, and UART connectors.</td>
-  </tr>
-  <tr>
     <td><strong>Arduino WiFi Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
     <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
   </tr>
+  <tr>
+    <td><strong>Grove Base Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
+    <td>Grove digital, analog, I2C, and UART connectors.</td>
+  </tr>
+  </tbody>
+</table>
+
+### Arduino Nano Family
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Nano ESP32</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Arduino Nano shields supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Accessory</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
   <tr>
     <td><strong>Arduino Nano Connector Carrier</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
@@ -91,7 +118,7 @@ closed-world linking on the development machine, and emits Assembly.
   </tbody>
 </table>
 
-## M5Stack board
+## M5Stack boards supported
 
 <table>
   <tr>
@@ -277,13 +304,13 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   [`SntpTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and
   [`SntpTimeSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java)
   (server read from the SD card).
-- **UUID:** `java.util.UUID` construction, parsing, formatting, comparison and 16-byte conversion through
-  `UuidCodec`. `UUID.randomUUID()` uses the board's hardware random source on the UNO R4 WiFi, UNO WiFi Rev2
-  and UNO Q; the UNO R3 has none, so it is rejected there.
-- **Objects and interfaces:** simple enums, records, final closed-world classes, constructors, instance
-  fields, and directly implemented interfaces with closed-world dispatch through an interface reference.
-  Objects, records, and capturing closures share the fixed 8 KiB arena, which uses conservative garbage
-  collection. See
+- **UUID:** `java.util.UUID` supports construction, parsing, formatting, comparison, 16-byte conversion through
+  `UuidCodec`, and `randomUUID()` on all boards. On the classic UNO R3, random UUIDs are weak and non-cryptographic;
+  use them only for node identities, as shown by [`WeakUuid`](juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java).
+- **Objects and interfaces:** enums, records, classes, constructors, instance fields, class inheritance, virtual
+  dispatch, and directly implemented interfaces with closed-world dispatch. Inheritance and inherited/default
+  implementations are available on every board, but the AVR boards have much less flash, SRAM and arena space, so
+  the Arduino build or runtime may fail for larger object graphs. See
   [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java) and
   [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java).
 - **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
@@ -396,6 +423,9 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.oracle.com/javase/specs/jls/se25/html/index.html
 - https://docs.oracle.com/en/java/javase/27/docs/api/index.html
 - https://github.com/openjdk/jcstress/tree/master/jcstress-samples
+- https://openjdk.org/
+- https://openjdk.org/groups/conformance/JckAccess/
+- https://github.com/openjdk
 - https://docs.arduino.cc/hardware/uno-q/
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
@@ -409,3 +439,4 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://tinyvm.sourceforge.net/
 - https://sunspotdev.org/
 - https://sunspotdev.org/docs/index.html
+- https://bearssl.org/

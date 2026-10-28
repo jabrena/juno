@@ -119,7 +119,9 @@ a call, field, or array boundary. Remaining exclusions include:
   [FEATURES.md](../features) for the exact list. Multi-character LED matrix display (see
   [`LedCanvas`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/led/LedCanvas.java)) still works
   character-by-character with hand-encoded font tables rather than string data
-- polymorphic objects/inheritance and unbounded allocation. Final closed-world objects and records use
-  one-slot handles into a fixed 8 KiB program-lifetime arena with no reclamation
+- open-world object polymorphism and unbounded allocation. Class inheritance and virtual dispatch are resolved over
+  the instantiated closed world on every board; the AVR boards have less flash, SRAM and arena space, so larger
+  object graphs may fail the Arduino link or exhaust memory at runtime. Objects use one-slot handles into a fixed
+  8 KiB program-lifetime arena
 
 See [FEATURES.md](../features) for the full, authoritative list.

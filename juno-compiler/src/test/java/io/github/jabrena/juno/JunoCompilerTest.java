@@ -477,30 +477,153 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Rejects allocating a non-final class that has a subclass")
-        void shouldRejectAllocatingANonFinalClassWithASubclass() throws Exception {
+        @DisplayName("Supports inherited classes and virtual method dispatch")
+        void shouldSupportInheritedClassesAndVirtualMethodDispatch() throws Exception {
             // Given
             String source = """
                     package demo;
                     public class Extended {
                         public static void main(String[] args) {
-                            new Extended().run();
+                            Extended first = new Sub();
+                            Extended second = new Other();
+                            if (first.run() + second.run() != 8) {
+                                throw new IllegalStateException();
+                            }
                         }
-                        void run() {
+                        private int value;
+                        Extended(int value) {
+                            this.value = value;
+                        }
+                        int run() {
+                            return value;
                         }
                     }
                     class Sub extends Extended {
+                        Sub() {
+                            super(2);
+                        }
                         @Override
-                        void run() {
+                        int run() {
+                            return super.run() + 1;
+                        }
+                    }
+                    class Other extends Extended {
+                        Other() {
+                            super(3);
+                        }
+                        @Override
+                        int run() {
+                            return super.run() + 2;
                         }
                     }
                     """;
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.Extended", source);
 
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Extended"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("final or have no subclass");
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Extended");
+
+            // Then
+            assertThat(result.assembly()).contains("cmp r0, r1", "bl juno_fn");
+        }
+
+        @Test
+        @DisplayName("Supports abstract bases with concrete virtual implementations")
+        void shouldSupportAbstractBaseClasses() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public class AbstractBase {
+                        public static void main(String[] args) {
+                            Base value = new Concrete();
+                            if (value.value() != 7) {
+                                throw new IllegalStateException();
+                            }
+                        }
+                        abstract static class Base {
+                            abstract int value();
+                        }
+                        static final class Concrete extends Base {
+                            @Override
+                            int value() {
+                                return 7;
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.AbstractBase", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AbstractBase");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("Supports class inheritance on the classic UNO R3")
+        void shouldSupportClassInheritanceOnClassicUnoR3() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    @Board(ArduinoUnoR3Board.class)
+                    public class R3Inheritance {
+                        public static void main(String[] args) {
+                            Base value = new Child();
+                            value.run();
+                        }
+                        static class Base {
+                            int run() {
+                                return 1;
+                            }
+                        }
+                        static class Child extends Base {
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.R3Inheritance", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.R3Inheritance");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("Supports an inherited interface default method")
+        void shouldSupportInheritedInterfaceDefaultMethod() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public class DefaultInterface {
+                        public static void main(String[] args) {
+                            Greeting greeting = new GreetingImpl();
+                            if (greeting.value() != 7) {
+                                throw new IllegalStateException();
+                            }
+                        }
+                        interface Greeting {
+                            default int value() {
+                                return 7;
+                            }
+                        }
+                        static final class GreetingImpl implements Greeting {
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.DefaultInterface", source);
+
+            // When
+            Program program = CompilerTestSupport.link(temporaryDirectory, "demo.DefaultInterface");
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DefaultInterface");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+            assertThat(program.interfaceDispatches().values()).anySatisfy(dispatch ->
+                    assertThat(dispatch.targets()).anySatisfy(target ->
+                            assertThat(target.method().owner()).isEqualTo("demo/DefaultInterface$Greeting")));
         }
 
         @Test

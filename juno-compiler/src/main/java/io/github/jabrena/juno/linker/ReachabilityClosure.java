@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-/** Computes the fixed point of direct calls, allocated classes, and interface-dispatch targets. */
+/** Computes the fixed point of direct calls, allocated classes, and polymorphic-dispatch targets. */
 final class ReachabilityClosure {
 
     record Result(List<LinkedMethod> methods, Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,

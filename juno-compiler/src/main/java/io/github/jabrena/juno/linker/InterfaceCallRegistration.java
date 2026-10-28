@@ -21,4 +21,13 @@ final class InterfaceCallRegistration {
         resolver.validateCall(linked, instruction, called, classes, lambdaSites);
         interfaceCalls.put(new InterfaceCallSite(linked.method().reference(), instruction.offset()), called);
     }
+
+    /** Keeps ordinary {@code invokevirtual} sites in the same closed-world dispatch table as interfaces. */
+    void registerVirtual(LinkedMethod linked, Instruction instruction, MethodRef called,
+                         Map<String, JavaClass> classes, Map<InterfaceCallSite, MethodRef> calls,
+                         InterfaceDispatchResolver resolver) {
+        if (intrinsicRegistry.isIntrinsic(called) || ClojureSupport.isLowered(called)) return;
+        resolver.validateVirtualCall(linked, instruction, called, classes);
+        calls.put(new InterfaceCallSite(linked.method().reference(), instruction.offset()), called);
+    }
 }

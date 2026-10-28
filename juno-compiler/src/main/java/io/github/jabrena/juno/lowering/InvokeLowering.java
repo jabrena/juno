@@ -102,6 +102,8 @@ final class InvokeLowering implements InstructionLowering {
             stack.push(message);
         } else if (throwableTypes.isAddSuppressed(called, context.classes())) {
             discardCall(called);
+        } else if (dispatch(instruction).isPresent()) {
+            invokeDispatch(instruction, dispatch(instruction).orElseThrow());
         } else {
             calls.call(instruction, called, true, List.of());
         }
@@ -143,6 +145,10 @@ final class InvokeLowering implements InstructionLowering {
         if (dispatch == null) {
             throw new CompileException("Missing linked interface dispatch for " + context.at(instruction));
         }
+        invokeDispatch(instruction, dispatch);
+    }
+
+    private void invokeDispatch(Instruction instruction, InterfaceDispatch dispatch) {
         if (dispatch.targets().size() == 1) {
             InterfaceDispatch.Target target = dispatch.targets().getFirst();
             if (target.isLambda()) {
@@ -158,6 +164,11 @@ final class InvokeLowering implements InstructionLowering {
                         target.method(), target.lambda()))
                 .toList();
         calls.call(instruction, dispatch.interfaceMethod(), true, targets);
+    }
+
+    private Optional<InterfaceDispatch> dispatch(Instruction instruction) {
+        return Optional.ofNullable(context.program().interfaceDispatches()
+                .get(new InterfaceCallSite(context.method().method().reference(), instruction.offset())));
     }
 
     /** Materializes a built-in {@code Joiner} as a small runtime policy token. */

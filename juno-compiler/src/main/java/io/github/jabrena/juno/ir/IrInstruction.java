@@ -189,7 +189,7 @@ public sealed interface IrInstruction {
         }
     }
 
-    /** A polymorphic interface call; {@code arguments} starts with the receiver. */
+    /** A polymorphic interface or virtual call; {@code arguments} starts with the receiver. */
     record InterfaceCall(Optional<Value> target, List<Value> arguments, List<InterfaceTarget> targets)
             implements IrInstruction {
         public InterfaceCall {

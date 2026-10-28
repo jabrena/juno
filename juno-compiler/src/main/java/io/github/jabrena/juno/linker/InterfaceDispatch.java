@@ -5,7 +5,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-/** Closed-world concrete targets of one reachable {@code invokeinterface} instruction. */
+/** Closed-world concrete targets of one reachable interface or virtual call instruction. */
 public record InterfaceDispatch(MethodRef interfaceMethod, List<Target> targets) {
     public InterfaceDispatch {
         targets = List.copyOf(targets);
