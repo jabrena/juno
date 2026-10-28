@@ -51,6 +51,14 @@ class File32 {
 public:
   int available() { return file_ != nullptr && cursor_ < file_->size ? 1 : 0; }
   int read() { return available() != 0 ? static_cast<uint8_t>(file_->data[cursor_++]) : -1; }
+  size_t read(uint8_t* buffer, size_t count) {
+    if (file_ == nullptr || buffer == nullptr || cursor_ >= file_->size) return 0;
+    size_t remaining = file_->size - cursor_;
+    size_t copied = count < remaining ? count : remaining;
+    memcpy(buffer, file_->data + cursor_, copied);
+    cursor_ += copied;
+    return copied;
+  }
   uint32_t size() { return file_ != nullptr ? file_->size : 0; }
   size_t print(const char* text) {
     size_t length = strlen(text);
