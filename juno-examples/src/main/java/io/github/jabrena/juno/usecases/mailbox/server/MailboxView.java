@@ -4,7 +4,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
 /**
  * The mailbox TFT view, in portrait: a flat blue mailbox with a letter dropping into its slot, above the message
- * count and IP address, and a settings gear that opens a status screen with the SD-card, Wi-Fi and API-key state.
+ * count, IP address, and HTTPS state, and a settings gear that opens a status screen with the SD-card, Wi-Fi and
+ * API-key state.
  * From there the Security screen changes the API key on a numeric keypad. Later changes redraw only their own row on
  * the cover, or the whole status screen while it is shown.
  */
@@ -14,20 +15,22 @@ public final class MailboxView {
     static final int TEXT = 0x19D1;
     static final int DARK_GREEN = 0x0400;
 
-    /** The cover's two status rows (message count, then IP address) share text size 2 and are each centered. */
+    /** The cover's three status rows (message count, IP address, then HTTPS) share text size 2 and are each centered. */
     static final int SCREEN_WIDTH = 240;
     private static final int STATUS_TEXT_SIZE = 2;
     private static final int STATUS_CHAR_WIDTH = STATUS_TEXT_SIZE * TftTouchShield.CHAR_WIDTH;
     private static final int STATUS_ROW_HEIGHT = STATUS_TEXT_SIZE * TftTouchShield.CHAR_HEIGHT;
     private static final int COUNT_Y = 232;
     private static final int IP_Y = 256;
+    private static final int HTTPS_Y = 272;
+    private static final String HTTPS_LABEL = "HTTPS: ";
     private static final String MESSAGES_LABEL = "MESSAGES: ";
     private static final String IP_HINT = "SET JUNO_Q_IP AT BUILD TIME";
     private static final int IP_CAPACITY = 16;
 
     /** The settings gear in the bottom-right corner; a tap near it opens the status screen. */
     private static final int GEAR_X = 214;
-    private static final int GEAR_Y = 296;
+    private static final int GEAR_Y = 304;
     private static final int GEAR_RADIUS = 11;
     private static final int GEAR_TOOTH_RADIUS = 4;
     private static final int[] GEAR_TOOTH_X = {0, 9, 13, 9, 0, -9, -13, -9};
@@ -42,7 +45,7 @@ public final class MailboxView {
     private static final int ROW_GAP = 34;
     private static final int BACK_Y = 292;
     private static final String DEFAULT_KEY_HINT = "DEFAULT API KEY: TAP THE GEAR";
-    private static final int KEY_HINT_Y = 276;
+    private static final int KEY_HINT_Y = 292;
 
     private static final int COVER = 0;
     private static final int STATUS = 1;
@@ -73,8 +76,15 @@ public final class MailboxView {
     public void drawCover(boolean storageReady, int messageCount) {
         this.storageReady = storageReady;
         this.messageCount = messageCount;
-        ipLength = copy("CONNECTING");
         drawCoverScreen();
+    }
+
+    /** Publishes SD readiness without redrawing the mailbox art while startup work is still active. */
+    public void updateStorageReady(boolean storageReady) {
+        this.storageReady = storageReady;
+        if (screen == STATUS) {
+            drawStorageStatus();
+        }
     }
 
     public void drawInternetConnecting() {
@@ -130,7 +140,7 @@ public final class MailboxView {
                 drawStatusScreen();
             }
         } else if (screen == STATUS) {
-            if (x >= SECURITY_BUTTON_LEFT && y >= BUTTON_TOP) {
+            if (x >= SECURITY_BUTTON_LEFT && y >= BUTTON_TOP && storageReady) {
                 screen = SECURITY;
                 securityView.show();
             } else {
@@ -148,7 +158,18 @@ public final class MailboxView {
         internetColor = color;
         if (screen == STATUS) {
             drawStatusScreen();
+        } else if (screen == COVER) {
+            drawInternetRow();
         }
+    }
+
+    /** The cover's third row shows the HTTPS listener state without hiding the configured IP. */
+    private void drawInternetRow() {
+        startRow(HTTPS_Y, HTTPS_LABEL.length() + internetState.length());
+        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
+        TftTouchShield.print(HTTPS_LABEL);
+        TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
+        TftTouchShield.print(internetState);
     }
 
     private void redrawIp() {
@@ -164,6 +185,7 @@ public final class MailboxView {
         art.draw();
         drawCountRow();
         drawIpRow();
+        drawInternetRow();
         drawKeyHint();
         drawGear();
     }
@@ -217,9 +239,7 @@ public final class MailboxView {
         TftTouchShield.fillScreen(TftTouchShield.WHITE);
         drawHeader("STATUS");
 
-        statusLabel("SD", 0);
-        TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
-        TftTouchShield.print(storageReady ? "READY" : "UNAVAILABLE");
+        drawStorageStatus();
         statusLabel("NET", 1);
         TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
         TftTouchShield.print(internetState);
@@ -263,6 +283,14 @@ public final class MailboxView {
         TftTouchShield.setCursor(LABEL_X, y);
         TftTouchShield.print(label);
         TftTouchShield.setCursor(VALUE_X, y);
+    }
+
+    private void drawStorageStatus() {
+        TftTouchShield.fillRect(VALUE_X, FIRST_ROW_Y, SCREEN_WIDTH - VALUE_X, STATUS_ROW_HEIGHT,
+                TftTouchShield.WHITE);
+        statusLabel("SD", 0);
+        TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
+        TftTouchShield.print(storageReady ? "READY" : "UNAVAILABLE");
     }
 
     /** Clears a status row and puts the cursor where {@code characters} at the status size end up centered. */

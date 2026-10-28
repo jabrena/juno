@@ -51,6 +51,7 @@ public final class ProgressView implements KeyboardView {
     private final Display display;
     private final MailboxApi client;
     private final MailboxModel model;
+    private final MailboxConnection connection;
     private final Footer footer;
     private final Clock clock;
     private int operation;
@@ -66,22 +67,30 @@ public final class ProgressView implements KeyboardView {
     private int head;
     private int enteredAt;
 
-    public ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model, Footer footer) {
-        this(navigator, display, client, model, footer, ArduinoUno.getClock());
+    public ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model,
+            MailboxConnection connection, Footer footer) {
+        this(navigator, display, client, model, connection, footer, ArduinoUno.getClock());
     }
 
     ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model, Footer footer,
             Clock clock) {
+        this(navigator, display, client, model, null, footer, clock);
+    }
+
+    ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model,
+            MailboxConnection connection, Footer footer, Clock clock) {
         this.navigator = navigator;
         this.display = display;
         this.client = client;
         this.model = model;
+        this.connection = connection;
         this.footer = footer;
         this.clock = clock;
     }
 
     /** Shows this view to send the message; the caller keeps the buffers unchanged until the inbox is shown. */
     public void send(char[] messageTitle, int messageTitleLength, char[] messageBody, int messageBodyLength) {
+        client.beginRefresh();
         operation = SEND;
         title = messageTitle;
         titleLength = messageTitleLength;
@@ -92,6 +101,7 @@ public final class ProgressView implements KeyboardView {
 
     /** Shows this view to delete the message with this uuid; the caller keeps the buffer unchanged meanwhile. */
     public void delete(byte[] messageUuid, int messageUuidLength) {
+        client.beginRefresh();
         operation = DELETE;
         uuid = messageUuid;
         uuidLength = messageUuidLength;
@@ -100,6 +110,7 @@ public final class ProgressView implements KeyboardView {
 
     /** Shows this view to read the inbox again. */
     public void refresh() {
+        client.beginRefresh();
         operation = REFRESH;
         navigator.show(PROGRESS_VIEW);
     }
@@ -120,7 +131,7 @@ public final class ProgressView implements KeyboardView {
             drawDot(dot, DIM_DOT);
         }
         drawSpinner();
-        drawLabel(firstLabel());
+        drawLabel(connection != null && !connection.isConnected() ? "Waiting for WiFi" : firstLabel());
     }
 
     private String header() {
@@ -141,6 +152,12 @@ public final class ProgressView implements KeyboardView {
     @Override
     public void render() {
         if (phase == DONE || phase == FAILED) {
+            return;
+        }
+        if (connection != null && !connection.isConnected()) {
+            drawLabel(connection.state() == MailboxConnection.NO_SETTINGS ? "No WiFi settings" : "Waiting for WiFi");
+            head = (head + 1) % DOT_X.length;
+            drawSpinner();
             return;
         }
         if (phase == REQUEST) {

@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +43,7 @@ public final class MailboxModel {
     private final byte[][] createAts = new byte[MAX_MESSAGES][CREATE_AT_CAPACITY];
     private int messageCount;
     private boolean storageReady;
+    private volatile boolean restoreComplete;
     private String errorMessage;
 
     public MailboxModel(SdCard sdCard) {
@@ -49,18 +51,31 @@ public final class MailboxModel {
     }
 
     void begin() {
+        beginStorage();
+        restore();
+    }
+
+    void beginStorage() {
         boolean cardReady = sdCard.begin();
         Serial.println(cardReady ? "SD begin ok" : "SD begin failed");
         boolean directoryReady = cardReady && sdCard.createDirectory(SD_MAILBOX_DIRECTORY);
         Serial.println(directoryReady ? "SD directory ok" : "SD directory failed");
         storageReady = directoryReady;
+    }
+
+    void restore() {
         if (storageReady) {
             restoreMessages();
+            restoreComplete = true;
         }
     }
 
     boolean storageReady() {
         return storageReady;
+    }
+
+    boolean restoreComplete() {
+        return restoreComplete;
     }
 
     int messageCount() {
@@ -162,13 +177,17 @@ public final class MailboxModel {
             return false;
         }
         try {
-            while (file.available() > 0) {
-                int character = file.read();
-                if (character < 0) {
-                    file.close();
-                    return false;
+            while (true) {
+                int count = file.read(storedMessage, 0, storedMessage.length);
+                if (count < 0) {
+                    break;
                 }
-                response.append((char) character);
+                if (count == 0) {
+                    continue;
+                }
+                for (int bufferIndex = 0; bufferIndex < count; bufferIndex++) {
+                    response.append((char) (storedMessage[bufferIndex] & 0xff));
+                }
             }
             file.close();
             return true;
@@ -256,16 +275,39 @@ public final class MailboxModel {
     }
 
     private void restoreMessages() {
-        for (int directoryIndex = 0; messageCount < MAX_MESSAGES; directoryIndex++) {
+        int directoryIndex = 0;
+        int directoriesScanned = 0;
+        int directoriesRemoved = 0;
+        while (true) {
             int directoryLength = sdCard.list(SD_MAILBOX_DIRECTORY, directoryIndex, directoryEntry, directoryEntry.length);
             if (directoryLength <= 0) {
+                Serial.print("Mailbox restore scanned ");
+                Serial.print(directoriesScanned);
+                Serial.print(" removed ");
+                Serial.println(directoriesRemoved);
                 return;
             }
+            directoriesScanned++;
             String directoryName = entryName(directoryLength);
             if (!isTimestampDirectory(directoryName)) {
+                directoryIndex++;
+                Thread.yield();
                 continue;
             }
-            restoreDirectory(directoryDate(directoryName));
+            long date = directoryDate(directoryName);
+            if (!restoreDirectory(date)) {
+                if (sdCard.removeDirectory(mailboxDirectory(date))) {
+                    directoriesRemoved++;
+                    if (directoriesRemoved % 10 == 0) {
+                        Serial.print("Mailbox cleanup removed ");
+                        Serial.println(directoriesRemoved);
+                    }
+                    Delay.millis(10);
+                    continue;
+                }
+            }
+            directoryIndex++;
+            Thread.yield();
         }
     }
 
@@ -277,24 +319,33 @@ public final class MailboxModel {
         return date;
     }
 
-    private void restoreDirectory(long directoryDate) {
-        for (int fileIndex = 0; messageCount < MAX_MESSAGES; fileIndex++) {
+    /** Restores supported files and reports whether the directory has any child at all. */
+    private boolean restoreDirectory(long directoryDate) {
+        for (int fileIndex = 0; ; fileIndex++) {
             int fileLength = sdCard.list(mailboxDirectory(directoryDate), fileIndex, directoryEntry, directoryEntry.length);
             if (fileLength <= 0) {
-                return;
+                return fileIndex > 0;
+            }
+            if (messageCount == MAX_MESSAGES) {
+                return true;
             }
             if (!hasTextExtension(fileLength)) {
+                Thread.yield();
                 continue;
             }
             UUID uuid = entryUuid(fileLength);
             if (uuid == null || containsMessage(uuid)) {
+                Thread.yield();
                 continue;
             }
+            Serial.print("Mailbox restore file ");
+            Serial.println(fileIndex);
             MailboxMessage message = readMessage(directoryDate, uuid);
             if (message != null) {
                 messages[messageCount] = message;
                 messageCount++;
             }
+            Thread.yield();
         }
     }
 
@@ -305,17 +356,23 @@ public final class MailboxModel {
         }
         int length = 0;
         try {
-            while (file.available() > 0) {
+            while (true) {
                 if (length == storedMessage.length) {
+                    if (file.available() > 0) {
+                        file.close();
+                        return null;
+                    }
+                    break;
+                }
+                int count = file.read(storedMessage, length, storedMessage.length - length);
+                if (count < 0) {
+                    break;
+                }
+                if (count == 0) {
                     file.close();
                     return null;
                 }
-                int value = file.read();
-                if (value < 0) {
-                    file.close();
-                    return null;
-                }
-                storedMessage[length++] = (byte) value;
+                length += count;
             }
             file.close();
         } catch (IOException exception) {

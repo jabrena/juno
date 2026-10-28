@@ -265,6 +265,15 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The ESP32 runtime-trust HTTPS helper does not embed the default CA bundle")
+    void shouldOmitTheDefaultCaBundleWhenTrustIsLoadedAtRuntime() {
+        String helpers = coreRuntimes.of(ArduinoCore.ESP32).httpsHelpers(true);
+
+        assertThat(helpers).contains("setCACert(juno_runtime_trusted_ca);")
+                .doesNotContain("juno_ca_bundle", "setCACertBundle");
+    }
+
+    @Test
     @DisplayName("The Zephyr core rejects a watchdog because its subsystem is not enabled")
     void shouldRejectAWatchdogOnZephyr() {
         // When & Then

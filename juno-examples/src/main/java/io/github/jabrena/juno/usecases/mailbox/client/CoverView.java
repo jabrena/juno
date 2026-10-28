@@ -8,7 +8,7 @@ import io.github.jabrena.juno.util.mvc.Navigator;
 
 /**
  * The opening screen: a letter flying across a night sky, with twinkling stars and a blinking "press any key" prompt.
- * Wi-Fi joins in the background meanwhile; any key opens the settings, where the mailbox is scanned for or typed.
+ * Wi-Fi joins in the background meanwhile; any key opens the settings, where the mailbox IP is typed.
  */
 public final class CoverView implements KeyboardView {
     private static final int SETTINGS_VIEW = 0;
@@ -32,8 +32,6 @@ public final class CoverView implements KeyboardView {
 
     private static final String TITLE = "JUNO MAILBOX";
     private static final int TITLE_Y = 78;
-    private static final String SUBTITLE = "Java on the Cardputer";
-    private static final int SUBTITLE_Y = 99;
     private static final String PROMPT = "PRESS ANY KEY TO CONTINUE";
     private static final int PROMPT_Y = 118;
     private static final int CHAR_WIDTH = 6;
@@ -73,7 +71,6 @@ public final class CoverView implements KeyboardView {
         drawSpeedLines();
         drawEnvelope();
         drawCentered(TITLE, 2, TITLE_Y, Display.YELLOW);
-        drawCentered(SUBTITLE, 1, SUBTITLE_Y, Display.CYAN);
         promptShown = false;
         nextBlink = clock.millis();
         nextTwinkle = nextBlink;

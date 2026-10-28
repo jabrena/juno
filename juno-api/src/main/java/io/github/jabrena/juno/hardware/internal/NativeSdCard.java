@@ -85,6 +85,9 @@ public final class NativeSdCard implements SdCard {
     public native boolean remove(String path);
 
     @Override
+    public native boolean removeDirectory(String path);
+
+    @Override
     public native boolean remove(String directory, String fileStem);
 
     @Override

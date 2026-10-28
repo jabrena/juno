@@ -1982,6 +1982,40 @@ class JunoCompilerTest {
                     .isGreaterThanOrEqualTo(RuntimeLimits.PROPERTIES_STORAGE_BYTES);
         }
 
+        @Test
+        @DisplayName("Lowers buffered SD input stream reads")
+        void shouldLowerBufferedSdInputStreamReads() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                    import java.io.IOException;
+                    import java.io.InputStream;
+                    public final class BufferedSdRead {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
+                        public static void main(String[] args) throws IOException {
+                            if (!SD_CARD.begin()) return;
+                            InputStream file = SD_CARD.open("payload.bin");
+                            if (file == null) return;
+                            byte[] buffer = new byte[128];
+                            file.read(buffer, 0, buffer.length);
+                            file.close();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedSdRead", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedSdRead");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_sd_file_read_bytes", "bl juno_sd_file_close");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_sd_file_read_bytes(",
+                    "juno_sd_file(handle)->read(buffer + offset");
+        }
+
         /**
          * {@code SdCard.appendLine}'s path must stay a compile-time literal like every other SD path, but its
          * {@code line} argument must accept a runtime value built from {@code StringBuilder#toString()} —
@@ -2194,7 +2228,10 @@ class JunoCompilerTest {
                             SD_CARD.begin();
                             String directory = "mailbox/20261025";
                             String fileStem = "5500e840-e29b-41d4-a716-446655440000";
+                            byte[] entry = new byte[48];
                             SD_CARD.createDirectory(directory);
+                            SD_CARD.list("/mailbox", 0, entry, entry.length);
+                            SD_CARD.removeDirectory(directory);
                             SD_CARD.appendText(directory, fileStem, "message");
                             InputStream file = SD_CARD.open(directory, fileStem);
                             if (file != null) file.close();
@@ -2210,9 +2247,12 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains(
                     "bl juno_sd_create_directory", "bl juno_sd_file_append_file_text",
-                    "bl juno_sd_open_file", "bl juno_sd_remove_file");
+                    "bl juno_sd_list", "bl juno_sd_remove_directory", "bl juno_sd_open_file", "bl juno_sd_remove_file");
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_sd_create_directory(const char* path)",
+                    "static constexpr int32_t JUNO_SD_LIST_CURSOR_COUNT = 2",
+                    "static JunoSdListCursor* juno_sd_list_cursor(const char* directory, int32_t index)",
+                    "extern \"C\" int32_t juno_sd_remove_directory(const char* path)",
                     "extern \"C\" int32_t juno_sd_file_append_file_text(const char* directory, const char* fileStem, const char* text)",
                     "extern \"C\" int32_t juno_sd_open_file(const char* directory, const char* fileStem)",
                     "extern \"C\" int32_t juno_sd_remove_file(const char* directory, const char* fileStem)",
@@ -2758,6 +2798,31 @@ class JunoCompilerTest {
                     "extern \"C\" void juno_http_set_timeout(int32_t millisToWait) {",
                     "client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms))",
                     "const unsigned long deadline = millis() + juno_http_timeout_ms;");
+        }
+
+        @Test
+        @DisplayName("Lowers HttpClient.setTrustedCertificate to the runtime TLS certificate setter")
+        void shouldLowerHttpTrustedCertificateSetter() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTrustedCertificateDemo {
+                        public static void main(String[] args) {
+                            byte[] certificate = new byte[2048];
+                            certificate[0] = 'x';
+                            HttpClient.setTrustedCertificate(certificate, 1);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTrustedCertificateDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTrustedCertificateDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_set_trusted_certificate");
+            assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_http_set_trusted_certificate(");
         }
 
         @Test

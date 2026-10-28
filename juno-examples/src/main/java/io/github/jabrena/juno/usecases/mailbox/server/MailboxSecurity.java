@@ -31,7 +31,7 @@ public final class MailboxSecurity {
     }
 
     /** Reads the stored key; a missing, empty or unreadable file leaves {@link #DEFAULT_KEY}. */
-    void begin() {
+    synchronized void begin() {
         for (int i = 0; i < DEFAULT_KEY.length(); i++) {
             key[i] = (byte) DEFAULT_KEY.charAt(i);
         }
@@ -113,18 +113,16 @@ public final class MailboxSecurity {
             return -1;
         }
         int length = 0;
-        try {
-            while (file.available() > 0) {
-                int value = file.read();
+        try (InputStream openedFile = file) {
+            while (openedFile.available() > 0) {
+                int value = openedFile.read();
                 if (value < 0 || length == MAX_KEY_BYTES && value > ' ') {
-                    file.close();
                     return -1;
                 }
                 if (value > ' ') {
                     candidate[length++] = (byte) value;
                 }
             }
-            file.close();
         } catch (IOException exception) {
             return -1;
         }

@@ -26,6 +26,7 @@ public:
   void print(const char*) {}
   void close() {}
   bool isDir() const { return true; }
+  bool rmdir() { return true; }
   bool openNext(File32*, int) { return false; }
   size_t getName(char*, size_t) { return 0; }
   operator bool() const { return true; }
