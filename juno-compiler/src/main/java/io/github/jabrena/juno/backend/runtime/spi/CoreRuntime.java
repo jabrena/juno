@@ -98,6 +98,20 @@ public interface CoreRuntime {
     /** Optional core-specific HTTPS adapter emitted before the HTTP codec. */
     String httpsHelpers();
 
+    /** Optional variant of the HTTPS adapter for a program that installs its trust anchor at runtime. */
+    default String httpsHelpers(boolean runtimeTrustAnchor) {
+        return httpsHelpers();
+    }
+
+    /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
+    default String httpsTrustHelpers() {
+        return """
+                extern "C" int32_t juno_http_set_trusted_certificate(const uint8_t*, int32_t) {
+                  return 0;
+                }
+                """;
+    }
+
     /** Safe number of simultaneous HTTP transport leases; excess callers wait cooperatively. */
     default int maxConcurrentHttpRequests() {
         return 2;

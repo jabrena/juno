@@ -2801,6 +2801,31 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Lowers HttpClient.setTrustedCertificate to the runtime TLS certificate setter")
+        void shouldLowerHttpTrustedCertificateSetter() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTrustedCertificateDemo {
+                        public static void main(String[] args) {
+                            byte[] certificate = new byte[2048];
+                            certificate[0] = 'x';
+                            HttpClient.setTrustedCertificate(certificate, 1);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTrustedCertificateDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTrustedCertificateDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_set_trusted_certificate");
+            assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_http_set_trusted_certificate(");
+        }
+
+        @Test
         @DisplayName("Backs HttpClient.setTimeout with a no-op when the program makes no request")
         void shouldStubHttpTimeoutWithoutRequests() throws Exception {
             // Given

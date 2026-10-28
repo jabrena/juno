@@ -197,6 +197,8 @@ public enum Intrinsic {
     HTTP_REQUEST_BUFFER,
     /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
     HTTP_SET_TIMEOUT,
+    /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */
+    HTTP_SET_TRUSTED_CERTIFICATE,
     HTTP_GET_PATH_BUFFER,
     /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
     HTTP_URL_GET,

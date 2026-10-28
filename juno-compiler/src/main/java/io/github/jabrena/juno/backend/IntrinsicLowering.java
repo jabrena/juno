@@ -722,6 +722,8 @@ public final class IntrinsicLowering {
                 ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
         shim(Intrinsic.HTTP_SET_TIMEOUT, "juno_http_set_timeout", Result.NONE, List.of(arg(0)),
                 ShimFeature.HTTP_TIMEOUT);
+        shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE, "juno_http_set_trusted_certificate", Result.WORD,
+                List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
     }
 
     private void registerEmail() {

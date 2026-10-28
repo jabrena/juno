@@ -109,20 +109,56 @@ final class Esp32CoreRuntime implements CoreRuntime {
      */
     @Override
     public String httpsHelpers() {
-        String customCa = System.getenv("JUNO_TLS_CA");
-        if (customCa != null && !customCa.isBlank()) {
-            return CertificateBundle.cPem("juno_custom_ca", customCa)
-                    + """
+        return httpsHelpers(false);
+    }
+
+    @Override
+    public String httpsHelpers(boolean runtimeTrustAnchor) {
+        if (runtimeTrustAnchor) {
+            return """
                     struct JunoEspTlsClient : WiFiClientSecure {
-                      JunoEspTlsClient() { setCACert(juno_custom_ca); }
+                      JunoEspTlsClient() {
+                        if (juno_runtime_trusted_ca != nullptr) {
+                          setCACert(juno_runtime_trusted_ca);
+                        }
+                      }
                     };
                     """;
         }
-        return CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem")).cArray("juno_ca_bundle")
-                + """
+        String customCa = System.getenv("JUNO_TLS_CA");
+        String defaultTrust;
+        String defaultTrustConfiguration;
+        if (customCa != null && !customCa.isBlank()) {
+            defaultTrust = CertificateBundle.cPem("juno_custom_ca", customCa);
+            defaultTrustConfiguration = "setCACert(juno_custom_ca);";
+        } else {
+            defaultTrust = CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem"))
+                    .cArray("juno_ca_bundle");
+            defaultTrustConfiguration = "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));";
+        }
+        return defaultTrust + """
                 struct JunoEspTlsClient : WiFiClientSecure {
-                  JunoEspTlsClient() { setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle)); }
+                  JunoEspTlsClient() {
+                    if (juno_runtime_trusted_ca != nullptr) {
+                      setCACert(juno_runtime_trusted_ca);
+                    } else {
+                      ${JUNO_DEFAULT_TRUST}
+                    }
+                  }
                 };
+                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrustConfiguration);
+    }
+
+    @Override
+    public String httpsTrustHelpers() {
+        return """
+                static const char* juno_runtime_trusted_ca = nullptr;
+
+                extern "C" int32_t juno_http_set_trusted_certificate(const uint8_t* certificate, int32_t length) {
+                  if (certificate == nullptr || length <= 0) return 0;
+                  juno_runtime_trusted_ca = reinterpret_cast<const char*>(certificate);
+                  return 1;
+                }
                 """;
     }
 

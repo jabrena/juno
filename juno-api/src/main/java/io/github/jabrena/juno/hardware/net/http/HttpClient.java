@@ -36,6 +36,14 @@ public final class HttpClient {
      */
     public static native void setTimeout(int millis);
 
+    /**
+     * Sets a caller-owned PEM trust anchor for later HTTPS requests. The certificate length excludes the trailing NUL
+     * byte, which must remain available in {@code certificate}; keep the buffer reachable for as long as requests may
+     * use it. Returns {@code false} when the selected board cannot install a runtime trust anchor or the arguments are
+     * invalid.
+     */
+    public static native boolean setTrustedCertificate(byte[] certificate, int certificateLength);
+
     private HttpClient() {
     }
 

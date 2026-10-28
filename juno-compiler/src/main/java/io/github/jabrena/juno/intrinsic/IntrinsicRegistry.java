@@ -455,6 +455,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.HTTP_REQUEST_BUFFER),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpClient", "setTimeout", "(I)V"),
                     Intrinsic.HTTP_SET_TIMEOUT),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpClient", "setTrustedCertificate",
+                    "([BI)Z"), Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/Json", "rawText",
                     "([BII)Ljava/lang/String;"), Intrinsic.STRING_FROM_BYTES),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "begin", "(I)V"),
