@@ -97,6 +97,9 @@ public interface SdCard {
     /** Deletes {@code path} from the card. Returns whether it was removed. */
     boolean remove(String path);
 
+    /** Deletes the empty directory at {@code path}. Returns false when it is missing, non-empty, or cannot be removed. */
+    boolean removeDirectory(String path);
+
     /** Deletes {@code directory}/{@code fileStem}.txt from the card. Returns whether it was removed. */
     boolean remove(String directory, String fileStem);
 

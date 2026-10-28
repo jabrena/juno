@@ -60,6 +60,7 @@ public:
   size_t println(const char* text) { return print(text) + print("\n"); }
   void close() { file_ = nullptr; }
   bool isDir() const { return false; }
+  bool rmdir() { return false; }
   bool openNext(File32*, int) { return false; }
   size_t getName(char*, size_t) { return 0; }
   explicit operator bool() const { return file_ != nullptr; }

@@ -6,11 +6,63 @@ static constexpr int32_t JUNO_PROPERTIES_MAX_ENTRIES = ${JUNO_PROPERTIES_MAX_ENT
 static constexpr int32_t JUNO_PROPERTIES_KEY_CAPACITY = ${JUNO_PROPERTIES_KEY_CAPACITY};
 static constexpr int32_t JUNO_PROPERTIES_VALUE_CAPACITY = ${JUNO_PROPERTIES_VALUE_CAPACITY};
 static constexpr int32_t JUNO_PROPERTIES_LINE_CAPACITY = ${JUNO_PROPERTIES_LINE_CAPACITY};
+static constexpr int32_t JUNO_SD_LIST_CURSOR_COUNT = 2;
+static constexpr size_t JUNO_SD_LIST_DIRECTORY_CAPACITY = 96;
 
 ${JUNO_SD_SPI_DECLARATION}
 static SdFat32 juno_sd;
 static File32 juno_sd_files[JUNO_SD_MAX_OPEN_FILES];
 static bool juno_sd_file_used[JUNO_SD_MAX_OPEN_FILES];
+
+struct JunoSdListCursor {
+  File32 parent;
+  char directory[JUNO_SD_LIST_DIRECTORY_CAPACITY];
+  int32_t nextIndex;
+  uint32_t lastUse;
+  bool active;
+};
+
+static JunoSdListCursor juno_sd_list_cursors[JUNO_SD_LIST_CURSOR_COUNT];
+static uint32_t juno_sd_list_use;
+
+static void juno_sd_list_close(JunoSdListCursor& cursor) {
+  if (cursor.active) cursor.parent.close();
+  cursor.active = false;
+  cursor.nextIndex = 0;
+}
+
+static bool juno_sd_list_open(JunoSdListCursor& cursor, const char* directory) {
+  size_t length = strlen(directory);
+  if (length >= sizeof(cursor.directory)) return false;
+  juno_sd_list_close(cursor);
+  cursor.parent = juno_sd.open(directory, O_RDONLY);
+  if (!cursor.parent || !cursor.parent.isDir()) {
+    cursor.parent.close();
+    return false;
+  }
+  memcpy(cursor.directory, directory, length + 1u);
+  cursor.nextIndex = 0;
+  cursor.lastUse = ++juno_sd_list_use;
+  cursor.active = true;
+  return true;
+}
+
+static JunoSdListCursor* juno_sd_list_cursor(const char* directory, int32_t index) {
+  JunoSdListCursor* available = nullptr;
+  JunoSdListCursor* oldest = &juno_sd_list_cursors[0];
+  for (int32_t i = 0; i < JUNO_SD_LIST_CURSOR_COUNT; i++) {
+    JunoSdListCursor& cursor = juno_sd_list_cursors[i];
+    if (cursor.active && strcmp(cursor.directory, directory) == 0) {
+      if (index < cursor.nextIndex && !juno_sd_list_open(cursor, directory)) return nullptr;
+      cursor.lastUse = ++juno_sd_list_use;
+      return &cursor;
+    }
+    if (!cursor.active && available == nullptr) available = &cursor;
+    if (cursor.lastUse < oldest->lastUse) oldest = &cursor;
+  }
+  JunoSdListCursor* selected = available != nullptr ? available : oldest;
+  return juno_sd_list_open(*selected, directory) ? selected : nullptr;
+}
 
 static File32* juno_sd_file(int32_t handle) {
   int32_t index = handle - 1;
@@ -26,6 +78,7 @@ extern "C" int32_t juno_sd_begin(int32_t chipSelectPin) {
     if (juno_sd_file_used[i]) juno_sd_files[i].close();
     juno_sd_file_used[i] = false;
   }
+  for (int32_t i = 0; i < JUNO_SD_LIST_CURSOR_COUNT; i++) juno_sd_list_close(juno_sd_list_cursors[i]);
   // A card that survived a host reset without losing power can fail its first init.
   for (int32_t attempt = 0; attempt < JUNO_SD_BEGIN_ATTEMPTS; attempt++) {
     if (${JUNO_SD_BEGIN_EXPRESSION}) return 1;
@@ -83,24 +136,23 @@ extern "C" int32_t juno_sd_open_file(const char* directory, const char* fileStem
 
 extern "C" int32_t juno_sd_list(const char* directory, int32_t index, uint8_t* name, int32_t capacity) {
   if (index < 0 || name == nullptr || capacity < 2) return -1;
-  File32 parent = juno_sd.open(directory, O_RDONLY);
-  if (!parent || !parent.isDir()) return -1;
+  JunoSdListCursor* cursor = juno_sd_list_cursor(directory, index);
+  if (cursor == nullptr) return -1;
   File32 entry;
-  for (int32_t current = 0; current <= index; current++) {
-    if (!entry.openNext(&parent, O_RDONLY)) {
-      parent.close();
+  while (cursor->nextIndex <= index) {
+    if (!entry.openNext(&cursor->parent, O_RDONLY)) {
+      juno_sd_list_close(*cursor);
       return 0;
     }
+    int32_t current = cursor->nextIndex++;
     if (current < index) {
       entry.close();
       continue;
     }
     size_t length = entry.getName(reinterpret_cast<char*>(name), static_cast<size_t>(capacity));
     entry.close();
-    parent.close();
     return length == 0 ? -1 : static_cast<int32_t>(length);
   }
-  parent.close();
   return 0;
 }
 
@@ -110,6 +162,17 @@ extern "C" int32_t juno_sd_file_available(int32_t handle) {
 
 extern "C" int32_t juno_sd_file_read(int32_t handle) {
   return juno_sd_file(handle)->read();
+}
+
+extern "C" int32_t juno_sd_file_read_bytes(
+    int32_t handle, uint8_t* buffer, int32_t offset, int32_t length) {
+  if (buffer == nullptr || offset < 0 || length < 0) {
+    juno_panic();
+    return -1;
+  }
+  if (length == 0) return 0;
+  int32_t count = static_cast<int32_t>(juno_sd_file(handle)->read(buffer + offset, static_cast<size_t>(length)));
+  return count == 0 ? -1 : count;
 }
 
 extern "C" void juno_sd_file_close(int32_t handle) {
@@ -143,6 +206,12 @@ extern "C" int32_t juno_sd_file_append_file_text(const char* directory, const ch
 
 extern "C" int32_t juno_sd_remove(const char* path) {
   return juno_sd.remove(path) ? 1 : 0;
+}
+
+extern "C" int32_t juno_sd_remove_directory(const char* path) {
+  for (int32_t i = 0; i < JUNO_SD_LIST_CURSOR_COUNT; i++) juno_sd_list_close(juno_sd_list_cursors[i]);
+  File32 directory = juno_sd.open(path, O_RDONLY);
+  return directory && directory.rmdir() ? 1 : 0;
 }
 
 extern "C" int32_t juno_sd_remove_file(const char* directory, const char* fileStem) {
