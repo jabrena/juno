@@ -135,6 +135,19 @@ public final class EmulatedSdCard implements SdCard {
     }
 
     @Override
+    public boolean removeDirectory(String path) {
+        if (!present || !directories.contains(path)) {
+            return false;
+        }
+        String prefix = path.endsWith("/") ? path : path + "/";
+        if (directories.stream().anyMatch(child -> child.startsWith(prefix))
+                || files.keySet().stream().anyMatch(child -> child.startsWith(prefix))) {
+            return false;
+        }
+        return directories.remove(path);
+    }
+
+    @Override
     public boolean remove(String directory, String fileStem) {
         return remove(filePath(directory, fileStem));
     }

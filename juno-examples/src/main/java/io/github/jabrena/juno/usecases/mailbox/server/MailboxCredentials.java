@@ -15,7 +15,6 @@ public final class MailboxCredentials {
     static final String PRIVATE_KEY_FILE = "server.key";
     /** Large enough for an EC P-256 or RSA-2048 certificate or key in PEM. */
     static final int PEM_CAPACITY = 2048;
-
     private final SdCard sdCard;
     private final byte[] certificate = new byte[PEM_CAPACITY];
     private final byte[] privateKey = new byte[PEM_CAPACITY];
@@ -68,13 +67,18 @@ public final class MailboxCredentials {
         }
         int length = 0;
         try (InputStream openedFile = file) {
-            while (openedFile.available() > 0) {
-                int value = openedFile.read();
-                if (value < 0 || length == target.length) {
+            while (true) {
+                if (length == target.length) {
+                    return openedFile.available() == 0 ? length : -1;
+                }
+                int count = openedFile.read(target, length, target.length - length);
+                if (count < 0) {
+                    break;
+                }
+                if (count == 0) {
                     return -1;
                 }
-                target[length] = (byte) value;
-                length = length + 1;
+                length += count;
             }
         } catch (IOException exception) {
             return -1;
