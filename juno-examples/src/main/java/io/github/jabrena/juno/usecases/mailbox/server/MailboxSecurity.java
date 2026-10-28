@@ -31,7 +31,7 @@ public final class MailboxSecurity {
     }
 
     /** Reads the stored key; a missing, empty or unreadable file leaves {@link #DEFAULT_KEY}. */
-    void begin() {
+    synchronized void begin() {
         for (int i = 0; i < DEFAULT_KEY.length(); i++) {
             key[i] = (byte) DEFAULT_KEY.charAt(i);
         }
