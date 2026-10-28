@@ -20,8 +20,11 @@ final class FakeRcx implements H8Simulator.Rom {
     private final List<String> calls = new ArrayList<>();
     private final int[][] readings = new int[3][3];
     private int batteryReading = 300;
-    private int displayed = -1;
+    private int mainDisplayed = -1;
+    private int programDisplayed = -1;
+    private final List<Integer> displayedValues = new ArrayList<>();
     private int displayStyle;
+    private int mainDisplayStyle;
     private boolean idleElapses;
     private boolean wakesAfterSleep;
     private boolean idleTriggered;
@@ -34,7 +37,7 @@ final class FakeRcx implements H8Simulator.Rom {
     private int countdownAtMessage = -1;
     private int idlePolls;
     private int receivedFlagAddress = -1;
-    private int brickButtonClick;
+    private final Deque<Integer> brickButtonClicks = new ArrayDeque<>();
     private final Set<Integer> icons = new TreeSet<>();
     private final Set<Integer> everLit = new TreeSet<>();
     private final List<String> displayCalls = new ArrayList<>();
@@ -65,7 +68,7 @@ final class FakeRcx implements H8Simulator.Rom {
      * loop has polled for a message, then releases them.
      */
     void clickBrickButton(int buttons) {
-        brickButtonClick = buttons;
+        brickButtonClicks.add(buttons);
     }
 
     /** Once the messages run out, the auto power-off countdown reaches zero instead of the run ending. */
@@ -142,12 +145,24 @@ final class FakeRcx implements H8Simulator.Rom {
     }
 
     int displayed() {
-        return displayed;
+        return mainDisplayed >= 0 ? mainDisplayed : programDisplayed;
     }
 
-    /** The style code of the last number displayed: signed (0x3001) or unsigned (0x301F). */
+    int mainDisplayed() {
+        return mainDisplayed;
+    }
+
+    int programDisplayed() {
+        return programDisplayed;
+    }
+
+    List<Integer> displayedValues() {
+        return displayedValues;
+    }
+
+    /** The visible main-number style, or the program style when only the channel digit is visible. */
     int displayStyle() {
-        return displayStyle;
+        return mainDisplayed >= 0 ? mainDisplayStyle : displayStyle;
     }
 
     @Override
@@ -223,10 +238,7 @@ final class FakeRcx implements H8Simulator.Rom {
             }
             case RcxRom.INIT_BUTTONS -> calls.add("init buttons");
             case RcxRom.READ_BUTTONS -> {
-                int held = mainLoopRunning ? brickButtonClick : 0;
-                if (held != 0) {
-                    brickButtonClick = 0;
-                }
+                int held = mainLoopRunning && !brickButtonClicks.isEmpty() ? brickButtonClicks.remove() : 0;
                 cpu.writeWord(cpu.stackArgument(0), held);
             }
             case RcxRom.CONTROL_MOTOR -> calls.add("motor %X %d %d".formatted(r6, cpu.stackArgument(0),
@@ -236,12 +248,20 @@ final class FakeRcx implements H8Simulator.Rom {
                     cpu.stackArgument(1)));
             case RcxRom.CLEAR_DISPLAY -> {
                 icons.clear();
-                displayed = -1;
+                mainDisplayed = -1;
+                programDisplayed = -1;
                 displayCalls.add("clear display");
             }
             case RcxRom.SET_LCD_NUMBER -> {
                 displayStyle = r6;
-                displayed = cpu.stackArgument(0);
+                int value = cpu.stackArgument(0);
+                displayedValues.add(value);
+                if (displayStyle == RcxRom.LCD_PROGRAM) {
+                    programDisplayed = value;
+                } else {
+                    mainDisplayed = value;
+                    mainDisplayStyle = displayStyle;
+                }
             }
             case RcxRom.SET_LCD_SEGMENT -> {
                 icons.add(r6);

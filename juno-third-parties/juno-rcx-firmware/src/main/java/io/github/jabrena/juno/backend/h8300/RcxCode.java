@@ -19,7 +19,7 @@ final class RcxCode {
     static final String NO_REPLY = "no_reply";
     /** The main loop, for messages that get no reply. */
     static final String LOOP = "loop";
-    /** Subroutine: draws the display's number, or {@code JUno} before the first command, without refreshing. */
+    /** Subroutine: draws an explicit number, text or brand, plus the selected channel, without refreshing. */
     static final String DRAW_NUMBER = "draw_number";
 
     private final H8Assembler assembler;

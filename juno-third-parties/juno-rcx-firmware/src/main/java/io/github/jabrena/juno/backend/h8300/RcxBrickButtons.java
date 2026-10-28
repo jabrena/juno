@@ -2,8 +2,8 @@ package io.github.jabrena.juno.backend.h8300;
 
 /**
  * The brick's own View, Prgm and Run buttons in {@link RcxRemoteFirmware}. The main loop reads them through the ROM
- * ({@link #CHECK}) and remembers each click, changing nothing on the brick, until the Arduino polls Juno's own source
- * {@link #SOURCE_CLICKED}, which replies with the clicks since the previous poll and forgets them.
+ * ({@link #CHECK}), advances the channel on a Prgm click, and remembers each click until the Arduino polls Juno's own
+ * source {@link #SOURCE_CLICKED}, which replies with the clicks since the previous poll and forgets them.
  */
 final class RcxBrickButtons {
     /** Subroutine: reads the buttons and remembers new clicks. */
@@ -27,10 +27,12 @@ final class RcxBrickButtons {
 
     private final RcxCode code;
     private final H8Assembler assembler;
+    private final RcxChannel channel;
 
-    RcxBrickButtons(RcxCode code) {
+    RcxBrickButtons(RcxCode code, RcxChannel channel) {
         this.code = code;
         this.assembler = code.assembler();
+        this.channel = channel;
     }
 
     /** The {@link #CHECK} subroutine and the poll handler. */
@@ -53,6 +55,9 @@ final class RcxBrickButtons {
             assembler.loadByte(CLICKED + 1, H8ByteRegister.R0L);
             assembler.or(button, H8ByteRegister.R0L);
             assembler.storeByte(H8ByteRegister.R0L, CLICKED + 1);
+            if (button == PRGM) {
+                assembler.call(channel.nextLabel());
+            }
             assembler.label(skip);
         }
         assembler.load(HELD, H8Register.R0);

@@ -82,6 +82,28 @@ class RcxLinkTest {
     }
 
     @Test
+    @DisplayName("Channel tone frames encode the channel in the channel-specific opcode")
+    void shouldSendAChannelToneFrame() {
+        // When
+        link.sendChannelTone(2, 440, 10);
+
+        // Then
+        assertThat(Infrared.written).containsSubsequence(
+                0xB3, 0x4C, 0xB8, 0x47, 0x01, 0xFE, 0x0A, 0xF5, (0xB3 + 0xB8 + 0x01 + 0x0A) & 0xFF);
+    }
+
+    @Test
+    @DisplayName("Configures a channel's tone indicator motor output")
+    void shouldConfigureAChannelToneIndicator() {
+        // When
+        link.configureChannelIndicator(2, RcxLight.PORT_C);
+
+        // Then
+        assertThat(Infrared.written).containsSubsequence(
+                0x92, 0x6D, 0x02, 0xFD, 0x02, 0xFD, (0x92 + 2 + 2) & 0xFF);
+    }
+
+    @Test
     @DisplayName("Send leaves the toggle clear when the command changes")
     void shouldLeaveTheToggleClearWhenTheCommandChanges() {
         // Given

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.backend.h8300;
 import java.util.Map;
 
 /**
- * Text on the display of {@link RcxRemoteFirmware}: the four seven-segment digits show {@code JUno} at power-on, a
+ * Text on the display of {@link RcxRemoteFirmware}: the four seven-segment digits show {@code JUno} after power-on, a
  * number from command 0x72, or the text the Arduino writes with command 0x82, one character per message. Letters are
  * approximated as seven-segment displays do ({@code VIEW} shows as {@code UIEu}, {@code PRGM} as {@code PrG∩}); a
  * character the font lacks shows blank. While text shows, the display shows nothing else but the IR cones.
@@ -48,7 +48,7 @@ final class RcxDisplayText {
             Map.entry('Y', "bcdfg"), Map.entry('Z', "abdeg"),
             Map.entry('c', "deg"), Map.entry('h', "cefg"), Map.entry('i', "e"), Map.entry('o', "cdeg"),
             Map.entry('u', "cde"));
-    /** {@code JUno}, shown until a number or text replaces it. */
+    /** {@code JUno}, written during startup and when no explicit number or text replaces it. */
     private static final int[] BRAND = lcdBytes("JUno");
 
     private final RcxCode code;
