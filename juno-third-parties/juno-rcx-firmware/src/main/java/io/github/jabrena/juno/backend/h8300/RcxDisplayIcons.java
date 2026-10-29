@@ -84,7 +84,7 @@ final class RcxDisplayIcons {
 
     /** The command handler, the subroutines and the table of drawn icons. */
     void handlers(RcxMotorCommands motors, RcxSensorCommands sensors, RcxDisplayText text) {
-        setIcon();
+        setIcon(text);
         tick(motors);
         update(motors, sensors, text);
         assembler.label(DRAWN_TABLE);
@@ -92,7 +92,7 @@ final class RcxDisplayIcons {
     }
 
     /** Stores the Arduino's choice for the icon; the reply redraws the display. */
-    private void setIcon() {
+    private void setIcon(RcxDisplayText text) {
         assembler.label(SET_ICON);
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
         assembler.moveImmediate(0, H8ByteRegister.R2H);
@@ -102,6 +102,7 @@ final class RcxDisplayIcons {
         code.jumpIf(H8Condition.CARRY_CLEAR, RcxCode.REPLY_ACK);
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
         assembler.storeByteIndexed(H8ByteRegister.R0L, MANUAL, H8Register.R2);
+        text.hideBlankDisplay();
         code.replyWith(1);
     }
 
@@ -193,6 +194,7 @@ final class RcxDisplayIcons {
         String cones = code.newLabel();
         code.rom().call(RcxRom.CLEAR_DISPLAY);
         assembler.call(RcxCode.DRAW_NUMBER);
+        text.jumpIfDisplayBlank(done);
         // Text shows alone but for the IR cones.
         text.jumpIfTextShown(cones);
         code.clearWord(CURSOR);

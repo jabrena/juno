@@ -18,6 +18,8 @@ final class RcxDisplayText {
     private static final int TEXT = 0xC110;
     /** Non-zero while the display shows {@link #TEXT}. */
     private static final int TEXT_SHOWN = 0xC114;
+    /** Non-zero while the display was explicitly cleared and must remain blank. */
+    static final int DISPLAY_BLANK = 0xC11A;
     private static final int POSITIONS = 4;
     private static final String FONT_TABLE = "font";
     private static final String SEGMENTS = "abcdefg";
@@ -140,6 +142,17 @@ final class RcxDisplayText {
         code.clearWord(TEXT_SHOWN);
     }
 
+    /** Stops retaining an explicitly blank display before a number, text, or icon is shown. */
+    void hideBlankDisplay() {
+        code.clearWord(DISPLAY_BLANK);
+    }
+
+    /** Jumps to {@code target} while the display was explicitly cleared. */
+    void jumpIfDisplayBlank(String target) {
+        assembler.load(DISPLAY_BLANK, H8Register.R0);
+        code.jumpIf(H8Condition.NOT_EQUAL, target);
+    }
+
     /** The command handler, which clears the number word {@code numberShown}, and the font table. */
     void handlers(int numberShown) {
         setCharacter(numberShown);
@@ -153,6 +166,7 @@ final class RcxDisplayText {
 
     private void setCharacter(int numberShown) {
         String blank = code.newLabel();
+        String done = code.newLabel();
         String show = code.newLabel();
         assembler.label(SET_CHARACTER);
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
@@ -167,9 +181,15 @@ final class RcxDisplayText {
         for (int position = 0; position < POSITIONS; position++) {
             assembler.storeByte(H8ByteRegister.R0L, TEXT + position);
         }
+        code.clearWord(TEXT_SHOWN);
+        assembler.moveImmediate(1, H8Register.R0);
+        assembler.store(H8Register.R0, DISPLAY_BLANK);
+        assembler.branch(H8Condition.ALWAYS, done);
         assembler.label(show);
+        hideBlankDisplay();
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, TEXT_SHOWN);
+        assembler.label(done);
         code.clearWord(numberShown);
         code.replyWith(1);
     }

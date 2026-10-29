@@ -242,6 +242,21 @@ class RcxRemoteFirmwareTest {
         }
 
         @Test
+        @DisplayName("Shows icons after clearing text mode")
+        void shouldShowIconsAfterClearingTextMode() {
+            // Given
+            rcx.receive(0x82, 0, 'V');
+            rcx.receive(0x8A, 0xFF, 0);
+            rcx.receive(0xB2, 0x06, 1);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.icons()).contains(RcxRom.LCD_ICONS + 0x06);
+        }
+
+        @Test
         @DisplayName("Lights every segment until asked to stop")
         void shouldLightEverySegmentUntilAskedToStop() {
             // Given

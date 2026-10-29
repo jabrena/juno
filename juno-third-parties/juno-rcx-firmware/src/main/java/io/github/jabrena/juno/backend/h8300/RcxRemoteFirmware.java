@@ -449,6 +449,7 @@ public final class RcxRemoteFirmware {
         assembler.store(H8Register.R1, SHOWN_NUMBER);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, NUMBER_SHOWN);
+        text.hideBlankDisplay();
         text.hideText();
         code.replyWith(1);
     }
@@ -584,6 +585,7 @@ public final class RcxRemoteFirmware {
         assembler.returnFromSubroutine();
 
         assembler.label(RcxCode.DRAW_NUMBER);
+        text.jumpIfDisplayBlank("draw_blank_display");
         assembler.load(NUMBER_SHOWN, H8Register.R0);
         code.jumpIf(H8Condition.NOT_EQUAL, "draw_shown_number");
         text.jumpIfTextShown("draw_shown_text");
@@ -599,6 +601,9 @@ public final class RcxRemoteFirmware {
         rom.call(RcxRom.SET_LCD_NUMBER, Argument.constant(RcxRom.LCD_SIGNED), Argument.register(H8Register.R1),
                 Argument.constant(RcxRom.LCD_NO_COMMA));
         assembler.call(RcxChannel.DRAW);
+        assembler.returnFromSubroutine();
+        assembler.label("draw_blank_display");
+        text.drawText();
         assembler.returnFromSubroutine();
     }
 
