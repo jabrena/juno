@@ -227,7 +227,7 @@ class JunoCompilerTest {
                     "call8 juno_m5_display_height");
             assertThat(result.runtimeShim()).contains(
                     "#include <M5Cardputer.h>",
-                    "M5Cardputer.begin(keyboard)",
+                    "M5Cardputer.begin(M5.config(), keyboard)",
                     "M5Cardputer.Display.fillScreen",
                     "M5Cardputer.Display.print(static_cast<char>(",
                     "M5Cardputer.Display.println");
@@ -288,6 +288,35 @@ class JunoCompilerTest {
                     "call8 juno_m5_battery_voltage_millivolts");
             assertThat(result.runtimeShim()).contains("#include <M5Cardputer.h>",
                     "M5Cardputer.Power.getBatteryLevel()", "M5Cardputer.Power.getBatteryVoltage()");
+        }
+
+        @Test
+        @DisplayName("Compiles Cardputer USB HID mouse access through the M5StackCardputer facade")
+        void shouldCompileCardputerMouseThroughM5StackCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.hid.Mouse;
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
+                    public final class CardputerMouse {
+                        public static void main(String[] args) {
+                            Mouse mouse = M5StackCardputer.getMouse();
+                            mouse.begin();
+                            mouse.move(50, -50);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerMouse", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerMouse");
+
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_mouse_begin", "call8 juno_mouse_move");
+            assertThat(result.runtimeShim())
+                    .contains("#include <USB.h>\n#include <USBHIDMouse.h>", "static JunoUsbMouse Mouse;",
+                            "extern \"C\" void juno_mouse_move(int32_t x, int32_t y)")
+                    .doesNotContain("#include <Mouse.h>");
         }
 
         @Test
@@ -1366,7 +1395,8 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
-            assertThat(result.report().board().fqbn()).isEqualTo("m5stack:esp32:m5stack_cardputer");
+            assertThat(result.report().board().fqbn())
+                    .isEqualTo("m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc");
             assertThat(result.assembly()).contains("call8 juno_serial_begin", "call8 juno_serial_println_str",
                     "Hello, World!");
             assertThat(result.runtimeShim())

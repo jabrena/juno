@@ -65,15 +65,17 @@ public enum Board {
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
                     Capability.WATCHDOG, Capability.USB_HID)),
     /**
-     * M5Stack Cardputer: ESP32-S3 support for USB serial, GPIO, SD storage, onboard Wi-Fi, plain HTTP and HTTPS
-     * clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and battery.
+     * M5Stack Cardputer: ESP32-S3 support for USB serial and HID, GPIO, SD storage, onboard Wi-Fi, plain HTTP and
+     * HTTPS clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and
+     * battery.
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
-            "m5stack:esp32:m5stack_cardputer", ArduinoCore.ESP32, UnoGeneration.NANO,
+            "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.ESP32,
+            UnoGeneration.NANO,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
-                    Capability.M5_BATTERY));
+                    Capability.M5_BATTERY, Capability.USB_HID));
 
     private final String apiClassName;
     private final String id;

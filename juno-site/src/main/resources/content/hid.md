@@ -7,15 +7,17 @@ layout: page
 [`Mouse`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/hid/Mouse.java)
 (`io.github.jabrena.juno.hardware.hid`) lets a Juno program act as a USB HID mouse, moving the
 pointer of whatever computer the board's USB port is plugged into. `ArduinoUno.getMouse()` hands out the
-board's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library; a unit
-test passes `mock(Mouse.class)` instead (see [Injectable APIs](../apis)). Get it once, at startup,
-and pass it to the code that moves the pointer.
+UNO's mouse, whose methods are compiler intrinsics backed by the Arduino `Mouse` library. The ESP32-S3
+Nano ESP32 and M5Stack Cardputer use the core's TinyUSB `USBHIDMouse` through
+`ArduinoNano.getMouse()` and `M5StackCardputer.getMouse()`. A unit test passes `mock(Mouse.class)` instead
+(see [Injectable APIs](../apis)). Get it once, at startup, and pass it to the code that moves the pointer.
 
 ## Requirements
 
-- A board with native USB support. The UNO R4 WiFi qualifies; boards without native USB (e.g. a
-  UNO R3 with an ATmega16U2 as a fixed USB-serial bridge) cannot act as a HID device.
-- The Arduino `Mouse` library installed:
+- A board with native USB support: UNO R4 WiFi, Arduino Nano ESP32, or M5Stack Cardputer. Boards
+  without native USB (e.g. a UNO R3 with an ATmega16U2 as a fixed USB-serial bridge) cannot act as
+  a HID device.
+- The Arduino `Mouse` library installed for the UNO R4 WiFi:
 
   ```bash
   arduino-cli lib install Mouse
@@ -89,6 +91,21 @@ on the LED matrix first. Build, flash, and run it with `juno-maven-plugin` (see
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.hid.RatonLoco
 ```
+
+The M5Stack Cardputer version uses its ESP32-S3 TinyUSB HID stack and keeps the USB serial console available:
+
+[`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java)
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.hid.M5RatonLoco \
+  -Djuno.board=m5stack-cardputer
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=m5stack-cardputer -Djuno.baudRate=115200
+```
+
+The Cardputer changes from its upload interface to its native TinyUSB device after flashing. If the monitor cannot
+attach, run `arduino-cli board list` and pass the newly listed `/dev/cu.usbmodem...` path as `-Djuno.port`.
 
 ## Warning
 
