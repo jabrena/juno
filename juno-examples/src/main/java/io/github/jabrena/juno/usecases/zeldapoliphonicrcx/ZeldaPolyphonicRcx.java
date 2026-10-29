@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.zeldapoliphonicrcx;
 
+import io.github.jabrena.juno.hardware.device.ir.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannelAudio;
@@ -31,7 +33,7 @@ public final class ZeldaPolyphonicRcx {
         RcxChannelAudio audio = new RcxChannelAudio(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        link.begin(RECEIVE_PIN, TRANSMIT_PIN);
+        link.begin(new HXM121InfraredReceiver(RECEIVE_PIN), new HX53InfraredEmitter(TRANSMIT_PIN));
         Delay.millis(START_MILLIS);
         Serial.println("Playing Zelda Ocarina on RCX channels 1, 2 and 3");
         configureIndicators(audio);

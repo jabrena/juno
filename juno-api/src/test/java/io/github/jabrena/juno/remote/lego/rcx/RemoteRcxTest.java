@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
@@ -24,6 +26,21 @@ class RemoteRcxTest {
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x00, 0x00));
         remote.buttons();
         Infrared.replies.clear();
+    }
+
+    @Test
+    @DisplayName("Begin preserves the driver selected by typed infrared modules")
+    void shouldBeginWithTheTypedInfraredModulesDriver() {
+        Infrared.reset();
+        RemoteRcx groveRemote = new RemoteRcx(
+                new RcxLink(SimulatedTime.clock()),
+                new GroveInfraredReceiver(2),
+                new GroveInfraredEmitter(3),
+                SimulatedTime.clock());
+
+        groveRemote.begin();
+
+        assertThat(Infrared.groveDriver).isTrue();
     }
 
     @Test

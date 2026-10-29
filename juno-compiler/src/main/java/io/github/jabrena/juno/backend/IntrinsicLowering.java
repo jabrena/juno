@@ -648,7 +648,10 @@ public final class IntrinsicLowering {
                 ShimFeature.PARALLEL_BUS);
         shim(Intrinsic.PARALLEL_BUS_REPEAT16, "juno_parallel_bus_repeat16", Result.NONE, List.of(arg(0), arg(1)),
                 ShimFeature.PARALLEL_BUS);
-        shim(Intrinsic.IR_BEGIN, "juno_ir_begin", Result.NONE, List.of(arg(0), arg(1), arg(2)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_BEGIN_HX, "juno_ir_begin_hx", Result.NONE, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.INFRARED);
+        shim(Intrinsic.IR_BEGIN_GROVE, "juno_ir_begin_grove", Result.NONE, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.INFRARED);
         shim(Intrinsic.IR_RECEIVING, "juno_ir_receiving", Result.WORD, List.of(), ShimFeature.INFRARED);
         shim(Intrinsic.IR_READ_BYTE, "juno_ir_read_byte", Result.WORD, List.of(arg(0)), ShimFeature.INFRARED);
         shim(Intrinsic.IR_WRITE_BYTE, "juno_ir_write_byte", Result.NONE, List.of(arg(0)), ShimFeature.INFRARED);

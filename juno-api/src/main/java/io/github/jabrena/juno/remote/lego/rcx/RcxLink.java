@@ -2,6 +2,8 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
@@ -36,6 +38,7 @@ public final class RcxLink {
     private static final int COMMAND_GAP_MILLIS = 60;
     private static final int CHANNEL_TONE_OPCODE = 0xA3;
     private static final int CHANNEL_INDICATOR_OPCODE = 0x92;
+    private static final int CHANNEL_SELECTOR_OPCODE = 0x91;
 
     /** The opcode (toggle bit cleared) and arguments of the last frame {@link #receive} accepted. */
     int opcode;
@@ -53,9 +56,10 @@ public final class RcxLink {
     /** How long {@link #awaitReply} lets one wait for a start bit run before it checks its deadline again. */
     private static final int REPLY_POLL_MICROS = 20000;
 
-    public void begin(int receivePin, int transmitPin) {
-        receiveEnabled = receivePin >= 0;
-        Infrared.begin(receivePin, transmitPin, BAUD);
+    /** Configures an RCX link with a typed receiver and emitter pair. */
+    public void begin(InfraredReceiver receiver, InfraredEmitter emitter) {
+        receiveEnabled = receiver.signalPin() >= 0;
+        emitter.begin(receiver, BAUD);
     }
 
     /**
@@ -197,6 +201,12 @@ public final class RcxLink {
         }
     }
 
+    /** Sends a command only to the brick whose firmware-selected channel is {@code channel}. */
+    void commandChannel(int channel, int opcode, int first, int second, int third, int arguments) {
+        selectChannel(channel);
+        command(opcode, first, second, third, arguments);
+    }
+
     /**
      * Sends a direct command and waits for the brick's reply, whose opcode is the complement of the
      * command's. The receiver module also hears the vehicle's own LED, so frames with other opcodes (the
@@ -211,6 +221,20 @@ public final class RcxLink {
     int request(int command, int first, int second, int third, int arguments) {
         send(command, first, second, third, arguments);
         return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+    }
+
+    /** Sends a request only to {@code channel} and waits for that brick's reply. */
+    int requestChannel(int channel, int command, int first, int second, int third, int arguments) {
+        selectChannel(channel);
+        return request(command, first, second, third, arguments);
+    }
+
+    private void selectChannel(int channel) {
+        if (channel < 1 || channel > 5) {
+            throw new IllegalArgumentException("RCX channel must be between 1 and 5");
+        }
+        send(CHANNEL_SELECTOR_OPCODE, channel, 0, 0, 1);
+        Delay.millis(COMMAND_GAP_MILLIS);
     }
 
     /**

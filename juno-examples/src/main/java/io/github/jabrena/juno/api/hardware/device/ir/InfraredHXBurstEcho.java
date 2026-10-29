@@ -9,7 +9,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Checks that an IR transmitter and receiver on the same board hear each other, at the simplest level before
- * {@link InfraredLoopback} tries whole bytes: it sends 100 single bursts of the 38 kHz carrier for each of a few
+ * {@link InfraredHXLoopback} tries whole bytes: it sends 100 single bursts of the 38 kHz carrier for each of a few
  * lengths and counts how many the receiver reports within 600 microseconds after each ends (its output lags the light), as {@code 600 us: hits/100}, plus a
  * {@code noise} line counting the same samples with the LED dark. Wire the transmitter's DAT to pin 3 and the
  * receiver's OUT to pin 2, with VCC and GND, and point the modules at each other a few centimetres apart (or both
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * receiver (aim, distance or the transmitter's wiring); hits as high as the noise means the receiver is
  * reporting interference, not the transmitter. Pick the board with {@code -Djuno.board}.
  */
-public class InfraredBurstEcho {
+public class InfraredHXBurstEcho {
     private final Clock clock = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
@@ -32,13 +32,13 @@ public class InfraredBurstEcho {
     private static final int START_MILLIS = 2000;
 
     public static void main(String[] args) {
-        new InfraredBurstEcho().run();
+        new InfraredHXBurstEcho().run();
     }
 
     private void run() {
         Serial.begin(BaudRate.BAUD_115200);
         int[] lengths = {200, 400, 600, 1000};
-        Infrared.begin(RECEIVE_PIN, TRANSMIT_PIN, BAUD);
+        Infrared.beginHX(RECEIVE_PIN, TRANSMIT_PIN, BAUD);
         Delay.millis(START_MILLIS);
 
         while (true) {

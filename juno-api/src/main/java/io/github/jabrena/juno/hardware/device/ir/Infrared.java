@@ -23,8 +23,14 @@ public final class Infrared {
     /** {@link #readByte} result when a byte arrived with a wrong parity bit or stop bit. */
     public static final int FRAMING_ERROR = -2;
 
-    /** Configures the pins and the bit rate, e.g. {@code 2400} for the LEGO RCX. */
-    public static native void begin(int receivePin, int transmitPin, int baud);
+    /** Configures HX-53/HX-M121 pins and the bit rate, e.g. {@code 2400} for the LEGO RCX. */
+    public static native void beginHX(int receivePin, int transmitPin, int baud);
+
+    /**
+     * Configures Grove infrared modules. On ESP32 boards this uses a hardware-generated 38 kHz carrier so Wi-Fi,
+     * USB and scheduler interrupts cannot distort individual carrier cycles.
+     */
+    public static native void beginGrove(int receivePin, int transmitPin, int baud);
 
     /** Whether the receiver currently sees a burst, i.e. a byte may be arriving; never blocks. */
     public static native boolean receiving();
@@ -52,7 +58,7 @@ public final class Infrared {
      * Transmits a burst of the 38 kHz carrier for {@code micros} microseconds. With {@link #space}, it
      * builds protocols that encode bits in pulse lengths rather than as serial bytes, such as
      * {@link io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote}; the transmit pin must be set by
-     * {@link #begin} (the baud rate is ignored by these two calls).
+     * {@link #beginHX} or {@link #beginGrove} (the baud rate is ignored by these two calls).
      */
     public static native void mark(int micros);
 

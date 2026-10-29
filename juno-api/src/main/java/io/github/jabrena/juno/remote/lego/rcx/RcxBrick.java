@@ -12,6 +12,8 @@ package io.github.jabrena.juno.remote.lego.rcx;
  */
 public final class RcxBrick {
     private final RcxLink link;
+    /** Zero preserves the original broadcast RCX protocol; 1..5 use Juno's channel selector. */
+    private final int channel;
 
     /** A brick on the board's own infrared link. Create it once, at startup. */
     public RcxBrick() {
@@ -20,7 +22,15 @@ public final class RcxBrick {
 
     /** A brick on a link shared with other RCX classes, so they share one toggle bit. */
     public RcxBrick(RcxLink link) {
+        this(link, 0);
+    }
+
+    RcxBrick(RcxLink link, int channel) {
+        if (channel < 0 || channel > 5) {
+            throw new IllegalArgumentException("RCX channel must be zero or between 1 and 5");
+        }
         this.link = link;
+        this.channel = channel;
     }
 
 
@@ -79,14 +89,14 @@ public final class RcxBrick {
      * otherwise. Returns whether the brick acknowledged both commands.
      */
     public boolean setTouchSensor(int input) {
-        boolean typed = link.request(OPCODE_SET_INPUT_TYPE, input, TYPE_TOUCH, 2) >= 0;
-        boolean moded = link.request(OPCODE_SET_INPUT_MODE, input, MODE_BOOLEAN, 2) >= 0;
+        boolean typed = request(OPCODE_SET_INPUT_TYPE, input, TYPE_TOUCH, 2) >= 0;
+        boolean moded = request(OPCODE_SET_INPUT_MODE, input, MODE_BOOLEAN, 2) >= 0;
         return typed && moded;
     }
 
     /** The value of the sensor on {@code input} (for a touch sensor 1 pressed, 0 released), or {@code -1} if no reply. */
     public int readSensor(int input) {
-        int arguments = link.request(OPCODE_POLL, SOURCE_SENSOR_VALUE, input, 2);
+        int arguments = request(OPCODE_POLL, SOURCE_SENSOR_VALUE, input, 2);
         return arguments < 2 ? -1 : link.argument0 | (link.argument1 << 8);
     }
 
@@ -128,33 +138,33 @@ public final class RcxBrick {
 
     /** Sets the value of the sensor on {@code input} back to zero, e.g. a rotation sensor's count. */
     public void clearSensor(int input) {
-        link.command(OPCODE_CLEAR_SENSOR, input, 0, 0, 1);
+        command(OPCODE_CLEAR_SENSOR, input, 0, 0, 1);
     }
 
     /** Turns the outputs {@code outputs} (OUTPUT_* bits) on, at the power level and in the direction last set. */
     public void motorOn(int outputs) {
-        link.command(OPCODE_ON_OFF_FLOAT, MODE_ON | (outputs & 0x7), 0, 0, 1);
+        command(OPCODE_ON_OFF_FLOAT, MODE_ON | (outputs & 0x7), 0, 0, 1);
     }
 
     /** Switches the outputs off with the motors braking. */
     public void motorOff(int outputs) {
-        link.command(OPCODE_ON_OFF_FLOAT, MODE_OFF | (outputs & 0x7), 0, 0, 1);
+        command(OPCODE_ON_OFF_FLOAT, MODE_OFF | (outputs & 0x7), 0, 0, 1);
     }
 
     /** Switches the outputs off with the motors free to coast. */
     public void motorFloat(int outputs) {
-        link.command(OPCODE_ON_OFF_FLOAT, MODE_FLOAT | (outputs & 0x7), 0, 0, 1);
+        command(OPCODE_ON_OFF_FLOAT, MODE_FLOAT | (outputs & 0x7), 0, 0, 1);
     }
 
     /** Sets the direction of the outputs, forwards or backwards. */
     public void setMotorDirection(int outputs, boolean forward) {
-        link.command(OPCODE_OUTPUT_DIRECTION, (forward ? DIRECTION_FORWARD : DIRECTION_BACKWARD) | (outputs & 0x7), 0, 0, 1);
+        command(OPCODE_OUTPUT_DIRECTION, (forward ? DIRECTION_FORWARD : DIRECTION_BACKWARD) | (outputs & 0x7), 0, 0, 1);
     }
 
     /** Sets the power level of the outputs, {@code 0..}{@link RcxMotor#MAX_POWER} (clamped); it takes effect while they are on. */
     public void setMotorPower(int outputs, int level) {
         int limited = level < 0 ? 0 : level > RcxMotor.MAX_POWER ? RcxMotor.MAX_POWER : level;
-        link.command(OPCODE_OUTPUT_POWER, outputs & 0x7, SOURCE_CONSTANT, limited, 3);
+        command(OPCODE_OUTPUT_POWER, outputs & 0x7, SOURCE_CONSTANT, limited, 3);
     }
 
     /**
@@ -173,8 +183,8 @@ public final class RcxBrick {
     }
 
     private boolean configureSensor(int input, int type, int mode) {
-        boolean typed = link.request(OPCODE_SET_INPUT_TYPE, input, type, 2) >= 0;
-        boolean moded = link.request(OPCODE_SET_INPUT_MODE, input, mode, 2) >= 0;
+        boolean typed = request(OPCODE_SET_INPUT_TYPE, input, type, 2) >= 0;
+        boolean moded = request(OPCODE_SET_INPUT_MODE, input, mode, 2) >= 0;
         return typed && moded;
     }
 
@@ -187,7 +197,7 @@ public final class RcxBrick {
      * below about 6000), or {@code -1} if it did not answer. It is a request and a reply, like the sensor reads.
      */
     public int batteryMillivolts() {
-        int arguments = link.request(OPCODE_BATTERY_LEVEL, 0, 0, 0);
+        int arguments = request(OPCODE_BATTERY_LEVEL, 0, 0, 0);
         return arguments < 2 ? -1 : link.argument0 | (link.argument1 << 8);
     }
 
@@ -197,7 +207,7 @@ public final class RcxBrick {
      * waiting for it to end.
      */
     public boolean playSound(int sound) {
-        return link.request(OPCODE_PLAY_SOUND, sound & 0xFF, 0, 1) >= 0;
+        return request(OPCODE_PLAY_SOUND, sound & 0xFF, 0, 1) >= 0;
     }
 
     /**
@@ -207,7 +217,7 @@ public final class RcxBrick {
      */
     public boolean showNumber(int value) {
         int limited = value < RcxLcd.MIN_NUMBER ? RcxLcd.MIN_NUMBER : value > RcxLcd.MAX_NUMBER ? RcxLcd.MAX_NUMBER : value;
-        return link.request(OPCODE_SHOW_NUMBER, limited & 0xFF, (limited >> 8) & 0xFF, 2) >= 0;
+        return request(OPCODE_SHOW_NUMBER, limited & 0xFF, (limited >> 8) & 0xFF, 2) >= 0;
     }
 
     /**
@@ -216,7 +226,7 @@ public final class RcxBrick {
      * acknowledged.
      */
     public boolean clearDisplay() {
-        return link.request(OPCODE_SET_CHARACTER, BLANK_ALL, 0, 2) >= 0;
+        return request(OPCODE_SET_CHARACTER, BLANK_ALL, 0, 2) >= 0;
     }
 
     /**
@@ -229,7 +239,7 @@ public final class RcxBrick {
         boolean acknowledged = true;
         for (int position = 0; position < TEXT_POSITIONS; position++) {
             int character = position < text.length() ? text.charAt(position) & 0x7F : ' ';
-            acknowledged &= link.request(OPCODE_SET_CHARACTER, position, character, 2) >= 0;
+            acknowledged &= request(OPCODE_SET_CHARACTER, position, character, 2) >= 0;
         }
         return acknowledged;
     }
@@ -241,7 +251,7 @@ public final class RcxBrick {
      * LEGO's firmware does not know the command and does not answer. Returns whether the brick acknowledged.
      */
     public boolean showIcon(int icon, boolean lit) {
-        return link.request(OPCODE_SET_ICON, icon & 0xFF, lit ? 1 : 0, 2) >= 0;
+        return request(OPCODE_SET_ICON, icon & 0xFF, lit ? 1 : 0, 2) >= 0;
     }
 
     /**
@@ -251,7 +261,7 @@ public final class RcxBrick {
      * duration before sending the next.
      */
     public boolean playTone(int frequencyHz, int durationCentiseconds) {
-        return link.request(OPCODE_PLAY_TONE, frequencyHz & 0xFF, (frequencyHz >> 8) & 0xFF,
+        return request(OPCODE_PLAY_TONE, frequencyHz & 0xFF, (frequencyHz >> 8) & 0xFF,
                 durationCentiseconds & 0xFF, 3) >= 0;
     }
 
@@ -260,12 +270,31 @@ public final class RcxBrick {
      * reply. Polls Juno's own source {@value #SOURCE_CLICKED_BUTTONS}, which only Juno's RCX firmware answers.
      */
     public int clickedButtons() {
-        int arguments = link.request(OPCODE_POLL, SOURCE_CLICKED_BUTTONS, 0, 2);
+        int arguments = request(OPCODE_POLL, SOURCE_CLICKED_BUTTONS, 0, 2);
         return arguments < 2 ? -1 : link.argument0 | (link.argument1 << 8);
     }
 
     /** Whether the touch sensor on {@code input} is pressed; {@code false} also when the brick did not answer. */
     public boolean isPressed(int input) {
         return readSensor(input) == 1;
+    }
+
+    private void command(int opcode, int first, int second, int third, int arguments) {
+        if (channel == 0) {
+            link.command(opcode, first, second, third, arguments);
+        } else {
+            link.commandChannel(channel, opcode, first, second, third, arguments);
+        }
+    }
+
+    private int request(int opcode, int first, int second, int arguments) {
+        return request(opcode, first, second, 0, arguments);
+    }
+
+    private int request(int opcode, int first, int second, int third, int arguments) {
+        if (channel == 0) {
+            return link.request(opcode, first, second, third, arguments);
+        }
+        return link.requestChannel(channel, opcode, first, second, third, arguments);
     }
 }

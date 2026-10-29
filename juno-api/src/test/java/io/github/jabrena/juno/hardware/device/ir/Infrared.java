@@ -21,6 +21,10 @@ public final class Infrared {
     public static final ArrayDeque<Integer> replies = new ArrayDeque<>();
     /** Carrier pulses: a mark of n microseconds records n, a space records -n. */
     public static final List<Integer> pulses = new ArrayList<>();
+    public static int receivePin;
+    public static int transmitPin;
+    public static int baud;
+    public static boolean groveDriver;
     public static boolean receivingFrame;
 
     private Infrared() {
@@ -30,10 +34,25 @@ public final class Infrared {
         written.clear();
         replies.clear();
         pulses.clear();
+        receivePin = -1;
+        transmitPin = -1;
+        baud = -1;
+        groveDriver = false;
         receivingFrame = false;
     }
 
-    public static void begin(int receivePin, int transmitPin, int baud) {
+    public static void beginHX(int receivePin, int transmitPin, int baud) {
+        Infrared.receivePin = receivePin;
+        Infrared.transmitPin = transmitPin;
+        Infrared.baud = baud;
+        groveDriver = false;
+    }
+
+    public static void beginGrove(int receivePin, int transmitPin, int baud) {
+        Infrared.receivePin = receivePin;
+        Infrared.transmitPin = transmitPin;
+        Infrared.baud = baud;
+        groveDriver = true;
     }
 
     public static boolean receiving() {

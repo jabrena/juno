@@ -27,7 +27,7 @@ public class MagicSquarePowerFunctions {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         MagicSquarePowerFunctions app = new MagicSquarePowerFunctions();
-        PowerFunctionsRemote.begin(TRANSMIT_PIN);
+        PowerFunctionsRemote.beginHX(TRANSMIT_PIN);
 
         while (true) {
             Serial.println("Straight");
