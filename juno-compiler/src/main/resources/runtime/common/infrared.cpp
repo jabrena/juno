@@ -2,6 +2,23 @@
 static int32_t juno_ir_rx_pin = -1;
 static int32_t juno_ir_tx_pin = -1;
 static uint32_t juno_ir_bit_us = 417;
+#if defined(ARDUINO_ARCH_ESP32)
+// Nano startup uses channels 5..7 for RGB, and tone() uses channel 0.
+// Channel 2 has its own timer relative to both, so IR does not drive the status LEDs.
+static const uint8_t juno_ir_ledc_channel = 2;
+// A 50% envelope duty is the normal operating point for the Grove demodulator.
+static const uint8_t juno_ir_grove_carrier_duty = 128;
+static bool juno_ir_ledc_carrier = false;
+
+static void juno_ir_release_ledc_carrier() {
+  if (!juno_ir_ledc_carrier) {
+    return;
+  }
+  ledcWrite(juno_ir_ledc_channel, 0);
+  ledcDetachPin(juno_ir_tx_pin);
+  juno_ir_ledc_carrier = false;
+}
+#endif
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
 static bool juno_ir_timer2_carrier = false;
 static uint16_t juno_ir_bit_ticks = 833;
@@ -90,7 +107,12 @@ static void juno_ir_calibrate_carrier() {
   }
 }
 
-extern "C" void juno_ir_begin(int32_t receivePin, int32_t transmitPin, int32_t baud) {
+extern "C" void juno_ir_begin_hx(int32_t receivePin, int32_t transmitPin, int32_t baud) {
+#if defined(ARDUINO_ARCH_ESP32)
+  juno_ir_release_ledc_carrier();
+  receivePin = juno_nano_pin(receivePin);
+  transmitPin = juno_nano_pin(transmitPin);
+#endif
   juno_ir_rx_pin = receivePin;
   juno_ir_tx_pin = transmitPin;
   juno_ir_bit_us = baud > 0 ? static_cast<uint32_t>((1000000 + baud / 2) / baud) : 417;
@@ -116,6 +138,23 @@ extern "C" void juno_ir_begin(int32_t receivePin, int32_t transmitPin, int32_t b
   }
 }
 
+extern "C" void juno_ir_begin_grove(int32_t receivePin, int32_t transmitPin, int32_t baud) {
+  juno_ir_begin_hx(receivePin, transmitPin, baud);
+  // Grove demodulator outputs are open-collector on some module revisions. Keep the idle
+  // level high even when the carrier is absent or the module output is high impedance.
+  if (receivePin >= 0) {
+    pinMode(juno_ir_rx_pin, INPUT_PULLUP);
+  }
+#if defined(ARDUINO_ARCH_ESP32)
+  if (transmitPin >= 0) {
+    ledcSetup(juno_ir_ledc_channel, 38000, 8);
+    ledcAttachPin(juno_ir_tx_pin, juno_ir_ledc_channel);
+    ledcWrite(juno_ir_ledc_channel, 0);
+    juno_ir_ledc_carrier = true;
+  }
+#endif
+}
+
 extern "C" int32_t juno_ir_receiving() {
   return juno_ir_rx_pin >= 0 && digitalRead(juno_ir_rx_pin) == LOW ? 1 : 0;
 }
@@ -128,6 +167,14 @@ static void juno_ir_wait_until(uint32_t at) {
 // Modulates the IR LED until micros() reaches at. Every carrier goes through this loop, whose
 // per-cycle cost juno_ir_calibrate_carrier measured, so callers do their bookkeeping between calls.
 static void juno_ir_carrier_until(uint32_t at) {
+#if defined(ARDUINO_ARCH_ESP32)
+  if (juno_ir_ledc_carrier) {
+    ledcWrite(juno_ir_ledc_channel, juno_ir_grove_carrier_duty);
+    juno_ir_wait_until(at);
+    ledcWrite(juno_ir_ledc_channel, 0);
+    return;
+  }
+#endif
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
   if (juno_ir_timer2_carrier) {
     juno_ir_timer2_until(at);
@@ -143,6 +190,13 @@ static void juno_ir_carrier_until(uint32_t at) {
 // sampler calls it several times within one bit; disconnecting PWM at every sample would fragment
 // an otherwise continuous mark and make the diagnostic observe a waveform writeByte never sends.
 static void juno_ir_hold_bit_until(int bit, uint32_t at) {
+#if defined(ARDUINO_ARCH_ESP32)
+  if (juno_ir_ledc_carrier) {
+    ledcWrite(juno_ir_ledc_channel, bit == 0 ? juno_ir_grove_carrier_duty : 0);
+    juno_ir_wait_until(at);
+    return;
+  }
+#endif
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__)
   if (juno_ir_timer2_carrier) {
     juno_ir_set_timer2_carrier(bit == 0);
@@ -192,6 +246,13 @@ extern "C" int32_t juno_ir_read_byte(int32_t timeoutMicros) {
 // accumulates over a byte: timed from each bit's own start, a run of 0 bits drifted by a cycle per bit.
 static void juno_ir_send_bit(int bit, uint32_t end) {
   if (bit != 0) {
+#if defined(ARDUINO_ARCH_ESP32)
+    if (juno_ir_ledc_carrier) {
+      ledcWrite(juno_ir_ledc_channel, 0);
+      juno_ir_wait_until(end);
+      return;
+    }
+#endif
     digitalWrite(juno_ir_tx_pin, LOW);
     juno_ir_wait_until(end);
     return;
@@ -249,7 +310,14 @@ extern "C" int32_t juno_ir_echo_byte(int32_t value, int32_t latencyMicros) {
     juno_ir_set_timer2_carrier(false);
   }
 #endif
-  digitalWrite(juno_ir_tx_pin, LOW);
+#if defined(ARDUINO_ARCH_ESP32)
+  if (juno_ir_ledc_carrier) {
+    ledcWrite(juno_ir_ledc_channel, 0);
+  } else
+#endif
+  {
+    digitalWrite(juno_ir_tx_pin, LOW);
+  }
   if (heard[0] != 0) {
     return -1;
   }
@@ -278,7 +346,14 @@ extern "C" void juno_ir_space(int32_t durationMicros) {
   if (juno_ir_tx_pin < 0) {
     return;
   }
-  digitalWrite(juno_ir_tx_pin, LOW);
+#if defined(ARDUINO_ARCH_ESP32)
+  if (juno_ir_ledc_carrier) {
+    ledcWrite(juno_ir_ledc_channel, 0);
+  } else
+#endif
+  {
+    digitalWrite(juno_ir_tx_pin, LOW);
+  }
   juno_ir_wait_until(micros() + static_cast<uint32_t>(durationMicros));
 }
 

@@ -8,7 +8,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /** Sends the RCX firmware-independent alive packet and prints the raw reply. */
-public class RcxRawSoundProbe {
+public class RcxHXRawSoundProbe {
     private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
@@ -21,7 +21,7 @@ public class RcxRawSoundProbe {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.seconds(2);
-        Infrared.begin(RECEIVE_PIN, TRANSMIT_PIN, BAUD);
+        Infrared.beginHX(RECEIVE_PIN, TRANSMIT_PIN, BAUD);
         Serial.println("Sending raw RCX alive packet");
         Delay.millis(SERIAL_DRAIN_MILLIS);
 

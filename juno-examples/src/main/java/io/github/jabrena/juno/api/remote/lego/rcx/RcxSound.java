@@ -26,6 +26,11 @@ public class RcxSound {
 
     public static void main(String[] args) {
         RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        play(remote);
+    }
+
+    /** Plays the same sequence using the caller's board, infrared modules and RCX channel. */
+    public static void play(RemoteRcx remote) {
         RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);
         remote.begin();

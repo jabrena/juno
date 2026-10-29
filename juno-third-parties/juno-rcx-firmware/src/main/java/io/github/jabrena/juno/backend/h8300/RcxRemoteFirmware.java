@@ -128,6 +128,8 @@ public final class RcxRemoteFirmware {
     private static final int OPCODE_SET_MESSAGE = 0xF7;
     /** Juno's own: selects the tone-indicator output for the currently selected channel. */
     private static final int OPCODE_SET_TONE_OUTPUT = 0x92;
+    /** Juno's own: selects which brick accepts the following ordinary RCX command. */
+    private static final int OPCODE_SELECT_CHANNEL = 0x91;
     /** Tenths of a second between icon redraws, the walking figure's step. */
     private static final int ICON_TICK_TENTHS = 3;
     /** Holding On-Off this long deliberately returns the brick to its ROM downloader. */
@@ -317,6 +319,8 @@ public final class RcxRemoteFirmware {
         assembler.moveImmediate(0, H8ByteRegister.R1H);
         assembler.compare(H8Register.R1, H8Register.R0);
         code.jumpIf(H8Condition.EQUAL, "play_tone");
+        handler(OPCODE_SELECT_CHANNEL, RcxChannel.SELECT);
+        filterSelectedCommand();
         handler(OPCODE_ALIVE, RcxCode.REPLY_ACK);
         handler(OPCODE_VERSIONS, "versions");
         handler(OPCODE_ON_OFF_FLOAT, RcxMotorCommands.ON_OFF_FLOAT);
@@ -338,6 +342,25 @@ public final class RcxRemoteFirmware {
         handler(OPCODE_REMOTE_BUTTONS, RcxRemoteControl.BUTTONS);
         handler(OPCODE_SET_MESSAGE, RcxRemoteControl.SET_MESSAGE);
         assembler.jump(RcxCode.LOOP);
+    }
+
+    /** Lets legacy commands through, or consumes a selector and accepts or rejects exactly one following command. */
+    private void filterSelectedCommand() {
+        assembler.loadByte(RcxChannel.SELECTION, H8ByteRegister.R1L);
+        assembler.compareImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        String accepted = code.newLabel();
+        assembler.branch(H8Condition.EQUAL, accepted);
+        assembler.compareImmediate(RcxChannel.ACCEPT_SELECTION, H8ByteRegister.R1L);
+        String rejected = code.newLabel();
+        assembler.branch(H8Condition.NOT_EQUAL, rejected);
+        assembler.moveImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        assembler.storeByte(H8ByteRegister.R1L, RcxChannel.SELECTION);
+        assembler.jump(accepted);
+        assembler.label(rejected);
+        assembler.moveImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        assembler.storeByte(H8ByteRegister.R1L, RcxChannel.SELECTION);
+        assembler.jump(RcxCode.LOOP);
+        assembler.label(accepted);
     }
 
     private void versions() {
@@ -426,6 +449,7 @@ public final class RcxRemoteFirmware {
         assembler.store(H8Register.R1, SHOWN_NUMBER);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, NUMBER_SHOWN);
+        text.hideBlankDisplay();
         text.hideText();
         code.replyWith(1);
     }
@@ -561,6 +585,7 @@ public final class RcxRemoteFirmware {
         assembler.returnFromSubroutine();
 
         assembler.label(RcxCode.DRAW_NUMBER);
+        text.jumpIfDisplayBlank("draw_blank_display");
         assembler.load(NUMBER_SHOWN, H8Register.R0);
         code.jumpIf(H8Condition.NOT_EQUAL, "draw_shown_number");
         text.jumpIfTextShown("draw_shown_text");
@@ -576,6 +601,9 @@ public final class RcxRemoteFirmware {
         rom.call(RcxRom.SET_LCD_NUMBER, Argument.constant(RcxRom.LCD_SIGNED), Argument.register(H8Register.R1),
                 Argument.constant(RcxRom.LCD_NO_COMMA));
         assembler.call(RcxChannel.DRAW);
+        assembler.returnFromSubroutine();
+        assembler.label("draw_blank_display");
+        text.drawText();
         assembler.returnFromSubroutine();
     }
 

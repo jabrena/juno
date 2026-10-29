@@ -25,7 +25,17 @@ class PowerFunctionsRemoteTest {
     void startWithAnEmptyTransmitter() {
         Wire.resetBoard();
         Infrared.reset();
-        PowerFunctionsRemote.begin(3);
+        PowerFunctionsRemote.beginHX(3);
+    }
+
+    @Test
+    @DisplayName("Grove setup selects the Grove hardware carrier")
+    void shouldSelectTheGroveHardwareCarrier() {
+        PowerFunctionsRemote.beginGrove(4);
+
+        assertThat(Infrared.receivePin).isEqualTo(-1);
+        assertThat(Infrared.transmitPin).isEqualTo(4);
+        assertThat(Infrared.groveDriver).isTrue();
     }
 
     @Test

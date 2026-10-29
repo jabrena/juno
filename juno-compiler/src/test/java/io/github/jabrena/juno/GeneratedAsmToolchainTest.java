@@ -1068,7 +1068,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.hardware.device.ir.Infrared;
                 public final class AsmLoopback {
                     public static void main(String[] args) {
-                        Infrared.begin(2, 3, 2400);
+                        Infrared.beginHX(2, 3, 2400);
                         int ok = 0;
                         for (int value = 0; value < 256; value++) {
                             if (Infrared.echoByte(value, 200) == value) ok++;
@@ -1085,8 +1085,64 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.runtimeShim())
-                .contains("juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1", "_BV(COM2B1)", "cli()");
+                .contains("juno_ir_begin_hx", "juno_ir_echo_byte", "juno_ir_timer2_until", "juno_ir_wait_timer1",
+                        "_BV(COM2B1)", "cli()");
+        assertThat(result.assembly()).contains("bl juno_ir_begin_hx");
         syntaxCheckCpp(compiler, shim);
+    }
+
+    @Test
+    @DisplayName("A Grove infrared program lowers its dedicated driver and keeps the shim valid C++")
+    void shouldCompileAGroveInfraredProgramsShimWithACppCompiler() throws Exception {
+        // Given
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.hardware.device.ir.Infrared;
+                public final class AsmGroveInfrared {
+                    public static void main(String[] args) {
+                        Infrared.beginGrove(2, 3, 2400);
+                        Infrared.writeByte(0x55);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmGroveInfrared", source);
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmGroveInfrared");
+        Path shim = temporaryDirectory.resolve("AsmGroveInfraredShim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+
+        // Then
+        assertThat(result.assembly()).contains("bl juno_ir_begin_grove");
+        assertThat(result.runtimeShim()).contains("juno_ir_begin_grove", "ledcSetup", "ledcWrite");
+        syntaxCheckCpp(compiler, shim);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @DisplayName("Nano IR uses physical analog pins and preserves its configured carrier duty")
+    void shouldMapNanoInfraredPinsAndPreserveCarrierDuty(boolean gpioNumbers) throws Exception {
+        String compiler = availableCppCompiler();
+        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
+        String gpioHarness = Files.readString(Path.of("src/test/resources/esp32-gpio-harness.cpp"));
+        String gpioRuntime = Files.readString(Path.of("src/main/resources/runtime/esp32/core-glue.cpp"));
+        String infrared = Files.readString(Path.of("src/main/resources/runtime/common/infrared.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/esp32-infrared-harness.cpp"));
+        String source = "#define BOARD_HAS_PIN_REMAP\n#define ARDUINO_ARCH_ESP32\n#define GPIO_NUMBERS "
+                + (gpioNumbers ? 1 : 0) + "\n"
+                + gpioHarness.substring(0, gpioHarness.indexOf("int main()"))
+                        .replace("// ESP32_CORE_GLUE", gpioRuntime)
+                + harness.replace("// INFRARED_RUNTIME", infrared);
+        Process run = compileAndStart(compiler, source, "esp32-infrared");
+        boolean finished = run.waitFor(20, TimeUnit.SECONDS);
+        if (!finished) {
+            run.destroyForcibly();
+        }
+        assertThat(finished).isTrue();
+        String diagnostics = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertThat(run.exitValue()).as(diagnostics).isZero();
     }
 
     @Test
@@ -1192,7 +1248,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote;
                 public final class AsmPowerFunctions {
                     public static void main(String[] args) {
-                        PowerFunctionsRemote.begin(3);
+                        PowerFunctionsRemote.beginHX(3);
                         PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 5);
                         PowerFunctionsRemote.setSpeeds(PowerFunctionsRemote.CHANNEL_2, -7, 7);
                         PowerFunctionsRemote.brake(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_BLUE);

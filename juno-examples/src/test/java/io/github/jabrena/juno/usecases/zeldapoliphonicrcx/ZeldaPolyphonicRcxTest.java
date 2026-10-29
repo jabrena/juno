@@ -23,6 +23,9 @@ class ZeldaPolyphonicRcxTest {
         assertThat(ZeldaPolyphonicRcx.REFERENCE_FREQUENCY_HZ).isEqualTo(440);
         assertThat(ZeldaPolyphonicRcx.REFERENCE_DURATION_CENTISECONDS).isEqualTo(50);
         assertThat(ZeldaPolyphonicRcx.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
+        assertThat(ZeldaPolyphonicRcxNano.REFERENCE_FREQUENCY_HZ).isEqualTo(440);
+        assertThat(ZeldaPolyphonicRcxNano.REFERENCE_DURATION_CENTISECONDS).isEqualTo(50);
+        assertThat(ZeldaPolyphonicRcxNano.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
     }
 
     @Test
@@ -30,5 +33,8 @@ class ZeldaPolyphonicRcxTest {
         assertThat(ZeldaPolyphonicRcx.durationCentiseconds(0)).isEqualTo(1);
         assertThat(ZeldaPolyphonicRcx.durationCentiseconds(274)).isEqualTo(27);
         assertThat(ZeldaPolyphonicRcx.durationCentiseconds(3356)).isEqualTo(255);
+        assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(0)).isEqualTo(1);
+        assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(274)).isEqualTo(27);
+        assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(3356)).isEqualTo(255);
     }
 }
