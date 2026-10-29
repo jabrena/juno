@@ -36,6 +36,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
  */
 public final class RemoteRcx {
     private final RcxLink link;
+    private final int channel;
     private final InfraredReceiver receiver;
     private final InfraredEmitter emitter;
     private final Clock clock;
@@ -78,6 +79,7 @@ public final class RemoteRcx {
     /** A brick on Juno firmware channel {@code 1..5}, reached through typed infrared modules and timed by {@code clock}. */
     public RemoteRcx(RcxLink link, int channel, InfraredReceiver receiver, InfraredEmitter emitter, Clock clock) {
         this.link = link;
+        this.channel = channel;
         this.receiver = receiver;
         this.emitter = emitter;
         this.clock = clock;
@@ -215,12 +217,20 @@ public final class RemoteRcx {
 
     /** Transmits a remote-control command with {@code buttonMask} to RCX bricks in range, as the remote does. */
     public void sendButtons(int buttonMask) {
-        link.sendButtons(buttonMask);
+        if (channel == 0) {
+            link.sendButtons(buttonMask);
+        } else {
+            link.sendButtonsChannel(channel, buttonMask);
+        }
     }
 
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
     public void sendMessage(int value) {
-        link.sendMessage(value);
+        if (channel == 0) {
+            link.sendMessage(value);
+        } else {
+            link.sendMessageChannel(channel, value);
+        }
     }
 
     private void poll() {

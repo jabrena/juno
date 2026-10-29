@@ -2,6 +2,8 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
+import io.github.jabrena.juno.hardware.device.ir.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
@@ -51,6 +53,23 @@ class RemoteRcxTest {
 
         // Then
         assertThat(Infrared.written).containsSubsequence(0x12, 0xED, 0x34, 0xCB);
+    }
+
+    @Test
+    @DisplayName("Channel remotes select their brick before sending buttons and messages")
+    void shouldSelectChannelForButtonsAndMessages() {
+        Infrared.reset();
+        RemoteRcx remote = new RemoteRcx(
+                new RcxLink(SimulatedTime.clock()),
+                2,
+                new HXM121InfraredReceiver(2),
+                new HX53InfraredEmitter(3),
+                SimulatedTime.clock());
+
+        remote.sendButtons(0x1234);
+        remote.sendMessage(0x5A);
+
+        assertThat(Infrared.written).contains(0x91, 0x99, 0xD2, 0xF7, 0x5A);
     }
 
     @Test

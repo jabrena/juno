@@ -127,9 +127,21 @@ public final class RcxLink {
         sendFrame(OPCODE_REMOTE, (buttonMask >> 8) & 0xFF, buttonMask & 0xFF, 0, 2);
     }
 
+    /** Transmits a remote-control command only to the selected Juno firmware channel. */
+    void sendButtonsChannel(int channel, int buttonMask) {
+        selectChannel(channel);
+        sendButtons(buttonMask);
+    }
+
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
     public void sendMessage(int value) {
         send(OPCODE_MESSAGE, value & 0xFF, 0, 1);
+    }
+
+    /** Transmits a message only to the selected Juno firmware channel. */
+    void sendMessageChannel(int channel, int value) {
+        selectChannel(channel);
+        sendMessage(value);
     }
 
     /**
