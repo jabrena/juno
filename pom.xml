@@ -32,7 +32,7 @@
         <!-- Error Prone and NullAway checks for every @NullMarked module. -->
         <nullaway.errorprone.arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:AnnotatedPackages=io.github.jabrena.juno -XepOpt:NullAway:TreatGeneratedAsUnannotated=true -XepOpt:NullAway:CheckOptionalEmptiness=true -XepOpt:NullAway:HandleTestAssertionLibraries=true -XepOpt:NullAway:AssertsEnabled=true -XepExcludedPaths:.*/src/test/.*</nullaway.errorprone.arg>
         <testcontainers.version>2.0.5</testcontainers.version>
-        <logback.version>1.6.5</logback.version>
+        <logback.version>1.6.6</logback.version>
         <slf4j.version>2.0.20</slf4j.version>
         <maven.version>3.10.0</maven.version>
         <maven.version.range>[3.9.16,4.0.0)</maven.version.range>
