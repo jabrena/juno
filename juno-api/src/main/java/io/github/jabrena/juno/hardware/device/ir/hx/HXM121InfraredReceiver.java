@@ -1,4 +1,6 @@
-package io.github.jabrena.juno.hardware.device.ir;
+package io.github.jabrena.juno.hardware.device.ir.hx;
+
+import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 
 /** An HX-M121 38 kHz demodulating infrared receiver. */
 public final class HXM121InfraredReceiver implements InfraredReceiver {

@@ -2,11 +2,11 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
-import io.github.jabrena.juno.hardware.device.ir.HX53InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;

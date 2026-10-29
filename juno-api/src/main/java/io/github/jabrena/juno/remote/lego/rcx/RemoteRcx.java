@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
-import io.github.jabrena.juno.hardware.device.ir.HX53InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**

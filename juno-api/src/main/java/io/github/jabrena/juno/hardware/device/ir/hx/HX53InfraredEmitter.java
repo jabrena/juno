@@ -1,4 +1,8 @@
-package io.github.jabrena.juno.hardware.device.ir;
+package io.github.jabrena.juno.hardware.device.ir.hx;
+
+import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 
 /** An HX-53 infrared emitter using Juno's original software-carrier driver. */
 public final class HX53InfraredEmitter implements InfraredEmitter {
