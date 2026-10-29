@@ -125,6 +125,8 @@ public final class RcxRom {
     public static final int LCD_ICONS = 0x3000;
     /** {@link #SET_LCD_NUMBER}'s style for a signed decimal value, -9999 to 9999. */
     public static final int LCD_SIGNED = 0x3001;
+    /** {@link #SET_LCD_NUMBER}'s style for the single program digit right of the minifigure. */
+    public static final int LCD_PROGRAM = 0x3017;
     /** {@link #SET_LCD_NUMBER}'s style for an unsigned decimal value. */
     public static final int LCD_UNSIGNED = 0x301F;
     /** {@link #SET_LCD_NUMBER}'s comma code for no decimal point. */

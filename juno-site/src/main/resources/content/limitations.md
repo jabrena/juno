@@ -25,8 +25,9 @@ These fail with a `CompileException`; they are listed because they come up when 
 - **`length` of an array parameter.** `arraylength` works only on a local array created once in the same method
   with a constant size. A method that receives an array must also receive its length, and an enhanced `for`
   over a parameter (which javac compiles to `arraylength`) is rejected. Use an indexed loop with a count.
-- **Default and inherited interface methods.** A reachable implementation must declare each interface method
-  it is called through directly.
+- **Inheritance on small boards.** Class inheritance, inherited methods and default interface methods are supported,
+  but the AVR boards have much less flash, SRAM and arena space. A generated sketch may fail the Arduino link or
+  exhaust the arena at runtime; refactor the object graph when that happens.
 - **JDK functional interfaces** such as `IntBinaryOperator` in signatures. Declare your own interface.
 - **`Object` in signatures**, which rules out `equals(Object)` on records and classes when it is reachable.
 - **Concatenating arbitrary objects.** Juno lowers `StringConcatFactory` for strings and primitive

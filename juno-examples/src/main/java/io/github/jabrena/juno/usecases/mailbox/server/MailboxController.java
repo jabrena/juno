@@ -42,6 +42,10 @@ public final class MailboxController {
             respondProblem(HttpStatus.NOT_FOUND, "No mailbox message at the requested path");
             return;
         }
+        if (!model.restoreComplete()) {
+            respondProblem(HttpStatus.SERVICE_UNAVAILABLE, "Mailbox messages are still loading");
+            return;
+        }
         synchronized (security) {
             byte[] key = security.candidate();
             if (!security.matches(HttpServer.header(MailboxSecurity.HEADER, key, key.length))) {

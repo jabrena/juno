@@ -265,6 +265,15 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The ESP32 runtime-trust HTTPS helper does not embed the default CA bundle")
+    void shouldOmitTheDefaultCaBundleWhenTrustIsLoadedAtRuntime() {
+        String helpers = coreRuntimes.of(ArduinoCore.ESP32).httpsHelpers(true);
+
+        assertThat(helpers).contains("setCACert(juno_runtime_trusted_ca);")
+                .doesNotContain("juno_ca_bundle", "setCACertBundle");
+    }
+
+    @Test
     @DisplayName("The Zephyr core rejects a watchdog because its subsystem is not enabled")
     void shouldRejectAWatchdogOnZephyr() {
         // When & Then
@@ -394,6 +403,16 @@ class CoreRuntimeTest {
 
         // When & Then
         assertThat(runtime.uuidRandomHelpers()).contains("esp_fill_random(target, length)", "return false;");
+    }
+
+    @Test
+    @DisplayName("The classic AVR core uses the documented weak random UUID provider")
+    void shouldUseWeakRandomUuidProviderOnClassicAvr() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.CLASSIC_AVR);
+
+        // When & Then
+        assertThat(runtime.uuidRandomHelpers()).contains("analogRead(A5)", "randomSeed(seed)", "micros()");
     }
 
     @Test

@@ -4,7 +4,7 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.linker.LambdaSite;
 import org.jspecify.annotations.Nullable;
 
-/** One object type-id branch and its concrete method in a closed-world interface dispatch. */
+/** One object type-id branch and its concrete method in a closed-world dispatch. */
 public record InterfaceTarget(int typeId, MethodRef method, @Nullable LambdaSite lambda) {
     public InterfaceTarget(int typeId, MethodRef method) {
         this(typeId, method, null);

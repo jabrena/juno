@@ -35,10 +35,9 @@ class RcxFirmwareImageTest {
     }
 
     @Test
-    @DisplayName("Addresses outside the first chunk read as zero")
-    void shouldReadAddressesOutsideTheFirstChunkAsZero() {
+    @DisplayName("Addresses beyond the generated image read as zero")
+    void shouldReadAddressesBeyondTheGeneratedImageAsZero() {
         // When & Then
-        assertThat(RcxFirmwareImage.byteAt(4096)).isZero();
         assertThat(RcxFirmwareImage.byteAt(RcxFirmwareImage.LENGTH + 10_000)).isZero();
     }
 

@@ -64,7 +64,8 @@ public final class BytecodeToIr {
         boolean divisionByZeroUnwinds = anyHandlerCatchesArithmetic(program);
         ConstantTables constantTables = ConstantTables.of(program);
         List<String> throwableClasses = throwableClasses(program.methods(), program.classes(), divisionByZeroUnwinds);
-        Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses);
+        Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses,
+                program.classes());
         ProgramContext context = new ProgramContext(program.classes(), throwableClasses,
                 program.interfaceDispatches(), objectTypeIds, program.lambdaSites(), new ThrowingMethods(),
                 constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, program.board(),
@@ -78,7 +79,7 @@ public final class BytecodeToIr {
         }
         methods.addAll(entryPoints(program.interfaceDispatches(), objectTypeIds));
         return new IrProgram(program.entryPoint(), List.copyOf(methods), program.watchdogTimeoutMillis(),
-                throwableClasses, objectTypeIds);
+                throwableClasses, objectTypeIds, superClasses(program.classes()));
     }
 
     /** Lowers one method on its own, as if it were the whole program, for the explicitly supplied board. */
@@ -130,9 +131,9 @@ public final class BytecodeToIr {
                         ExceptionRouting.ARITHMETIC_EXCEPTION, handler.catchType(), program.classes())));
     }
 
-    /** The runtime type id of every class that takes part in polymorphic interface dispatch. */
+    /** The runtime type id of every class that takes part in polymorphic dispatch. */
     private Map<String, Integer> objectTypeIds(Map<InterfaceCallSite, InterfaceDispatch> dispatches,
-                                               List<String> throwableClasses) {
+                                               List<String> throwableClasses, Map<String, JavaClass> classes) {
         Set<String> polymorphicClasses = dispatches.values().stream()
                 .filter(dispatch -> dispatch.targets().size() > 1)
                 .flatMap(dispatch -> dispatch.targets().stream())
@@ -142,11 +143,25 @@ public final class BytecodeToIr {
             throw new CompileException("Throwable interface implementations cannot use polymorphic dispatch yet: "
                     + className.replace('/', '.'));
         });
-        Map<String, Integer> typeIds = new LinkedHashMap<>();
+        Set<String> classesWithHeaders = new TreeSet<>(polymorphicClasses);
         for (String className : polymorphicClasses) {
+            JavaClass type = classes.get(className);
+            while (type != null && type.superClassName() != null) {
+                classesWithHeaders.add(type.superClassName());
+                type = classes.get(type.superClassName());
+            }
+        }
+        Map<String, Integer> typeIds = new LinkedHashMap<>();
+        for (String className : classesWithHeaders) {
             typeIds.put(className, typeIds.size() + 1);
         }
         return Map.copyOf(typeIds);
+    }
+
+    private Map<String, String> superClasses(Map<String, JavaClass> classes) {
+        return classes.values().stream()
+                .filter(type -> type.superClassName() != null)
+                .collect(Collectors.toUnmodifiableMap(JavaClass::name, type -> type.superClassName()));
     }
 
     /**

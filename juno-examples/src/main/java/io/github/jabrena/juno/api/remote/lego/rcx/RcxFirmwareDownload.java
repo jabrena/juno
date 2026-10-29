@@ -28,6 +28,11 @@ public final class RcxFirmwareDownload {
 
     public static void main(String[] args) {
         RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        download(remote);
+    }
+
+    /** Downloads the image using an already wired RCX remote. */
+    public static void download(RemoteRcx remote) {
         RcxFirmware firmware = remote.getFirmware();
         RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);

@@ -121,7 +121,8 @@ public enum Intrinsic {
     LEGO_HUB_UNLINK_MOTORS,
     LEGO_HUB_SET_LINKED_MOTOR_POWER,
     LEGO_HUB_BRAKE_LINKED_MOTORS,
-    IR_BEGIN,
+    IR_BEGIN_HX,
+    IR_BEGIN_GROVE,
     IR_RECEIVING,
     IR_READ_BYTE,
     IR_WRITE_BYTE,
@@ -155,12 +156,14 @@ public enum Intrinsic {
     SD_LIST,
     SD_FILE_AVAILABLE,
     SD_FILE_READ,
+    SD_FILE_READ_BYTES,
     SD_FILE_CLOSE,
     SD_SIZE,
     SD_APPEND_LINE,
     SD_APPEND_TEXT,
     SD_APPEND_FILE_TEXT,
     SD_REMOVE,
+    SD_REMOVE_DIRECTORY,
     SD_REMOVE_FILE,
     SD_TOTAL_KIB,
     SD_FREE_KIB,
@@ -195,6 +198,8 @@ public enum Intrinsic {
     HTTP_REQUEST_BUFFER,
     /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
     HTTP_SET_TIMEOUT,
+    /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */
+    HTTP_SET_TRUSTED_CERTIFICATE,
     HTTP_GET_PATH_BUFFER,
     /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
     HTTP_URL_GET,
@@ -469,8 +474,8 @@ public enum Intrinsic {
      * wait on the card, so they do not inline either.
      */
     private static final Set<Intrinsic> SD_CARD_OPERATIONS = EnumSet.of(SD_BEGIN, SD_EXISTS, SD_CREATE_DIRECTORY, SD_SIZE,
-            SD_OPEN, SD_OPEN_FILE, SD_LIST, SD_APPEND_LINE, SD_APPEND_TEXT, SD_APPEND_FILE_TEXT, SD_REMOVE, SD_REMOVE_FILE,
-            SD_TOTAL_KIB, SD_FREE_KIB);
+            SD_OPEN, SD_OPEN_FILE, SD_LIST, SD_APPEND_LINE, SD_APPEND_TEXT, SD_APPEND_FILE_TEXT, SD_REMOVE,
+            SD_REMOVE_DIRECTORY, SD_REMOVE_FILE, SD_TOTAL_KIB, SD_FREE_KIB);
 
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {

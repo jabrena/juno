@@ -15,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * gets no power or its output is not on pin 2; one that is high even in the dark means noise, e.g. a missing
  * ground. Pick the board with {@code -Djuno.board}.
  */
-public class InfraredReceiverProbe {
+public class InfraredHXReceiverProbe {
     private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int NO_PIN = -1;
@@ -25,8 +25,8 @@ public class InfraredReceiverProbe {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        InfraredReceiverProbe app = new InfraredReceiverProbe();
-        Infrared.begin(RECEIVE_PIN, NO_PIN, BAUD);
+        InfraredHXReceiverProbe app = new InfraredHXReceiverProbe();
+        Infrared.beginHX(RECEIVE_PIN, NO_PIN, BAUD);
         Delay.millis(START_MILLIS);
         Serial.println("IR receiver probe: point a TV remote at it");
 

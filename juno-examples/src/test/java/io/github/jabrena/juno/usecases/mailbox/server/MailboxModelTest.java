@@ -10,6 +10,50 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class MailboxModelTest {
     @Test
+    void removesEmptyTimestampDirectoriesDuringRestore() {
+        // Given
+        EmulatedSdCard card = new EmulatedSdCard();
+        card.insert();
+        card.createDirectory("/mailbox/20261025100000");
+        MailboxModel model = new MailboxModel(card);
+
+        // When
+        model.begin();
+
+        // Then
+        byte[] entry = new byte[48];
+        assertThat(card.list("/mailbox", 0, entry, entry.length)).isZero();
+        assertThat(model.restoreComplete()).isTrue();
+    }
+
+    @Test
+    void canInitializeStorageBeforeRestoringMessages() {
+        // Given
+        EmulatedSdCard card = new EmulatedSdCard();
+        card.insert();
+        card.createDirectory("/mailbox/20261025100000");
+        card.appendText("/mailbox/20261025100000", "5500e840-e29b-41d4-a716-446655440000",
+                "{\"uuid\":\"5500e840-e29b-41d4-a716-446655440000\",\"title\":\"Old\","
+                        + "\"body\":\"Message from a previous version\",\"createAt\":\"2026-10-25T10:00:00\"}");
+        MailboxModel model = new MailboxModel(card);
+
+        // When
+        model.beginStorage();
+
+        // Then
+        assertThat(model.storageReady()).isTrue();
+        assertThat(model.restoreComplete()).isFalse();
+        assertThat(model.messageCount()).isZero();
+
+        // When
+        model.restore();
+
+        // Then
+        assertThat(model.restoreComplete()).isTrue();
+        assertThat(model.messageCount()).isOne();
+    }
+
+    @Test
     void restoresMessagesFromExistingSdFiles() {
         // Given
         EmulatedSdCard card = new EmulatedSdCard();

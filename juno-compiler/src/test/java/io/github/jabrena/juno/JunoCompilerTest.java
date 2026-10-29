@@ -227,7 +227,7 @@ class JunoCompilerTest {
                     "call8 juno_m5_display_height");
             assertThat(result.runtimeShim()).contains(
                     "#include <M5Cardputer.h>",
-                    "M5Cardputer.begin(keyboard)",
+                    "M5Cardputer.begin(M5.config(), keyboard)",
                     "M5Cardputer.Display.fillScreen",
                     "M5Cardputer.Display.print(static_cast<char>(",
                     "M5Cardputer.Display.println");
@@ -288,6 +288,35 @@ class JunoCompilerTest {
                     "call8 juno_m5_battery_voltage_millivolts");
             assertThat(result.runtimeShim()).contains("#include <M5Cardputer.h>",
                     "M5Cardputer.Power.getBatteryLevel()", "M5Cardputer.Power.getBatteryVoltage()");
+        }
+
+        @Test
+        @DisplayName("Compiles Cardputer USB HID mouse access through the M5StackCardputer facade")
+        void shouldCompileCardputerMouseThroughM5StackCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.hid.Mouse;
+                    @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
+                    public final class CardputerMouse {
+                        public static void main(String[] args) {
+                            Mouse mouse = M5StackCardputer.getMouse();
+                            mouse.begin();
+                            mouse.move(50, -50);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerMouse", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerMouse");
+
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
+            assertThat(result.assembly()).contains("call8 juno_mouse_begin", "call8 juno_mouse_move");
+            assertThat(result.runtimeShim())
+                    .contains("#include <USB.h>\n#include <USBHIDMouse.h>", "static JunoUsbMouse Mouse;",
+                            "extern \"C\" void juno_mouse_move(int32_t x, int32_t y)")
+                    .doesNotContain("#include <Mouse.h>");
         }
 
         @Test
@@ -477,30 +506,153 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Rejects allocating a non-final class that has a subclass")
-        void shouldRejectAllocatingANonFinalClassWithASubclass() throws Exception {
+        @DisplayName("Supports inherited classes and virtual method dispatch")
+        void shouldSupportInheritedClassesAndVirtualMethodDispatch() throws Exception {
             // Given
             String source = """
                     package demo;
                     public class Extended {
                         public static void main(String[] args) {
-                            new Extended().run();
+                            Extended first = new Sub();
+                            Extended second = new Other();
+                            if (first.run() + second.run() != 8) {
+                                throw new IllegalStateException();
+                            }
                         }
-                        void run() {
+                        private int value;
+                        Extended(int value) {
+                            this.value = value;
+                        }
+                        int run() {
+                            return value;
                         }
                     }
                     class Sub extends Extended {
+                        Sub() {
+                            super(2);
+                        }
                         @Override
-                        void run() {
+                        int run() {
+                            return super.run() + 1;
+                        }
+                    }
+                    class Other extends Extended {
+                        Other() {
+                            super(3);
+                        }
+                        @Override
+                        int run() {
+                            return super.run() + 2;
                         }
                     }
                     """;
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.Extended", source);
 
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Extended"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("final or have no subclass");
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Extended");
+
+            // Then
+            assertThat(result.assembly()).contains("cmp r0, r1", "bl juno_fn");
+        }
+
+        @Test
+        @DisplayName("Supports abstract bases with concrete virtual implementations")
+        void shouldSupportAbstractBaseClasses() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public class AbstractBase {
+                        public static void main(String[] args) {
+                            Base value = new Concrete();
+                            if (value.value() != 7) {
+                                throw new IllegalStateException();
+                            }
+                        }
+                        abstract static class Base {
+                            abstract int value();
+                        }
+                        static final class Concrete extends Base {
+                            @Override
+                            int value() {
+                                return 7;
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.AbstractBase", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AbstractBase");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("Supports class inheritance on the classic UNO R3")
+        void shouldSupportClassInheritanceOnClassicUnoR3() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    @Board(ArduinoUnoR3Board.class)
+                    public class R3Inheritance {
+                        public static void main(String[] args) {
+                            Base value = new Child();
+                            value.run();
+                        }
+                        static class Base {
+                            int run() {
+                                return 1;
+                            }
+                        }
+                        static class Child extends Base {
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.R3Inheritance", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.R3Inheritance");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("Supports an inherited interface default method")
+        void shouldSupportInheritedInterfaceDefaultMethod() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public class DefaultInterface {
+                        public static void main(String[] args) {
+                            Greeting greeting = new GreetingImpl();
+                            if (greeting.value() != 7) {
+                                throw new IllegalStateException();
+                            }
+                        }
+                        interface Greeting {
+                            default int value() {
+                                return 7;
+                            }
+                        }
+                        static final class GreetingImpl implements Greeting {
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.DefaultInterface", source);
+
+            // When
+            Program program = CompilerTestSupport.link(temporaryDirectory, "demo.DefaultInterface");
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.DefaultInterface");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+            assertThat(program.interfaceDispatches().values()).anySatisfy(dispatch ->
+                    assertThat(dispatch.targets()).anySatisfy(target ->
+                            assertThat(target.method().owner()).isEqualTo("demo/DefaultInterface$Greeting")));
         }
 
         @Test
@@ -1243,7 +1395,8 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
-            assertThat(result.report().board().fqbn()).isEqualTo("m5stack:esp32:m5stack_cardputer");
+            assertThat(result.report().board().fqbn())
+                    .isEqualTo("m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc");
             assertThat(result.assembly()).contains("call8 juno_serial_begin", "call8 juno_serial_println_str",
                     "Hello, World!");
             assertThat(result.runtimeShim())
@@ -1859,6 +2012,40 @@ class JunoCompilerTest {
                     .isGreaterThanOrEqualTo(RuntimeLimits.PROPERTIES_STORAGE_BYTES);
         }
 
+        @Test
+        @DisplayName("Lowers buffered SD input stream reads")
+        void shouldLowerBufferedSdInputStreamReads() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
+                    import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                    import java.io.IOException;
+                    import java.io.InputStream;
+                    public final class BufferedSdRead {
+                        private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
+                        public static void main(String[] args) throws IOException {
+                            if (!SD_CARD.begin()) return;
+                            InputStream file = SD_CARD.open("payload.bin");
+                            if (file == null) return;
+                            byte[] buffer = new byte[128];
+                            file.read(buffer, 0, buffer.length);
+                            file.close();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedSdRead", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedSdRead");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_sd_file_read_bytes", "bl juno_sd_file_close");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_sd_file_read_bytes(",
+                    "juno_sd_file(handle)->read(buffer + offset");
+        }
+
         /**
          * {@code SdCard.appendLine}'s path must stay a compile-time literal like every other SD path, but its
          * {@code line} argument must accept a runtime value built from {@code StringBuilder#toString()} —
@@ -2071,7 +2258,10 @@ class JunoCompilerTest {
                             SD_CARD.begin();
                             String directory = "mailbox/20261025";
                             String fileStem = "5500e840-e29b-41d4-a716-446655440000";
+                            byte[] entry = new byte[48];
                             SD_CARD.createDirectory(directory);
+                            SD_CARD.list("/mailbox", 0, entry, entry.length);
+                            SD_CARD.removeDirectory(directory);
                             SD_CARD.appendText(directory, fileStem, "message");
                             InputStream file = SD_CARD.open(directory, fileStem);
                             if (file != null) file.close();
@@ -2087,9 +2277,12 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains(
                     "bl juno_sd_create_directory", "bl juno_sd_file_append_file_text",
-                    "bl juno_sd_open_file", "bl juno_sd_remove_file");
+                    "bl juno_sd_list", "bl juno_sd_remove_directory", "bl juno_sd_open_file", "bl juno_sd_remove_file");
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_sd_create_directory(const char* path)",
+                    "static constexpr int32_t JUNO_SD_LIST_CURSOR_COUNT = 2",
+                    "static JunoSdListCursor* juno_sd_list_cursor(const char* directory, int32_t index)",
+                    "extern \"C\" int32_t juno_sd_remove_directory(const char* path)",
                     "extern \"C\" int32_t juno_sd_file_append_file_text(const char* directory, const char* fileStem, const char* text)",
                     "extern \"C\" int32_t juno_sd_open_file(const char* directory, const char* fileStem)",
                     "extern \"C\" int32_t juno_sd_remove_file(const char* directory, const char* fileStem)",
@@ -2635,6 +2828,31 @@ class JunoCompilerTest {
                     "extern \"C\" void juno_http_set_timeout(int32_t millisToWait) {",
                     "client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms))",
                     "const unsigned long deadline = millis() + juno_http_timeout_ms;");
+        }
+
+        @Test
+        @DisplayName("Lowers HttpClient.setTrustedCertificate to the runtime TLS certificate setter")
+        void shouldLowerHttpTrustedCertificateSetter() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    public final class HttpTrustedCertificateDemo {
+                        public static void main(String[] args) {
+                            byte[] certificate = new byte[2048];
+                            certificate[0] = 'x';
+                            HttpClient.setTrustedCertificate(certificate, 1);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTrustedCertificateDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTrustedCertificateDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_set_trusted_certificate");
+            assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_http_set_trusted_certificate(");
         }
 
         @Test

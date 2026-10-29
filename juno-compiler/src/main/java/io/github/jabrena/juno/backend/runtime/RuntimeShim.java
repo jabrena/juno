@@ -275,8 +275,11 @@ public final class RuntimeShim {
                         throwableClasses.indexOf("java/io/EOFException"),
                         throwableClasses.indexOf("java/lang/IndexOutOfBoundsException"))),
                 new ShimFeatureBlock(ShimFeature.STRING_FROM_BYTES, shimLibraries::stringFromBytesHelpers)));
-        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(core.httpsHelpers());
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.HTTPS_TRUSTED_CERTIFICATE, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+            if (uses(ShimFeature.HTTPS_TRUSTED_CERTIFICATE)) {
+                shim.append(core.httpsTrustHelpers());
+            }
+            shim.append(core.httpsHelpers(uses(ShimFeature.HTTPS_TRUSTED_CERTIFICATE)));
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
             shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), core.httpsClientType(),

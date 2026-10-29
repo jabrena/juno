@@ -7,7 +7,6 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** The deliberately bounded {@code java.util.UUID} subset lowered onto the runtime shim. */
 @DisplayName("Bounded java.util.UUID subset")
@@ -137,8 +136,8 @@ class UuidTest {
     }
 
     @Test
-    @DisplayName("Rejects random UUIDs on the classic UNO, which has no hardware entropy source")
-    void shouldRejectRandomUuidOnTheClassicUnoWithoutAHardwareEntropySource() throws Exception {
+    @DisplayName("Uses the weak random UUID provider on the classic UNO")
+    void shouldUseTheWeakRandomUuidProviderOnTheClassicUno() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -154,10 +153,11 @@ class UuidTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25");
 
-        // When & Then
-        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("cryptographic entropy source");
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("analogRead(A5)", "randomSeed(seed)", "juno_uuid_random_bytes");
     }
 
     @Test

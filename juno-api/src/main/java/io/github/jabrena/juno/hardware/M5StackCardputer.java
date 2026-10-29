@@ -3,10 +3,12 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
+import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
@@ -53,6 +55,11 @@ public final class M5StackCardputer {
     /** The Cardputer's built-in keyboard. */
     public static Keyboard getKeyboard() {
         return NativeKeyboard.keyboard();
+    }
+
+    /** The Cardputer's ESP32-S3 acting as a USB HID mouse through the core's TinyUSB stack. */
+    public static Mouse getMouse() {
+        return NativeMouse.mouse();
     }
 
     /** The Cardputer's built-in speaker. */

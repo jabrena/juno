@@ -3,7 +3,7 @@ package io.github.jabrena.juno.backend.h8300;
 import java.util.Map;
 
 /**
- * Text on the display of {@link RcxRemoteFirmware}: the four seven-segment digits show {@code JUno} at power-on, a
+ * Text on the display of {@link RcxRemoteFirmware}: the four seven-segment digits show {@code JUno} after power-on, a
  * number from command 0x72, or the text the Arduino writes with command 0x82, one character per message. Letters are
  * approximated as seven-segment displays do ({@code VIEW} shows as {@code UIEu}, {@code PRGM} as {@code PrG∩}); a
  * character the font lacks shows blank. While text shows, the display shows nothing else but the IR cones.
@@ -18,6 +18,8 @@ final class RcxDisplayText {
     private static final int TEXT = 0xC110;
     /** Non-zero while the display shows {@link #TEXT}. */
     private static final int TEXT_SHOWN = 0xC114;
+    /** Non-zero while the display was explicitly cleared and must remain blank. */
+    static final int DISPLAY_BLANK = 0xC11A;
     private static final int POSITIONS = 4;
     private static final String FONT_TABLE = "font";
     private static final String SEGMENTS = "abcdefg";
@@ -48,7 +50,7 @@ final class RcxDisplayText {
             Map.entry('Y', "bcdfg"), Map.entry('Z', "abdeg"),
             Map.entry('c', "deg"), Map.entry('h', "cefg"), Map.entry('i', "e"), Map.entry('o', "cdeg"),
             Map.entry('u', "cde"));
-    /** {@code JUno}, shown until a number or text replaces it. */
+    /** {@code JUno}, written during startup and when no explicit number or text replaces it. */
     private static final int[] BRAND = lcdBytes("JUno");
 
     private final RcxCode code;
@@ -140,6 +142,17 @@ final class RcxDisplayText {
         code.clearWord(TEXT_SHOWN);
     }
 
+    /** Stops retaining an explicitly blank display before a number, text, or icon is shown. */
+    void hideBlankDisplay() {
+        code.clearWord(DISPLAY_BLANK);
+    }
+
+    /** Jumps to {@code target} while the display was explicitly cleared. */
+    void jumpIfDisplayBlank(String target) {
+        assembler.load(DISPLAY_BLANK, H8Register.R0);
+        code.jumpIf(H8Condition.NOT_EQUAL, target);
+    }
+
     /** The command handler, which clears the number word {@code numberShown}, and the font table. */
     void handlers(int numberShown) {
         setCharacter(numberShown);
@@ -153,6 +166,7 @@ final class RcxDisplayText {
 
     private void setCharacter(int numberShown) {
         String blank = code.newLabel();
+        String done = code.newLabel();
         String show = code.newLabel();
         assembler.label(SET_CHARACTER);
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
@@ -167,9 +181,15 @@ final class RcxDisplayText {
         for (int position = 0; position < POSITIONS; position++) {
             assembler.storeByte(H8ByteRegister.R0L, TEXT + position);
         }
+        code.clearWord(TEXT_SHOWN);
+        assembler.moveImmediate(1, H8Register.R0);
+        assembler.store(H8Register.R0, DISPLAY_BLANK);
+        assembler.branch(H8Condition.ALWAYS, done);
         assembler.label(show);
+        hideBlankDisplay();
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, TEXT_SHOWN);
+        assembler.label(done);
         code.clearWord(numberShown);
         code.replyWith(1);
     }

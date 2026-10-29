@@ -31,6 +31,8 @@ import java.util.Objects;
  * 0x01, View 0x02, Prgm 0x04)</td><td>the value (low, high); 0 for other sources</td></tr>
  * <tr><td>0x51</td><td>play system sound 0-5</td><td>none</td></tr>
  * <tr><td>0x23</td><td>play tone: frequency in Hz (low, high), duration</td><td>none</td></tr>
+ * <tr><td>0x92</td><td>select the tone-activity lamp output (channel 1-5, output A-C); applied only to the selected channel</td>
+ * <td>none</td></tr>
  * <tr><td>0x30</td><td>battery level</td><td>millivolts (low, high)</td></tr>
  * <tr><td>0x72</td><td>show a signed number (low, high) instead of {@code JUno}; Juno's own, unused by
  * LEGO's firmware</td><td>none</td></tr>
@@ -45,9 +47,11 @@ import java.util.Objects;
  * <tr><td>0xF7</td><td>set the message (0-255)</td><td>no reply</td></tr>
  * </table>
  *
- * <p>Other messages get no reply. The brick's View, Prgm and Run clicks change nothing on it; they are only kept for
- * the poll of source 0x60 (see {@code RcxBrickButtons}). The display shows {@code JUno} until a number or text is shown
- * (see {@code RcxDisplayText}), and lights its icons from the brick's state as well as on request (see
+ * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
+ * channel from 1 through 5 and wraps back to 1. The tone-activity lamp output is independently configurable per
+ * selected channel and defaults to A after startup. All three clicks are also kept for the poll of source 0x60 (see
+ * {@code RcxBrickButtons}). The display shows the selected channel until a number or text is shown (see
+ * {@code RcxDisplayText}), and lights its icons from the brick's state as well as on request (see
  * {@code RcxDisplayIcons}):
  * running motors' arrows, pressed touch sensors, low battery, and the minifigure, walking while a motor runs. Outputs
  * start floating, forward, at full power, as LEGO's firmware leaves them. After
@@ -86,9 +90,13 @@ public final class RcxRemoteFirmware {
     private static final int RECEIVED_LENGTH = 0xC042;
     private static final int STATUS = 0xC044;
     private static final int REPLY_LENGTH = 0xC048;
-    /** The number 0x72 shows, and whether one was shown (non-zero) or the display counts commands (zero). */
+    /** The number 0x72 shows, and whether one was shown (non-zero) or the display shows the selected channel (zero). */
     private static final int SHOWN_NUMBER = 0xC05C;
     private static final int NUMBER_SHOWN = 0xC05E;
+    /** Non-zero while the configured tone indicator is lit. */
+    static final int TONE_INDICATOR = 0xC0FE;
+    /** Selected motor output for the tone indicator: A, B or C, encoded as 0, 1 or 2. */
+    static final int TONE_OUTPUT = 0xC0FF;
     private static final int DATA_END = 0xF000;
 
     private static final int OPCODE_TOGGLE = 0x08;
@@ -118,6 +126,10 @@ public final class RcxRemoteFirmware {
     /** The RCX Remote Control's button state. */
     private static final int OPCODE_REMOTE_BUTTONS = 0xD2;
     private static final int OPCODE_SET_MESSAGE = 0xF7;
+    /** Juno's own: selects the tone-indicator output for the currently selected channel. */
+    private static final int OPCODE_SET_TONE_OUTPUT = 0x92;
+    /** Juno's own: selects which brick accepts the following ordinary RCX command. */
+    private static final int OPCODE_SELECT_CHANNEL = 0x91;
     /** Tenths of a second between icon redraws, the walking figure's step. */
     private static final int ICON_TICK_TENTHS = 3;
     /** Holding On-Off this long deliberately returns the brick to its ROM downloader. */
@@ -126,6 +138,7 @@ public final class RcxRemoteFirmware {
     private static final int SETTLE_TENTHS = 3;
     /** The command-line flag that leaves the display icons out. */
     private static final String NO_ICONS = "--no-icons";
+    private static final String DRAW_BRAND = "draw_brand";
     private static final Path SRECORD_OUTPUT =
             Path.of("juno-third-parties/juno-rcx-firmware/src/main/resources/rcx/firmware.srec");
     private static final Path JAVA_OUTPUT = Path.of(
@@ -145,7 +158,8 @@ public final class RcxRemoteFirmware {
     private final RcxSensorCommands sensors = new RcxSensorCommands(code);
     private final RcxDisplayIcons icons = new RcxDisplayIcons(code);
     private final RcxRemoteControl remote = new RcxRemoteControl(code, motors);
-    private final RcxBrickButtons buttons = new RcxBrickButtons(code);
+    private final RcxChannel channel = new RcxChannel(code);
+    private final RcxBrickButtons buttons = new RcxBrickButtons(code, channel);
     private final RcxDisplayText text = new RcxDisplayText(code);
 
     public RcxRemoteFirmware() {
@@ -160,7 +174,7 @@ public final class RcxRemoteFirmware {
     /**
      * A firmware that sleeps after {@code autoOffMinutes} minutes, 1 or more, without a command, with or without the
      * display icons (command 0xB2 and the icons the brick lights by itself); without them the display shows only the
-     * {@code JUno} or the number command 0x72 set.
+     * the selected channel or the number command 0x72 set.
      */
     public RcxRemoteFirmware(int autoOffMinutes, boolean withIcons) {
         if (autoOffMinutes < 1 || autoOffMinutes > 0x7FFF) {
@@ -200,6 +214,7 @@ public final class RcxRemoteFirmware {
         versions();
         playSound();
         playTone();
+        setToneOutput();
         battery();
         showNumber();
         reply();
@@ -211,6 +226,7 @@ public final class RcxRemoteFirmware {
         sensors.handlers();
         remote.handlers();
         buttons.handlers();
+        channel.handlers();
         text.handlers(NUMBER_SHOWN);
         if (withIcons) {
             icons.handlers(motors, sensors, text);
@@ -241,6 +257,7 @@ public final class RcxRemoteFirmware {
         assembler.call(RcxSensorCommands.POWER_ALL);
         restartAutoOff();
         assembler.call("show_brand");
+        assembler.call(RcxChannel.START);
         if (withIcons) {
             assembler.call(RcxDisplayIcons.UPDATE);
         }
@@ -297,6 +314,13 @@ public final class RcxRemoteFirmware {
         assembler.not(H8ByteRegister.R1L);
         assembler.storeByte(H8ByteRegister.R1L, RcxCode.REPLY);
         assembler.and(~OPCODE_TOGGLE & 0xFF, H8ByteRegister.R0L);
+        assembler.moveImmediate(0, H8ByteRegister.R0H);
+        assembler.loadByte(RcxChannel.ADDRESS + 1, H8ByteRegister.R1L);
+        assembler.moveImmediate(0, H8ByteRegister.R1H);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        code.jumpIf(H8Condition.EQUAL, "play_tone");
+        handler(OPCODE_SELECT_CHANNEL, RcxChannel.SELECT);
+        filterSelectedCommand();
         handler(OPCODE_ALIVE, RcxCode.REPLY_ACK);
         handler(OPCODE_VERSIONS, "versions");
         handler(OPCODE_ON_OFF_FLOAT, RcxMotorCommands.ON_OFF_FLOAT);
@@ -308,6 +332,7 @@ public final class RcxRemoteFirmware {
         handler(OPCODE_POLL, RcxSensorCommands.POLL);
         handler(OPCODE_PLAY_SOUND, "play_sound");
         handler(OPCODE_PLAY_TONE, "play_tone");
+        handler(OPCODE_SET_TONE_OUTPUT, "set_tone_output");
         handler(OPCODE_BATTERY, "battery");
         handler(OPCODE_SHOW_NUMBER, "show_number");
         if (withIcons) {
@@ -317,6 +342,25 @@ public final class RcxRemoteFirmware {
         handler(OPCODE_REMOTE_BUTTONS, RcxRemoteControl.BUTTONS);
         handler(OPCODE_SET_MESSAGE, RcxRemoteControl.SET_MESSAGE);
         assembler.jump(RcxCode.LOOP);
+    }
+
+    /** Lets legacy commands through, or consumes a selector and accepts or rejects exactly one following command. */
+    private void filterSelectedCommand() {
+        assembler.loadByte(RcxChannel.SELECTION, H8ByteRegister.R1L);
+        assembler.compareImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        String accepted = code.newLabel();
+        assembler.branch(H8Condition.EQUAL, accepted);
+        assembler.compareImmediate(RcxChannel.ACCEPT_SELECTION, H8ByteRegister.R1L);
+        String rejected = code.newLabel();
+        assembler.branch(H8Condition.NOT_EQUAL, rejected);
+        assembler.moveImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        assembler.storeByte(H8ByteRegister.R1L, RcxChannel.SELECTION);
+        assembler.jump(accepted);
+        assembler.label(rejected);
+        assembler.moveImmediate(RcxChannel.NO_SELECTION, H8ByteRegister.R1L);
+        assembler.storeByte(H8ByteRegister.R1L, RcxChannel.SELECTION);
+        assembler.jump(RcxCode.LOOP);
+        assembler.label(accepted);
     }
 
     private void versions() {
@@ -340,13 +384,37 @@ public final class RcxRemoteFirmware {
     /** Queues a tone: the ROM takes the frequency in Hz and the duration as LEGO's command carries them. */
     private void playTone() {
         assembler.label("play_tone");
+        if (withIcons) {
+            icons.signalTone();
+        }
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R1L);
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R1H);
         assembler.loadByte(RcxCode.REQUEST + 3, H8ByteRegister.R2L);
         assembler.moveImmediate(0, H8ByteRegister.R2H);
         rom.call(RcxRom.PLAY_SOUND_OR_SET_DATA_POINTER, Argument.constant(RcxRom.SOUND_TONE),
                 Argument.register(H8Register.R1), Argument.register(H8Register.R2));
+        if (withIcons) {
+            motors.toneIndicatorOn(TONE_OUTPUT);
+            assembler.loadByte(RcxCode.REQUEST + 3, H8ByteRegister.R6L);
+            assembler.storeByte(H8ByteRegister.R6L, TONE_INDICATOR);
+        }
         code.replyWith(1);
+    }
+
+    /** Stores a tone-indicator output only on the brick whose selected channel matches the command. */
+    private void setToneOutput() {
+        assembler.label("set_tone_output");
+        assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R0L);
+        assembler.moveImmediate(0, H8ByteRegister.R0H);
+        assembler.loadByte(RcxChannel.ADDRESS, H8ByteRegister.R1L);
+        assembler.moveImmediate(0, H8ByteRegister.R1H);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        code.jumpIf(H8Condition.NOT_EQUAL, RcxCode.LOOP);
+        assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
+        assembler.compareImmediate(3, H8ByteRegister.R0L);
+        code.jumpIf(H8Condition.CARRY_CLEAR, RcxCode.LOOP);
+        assembler.storeByte(H8ByteRegister.R0L, TONE_OUTPUT);
+        assembler.jump(RcxCode.LOOP);
     }
 
     /**
@@ -381,6 +449,7 @@ public final class RcxRemoteFirmware {
         assembler.store(H8Register.R1, SHOWN_NUMBER);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.store(H8Register.R0, NUMBER_SHOWN);
+        text.hideBlankDisplay();
         text.hideText();
         code.replyWith(1);
     }
@@ -495,36 +564,45 @@ public final class RcxRemoteFirmware {
     private void showBrand() {
         assembler.label("show_brand");
         rom.call(RcxRom.CLEAR_DISPLAY);
-        text.drawBrand();
+        assembler.call(DRAW_BRAND);
         rom.call(RcxRom.REFRESH_DISPLAY);
+        assembler.returnFromSubroutine();
+
+        assembler.label(DRAW_BRAND);
+        text.drawBrand();
         assembler.returnFromSubroutine();
     }
 
     /**
      * Subroutines: {@link RcxCode#DRAW_NUMBER} draws the number 0x72 set, signed, or else the text 0x82 set, or else
-     * {@code JUno};
+     * the startup brand, then draws the selected channel in the program digit;
      * {@code update_display} draws it and refreshes the LCD.
      */
     private void updateDisplay() {
-        String brand = code.newLabel();
-        String shownText = code.newLabel();
         assembler.label("update_display");
         assembler.call(RcxCode.DRAW_NUMBER);
         rom.call(RcxRom.REFRESH_DISPLAY);
         assembler.returnFromSubroutine();
 
         assembler.label(RcxCode.DRAW_NUMBER);
+        text.jumpIfDisplayBlank("draw_blank_display");
         assembler.load(NUMBER_SHOWN, H8Register.R0);
-        assembler.branch(H8Condition.EQUAL, brand);
+        code.jumpIf(H8Condition.NOT_EQUAL, "draw_shown_number");
+        text.jumpIfTextShown("draw_shown_text");
+        assembler.call(DRAW_BRAND);
+        assembler.call(RcxChannel.DRAW);
+        assembler.returnFromSubroutine();
+        assembler.label("draw_shown_text");
+        text.drawText();
+        assembler.call(RcxChannel.DRAW);
+        assembler.returnFromSubroutine();
+        assembler.label("draw_shown_number");
         assembler.load(SHOWN_NUMBER, H8Register.R1);
         rom.call(RcxRom.SET_LCD_NUMBER, Argument.constant(RcxRom.LCD_SIGNED), Argument.register(H8Register.R1),
                 Argument.constant(RcxRom.LCD_NO_COMMA));
+        assembler.call(RcxChannel.DRAW);
         assembler.returnFromSubroutine();
-        assembler.label(brand);
-        text.branchIfTextShown(shownText);
-        text.drawBrand();
-        assembler.returnFromSubroutine();
-        assembler.label(shownText);
+        assembler.label("draw_blank_display");
         text.drawText();
         assembler.returnFromSubroutine();
     }

@@ -2,6 +2,10 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
@@ -32,8 +36,9 @@ import io.github.jabrena.juno.hardware.time.Clock;
  */
 public final class RemoteRcx {
     private final RcxLink link;
-    private final int receivePin;
-    private final int transmitPin;
+    private final int channel;
+    private final InfraredReceiver receiver;
+    private final InfraredEmitter emitter;
     private final Clock clock;
     private final RcxMotor motorA;
     private final RcxMotor motorB;
@@ -53,16 +58,32 @@ public final class RemoteRcx {
      * the pins. Share {@code link} with any other RCX class, so they share one toggle bit.
      */
     public RemoteRcx(RcxLink link, int receivePin, int transmitPin) {
-        this(link, receivePin, transmitPin, ArduinoUno.getClock());
+        this(link, new HXM121InfraredReceiver(receivePin), new HX53InfraredEmitter(transmitPin), ArduinoUno.getClock());
     }
 
-    /** As the three-argument constructor, timing the button hold and firmware waits on {@code clock}: a simulated clock in a unit test. */
-    public RemoteRcx(RcxLink link, int receivePin, int transmitPin, Clock clock) {
+    /** A brick reached through typed infrared modules, using the UNO clock. */
+    public RemoteRcx(RcxLink link, InfraredReceiver receiver, InfraredEmitter emitter) {
+        this(link, 0, receiver, emitter, ArduinoUno.getClock());
+    }
+
+    /** A brick on Juno firmware channel {@code 1..5}, reached through typed infrared modules. */
+    public RemoteRcx(RcxLink link, int channel, InfraredReceiver receiver, InfraredEmitter emitter) {
+        this(link, channel, receiver, emitter, ArduinoUno.getClock());
+    }
+
+    /** A brick reached through typed infrared modules and timed by {@code clock}. */
+    public RemoteRcx(RcxLink link, InfraredReceiver receiver, InfraredEmitter emitter, Clock clock) {
+        this(link, 0, receiver, emitter, clock);
+    }
+
+    /** A brick on Juno firmware channel {@code 1..5}, reached through typed infrared modules and timed by {@code clock}. */
+    public RemoteRcx(RcxLink link, int channel, InfraredReceiver receiver, InfraredEmitter emitter, Clock clock) {
         this.link = link;
-        this.receivePin = receivePin;
-        this.transmitPin = transmitPin;
+        this.channel = channel;
+        this.receiver = receiver;
+        this.emitter = emitter;
         this.clock = clock;
-        RcxBrick brick = new RcxBrick(link);
+        RcxBrick brick = new RcxBrick(link, channel);
         this.motorA = new RcxMotor(brick, RcxBrick.OUTPUT_A);
         this.motorB = new RcxMotor(brick, RcxBrick.OUTPUT_B);
         this.motorC = new RcxMotor(brick, RcxBrick.OUTPUT_C);
@@ -74,6 +95,11 @@ public final class RemoteRcx {
         this.battery = new RcxBattery(brick);
         this.buttons = new RcxButtons(brick);
         this.firmware = new RcxFirmware(link, clock);
+    }
+
+    /** As the three-argument constructor, timing the button hold and firmware waits on {@code clock}: a simulated clock in a unit test. */
+    public RemoteRcx(RcxLink link, int receivePin, int transmitPin, Clock clock) {
+        this(link, new HXM121InfraredReceiver(receivePin), new HX53InfraredEmitter(transmitPin), clock);
     }
 
 
@@ -109,7 +135,7 @@ public final class RemoteRcx {
      * cannot hear the brick's answers: reads return {@code -1} and acknowledgements {@code false}.
      */
     public void begin() {
-        link.begin(receivePin, transmitPin);
+        link.begin(receiver, emitter);
     }
 
     /** Output A. */
@@ -191,12 +217,20 @@ public final class RemoteRcx {
 
     /** Transmits a remote-control command with {@code buttonMask} to RCX bricks in range, as the remote does. */
     public void sendButtons(int buttonMask) {
-        link.sendButtons(buttonMask);
+        if (channel == 0) {
+            link.sendButtons(buttonMask);
+        } else {
+            link.sendButtonsChannel(channel, buttonMask);
+        }
     }
 
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
     public void sendMessage(int value) {
-        link.sendMessage(value);
+        if (channel == 0) {
+            link.sendMessage(value);
+        } else {
+            link.sendMessageChannel(channel, value);
+        }
     }
 
     private void poll() {

@@ -52,9 +52,14 @@ public final class PowerFunctionsRemote {
 
     private static int toggleBit;
 
-    /** Configures {@code transmitPin} for the IR LED. */
-    public static void begin(int transmitPin) {
-        Infrared.begin(-1, transmitPin, 0);
+    /** Configures an HX-53 emitter on {@code transmitPin}. */
+    public static void beginHX(int transmitPin) {
+        Infrared.beginHX(-1, transmitPin, 0);
+    }
+
+    /** Configures a Grove infrared emitter on {@code transmitPin}. */
+    public static void beginGrove(int transmitPin) {
+        Infrared.beginGrove(-1, transmitPin, 0);
     }
 
     /**

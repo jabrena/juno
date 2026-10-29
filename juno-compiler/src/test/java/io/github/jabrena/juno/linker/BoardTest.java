@@ -28,12 +28,16 @@ class BoardTest {
 
     static Stream<Arguments> capabilities() {
         return Stream.of(
+                arguments(Board.UNO_R3, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3, Capability.WIFI, true),
+                arguments(Board.UNO_R3, Capability.UUID_RANDOM, true),
+                arguments(Board.UNO_R3, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
                 arguments(Board.UNO_R3, Capability.HTTP_CLIENT, true),
                 arguments(Board.UNO_R3, Capability.HTTPS_CLIENT, false),
                 arguments(Board.UNO_R4_WIFI, Capability.WIFI_ACCESS_POINT, true),
+                arguments(Board.UNO_R4_WIFI, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R4_WIFI, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R4_WIFI, Capability.WIFI, true),
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_CLIENT, true),
@@ -41,6 +45,7 @@ class BoardTest {
                 arguments(Board.UNO_R4_WIFI, Capability.USB_HID, true),
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_SERVER, false),
                 arguments(Board.UNO_Q, Capability.WIFI, true),
+                arguments(Board.UNO_Q, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_Q, Capability.HTTPS_CLIENT, true),
                 arguments(Board.UNO_Q, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_Q, Capability.HTTP_SERVER, true),
@@ -49,7 +54,9 @@ class BoardTest {
                 arguments(Board.UNO_Q, Capability.WATCHDOG, false),
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
+                arguments(Board.NANO_ESP32, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_CLIENT, true),
@@ -63,7 +70,9 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true),
                 arguments(Board.NANO_ESP32, Capability.USB_HID, true),
-                arguments(Board.M5_CARDPUTER, Capability.USB_HID, false),
+                arguments(Board.M5_CARDPUTER, Capability.BIG_NUMBERS, true),
+                arguments(Board.M5_CARDPUTER, Capability.CLASS_INHERITANCE, true),
+                arguments(Board.M5_CARDPUTER, Capability.USB_HID, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.ONBOARD_WIFI, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI_ACCESS_POINT, true),
@@ -90,7 +99,8 @@ class BoardTest {
         // When & Then
         assertThat(board).isEqualTo(Board.M5_CARDPUTER);
         assertThat(board.annotationArgument()).isEqualTo("M5StackCardputerBoard.class");
-        assertThat(board.fqbn()).isEqualTo("m5stack:esp32:m5stack_cardputer");
+        assertThat(board.fqbn())
+                .isEqualTo("m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc");
         assertThat(board.core()).isEqualTo(ArduinoCore.ESP32);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/M5StackCardputerBoard")).isEqualTo(board);
     }

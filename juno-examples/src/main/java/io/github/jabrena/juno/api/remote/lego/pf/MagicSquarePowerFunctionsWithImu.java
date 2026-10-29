@@ -36,7 +36,7 @@ public class MagicSquarePowerFunctionsWithImu {
             Serial.println("No BNO055 found: is the 9 Axis Motion Shield attached?");
             return;
         }
-        PowerFunctionsRemote.begin(TRANSMIT_PIN);
+        PowerFunctionsRemote.beginHX(TRANSMIT_PIN);
 
         while (true) {
             Serial.println("Straight");

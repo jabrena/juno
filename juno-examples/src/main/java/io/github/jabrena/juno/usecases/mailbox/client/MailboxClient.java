@@ -10,7 +10,7 @@ import io.github.jabrena.juno.util.mvc.Task;
 
 /**
  * Allocation-free, retrying HTTPS client for the mailbox API. Every mailbox request carries the {@link MailboxKey}'s
- * header; only the discovery probe of {@code /actuator/info}, which the board leaves open, goes without it.
+ * header; only the probe of {@code /actuator/info}, which the board leaves open, goes without it.
  */
 public final class MailboxClient implements MailboxApi, Task {
     /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
@@ -25,7 +25,7 @@ public final class MailboxClient implements MailboxApi, Task {
     /** One byte longer than {@link #SERVICE_NAME}, so a longer "info" value is told apart from it. */
     private static final int INFO_CAPACITY = 13;
     private static final int HTTPS_PORT = 443;
-    private static final int REFRESH_MILLIS = 5 * 60 * 1000;
+    private static final int MINUTE_MILLIS = 60 * 1000;
     private static final int RETRY_MILLIS = 5 * 1000;
     private static final int RESPONSE_CAPACITY = 1536;
     private static final int HEADERS_CAPACITY = 256;
@@ -41,6 +41,7 @@ public final class MailboxClient implements MailboxApi, Task {
     private final MailboxModel model;
     private final MailboxConnection connection;
     private final MailboxKey key;
+    private final int pollingMillis;
     private final Clock clock;
     private final byte[] path = new byte[PATH_CAPACITY];
     private final byte[] noHeaders = new byte[1];
@@ -52,16 +53,27 @@ public final class MailboxClient implements MailboxApi, Task {
     private String host;
     private int nextRefresh;
     private boolean refreshNow;
+    private boolean foregroundRefresh;
 
     /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
-    public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key) {
-        this(model, connection, key, ArduinoUno.getClock());
+    public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling) {
+        this(model, connection, key, polling, ArduinoUno.getClock());
     }
 
     MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, Clock clock) {
+        this(model, connection, key, MailboxPolling.DEFAULT_MINUTES, clock);
+    }
+
+    MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling, Clock clock) {
+        this(model, connection, key, polling.minutes(), clock);
+    }
+
+    private MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, int pollingMinutes,
+            Clock clock) {
         this.model = model;
         this.connection = connection;
         this.key = key;
+        this.pollingMillis = pollingMinutes * MINUTE_MILLIS;
         this.clock = clock;
         refreshNow = true;
     }
@@ -69,11 +81,17 @@ public final class MailboxClient implements MailboxApi, Task {
     @Override
     public void host(String value) {
         host = value;
-        requestRefresh();
+    }
+
+    @Override
+    public void beginRefresh() {
+        foregroundRefresh = true;
+        refreshNow = false;
     }
 
     @Override
     public void requestRefresh() {
+        foregroundRefresh = false;
         refreshNow = true;
     }
 
@@ -86,12 +104,15 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status(configured ? "Waiting for WiFi" : "No WiFi settings on SD");
             return;
         }
+        if (foregroundRefresh) {
+            return;
+        }
         int now = clock.millis();
         if (refreshNow || now - nextRefresh >= 0) {
             refreshNow = false;
             // A failed refresh leaves the inbox empty, so it is retried soon rather than at the next periodic refresh.
             boolean refreshed = refresh();
-            nextRefresh = clock.millis() + (refreshed ? REFRESH_MILLIS : RETRY_MILLIS);
+            nextRefresh = clock.millis() + (refreshed ? pollingMillis : RETRY_MILLIS);
         }
     }
 
@@ -164,6 +185,8 @@ public final class MailboxClient implements MailboxApi, Task {
 
     @Override
     public void finishRefresh(int count) {
+        foregroundRefresh = false;
+        nextRefresh = clock.millis() + pollingMillis;
         model.status(count == 0 ? "Mailbox is empty" : "Updated just now");
         model.finishRefresh();
     }

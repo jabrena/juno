@@ -2,10 +2,12 @@ package io.github.jabrena.juno.hardware;
 
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
+import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import org.junit.jupiter.api.DisplayName;
@@ -54,6 +56,16 @@ class M5Test {
     void shouldHandOutOneKeyboardInstance() {
         // When & Then
         assertThat(M5StackCardputer.getKeyboard()).isSameAs(M5StackCardputer.getKeyboard()).isSameAs(NativeKeyboard.INSTANCE);
+    }
+
+    @Test
+    @DisplayName("The Cardputer's USB HID mouse is one shared instance")
+    void shouldHandOutOneMouseInstance() {
+        // When
+        Mouse mouse = M5StackCardputer.getMouse();
+
+        // Then
+        assertThat(mouse).isSameAs(M5StackCardputer.getMouse()).isSameAs(NativeMouse.INSTANCE);
     }
 
     @Test

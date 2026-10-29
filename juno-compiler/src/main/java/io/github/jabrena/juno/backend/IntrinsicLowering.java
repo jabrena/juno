@@ -481,6 +481,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.SD);
         shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
+        shim(Intrinsic.SD_FILE_READ_BYTES, "juno_sd_file_read_bytes", Result.WORD,
+                List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.SD);
         shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_LINE, "juno_sd_file_append_line", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
@@ -488,6 +490,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_APPEND_FILE_TEXT, "juno_sd_file_append_file_text", Result.WORD,
                 parameters(List.of(0, 1, 2), 0, 1, 2), ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE, "juno_sd_remove", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_REMOVE_DIRECTORY, "juno_sd_remove_directory", Result.WORD,
+                List.of(new Parameter(0, List.of(0))), ShimFeature.SD);
         shim(Intrinsic.SD_REMOVE_FILE, "juno_sd_remove_file", Result.WORD,
                 parameters(List.of(0, 1), 0, 1), ShimFeature.SD);
         shim(Intrinsic.SD_TOTAL_KIB, "juno_sd_total_kib", Result.WORD, List.of(), ShimFeature.SD,
@@ -644,7 +648,10 @@ public final class IntrinsicLowering {
                 ShimFeature.PARALLEL_BUS);
         shim(Intrinsic.PARALLEL_BUS_REPEAT16, "juno_parallel_bus_repeat16", Result.NONE, List.of(arg(0), arg(1)),
                 ShimFeature.PARALLEL_BUS);
-        shim(Intrinsic.IR_BEGIN, "juno_ir_begin", Result.NONE, List.of(arg(0), arg(1), arg(2)), ShimFeature.INFRARED);
+        shim(Intrinsic.IR_BEGIN_HX, "juno_ir_begin_hx", Result.NONE, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.INFRARED);
+        shim(Intrinsic.IR_BEGIN_GROVE, "juno_ir_begin_grove", Result.NONE, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.INFRARED);
         shim(Intrinsic.IR_RECEIVING, "juno_ir_receiving", Result.WORD, List.of(), ShimFeature.INFRARED);
         shim(Intrinsic.IR_READ_BYTE, "juno_ir_read_byte", Result.WORD, List.of(arg(0)), ShimFeature.INFRARED);
         shim(Intrinsic.IR_WRITE_BYTE, "juno_ir_write_byte", Result.NONE, List.of(arg(0)), ShimFeature.INFRARED);
@@ -718,6 +725,8 @@ public final class IntrinsicLowering {
                 ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
         shim(Intrinsic.HTTP_SET_TIMEOUT, "juno_http_set_timeout", Result.NONE, List.of(arg(0)),
                 ShimFeature.HTTP_TIMEOUT);
+        shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE, "juno_http_set_trusted_certificate", Result.WORD,
+                List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
     }
 
     private void registerEmail() {
