@@ -15,8 +15,8 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * Diagnoses two Grove infrared modules connected to the Nano Connector Carrier.
  *
- * <p>Point the two modules at each other a few centimetres apart. The clear Grove emitter is connected to SCL/A5 and the
- * black Grove receiver is connected to the A0 socket. A non-zero result means the modules and
+ * <p>Point the two modules at each other a few centimetres apart. The clear Grove emitter is connected to the A0 socket and the
+ * black Grove receiver is connected to SCL/A5. A non-zero result means the modules and
  * that carrier wiring are working; zero means power, alignment, module type or wiring still needs attention.
  */
 @Board({ArduinoNanoEsp32Board.class})
@@ -33,14 +33,14 @@ public final class NanoCarrierInfraredLoopback {
 
     public static void main(String[] args) {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier();
-        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getI2cScl());
-        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getGroveA0());
+        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
         while (true) {
             Serial.println("Grove IR loopback: point modules at each other");
-            probe("TX A5 RX A0", receiver, emitter);
+            probe("TX A0 RX A5", receiver, emitter);
             Delay.millis(ROUND_PAUSE_MILLIS);
         }
     }
