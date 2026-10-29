@@ -475,6 +475,36 @@ class RcxRemoteFirmwareTest {
         }
 
         @Test
+        @DisplayName("Reports the battery only after selecting this brick's channel")
+        void shouldReportTheBatteryForTheSelectedChannel() {
+            // Given
+            rcx.batteryReading(287);
+            rcx.receive(0x91, 1);
+            rcx.receive(0x30);
+
+            // When
+            run();
+
+            // Then
+            int millivolts = 287 * 28 + 287 / 5;
+            assertThat(rcx.replies()).containsExactly(new int[] {0xCF, millivolts & 0xFF, millivolts >> 8});
+        }
+
+        @Test
+        @DisplayName("Ignores the battery request after another channel is selected")
+        void shouldIgnoreTheBatteryForAnotherChannel() {
+            // Given
+            rcx.receive(0x91, 2);
+            rcx.receive(0x30);
+
+            // When
+            run();
+
+            // Then
+            assertThat(rcx.replies()).isEmpty();
+        }
+
+        @Test
         @DisplayName("Leaves unknown messages unanswered")
         void shouldLeaveUnknownMessagesUnanswered() {
             // Given
