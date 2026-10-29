@@ -6,8 +6,8 @@ static uint32_t juno_ir_bit_us = 417;
 // Nano startup uses channels 5..7 for RGB, and tone() uses channel 0.
 // Channel 2 has its own timer relative to both, so IR does not drive the status LEDs.
 static const uint8_t juno_ir_ledc_channel = 2;
-// One-third duty with the 8-bit LEDC timer configured in begin_grove.
-static const uint8_t juno_ir_grove_carrier_duty = 85;
+// A 50% envelope duty is the normal operating point for the Grove demodulator.
+static const uint8_t juno_ir_grove_carrier_duty = 128;
 static bool juno_ir_ledc_carrier = false;
 
 static void juno_ir_release_ledc_carrier() {
@@ -140,6 +140,11 @@ extern "C" void juno_ir_begin_hx(int32_t receivePin, int32_t transmitPin, int32_
 
 extern "C" void juno_ir_begin_grove(int32_t receivePin, int32_t transmitPin, int32_t baud) {
   juno_ir_begin_hx(receivePin, transmitPin, baud);
+  // Grove demodulator outputs are open-collector on some module revisions. Keep the idle
+  // level high even when the carrier is absent or the module output is high impedance.
+  if (receivePin >= 0) {
+    pinMode(juno_ir_rx_pin, INPUT_PULLUP);
+  }
 #if defined(ARDUINO_ARCH_ESP32)
   if (transmitPin >= 0) {
     ledcSetup(juno_ir_ledc_channel, 38000, 8);

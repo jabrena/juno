@@ -39,7 +39,7 @@ int main() {
   assert(frequency == 38000 && resolution == 8 && duty == 0);
   assert(juno_ir_receiving() == 0 && lastPin == 1);
   juno_ir_mark(417);
-  assert(peakDuty == 85 && duty == 0);
+  assert(peakDuty == 128 && duty == 0);
   assert(resolution == 8);
   assert(timerFrequency[0] == 440 && timerResolution[0] == 10);
   assert(timerFrequency[2] == 1000 && timerResolution[2] == 8);
