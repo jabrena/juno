@@ -8,6 +8,23 @@ Juno's first Cardputer support adds the board target and an example that sends t
 serial. The example uses Juno's existing `Serial` and `Delay` APIs. The `M5StackCardputer` device facade is the
 entry point for Cardputer peripherals.
 
+## USB HID mouse
+
+The Cardputer's ESP32-S3 can act as a USB HID mouse through its core's TinyUSB stack. The
+[`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java)
+example moves the host pointer around a square and reports each side over the USB serial console:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.hid.M5RatonLoco \
+  -Djuno.board=m5stack-cardputer
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=m5stack-cardputer -Djuno.baudRate=115200
+```
+
+The native TinyUSB device may receive a new serial-port path after flashing. Use `arduino-cli board list` and pass that
+new `/dev/cu.usbmodem...` path as `-Djuno.port` if the monitor does not attach.
+
 ## Hello World
 
 [`M5CardputerHelloWorld`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/m5stack/M5CardputerHelloWorld.java)
