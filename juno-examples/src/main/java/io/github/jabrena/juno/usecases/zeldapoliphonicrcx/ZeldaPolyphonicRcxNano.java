@@ -17,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * Plays the Ocarina of Time opening from an Arduino Nano ESP32 through the Nano Connector Carrier.
  *
  * <p>The carrier wiring shown in the example setup is named instead of hard-coded: the infrared transmitter is in
- * the Grove I2C socket (signal SCL/A5) and the infrared receiver is in the Grove A0/A1 socket (signal A0). The
+ * the Grove A0/A1 socket (signal A0) and the infrared receiver is in the Grove I2C socket (signal SCL/A5). The
  * carrier supplies power and ground to both modules.
  *
  * <p>The three RCX bricks listen on channels one, two and three.
@@ -48,15 +48,15 @@ public final class ZeldaPolyphonicRcxNano {
 
     public static void main(String[] args) {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier();
-        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getI2cScl());
-        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getGroveA0());
+        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         RcxLink link = new RcxLink(ArduinoNano.getClock());
         RcxChannelAudio audio = new RcxChannelAudio(link);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         link.begin(receiver, emitter);
         Delay.millis(START_MILLIS);
-        Serial.println("Nano carrier IR: TX A5, RX A0");
+        Serial.println("Nano carrier IR: TX A0, RX A5");
         Serial.println("Playing Zelda Ocarina on Nano RCX channels 1, 2 and 3");
         configureIndicators(audio);
         playReferenceTone(audio);

@@ -23,8 +23,8 @@ public final class NanoCarrierRcxSound {
 
     public static void main(String[] args) {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier();
-        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getI2cScl());
-        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getGroveA0());
+        GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+        GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         RcxLink link = new RcxLink(ArduinoNano.getClock());
         RemoteRcx remote = new RemoteRcx(link, CHANNEL, receiver, emitter, ArduinoNano.getClock());
         RcxSound.play(remote);
