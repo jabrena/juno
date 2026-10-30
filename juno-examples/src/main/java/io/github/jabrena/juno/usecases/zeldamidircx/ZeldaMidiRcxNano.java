@@ -28,6 +28,9 @@ public final class ZeldaMidiRcxNano {
     static final int REFERENCE_FREQUENCY_HZ = 440;
     static final int REFERENCE_DURATION_CENTISECONDS = 50;
     static final int[] ORCHESTRA_CHANNELS = {CHANNEL_1, CHANNEL_2, CHANNEL_3};
+    private static int idx1;
+    private static int idx2;
+    private static int idx3;
 
 
 
@@ -103,122 +106,20 @@ public final class ZeldaMidiRcxNano {
     }
 
     private static void play(RcxChannelAudio audio) {
-        int idx1 = 0;
-        int idx2 = 0;
-        int idx3 = 0;
+        idx1 = 0;
+        idx2 = 0;
+        idx3 = 0;
 
         while (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 || idx2 < ZeldaMidiRcxNanoMidi.noteCount2 || idx3 < ZeldaMidiRcxNanoMidi.noteCount3) {
-            int nextTick = Integer.MAX_VALUE;
-            if (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 && ZeldaMidiRcxNanoMidi.noteTick1[idx1] < nextTick) {
-                nextTick = ZeldaMidiRcxNanoMidi.noteTick1[idx1];
-            }
-            if (idx2 < ZeldaMidiRcxNanoMidi.noteCount2 && ZeldaMidiRcxNanoMidi.noteTick2[idx2] < nextTick) {
-                nextTick = ZeldaMidiRcxNanoMidi.noteTick2[idx2];
-            }
-            if (idx3 < ZeldaMidiRcxNanoMidi.noteCount3 && ZeldaMidiRcxNanoMidi.noteTick3[idx3] < nextTick) {
-                nextTick = ZeldaMidiRcxNanoMidi.noteTick3[idx3];
-            }
+            int nextTick = nextPendingTick();
             if (nextTick == Integer.MAX_VALUE) {
                 break;
             }
+            processChannel1(audio, CHANNEL_1, nextTick);
+            processChannel2(audio, CHANNEL_2, nextTick);
+            processChannel3(audio, CHANNEL_3, nextTick);
 
-            while (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 && ZeldaMidiRcxNanoMidi.noteTick1[idx1] == nextTick) {
-                int midiNote = ZeldaMidiRcxNanoMidi.noteNum1[idx1] + TRANSPOSE;
-                if (midiNote >= 0 && midiNote < 128) {
-                    int freq = NOTE_HZ[midiNote];
-                    if (freq > 0) {
-                        int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick1[idx1]);
-                        int endMs;
-                        if (idx1 + 1 < ZeldaMidiRcxNanoMidi.noteCount1) {
-                            endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick1[idx1 + 1]);
-                        } else {
-                            endMs = startMs + 250;
-                        }
-                        int durMs = endMs - startMs;
-                        if (durMs < 10) {
-                            durMs = 10;
-                        }
-                        int durCs = durMs / 10;
-                        if (durCs < 1) {
-                            durCs = 1;
-                        }
-                        if (durCs > 255) {
-                            durCs = 255;
-                        }
-                        audio.playTone(CHANNEL_1, freq, durCs);
-                    }
-                }
-                idx1++;
-            }
-
-            while (idx2 < ZeldaMidiRcxNanoMidi.noteCount2 && ZeldaMidiRcxNanoMidi.noteTick2[idx2] == nextTick) {
-                int midiNote = ZeldaMidiRcxNanoMidi.noteNum2[idx2] + TRANSPOSE;
-                if (midiNote >= 0 && midiNote < 128) {
-                    int freq = NOTE_HZ[midiNote];
-                    if (freq > 0) {
-                        int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick2[idx2]);
-                        int endMs;
-                        if (idx2 + 1 < ZeldaMidiRcxNanoMidi.noteCount2) {
-                            endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick2[idx2 + 1]);
-                        } else {
-                            endMs = startMs + 250;
-                        }
-                        int durMs = endMs - startMs;
-                        if (durMs < 10) {
-                            durMs = 10;
-                        }
-                        int durCs = durMs / 10;
-                        if (durCs < 1) {
-                            durCs = 1;
-                        }
-                        if (durCs > 255) {
-                            durCs = 255;
-                        }
-                        audio.playTone(CHANNEL_2, freq, durCs);
-                    }
-                }
-                idx2++;
-            }
-
-            while (idx3 < ZeldaMidiRcxNanoMidi.noteCount3 && ZeldaMidiRcxNanoMidi.noteTick3[idx3] == nextTick) {
-                int midiNote = ZeldaMidiRcxNanoMidi.noteNum3[idx3] + TRANSPOSE;
-                if (midiNote >= 0 && midiNote < 128) {
-                    int freq = NOTE_HZ[midiNote];
-                    if (freq > 0) {
-                        int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick3[idx3]);
-                        int endMs;
-                        if (idx3 + 1 < ZeldaMidiRcxNanoMidi.noteCount3) {
-                            endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick3[idx3 + 1]);
-                        } else {
-                            endMs = startMs + 250;
-                        }
-                        int durMs = endMs - startMs;
-                        if (durMs < 10) {
-                            durMs = 10;
-                        }
-                        int durCs = durMs / 10;
-                        if (durCs < 1) {
-                            durCs = 1;
-                        }
-                        if (durCs > 255) {
-                            durCs = 255;
-                        }
-                        audio.playTone(CHANNEL_3, freq, durCs);
-                    }
-                }
-                idx3++;
-            }
-
-            int nextTick2 = Integer.MAX_VALUE;
-            if (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 && ZeldaMidiRcxNanoMidi.noteTick1[idx1] < nextTick2) {
-                nextTick2 = ZeldaMidiRcxNanoMidi.noteTick1[idx1];
-            }
-            if (idx2 < ZeldaMidiRcxNanoMidi.noteCount2 && ZeldaMidiRcxNanoMidi.noteTick2[idx2] < nextTick2) {
-                nextTick2 = ZeldaMidiRcxNanoMidi.noteTick2[idx2];
-            }
-            if (idx3 < ZeldaMidiRcxNanoMidi.noteCount3 && ZeldaMidiRcxNanoMidi.noteTick3[idx3] < nextTick2) {
-                nextTick2 = ZeldaMidiRcxNanoMidi.noteTick3[idx3];
-            }
+            int nextTick2 = nextPendingTick();
             if (nextTick2 != Integer.MAX_VALUE) {
                 int delayMs = ZeldaMidiRcxNanoMidi.ticksToMillis(nextTick2) - ZeldaMidiRcxNanoMidi.ticksToMillis(nextTick);
                 if (delayMs < 10) {
@@ -229,12 +130,93 @@ public final class ZeldaMidiRcxNano {
         }
     }
 
-
-    static int durationCentiseconds(int toneMillis) {
-        return ZeldaMidiRcxNanoMidi.durationCentiseconds(toneMillis);
+    private static int nextPendingTick() {
+        int next = Integer.MAX_VALUE;
+        if (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 && ZeldaMidiRcxNanoMidi.noteTick1[idx1] < next) {
+            next = ZeldaMidiRcxNanoMidi.noteTick1[idx1];
+        }
+        if (idx2 < ZeldaMidiRcxNanoMidi.noteCount2 && ZeldaMidiRcxNanoMidi.noteTick2[idx2] < next) {
+            next = ZeldaMidiRcxNanoMidi.noteTick2[idx2];
+        }
+        if (idx3 < ZeldaMidiRcxNanoMidi.noteCount3 && ZeldaMidiRcxNanoMidi.noteTick3[idx3] < next) {
+            next = ZeldaMidiRcxNanoMidi.noteTick3[idx3];
+        }
+        return next;
     }
 
-    static int noteCount() {
-        return ZeldaMidiRcxNanoMidi.noteCount();
+    private static void processChannel1(RcxChannelAudio audio, int channel, int nextTick) {
+        while (idx1 < ZeldaMidiRcxNanoMidi.noteCount1 && ZeldaMidiRcxNanoMidi.noteTick1[idx1] == nextTick) {
+            int midiNote = ZeldaMidiRcxNanoMidi.noteNum1[idx1] + TRANSPOSE;
+            if (midiNote >= 0 && midiNote < 128) {
+                int freq = NOTE_HZ[midiNote];
+                if (freq > 0) {
+                    int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick1[idx1]);
+                    int endMs;
+                    if (idx1 + 1 < ZeldaMidiRcxNanoMidi.noteCount1) {
+                        endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick1[idx1 + 1]);
+                    } else {
+                        endMs = startMs + 250;
+                    }
+                    playToneFor(audio, channel, freq, startMs, endMs);
+                }
+            }
+            idx1++;
+        }
     }
+
+    private static void processChannel2(RcxChannelAudio audio, int channel, int nextTick) {
+        while (idx2 < ZeldaMidiRcxNanoMidi.noteCount2 && ZeldaMidiRcxNanoMidi.noteTick2[idx2] == nextTick) {
+            int midiNote = ZeldaMidiRcxNanoMidi.noteNum2[idx2] + TRANSPOSE;
+            if (midiNote >= 0 && midiNote < 128) {
+                int freq = NOTE_HZ[midiNote];
+                if (freq > 0) {
+                    int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick2[idx2]);
+                    int endMs;
+                    if (idx2 + 1 < ZeldaMidiRcxNanoMidi.noteCount2) {
+                        endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick2[idx2 + 1]);
+                    } else {
+                        endMs = startMs + 250;
+                    }
+                    playToneFor(audio, channel, freq, startMs, endMs);
+                }
+            }
+            idx2++;
+        }
+    }
+
+    private static void processChannel3(RcxChannelAudio audio, int channel, int nextTick) {
+        while (idx3 < ZeldaMidiRcxNanoMidi.noteCount3 && ZeldaMidiRcxNanoMidi.noteTick3[idx3] == nextTick) {
+            int midiNote = ZeldaMidiRcxNanoMidi.noteNum3[idx3] + TRANSPOSE;
+            if (midiNote >= 0 && midiNote < 128) {
+                int freq = NOTE_HZ[midiNote];
+                if (freq > 0) {
+                    int startMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick3[idx3]);
+                    int endMs;
+                    if (idx3 + 1 < ZeldaMidiRcxNanoMidi.noteCount3) {
+                        endMs = ZeldaMidiRcxNanoMidi.ticksToMillis(ZeldaMidiRcxNanoMidi.noteTick3[idx3 + 1]);
+                    } else {
+                        endMs = startMs + 250;
+                    }
+                    playToneFor(audio, channel, freq, startMs, endMs);
+                }
+            }
+            idx3++;
+        }
+    }
+
+    private static void playToneFor(RcxChannelAudio audio, int channel, int freq, int startMs, int endMs) {
+        int durMs = endMs - startMs;
+        if (durMs < 10) {
+            durMs = 10;
+        }
+        int durCs = durMs / 10;
+        if (durCs < 1) {
+            durCs = 1;
+        }
+        if (durCs > 255) {
+            durCs = 255;
+        }
+        audio.playTone(channel, freq, durCs);
+    }
+
 }

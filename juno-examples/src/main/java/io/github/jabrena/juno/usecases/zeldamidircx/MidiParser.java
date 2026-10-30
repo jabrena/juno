@@ -12,6 +12,12 @@ import java.util.ArrayList;
  * Small command-line inspector for Standard MIDI Files (SMF).
  */
 public final class MidiParser {
+    private static byte[] data;
+    private static int cursor;
+    private static int absTick;
+    private static TrackInfo info;
+    private static ArrayList<Integer> tempoTicks;
+    private static ArrayList<Integer> tempoUs;
 
     private MidiParser() {
     }
@@ -141,12 +147,13 @@ public final class MidiParser {
         System.out.printf("Total duration ~ %.1f s%n", totalMs / 1000.0);
     }
     private static TrackInfo parseTrack(byte[] data, int start, int end) {
-        TrackInfo info = new TrackInfo();
-        int cursor = start;
-        int absTick = 0;
+        MidiParser.data = data;
+        cursor = start;
+        absTick = 0;
+        info = new TrackInfo();
+        tempoTicks = new ArrayList<>();
+        tempoUs = new ArrayList<>();
         int runningStatus = 0;
-        ArrayList<Integer> tempoTicks = new ArrayList<>();
-        ArrayList<Integer> tempoUs = new ArrayList<>();
 
         while (cursor < end) {
             int delta = 0;
@@ -176,41 +183,7 @@ public final class MidiParser {
             } else {
                 status = runningStatus;
             }
-            int hi = status & 0xF0;
-            if (status == 0xFF) {
-                int mtype = data[cursor] & 0xFF;
-                cursor++;
-                int mlen = readVarLen(data, cursor);
-                cursor = skipVarLen(data, cursor);
-                int payloadStart = cursor;
-                if (mtype == 0x03) {
-                    info.name = new String(data, payloadStart, mlen, java.nio.charset.StandardCharsets.ISO_8859_1);
-                } else if (mtype == 0x51 && mlen == 3) {
-                    int uspq = ((data[payloadStart] & 0xFF) << 16)
-                            | ((data[payloadStart + 1] & 0xFF) << 8)
-                            | (data[payloadStart + 2] & 0xFF);
-                    tempoTicks.add(absTick);
-                    tempoUs.add(uspq);
-                }
-                cursor = payloadStart + mlen;
-            } else if (status == 0xF0 || status == 0xF7) {
-                int slen = readVarLen(data, cursor);
-                cursor = skipVarLen(data, cursor) + slen;
-            } else if (hi == 0x80 || hi == 0x90 || hi == 0xA0 || hi == 0xB0 || hi == 0xE0) {
-                int d1 = data[cursor] & 0xFF;
-                cursor++;
-                int d2 = data[cursor] & 0xFF;
-                cursor++;
-                if (hi == 0x90 && d2 > 0) {
-                    info.noteCount++;
-                    if (info.noteCount == 1) {
-                        info.firstTick = absTick;
-                    }
-                    info.lastTick = absTick;
-                }
-            } else if (hi == 0xC0 || hi == 0xD0) {
-                cursor++;
-            }
+            handleMidiEvent(status, end);
         }
 
         if (info.noteCount == 0) {
@@ -224,6 +197,44 @@ public final class MidiParser {
             info.tempoUs[i] = tempoUs.get(i);
         }
         return info;
+    }
+
+    private static void handleMidiEvent(int status, int end) {
+        int hi = status & 0xF0;
+        if (status == 0xFF) {
+            int mtype = data[cursor] & 0xFF;
+            cursor++;
+            int mlen = readVarLen(data, cursor);
+            cursor = skipVarLen(data, cursor);
+            int payloadStart = cursor;
+            if (mtype == 0x03) {
+                info.name = new String(data, payloadStart, mlen, java.nio.charset.StandardCharsets.ISO_8859_1);
+            } else if (mtype == 0x51 && mlen == 3) {
+                int uspq = ((data[payloadStart] & 0xFF) << 16)
+                        | ((data[payloadStart + 1] & 0xFF) << 8)
+                        | (data[payloadStart + 2] & 0xFF);
+                tempoTicks.add(absTick);
+                tempoUs.add(uspq);
+            }
+            cursor = payloadStart + mlen;
+        } else if (status == 0xF0 || status == 0xF7) {
+            int slen = readVarLen(data, cursor);
+            cursor = skipVarLen(data, cursor) + slen;
+        } else if (hi == 0x80 || hi == 0x90 || hi == 0xA0 || hi == 0xB0 || hi == 0xE0) {
+            int d1 = data[cursor] & 0xFF;
+            cursor++;
+            int d2 = data[cursor] & 0xFF;
+            cursor++;
+            if (hi == 0x90 && d2 > 0) {
+                info.noteCount++;
+                if (info.noteCount == 1) {
+                    info.firstTick = absTick;
+                }
+                info.lastTick = absTick;
+            }
+        } else if (hi == 0xC0 || hi == 0xD0) {
+            cursor++;
+        }
     }
 
     private static int readUInt16(byte[] data, int offset) {

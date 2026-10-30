@@ -84,49 +84,57 @@ public final class ZeldaMidiRcxNanoMidi {
             } else {
                 status = runningStatus;
             }
-            int hi = status & 0xF0;
-            if (status == 0xFF) {
-                int mtype = midiData[cursor] & 0xFF;
-                cursor++;
-                int mlen = readVarLen();
-                if (mtype == 0x51 && mlen == 3) {
-                    int uspq = ((midiData[cursor] & 0xFF) << 16) | ((midiData[cursor + 1] & 0xFF) << 8) | (midiData[cursor + 2] & 0xFF);
-                    if (tempoCount < MAX_TEMPO) {
-                        tempoTick[tempoCount] = absTick;
-                        tempoUs[tempoCount] = uspq;
-                        tempoCount++;
-                    }
-                } else if (mtype == 0x2F) {
-                    cursor += mlen;
-                    break;
+            handleEvent(status, trackIndex, absTick);
+        }
+    }
+
+    private static void handleEvent(int status, int trackIndex, int absTick) {
+        int hi = status & 0xF0;
+        if (status == 0xFF) {
+            int mtype = midiData[cursor] & 0xFF;
+            cursor++;
+            int mlen = readVarLen();
+            if (mtype == 0x51 && mlen == 3) {
+                int uspq = ((midiData[cursor] & 0xFF) << 16) | ((midiData[cursor + 1] & 0xFF) << 8) | (midiData[cursor + 2] & 0xFF);
+                if (tempoCount < MAX_TEMPO) {
+                    tempoTick[tempoCount] = absTick;
+                    tempoUs[tempoCount] = uspq;
+                    tempoCount++;
                 }
+            } else if (mtype == 0x2F) {
                 cursor += mlen;
-            } else if (status == 0xF0 || status == 0xF7) {
-                int slen = readVarLen();
-                cursor += slen;
-            } else if (hi == 0x80 || hi == 0x90 || hi == 0xA0 || hi == 0xB0 || hi == 0xE0) {
-                int d1 = midiData[cursor] & 0xFF;
-                cursor++;
-                int d2 = midiData[cursor] & 0xFF;
-                cursor++;
-                if (hi == 0x90 && d2 > 0) {
-                    if (trackIndex == TRACK_1 && noteCount1 < MAX_NOTES) {
-                        noteTick1[noteCount1] = absTick;
-                        noteNum1[noteCount1] = d1;
-                        noteCount1++;
-                    } else if (trackIndex == TRACK_2 && noteCount2 < MAX_NOTES) {
-                        noteTick2[noteCount2] = absTick;
-                        noteNum2[noteCount2] = d1;
-                        noteCount2++;
-                    } else if (trackIndex == TRACK_3 && noteCount3 < MAX_NOTES) {
-                        noteTick3[noteCount3] = absTick;
-                        noteNum3[noteCount3] = d1;
-                        noteCount3++;
-                    }
-                }
-            } else if (hi == 0xC0 || hi == 0xD0) {
-                cursor++;
+                return;
             }
+            cursor += mlen;
+        } else if (status == 0xF0 || status == 0xF7) {
+            int slen = readVarLen();
+            cursor += slen;
+        } else if (hi == 0x80 || hi == 0x90 || hi == 0xA0 || hi == 0xB0 || hi == 0xE0) {
+            int d1 = midiData[cursor] & 0xFF;
+            cursor++;
+            int d2 = midiData[cursor] & 0xFF;
+            cursor++;
+            if (hi == 0x90 && d2 > 0) {
+                collectNote(trackIndex, d1, absTick);
+            }
+        } else if (hi == 0xC0 || hi == 0xD0) {
+            cursor++;
+        }
+    }
+
+    private static void collectNote(int trackIndex, int note, int absTick) {
+        if (trackIndex == TRACK_1 && noteCount1 < MAX_NOTES) {
+            noteTick1[noteCount1] = absTick;
+            noteNum1[noteCount1] = note;
+            noteCount1++;
+        } else if (trackIndex == TRACK_2 && noteCount2 < MAX_NOTES) {
+            noteTick2[noteCount2] = absTick;
+            noteNum2[noteCount2] = note;
+            noteCount2++;
+        } else if (trackIndex == TRACK_3 && noteCount3 < MAX_NOTES) {
+            noteTick3[noteCount3] = absTick;
+            noteNum3[noteCount3] = note;
+            noteCount3++;
         }
     }
 
