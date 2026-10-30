@@ -12,16 +12,21 @@ final class ChallengeView implements View {
     private final Navigator navigator;
     private final LichessModel model;
     private final LichessBoardView boardView;
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock;
     private int selected = -1;
     private int feedback = LichessModel.MOVE_CORRECT;
     private int feedbackAt;
     private boolean dirty;
 
     ChallengeView(Navigator navigator, LichessModel model) {
+        this(navigator, model, ArduinoUno.getClock());
+    }
+
+    ChallengeView(Navigator navigator, LichessModel model, Clock clock) {
         this.navigator = navigator;
         this.model = model;
         boardView = new LichessBoardView(model);
+        this.clock = clock;
     }
 
     @Override
@@ -68,9 +73,17 @@ final class ChallengeView implements View {
             dirty = true;
             return;
         }
+        if (model.board().pieceAt(square) * model.board().playerColor() > 0) {
+            selected = square;
+            dirty = true;
+            return;
+        }
         feedback = model.play(selected, square);
         selected = -1;
         feedbackAt = clock.millis();
         dirty = true;
+        if (feedback == LichessModel.MOVE_SOLVED) {
+            navigator.show(LichessViews.WIN);
+        }
     }
 }

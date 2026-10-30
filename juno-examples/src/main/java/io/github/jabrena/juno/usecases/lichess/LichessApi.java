@@ -14,6 +14,8 @@ import java.util.Properties;
 /** The network model service for the public Lichess puzzle endpoints. */
 public final class LichessApi {
     private static final int WIFI_ATTEMPTS = 30;
+    private static final int DEFAULT_HTTP_TIMEOUT = 5000;
+    private static final int TV_HTTP_TIMEOUT = 1500;
     private static final int RESPONSE_CAPACITY = 2048;
     private static final int RESPONSE_HEADERS_CAPACITY = 256;
 
@@ -68,5 +70,14 @@ public final class LichessApi {
         int length = HttpClient.get("https://lichess.org/api/puzzle/next", response, response.length,
                 responseHeaders, responseHeaders.length, status);
         return model.loadResponse(response, length, status[0], LichessModel.FRESH);
+    }
+
+    /** Reads the current game and recent positions from the public Lichess TV stream. */
+    public boolean loadTv(TvModel model) {
+        HttpClient.setTimeout(TV_HTTP_TIMEOUT);
+        int length = HttpClient.get("https://lichess.org/api/tv/feed", response, response.length,
+                responseHeaders, responseHeaders.length, status);
+        HttpClient.setTimeout(DEFAULT_HTTP_TIMEOUT);
+        return model.loadResponse(response, length, status[0]);
     }
 }

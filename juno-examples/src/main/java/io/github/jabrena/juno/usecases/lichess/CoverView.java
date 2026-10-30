@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.lichess;
 
+import io.github.jabrena.juno.games.chess.ChessPieceRenderer;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
@@ -8,9 +9,9 @@ import io.github.jabrena.juno.util.mvc.View;
 final class CoverView implements View {
     private static final int BACKGROUND = 0x1082;
     private static final int CONTENT_WIDTH = 240;
-    private static final int LOGO_CENTER_X = 120;
-    private static final int LOGO_CENTER_Y = 53;
-    private static final int LOGO_RADIUS = 42;
+    private static final int KNIGHT_X = 80;
+    private static final int KNIGHT_Y = 15;
+    private static final int KNIGHT_SCALE = 4;
     private static final int BUTTON_X = 34;
     private static final int BUTTON_Y = 201;
     private static final int BUTTON_WIDTH = 172;
@@ -60,26 +61,9 @@ final class CoverView implements View {
         navigator.show(LichessViews.MENU);
     }
 
-    /** A large white-on-navy approximation of the supplied Lichess horse mark. */
+    /** The same knight bitmap used by the chess game, enlarged for the cover. */
     private void drawLogo() {
-        TftTouchShield.fillCircle(LOGO_CENTER_X, LOGO_CENTER_Y, LOGO_RADIUS, TftTouchShield.WHITE);
-        TftTouchShield.fillCircle(LOGO_CENTER_X, LOGO_CENTER_Y, 34, BACKGROUND);
-
-        // Circular stroke.
-        TftTouchShield.fillCircle(LOGO_CENTER_X, LOGO_CENTER_Y, 30, TftTouchShield.WHITE);
-        TftTouchShield.fillCircle(LOGO_CENTER_X, LOGO_CENTER_Y, 23, BACKGROUND);
-        TftTouchShield.fillRect(120, 29, 30, 52, BACKGROUND);
-
-        // Horse neck, head and pointed ear, built from chunky primitives for the 240x320 display.
-        TftTouchShield.fillCircle(115, 54, 12, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(110, 50, 26, 28, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(120, 42, 18, 28, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(130, 34, 13, 20, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(138, 32, 13, 8, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(136, 39, 8, 10, BACKGROUND);
-        TftTouchShield.fillCircle(127, 57, 4, BACKGROUND);
-        TftTouchShield.fillRect(105, 73, 34, 8, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(97, 78, 42, 7, TftTouchShield.WHITE);
+        ChessPieceRenderer.drawKnight(KNIGHT_X, KNIGHT_Y, KNIGHT_SCALE, BACKGROUND);
     }
 
     private static int centeredX(String text, int size) {

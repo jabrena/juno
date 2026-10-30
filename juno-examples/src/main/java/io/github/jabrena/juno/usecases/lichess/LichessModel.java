@@ -142,6 +142,12 @@ public final class LichessModel {
         return plays;
     }
 
+    /** Returns the number of player moves still required to solve the puzzle. */
+    int remainingPlayerMoves() {
+        int remainingSolutionMoves = solutionCount - solutionIndex;
+        return (remainingSolutionMoves + 1) / 2;
+    }
+
     public byte[] theme() {
         return theme;
     }
@@ -172,6 +178,16 @@ public final class LichessModel {
 
     public int replyTo() {
         return replyTo;
+    }
+
+    /** The source square of the next solution move, used by the view to show a hint after a wrong move. */
+    int hintFrom() {
+        return loaded && solutionIndex < solutionCount ? PuzzleBoard.from(solution[solutionIndex]) : -1;
+    }
+
+    /** The destination square of the next solution move, used by the view to show a hint after a wrong move. */
+    int hintTo() {
+        return loaded && solutionIndex < solutionCount ? PuzzleBoard.to(solution[solutionIndex]) : -1;
     }
 
     private static String solutionPath(int index) {

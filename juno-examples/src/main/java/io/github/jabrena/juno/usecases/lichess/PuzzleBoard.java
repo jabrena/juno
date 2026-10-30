@@ -16,6 +16,7 @@ public final class PuzzleBoard {
 
     private final byte[] squares = new byte[64];
     private final byte[] initial = new byte[64];
+    private final byte[] scratch = new byte[64];
     private int playerColor;
     private int initialPlayerColor;
     private int enPassant = -1;
@@ -167,8 +168,181 @@ public final class PuzzleBoard {
         return squares[square];
     }
 
+    /** Writes the legal destinations for the selected player's piece into the caller-owned array. */
+    int legalDestinations(int from, int[] destinations) {
+        if (destinations == null || from < 0 || from >= squares.length || squares[from] * playerColor <= 0) {
+            return 0;
+        }
+        int piece = Math.abs(squares[from]);
+        int row = from >> 3;
+        int column = from & 7;
+        int count = 0;
+        if (piece == PAWN) {
+            count = pawnDestinations(from, row, column, count, destinations);
+        } else if (piece == KNIGHT) {
+            for (int dr = -2; dr <= 2; dr++) {
+                for (int dc = -2; dc <= 2; dc++) {
+                    if (dr != 0 && dc != 0 && Math.abs(dr) != Math.abs(dc)) {
+                        count = addLegalDestination(from, row + dr, column + dc, count, destinations);
+                    }
+                }
+            }
+        } else if (piece == KING) {
+            for (int dr = -1; dr <= 1; dr++) {
+                for (int dc = -1; dc <= 1; dc++) {
+                    if (dr != 0 || dc != 0) {
+                        count = addLegalDestination(from, row + dr, column + dc, count, destinations);
+                    }
+                }
+            }
+        } else {
+            for (int dr = -1; dr <= 1; dr++) {
+                for (int dc = -1; dc <= 1; dc++) {
+                    boolean straight = dr == 0 || dc == 0;
+                    if ((dr != 0 || dc != 0)
+                            && (piece == QUEEN || (piece == ROOK && straight) || (piece == BISHOP && !straight))) {
+                        count = rayDestinations(from, row, column, dr, dc, count, destinations);
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
     public int playerColor() {
         return playerColor;
+    }
+
+    private int pawnDestinations(int from, int row, int column, int count, int[] destinations) {
+        int direction = playerColor > 0 ? -1 : 1;
+        int next = row + direction;
+        if (next < 0 || next > 7) {
+            return count;
+        }
+        int forward = next * 8 + column;
+        if (squares[forward] == EMPTY) {
+            count = addLegalDestination(from, next, column, count, destinations);
+            int startRow = playerColor > 0 ? 6 : 1;
+            int jump = (row + 2 * direction) * 8 + column;
+            if (row == startRow && squares[jump] == EMPTY) {
+                count = addLegalDestination(from, row + 2 * direction, column, count, destinations);
+            }
+        }
+        for (int dc = -1; dc <= 1; dc += 2) {
+            int target = column + dc;
+            if (target >= 0 && target < 8) {
+                int to = next * 8 + target;
+                if (squares[to] * playerColor < 0 || to == enPassant) {
+                    count = addLegalDestination(from, next, target, count, destinations);
+                }
+            }
+        }
+        return count;
+    }
+
+    private int rayDestinations(int from, int row, int column, int dr, int dc, int count, int[] destinations) {
+        int r = row + dr;
+        int c = column + dc;
+        while (r >= 0 && r <= 7 && c >= 0 && c <= 7) {
+            int to = r * 8 + c;
+            if (squares[to] * playerColor > 0) {
+                break;
+            }
+            count = addLegalDestination(from, r, c, count, destinations);
+            if (squares[to] * playerColor < 0) {
+                break;
+            }
+            r += dr;
+            c += dc;
+        }
+        return count;
+    }
+
+    private int addLegalDestination(int from, int row, int column, int count, int[] destinations) {
+        if (count >= destinations.length || row < 0 || row > 7 || column < 0 || column > 7) {
+            return count;
+        }
+        int to = row * 8 + column;
+        if (squares[to] * playerColor > 0) {
+            return count;
+        }
+        int move = from | to << 6;
+        copy(squares, scratch);
+        int previousEnPassant = enPassant;
+        apply(move);
+        boolean legal = !inCheck(playerColor);
+        copy(scratch, squares);
+        enPassant = previousEnPassant;
+        if (!legal) {
+            return count;
+        }
+        destinations[count] = to;
+        return count + 1;
+    }
+
+    private boolean inCheck(int color) {
+        int king = -1;
+        for (int square = 0; square < squares.length; square++) {
+            if (squares[square] == KING * color) {
+                king = square;
+                break;
+            }
+        }
+        return king >= 0 && isAttacked(king, -color);
+    }
+
+    private boolean isAttacked(int square, int by) {
+        int row = square >> 3;
+        int column = square & 7;
+        int pawnRow = row + by;
+        if (pawnRow >= 0 && pawnRow <= 7) {
+            if (column > 0 && squares[pawnRow * 8 + column - 1] == PAWN * by) {
+                return true;
+            }
+            if (column < 7 && squares[pawnRow * 8 + column + 1] == PAWN * by) {
+                return true;
+            }
+        }
+        for (int dr = -2; dr <= 2; dr++) {
+            for (int dc = -2; dc <= 2; dc++) {
+                if (dr != 0 && dc != 0 && Math.abs(dr) != Math.abs(dc)
+                        && pieceAt(row + dr, column + dc) == KNIGHT * by) {
+                    return true;
+                }
+            }
+        }
+        for (int dr = -1; dr <= 1; dr++) {
+            for (int dc = -1; dc <= 1; dc++) {
+                if (dr == 0 && dc == 0) {
+                    continue;
+                }
+                if (pieceAt(row + dr, column + dc) == KING * by) {
+                    return true;
+                }
+                int slider = dr == 0 || dc == 0 ? ROOK : BISHOP;
+                int r = row + dr;
+                int c = column + dc;
+                while (r >= 0 && r <= 7 && c >= 0 && c <= 7) {
+                    int piece = squares[r * 8 + c];
+                    if (piece != EMPTY) {
+                        if (piece == slider * by || piece == QUEEN * by) {
+                            return true;
+                        }
+                        break;
+                    }
+                    r += dr;
+                    c += dc;
+                }
+            }
+        }
+        return false;
+    }
+
+    private int pieceAt(int row, int column) {
+        if (row < 0 || row > 7 || column < 0 || column > 7) {
+            return EMPTY;
+        }
+        return squares[row * 8 + column];
     }
 
     static int from(int move) {

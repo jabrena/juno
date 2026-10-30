@@ -25,4 +25,25 @@ class PuzzleBoardTest {
         assertEquals(-1, PuzzleBoard.parseUci("e9e4".getBytes(), 4));
         assertEquals(-1, PuzzleBoard.parseUci("e2e4x".getBytes(), 5));
     }
+
+    @Test
+    void findsLegalDestinationsForSelectedPiece() {
+        PuzzleBoard board = new PuzzleBoard();
+        byte[] fen = "4k3/8/8/8/8/8/4P3/4K3 w - - 0 1".getBytes();
+        int[] destinations = new int[32];
+
+        assertTrue(board.loadFen(fen, fen.length));
+        assertEquals(2, board.legalDestinations(52, destinations));
+        assertTrue(contains(destinations, 44));
+        assertTrue(contains(destinations, 36));
+    }
+
+    private static boolean contains(int[] values, int expected) {
+        for (int value : values) {
+            if (value == expected) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

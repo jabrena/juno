@@ -12,6 +12,15 @@ public final class ChessPieceRenderer {
 
     /** Draws one signed chess piece into an already opened square background. */
     public static void draw(int x, int y, int piece, int background) {
+        drawScaled(x, y, 1, piece, background);
+    }
+
+    /** Draws the shared knight bitmap enlarged by {@code scale} without allocating a new bitmap. */
+    public static void drawKnight(int x, int y, int scale, int background) {
+        drawScaled(x, y, scale, 2, background);
+    }
+
+    private static void drawScaled(int x, int y, int scale, int piece, int background) {
         int type = Math.abs(piece);
         int fill = TftTouchShield.WHITE;
         int ink = TftTouchShield.BLACK;
@@ -19,7 +28,8 @@ public final class ChessPieceRenderer {
             fill = TftTouchShield.BLACK;
             ink = BLACK_PIECE_EDGE;
         }
-        if (!TftTouchShield.beginPixels(x, y, PIECE_SIZE, PIECE_SIZE)) {
+        int size = PIECE_SIZE * scale;
+        if (!TftTouchShield.beginPixels(x, y, size, size)) {
             return;
         }
         int above = 0;
@@ -31,14 +41,18 @@ public final class ChessPieceRenderer {
             }
             int interior = shape & above & below & (shape << 1) & (shape >> 1);
             int outline = (shape & ~interior) | PieceSprites.detailRow(type, row);
-            for (int column = 0; column < PIECE_SIZE; column++) {
-                int color = background;
-                if (((outline >> column) & 1) != 0) {
-                    color = ink;
-                } else if (((shape >> column) & 1) != 0) {
-                    color = fill;
+            for (int repeatRow = 0; repeatRow < scale; repeatRow++) {
+                for (int column = 0; column < PIECE_SIZE; column++) {
+                    int color = background;
+                    if (((outline >> column) & 1) != 0) {
+                        color = ink;
+                    } else if (((shape >> column) & 1) != 0) {
+                        color = fill;
+                    }
+                    for (int repeatColumn = 0; repeatColumn < scale; repeatColumn++) {
+                        TftTouchShield.pushPixel(color);
+                    }
                 }
-                TftTouchShield.pushPixel(color);
             }
             above = shape;
             shape = below;
