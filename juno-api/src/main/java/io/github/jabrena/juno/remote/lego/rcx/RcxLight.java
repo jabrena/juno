@@ -19,7 +19,8 @@ public final class RcxLight {
         this.port = port;
     }
 
-    int port() {
+    /** Returns the motor output (port) used as the tone indicator. */
+    public int port() {
         return port;
     }
 }

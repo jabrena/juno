@@ -8,7 +8,6 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxChannelAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLight;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.util.Delay;
