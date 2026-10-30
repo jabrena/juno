@@ -49,7 +49,7 @@
         <maven-plugin-spotless.version>3.10.4</maven-plugin-spotless.version>
         <maven-plugin-enforcer.version>3.6.3</maven-plugin-enforcer.version>
         <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
-        <maven-plugin-jacoco.version>0.8.15</maven-plugin-jacoco.version>
+        <maven-plugin-jacoco.version>0.8.16</maven-plugin-jacoco.version>
         <!-- Minimum coverage for the modules that gate on it: JaCoCo per counter under -Pjacoco, and PiTest's
              mutation and line coverage under -Ppitest (juno-compiler). -->
         <coverage.level>80</coverage.level>
