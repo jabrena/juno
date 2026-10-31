@@ -25,7 +25,7 @@ class ZeldaPolyphonicRcxTest {
         assertThat(ZeldaPolyphonicRcx.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
         assertThat(ZeldaPolyphonicRcxNano.REFERENCE_FREQUENCY_HZ).isEqualTo(440);
         assertThat(ZeldaPolyphonicRcxNano.REFERENCE_DURATION_CENTISECONDS).isEqualTo(50);
-        assertThat(ZeldaPolyphonicRcxNano.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
+        assertThat(ZeldaPolyphonicRcxNano.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3, 4);
     }
 
     @Test

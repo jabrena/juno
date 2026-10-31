@@ -5,6 +5,7 @@ public final class ZeldaMidiRcxNanoMidi {
     private static final int TRACK_1 = 1;
     private static final int TRACK_2 = 2;
     private static final int TRACK_3 = 3;
+    private static final int TRACK_4 = 4;
 
     private static final int MAX_TEMPO = 128;
     private static final int MAX_NOTES = 256;
@@ -28,6 +29,10 @@ public final class ZeldaMidiRcxNanoMidi {
     public static final int[] noteTick3 = new int[MAX_NOTES];
     public static final int[] noteNum3 = new int[MAX_NOTES];
     public static int noteCount3 = 0;
+
+    public static final int[] noteTick4 = new int[MAX_NOTES];
+    public static final int[] noteNum4 = new int[MAX_NOTES];
+    public static int noteCount4 = 0;
 
     private ZeldaMidiRcxNanoMidi() {
     }
@@ -135,6 +140,10 @@ public final class ZeldaMidiRcxNanoMidi {
             noteTick3[noteCount3] = absTick;
             noteNum3[noteCount3] = note;
             noteCount3++;
+        } else if (trackIndex == TRACK_4 && noteCount4 < MAX_NOTES) {
+            noteTick4[noteCount4] = absTick;
+            noteNum4[noteCount4] = note;
+            noteCount4++;
         }
     }
 
@@ -204,6 +213,6 @@ public final class ZeldaMidiRcxNanoMidi {
     }
 
     public static int noteCount() {
-        return noteCount1 + noteCount2 + noteCount3;
+        return noteCount1 + noteCount2 + noteCount3 + noteCount4;
     }
 }
