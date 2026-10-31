@@ -8,7 +8,6 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.rcx.RcxChannelAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLight;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.util.Delay;
@@ -35,13 +34,15 @@ public final class ZeldaPolyphonicRcxNano {
     private static final int MELODY_CHANNEL = 1;
     private static final int HARMONY_CHANNEL = 2;
     private static final int COUNTERPOINT_CHANNEL = 3;
+    private static final int BASS_CHANNEL = 4;
     static final int REFERENCE_FREQUENCY_HZ = 440;
     static final int REFERENCE_DURATION_CENTISECONDS = 50;
-    static final int[] ORCHESTRA_CHANNELS = {MELODY_CHANNEL, HARMONY_CHANNEL, COUNTERPOINT_CHANNEL};
+    static final int[] ORCHESTRA_CHANNELS = {MELODY_CHANNEL, HARMONY_CHANNEL, COUNTERPOINT_CHANNEL, BASS_CHANNEL};
     /** The current physical wiring: each RCX brick has its activity lamp on output A. */
     private static final RcxLight MELODY_LIGHT = new RcxLight(RcxLight.PORT_A);
     private static final RcxLight HARMONY_LIGHT = new RcxLight(RcxLight.PORT_A);
     private static final RcxLight COUNTERPOINT_LIGHT = new RcxLight(RcxLight.PORT_A);
+    private static final RcxLight BASS_LIGHT = new RcxLight(RcxLight.PORT_A);
 
     private ZeldaPolyphonicRcxNano() {
     }
@@ -57,7 +58,7 @@ public final class ZeldaPolyphonicRcxNano {
         link.begin(receiver, emitter);
         Delay.millis(START_MILLIS);
         Serial.println("Nano carrier IR: TX A0, RX A5");
-        Serial.println("Playing Zelda Ocarina on Nano RCX channels 1, 2 and 3");
+        Serial.println("Playing Zelda Ocarina on Nano RCX channels 1, 2, 3 and 4");
         configureIndicators(audio);
         playReferenceTone(audio);
         play(audio);
@@ -69,6 +70,7 @@ public final class ZeldaPolyphonicRcxNano {
         audio.configureIndicator(MELODY_CHANNEL, MELODY_LIGHT);
         audio.configureIndicator(HARMONY_CHANNEL, HARMONY_LIGHT);
         audio.configureIndicator(COUNTERPOINT_CHANNEL, COUNTERPOINT_LIGHT);
+        audio.configureIndicator(BASS_CHANNEL, BASS_LIGHT);
     }
 
     /** Plays the same A4 reference tone on every channel so the three brick volumes can be compared before the piece. */
@@ -87,6 +89,7 @@ public final class ZeldaPolyphonicRcxNano {
                 int melody = ZeldaOcarinaTheme.frequencyHz(note);
                 int harmony = ZeldaOcarinaHarmony.frequencyHz(note);
                 int counterpoint = ZeldaOcarinaCounterpoint.frequencyHz(note);
+                int bass = ZeldaOcarinaBass.frequencyHz(note);
                 if (melody > 0) {
                     audio.playTone(MELODY_CHANNEL, melody, duration);
                 }
@@ -95,6 +98,9 @@ public final class ZeldaPolyphonicRcxNano {
                 }
                 if (counterpoint > 0) {
                     audio.playTone(COUNTERPOINT_CHANNEL, counterpoint, duration);
+                }
+                if (bass > 0) {
+                    audio.playTone(BASS_CHANNEL, bass, duration);
                 }
                 Delay.millis(ZeldaOcarinaTheme.stepMillis(note));
             }
