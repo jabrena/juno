@@ -1,0 +1,22 @@
+---
+layout: default
+---
+{@io.quarkiverse.roq.frontmatter.runtime.model.Site site}
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+{#include partials/juno/topbar /}
+{#insert /}
+{#include partials/juno/footer /}
+{! Copy buttons for the docs' terminal windows; the theme's click handler copies the block's code. !}
+<script>{|
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+|}</script>

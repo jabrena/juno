@@ -1,26 +1,910 @@
-/* Juno theme: PCB teal accent, copper/solder pop color. */
+/* Juno theme: LEGO Mindstorms RCX colors. Accent = LEGO bright blue, pop = RCX yellow (the darker
+   pop shades turn ochre so pop text stays readable on light tints). */
 @theme inline {
-    --color-accent-50: #eefaf7;
-    --color-accent-100: #d3f1ea;
-    --color-accent-200: #a8e3d6;
-    --color-accent-300: #75cebc;
-    --color-accent-400: #45b09c;
-    --color-accent-500: #2c9382;
-    --color-accent-600: #21766a;
-    --color-accent-700: #1c5f56;
-    --color-accent-800: #194c46;
-    --color-accent-900: #163f3a;
-    --color-accent-950: #092422;
+    --color-accent-50: #eef5ff;
+    --color-accent-100: #d9e8ff;
+    --color-accent-200: #b3d0ff;
+    --color-accent-300: #7fb0f5;
+    --color-accent-400: #3d86e0;
+    --color-accent-500: #1a6ad1;
+    --color-accent-600: #0055bf;
+    --color-accent-700: #00449a;
+    --color-accent-800: #003577;
+    --color-accent-900: #0a2a5a;
+    --color-accent-950: #061a38;
 
-    --color-pop-50: #fdf6ec;
-    --color-pop-100: #fae8cc;
-    --color-pop-200: #f4cd94;
-    --color-pop-300: #edac5c;
-    --color-pop-400: #e68f38;
-    --color-pop-500: #d5701f;
-    --color-pop-600: #b25518;
-    --color-pop-700: #8e3f18;
-    --color-pop-800: #74341a;
-    --color-pop-900: #612d19;
-    --color-pop-950: #37150b;
+    --color-pop-50: #fffbeb;
+    --color-pop-100: #fff5cc;
+    --color-pop-200: #ffea99;
+    --color-pop-300: #ffde5c;
+    --color-pop-400: #ffcd03;
+    --color-pop-500: #f5b800;
+    --color-pop-600: #9a7400;
+    --color-pop-700: #7a5c00;
+    --color-pop-800: #5e4700;
+    --color-pop-900: #453400;
+    --color-pop-950: #2b2000;
+}
+
+/* The other LEGO brick colors from the RCX kits. */
+:root {
+    --lego-red: #c91a09;
+    --lego-green: #237841;
+    --lego-black: #1b2a34;
+}
+
+/* ===== Layout: top bar + full-width pages (tinygo.org-style) ===== */
+.wrapper {
+    max-width: none;
+}
+
+.juno-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: 4rem;
+    background: var(--color-pop-400);
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.juno-topbar-inner {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    height: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+.juno-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--lego-black);
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.juno-topnav {
+    display: flex;
+    gap: 0.25rem;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.juno-topnav-children {
+    display: none;
+}
+
+.juno-topnav a {
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.375rem;
+    color: var(--lego-black);
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.juno-topnav a:hover {
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.juno-topnav a.active {
+    color: white;
+    background: var(--lego-black);
+}
+
+.juno-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.juno-icon-link {
+    color: var(--lego-black);
+    font-size: 1.3rem;
+}
+
+.juno-icon-link:hover {
+    color: var(--color-accent-700);
+}
+
+@media (max-width: 640px) {
+    .juno-topbar-inner {
+        gap: 0.75rem;
+    }
+}
+
+/* Menu button: hidden on wide screens; on phones it opens the main navigation as a panel under the top bar. */
+.juno-menu-toggle {
+    display: none;
+}
+
+@media (max-width: 767px) {
+    .juno-topbar-inner {
+        position: relative;
+    }
+
+    .juno-topbar-actions {
+        margin-left: auto;
+    }
+
+    .juno-menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.5rem;
+        height: 2.5rem;
+        flex-shrink: 0;
+        border: 0;
+        border-radius: 0.375rem;
+        background: transparent;
+        color: var(--lego-black);
+        font-size: 1.35rem;
+        cursor: pointer;
+    }
+
+    .juno-menu-toggle:hover {
+        background: rgba(0, 0, 0, 0.08);
+    }
+
+    .juno-topnav {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        max-height: calc(100vh - 4rem);
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0.5rem 1.25rem 1rem;
+        background: var(--color-pop-400);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .juno-topnav.open {
+        display: flex;
+    }
+
+    /* The secondary links of the current section sit under their parent inside the panel; the bar is not shown. */
+    .juno-subnav {
+        display: none;
+    }
+
+    .juno-topnav-children {
+        display: none;
+        flex-direction: column;
+        padding-left: 1rem;
+        border-left: 2px solid var(--lego-black);
+        margin: 0.15rem 0 0.35rem 0.75rem;
+    }
+
+    .juno-topnav > a.active + .juno-topnav-children {
+        display: flex;
+    }
+
+    .juno-topnav-children a {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.95rem;
+    }
+
+    .juno-topnav a {
+        padding: 0.8rem 0.75rem;
+        font-size: 1rem;
+    }
+}
+
+/* ===== Secondary bar: the pages of the current top-bar section ===== */
+.juno-subnav {
+    position: sticky;
+    top: 4rem;
+    z-index: 30;
+    background: white;
+    border-bottom: 1px solid var(--color-neutral-200);
+}
+
+.dark .juno-subnav {
+    background: var(--color-neutral-900);
+    border-bottom-color: var(--color-neutral-700);
+}
+
+.juno-subnav-inner {
+    display: flex;
+    gap: 0.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.juno-subnav a {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 2px solid transparent;
+    color: var(--color-neutral-600);
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.dark .juno-subnav a {
+    color: var(--color-neutral-400);
+}
+
+.juno-subnav a:hover {
+    color: var(--color-accent-700);
+}
+
+.juno-subnav a.active {
+    color: var(--color-accent-700);
+    border-bottom-color: var(--lego-red);
+}
+
+.dark .juno-subnav a:hover,
+.dark .juno-subnav a.active {
+    color: var(--color-accent-300);
+}
+
+/* ===== Docs pages: full width under the top bar, no sidebar ===== */
+/* The white page area lines up with the top and secondary bars' 1200px column (whose links
+   start after 1.25rem of padding), and the text uses that whole width instead of the theme's
+   narrow centered column. */
+.juno-docs {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+.juno-docs .page-content {
+    padding: 2rem 2.5rem;
+}
+
+.juno-docs .page-content .content-main {
+    max-width: none;
+}
+
+@media (max-width: 767px) {
+    .juno-docs {
+        padding: 0;
+    }
+
+    .juno-docs .page-content {
+        padding: 1.25rem;
+    }
+}
+
+/* Docs page title: left-aligned with the text below it, no subtitle or separator line. */
+.juno-page-header {
+    margin: 0.5rem 0 1.75rem;
+}
+
+.juno-page-header h1 {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--color-accent-900);
+}
+
+.dark .juno-page-header h1 {
+    color: var(--color-accent-300);
+}
+
+/* Deeper docs headings: keep h4 and h5 distinguishable (the theme renders both at body size). */
+.juno-docs .content-prose h4 {
+    margin-top: 2rem;
+    font-size: 1.3rem;
+}
+
+.juno-docs .content-prose h5 {
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    color: var(--color-accent-700);
+}
+
+.dark .juno-docs .content-prose h5 {
+    color: var(--color-accent-300);
+}
+
+/* ===== Docs code blocks: a dark editor window with a title bar naming the language ===== */
+.juno-docs pre {
+    position: relative;
+    margin: 1.5rem 0;
+    padding: 0;
+    border: 1px solid #30363d;
+    border-radius: 0.75rem;
+    background: #0d1117;
+    box-shadow: 0 12px 28px -18px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+.juno-docs pre code {
+    display: block;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    background: none;
+    color: #e6edf3;
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 400;
+    line-height: 1.65;
+    border-radius: 0;
+}
+
+/* Title bar: three brick-colored dots and the block's language. */
+.juno-docs pre:has(> code[class*="language-"])::before {
+    display: block;
+    padding: 0.45rem 1rem 0.45rem 4.25rem;
+    border-bottom: 1px solid #30363d;
+    background-color: #161b22;
+    background-image:
+        radial-gradient(circle, var(--lego-red) 0 4.5px, transparent 5px),
+        radial-gradient(circle, var(--color-pop-400) 0 4.5px, transparent 5px),
+        radial-gradient(circle, var(--lego-green) 0 4.5px, transparent 5px);
+    background-size: 12px 12px;
+    background-repeat: no-repeat;
+    background-position: 1rem center, 1.85rem center, 2.7rem center;
+    color: #8b949e;
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    content: "Code";
+}
+
+.juno-docs pre:has(> code.language-java)::before {
+    content: "Java";
+}
+
+.juno-docs pre:has(> code.language-bash)::before {
+    content: "Terminal";
+}
+
+.juno-docs pre:has(> code.language-xml)::before {
+    content: "XML";
+}
+
+.juno-docs pre:has(> code.language-properties)::before {
+    content: "Properties";
+}
+
+.juno-docs pre:has(> code.language-asm)::before {
+    content: "Assembly";
+}
+
+.juno-docs pre:has(> code.language-text)::before {
+    content: "Text";
+}
+
+/* Copy button in a terminal window's title bar. */
+.juno-docs pre .juno-copy-btn {
+    top: 0.2rem;
+    right: 0.5rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
+}
+
+/* Terminal commands read as shell input: a prompt before the first line, in a terminal green. */
+.juno-docs pre code.language-bash {
+    color: #7ee787;
+}
+
+.juno-docs pre code.language-bash::before {
+    content: "$ ";
+    color: #8b949e;
+    user-select: none;
+}
+
+/* ===== Home: hero over the juno.png photograph ===== */
+.juno-home code {
+    font-family: var(--font-heading);
+    font-size: 0.9em;
+}
+
+.juno-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: min(calc(100vh - 4rem), 760px);
+    padding: 5rem 1.25rem;
+    color: var(--lego-black);
+    background-color: var(--color-pop-50);
+    background-image:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 38%, rgba(255, 255, 255, 0.12) 66%, rgba(255, 255, 255, 0) 100%),
+        var(--juno-hero-image);
+    background-size: cover;
+    background-position: center;
+}
+
+.dark .juno-hero {
+    color: white;
+    background-color: var(--lego-black);
+    background-image:
+        linear-gradient(90deg, rgba(27, 42, 52, 0.95) 0%, rgba(27, 42, 52, 0.82) 40%, rgba(27, 42, 52, 0.35) 75%, rgba(27, 42, 52, 0.15) 100%),
+        var(--juno-hero-image);
+}
+
+.juno-hero-inner {
+    width: 100%;
+    min-width: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.juno-hero-inner > * {
+    max-width: 40rem;
+}
+
+.juno-hero h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(2.25rem, 5vw, 3.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--lego-black);
+}
+
+.dark .juno-hero h1 {
+    color: white;
+}
+
+.juno-hero-tagline {
+    margin: 0 0 2rem;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--color-accent-700);
+}
+
+.dark .juno-hero-tagline {
+    color: var(--color-pop-300);
+}
+
+.juno-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.juno-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.15s, background-color 0.2s, border-color 0.2s;
+}
+
+.juno-btn:hover {
+    transform: translateY(-1px);
+}
+
+.juno-btn-primary {
+    background: var(--color-accent-600);
+    color: white;
+}
+
+.juno-btn-primary:hover {
+    background: var(--color-accent-500);
+}
+
+.juno-btn-secondary {
+    background: var(--color-pop-400);
+    color: var(--lego-black);
+}
+
+.juno-btn-secondary:hover {
+    background: var(--color-pop-300);
+}
+
+.juno-btn-ghost {
+    border-color: var(--lego-black);
+    color: var(--lego-black);
+}
+
+.juno-btn-ghost:hover {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.dark .juno-btn-ghost {
+    border-color: rgba(255, 255, 255, 0.6);
+    color: white;
+}
+
+/* ===== Home: content bands ===== */
+.juno-band {
+    padding: 4.5rem 1.25rem;
+    background: white;
+}
+
+.juno-band-alt {
+    background: var(--color-pop-50);
+}
+
+.dark .juno-band {
+    background: var(--color-neutral-900);
+}
+
+.dark .juno-band-alt {
+    background: var(--color-neutral-950);
+}
+
+.juno-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.juno-band h2,
+.juno-band h3 {
+    color: var(--color-neutral-800);
+}
+
+.dark .juno-band h2,
+.dark .juno-band h3 {
+    color: var(--color-neutral-100);
+}
+
+.juno-band p {
+    line-height: 1.7;
+}
+
+.juno-band p code {
+    color: var(--color-accent-700);
+}
+
+.dark .juno-band p code {
+    color: var(--color-accent-300);
+}
+
+.juno-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 3rem;
+}
+
+.juno-split h2 {
+    margin: 0 0 1rem;
+    font-size: 1.6rem;
+}
+
+.juno-split h2 i {
+    margin-right: 0.4rem;
+    color: var(--lego-red);
+}
+
+.juno-split > div:nth-child(2) h2 i {
+    color: var(--color-accent-600);
+}
+
+.juno-section-title {
+    margin: 0 0 0.5rem;
+    font-size: 2rem;
+    text-align: center;
+}
+
+.juno-section-lead {
+    margin: 0 auto 2.5rem;
+    max-width: 40rem;
+    text-align: center;
+    font-size: 1.1rem;
+}
+
+/* "Try Juno": an editor-like code window next to the build steps */
+.juno-try {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 2rem;
+    align-items: start;
+}
+
+.juno-code-window {
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: #0d1117;
+    box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.45);
+}
+
+.juno-code-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.7rem 1rem;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+}
+
+.juno-code-bar span {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: #30363d;
+}
+
+.juno-code-bar span:first-child {
+    background: var(--lego-red);
+}
+
+.juno-code-bar span:nth-child(2) {
+    background: var(--color-pop-400);
+}
+
+.juno-code-bar span:nth-child(3) {
+    background: var(--lego-green);
+}
+
+.juno-code-bar em {
+    margin-left: 0.75rem;
+    font-style: normal;
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    color: var(--color-neutral-400);
+}
+
+.juno-code-window pre {
+    margin: 0;
+    padding: 1.25rem;
+}
+
+.juno-code-window pre code,
+.juno-steps pre code {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: #e6edf3;
+    background: none;
+}
+
+.juno-steps {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+}
+
+.juno-steps li {
+    position: relative;
+    padding-left: 3rem;
+    margin-bottom: 1.75rem;
+    counter-increment: step;
+}
+
+.juno-steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--lego-red);
+    color: white;
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+
+.juno-steps li:nth-child(2)::before {
+    background: var(--color-pop-400);
+    color: var(--lego-black);
+}
+
+.juno-steps li:nth-child(3)::before {
+    background: var(--color-accent-600);
+}
+
+.juno-steps h3 {
+    margin: 0.15rem 0 0.25rem;
+    font-size: 1.1rem;
+}
+
+.juno-steps p {
+    margin: 0 0 0.5rem;
+}
+
+.juno-steps pre {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: #0d1117;
+}
+
+/* Copy-to-clipboard button on each step's command (the theme's click handler does the copying). */
+.juno-steps pre {
+    position: relative;
+    padding-right: 2.75rem;
+}
+
+/* The full commands are wider than the column: scroll the code, not the block, so the button stays put. */
+.juno-steps pre code {
+    display: block;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.juno-copy-btn {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    padding: 0.35rem 0.45rem;
+    border: 0;
+    border-radius: 0.375rem;
+    background: rgba(255, 255, 255, 0.08);
+    color: #8b949e;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.juno-copy-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+/* Supported boards grid */
+.juno-boards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1.25rem;
+}
+
+.juno-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 0.75rem;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.juno-board:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-pop-400);
+    box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.35);
+}
+
+.dark .juno-board {
+    border-color: var(--color-neutral-700);
+}
+
+.juno-board img {
+    height: 7rem;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+}
+
+.juno-board span {
+    font-weight: 600;
+    color: var(--color-neutral-800);
+}
+
+.dark .juno-board span {
+    color: var(--color-neutral-100);
+}
+
+.juno-board small {
+    color: var(--color-neutral-500);
+}
+
+/* Link cards */
+.juno-cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.juno-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.75rem;
+    border-radius: 0.75rem;
+    background: white;
+    border: 1px solid var(--color-neutral-200);
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.juno-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -20px rgba(0, 0, 0, 0.4);
+}
+
+.dark .juno-card {
+    background: var(--color-neutral-900);
+    border-color: var(--color-neutral-700);
+}
+
+.juno-card > i {
+    font-size: 1.75rem;
+    color: var(--lego-red);
+    margin-bottom: 1rem;
+}
+
+.juno-card:nth-child(2) > i {
+    color: var(--color-accent-600);
+}
+
+.juno-card:nth-child(3) > i {
+    color: var(--lego-green);
+}
+
+.juno-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+}
+
+.juno-card p {
+    flex: 1;
+    margin: 0 0 1rem;
+    color: var(--color-neutral-600);
+}
+
+.dark .juno-card p {
+    color: var(--color-neutral-400);
+}
+
+.juno-card > span {
+    font-weight: 600;
+    color: var(--color-accent-600);
+}
+
+.dark .juno-card > span {
+    color: var(--color-accent-400);
+}
+
+@media (max-width: 900px) {
+    .juno-split,
+    .juno-try,
+    .juno-cards {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* ===== Footer ===== */
+.juno-footer {
+    padding: 2.5rem 1.25rem;
+    background: var(--color-accent-600);
+    color: var(--color-accent-100);
+    text-align: center;
+}
+
+.juno-footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.juno-footer-links a {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.juno-footer-links a:hover {
+    color: var(--color-pop-400);
+}
+
+.juno-footer p {
+    margin: 0;
+    font-size: 0.85rem;
 }

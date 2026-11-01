@@ -1,0 +1,53 @@
+{@io.quarkiverse.roq.frontmatter.runtime.model.Site site}
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="{site.url}">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      {#for item in cdi:topnav.items}
+      <a class="{page.url.isActive(site.url(item.path).path) ? 'active' : ''}{#if item.children??}{#for c in item.children}{#if page.url.isActive(site.url(c.path).path)} active{/if}{/for}{/if}" href="{site.url(item.path)}" {#if item.target??}target="{item.target}" rel="noopener"{/if}>{item.title}</a>
+      {#if item.children??}
+      <div class="juno-topnav-children">
+        {#for child in item.children}
+        <a class="{page.url.isActive(site.url(child.path).path) ? 'active' : ''}" href="{site.url(child.path)}">{child.title}</a>
+        {/for}
+      </div>
+      {/if}
+      {/for}
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>{|
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+|}</script>
+{! A page belongs to at most one section, so the secondary bar renders at most once. !}
+{#for item in cdi:topnav.items}
+{#if item.children??}
+{#for current in item.children}
+{#if page.url.isActive(site.url(current.path).path)}
+<nav class="juno-subnav" aria-label="{item.title}">
+  <div class="juno-subnav-inner">
+    {#for child in item.children}
+    <a class="{page.url.isActive(site.url(child.path).path) ? 'active' : ''}" href="{site.url(child.path)}">{child.title}</a>
+    {/for}
+  </div>
+</nav>
+{/if}
+{/for}
+{/if}
+{/for}
