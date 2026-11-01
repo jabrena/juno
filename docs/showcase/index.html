@@ -158,6 +158,32 @@ document.addEventListener('DOMContentLoaded', function () {
 <p>Showcase programs are complete, working applications built with Juno. Each one runs on real hardware, uses several
 parts of the API together, and is the best place to see how a larger program is organized. Their source is in
 <a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases"><code>juno-examples</code></a>.</p>
+<h2 id="mailbox">Mailbox</h2>
+<p>Mailbox is a remote messaging system for Claude. Run Mailbox and define an API key to be shared with Claude and the M5Stack Cardputer. On the M5Stack Cardputer you can send messages to Mailbox, and Claude periodically reviews the mailbox to process them and notify the status.</p>
+<img src="../images/showcase/mailbox2.png" alt="The M5Stack Cardputer ADV running the Mailbox client, its screen showing a message and the keyboard below it" width="480">
+<img src="../images/showcase/mailbox1.png" alt="The Mailbox setup: a Java logo on one TFT shield, the mailbox screen on another with its message count and address, and the Cardputer below" width="480">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox"><code>usecases/mailbox</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-uno-q"><code>Arduino Q</code></a> (server), <a href="../m5stack-cardputer"><code>M5Stack Cardputer</code></a> (client)</td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>HTTPS server, HTTPS client, self-signed certificates, Wi-Fi, SD card, API key header, TFT touch screen, Cardputer keyboard, MVC view router, JSON, serial output, clock, delays</td>
+</tr>
+</tbody>
+</table>
 <h2 id="gladiator">Gladiator</h2>
 <p><a href="../games#gladiator">Gladiator</a> is a game for the ELEGOO 2.8&quot; TFT touch shield. Two gladiators fight in a Roman arena,
 each seen from its own board, while a third board keeps the arena. The solo mode runs a CPU-versus-CPU duel on a single
