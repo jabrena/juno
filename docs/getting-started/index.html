@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es-ES">
 <head>
 
 <meta charset="utf-8">
@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Getting Started">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Requirements, the Quick start build, and the Blink walkthrough from javac to a flashed board.">
-  <meta property="og:description" content="Requirements, the Quick start build, and the Blink walkthrough from javac to a flashed board." />
-  <meta name="twitter:description" content="Requirements, the Quick start build, and the Blink walkthrough from javac to a flashed board.">
+  <meta name="description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi.">
+  <meta property="og:description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi." />
+  <meta name="twitter:description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/juno/getting-started/" />
@@ -41,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.1.9" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -49,176 +49,184 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<meta name="theme-color" content="#0f6e63">
-<meta name="msapplication-navbutton-color" content="#0f6e63">
-<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
 
 
-    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
 
 </head>
-<body >
+<body>
 
 
 
 <div class="wrapper default">
-
-
-<aside class="sidebar main">
-  <header>
-<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
-<section class="about">
-  <div class="site-name">Juno</div>
-  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
-</section>
-<section class="menu">
-  <h3 class="section-title menu-title">MENU</h3>
-  <ul>
-    <li><a class="" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
-    <li><a class="active" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
-    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
-    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
-    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
-    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
-    <li class="menu-group"><span>Boards</span></li>
-    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
-    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
-    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
-    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
-    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
-    <li class="menu-group"><span>Hardware APIs</span></li>
-    <li><a class="" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
-    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
-    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
-    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
-    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
-    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
-    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
-    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
-    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
-    <li class="menu-group"><span>Shields</span></li>
-    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
-    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
-    <li class="menu-group"><span>Tooling</span></li>
-    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
-    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
-    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
-  </ul>
-</section>
-  </header> <!-- End Header -->
-  <footer>
-<section class="contact">
-    <h3 class="section-title contact-title">Contact me</h3>
-    <ul>
-        <li>
-            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-github" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</section>
-<section class="copyright">
-  <p>2026 &copy; Juno</p>
-</section>
-
-  </footer> <!-- End Footer -->
-</aside> <!-- End Sidebar -->
-<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
-<button class="dark-mode-toggle" aria-label="Toggle dark mode">
-  <i class="fas fa-moon"></i>
-</button>
-<main class="main-content">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="active active" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="active" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Getting Started">
+  <div class="juno-subnav-inner">
+    <a class="active" href="/juno/getting-started">Getting Started</a>
+    <a class="" href="/juno/create-your-first-project">Create your first project</a>
+    <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
 
 <article class="page-content">
 
   <section class="content-main">
-
-<section class="page-header">
-  <h1 class="page-title">Getting Started</h1>
-  <p class="page-header-intro">
-    Requirements, the Quick start build, and the Blink walkthrough from javac to a flashed board.
-  </p>
-</section>    <div class="content-prose">
-<p>Juno is an ahead-of-time compiler for running a practical subset of Java on the Arduino UNO R4 WiFi
-and the Arduino UNO Q. It keeps <code>javac</code> as the Java frontend, performs
-closed-world linking on the development machine, and emits GNU ARM (Cortex-M4, Thumb-2) assembly
-straight from Juno's own IR, plus a small <code>extern &quot;C&quot;</code> C++ runtime shim (GPIO/Serial/LED matrix/
-Wi-Fi/HTTP/JSON helpers, the arena allocator, <code>long</code>/<code>float</code>/<code>double</code> support) that the board's
-Arduino toolchain assembles and links alongside it into native code: the Renesas core for the
-UNO R4 WiFi's RA4M1 (Cortex-M4), and the Zephyr core for the UNO Q's STM32U585 microcontroller
-(Cortex-M33, which runs the same Thumb-2 code).</p>
-<p><strong>Arduino UNO Q</strong></p>
-<p><img src="../images/boards/arduino-one-q.png" alt="" /></p>
-<p><strong>Arduino UNO R4 WiFi</strong></p>
-<p><img src="../images/boards/arduino-one-r4-wifi.png" alt="" /></p>
-<p>This repository contains a working v0.1 compiler, not a JVM interpreter. The first milestone
-supports 32-bit integer code, static methods, branches, loops, and GPIO/time intrinsics. It can
-compile <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java"><code>juno-examples/src/main/java/io/github/jabrena/juno/api/Blink.java</code></a> all the way to a
-sketch (<code>.S</code> assembly + <code>Shim.cpp</code> runtime + <code>.ino</code> wrapper).</p>
-<pre><code class="language-text">Java source -&gt; javac -&gt; .class -&gt; Juno linker/AOT -&gt; .S + Shim.cpp + .ino -&gt; Arduino toolchain -&gt; RA4M1 (UNO R4 WiFi)
-                                                                                                 -&gt; STM32U585 (UNO Q)
+<header class="juno-page-header">
+  <h1>Getting Started</h1>
+</header>
+    <div class="content-prose">
+<h2 id="explore-the-project">Explore the project</h2>
+<p>A quick tour from cloning the repository to a blinking LED on an Arduino UNO R4 WiFi.</p>
+<h3 id="1-prerequisites">1. Prerequisites</h3>
+<p>Juno builds with Java 27 and Maven. The easiest way to get both is <a href="https://sdkman.io">SDKMAN!</a>, which installs the
+exact versions the repository pins in its <code>.sdkmanrc</code>:</p>
+<pre><code class="language-bash">curl -s &quot;https://get.sdkman.io&quot; | bash
+source &quot;$HOME/.sdkman/bin/sdkman-init.sh&quot;
+sdk install java 27.0.0.0+35-tem
+sdk install maven 3.10.0
+java -version    # should report version 27
+mvn -version     # should report Apache Maven 3.10.0 running on Java 27
 </code></pre>
-<h2 id="modules">Modules</h2>
-<p>This is a multi-module Maven build:</p>
-<ul>
-<li><a href="https://github.com/jabrena/juno/tree/main/juno-api"><code>juno-api/</code></a> — the programming model: the small Java-facing hardware API Juno recognizes as compiler intrinsics
-(<code>io.github.jabrena.juno.api</code>: <code>Delay</code>, <code>Clock</code>, <code>Random</code>, <code>LedMatrix</code>, <code>api.io.Gpio</code>,
-<code>api.io.DigitalOutput</code>, <code>api.lcd.LcdKeypadShield</code>, <code>api.tft.TftTouchShield</code>, <code>api.hid.Mouse</code>, <code>api.io.serial.Serial</code>, …) and the
-<code>io.github.jabrena.juno.annotations</code> package
-(<code>Board</code>, <code>ArduinoBoard</code>, <code>ArduinoUnoR4WiFi</code>, <code>ArduinoUnoQ</code>) that entry-point classes use to select a
-compilation target. This is the only artifact programs compile against.</li>
-<li><a href="https://github.com/jabrena/juno/tree/main/juno-compiler"><code>juno-compiler/</code></a> — the Juno compiler itself (<code>classfile</code>, <code>bytecode</code>,
-<code>linker</code>, <code>backend</code>, …), which depends on <code>juno-api</code>. Builds <code>juno-compiler/target/juno-compiler-&lt;version&gt;.jar</code>, an
-executable jar whose main class is <code>io.github.jabrena.juno.Main</code>.</li>
-<li><a href="https://github.com/jabrena/juno/tree/main/juno-maven-plugin"><code>juno-maven-plugin/</code></a> — Maven goals for generating a sketch (<code>juno:compile</code>),
-compiling it with Arduino CLI (<code>juno:verify</code>), uploading it (<code>juno:upload</code>), and opening the
-serial monitor (<code>juno:monitor</code>). Every sketch is generated by the Cortex-M4 ASM backend, Juno's
-sole code-generation backend.</li>
-<li><a href="https://github.com/jabrena/juno/tree/main/juno-examples"><code>juno-examples/</code></a> — example Java programs written against <code>juno-api</code>'s <code>api</code> and
-<code>annotations</code> packages, compiled by Maven like any other Java module
-(<code>juno-examples/target/classes</code>) so they are checked for compile errors on every build.</li>
-</ul>
-<h2 id="quick-start">Quick start</h2>
-<p>Requirements: JDK 27+ and Maven 3.9+.</p>
-<pre><code class="language-bash">./mvnw clean install
+<p>The Juno Maven plugin drives <a href="https://arduino.github.io/arduino-cli/">Arduino CLI</a> to compile and upload sketches, so
+install it too, with Homebrew on macOS or the official install script elsewhere:</p>
+<pre><code class="language-bash">brew install arduino-cli
+# or: curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+arduino-cli version
 </code></pre>
-<p>This builds the modules: <code>juno-api/target/juno-api-0.1.0-SNAPSHOT.jar</code> (the hardware API),
-<code>juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar</code> (the compiler), <code>juno-maven-plugin/target/juno-maven-plugin-0.1.0-SNAPSHOT.jar</code> (the Maven integration), and
-<code>juno-examples/target/classes</code> (the compiled example programs). To turn an example into a
-<code>.ino</code> sketch and run it on real UNO R4 WiFi or UNO Q hardware with <code>arduino-cli</code>, see
-<a href="../arduino">docs/ARDUINO.md</a>. The UNO Q also needs Arduino's Zephyr core:
-<code>arduino-cli core install arduino:zephyr</code>.</p>
-<p>Use the following commands for the complete <code>Blink</code> workflow. <code>Blink</code> targets both boards, so pick
-one with <code>-Djuno.board</code>:</p>
-<pre><code class="language-bash"># Generate and verify with arduino-cli
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
-
-# Upload
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
-
-# Monitor
-./mvnw -f juno-examples/pom.xml juno:monitor
+<h3 id="2-clone-the-project">2. Clone the project</h3>
+<pre><code class="language-bash">git clone https://github.com/jabrena/juno.git
+cd juno
+sdk env
+./mvnw clean install
 </code></pre>
-<p>Upload and monitor auto-detect the port when exactly one matching board is connected. Otherwise,
-select it with <code>-Djuno.port=&lt;PORT&gt;</code>. Select another example with
-<code>-Djuno.main=&lt;fully-qualified-class-name&gt;</code>.</p>
-<h2 id="java-api">Java API</h2>
-<p>Hardware operations are normal Java native declarations at compile time and compiler intrinsics
-at link time:</p>
-<pre><code class="language-java">import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFi;
-import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.Delay;
-import io.github.jabrena.juno.api.io.DigitalOutput;
+<p><code>sdk env</code> switches the shell to the pinned Java and Maven versions. <code>install</code> builds every module and puts the Juno
+Maven plugin in your local repository, so the examples can use it.</p>
+<h3 id="3-look-around-the-modules">3. Look around the modules</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What it holds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-api"><code>juno-api</code></a></td>
+<td>The Java API your programs compile against: GPIO, timing, Serial, Wi-Fi, shields, LEGO and the <code>@Board</code> annotations.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-compiler"><code>juno-compiler</code></a></td>
+<td>The compiler: reads <code>.class</code> files, links the program and emits AVR, Thumb-2 or Xtensa assembly plus a C++ runtime shim.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-maven-plugin"><code>juno-maven-plugin</code></a></td>
+<td>The Maven goals that compile, verify, upload and monitor a program.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples"><code>juno-examples</code></a></td>
+<td>Ready-to-run example programs, from Blink to games.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-connect-the-board">4. Connect the board</h3>
+<p>Plug the UNO R4 WiFi into your computer with a USB-C cable.</p>
+<img src="../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
+<p>Install the board cores and libraries the examples need, once per machine, then check that the board is detected:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
+./mvnw -f juno-examples/pom.xml juno:boards
+</code></pre>
+<p><code>juno:boards</code> lists the connected boards with their port and FQBN; the UNO R4 WiFi shows as
+<code>arduino:renesas_uno:unor4wifi</code>.</p>
+<h3 id="5-read-the-blink-example">5. Read the Blink example</h3>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is plain
+Java: it turns the built-in LED on and off every half second.</p>
+<pre><code class="language-java">public class Blink {
 
-@Board(ArduinoUnoR4WiFi.class)
-public final class Blink {
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(13);
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
         while (true) {
             led.high();
             Delay.millis(500);
@@ -228,131 +236,29 @@ public final class Blink {
     }
 }
 </code></pre>
-<p>See the <a href="https://jabrena.github.io/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html">Javadoc</a>
-for the complete Java API reference.</p>
-<p>For Wi-Fi connections, HTTP/HTTPS REST calls, and bounded JSON response extraction, see the
-<a href="../internet">Internet access guide</a>. Credentials can be resolved at compile time or loaded
-from an SD card as described in the <a href="../storage">SD-card configuration guide</a>. For sending and reading email
-(<code>Smtp</code>/<code>Pop3Client</code>), see <a href="../email">docs/EMAIL.md</a>. For how these API classes work
-internally, and the checklist for adding a new one, see <a href="../apis">docs/APIS.md</a>.</p>
-<h3 id="target-board">Target board</h3>
-<p><code>@Board</code> (<code>io.github.jabrena.juno.annotations.Board</code>) on the entry-point class selects the board
-Juno compiles for, and <code>juno:verify</code>/<code>juno:upload</code> build for its Arduino CLI FQBN:</p>
-<table>
-<thead>
-<tr>
-<th>Annotation</th>
-<th>Board</th>
-<th>FQBN</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>@Board(ArduinoUnoR4WiFi.class)</code></td>
-<td>Arduino UNO R4 WiFi</td>
-<td><code>arduino:renesas_uno:unor4wifi</code></td>
-</tr>
-<tr>
-<td><code>@Board(ArduinoUnoQ.class)</code></td>
-<td>Arduino UNO Q (its STM32U585 microcontroller)</td>
-<td><code>arduino:zephyr:unoq</code></td>
-</tr>
-</tbody>
-</table>
-<p>A class with no <code>@Board</code> annotation is not restricted to one board: it builds for the board named by
-<code>-Djuno.board=&lt;id&gt;</code>, or the UNO R4 WiFi when the option is omitted. GPIO, time, Serial, <code>Wifi</code>/<code>Udp</code>,
-and the shields built on them (LCD keypad, TFT touch) compile and upload for both boards. The LED
-matrix, Wi-Fi with HTTP/HTTPS/email, and <code>@Watchdog</code> are UNO R4 WiFi only (on the UNO Q, the LED
-matrix belongs to the board's Linux side, and its Zephyr core has no HTTP/HTTPS/email libraries
-Juno can lower to — plain <code>Wifi</code>/<code>Udp</code> still work through the MCU's own Zephyr networking), and
-Juno rejects the R4-only APIs at compile time for the UNO Q. The other APIs built on UNO R4
-libraries (USB mouse, SD card, servo) have not been tried on the UNO Q yet. The TFT games
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/startrek/StarTrek.java">Star Trek</a>,
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/starwars/StarWars.java">Star Wars</a>,
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/empirestrikesback/EmpireStrikesBack.java">The Empire Strikes Back</a>,
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/redbaron/RedBaron.java">Red Baron</a> and
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/games/spaceparanoids/SpaceParanoids.java">Space Paranoids</a>
-target the UNO Q:</p>
-<pre><code class="language-java">@Board(ArduinoUnoQ.class)
-public final class RedBaron {
+<h3 id="6-compile-verify-and-upload-blink">6. Compile, verify and upload Blink</h3>
+<p>Each Maven goal builds on the previous one. <code>juno:compile</code> turns the program into an Arduino sketch (<code>.S</code> assembly,
+<code>Shim.cpp</code> and <code>.ino</code>) under <code>juno-examples/target/juno</code>:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<h2 id="supported-java-subset">Supported Java subset</h2>
-<p>Juno deliberately fails at link time when reachable code uses something outside the current
-subset. Diagnostics identify the method, bytecode offset, and unsupported operation/bootstrap. See
-<a href="../features">docs/FEATURES.md</a> for the full, up-to-date inventory of what's supported and
-what isn't.</p>
-<p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals) prints
-conservative runtime-risk and resource estimates automatically:</p>
-<pre><code class="language-bash">java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
-  --main ArenaFeaturesPulse \
-  --classpath juno-examples/target/classes:juno-api/target/classes
+<p>The plugin generates a complete Arduino sketch directory:</p>
+<pre><code class="language-text">juno-examples/target/juno/BlinkAsm/
+├── BlinkAsm.ino
+├── Blink.S
+└── BlinkShim.cpp
 </code></pre>
-<p>The report includes the fixed-arena budget, estimated static RAM and generated local storage,
-maximum call depth, emitted array bounds checks, and stable <code>JUNO-RISK-*</code> findings for allocation
-inside loops, recursion, possible integer division by zero, unchecked array access, and
-compile-time-null dereferences. These are conservative source-level checks; the Arduino linker's
-memory report remains authoritative for final RAM and flash use.</p>
-<h2 id="architecture">Architecture</h2>
-<ul>
-<li><code>classfile</code> parses standard JVM class files and resolves constant-pool references.</li>
-<li><code>bytecode</code> decodes and validates the v0.1 instruction set.</li>
-<li><code>linker</code> starts at <code>main</code>, follows reachable static calls, resolves hardware intrinsics, and
-eliminates unreachable methods.</li>
-<li><code>backend</code> emits GNU ARM (Cortex-M4, Thumb-2) assembly directly from Juno's IR, plus a small
-<code>extern &quot;C&quot;</code> C++ runtime shim (GPIO/Serial/LED matrix/Wi-Fi/HTTP/JSON helpers, the arena
-allocator, <code>long</code>/<code>float</code>/<code>double</code> support) that the generated assembly calls into.</li>
-</ul>
-<p>The above live under
-<a href="https://github.com/jabrena/juno/tree/main/juno-compiler/src/main/java/io/github/jabrena/juno"><code>juno-compiler/src/main/java/io/github/jabrena/juno/</code></a>;
-the small Java-facing hardware abstraction (<code>api/</code>) and the <code>@Board</code> selection types (<code>annotations/</code>) live under
-<a href="https://github.com/jabrena/juno/tree/main/juno-api/src/main/java/io/github/jabrena/juno"><code>juno-api/src/main/java/io/github/jabrena/juno/</code></a>.</p>
-<h2 id="development">Development</h2>
-<pre><code class="language-bash">./mvnw test
+<p><code>juno:verify</code> also compiles that sketch with the real Arduino toolchain, without touching the board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p>Runs the full reactor's tests, including the <code>juno-compiler</code> module's unit tests and offline
-toolchain verification for the generated ASM backend artifacts. The tests compile Java fixtures,
-check reachability and failure diagnostics, assemble generated <code>.S</code> files with a bundled
-<code>arm-none-eabi-gcc</code> when one can be found locally, and pass the generated runtime shim through
-<code>clang++</code> or <code>g++</code> with a minimal Arduino compatibility header when one is available.</p>
-<pre><code class="language-bash">./mvnw javadoc:aggregate
+<p><code>juno:upload</code> flashes it to the board, which then blinks its built-in LED:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p>Generates a Javadoc site for <code>juno-api</code> and <code>juno-compiler</code> into <code>docs/javadocs/&lt;version&gt;/apidocs</code>,
-e.g. <code>docs/javadocs/0.1.0-SNAPSHOT/apidocs/index.html</code> (<code>juno-examples</code> is excluded, since it's
-example programs rather than library API).</p>
-<h3 id="cyclomatic-complexity">Cyclomatic complexity</h3>
-<p>The <code>cyclomatic-complexity</code> profile runs PMD's
-<a href="https://pmd.github.io/pmd/pmd_rules_java_design.html#cyclomaticcomplexity">CyclomaticComplexity</a>
-rule on every module with the thresholds in
-<a href="https://github.com/jabrena/juno/blob/main/pmd/pmd-cyclomatic-complexity.xml"><code>pmd/pmd-cyclomatic-complexity.xml</code></a> (methods above 25,
-classes above 70):</p>
-<pre><code class="language-bash"># Check: fails the build on any method or class over the thresholds
-./mvnw clean verify -Pcyclomatic-complexity
-
-# Report: the aggregate PMD report for all modules, cross-linked to the source
-./mvnw -Pcyclomatic-complexity -DskipTests site
-</code></pre>
-<p>The report is written to <code>target/site/pmd.html</code> (and per module to <code>&lt;module&gt;/target/site/pmd.html</code>).
-Serve it with the JDK's built-in web server, <code>jwebserver</code> (JDK 18+; it needs an absolute path),
-then open <a href="http://127.0.0.1:8000/pmd.html">http://127.0.0.1:8000/pmd.html</a>:</p>
-<pre><code class="language-bash">jwebserver -d &quot;$(pwd)/target/site&quot; -p 8000
-</code></pre>
-<p>Stop the server with <code>Ctrl+C</code>.</p>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://dev.java/">https://dev.java/</a></li>
-<li><a href="https://store.arduino.cc/products/uno-r4-wifi">https://store.arduino.cc/products/uno-r4-wifi</a></li>
-<li><a href="https://store.arduino.cc/products/arduino-uno-rev3">https://store.arduino.cc/products/arduino-uno-rev3</a></li>
-<li><a href="https://store.arduino.cc/products/arduino-uno-wifi-rev2">https://store.arduino.cc/products/arduino-uno-wifi-rev2</a></li>
-<li><a href="https://lejos.sourceforge.io/">https://lejos.sourceforge.io/</a></li>
-<li><a href="https://lejos.sourceforge.io/nxt/nxj/api/index.html">https://lejos.sourceforge.io/nxt/nxj/api/index.html</a></li>
-<li><a href="https://tinyvm.sourceforge.net/">https://tinyvm.sourceforge.net/</a></li>
-<li><a href="https://haiku-vm.sourceforge.net/">https://haiku-vm.sourceforge.net/</a></li>
-<li><a href="https://sunspotdev.org/">https://sunspotdev.org/</a></li>
-<li><a href="https://sunspotdev.org/docs/index.html">https://sunspotdev.org/docs/index.html</a></li>
-<li><a href="https://github.com/dzindra/lcdkeypad">https://github.com/dzindra/lcdkeypad</a></li>
-<li><a href="https://github.com/arduino-libraries/Mouse">https://github.com/arduino-libraries/Mouse</a></li>
-<li><a href="https://github.com/mobizt/ESP_SSLClient">https://github.com/mobizt/ESP_SSLClient</a></li>
-</ul>
     </div>
   </section>
 </article>
@@ -360,6 +266,30 @@ then open <a href="http://127.0.0.1:8000/pmd.html">http://127.0.0.1:8000/pmd.htm
 
 
 </main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
 
 </div>
 

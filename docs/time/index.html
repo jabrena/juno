@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Time - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Time" />
+  <meta name="twitter:title" content="Time">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Reading UTC with LocalDateTime.now() over SNTP, configuring the server, and measuring elapsed time with Clock.">
+  <meta property="og:description" content="Reading UTC with LocalDateTime.now() over SNTP, configuring the server, and measuring elapsed time with Clock." />
+  <meta name="twitter:description" content="Reading UTC with LocalDateTime.now() over SNTP, configuring the server, and measuring elapsed time with Clock.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/time/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/time/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/time/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/time/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="active" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="active" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Time</h1>
+</header>
+    <div class="content-prose">
+<p>Juno gives a program two clocks. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/udp/SntpClock.java"><code>LocalDateTime.now()</code></a>
+returns the current UTC date and time, synchronized over SNTP on the boards with Wi-Fi. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/time/Clock.java"><code>Clock</code></a>
+counts the milliseconds and microseconds since the board started, with no network at all. Use <code>LocalDateTime</code> for wall-clock
+time and <code>Clock</code> for intervals.</p>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>Argument</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LocalDateTime.now()</code></td>
+<td>none</td>
+<td>UTC, from SNTP; returns <code>LocalDateTime.MIN</code> until the clock has synchronized</td>
+</tr>
+<tr>
+<td><code>getYear()</code>, <code>getMonthValue()</code>, <code>getDayOfMonth()</code></td>
+<td>none</td>
+<td>date fields of a <code>LocalDateTime</code></td>
+</tr>
+<tr>
+<td><code>getHour()</code>, <code>getMinute()</code>, <code>getSecond()</code></td>
+<td>none</td>
+<td>time fields of a <code>LocalDateTime</code></td>
+</tr>
+<tr>
+<td><code>equals(Object)</code>, <code>toString()</code></td>
+<td>a <code>LocalDateTime</code> or none</td>
+<td><code>equals</code> compares the fields; <code>toString</code> prints ISO-8601</td>
+</tr>
+<tr>
+<td><code>LocalDateTime.MIN</code></td>
+<td>none</td>
+<td>the &quot;not synchronized&quot; sentinel</td>
+</tr>
+<tr>
+<td><code>SntpClock.configure(Properties)</code></td>
+<td>a <code>Properties</code> loaded from the SD card</td>
+<td>replaces the SNTP host and port at run time; returns <code>false</code> if a value is invalid</td>
+</tr>
+<tr>
+<td><code>Clock.millis()</code></td>
+<td>none</td>
+<td>milliseconds since start, wrapping after about 24.8 days</td>
+</tr>
+<tr>
+<td><code>Clock.micros()</code></td>
+<td>none</td>
+<td>microseconds since start, wrapping after about 35.8 minutes</td>
+</tr>
+</tbody>
+</table>
+<p>Any other <code>java.time.LocalDateTime</code> method, such as <code>plus</code>, <code>of</code>, <code>parse</code> or <code>format</code>, is rejected at compile time with a
+<code>CompileException</code>; the subset is deliberately small.</p>
+<h2 id="reading-the-time-with-localdatetimenow">Reading the time with LocalDateTime.now()</h2>
+<p><code>LocalDateTime.now()</code> needs the board to be on a Wi-Fi network first. Connect with <a href="../wifi"><code>Wifi</code></a>, wait until
+<code>status()</code> reports <code>Wifi.STATUS_CONNECTED</code>, and then call <code>now()</code>:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import java.time.LocalDateTime;
+
+Wifi wifi = ArduinoUno.getWifi();
+wifi.begin(ssid, password);
+while (wifi.status() != Wifi.STATUS_CONNECTED) {
+    Delay.millis(500);
+}
+
+LocalDateTime now = LocalDateTime.now();
+int hour = now.getHour();
+String text = now.toString();      // for example &quot;2026-11-01T14:05:09&quot;
+</code></pre>
+<p><code>toString()</code> follows Java's format: the seconds are printed only when they are not zero, so <code>14:05</code> is shown when the
+second is <code>0</code>.</p>
+<h3 id="how-the-clock-synchronizes">How the clock synchronizes</h3>
+<p>The first <code>now()</code> call after the connection is up starts one SNTP exchange. The steps are:</p>
+<ul>
+<li>Juno sends a 48-byte SNTP request on its own UDP socket and waits up to 2 seconds for the reply. The socket is separate
+from the one <a href="../wifi"><code>Udp</code></a> uses, so the two never share state.</li>
+<li>The server's transmit time becomes the base; later calls advance it with the board's millisecond counter, so most calls
+send no network traffic.</li>
+<li>The base is refreshed from the server once an hour. If a synchronization fails, Juno retries no sooner than every
+60 seconds, and <code>now()</code> returns <code>LocalDateTime.MIN</code> in the meantime.</li>
+</ul>
+<p>Until the first successful exchange, <code>now()</code> returns <code>LocalDateTime.MIN</code> rather than a guess, so a program must check for
+it before trusting the value. Every call allocates a small object in the program's arena, so read the time once per
+printed line or once per second, not in a tight loop.</p>
+<h3 id="choosing-the-sntp-server">Choosing the SNTP server</h3>
+<p>The default is <code>pool.ntp.org</code> on port <code>123</code>. Change it at build time with the <code>JUNO_SNTP_HOST</code> and <code>JUNO_SNTP_PORT</code>
+environment variables, or at run time with <code>SntpClock.configure</code>, which reads the <code>sntp.host</code> and <code>sntp.port</code> keys of a
+<code>Properties</code> object:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.net.udp.SntpClock;
+import java.util.Properties;
+
+Properties properties = /* loaded from application.properties on the SD card */;
+SntpClock.configure(properties);   // call once, before the first now()
+</code></pre>
+<p>A missing key keeps the build-time value. The host must be at most 63 characters of letters, digits, dots and hyphens,
+and the port must be between 1 and 65535; otherwise <code>configure</code> returns <code>false</code> and leaves the settings unchanged. The
+loaded <code>Properties</code> is typically read from the SD card as shown in <a href="../sdcard">SD Card</a>.</p>
+<h2 id="measuring-elapsed-time-with-clock">Measuring elapsed time with Clock</h2>
+<p><code>Clock</code> is the board's own monotonic counter, so it does not depend on Wi-Fi. Get it once at startup with
+<code>ArduinoUno.getClock()</code> and pass it to whatever needs it:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.time.Clock;
+
+Clock clock = ArduinoUno.getClock();
+
+int start = clock.millis();
+doWork();
+int elapsed = clock.millis() - start;    // correct across one wrap of the counter
+</code></pre>
+<p>Subtracting two <code>millis()</code> readings gives the right answer even after the counter wraps, as long as the interval itself is
+shorter than the wrap period. Use <code>micros()</code> for short intervals, and <code>Delay</code> (<a href="../delay">Delay</a>) when you only need to pause.
+A unit test passes <code>mock(Clock.class)</code> instead of the board's clock.</p>
+<h2 id="a-minimal-example">A minimal example</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java"><code>SntpTime</code></a>
+joins Wi-Fi, then prints UTC every ten seconds, or <code>sntp unavailable</code> when the clock has not synchronized yet:</p>
+<pre><code class="language-java">LocalDateTime now = LocalDateTime.now();
+if (now.equals(LocalDateTime.MIN)) {
+    Serial.println(&quot;sntp unavailable&quot;);
+} else {
+    Serial.println(now.toString());
+}
+Delay.millis(10000);
+</code></pre>
+<p>The same program reads its Wi-Fi credentials and SNTP server from the SD card in
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a>,
+and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java"><code>NanoSntpTimeSD</code></a>
+does the same on a Nano ESP32 in a Nano Connector Carrier.</p>
+<p>Build and watch the output with the Maven plugin, as described in <a href="../serial">Serial</a>:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.udp.SntpTime
+
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong><code>sntp unavailable</code> on every line:</strong> the board is not connected to Wi-Fi, the network blocks outbound UDP port <code>123</code>,
+or the configured server does not answer within 2 seconds. Check <code>wifi.status()</code> first, then point <code>sntp.host</code> at
+another server.</li>
+<li><strong>The time is wrong by a fixed amount:</strong> the clock is UTC. Apply the local offset in the program; Juno has no time-zone
+support.</li>
+<li><strong>The time stops advancing:</strong> <code>now()</code> advances from the board's counter and only resynchronizes hourly, so a
+synchronization that failed long ago keeps the last base. Call <code>now()</code> periodically to let the retry run.</li>
+<li><strong><code>CompileException</code> for a <code>LocalDateTime</code> method:</strong> the method is outside the supported subset listed above.</li>
+<li><strong><code>SntpClock.configure</code> returns <code>false</code>:</strong> a supplied host or port is invalid; the settings are unchanged.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

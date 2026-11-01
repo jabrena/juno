@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>HTTP server - Juno: Java for Arduino</title>
+  <meta property="og:title" content="HTTP server" />
+  <meta name="twitter:title" content="HTTP server">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS.">
+  <meta property="og:description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS." />
+  <meta name="twitter:description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/httpserver/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/httpserver/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/httpserver/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/httpserver/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="active" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="active" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>HTTP server</h1>
+</header>
+    <div class="content-prose">
+<p><code>HttpServer</code> lets a Juno program answer HTTP requests from other devices on the same network. It is a minimal server:
+it listens on a port, reads one request at a time and replies to it. Connect to Wi-Fi first, since the server listens on
+the board's network address. The <a href="../board-features">Board features</a> page lists which boards serve plain HTTP and which
+serve HTTPS.</p>
+<h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Arguments</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>begin(int)</code></td>
+<td>a port</td>
+<td>Starts listening for plain HTTP. Call it once, after Wi-Fi connects.</td>
+</tr>
+<tr>
+<td><code>beginTls(int, byte[], int, byte[], int)</code></td>
+<td>a port, the certificate, its length, the private key and its length</td>
+<td>Starts listening for HTTPS with a PEM certificate and key.</td>
+</tr>
+<tr>
+<td><code>accept(byte[], int)</code></td>
+<td>a body buffer and its capacity</td>
+<td>Reads the next request, or returns <code>-1</code> at once when no client is waiting.</td>
+</tr>
+<tr>
+<td><code>method()</code></td>
+<td>none</td>
+<td>The method of the request from the last <code>accept</code>, such as <code>GET</code>.</td>
+</tr>
+<tr>
+<td><code>path()</code></td>
+<td>none</td>
+<td>The path of the request from the last <code>accept</code>, such as <code>/status</code>.</td>
+</tr>
+<tr>
+<td><code>contentLength()</code></td>
+<td>none</td>
+<td>The request's <code>Content-Length</code>, or <code>-1</code> when it has none.</td>
+</tr>
+<tr>
+<td><code>header(String, byte[], int)</code></td>
+<td>a header name, a buffer and its capacity</td>
+<td>Copies a request header; returns its length, or <code>-1</code> when it is absent.</td>
+</tr>
+<tr>
+<td><code>respond(int, String, String)</code></td>
+<td>a status, a content type and a body</td>
+<td>Sends the reply and closes the connection.</td>
+</tr>
+<tr>
+<td><code>respond(int, String, StringBuilder)</code></td>
+<td>a status, a content type and a <code>StringBuilder</code></td>
+<td>Sends the contents of a <code>StringBuilder</code> as the reply, with no size cap.</td>
+</tr>
+</tbody>
+</table>
+<p><code>HttpStatus</code> provides the status codes, such as <code>OK</code> (200), <code>NOT_FOUND</code> (404) and <code>BAD_REQUEST</code> (400).</p>
+<h2 id="creating-rest-apis">Creating REST APIs</h2>
+<p>Call <code>accept</code> once per pass of the loop. It never waits for a client, so the rest of the loop keeps running. When it
+returns a value of zero or more, a request has been read: check <code>path()</code>, then send exactly one <code>respond</code> before the next
+<code>accept</code>:</p>
+<pre><code class="language-java">HttpServer.begin(80);
+byte[] body = new byte[HttpServer.DEFAULT_BODY_BUFFER_SIZE];
+
+while (true) {
+    if (HttpServer.accept(body, body.length) &gt;= 0) {
+        if (HttpServer.path().equals(&quot;/status&quot;)) {
+            HttpServer.respond(HttpStatus.OK, &quot;text/plain&quot;, &quot;online&quot;);
+        } else {
+            HttpServer.respond(HttpStatus.NOT_FOUND, &quot;text/plain&quot;, &quot;not found&quot;);
+        }
+    }
+}
+</code></pre>
+<p><code>accept</code> reads the request body into the buffer, truncated to its length. Check <code>contentLength()</code> before parsing a body that
+might be larger than the buffer, because <code>accept</code> truncates it silently.</p>
+<h2 id="https">HTTPS</h2>
+<p><code>HttpServer.beginTls</code> serves HTTPS with a certificate and a private key, both in PEM form. A self-signed pair is enough
+for a server on your own network. Clients must trust that certificate themselves, so the usual test is
+<code>curl --cacert server.crt</code>. Use it on the boards whose TLS support is listed on the <a href="../board-features">Board features</a>
+page.</p>
+<h3 id="creating-the-certificate">Creating the certificate</h3>
+<p>Create the pair on your computer with <code>openssl</code>. This makes an EC P-256 key and a certificate valid for ten years, for
+the name <code>juno.local</code>:</p>
+<pre><code class="language-bash">openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 3650 \
+  -subj /CN=juno.local -keyout server.key -out server.crt
+</code></pre>
+<p><code>server.key</code> is the private key. Keep it private: anyone who has it can impersonate the server. <code>server.crt</code> is the
+public certificate that clients trust.</p>
+<h3 id="putting-the-certificate-on-the-sd-card">Putting the certificate on the SD card</h3>
+<p>On the Nano ESP32 and the Cardputer, copy both files to the root of the microSD card, next to <code>application.properties</code>:</p>
+<pre><code class="language-text">microSD card/
+├── application.properties   wifi.ssid and wifi.password
+├── server.crt
+└── server.key
+</code></pre>
+<p>The program reads both files at startup into buffers it allocates once, then passes them to <code>beginTls</code>. The server parses
+them and keeps its own copy, so the program does not hold the key afterwards. Each buffer must hold its whole file, so
+keep the PEM text small: the examples use 2048-byte buffers.</p>
+<p>On the UNO Q there is no SD card in the example. <code>QHttpsServer</code> builds the certificate and key into the program: pass
+their PEM text as the <code>JUNO_TLS_CERT</code> and <code>JUNO_TLS_KEY</code> environment variables when you build it, so neither file is
+committed to the repository.</p>
+<h3 id="testing-the-server">Testing the server</h3>
+<p>Find the board's address on the serial monitor, then request the status route from a computer that trusts the
+certificate:</p>
+<pre><code class="language-bash">curl --cacert server.crt --resolve juno.local:443:&lt;address&gt; https://juno.local/status
+</code></pre>
+<p>The <code>--resolve</code> option sends the name <code>juno.local</code> to the board's address, so the certificate's name matches the request.</p>
+<h2 id="examples">Examples</h2>
+<ul>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java"><code>NanoHttpServerSD</code></a>
+joins the network with credentials from the SD card, prints its address and answers <code>GET /status</code> on port 80.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java"><code>QHttpsServer</code></a>
+serves HTTPS on the UNO Q, with the certificate and key built in at build time.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java"><code>HttpServerBacklight</code></a>
+demonstrates <code>POST</code> handling with an LCD Keypad Shield attached.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

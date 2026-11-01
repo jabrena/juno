@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>SD Card - Juno: Java for Arduino</title>
+  <meta property="og:title" content="SD Card" />
+  <meta name="twitter:title" content="SD Card">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Loading configuration and credentials from an SD card at boot.">
+  <meta property="og:description" content="Loading configuration and credentials from an SD card at boot." />
+  <meta name="twitter:description" content="Loading configuration and credentials from an SD card at boot.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/sdcard/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/sdcard/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/sdcard/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/sdcard/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="active" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="active" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>SD Card</h1>
+</header>
+    <div class="content-prose">
+<p>Juno exposes read-only <code>SdFat32</code>/<code>File32</code> operations through <code>SdCard</code> as the standard
+<code>java.io.InputStream</code>, so application code can construct a real <code>java.util.Properties</code> object and
+call <code>Properties.load(InputStream)</code>. Juno recognizes those
+standard-library bytecode calls and lowers them to a bounded embedded implementation; it does not
+link the desktop JDK's <code>Hashtable</code> implementation into the sketch. <code>SdFat</code> is used instead of
+Arduino's legacy <code>SD</code> library because <code>application.properties</code> is a long filename; the legacy
+library is limited to DOS 8.3 names.</p>
+<p><code>SdCard</code> is an interface: take the card from the shield or carrier that holds its socket, once, at
+startup, and pass it to the classes that need it. A unit test passes <code>mock(SdCard.class)</code> instead.</p>
+<table>
+<thead>
+<tr>
+<th>Socket</th>
+<th>Card</th>
+<th>Chip select</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AZDelivery Data Logger Shield</td>
+<td><code>new DataLoggerShield().getSdCard()</code></td>
+<td>D10</td>
+</tr>
+<tr>
+<td>ELEGOO 2.8&quot; TFT touch shield</td>
+<td><code>TftTouchShield.getSdCard()</code></td>
+<td>D10</td>
+</tr>
+<tr>
+<td>LCD Keypad Shield (stacked on a data logger)</td>
+<td><code>new LcdKeypadShield().getSdCard()</code></td>
+<td>D10</td>
+</tr>
+<tr>
+<td>Arduino WiFi Shield (UNO R3)</td>
+<td><code>new ArduinoWifiShield().getSdCard()</code></td>
+<td>D4</td>
+</tr>
+<tr>
+<td>Nano Connector Carrier</td>
+<td><code>new NanoConnectorCarrier().getSdCard()</code></td>
+<td>D4</td>
+</tr>
+</tbody>
+</table>
+<p>The card's <code>begin()</code> selects it on its socket's pin; <code>begin(chipSelectPin)</code> takes any other pin.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Argument</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>begin()</code></td>
+<td>none</td>
+<td>initializes the card on its socket's chip-select pin; returns whether it was detected</td>
+</tr>
+<tr>
+<td><code>begin(int)</code></td>
+<td>a chip-select pin</td>
+<td>initializes the card on any other pin</td>
+</tr>
+<tr>
+<td><code>exists(String)</code></td>
+<td>a path</td>
+<td>returns whether the path exists on the card</td>
+</tr>
+<tr>
+<td><code>createDirectory(String)</code></td>
+<td>a path</td>
+<td>creates the path and its missing parent directories</td>
+</tr>
+<tr>
+<td><code>size(String)</code></td>
+<td>a path</td>
+<td>the file's size in bytes; reports <code>Integer.MAX_VALUE</code> for files larger than that</td>
+</tr>
+<tr>
+<td><code>open(String)</code></td>
+<td>a path</td>
+<td>opens the file for reading, or returns <code>null</code> when it cannot be opened</td>
+</tr>
+<tr>
+<td><code>open(String, String)</code></td>
+<td>a directory and a file stem</td>
+<td>opens <code>directory/stem.txt</code> for reading, or returns <code>null</code></td>
+</tr>
+<tr>
+<td><code>list(String, int, byte[], int)</code></td>
+<td>a directory, an index, a name buffer and its capacity</td>
+<td>copies the name of the child at <code>index</code>; returns the number of bytes copied, <code>0</code> when there are no more children, or a negative value on failure</td>
+</tr>
+<tr>
+<td><code>appendLine(String, String)</code></td>
+<td>a path and a line</td>
+<td>appends the line and a newline, creating the file when needed; the line may be a runtime string</td>
+</tr>
+<tr>
+<td><code>appendText(String, String)</code></td>
+<td>a path and text</td>
+<td>appends the text with no newline added</td>
+</tr>
+<tr>
+<td><code>appendText(String, String, String)</code></td>
+<td>a directory, a file stem and text</td>
+<td>appends to <code>directory/stem.txt</code>, creating it when needed</td>
+</tr>
+<tr>
+<td><code>remove(String)</code></td>
+<td>a path</td>
+<td>deletes the file; returns whether it was removed</td>
+</tr>
+<tr>
+<td><code>removeDirectory(String)</code></td>
+<td>a path</td>
+<td>deletes an empty directory; returns <code>false</code> when it is missing or not empty</td>
+</tr>
+<tr>
+<td><code>remove(String, String)</code></td>
+<td>a directory and a file stem</td>
+<td>deletes <code>directory/stem.txt</code>; returns whether it was removed</td>
+</tr>
+<tr>
+<td><code>totalKiB()</code></td>
+<td>none</td>
+<td>the card's total capacity in KiB, or <code>-1</code> before a successful <code>begin()</code></td>
+</tr>
+<tr>
+<td><code>freeKiB()</code></td>
+<td>none</td>
+<td>the free space in KiB; counts the whole allocation table, so it can take a while on a large card</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reading-application-properties">Reading application properties</h2>
+<p><code>application.properties</code> is a plain text file of <code>key=value</code> lines on the card. Open it with <code>open()</code>, load it into a
+<code>java.util.Properties</code>, and read each value with <code>getProperty</code>. A key that is missing returns <code>null</code>, so check it
+before use. The example reads the Wi-Fi credentials used by the examples on this site:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+SdCard sd = new DataLoggerShield().getSdCard();
+if (sd.begin()) {
+    try (InputStream file = sd.open(&quot;application.properties&quot;)) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty(&quot;wifi.ssid&quot;);
+            String password = properties.getProperty(&quot;wifi.password&quot;);
+        }
+    } catch (IOException exception) {
+        Serial.println(&quot;application.properties could not be read&quot;);
+    }
+}
+</code></pre>
+<p>The properties file on the card holds the same keys:</p>
+<pre><code class="language-properties">wifi.ssid=your-network
+wifi.password=your-password
+</code></pre>
+<p>Juno's <code>Properties</code> support is bounded: a file may hold up to 8 entries, with keys of up to 15 characters and values of
+up to 31 characters. A larger file, or a longer key or value, is not loaded in full.</p>
+<h2 id="build">Build</h2>
+<p>Install the Arduino <code>SdFat</code> library once, then compile the example through the real toolchain:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.WifiStatusSD
+</code></pre>
+<p>The essential Java flow is:</p>
+<pre><code class="language-java">import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+SdCard sdCard = new DataLoggerShield().getSdCard();
+if (sdCard.begin()) {
+    InputStream file = sdCard.open(&quot;application.properties&quot;);
+    Properties properties = new Properties();
+    properties.load(file);
+    file.close();
+    ArduinoUno.getWifi().begin(
+        properties.getProperty(&quot;wifi.ssid&quot;),
+        properties.getProperty(&quot;wifi.password&quot;));
+}
+</code></pre>
+<p>Because the standard <code>Properties.load(InputStream)</code> declaration throws <code>IOException</code>, the enclosing
+method must declare <code>throws IOException</code> (or catch it). Juno's embedded implementation never actually
+throws from <code>load</code>, so such a handler is accepted but never runs. As specified by the Java API, <code>load</code> reads from the stream's current position
+and leaves it open, so close the <code>InputStream</code> explicitly.</p>
+<h2 id="random-access-with-randomaccessfile">Random access with <code>RandomAccessFile</code></h2>
+<p>For files read out of order, such as a game's data file with a directory of offsets, Juno supports the standard
+<code>java.io.RandomAccessFile</code> in read-only mode. The same code runs unchanged on a desktop JVM against a local file:</p>
+<pre><code class="language-java">import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+
+byte[] header = new byte[12];
+if (TftTouchShield.getSdCard().begin()) {
+    try (RandomAccessFile file = new RandomAccessFile(&quot;DATA.BIN&quot;, &quot;r&quot;)) {
+        file.readFully(header);                // the first 12 bytes
+        file.seek(file.length() - 16);         // jump anywhere in the file
+        int read = file.read(header, 0, 4);    // up to 4 bytes, or -1 at the end
+    } catch (FileNotFoundException missing) {
+        // no such file on the card
+    } catch (EOFException truncated) {
+        // readFully ran out of file
+    } catch (IOException failed) {
+        // any other card error
+    }
+}
+</code></pre>
+<p>Supported: the <code>(String, &quot;r&quot;)</code> constructor, <code>read()</code>, <code>read(byte[])</code>, <code>read(byte[], int, int)</code>, <code>readFully(byte[])</code>,
+<code>readFully(byte[], int, int)</code>, <code>seek(long)</code>, <code>getFilePointer()</code>, <code>length()</code>, <code>skipBytes(int)</code> and <code>close()</code>.
+Failures throw the JDK's own exceptions, as above, and a <code>RandomAccessFile</code> can be passed to helper methods.</p>
+<p>Limits:</p>
+<ul>
+<li>The path is a compile-time string literal and the mode must be <code>&quot;r&quot;</code>; any other mode is a compile error.</li>
+<li><code>read(byte[])</code> and <code>readFully(byte[])</code> take their length from the array, so they need a local array created
+with a constant size in the same method. Pass <code>(buffer, offset, length)</code> for any other array; its bounds are
+then not checked against the array's real size.</li>
+<li><code>seek</code> past the end of the file throws <code>IOException</code> (the JDK allows it).</li>
+<li><code>RandomAccessFile</code> and <code>SdCard.open()</code> share the card's four open-file slots.</li>
+</ul>
+<p>Every byte array, like any other <code>new</code> object, lives in Juno's garbage-collected arena, 8 KB by default. A program
+that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
+JVM-style <code>-Djuno.Xmx</code> (for example <code>-Djuno.Xmx=32k</code>), and check the room left at run time with
+<code>ArduinoUno.getBoardMemory().arenaCapacityBytes() - ArduinoUno.getBoardMemory().arenaUsedBytes()</code>. <code>-Djuno.Xss</code> sets each extra task's stack the same way.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

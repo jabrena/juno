@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>LEGO ecosystem - Juno: Java for Arduino</title>
+  <meta property="og:title" content="LEGO ecosystem" />
+  <meta name="twitter:title" content="LEGO ecosystem">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Remote-controlling LEGO Powered Up hubs and Mindstorms RCX bricks from Java.">
+  <meta property="og:description" content="Remote-controlling LEGO Powered Up hubs and Mindstorms RCX bricks from Java." />
+  <meta name="twitter:description" content="Remote-controlling LEGO Powered Up hubs and Mindstorms RCX bricks from Java.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/lego-ecosystem/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/lego-ecosystem/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/lego-ecosystem/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/lego-ecosystem/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class=" active" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="active" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Third parties">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/third-parties">Overview</a>
+    <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+    <a class="" href="/juno/grove-system">Grove system</a>
+    <a class="active" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>LEGO ecosystem</h1>
+</header>
+    <div class="content-prose">
+<p>LEGO has made several generations of motorised, remote-controlled systems. Juno drives two of them today from the
+same kind of Java program, and three more are pending. Each is a small remote-control class: the board plays the part of LEGO's remote, app or
+infrared tower, and the LEGO hardware does the rest.</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Since</th>
+<th>What it is</th>
+<th>Protocol used</th>
+<th>Board with support</th>
+<th>Juno class</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Powered Up</td>
+<td>2017</td>
+<td>Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps</td>
+<td>Bluetooth LE</td>
+<td>UNO R4 WiFi, UNO Q</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a></td>
+</tr>
+<tr>
+<td>Mindstorms EV3</td>
+<td>2013</td>
+<td>The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux</td>
+<td>Bluetooth Classic (serial port profile), LEGO's EV3 direct commands</td>
+<td>—</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Power Functions</td>
+<td>2007</td>
+<td>Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885)</td>
+<td>Infrared, through an IR LED on the board</td>
+<td>—</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Mindstorms NXT</td>
+<td>2006</td>
+<td>The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker</td>
+<td>Bluetooth Classic (serial port profile), LEGO's NXT direct commands</td>
+<td>—</td>
+<td>Pending</td>
+</tr>
+<tr>
+<td>Mindstorms RCX</td>
+<td>1998</td>
+<td>The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker</td>
+<td>Infrared, through an IR LED and receiver on the board</td>
+<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java"><code>RemoteRcx</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="lego-powered-up">LEGO Powered Up</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a>
+(<code>io.github.jabrena.juno.remote.lego.poweredup</code>) lets a Juno program remote-control a LEGO Powered Up hub — run
+its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
+Low Energy central and speaks the
+<a href="https://lego.github.io/lego-ble-wireless-protocol-docs/">LEGO Wireless Protocol 3.0</a> to the hub.
+It is a compiler intrinsic backed by the Arduino <code>ArduinoBLE</code> library.</p>
+<img src="../images/lego/lego-powered-up-hub.jpg" alt="LEGO Technic Hub 88012 (Powered Up)" width="280">
+<h3 id="connect-to-a-hub">Connect to a hub</h3>
+<p>Create one <code>PoweredUpHubRemote</code> at startup, press the hub's green button so it advertises, and call <code>connect</code>. It
+scans for the first hub it finds, for up to the given milliseconds (<code>0</code> waits forever). The hub drops the link when it
+switches off or goes out of range, so check <code>isConnected()</code> in long-running loops and connect again:</p>
+<pre><code class="language-java">PoweredUpHubRemote hub = new PoweredUpHubRemote();
+
+while (true) {
+    if (!hub.isConnected()) {
+        if (hub.connect(10_000)) {
+            Serial.print(&quot;connected to hub type &quot;);
+            Serial.println(hub.hubType());   // TYPE_CITY_HUB, TYPE_TECHNIC_HUB, ...
+        }
+    }
+    Delay.millis(500);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java"><code>PoweredUpHubHello</code></a> is the smallest check that a hub connects: it prints the battery level and waits for the hub again if the link drops. Close the LEGO apps first: a hub accepts one
+connection at a time.</p>
+<h3 id="set-the-led-color">Set the LED color</h3>
+<p>The hub's status LED takes a LEGO color index, from <code>COLOR_OFF</code> through <code>COLOR_PINK</code>, <code>COLOR_BLUE</code>, <code>COLOR_GREEN</code>,
+<code>COLOR_YELLOW</code>, <code>COLOR_RED</code> to <code>COLOR_WHITE</code>:</p>
+<pre><code class="language-java">int[] colors = {
+    PoweredUpHubRemote.COLOR_RED, PoweredUpHubRemote.COLOR_GREEN, PoweredUpHubRemote.COLOR_BLUE
+};
+
+while (hub.isConnected()) {
+    for (int color : colors) {
+        hub.setLedColor(color);
+        Delay.millis(1000);
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java"><code>PoweredUpHubHello</code></a> connects and then cycles the LED through several colors.</p>
+<h3 id="drive-the-motors">Drive the motors</h3>
+<p><code>setMotorPower(port, percent)</code> runs any Powered Up motor on <code>PORT_A</code> to <code>PORT_D</code>, from <code>-100</code> (full reverse) to <code>100</code>
+(full forward). There are three ways to stop: <code>setMotorPower(port, 0)</code> lets the motor coast, <code>brakeMotor</code> stops it
+actively, and <code>holdMotor</code> holds a motor with a rotation sensor in place. <code>portDevice(port)</code> tells which motor the hub
+detected on a port:</p>
+<pre><code class="language-java">if (hub.portDevice(PoweredUpHubRemote.PORT_A) != PoweredUpHubRemote.DEVICE_NONE) {
+    hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);    // half speed forward
+    Delay.millis(2000);
+    hub.setMotorPower(PoweredUpHubRemote.PORT_A, -50);   // half speed backward
+    Delay.millis(2000);
+    hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java"><code>MagicSquarePoweredUpHub</code></a> drives a two-motor vehicle (ports A and B) around a square. To drive two motors as one, as a vehicle's left and
+right wheels, pair them with <code>linkMotors(PORT_A, PORT_B)</code> and drive the pair with <code>setLinkedMotorPower</code>.</p>
+<h2 id="lego-mindstorms-rcx">Lego mindstorms RCX</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java"><code>RemoteRcx</code></a> (<code>io.github.jabrena.juno.remote.lego.rcx</code>) lets a Juno program remote-control a LEGO
+Mindstorms RCX brick over infrared: run its motors, read its sensors and buttons, play sounds and read its batteries.
+It follows LeJOS's <code>RemoteNXT</code>: one object for the brick, whose getters hand out its parts, all allocated once when
+the <code>RemoteRcx</code> is created. The board needs an IR receiver module and an IR LED, here on pins 2 and 3, pointed at the
+brick's infrared window. The motors, sensors, sounds and battery work with LEGO's own firmware; reading the
+buttons and writing text on the display need Juno's RCX firmware, downloaded to the brick once with
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxFirmwareDownload.java"><code>RcxFirmwareDownload</code></a>. The <a href="../arduino-nano-esp32#remote-control-a-lego-rcx">Nano ESP32</a> page shows the same
+setup with Grove infrared modules.</p>
+<img src="../images/lego/lego-rcx.png" alt="LEGO Mindstorms RCX 1.0" width="280">
+<h3 id="installing-the-juno-firmware-to-lego-mindstorms-rcx">Installing the JUno firmware to lego mindstorms RCX</h3>
+<p>Download Juno's firmware to the brick once. Wire the IR receiver to pin 2 and the IR LED to pin 3, point both at the
+switched-on RCX from 10 to 50 cm, and keep them still for about ten minutes; the serial monitor shows the progress:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxFirmwareDownload \
+  -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
+</code></pre>
+<p>On a Nano ESP32 with the Nano Connector Carrier, put a Grove infrared emitter in the A0/A1 socket and a Grove infrared
+receiver on the I2C socket's SCL line, and run the carrier version instead:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.NanoCarrierRcxFirmwareDownload \
+  -Djuno.board=arduino-nano-esp32
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
+</code></pre>
+<h3 id="connecting-with-the-brick">Connecting with the brick</h3>
+<p>A brick that already runs firmware is left alone, so resetting the board afterwards cannot delete it.</p>
+<p>A program reaches the brick through an infrared receiver and emitter pair, either HX modules wired to plain pins or
+Grove modules plugged into Grove sockets. Create the <code>RemoteRcx</code> once, at startup, and call <code>begin()</code>.</p>
+<h4 id="hx-infrared-modules">HX infrared modules</h4>
+<p>With an HX-M121 receiver and an HX-53 emitter, here on pins 2 and 3 of an UNO board:</p>
+<img src="../images/ir/hx-m121-hx-53.png" alt="HX-53 infrared emitter and HX-M121 infrared receiver modules" width="280">
+<pre><code class="language-java">HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(Gpio.getD2());   // DAT on D2
+HX53InfraredEmitter emitter = new HX53InfraredEmitter(Gpio.getD3());         // DAT on D3
+RemoteRcx rcx = new RemoteRcx(new RcxLink(), receiver, emitter);
+rcx.begin();
+</code></pre>
+<h4 id="grove-infrared-modules">Grove infrared modules</h4>
+<p>With Grove infrared modules on a Nano ESP32's Nano Connector Carrier, the emitter in the A0/A1 socket and the receiver
+on the I2C socket's SCL line, passing the Nano's clock:</p>
+<img src="../images/grove/grove-ir-emitter.jpg" alt="Grove Infrared Emitter" width="240">
+<img src="../images/grove/grove-ir-receiver.jpg" alt="Grove Infrared Receiver" width="240">
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
+RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), receiver, emitter, ArduinoNano.getClock());
+rcx.begin();
+</code></pre>
+<p>Either way, the examples below use the same <code>rcx</code>.</p>
+<h3 id="use-the-motors">Use the motors</h3>
+<p>The brick has three motor outputs, <code>getMotorA()</code>, <code>getMotorB()</code> and <code>getMotorC()</code>; <code>and</code> combines two into one, as a
+vehicle's left and right wheels. <code>drive(speed)</code> runs them from <code>-RcxMotor.MAX_POWER</code> (full reverse) to <code>MAX_POWER</code>
+(7, full forward). <code>stop()</code> brakes them and <code>flt()</code> lets them coast:</p>
+<pre><code class="language-java">RcxMotor wheels = rcx.getMotorA().and(rcx.getMotorC());
+
+wheels.drive(RcxMotor.MAX_POWER);    // forward
+Delay.millis(2000);
+wheels.drive(-RcxMotor.MAX_POWER);   // backward
+Delay.millis(2000);
+wheels.stop();
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxDriveAC.java"><code>RcxDriveAC</code></a> drives a vehicle with its motors on outputs A and C.</p>
+<h3 id="use-the-rotation-sensor">Use the rotation sensor</h3>
+<p>A rotation sensor counts 16 steps per turn of its axle, signed by direction. Plug it into one of the brick's three
+inputs, <code>getSensor1()</code> to <code>getSensor3()</code>, and call <code>begin()</code> after <code>rcx.begin()</code>; <code>reset()</code> sets the count back to zero:</p>
+<pre><code class="language-java">RcxRotationSensor rotation = new RcxRotationSensor(rcx.getSensor1());
+rotation.begin();
+rotation.reset();
+
+while (true) {
+    Serial.print(rotation.steps());       // 16 per turn
+    Serial.print(&quot; steps, &quot;);
+    Serial.print(rotation.degrees());     // 22.5 per step
+    Serial.println(&quot; degrees&quot;);
+    Delay.millis(200);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxRotationSensorExample.java"><code>RcxRotationSensorExample</code></a> prints the steps and the angle each time the axle turns.</p>
+<h3 id="use-the-touch-sensor">Use the touch sensor</h3>
+<p><code>isPressed()</code> tells whether the touch sensor's button is down:</p>
+<pre><code class="language-java">RcxTouchSensor touch = new RcxTouchSensor(rcx.getSensor1());
+touch.begin();
+
+while (!touch.isPressed()) {
+    Delay.millis(50);
+}
+Serial.println(&quot;Pressed&quot;);
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxTouchSensorExample.java"><code>RcxTouchSensorExample</code></a> prints <code>Pressed</code> or <code>Released</code> each time it changes.</p>
+<h3 id="use-the-temperature-sensor">Use the temperature sensor</h3>
+<p><code>temperatureTenths()</code> returns the temperature in tenths of a degree Celsius, so <code>235</code> is 23.5 °C:</p>
+<pre><code class="language-java">RcxTemperatureSensor temperature = new RcxTemperatureSensor(rcx.getSensor1());
+temperature.begin();
+
+int tenths = temperature.temperatureTenths();
+Serial.print(tenths / 10);
+Serial.print(&quot;.&quot;);
+Serial.print(tenths % 10);
+Serial.println(&quot; C&quot;);
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxTemperatureSensorExample.java"><code>RcxTemperatureSensorExample</code></a> prints the temperature once a second.</p>
+<h3 id="use-the-light-sensor">Use the light sensor</h3>
+<p><code>lightPercent()</code> returns the light level from <code>0</code> to <code>100</code>, or <code>-1</code> if the brick did not answer:</p>
+<pre><code class="language-java">RcxLightSensor light = new RcxLightSensor(rcx.getSensor1());
+light.begin();
+
+int percent = light.lightPercent();
+if (percent &gt;= 0) {
+    Serial.print(percent);
+    Serial.println(&quot; %&quot;);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxLightSensorExample.java"><code>RcxLightSensorExample</code></a> prints the light level twice a second.</p>
+<h3 id="play-music">Play music</h3>
+<p>The brick's speaker plays one of six built-in sounds (<code>RcxAudio.SOUND_BEEP</code>, <code>SOUND_SWEEP_UP</code>, ...) or a tone of a
+given frequency, from about 31 to 20000 Hz, for a duration in hundredths of a second. A tone replaces any sound
+still playing, so wait for it to end before the next:</p>
+<pre><code class="language-java">RcxAudio audio = rcx.getAudio();
+audio.playSound(RcxAudio.SOUND_BEEP);
+Delay.millis(500);
+
+int[] notes = {262, 294, 330, 349, 392};   // C, D, E, F, G
+for (int note : notes) {
+    audio.playTone(note, 30);              // 0.3 seconds
+    Delay.millis(350);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxFurElise.java"><code>RcxFurElise</code></a> plays the melody of Beethoven's &quot;Für Elise&quot; on the brick.</p>
+<h3 id="read-the-battery">Read the battery</h3>
+<p><code>getBattery().millivolts()</code> asks the brick for its battery voltage. A negative value means the brick did not answer:
+it is off, out of range, or not facing the IR LED. That makes it a good first check that the link works:</p>
+<pre><code class="language-java">int millivolts = rcx.getBattery().millivolts();
+if (millivolts &lt; 0) {
+    Serial.println(&quot;No answer from the RCX&quot;);
+} else {
+    Serial.print(millivolts);
+    Serial.println(&quot; mV&quot;);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxPing.java"><code>RcxPing</code></a> reads the battery in a loop and reports whether the brick answers.</p>
+<h3 id="read-the-buttons">Read the buttons</h3>
+<p>With Juno's firmware, clicking View, Prgm or Run changes nothing on the brick: it remembers the click, and
+<code>getButtons().clicked()</code> returns the buttons clicked since the previous call as a mask of <code>RcxButtons.VIEW</code>, <code>PRGM</code>
+and <code>RUN</code>. The program decides what the display shows: <code>getLcd().showText(...)</code> writes up to four characters on the
+digits, and <code>getLcd().clear()</code> blanks them:</p>
+<pre><code class="language-java">rcx.getLcd().clear();
+while (true) {
+    int clicked = rcx.getButtons().clicked();
+    if ((clicked &amp; RcxButtons.RUN) != 0) {
+        rcx.getLcd().showText(&quot;RUN&quot;);
+    }
+    Delay.millis(200);
+}
+</code></pre>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

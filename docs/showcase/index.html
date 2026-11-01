@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Showcase - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Showcase" />
+  <meta name="twitter:title" content="Showcase">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Complete Juno programs that go beyond the examples in the docs: a network arena game, cloud publishing, a chess tactics trainer, a Zelda ocarina player and a polyphonic LEGO RCX.">
+  <meta property="og:description" content="Complete Juno programs that go beyond the examples in the docs: a network arena game, cloud publishing, a chess tactics trainer, a Zelda ocarina player and a polyphonic LEGO RCX." />
+  <meta name="twitter:description" content="Complete Juno programs that go beyond the examples in the docs: a network arena game, cloud publishing, a chess tactics trainer, a Zelda ocarina player and a polyphonic LEGO RCX.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/showcase/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/showcase/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/showcase/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/showcase/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="active active" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="active" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Showcase">
+  <div class="juno-subnav-inner">
+    <a class="active" href="/juno/showcase">Overview</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Showcase</h1>
+</header>
+    <div class="content-prose">
+<p>Showcase programs are complete, working applications built with Juno. Each one runs on real hardware, uses several
+parts of the API together, and is the best place to see how a larger program is organized. Their source is in
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases"><code>juno-examples</code></a>.</p>
+<h2 id="gladiator">Gladiator</h2>
+<p><a href="../games#gladiator">Gladiator</a> is a game for the ELEGOO 2.8&quot; TFT touch shield. Two gladiators fight in a Roman arena,
+each seen from its own board, while a third board keeps the arena. The solo mode runs a CPU-versus-CPU duel on a single
+board, with no network needed.</p>
+<img src="../images/games/gladiator-solo.gif" alt="Gladiator Solo: the title, class selection, the versus view, then a CPU-versus-CPU bout until the result" width="320">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/gladiator"><code>games/gladiator</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-uno-q"><code>Arduino Q</code></a></td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>Wi-Fi, UDP, SD card, TFT touch screen, rotating 3D wireframe view, CPU opponent AI, lion, javelins, smoke, stamina, random numbers, clock</td>
+</tr>
+</tbody>
+</table>
+<h2 id="doom">Doom</h2>
+<p><a href="../games#doom">DOOM</a> runs in landscape on the ELEGOO 2.8&quot; TFT touch shield, drawn as a wireframe with DOOM's own BSP
+renderer. Pick <strong>HUMAN</strong> (touch to turn, walk and fire) or <strong>CPU</strong> (an autopilot), then the episode and skill. The game
+reads your own <code>DOOM1.WAD</code> from the microSD card.</p>
+<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield in the emulator: the CPU on I'm Too Young to Die clears E1M1 and E1M2 with the pistol, then picks up the shotgun on E1M3 and fights there until it dies" width="320">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/doom"><code>games/doom</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-uno-q"><code>Arduino Q</code></a></td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>TFT touch screen, SD card with RandomAccessFile, MVC view router, BSP wireframe renderer, CPU autopilot, serial output, delays, clock</td>
+</tr>
+</tbody>
+</table>
+<h2 id="supabase">Supabase</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase/publisher/SupabaseGroveTemperatures.java"><code>SupabaseGroveTemperatures</code></a>
+reads three Grove temperature sensors once a minute and inserts them as one row of a Supabase table through its
+PostgREST API. It shows Wi-Fi, HTTPS requests with caller-owned buffers, and a timestamp taken once
+from <code>LocalDateTime.now()</code> and then advanced by the board's clock, so the program makes no extra time requests.</p>
+<p>A failing sensor is sent as <code>null</code>, so one broken sensor does not stop the other two from being published. The board is
+a public client, so it uses a publishable key that is protected by Row Level Security. The
+<a href="../arduino-uno-r4-wifi">UNO R4 WiFi</a> page describes the wiring.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase"><code>usecases/supabase</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-uno-r4-wifi"><code>UNO R4 WiFi</code></a>, <a href="../arduino-uno-q"><code>UNO Q</code></a></td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>Wi-Fi, HTTPS, Grove sensors, Grove Base Shield, LocalDateTime, clock, TFT touch screen, MVC view router, serial output, delays</td>
+</tr>
+</tbody>
+</table>
+<h2 id="lichess">Lichess</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/lichess/LichessDailyChallenges.java"><code>LichessDailyChallenges</code></a>
+is a chess tactics trainer for the UNO R4 WiFi and its TFT touch shield. The cover leads to a challenge menu built with
+the <a href="../mvc">MVC</a> pattern. The daily puzzle and a fresh public puzzle are fetched from Lichess as a position and its
+solution, and the player finds the moves on the touch board.</p>
+<p>The program reads <code>wifi.ssid</code> and <code>wifi.password</code> from <code>application.properties</code> on the shield's microSD card. Its
+buffers are allocated once at startup, so the frame loop allocates nothing.</p>
+<img src="../images/games/lichess-daily.gif" alt="Lichess daily puzzle on the TFT shield: the board with the player's moves and Lichess's replies, then the win screen" width="240">
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/lichess"><code>usecases/lichess</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-uno-r4-wifi"><code>UNO R4 WiFi</code></a></td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>Wi-Fi, HTTPS, JSON, SD card, TFT touch screen, MVC view router, chess piece rendering, clock, serial output, delays</td>
+</tr>
+</tbody>
+</table>
+<h2 id="polyphonic-rcx">Polyphonic RCX</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx/ZeldaPolyphonicRcx.java"><code>ZeldaPolyphonicRcx</code></a>
+plays the opening of Ocarina of Time as three synchronized instruments, one on each of the LEGO RCX bricks' channels one,
+two and three. The three bricks sound together, so the melody and its harmony come from different bricks.</p>
+<p>The same program runs on an Arduino Nano ESP32 through the Nano Connector Carrier, in
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx/ZeldaPolyphonicRcxNano.java"><code>ZeldaPolyphonicRcxNano</code></a>.
+Its infrared transmitter is on a Grove socket and its receiver on the Grove I2C socket. See the
+<a href="../lego-ecosystem">LEGO</a> page for the RCX link. This version adds a bass instrument on a fourth brick, channel 4.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx"><code>usecases/zeldapoliphonicrcx</code></a></td>
+</tr>
+<tr>
+<td>Board supported</td>
+<td><a href="../arduino-nano-esp32"><code>Arduino Nano ESP32</code></a></td>
+</tr>
+<tr>
+<td>Features used</td>
+<td>Infrared link, RCX channels, multi-brick playback, RCX indicator lights, Grove infrared emitter and receiver, Nano Connector Carrier, serial output, delays</td>
+</tr>
+</tbody>
+</table>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

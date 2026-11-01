@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Create your first project - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Create your first project" />
+  <meta name="twitter:title" content="Create your first project">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi.">
+  <meta property="og:description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi." />
+  <meta name="twitter:description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/create-your-first-project/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/create-your-first-project/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/create-your-first-project/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/create-your-first-project/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class=" active" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="active" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Getting Started">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/getting-started">Getting Started</a>
+    <a class="active" href="/juno/create-your-first-project">Create your first project</a>
+    <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Create your first project</h1>
+</header>
+    <div class="content-prose">
+<p>This page creates a new Git repository called <code>testing-juno</code>. It adds Juno as a git submodule, configures the Maven
+plugin, and uploads a first program to an Arduino UNO R4 WiFi.</p>
+<p>You need the tools from <a href="../getting-started#1-prerequisites">Getting Started</a>: JDK 27, Maven, Arduino CLI and Git.</p>
+<h2 id="1-create-the-repository">1. Create the repository</h2>
+<pre><code class="language-bash">mkdir testing-juno
+cd testing-juno
+git init
+</code></pre>
+<p>By the end of this page the project will look like this:</p>
+<pre><code class="language-text">testing-juno/
+├── juno/                                  git submodule: jabrena/juno
+├── src/main/java/com/example/testingjuno/App.java
+├── .gitmodules
+├── .mvn/jvm.config
+├── mvnw
+└── pom.xml
+</code></pre>
+<h2 id="2-add-juno-as-a-submodule">2. Add Juno as a submodule</h2>
+<pre><code class="language-bash">git submodule add https://github.com/jabrena/juno.git juno
+</code></pre>
+<p><code>git submodule add</code> clones Juno into <code>juno/</code> and records it in a <code>.gitmodules</code> file. To build against a specific Juno
+revision, pin the submodule to a commit with <code>git -C juno checkout &lt;commit&gt;</code>.</p>
+<h2 id="3-build-juno-into-your-local-maven-repository">3. Build Juno into your local Maven repository</h2>
+<p>The project depends on <code>juno-api</code> and the Maven plugin at version <code>0.1.0-SNAPSHOT</code>. Maven resolves them from your local
+repository (<code>~/.m2</code>), not from the submodule, so build the submodule once with its own wrapper:</p>
+<pre><code class="language-bash">cd juno
+./mvnw clean install -DskipTests -Dspotless.check.skip=true -Dpmd.skip=true \
+  -pl juno-api,juno-compiler,juno-maven-plugin -am
+cd ..
+</code></pre>
+<p>Run this again whenever you move the submodule to a new commit.</p>
+<h2 id="4-create-the-maven-project">4. Create the Maven project</h2>
+<p>Create a <code>pom.xml</code> in the root of <code>testing-juno</code>:</p>
+<pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
+         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
+         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+    &lt;groupId&gt;com.example&lt;/groupId&gt;
+    &lt;artifactId&gt;testing-juno&lt;/artifactId&gt;
+    &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
+    &lt;packaging&gt;jar&lt;/packaging&gt;
+
+    &lt;properties&gt;
+        &lt;maven.compiler.release&gt;27&lt;/maven.compiler.release&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+        &lt;juno.version&gt;0.1.0-SNAPSHOT&lt;/juno.version&gt;
+        &lt;juno.board&gt;arduino-uno-r4-wifi&lt;/juno.board&gt;
+        &lt;juno.main&gt;com.example.testingjuno.App&lt;/juno.main&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
+            &lt;artifactId&gt;juno-api&lt;/artifactId&gt;
+            &lt;version&gt;${juno.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;3.13.0&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;release&gt;${maven.compiler.release}&lt;/release&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
+                &lt;artifactId&gt;juno-maven-plugin&lt;/artifactId&gt;
+                &lt;version&gt;${juno.version}&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;board&gt;${juno.board}&lt;/board&gt;
+                    &lt;mainClass&gt;${juno.main}&lt;/mainClass&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+&lt;/project&gt;
+</code></pre>
+<p>Each part has a job:</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>maven.compiler.release</code></td>
+<td>The JDK level the program is compiled for. Juno requires 27.</td>
+</tr>
+<tr>
+<td><code>juno.version</code></td>
+<td>Must match the version installed from the submodule in step 3.</td>
+</tr>
+<tr>
+<td><code>juno-api</code> dependency</td>
+<td>The only artifact your program compiles against: the board API, with no compiler code.</td>
+</tr>
+<tr>
+<td><code>&lt;mainClass&gt;</code></td>
+<td>The entry-point class, fully qualified. It is the <code>juno.main</code> property.</td>
+</tr>
+<tr>
+<td><code>&lt;board&gt;</code></td>
+<td>The target board id, here <code>arduino-uno-r4-wifi</code>. It is the <code>juno.board</code> property.</td>
+</tr>
+</tbody>
+</table>
+<p>Every plugin option can also be passed on the command line. A <code>-D</code> property overrides the value in <code>pom.xml</code> for that run:</p>
+<table>
+<thead>
+<tr>
+<th>Plugin option</th>
+<th>Property</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mainClass</code></td>
+<td><code>juno.main</code></td>
+<td>The entry point to compile.</td>
+</tr>
+<tr>
+<td><code>board</code></td>
+<td><code>juno.board</code></td>
+<td>The board id. Needed only when the entry point's <code>@Board</code> lists several boards.</td>
+</tr>
+<tr>
+<td><code>port</code></td>
+<td><code>juno.port</code></td>
+<td>The serial port, when more than one matching board is connected.</td>
+</tr>
+<tr>
+<td><code>fqbn</code></td>
+<td><code>juno.fqbn</code></td>
+<td>Overrides the board's Arduino FQBN.</td>
+</tr>
+<tr>
+<td><code>arduinoCli</code></td>
+<td><code>juno.arduinoCli</code></td>
+<td>The <code>arduino-cli</code> executable, if it is not on the <code>PATH</code>.</td>
+</tr>
+<tr>
+<td><code>outputDirectory</code></td>
+<td><code>juno.outputDirectory</code></td>
+<td>Where the generated sketch folders are written.</td>
+</tr>
+<tr>
+<td><code>arenaSize</code></td>
+<td><code>juno.Xmx</code></td>
+<td>The memory arena size for the program.</td>
+</tr>
+<tr>
+<td><code>threadStackSize</code></td>
+<td><code>juno.Xss</code></td>
+<td>The stack size of each Juno thread.</td>
+</tr>
+<tr>
+<td><code>maxThreads</code></td>
+<td><code>juno.maxThreads</code></td>
+<td>The maximum number of threads.</td>
+</tr>
+</tbody>
+</table>
+<p>Juno's compiler needs a few JDK modules opened, so add <code>.mvn/jvm.config</code> with these lines:</p>
+<pre><code class="language-text">--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
+--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
+</code></pre>
+<p>Then add the Maven wrapper so <code>./mvnw</code> works without a separate Maven install:</p>
+<pre><code class="language-bash">mvn -N wrapper:wrapper
+</code></pre>
+<h2 id="5-install-the-board-core-and-libraries">5. Install the board core and libraries</h2>
+<p>Run this once per machine. It installs the Renesas UNO core and the optional libraries the examples need:</p>
+<pre><code class="language-bash">./mvnw juno:install-deps
+</code></pre>
+<h2 id="6-write-the-program">6. Write the program</h2>
+<p>Create <code>src/main/java/com/example/testingjuno/App.java</code>. The board is selected by its <code>@Board</code> annotation, and the program
+scrolls a message across the 12 × 8 LED matrix:</p>
+<pre><code class="language-java">package com.example.testingjuno;
+
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.led.LedCanvas;
+import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.util.Delay;
+
+@Board(ArduinoUnoR4WiFiBoard.class)
+public final class App {
+    public static void main(String[] args) {
+        LedMatrix matrix = ArduinoUno.getLedMatrix();
+        matrix.begin();
+        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+
+        while (true) {
+            for (int offset = 12; offset &gt;= -60; offset--) {
+                LedCanvas.clear(frame);
+                LedCanvas.drawText(frame, &quot;Hello, Juno&quot;, offset, 0);
+                LedCanvas.show(frame);
+                Delay.millis(80);
+            }
+        }
+    }
+}
+</code></pre>
+<p><code>drawText</code> takes a compile-time string literal, so the message is written directly in the source.</p>
+<h2 id="7-build-and-upload">7. Build and upload</h2>
+<p>Connect the board with a USB-C cable. Compile, verify and upload in one command:</p>
+<pre><code class="language-bash">./mvnw compile juno:upload
+</code></pre>
+<p>On Windows, use <code>.\mvnw.cmd compile juno:upload</code>. To check the program without touching the board, run <code>juno:verify</code>
+instead:</p>
+<pre><code class="language-bash">./mvnw compile juno:verify
+</code></pre>
+<p>If several boards are connected, list them and choose the port:</p>
+<pre><code class="language-bash">./mvnw juno:boards
+./mvnw compile juno:upload -Djuno.port=&lt;PORT&gt;
+</code></pre>
+<p>On Windows, quote the property: <code>.\mvnw.cmd compile juno:upload &quot;-Djuno.port=COM11&quot;</code>.</p>
+<h2 id="8-commit-the-project">8. Commit the project</h2>
+<pre><code class="language-bash">git add .gitmodules juno pom.xml mvnw .mvn src
+git commit -m &quot;chore: first Juno project&quot;
+</code></pre>
+<p>Others can then clone it with <code>git clone --recursive</code> and build it the same way.</p>
+<h2 id="9-review-ideas-for-your-next-steps">9. Review ideas for your next steps</h2>
+<ul>
+<li><strong>Change the message:</strong> edit the text and the scroll range in <code>App.java</code>, then run <code>./mvnw compile juno:upload</code> again.</li>
+<li><strong>Add a second program:</strong> create another class with <code>@Board</code>, then upload it with <code>-Djuno.main=&lt;fully-qualified-name&gt;</code>
+instead of editing <code>pom.xml</code>.</li>
+<li><strong>Update Juno:</strong> move the submodule to a new commit with <code>git -C juno checkout &lt;commit&gt;</code>, rebuild it with the step 3
+command, then compile again.</li>
+<li><strong>Track the submodule version:</strong> commit the new submodule pointer after each update, so everyone builds the same Juno.</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>The <code>juno-maven-plugin</code> or <code>juno-api</code> version cannot be resolved:</strong> rebuild the submodule (step 3). The <code>juno.version</code>
+property must match the version it installs.</li>
+<li><strong>&quot;Missing required Juno entry point&quot;:</strong> set <code>&lt;mainClass&gt;</code> in <code>pom.xml</code>, or pass <code>-Djuno.main=&lt;fully-qualified-name&gt;</code>.</li>
+<li><strong>The upload cannot find the port:</strong> run <code>./mvnw juno:boards</code> and pass <code>-Djuno.port=&lt;PORT&gt;</code>.</li>
+<li><strong>Several boards match:</strong> pass <code>-Djuno.board=&lt;id&gt;</code> when the entry point's <code>@Board</code> lists more than one board.</li>
+</ul>
+<p>For every goal and option, see the <a href="../juno-maven-plugin">Maven Plugin</a> page.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

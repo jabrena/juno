@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>JLS 17 Conformance - Juno: Java for Arduino</title>
+  <meta property="og:title" content="JLS 17 Conformance" />
+  <meta name="twitter:title" content="JLS 17 Conformance">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Focused Java Memory Model examples, what each one proves, and how to run them on every Juno board that has a task scheduler.">
+  <meta property="og:description" content="Focused Java Memory Model examples, what each one proves, and how to run them on every Juno board that has a task scheduler." />
+  <meta name="twitter:description" content="Focused Java Memory Model examples, what each one proves, and how to run them on every Juno board that has a task scheduler.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/jls-17-conformance/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/jls-17-conformance/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/jls-17-conformance/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/jls-17-conformance/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class=" active" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="active" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Features">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/features">Overview</a>
+    <a class="" href="/juno/java-subset">Java subset</a>
+    <a class="" href="/juno/board-features">Board features</a>
+    <a class="" href="/juno/memory-model">Memory Model</a>
+    <a class="active" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>JLS 17 Conformance</h1>
+</header>
+    <div class="content-prose">
+<p>This page reviews <a href="https://docs.oracle.com/javase/specs/jls/se27/html/jls-17.html">JLS Chapter 17: Threads and Locks</a>
+against Juno. The examples live in
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency"><code>io.github.jabrena.juno.language.concurrency</code></a>.
+Each board entry point is intentionally small, prints one observable result, allocates its state once at startup, and
+does not allocate in its worker loops.</p>
+<p>A successful run demonstrates one concrete execution. It cannot prove that every execution allowed by the Java
+Memory Model is implemented correctly. In particular, a stress test that does not observe a permitted data-race
+outcome does not make the racy program correct. The deterministic examples therefore assert required outcomes; the
+one deliberately racy final-field example treats failure to observe the published reference as allowed.</p>
+<h2 id="locks-and-higher-level-coordination-objects">Locks and higher-level coordination objects</h2>
+<p>JLS 17 specifies the memory-ordering primitives (monitors, volatile access, thread start/join and interruption); it
+does not make <code>Semaphore</code>, <code>CountDownLatch</code> or the other <code>java.util.concurrent</code> classes language primitives. The
+examples make that boundary visible:</p>
+<table>
+<thead>
+<tr>
+<th>Example</th>
+<th>Object demonstrated</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java"><code>Locks</code></a></td>
+<td>Concrete <code>ReentrantLock</code>, reentrancy, <code>tryLock</code>, and <code>finally</code>/<code>unlock</code></td>
+<td>Board-ready on UNO R4 WiFi, UNO Q and UNO WiFi Rev2</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Atomics.java"><code>Atomics</code></a></td>
+<td><code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicBoolean</code>, <code>compareAndSet</code> and <code>getAndSet</code></td>
+<td>Board-ready on UNO R4 WiFi, UNO Q and UNO WiFi Rev2</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Semaphores.java"><code>Semaphores</code></a></td>
+<td>Counting permits</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/CountDownLatchExample.java"><code>CountDownLatchExample</code></a></td>
+<td>One-shot completion gate</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/PhaserExample.java"><code>PhaserExample</code></a></td>
+<td>Reusable phase barrier</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/CyclicBarrierExample.java"><code>CyclicBarrierExample</code></a></td>
+<td>Reusable barrier and barrier action</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ExchangerExample.java"><code>ExchangerExample</code></a></td>
+<td>Two-party value exchange</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ReadWriteLockExample.java"><code>ReadWriteLockExample</code></a></td>
+<td>Separate read and write locks</td>
+<td>JVM-only</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BlockingQueueExample.java"><code>BlockingQueueExample</code></a></td>
+<td>Blocking producer/consumer queue</td>
+<td>JVM-only</td>
+</tr>
+</tbody>
+</table>
+<p>The board-safe <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BoundedBuffer.java"><code>BoundedBuffer</code></a>
+shows the replacement pattern: a concrete <code>ReentrantLock</code>, a non-blocking <code>offer</code>/<code>poll</code>, and <code>Thread.yield()</code> while
+the caller retries. The compiler rejects the JVM-only classes' higher-level APIs instead of silently changing their
+blocking or fairness semantics. Their JUnit checks still run on OpenJDK, so each object has a focused executable
+example and a deterministic assertion.</p>
+<h2 id="clause-to-example-matrix">Clause-to-example matrix</h2>
+<table>
+<thead>
+<tr>
+<th>JLS clause</th>
+<th>Juno status</th>
+<th>Focused evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>17.1 Synchronization</td>
+<td>Monitor blocks are supported and reentrant. Normal and abrupt block exit emit monitor release. Synchronized methods are rejected.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/MonitorHappensBefore.java"><code>MonitorHappensBefore</code></a> prints <code>monitor value 42</code>.</td>
+</tr>
+<tr>
+<td>17.2 Wait sets and notification</td>
+<td>Board objects have monitors but Juno does not expose JVM wait-set operations.</td>
+<td>The four following rows retain runnable JVM examples and mark the board boundary explicitly.</td>
+</tr>
+<tr>
+<td>17.2.1 Wait</td>
+<td><code>Object.wait</code> is not lowered. On the JVM it requires monitor ownership, releases all of that thread's acquisitions of the monitor, may wake spuriously, and reacquires the same number before returning or throwing.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/WaitNotification.java"><code>WaitNotification.await</code></a> uses the required guarded <code>while</code> loop.</td>
+</tr>
+<tr>
+<td>17.2.2 Notification</td>
+<td><code>notify</code> and <code>notifyAll</code> are not lowered. JVM <code>notify</code> chooses an arbitrary waiter; <code>notifyAll</code> wakes all waiters, which then reacquire the monitor one at a time.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/WaitNotification.java"><code>WaitNotification.publish</code></a> changes guarded state before <code>notifyAll</code>.</td>
+</tr>
+<tr>
+<td>17.2.3 Interruptions</td>
+<td>Board thread interruption is not lowered. On the JVM, interruption sets the status; an interrupted wait/sleep throws <code>InterruptedException</code> and clears it.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Interruption.java"><code>Interruption</code></a> demonstrates restoring the status when an exception cannot be propagated.</td>
+</tr>
+<tr>
+<td>17.2.4 Wait/notification/interruption races</td>
+<td>Not applicable on boards because neither wait sets nor interruption are exposed. On the JVM a notified-and-interrupted waiter may return normally with a pending interrupt or throw; it may not clear the interrupt and return normally, and notification cannot be lost.</td>
+<td>Covered as a specification rule rather than a deterministic board test because both race outcomes are legal.</td>
+</tr>
+<tr>
+<td>17.3 Sleep and yield</td>
+<td>Both are supported scheduling points. As required, neither releases a monitor nor creates a Java Memory Model synchronization edge.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/SleepAndYield.java"><code>SleepAndYield</code></a> prints <code>monitor retained true</code>.</td>
+</tr>
+<tr>
+<td>17.4.1 Shared variables</td>
+<td>Fields and array elements are shared; locals and parameters remain thread-confined.</td>
+<td>All examples keep shared state in fields or arrays and worker-local expected values in locals.</td>
+</tr>
+<tr>
+<td>17.4.2 Actions</td>
+<td>Ordinary reads/writes, volatile reads/writes, monitor actions, thread start, thread termination detection, and serial output are represented. Thread divergence is specification machinery rather than a terminating board test.</td>
+<td>The examples below exercise each supported action kind.</td>
+</tr>
+<tr>
+<td>17.4.3 Program order and sequential consistency</td>
+<td>Juno executes one task at a time and provides a stronger, sequentially consistent implementation. Portable code must still be correctly synchronized.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LostUpdates.java"><code>LostUpdates</code></a> contrasts a racy compound action with monitor, lock, and atomic updates.</td>
+</tr>
+<tr>
+<td>17.4.4 Synchronization order</td>
+<td>Volatile, monitor, start, and join synchronization edges are supported. Default zero initialization occurs before Java code runs. Interrupt edges are unavailable because interruption is unsupported.</td>
+<td><code>MonitorHappensBefore</code>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/VolatileHappensBefore.java"><code>VolatileHappensBefore</code></a>, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java"><code>ThreadStartAndJoin</code></a>.</td>
+</tr>
+<tr>
+<td>17.4.5 Happens-before</td>
+<td>Monitor unlock/lock, volatile write/read, start, join, program order, and transitivity publish the expected values. A data race remains a bug even when Juno's single-core execution happens to hide it.</td>
+<td>The three happens-before examples each print <code>42</code>; <code>LostUpdates</code> documents the racy counterexample.</td>
+</tr>
+<tr>
+<td>17.4.6–17.4.7 Executions and well-formedness</td>
+<td>These sections define how a specification validates an execution; they are not separate runtime APIs. Juno's compiler/runtime must only produce well-formed executions.</td>
+<td>Cross-checks run the examples on OpenJDK and on generated target code.</td>
+</tr>
+<tr>
+<td>17.4.8 Causality</td>
+<td>Values cannot arise solely from circular reasoning between racy reads and conditional writes.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Causality.java"><code>Causality</code></a> prints <code>out of thin air false</code>.</td>
+</tr>
+<tr>
+<td>17.4.9 Observable behavior and nontermination</td>
+<td>Serial calls are external actions. Hangs are valid observable outcomes for deadlock or infinite execution, but an automated conformance example must terminate, so the suite does not deliberately hang a board.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/DiningPhilosophers.java"><code>DiningPhilosophers</code></a> avoids deadlock with a global lock order.</td>
+</tr>
+<tr>
+<td>17.5 Final fields</td>
+<td>Constructor-assigned final fields provide safe immutable state even when the reference publication itself is racy.</td>
+<td>The following rows separate ordinary freeze semantics from JVM-only reflective and <code>System</code>-stream exceptions.</td>
+</tr>
+<tr>
+<td>17.5.1 Final-field semantics</td>
+<td>Constructor exit freezes each final field. The guarantee extends to the initialized state reached through a final reference.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/FinalFieldPublication.java"><code>FinalFieldPublication</code></a> checks a final primitive and an array reached through a final field, then prints <code>final value 42</code> when its deliberately racy reader observes the reference. Not observing the reference is allowed.</td>
+</tr>
+<tr>
+<td>17.5.2 Reads during construction</td>
+<td>Reads in the constructing thread follow normal program order: a read after assignment sees the assigned value. Java's definite-assignment rules prevent an ordinary constructor from reading its own blank final before assignment.</td>
+<td>The <code>Value</code> constructor assigns <code>answer</code> before the object can be published.</td>
+</tr>
+<tr>
+<td>17.5.3 Subsequent modification</td>
+<td>Reflection/deserialization mutation of final fields is not in Juno's closed-world subset. Portable board programs never mutate a final after construction.</td>
+<td>Marked unsupported rather than emulated with weaker semantics.</td>
+</tr>
+<tr>
+<td>17.5.4 Write-protected fields</td>
+<td>The special JVM treatment of <code>System.in</code>, <code>System.out</code>, and <code>System.err</code> is not applicable: Juno serial I/O uses <code>Serial</code>, and <code>System.setIn/setOut/setErr</code> are not lowered.</td>
+<td>No board test; these JVM globals are outside the board API.</td>
+</tr>
+<tr>
+<td>17.6 Word tearing</td>
+<td>Distinct fields and array elements are updated independently, including adjacent bytes on AVR.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/WordTearing.java"><code>WordTearing</code></a> prints <code>word tears 0</code>.</td>
+</tr>
+<tr>
+<td>17.7 <code>double</code>, <code>long</code>, and reference atomicity</td>
+<td>References and volatile 64-bit values are atomic. Juno also keeps non-volatile 64-bit fields whole while its scheduler is active, which is stronger than the minimum JLS guarantee.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ReferenceAtomicity.java"><code>ReferenceAtomicity</code></a> prints <code>invalid references 0</code>; <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/VolatileLongAtomicity.java"><code>VolatileLongAtomicity</code></a> prints <code>torn longs 0</code>.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="board-matrix">Board matrix</h2>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Compile and link</th>
+<th>Runtime execution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNO R4 WiFi</td>
+<td>Supported</td>
+<td>Physical board, or Cortex-M4 QEMU for the language/runtime layer</td>
+</tr>
+<tr>
+<td>UNO Q</td>
+<td>Supported</td>
+<td>Physical board; Cortex-M4 QEMU uses a stand-in for the Zephyr scheduling port</td>
+</tr>
+<tr>
+<td>UNO WiFi Rev2</td>
+<td>Supported</td>
+<td>Physical board, or simavr for the AVR language/runtime layer</td>
+</tr>
+<tr>
+<td>Classic UNO R3</td>
+<td>Not applicable</td>
+<td>The board has only 2 KiB SRAM and intentionally exposes no task scheduler; Juno rejects monitor/lock concurrency for it instead of silently weakening the semantics</td>
+</tr>
+</tbody>
+</table>
+<p>The annotation on every board-ready example names the three supported targets, so the normal language-example tests
+compile each class once per target. The Arduino CLI integration profile then builds and links the generated sketches
+with each target's real Arduino core. QEMU and simavr compare generated-code output with OpenJDK for the runtime layer;
+real hardware remains the final check for each scheduler port.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

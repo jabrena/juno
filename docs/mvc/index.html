@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>MVC - Juno: Java for Arduino</title>
+  <meta property="og:title" content="MVC" />
+  <meta name="twitter:title" content="MVC">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Organizing a multi-screen Juno app with a model, views, a navigator and a router, using the util.mvc package.">
+  <meta property="og:description" content="Organizing a multi-screen Juno app with a model, views, a navigator and a router, using the util.mvc package." />
+  <meta name="twitter:description" content="Organizing a multi-screen Juno app with a model, views, a navigator and a router, using the util.mvc package.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/mvc/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/mvc/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/mvc/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/mvc/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="active" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="active" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>MVC</h1>
+</header>
+    <div class="content-prose">
+<p>A program with more than one screen, such as a menu, a list, a detail page and a settings page, is easiest to keep
+correct when each part has one job. Juno's <a href="https://github.com/jabrena/juno/tree/main/juno-api/src/main/java/io/github/jabrena/juno/util/mvc"><code>util.mvc</code></a>
+package provides the pieces for the model-view-controller split: the views, the way they hand over control, and the
+loop that runs them.</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Juno type</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model</td>
+<td>your own class, such as <code>MailboxModel</code></td>
+<td>the program's state, in fixed-size arrays; no screen logic</td>
+</tr>
+<tr>
+<td>View</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/mvc/View.java"><code>View</code></a> or <code>KeyboardView</code></td>
+<td>draws one screen from the model and turns touches or keys into actions</td>
+</tr>
+<tr>
+<td>Navigator</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/mvc/Navigator.java"><code>Navigator</code></a></td>
+<td><code>show(viewId)</code> and <code>back()</code>, the only way a view changes the screen</td>
+</tr>
+<tr>
+<td>Router</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/mvc/ViewRouter.java"><code>ViewRouter</code></a> or <code>KeyboardViewRouter</code></td>
+<td>owns the views, runs the frame loop and applies navigation between frames</td>
+</tr>
+<tr>
+<td>Background task</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/util/mvc/Task.java"><code>Task</code></a></td>
+<td>work advanced one short step per frame, such as HTTP requests, without a thread</td>
+</tr>
+</tbody>
+</table>
+<p>Views never refer to each other. A view knows only the integer id each screen was registered under, so a screen can be
+moved, renamed or removed without touching the rest.</p>
+<h2 id="layout-of-a-juno-app">Layout of a Juno app</h2>
+<p>The mailbox client in <code>juno-examples</code> shows the layout most apps can follow. Each concern gets its own file, and the
+main class only wires them together:</p>
+<pre><code class="language-text">usecases/mailbox/client/
+├── MailboxCardputer.java    main: builds the objects and the router, then runs the loop
+├── MailboxModel.java        state shared by the views and the client
+├── MailboxClient.java       a Task: the HTTPS requests, filling the model
+├── MailboxConnection.java   Wi-Fi join, advanced by the client each frame
+├── MailboxKey.java          settings read from the SD card
+├── CoverView.java           one screen per file, each implementing View or KeyboardView
+├── SettingsView.java
+├── InboxView.java
+├── MessageView.java
+├── ComposeView.java
+└── ProgressView.java
+</code></pre>
+<p>Put the code that talks to the hardware or the network in a service or a <code>Task</code>, the state in the model, and the drawing
+and input in the views. The main class has no screen logic, so reading it shows which screens exist and how they are
+connected.</p>
+<h2 id="the-model">The model</h2>
+<p>The model holds what the views display. It has no reference to a view and no drawing code. Juno needs every array
+length at compile time, so the model sizes its buffers with constants:</p>
+<pre><code class="language-java">public final class MailboxModel {
+    public static final int MAX_MESSAGES = 4;
+    public static final int MAX_TITLE_BYTES = 64;
+
+    private final byte[][] titles = new byte[MAX_MESSAGES][MAX_TITLE_BYTES];
+    private final int[] titleLengths = new int[MAX_MESSAGES];
+    private int messageCount;
+    private int revision;
+    private String status = &quot;Waiting for mailbox&quot;;
+
+    /** A changed value bumps the revision, so a view knows it must redraw. */
+    public void status(String message) {
+        if (!message.equals(status)) {
+            status = message;
+            revision = revision + 1;
+        }
+    }
+
+    public int revision() {
+        return revision;
+    }
+}
+</code></pre>
+<p>The <code>revision</code> counter is a cheap way for a view to know that something changed. The view compares it with the value it
+last drew, and redraws only when they differ.</p>
+<h2 id="the-views">The views</h2>
+<p>A view implements <code>View</code>: <code>enter()</code> runs once when the screen becomes active, <code>render()</code> runs every frame, and <code>touch(x, y)</code>
+runs for each new touch. A <code>KeyboardView</code> replaces <code>touch</code> with <code>key(key, fnPressed)</code>. To change screen, the view calls
+<code>navigator.show(id)</code>; to go back, <code>navigator.back()</code>:</p>
+<pre><code class="language-java">public final class InboxView implements View {
+    private static final int MESSAGE_VIEW = 2;
+
+    private final Navigator navigator;
+    private final MailboxModel model;
+    private int drawnRevision = -1;
+
+    public InboxView(Navigator navigator, MailboxModel model) {
+        this.navigator = navigator;
+        this.model = model;
+    }
+
+    @Override
+    public void enter() {
+        drawnRevision = -1;
+        // Clear the display and draw what never changes, such as the title bar.
+    }
+
+    @Override
+    public void render() {
+        if (model.revision() != drawnRevision) {
+            drawnRevision = model.revision();
+            // Redraw only the rows that changed.
+        }
+    }
+
+    @Override
+    public void touch(int x, int y) {
+        // Map the touch to a message index, then move to its detail view.
+        navigator.show(MESSAGE_VIEW);
+    }
+}
+</code></pre>
+<p>Two rules keep views simple. A view draws only what changed, because a full redraw each frame is slow on a small display.
+And a view never calls another view's methods: it asks the navigator and reads the model.</p>
+<h2 id="wiring-it-together">Wiring it together</h2>
+<p>The main class builds every object once at startup, registers each view under a fixed id, and starts the loop. This
+sketch trims the mailbox example to its essentials. The mailbox client is registered as the background task, so its
+requests run one step per frame:</p>
+<pre><code class="language-java">MailboxModel model = new MailboxModel();
+MailboxClient client = new MailboxClient(model, connection, key, polling);
+
+ViewRouter router = new ViewRouter(FRAME_MILLIS);
+router.register(COVER_VIEW, new CoverView(router, display));
+router.register(INBOX_VIEW, new InboxView(router, model));
+router.register(MESSAGE_VIEW, new MessageView(router, model));
+router.background(client);
+router.start(COVER_VIEW);
+router.run();          // never returns
+</code></pre>
+<p>Each view takes the <code>Navigator</code> it needs (the router) and the model, nothing else. Passing the views the router rather than
+each other is what keeps the graph of references flat.</p>
+<p><code>router.run()</code> repeats the same steps every frame:</p>
+<ol>
+<li>read the touch panel and give a new touch to the active view;</li>
+<li>advance the background task one step;</li>
+<li>apply a pending <code>show</code> or <code>back</code>, calling the new view's <code>enter()</code>;</li>
+<li>let the active view <code>render()</code>;</li>
+<li>wait until the next frame is due.</li>
+</ol>
+<p>A navigation request takes effect between frames, never in the middle of a touch handler, so a view can ask to change
+screen from its own <code>touch</code> method safely.</p>
+<h2 id="keyboard-boards">Keyboard boards</h2>
+<p>Boards with a keyboard, such as the M5Stack Cardputer, use <code>KeyboardViewRouter</code> with <code>KeyboardView</code> screens. It takes the
+<code>Keyboard</code> in place of the touch panel and calls <code>key(key, fnPressed)</code> for each key pressed in a transition. The rest
+of the layout is unchanged; <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a>
+follows this pattern.</p>
+<h2 id="limits">Limits</h2>
+<ul>
+<li>A router holds at most <code>ViewRouter.MAX_VIEWS</code> (8) views, numbered from <code>0</code>.</li>
+<li>The back stack remembers four screens; the oldest is dropped when it is full. <code>back()</code> does nothing when the stack
+is empty.</li>
+<li>The frame loop allocates nothing, so every view, model and buffer is created before <code>run()</code>.</li>
+<li>Runtime <code>String</code> values are short-lived. Do not keep one, such as a Wi-Fi password read from the SD card, in a field
+that outlives the call that loaded it; copy what you need into a fixed buffer.</li>
+</ul>
+<h2 id="testing">Testing</h2>
+<p>Pass a mocked clock to the router, and mock the <code>Navigator</code> for a view, so each view can be unit-tested without a board:</p>
+<pre><code class="language-java">Navigator navigator = mock(Navigator.class);
+InboxView view = new InboxView(navigator, model);
+view.touch(10, 40);
+verify(navigator).show(MESSAGE_VIEW);
+</code></pre>
+<p><code>ViewRouter(int, Clock)</code> takes the clock as a parameter for the same reason.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>A screen never changes:</strong> check that the id passed to <code>show</code> is the same constant the view was registered under.</li>
+<li><strong>Taps are missed:</strong> the router reads the touch panel once per frame, so a tap shorter than one frame can be missed,
+and a slow <code>render</code> delays every touch. Keep <code>render</code> short, and move slow work into a <code>Task</code>.</li>
+<li><strong>The display flickers:</strong> <code>render</code> redraws everything every frame. Compare the model's revision first, as in the
+inbox example above.</li>
+<li><strong>The build runs out of arena memory:</strong> the startup objects of a larger app can outgrow the default arena. Build with a
+larger <code>-Djuno.Xmx</code>, as the mailbox client does; see <a href="../memory-model">Memory model</a>.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

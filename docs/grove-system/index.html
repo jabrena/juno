@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Grove system - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Grove system" />
+  <meta name="twitter:title" content="Grove system">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java.">
+  <meta property="og:description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java." />
+  <meta name="twitter:description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/grove-system/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/grove-system/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/grove-system/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/grove-system/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class=" active" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="active" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Third parties">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/third-parties">Overview</a>
+    <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+    <a class="active" href="/juno/grove-system">Grove system</a>
+    <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Grove system</h1>
+</header>
+    <div class="content-prose">
+<p>Seeed Studio's <a href="https://wiki.seeedstudio.com/Grove_System/">Grove</a> system connects sensors with one four-wire cable:
+<code>GND</code>, <code>VCC</code>, and two signal wires, the first of which (yellow) carries the module's main signal. Juno reaches a Grove
+module in one of two ways, depending on the board, and its drivers take the socket's pin, so the same driver code works
+with either.</p>
+<h2 id="two-ways-to-connect">Two ways to connect</h2>
+<h3 id="grove-base-shield-on-the-uno-boards">Grove Base Shield, on the UNO boards</h3>
+<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
+<p>The <a href="https://wiki.seeedstudio.com/Base_Shield_V2/">Grove Base Shield</a> is a passive adapter for the UNO headers, used
+on the UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
+<a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java"><code>GroveBaseShield</code></a>
+names them. Seat it on the board's UNO headers and plug the module into a socket; the diagram is a socket map, not the
+shield's physical layout:</p>
+<pre><code class="language-text">+-------------------------------------------------------------+
+|                      Grove Base Shield                      |
+|                                                             |
+|  Digital   [D2] [D3] [D4] [D5] [D6] [D7] [D8]   getD2()...  |
+|  Analog    [A0] [A1] [A2] [A3]                  getA0()...  |
+|  I2C       [I2C] [I2C] [I2C] [I2C]  SDA A4, SCL A5          |
+|  UART      [UART]                   RX D0, TX D1            |
++------------------------------+------------------------------+
+                               | seated on the UNO headers
++------------------------------v------------------------------+
+|      UNO R3  /  UNO WiFi Rev2  /  UNO R4 WiFi  /  UNO Q     |
++-------------------------------------------------------------+
+
+ Grove DHT22 ---- cable ----&gt; [D4]
+ Java:  dht.read(shield.getD4(), reading, reading.length, frame, frame.length)
+</code></pre>
+<h3 id="nano-connector-carrier-on-the-nano-esp32">Nano Connector Carrier, on the Nano ESP32</h3>
+<img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="240">
+<p>The Arduino Nano Connector Carrier holds the Nano ESP32 and adds four Grove sockets (two analog, UART and I2C) plus a
+Qwiic connector; <code>NanoConnectorCarrier</code> names them. Set its input selector switch to 3.3 V for the Nano ESP32. See the
+<a href="../arduino-nano-esp32#nano-connector-carrier">Nano ESP32</a> page for its full pin map.</p>
+<p>The carrier seen from its connector side, USB cable at the bottom; <code>*</code> marks each Grove socket's yellow signal wire:</p>
+<pre><code class="language-text">+---------------------------------------------+
+|  Grove I2C                      Grove UART  |
+|  [ GND  ]                       [ RX * ]    |
+|  [ VCC  ]                       [ TX   ]    |
+|  [ SDA  ] A4                    [ VCC  ]    |
+|  [ SCL *] A5                    [ GND  ]    |
+|                 +-------------+             |
+|  Qwiic          |   microSD   |             |
+|  [ I2C  ]       |   slot      |             |
+|  A4/A5, 3.3 V   |   CS D4     |             |
+|                 +-------------+             |
+|  Grove A0/A1                    Grove A2/A3 |
+|  [ GND  ]                       [ A2 * ]    |
+|  [ VCC  ]                       [ A3   ]    |
+|  [ A1   ]                       [ VCC  ]    |
+|  [ A0 * ]                       [ GND  ]    |
++-------------------[ USB ]-------------------+
+
+ Grove light sensor ---- cable ----&gt; [Grove A0/A1]
+ Java:  light.rawValue(carrier.getGroveA0())
+</code></pre>
+<p>Keep digital modules out of the carrier's I2C socket: its bus pull-ups hold a digital output between low and high.</p>
+<h2 id="grove-sensors">Grove Sensors</h2>
+<p>Every driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the same on
+the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>, ...) and on the Nano Connector Carrier
+(<code>carrier.getGroveA0()</code>, <code>carrier.getGroveA2()</code>). Create each driver once, at startup.</p>
+<table>
+<thead>
+<tr>
+<th>Sensor</th>
+<th>Socket</th>
+<th>Driver</th>
+<th>Reads</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#temperature-and-humidity-sensor-pro-dht22">Temperature and Humidity Sensor Pro (DHT22)</a></td>
+<td>Digital</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.java"><code>GroveDht22</code></a></td>
+<td>Temperature and humidity, in tenths</td>
+</tr>
+<tr>
+<td><a href="#temperature-and-humidity-sensor-dht11">Temperature and Humidity Sensor (DHT11)</a></td>
+<td>Digital</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.java"><code>GroveDht11</code></a></td>
+<td>Whole-degree temperature and humidity</td>
+</tr>
+<tr>
+<td><a href="#temperature-sensor-v12">Temperature Sensor v1.2</a></td>
+<td>Analog</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureSensorV12.java"><code>GroveTemperatureSensorV12</code></a></td>
+<td>Degrees Celsius from a thermistor</td>
+</tr>
+<tr>
+<td><a href="#light-sensor-v12">Light Sensor v1.2</a></td>
+<td>Analog</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightSensorV12.java"><code>GroveLightSensorV12</code></a></td>
+<td>Raw light level</td>
+</tr>
+<tr>
+<td><a href="#sound-sensor-v16">Sound Sensor v1.6</a></td>
+<td>Analog</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundSensorV16.java"><code>GroveSoundSensorV16</code></a></td>
+<td>Raw microphone level</td>
+</tr>
+<tr>
+<td><a href="#gas-sensor">Gas sensor</a></td>
+<td>Analog</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.java"><code>GroveAnalogGas</code></a></td>
+<td>Raw gas reading</td>
+</tr>
+<tr>
+<td><a href="#pir-motion-sensor">PIR Motion Sensor</a></td>
+<td>Digital</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.java"><code>GrovePirMotion</code></a></td>
+<td>Motion detected or not</td>
+</tr>
+<tr>
+<td><a href="#3-axis-digital-compass-v20">3-Axis Digital Compass V2.0</a></td>
+<td>I2C</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveCompassProbe.java"><code>GroveCompassProbe</code></a></td>
+<td>Raw magnetic field on X, Y and Z</td>
+</tr>
+<tr>
+<td><a href="#infrared-emitter-and-receiver">Infrared emitter and receiver</a></td>
+<td>Digital</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.java"><code>GroveInfraredEmitter</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredReceiver.java"><code>GroveInfraredReceiver</code></a></td>
+<td>Infrared link to a LEGO RCX</td>
+</tr>
+</tbody>
+</table>
+<h3 id="temperature-and-humidity-sensor-pro-dht22">Temperature and Humidity Sensor Pro (DHT22)</h3>
+<p>Temperature and humidity in tenths of a degree and of a percent. The caller owns the reading and frame buffers:</p>
+<img src="../images/grove/grove-dht22.jpg" alt="Grove Temperature and Humidity Sensor Pro (DHT22)" width="240">
+<pre><code class="language-java">GroveDht22 dht = new GroveDht22();
+int[] reading = new int[GroveDht22.READING_LENGTH];
+int[] frame = new int[GroveDht22.FRAME_LENGTH];
+if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
+    int tenthsCelsius = reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS];
+    int tenthsPercent = reading[GroveDht22.HUMIDITY_TENTHS_PERCENT];
+}
+</code></pre>
+<h3 id="temperature-and-humidity-sensor-dht11">Temperature and Humidity Sensor (DHT11)</h3>
+<p>The DHT11 reports whole numbers; it reads the same way as the DHT22:</p>
+<img src="../images/grove/grove-dht11.jpg" alt="Grove Temperature and Humidity Sensor (DHT11)" width="240">
+<pre><code class="language-java">GroveDht11 dht = new GroveDht11();
+int[] reading = new int[GroveDht11.READING_LENGTH];
+int[] frame = new int[GroveDht11.FRAME_LENGTH];
+if (dht.read(shield.getD3(), reading, reading.length, frame, frame.length)) {
+    int celsius = reading[GroveDht11.TEMPERATURE_CELSIUS];
+    int percent = reading[GroveDht11.HUMIDITY_PERCENT];
+}
+</code></pre>
+<h3 id="temperature-sensor-v12">Temperature Sensor v1.2</h3>
+<p>A 100-kilohm thermistor divider; the driver converts the ADC count to degrees Celsius with Seeed's B constant:</p>
+<img src="../images/grove/grove-temperature-v12.jpg" alt="Grove Temperature Sensor v1.2" width="240">
+<pre><code class="language-java">GroveTemperatureSensorV12 temperature = new GroveTemperatureSensorV12();
+float celsius = temperature.celsius(shield.getA0());
+</code></pre>
+<h3 id="light-sensor-v12">Light Sensor v1.2</h3>
+<p>A raw ADC sample; calibrate it for the installation if an illuminance value is needed:</p>
+<img src="../images/grove/grove-light-v12.jpg" alt="Grove Light Sensor v1.2" width="240">
+<pre><code class="language-java">GroveLightSensorV12 light = new GroveLightSensorV12();
+int level = light.rawValue(shield.getA1());
+</code></pre>
+<h3 id="sound-sensor-v16">Sound Sensor v1.6</h3>
+<p>An ADC sample of the amplified microphone signal, not a decibel measurement:</p>
+<img src="../images/grove/grove-sound-v16.jpg" alt="Grove Sound Sensor v1.6" width="240">
+<pre><code class="language-java">GroveSoundSensorV16 sound = new GroveSoundSensorV16();
+int level = sound.rawValue(shield.getA2());
+</code></pre>
+<h3 id="gas-sensor">Gas sensor</h3>
+<p>The analog output of a Grove gas sensor. Useful for watching changes; a gas concentration needs the particular
+sensor's warm-up and calibration procedure:</p>
+<img src="../images/grove/grove-gas-mq2.jpg" alt="Grove Gas Sensor (MQ2)" width="240">
+<pre><code class="language-java">GroveAnalogGas gas = new GroveAnalogGas();
+int value = gas.rawValue(shield.getA3());
+</code></pre>
+<h3 id="pir-motion-sensor">PIR Motion Sensor</h3>
+<p>A digital output that goes high on motion. Configure the socket once, then poll it. On the Nano Connector Carrier, use
+an analog socket rather than the I2C one:</p>
+<img src="../images/grove/grove-pir-motion.jpg" alt="Grove PIR Motion Sensor" width="240">
+<pre><code class="language-java">GrovePirMotion pir = new GrovePirMotion();
+pir.begin(shield.getD2());
+boolean motion = pir.motionDetected(shield.getD2());
+</code></pre>
+<h3 id="3-axis-digital-compass-v20">3-Axis Digital Compass V2.0</h3>
+<p>Seeed's BMM150 compass, on an I2C socket, never a digital one. <code>detect()</code> starts the bus and confirms the chip;
+<code>readRaw</code> fills uncalibrated X, Y and Z counts. On the Nano ESP32, pass the board's bus:
+<code>new GroveCompassProbe(ArduinoNano.getI2c())</code>.</p>
+<img src="../images/grove/grove-compass-v2.jpg" alt="Grove 3-Axis Digital Compass V2.0" width="240">
+<pre><code class="language-java">GroveCompassProbe compass = new GroveCompassProbe();
+int[] axes = new int[GroveCompassProbe.AXIS_LENGTH];
+if (compass.detect() == GroveCompassProbe.BMM150 &amp;&amp; compass.readRaw(axes, axes.length)) {
+    int x = axes[GroveCompassProbe.X_AXIS];
+}
+</code></pre>
+<h3 id="infrared-emitter-and-receiver">Infrared emitter and receiver</h3>
+<p>A Grove infrared emitter and receiver form the infrared link to a LEGO Mindstorms RCX brick. Wrap each socket's pin,
+then hand both to <code>RemoteRcx</code>, which sets them up:</p>
+<img src="../images/grove/grove-ir-emitter.jpg" alt="Grove Infrared Emitter" width="240">
+<img src="../images/grove/grove-ir-receiver.jpg" alt="Grove Infrared Receiver" width="240">
+<pre><code class="language-java">GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
+</code></pre>
+<p>See <a href="../lego-ecosystem">LEGO</a> for driving the brick, and the
+<a href="../arduino-nano-esp32#remote-control-a-lego-rcx">Nano ESP32</a> page for a complete example.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

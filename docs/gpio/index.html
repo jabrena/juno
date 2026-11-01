@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Gpio - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Gpio" />
+  <meta name="twitter:title" content="Gpio">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Driving and reading the board&#39;s pins with Gpio and DigitalOutput, starting with the Blink example.">
+  <meta property="og:description" content="Driving and reading the board&#39;s pins with Gpio and DigitalOutput, starting with the Blink example." />
+  <meta name="twitter:description" content="Driving and reading the board&#39;s pins with Gpio and DigitalOutput, starting with the Blink example.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/gpio/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/gpio/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/gpio/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/gpio/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="active" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="active" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Gpio</h1>
+</header>
+    <div class="content-prose">
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/Gpio.java"><code>Gpio</code></a>
+is the board's set of pins. Get it once with <code>ArduinoUno.getGpio()</code> or <code>ArduinoNano.getGpio()</code>, then set a pin as an
+output, write it high or low, or read an input. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java"><code>DigitalOutput</code></a>
+is a lighter handle for a pin you only switch on and off.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Argument</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pinMode(pin, mode)</code></td>
+<td>a pin, and <code>Gpio.getInput()</code>, <code>getOutput()</code> or <code>getInputPullup()</code></td>
+<td>sets the direction of a pin</td>
+</tr>
+<tr>
+<td><code>digitalWrite(pin, high)</code></td>
+<td>a pin and a <code>boolean</code></td>
+<td>drives the pin high (<code>true</code>) or low (<code>false</code>)</td>
+</tr>
+<tr>
+<td><code>digitalRead(pin)</code></td>
+<td>a pin</td>
+<td>returns <code>true</code> when the pin is high</td>
+</tr>
+<tr>
+<td><code>analogRead(pin)</code></td>
+<td>an analog pin, such as <code>Gpio.getA0()</code></td>
+<td>returns the ADC reading</td>
+</tr>
+<tr>
+<td><code>analogWrite(pin, value)</code></td>
+<td>a pin and a value</td>
+<td>PWM output on a pin that supports it</td>
+</tr>
+<tr>
+<td><code>getBuiltinLed()</code></td>
+<td>none</td>
+<td>the pin of the board's onboard LED</td>
+</tr>
+</tbody>
+</table>
+<p>Pins are portable numbers, not the chip's own GPIO numbers. <code>Gpio.getD0()</code> through <code>Gpio.getD13()</code> return <code>0</code> to <code>13</code>, and
+<code>Gpio.getA0()</code> through <code>Gpio.getA5()</code> return <code>14</code> to <code>19</code>. The compiler translates these numbers to the linked board's
+pins, so the same program runs on a UNO R4 WiFi or a Nano ESP32 without changes.</p>
+<p><code>DigitalOutput.of(pin)</code> sets the pin as an output and returns a handle with <code>high()</code> and <code>low()</code>.</p>
+<h2 id="blink">Blink</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a>
+turns the board's onboard LED on and off forever: on for 500 milliseconds, off for 500 milliseconds, one full blink each
+second. It is the first program to run on any board, because it needs no wiring:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.util.Delay;
+
+public class Blink {
+
+    public static void main(String[] args) {
+
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
+        while (true) {
+            led.high();
+            Delay.millis(500);
+
+            led.low();
+            Delay.millis(500);
+        }
+    }
+}
+</code></pre>
+<p>Step by step:</p>
+<ol>
+<li><code>ArduinoUno.getGpio().getBuiltinLed()</code> asks the linked board which pin its LED is on. The same line works on every
+board, so the program names no pin.</li>
+<li><code>DigitalOutput.of(...)</code> configures that pin as an output and returns a handle to it.</li>
+<li>The loop sets the pin high, waits with <a href="../delay"><code>Delay</code></a>, sets it low and waits again. Creating the handle happens
+once, before the loop, so the loop allocates nothing.</li>
+</ol>
+<p>Build, verify and upload it with the Maven plugin. <code>juno:verify</code> compiles the generated sketch with the Arduino toolchain
+without touching the board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
+
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
+</code></pre>
+<p>Blink prints nothing over <a href="../serial">Serial</a>, so there is no output to read with <code>juno:monitor</code>. The LED is the result.</p>
+<h2 id="reading-an-input">Reading an input</h2>
+<p><code>digitalRead</code> and <code>analogRead</code> need a pin that is configured as an input. A button between a digital pin and ground,
+with the internal pull-up enabled, reads <code>false</code> while the button is pressed:</p>
+<pre><code class="language-java">Gpio gpio = ArduinoUno.getGpio();
+gpio.pinMode(Gpio.getD2(), Gpio.getInputPullup());
+
+boolean pressed = !gpio.digitalRead(Gpio.getD2());
+</code></pre>
+<p><code>analogRead</code> on an analog pin returns the ADC value, which is a number from the converter rather than a voltage:</p>
+<pre><code class="language-java">int light = gpio.analogRead(Gpio.getA0());
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<ul>
+<li><strong>The LED does not blink:</strong> check the board name in <code>-Djuno.board</code> matches the board you plugged in, and that
+<code>juno:upload</code> finished without an error.</li>
+<li><strong>A <code>digitalRead</code> always returns the same value:</strong> the pin was not set as an input with <code>pinMode</code> first, or a
+button is not wired between the pin and ground.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

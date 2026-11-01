@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino Nano ESP32 - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino Nano ESP32" />
+  <meta name="twitter:title" content="Arduino Nano ESP32">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino Nano ESP32 and what Juno supports on it so far.">
+  <meta property="og:description" content="Board notes for the Arduino Nano ESP32 and what Juno supports on it so far." />
+  <meta name="twitter:description" content="Board notes for the Arduino Nano ESP32 and what Juno supports on it so far.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/arduino-nano-esp32/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/arduino-nano-esp32/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/arduino-nano-esp32/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/arduino-nano-esp32/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="active" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="active" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Arduino Nano ESP32</h1>
+</header>
+    <div class="content-prose">
+<p>The Nano ESP32 puts an Espressif ESP32-S3 (in a u-blox NORA-W106 module) on the Nano form factor.
+Unlike the UNO boards, its CPU is an Xtensa LX7, so Juno generates Xtensa assembly for it with its
+own backend instead of the Thumb-2 or AVR one.</p>
+<img src="../images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" width="280">
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">Nano ESP32</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product SKU</td>
+<td align="right">ABX00083</td>
+</tr>
+<tr>
+<td>Module</td>
+<td align="right">u-blox NORA-W106-10B (ESP32-S3)</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">Dual-core 32-bit Xtensa LX7</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">240 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">16 MB (external)</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">512 kB, plus 8 MB PSRAM</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">3.3 V</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB-C (native USB)</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">D13 (ESP32-S3 GPIO48)</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:esp32:nano_nora</code></td>
+</tr>
+<tr>
+<td>Juno board id</td>
+<td align="right"><code>arduino-nano-esp32</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code>, <code>DigitalOutput</code></td>
+<td align="center">✓</td>
+<td>Pins keep the numbers printed on the board: <code>getBuiltinLed()</code> is <code>13</code> (GPIO48), and <code>getA0()</code>–<code>getA5()</code> are 14–19, so Grove drivers and pin maps work unchanged. Never pass raw ESP32 GPIO numbers; the onboard RGB LED is not reachable.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Delay</code>, <code>Serial</code></td>
+<td align="center">✓</td>
+<td><code>Serial</code> over the native USB port.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>int</code>, <code>long</code>, <code>float</code>, <code>double</code></td>
+<td align="center">✓</td>
+<td>Java semantics kept (a <code>long</code> division by zero stops the program, float-to-int casts saturate). <code>float</code> uses the S3's FPU; <code>double</code> is soft-float.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java"><code>SerialWideMath</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
+</tr>
+<tr>
+<td>Double-precision <code>java.lang.Math</code></td>
+<td align="center">✓</td>
+<td>Uses the toolchain's libm.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
+</tr>
+<tr>
+<td>Objects, arrays, static and interface calls</td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Lambdas and method references</td>
+<td align="center">✓</td>
+<td>Every shape.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java"><code>SerialLambdas</code></a></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td>Runs in the arena with the JDK's rounding and text rules.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java"><code>SerialBigNumbers</code></a></td>
+</tr>
+<tr>
+<td>Threads, <code>synchronized</code>, <code>ReentrantLock</code>, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
+<td align="center">✓</td>
+<td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. At most four threads including <code>main</code> (<code>-Djuno.maxThreads</code>).</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
+</tr>
+<tr>
+<td><code>UUID.randomUUID()</code></td>
+<td align="center">✓</td>
+<td>Hardware RNG through <code>esp_fill_random</code>; may be weaker before Wi-Fi or Bluetooth start.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
+</tr>
+<tr>
+<td>Wi-Fi station</td>
+<td align="center">✓</td>
+<td><code>begin</code>, <code>status</code>, <code>localIP</code>, <code>gatewayIP</code>, <code>macAddress</code>; credentials from the microSD card (see <a href="../sdcard">SD Card</a>).</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java"><code>NanoWifiStatusSD</code></a></td>
+</tr>
+<tr>
+<td>Wi-Fi access point</td>
+<td align="center">✓</td>
+<td><code>beginAP(ssid, password)</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java"><code>NanoAccessPointSD</code></a></td>
+</tr>
+<tr>
+<td><code>Udp</code>, SNTP (<code>LocalDateTime.now()</code>)</td>
+<td align="center">✓</td>
+<td>Through the core's <code>WiFiUDP</code>; optional <code>sntp.host</code>/<code>sntp.port</code> from the card.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java"><code>NanoSntpTimeSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient</code> (HTTP)</td>
+<td align="center">✓</td>
+<td>Host is a literal in the program; the path can come from the card.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java"><code>NanoHttpGetSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient.requestHttps</code></td>
+<td align="center">✓</td>
+<td>Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash); validity dates are not checked.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>HttpServer</code></td>
+<td align="center">✓</td>
+<td>Runs on the station address.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java"><code>NanoHttpServerSD</code></a></td>
+</tr>
+<tr>
+<td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
+<td align="center">✓</td>
+<td>Implicit TLS on ports 465 and 995, checked against the bundled roots. Password, subject and body must fit in 31 bytes each.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java"><code>NanoSmtpSendSD</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java"><code>NanoPop3InboxSD</code></a></td>
+</tr>
+<tr>
+<td><code>Smtp.send</code> (STARTTLS)</td>
+<td align="center">✓</td>
+<td>Needs <code>arduino-cli lib install ESP_SSLClient</code>; the server's certificate chain is not checked yet.</td>
+<td></td>
+</tr>
+<tr>
+<td>USB HID mouse</td>
+<td align="center">✓</td>
+<td><code>ArduinoNano.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java"><code>NanoRatonLoco</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="features">Features</h2>
+<p>These need only the Nano ESP32 and its USB cable.</p>
+<h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
+<p><code>getBuiltinLed()</code> is D13, the pin printed on the board (GPIO48 on the chip).</p>
+<pre><code class="language-java">Serial.begin(BaudRate.BAUD_115200);
+DigitalOutput led = DigitalOutput.of(ArduinoNano.getGpio().getBuiltinLed());
+
+while (true) {
+    led.high();
+    Serial.println(&quot;on&quot;);
+    Delay.millis(500);
+    led.low();
+    Serial.println(&quot;off&quot;);
+    Delay.millis(500);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBlink.java"><code>SerialBlink</code></a> also prints a cycle counter with each change.</p>
+<h3 id="usb-hid-mouse">USB HID mouse</h3>
+<p><code>ArduinoNano.getMouse()</code> makes the board a USB mouse for the computer it is plugged into; <code>Serial</code> keeps working on the
+same USB port. Call <code>begin()</code> once, then <code>move(x, y)</code> moves the pointer by that many pixels:</p>
+<pre><code class="language-java">Mouse mouse = ArduinoNano.getMouse();
+mouse.begin();
+
+while (true) {
+    mouse.move(50, 0);   // right
+    Delay.millis(1000);
+    mouse.move(0, 50);   // down
+    Delay.millis(1000);
+    mouse.move(-50, 0);  // left
+    Delay.millis(1000);
+    mouse.move(0, -50);  // up
+    Delay.millis(1000);
+}
+</code></pre>
+<p>Once uploaded, the program keeps moving the pointer; disconnect the board or upload another program to stop it.
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java"><code>NanoRatonLoco</code></a> also prints each side over <code>Serial</code>.</p>
+<h2 id="shields">Shields</h2>
+<h3 id="nano-connector-carrier">Nano Connector Carrier</h3>
+<img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="280">
+<p>The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a Nano header pin, and
+<code>NanoConnectorCarrier</code> names them so programs don't hard-code numbers:</p>
+<table>
+<thead>
+<tr>
+<th>Connector</th>
+<th>Nano pins</th>
+<th><code>NanoConnectorCarrier</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>microSD slot (SPI)</td>
+<td>CS D4 (D2/D3 by solder jumper), MOSI D11, MISO D12, SCK D13</td>
+<td><code>getSdCard()</code>, <code>getSdChipSelect()</code>, <code>getSdChipSelectJumperD2()</code>/<code>D3()</code>, <code>getSpiMosi()</code>/<code>Miso()</code>/<code>Sck()</code></td>
+</tr>
+<tr>
+<td>Grove A0/A1 (analog)</td>
+<td>A0 signal, A1</td>
+<td><code>getGroveA0()</code>; wires <code>getA0()</code>, <code>getA1()</code></td>
+</tr>
+<tr>
+<td>Grove A2/A3 (analog)</td>
+<td>A2 signal, A3</td>
+<td><code>getGroveA2()</code>; wires <code>getA2()</code>, <code>getA3()</code></td>
+</tr>
+<tr>
+<td>Grove UART</td>
+<td>RX D0 (signal), TX D1</td>
+<td><code>getGroveUart()</code>; wires <code>getUartRx()</code>, <code>getUartTx()</code></td>
+</tr>
+<tr>
+<td>Grove I2C and Qwiic</td>
+<td>SDA A4, SCL A5</td>
+<td><code>getI2cSda()</code>, <code>getI2cScl()</code> (one bus, <code>ArduinoNano.getI2c()</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>As with <code>GroveBaseShield</code>, plug a single-signal Grove module in and pass the socket's getter to its
+driver: <code>pir.begin(carrier.getGroveA2())</code>. The analog sockets work for digital modules too. Keep
+digital modules out of the I2C socket: its bus pull-ups held a Grove PIR's output at about 1.4 V at
+rest, neither low nor high. The class Javadoc has a diagram of the connectors, and pin details are in
+the <a href="https://docs.arduino.cc/resources/datasheets/ASX00061-datasheet.pdf">ASX00061 datasheet</a>.</p>
+<p>The input selector switch sets the Grove connectors' VCC to 3.3 V or 5 V; use 3.3 V with the Nano
+ESP32. The Qwiic connector is always 3.3 V.</p>
+<p>The carrier seen from its connector side, USB cable at the bottom; <code>*</code> marks each Grove socket's yellow
+signal wire (Grove pin 1):</p>
+<pre><code class="language-text">+---------------------------------------------+
+|  Grove I2C                      Grove UART  |
+|  [ GND  ]                       [ RX * ]    |
+|  [ VCC  ]                       [ TX   ]    |
+|  [ SDA  ] A4                    [ VCC  ]    |
+|  [ SCL *] A5                    [ GND  ]    |
+|                 +-------------+             |
+|  Qwiic          |   microSD   |             |
+|  [ I2C  ]       |   slot      |             |
+|  A4/A5, 3.3 V   |   CS D4     |             |
+|                 +-------------+             |
+|  Grove A0/A1                    Grove A2/A3 |
+|  [ GND  ]                       [ A2 * ]    |
+|  [ VCC  ]                       [ A3   ]    |
+|  [ A1   ]                       [ VCC  ]    |
+|  [ A0 * ]                       [ GND  ]    |
++-------------------[ USB ]-------------------+
+</code></pre>
+<h4 id="features-1">Features</h4>
+<h5 id="read-the-sd-card">Read the SD card</h5>
+<p>The Nano has no SD slot of its own, so <code>SdCard</code> needs the carrier: <code>getSdCard()</code> reaches its microSD
+slot (chip select D4, SPI D11–D13) through the same SdFat runtime as the UNO boards. The examples
+that read settings from the card (the <code>…SD</code> programs above) therefore need the carrier too.</p>
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+SdCard sd = carrier.getSdCard();
+if (sd.begin() &amp;&amp; sd.exists(&quot;application.properties&quot;)) {
+    InputStream in = sd.open(&quot;application.properties&quot;);
+    // read the file
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a> exercises every <code>SdCard</code> file
+operation end to end and reports each step over serial.</p>
+<h5 id="connect-to-wi-fi-with-credentials-from-the-sd-card">Connect to Wi-Fi with credentials from the SD card</h5>
+<p>Keep the network's credentials on the card rather than in the source: put them in <code>application.properties</code> at the
+card's root,</p>
+<pre><code class="language-properties">wifi.ssid=your-network
+wifi.password=your-password
+</code></pre>
+<p>then read the file with <code>java.util.Properties</code> and join the network:</p>
+<pre><code class="language-java">SdCard sd = new NanoConnectorCarrier().getSdCard();
+Wifi wifi = ArduinoNano.getWifi();
+
+if (sd.begin()) {
+    try (InputStream file = sd.open(&quot;application.properties&quot;)) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            wifi.begin(properties.getProperty(&quot;wifi.ssid&quot;), properties.getProperty(&quot;wifi.password&quot;));
+        }
+    }
+}
+while (wifi.status() != Wifi.STATUS_CONNECTED) {
+    Delay.millis(1000);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java"><code>NanoWifiStatusSD</code></a> is the complete program: it joins the network and
+prints its status once a second.</p>
+<h5 id="read-a-grove-sensor">Read a Grove sensor</h5>
+<p>Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.</p>
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+GrovePirMotion pir = new GrovePirMotion();
+GroveLightSensorV12 light = new GroveLightSensorV12();
+pir.begin(carrier.getGroveA2());
+
+boolean motion = pir.motionDetected(carrier.getGroveA2());
+int level = light.rawValue(carrier.getGroveA0());
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java"><code>NanoCarrierGroveSensors</code></a> prints a
+Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a second.</p>
+<h5 id="remote-control-a-lego-rcx">Remote-control a LEGO RCX</h5>
+<p>With a Grove infrared emitter in the A0/A1 socket and a Grove infrared receiver on the I2C socket's
+SCL line, the Nano talks to a LEGO Mindstorms RCX brick through <code>RemoteRcx</code> (see
+<a href="../lego-ecosystem">LEGO</a>). Download Juno's RCX firmware to the brick once with
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxFirmwareDownload.java"><code>NanoCarrierRcxFirmwareDownload</code></a>: keep the brick 10 to 50 cm away and still for about ten
+minutes. The brick then answers on channel 1:</p>
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
+RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, emitter,
+        ArduinoNano.getClock());
+rcx.begin();
+
+RcxMotor motor = rcx.getMotorA();
+motor.setPower(4);
+motor.forward();
+</code></pre>
+<p>One example per part of the brick: <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxMotorA.java"><code>NanoCarrierRcxMotorA</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxButtons.java"><code>NanoCarrierRcxButtons</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxTouchSensors.java"><code>NanoCarrierRcxTouchSensors</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLightSensor.java"><code>NanoCarrierRcxLightSensor</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRotation.java"><code>NanoCarrierRcxRotation</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxTemperature.java"><code>NanoCarrierRcxTemperature</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLcd.java"><code>NanoCarrierRcxLcd</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLamps.java"><code>NanoCarrierRcxLamps</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxSound.java"><code>NanoCarrierRcxSound</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxBattery.java"><code>NanoCarrierRcxBattery</code></a>.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Install the core once with <code>arduino-cli core install arduino:esp32</code>. <code>Blink</code> builds for any board,
+and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBlink.java"><code>SerialBlink</code></a>
+targets the Nano ESP32 and reports every LED change at 115200 baud:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-nano-esp32
+</code></pre>
+<p>The board can list two ports at once, its USB DFU port (for example <code>1-1</code>) and its serial port, so
+the plugin cannot pick one alone. Upload through the DFU port and monitor the serial one:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBlink -Djuno.port=1-1
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 \
+  -Djuno.port=/dev/cu.usbmodem&lt;ID&gt; -Djuno.baudRate=115200
+</code></pre>
+<p>The USB port re-enumerates when the program starts, so a program should wait a moment after
+<code>Serial.begin</code> before its first line, as <code>SerialBlink</code> does.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

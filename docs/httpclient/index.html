@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>HTTP client - Juno: Java for Arduino</title>
+  <meta property="og:title" content="HTTP client" />
+  <meta name="twitter:title" content="HTTP client">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Making HTTP and HTTPS requests with HttpClient: GET, POST, PATCH, DELETE and QUERY, with allocation-free buffers.">
+  <meta property="og:description" content="Making HTTP and HTTPS requests with HttpClient: GET, POST, PATCH, DELETE and QUERY, with allocation-free buffers." />
+  <meta name="twitter:description" content="Making HTTP and HTTPS requests with HttpClient: GET, POST, PATCH, DELETE and QUERY, with allocation-free buffers.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/httpclient/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/httpclient/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/httpclient/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/httpclient/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="active" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="active" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>HTTP client</h1>
+</header>
+    <div class="content-prose">
+<p><code>HttpClient</code> sends HTTP and HTTPS requests from a Juno program once the board is connected to Wi-Fi. Each method writes
+the response body into a buffer that the program owns, so a request does not allocate memory.</p>
+<h2 id="methods">Methods</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Request body</th>
+<th>Typical purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get</code></td>
+<td>none</td>
+<td>Read a resource.</td>
+</tr>
+<tr>
+<td><code>post</code></td>
+<td>JSON</td>
+<td>Create a resource or run a non-idempotent operation.</td>
+</tr>
+<tr>
+<td><code>delete</code></td>
+<td>none</td>
+<td>Delete a resource.</td>
+</tr>
+<tr>
+<td><code>patch</code></td>
+<td>JSON</td>
+<td>Partially update a resource.</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td>JSON</td>
+<td>Run a safe, idempotent query whose parameters do not fit in the URL.</td>
+</tr>
+</tbody>
+</table>
+<p><code>QUERY</code> is the method standardised by <a href="https://www.rfc-editor.org/rfc/rfc10008.html">RFC 10008</a>. The server must
+support it explicitly. <code>POST</code>, <code>PATCH</code> and <code>QUERY</code> send <code>Content-Type: application/json</code>.</p>
+<p>Other static methods configure the client: <code>setTimeout(int)</code> sets the request deadline in milliseconds, and
+<code>setTrustedCertificate(byte[], int)</code> supplies a certificate for an HTTPS server.</p>
+<h2 id="making-a-get-request">Making a GET request</h2>
+<p><code>HttpClient.get</code> takes a URL, a response buffer and its capacity, a headers buffer and its capacity, and an <code>int[2]</code>
+that receives the HTTP status code and the number of header bytes:</p>
+<pre><code class="language-java">private static final String URL = &quot;http://api.open-meteo.com/v1/forecast?latitude=40.4168&quot;
+        + &quot;&amp;longitude=-3.7038&amp;current=temperature_2m&quot;;
+
+byte[] response = new byte[512];
+byte[] headers = new byte[256];
+int[] status = new int[2];
+int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
+</code></pre>
+<p>The URL must be a compile-time string. A constant built from other constants is fine, because the compiler splits it into
+host, port and path before the program runs.</p>
+<p><code>http://</code> sends the request in the clear and <code>https://</code> uses TLS. The port defaults to 80 or 443; give another port in
+the URL, as in <code>http://192.168.1.10:8080/led</code>. HTTPS validates the server certificate against the root certificates
+the board trusts.</p>
+<h2 id="caller-owned-buffers">Caller-owned buffers</h2>
+<p>The three arrays in the GET example are the design of Juno's HTTP client. The client never allocates memory: the program
+creates the arrays once, and each request fills them in place.</p>
+<table>
+<thead>
+<tr>
+<th>Array</th>
+<th>What the client writes into it</th>
+<th>When it is too small</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>byte[] response</code></td>
+<td>the response body</td>
+<td>the body is truncated; the return value is the number of bytes stored</td>
+</tr>
+<tr>
+<td><code>byte[] headers</code></td>
+<td>the response headers as text</td>
+<td>the headers are truncated; <code>status[1]</code> reports how many bytes were written</td>
+</tr>
+<tr>
+<td><code>int[] status</code></td>
+<td>two results: <code>status[0]</code> is the HTTP status code and <code>status[1]</code> is the number of header bytes written</td>
+<td>not applicable: the array always has two elements</td>
+</tr>
+</tbody>
+</table>
+<p>The reason is memory. The board has a fixed 8 KB arena and no <code>OutOfMemoryError</code> to catch, so Juno requires every size to
+be known when the program is built. Each request then costs the same memory, however large the server's reply. The
+consequences for your program:</p>
+<ul>
+<li>Choose the response size for the largest reply you expect, and check the return value: a full buffer may mean the body
+was cut short.</li>
+<li>Read <code>status[0]</code> before you trust the body. The client returns the body whatever the status, including a <code>404</code> page.</li>
+<li>Pass the lengths explicitly. The methods take a capacity next to each array, so one array can be reused with a smaller
+capacity.</li>
+</ul>
+<h2 id="reading-the-result">Reading the result</h2>
+<table>
+<thead>
+<tr>
+<th align="right">Result</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>-1</code></td>
+<td>The connection failed, or the certificate was not trusted.</td>
+</tr>
+<tr>
+<td align="right"><code>0</code></td>
+<td>No response body bytes were captured.</td>
+</tr>
+<tr>
+<td align="right"><code>1..response.length</code></td>
+<td>Number of body bytes stored in the buffer.</td>
+</tr>
+</tbody>
+</table>
+<p>The client does not expose the HTTP status code to the body result, but <code>status[0]</code> holds it. The body is truncated to the
+buffer's length, so choose a buffer large enough for the response. Validate the body before you trust it: a positive
+result is not proof that the request succeeded.</p>
+<h2 id="sending-json-with-post-patch-and-query">Sending JSON with POST, PATCH and QUERY</h2>
+<p>The request body must be a compile-time string, so the same URL and body rules apply:</p>
+<pre><code class="language-java">String body = &quot;{\&quot;led\&quot;:\&quot;on\&quot;}&quot;;
+int responseBytes = HttpClient.post(&quot;http://192.168.1.10:8080/led&quot;, body, response, response.length,
+        headers, headers.length, status);
+</code></pre>
+<h2 id="keeping-the-buffers-outside-the-loop">Keeping the buffers outside the loop</h2>
+<p>Allocate the response and header buffers once, at startup, and reuse them. Creating them inside a loop makes the
+program allocate on every pass:</p>
+<pre><code class="language-java">byte[] response = new byte[512];
+byte[] headers = new byte[256];
+int[] status = new int[2];
+
+while (true) {
+    int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
+    // Process response[0..responseBytes).
+    Delay.millis(60000);
+}
+</code></pre>
+<h2 id="building-the-path-at-run-time">Building the path at run time</h2>
+<p>A path that depends on runtime data, such as coordinates returned by an earlier request, cannot be a literal. Build it in
+a <code>byte[]</code> and use the overload that takes a base URL (a scheme, host and optional port, with no path) plus the path
+buffer and its length. Runtime <code>String</code>s are limited to 31 bytes, so the buffer is the way to build longer paths:</p>
+<pre><code class="language-java">byte[] path = new byte[256];
+int pathLength = 0;
+// ... copy &quot;/v1/forecast?latitude=&quot;, the runtime latitude, and so on into path ...
+int responseBytes = HttpClient.get(&quot;https://api.open-meteo.com&quot;, path, pathLength,
+        response, response.length, headers, headers.length, status);
+</code></pre>
+<p>The base URL must still be a compile-time string. Only <code>GET</code> has this overload. The
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a>
+example uses it to pass the coordinates returned by one service to another.</p>
+<h2 id="reading-json-responses">Reading JSON responses</h2>
+<p><code>Json</code> reads values straight from the response bytes, with no parsing into objects. Pass it the number of bytes the client
+returned, not the buffer's capacity:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
+if (responseBytes &gt; 0) {
+    double temperature = Json.getDouble(response, responseBytes, &quot;current.temperature_2m&quot;);
+}
+</code></pre>
+<p>The parser checks the whole document before it reads a value. It supports objects, arrays, strings, numbers, booleans and
+<code>null</code>, nested up to 32 levels deep.</p>
+<h3 id="paths">Paths</h3>
+<p>Object fields are separated by dots, and array elements use zero-based indexes in brackets:</p>
+<table>
+<thead>
+<tr>
+<th>JSON</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;temperature&quot;: 21}</code></td>
+<td><code>&quot;temperature&quot;</code></td>
+</tr>
+<tr>
+<td><code>{&quot;current&quot;:{&quot;temperature&quot;:21}}</code></td>
+<td><code>&quot;current.temperature&quot;</code></td>
+</tr>
+<tr>
+<td><code>{&quot;users&quot;:[{&quot;name&quot;:&quot;Ada&quot;}]}</code></td>
+<td><code>&quot;users[0].name&quot;</code></td>
+</tr>
+<tr>
+<td><code>[{&quot;id&quot;:7}]</code></td>
+<td><code>&quot;[0].id&quot;</code></td>
+</tr>
+</tbody>
+</table>
+<p>A path is a compile-time string literal, so a loop cannot build one such as <code>&quot;items[&quot; + index + &quot;]&quot;</code>. Known positions are
+read with separate literal paths. Field names that contain <code>.</code>, <code>[</code> or <code>]</code>, and names written with JSON escapes, cannot
+yet be addressed.</p>
+<h3 id="reading-values">Reading values</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Json.getInt(...)</code></td>
+<td>an <code>int</code></td>
+</tr>
+<tr>
+<td><code>Json.getLong(...)</code></td>
+<td>a <code>long</code></td>
+</tr>
+<tr>
+<td><code>Json.getDouble(...)</code></td>
+<td>a <code>double</code></td>
+</tr>
+<tr>
+<td><code>Json.getBool(...)</code></td>
+<td>a <code>boolean</code></td>
+</tr>
+<tr>
+<td><code>Json.getString(..., byte[] out, int outLength)</code></td>
+<td>the number of UTF-8 bytes written to <code>out</code></td>
+</tr>
+<tr>
+<td><code>Json.arraySize(...)</code></td>
+<td>the number of elements in an array, or <code>-1</code> when the path is missing, invalid or not an array</td>
+</tr>
+</tbody>
+</table>
+<p>Typed getters return zero or <code>false</code> when the value cannot be read, so <code>getInt(...) == 0</code> is ambiguous by itself. Use
+<code>Json.type</code> when the difference matters:</p>
+<pre><code class="language-java">int valueType = Json.type(response, responseBytes, &quot;current.temperature_2m&quot;);
+if (valueType == Json.TYPE_NUMBER) {
+    double temperature = Json.getDouble(response, responseBytes, &quot;current.temperature_2m&quot;);
+} else if (valueType == Json.TYPE_NULL) {
+    Serial.println(&quot;Temperature is null&quot;);
+} else if (valueType == Json.TYPE_MISSING) {
+    Serial.println(&quot;Temperature is missing&quot;);
+} else if (valueType == Json.TYPE_INVALID) {
+    Serial.println(&quot;Invalid or truncated JSON&quot;);
+}
+</code></pre>
+<p>The type constants are <code>TYPE_MISSING</code>, <code>TYPE_NULL</code>, <code>TYPE_BOOLEAN</code>, <code>TYPE_NUMBER</code>, <code>TYPE_STRING</code>, <code>TYPE_OBJECT</code>,
+<code>TYPE_ARRAY</code> and <code>TYPE_INVALID</code>. A document cut short by a small response buffer reads as <code>TYPE_INVALID</code>.</p>
+<h3 id="reading-strings">Reading strings</h3>
+<p>Juno cannot create a runtime Java <code>String</code> here, so <code>Json.getString</code> decodes into a <code>byte[]</code> that the program owns:</p>
+<pre><code class="language-java">byte[] name = new byte[32];
+int nameBytes = Json.getString(response, responseBytes, &quot;user.name&quot;, name, name.length);
+</code></pre>
+<p>The method decodes escapes such as <code>\n</code>, <code>\&quot;</code> and <code>\u00e9</code>, including surrogate pairs, and writes at most <code>name.length</code>
+bytes. It adds no terminating NUL. A small buffer truncates the result.</p>
+<h2 id="interacting-with-https-endpoints">Interacting with HTTPS endpoints</h2>
+<p>An <code>https://</code> URL makes the client use TLS. Before it sends anything, the client checks the server's certificate chain
+against the trusted root certificates on the board. The calls are the same as for plain HTTP; only the scheme changes:</p>
+<pre><code class="language-java">int responseBytes = HttpClient.get(&quot;https://httpbin.org/anything&quot;, response, response.length, headers, headers.length, status);
+</code></pre>
+<p>A certificate that does not chain to a trusted root makes the request return <code>-1</code>.</p>
+<h3 id="trusted-roots-on-each-board">Trusted roots on each board</h3>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Where the trusted roots come from</th>
+<th>Runtime trust anchor (<code>setTrustedCertificate</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNO R4 WiFi</td>
+<td>The root CA bundle installed in the WiFi firmware. Arduino documents how to update it.</td>
+<td>Not supported: returns <code>false</code>.</td>
+</tr>
+<tr>
+<td>UNO WiFi Rev2</td>
+<td>The root certificates in the NINA-W102 module's firmware.</td>
+<td>Not supported: returns <code>false</code>.</td>
+</tr>
+<tr>
+<td>UNO Q</td>
+<td>The Linux system trust store, used through the bridge.</td>
+<td>Not supported: returns <code>false</code>.</td>
+</tr>
+<tr>
+<td>Nano ESP32 and M5Stack Cardputer</td>
+<td>Mozilla's root certificates, bundled into the program (about 55 KB of flash).</td>
+<td>Supported.</td>
+</tr>
+</tbody>
+</table>
+<p>The ESP32 boards also do not check certificate validity dates, because their TLS library has no calendar clock. A
+certificate that has expired can still be accepted there, so do not rely on the date check for security.</p>
+<h3 id="installing-a-trust-anchor">Installing a trust anchor</h3>
+<p>On the Nano ESP32 and the Cardputer, a program can trust one extra certificate, such as a self-signed certificate for a
+server on the local network. The certificate is PEM text, read into a caller-owned buffer, and its length excludes the
+trailing NUL byte, so the buffer must hold that NUL too:</p>
+<pre><code class="language-java">byte[] certificate = new byte[1537];   // PEM text read from the SD card, plus a trailing NUL byte
+int certificateLength = 1536;          // bytes of PEM text, excluding the NUL
+certificate[certificateLength] = 0;
+
+if (!HttpClient.setTrustedCertificate(certificate, certificateLength)) {
+    Serial.println(&quot;This board cannot install a certificate&quot;);
+}
+</code></pre>
+<p>The client keeps a pointer to the buffer, so keep the buffer reachable for as long as requests may use it. Do not reuse it
+for other data while HTTPS requests are still running.</p>
+<h2 id="compared-with-the-jdk-http-client">Compared with the JDK HTTP client</h2>
+<p>The JDK's <a href="https://openjdk.org/groups/net/httpclient/intro.html"><code>java.net.http.HttpClient</code></a> is the standard client on the
+desktop. Juno's client follows its purpose, sending HTTP and HTTPS requests, but not its design, because it has to run in
+a fixed amount of RAM:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>JDK <code>HttpClient</code></th>
+<th>Juno <code>HttpClient</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Creating a client</td>
+<td><code>HttpClient.newHttpClient()</code> or a builder</td>
+<td>No object: static methods on <code>HttpClient</code></td>
+</tr>
+<tr>
+<td>Building a request</td>
+<td>an immutable <code>HttpRequest</code> built with <code>HttpRequest.newBuilder()</code></td>
+<td>a URL string argument</td>
+</tr>
+<tr>
+<td>Getting the response</td>
+<td>an <code>HttpResponse&lt;T&gt;</code> object</td>
+<td>the program's own <code>byte[]</code> buffers, filled in place</td>
+</tr>
+<tr>
+<td>Choosing the body type</td>
+<td>a <code>BodyHandler</code> such as <code>ofString</code>, <code>ofByteArray</code> or <code>ofFile</code></td>
+<td>always raw bytes in a caller-owned buffer</td>
+</tr>
+<tr>
+<td>Synchronous and asynchronous</td>
+<td><code>send</code> and <code>sendAsync</code> (a <code>CompletableFuture</code>)</td>
+<td>synchronous calls only</td>
+</tr>
+<tr>
+<td>Headers</td>
+<td>set on the request and read from the response</td>
+<td>raw text in a buffer; no custom request headers</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>the library allocates objects and buffers</td>
+<td>no allocation; every size is fixed at build time</td>
+</tr>
+<tr>
+<td>Request body</td>
+<td><code>BodyPublishers</code> such as <code>ofString</code> or <code>ofFile</code></td>
+<td>a compile-time string literal</td>
+</tr>
+<tr>
+<td>Redirects, cookies and authentication</td>
+<td>configurable through the builder</td>
+<td>not available</td>
+</tr>
+<tr>
+<td>Timeouts</td>
+<td>set per request and per client</td>
+<td><code>setTimeout</code> sets one deadline for requests</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-same-get-request-in-each-client">The same GET request in each client</h3>
+<p>Juno, as in <a href="#making-a-get-request">Making a GET request</a>:</p>
+<pre><code class="language-java">private static final String URL = &quot;http://api.open-meteo.com/v1/forecast?latitude=40.4168&quot;
+        + &quot;&amp;longitude=-3.7038&amp;current=temperature_2m&quot;;
+
+byte[] response = new byte[512];
+byte[] headers = new byte[256];
+int[] status = new int[2];
+int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
+</code></pre>
+<p>The JDK client, with the same URL:</p>
+<pre><code class="language-java">HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(URL))
+        .GET()
+        .build();
+HttpResponse&lt;byte[]&gt; reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+int statusCode = reply.statusCode();
+byte[] body = reply.body();
+</code></pre>
+<p>The JDK version needs <code>IOException</code> and <code>InterruptedException</code> handled, since <code>send</code> declares both. Juno's call declares
+neither. The two differ in where the data goes:</p>
+<ul>
+<li>In Juno the program creates the buffers first and passes them in. The client writes the result into them and returns
+a count, so the program keeps control of the memory.</li>
+<li>In the JDK the library creates the result: <code>send</code> returns an object holding the status, headers and body, and the
+program reads them with accessor methods.</li>
+<li>Juno's request is a single call with the URL and the buffers. The JDK builds an <code>HttpRequest</code> first, then sends it.</li>
+</ul>
+<p>The JDK client also streams bodies as reactive <code>ByteBuffer</code> flows. Juno has no streams, because each reply is read into one
+buffer that the program chose in advance.</p>
+<h2 id="examples">Examples</h2>
+<ul>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a>
+makes one HTTPS request and prints the result.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java"><code>ParallelHttpsGet</code></a>
+makes several requests at the same time with virtual threads.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a>
+shows a weather station that builds its request path at run time.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>
