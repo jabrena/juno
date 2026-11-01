@@ -83,8 +83,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 # Coverage reports for every module (target/site/jacoco); fails if juno-compiler drops below coverage.level (80%)
 ./mvnw clean verify -Pjacoco
 
-# Generate the juno-api and juno-compiler modules' Javadoc HTML into docs/javadocs/<version>/apidocs
-./mvnw javadoc:aggregate
+# Generate the juno-api module's Javadoc HTML into docs/javadocs/<version>/apidocs
+./mvnw -pl juno-api javadoc:aggregate
 
 # Install reactor artifacts so the example module can resolve the development plugin
 ./mvnw install
