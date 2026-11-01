@@ -1,16 +1,16 @@
 ---
 title: "Arduino UNO Q"
-description: "Board notes for the Arduino UNO Q (STM32U585, Zephyr core)."
+description: "Board notes for the Arduino UNO Q (STM32U585, Zephyr core) and what Juno supports on it."
 layout: page
 ---
 
-> The official product name is **Arduino UNO Q**. This file keeps `ONE` in its filename to match
-> the repository's existing documentation naming convention.
-
 The UNO Q combines two processors on one UNO-form-factor board. A Qualcomm Dragonwing QRB2210
 runs Debian Linux for application-level and multimedia workloads, while an STM32U585 runs Arduino
-sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller; it
-does not run generated Java programs on the Linux processor.
+sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller with its
+Thumb-2 backend; it does not run generated Java programs on the Linux processor. The `ArduinoUno` device facade is
+the entry point for the board's peripherals, the same one the UNO R4 WiFi uses.
+
+<img src="../images/boards/arduino-uno-q.png" alt="Arduino UNO Q" width="280">
 
 ## Core specification
 
@@ -25,127 +25,167 @@ does not run generated Java programs on the Linux processor.
 | Graphics | Adreno GPU | Not applicable |
 | Wireless | Dual-band Wi-Fi 5 and Bluetooth 5.1 | Reached through the Linux side, not direct MCU radios |
 | Arduino CLI FQBN | Not applicable | `arduino:zephyr:unoq` |
+| Juno board id | Not applicable | `arduino-uno-q` |
 
-The two processors communicate through Arduino's Bridge/RPC facilities. That architecture lets a
-Linux application handle networking, storage, vision or a user interface while an Arduino sketch
-handles timing-sensitive GPIO. Juno currently compiles only the MCU sketch portion of that model.
+The two processors communicate through Arduino's Bridge/RPC facilities: the Linux side handles networking and
+Bluetooth, and the MCU sketch reaches them through the bridge. The Arduino linker report is authoritative for a
+generated sketch's usable memory; its limits describe the Zephyr user-sketch partition, which is smaller than the
+STM32U585's complete flash and SRAM.
 
-## Power and electrical characteristics
+## What Juno supports
 
-The traditional UNO-style headers expose the STM32U585's **3.3 V** I/O. Most MCU digital pins are
-5 V tolerant when configured as digital inputs, but outputs still drive 3.3 V. The analog inputs
-must remain within the selected analog-reference range; in particular, A0 and A1 are not 5 V
-tolerant. A4 and A5 used as I2C require pull-ups to 3.3 V.
+| Feature | Status | Notes | Example |
+|---|:---:|---|---|
+| `Gpio`, `DigitalOutput` | ✓ | The STM32's Arduino GPIO mapping. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Delay`, `Clock`, `Serial` | ✓ | Arduino/Zephyr timing and the MCU sketch's serial path. | |
+| Double-precision `java.lang.Math` | ✓ | | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
+| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
+| `UUID.randomUUID()` | ✓ | Zephyr's cryptographic random service on the STM32U585's TRNG; no Linux, Wi-Fi or bridge involved. | |
+| Onboard LED matrix | ✓ | 13 × 8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
+| `Wifi`, `Udp`, SNTP | ✓ | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
+| `HttpClient` (HTTPS) | ✓ | TLS connections use `BridgeTCPClient` and the Linux system trust store. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
+| `HttpServer` (HTTP and HTTPS) | ✓ | The TLS session runs on the MCU; the Linux side is already on the network. | [`QHttpsServer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java) |
+| `Smtp.sendTls`, `Pop3Client` | ✓ | Email over implicit TLS. | [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java) |
+| Bluetooth LE (LEGO Powered Up) | ✓ | `ArduinoBLE` reaches the Linux side's Bluetooth adapter through the bridge; see [LEGO](../lego-ecosystem). | |
+| `SdCard` | ✓ | On a shield's microSD slot, such as the TFT Touch Shield's or the Data Logger Shield's. | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |
+| LCD Keypad and TFT Touch shields | ✓ | Built on GPIO, timing and analog input; see [Shields](#shields). | |
 
-The separate JCTL and some bottom-connector signals belong to the QRB2210's **1.8 V** domain. Do
-not connect them to 3.3 V or 5 V logic. Check the official pinout before attaching a shield,
-carrier, debugger or USB-to-UART adapter because the board contains all three voltage domains.
+## Features
 
-The board can be powered through USB-C or VIN. The official pinout marks VIN for 7-24 V DC input.
-Use an external driver and suitable supply for motors, relays and other high-current loads rather
-than powering them directly from a GPIO pin.
+These need only the UNO Q and its USB-C cable.
 
-## MCU I/O and buses
-
-- **Digital:** D0-D21 on the UNO-style headers; D0/D1 provide the user UART and D20/D21 provide
-  the primary I2C bus.
-- **Analog:** A0-A5 support ADC input. A0 and A1 also provide DAC outputs.
-- **SPI:** D10-D13 provide the traditional UNO SPI mapping; the six-pin SPI header exposes a
-  second mapping. Consult the pinout before trying to use both interfaces simultaneously.
-- **I2C:** SDA/SCL are exposed as D20/D21. The Qwiic connector provides another 3.3 V I2C bus.
-- **CAN:** D4 and D5 expose the STM32 FDCAN transmit and receive signals. An external transceiver
-  is required for a physical CAN bus.
-- **USB-C:** supplies power and connects the Linux system to USB peripherals and displays through
-  a suitable powered adapter.
-- **Expansion:** bottom connectors expose camera, display, audio and additional mixed MPU/MCU
-  signals for compatible carriers.
-
-The classic UNO outline does not imply 5 V electrical compatibility. Confirm the voltage,
-current and library requirements of every shield before connecting it to the UNO Q.
-
-## Arduino toolchain
-
-Install Arduino CLI and the Zephyr core:
-
-```bash
-arduino-cli core update-index
-arduino-cli core install arduino:zephyr
-arduino-cli core list
-```
-
-Install the `Arduino_RouterBridge` library. It is required for every UNO Q sketch, not just ones
-using `Wifi`/`Udp`: without it, the zephyr core's `Arduino.h` fails to compile with `#error
-"Please install the Arduino_RouterBridge library from the Library Manager for proper Serial
-support on this board."`
-
-```bash
-arduino-cli lib install Arduino_RouterBridge
-```
-
-Programs using [`PoweredUpHubRemote`](../lego) also need `ArduinoBLE` 2.1.0 or newer, which reaches the
-Linux side's Bluetooth adapter through the same bridge (and `arduino-router` 0.7.0 or newer on the
-board):
-
-```bash
-arduino-cli lib install ArduinoBLE
-```
-
-Connect the board and confirm that its FQBN is detected:
-
-```bash
-arduino-cli board list
-```
-
-The expected FQBN is `arduino:zephyr:unoq`. The first upload may also install or update the
-Zephyr loader. Current ArduinoCore-zephyr releases automate this initial setup; if recovery is
-needed, follow the core's loader instructions rather than substituting an UNO R4 bootloader
-procedure.
-
-## Juno compatibility
-
-Annotate the Java entry point to select the UNO Q:
+### Blink the built-in LED
 
 ```java
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.Board;
+DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
 
-@Board(ArduinoUnoQBoard.class)
-public final class Example {
-    public static void main(String[] args) {
-        // Program executed by the STM32U585.
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
+```
+
+[`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) is the complete program; it builds for any board, so pass
+`-Djuno.board=arduino-uno-q`.
+
+### Scroll text on the LED matrix
+
+The UNO Q's matrix is 13 columns by 8 rows. `LedCanvas` draws into a frame and `show` sends it to the matrix:
+
+```java
+LedMatrix matrix = ArduinoUno.getLedMatrix();
+matrix.begin();
+boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+
+for (int offset = 12; offset >= -60; offset--) {
+    LedCanvas.clear(frame);
+    LedCanvas.drawText(frame, "Hello, Juno", offset, 0);
+    LedCanvas.show(frame);
+    Delay.millis(80);
+}
+```
+
+`drawText` takes a compile-time string literal. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
+message forever.
+
+### Serve HTTPS
+
+The Linux side is already on the network, so the program joins nothing: it starts a TLS listener on port 443 and
+answers requests. The certificate and key are PEM text, read at build time from the `JUNO_TLS_CERT` and
+`JUNO_TLS_KEY` environment variables so neither is committed:
+
+```java
+HttpServer.beginTls(443, certificate, certificateLength, key, keyLength);
+
+byte[] body = new byte[64];
+while (true) {
+    if (HttpServer.accept(body, body.length) >= 0) {
+        if (HttpServer.path().equals("/status")) {
+            HttpServer.respond(HttpStatus.OK, "text/plain", "online");
+        } else {
+            HttpServer.respond(HttpStatus.NOT_FOUND, "text/plain", "not found");
+        }
     }
 }
 ```
 
-Juno lowers the reachable Java bytecode to GNU Arm Thumb-2 assembly and emits a small C++ runtime
-shim. Arduino's Zephyr core assembles, compiles and packages those files as a sketch dynamically
-loaded by the board's Zephyr firmware.
+[`QHttpsServer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java) is the complete program, including how to create the certificate with
+`openssl` and test it with `curl`.
 
-| Juno API or feature | UNO Q | Notes |
-|---|---:|---|
-| `Gpio` and `DigitalOutput` | Yes | Uses the STM32's Arduino GPIO mapping |
-| `Delay`, `Clock` and `Random` | Yes | Uses Arduino/Zephyr timing support |
-| `UUID.randomUUID()` | Yes | Uses Zephyr's cryptographic random service on the local STM32U585 TRNG; it does not depend on Linux, Wi-Fi traffic or the Bridge |
-| `Serial` | Yes | Uses the MCU sketch's serial path |
-| LCD keypad and TFT touch shields | Yes | Built on GPIO, timing and analog input |
-| TFT games | Yes | Battleship, Blackjack, Chess, Tempest and Texas Hold'em support both UNO Q and UNO R4 WiFi; Empire Strikes Back, Missile Command, Pac-Man, Red Baron, Star Trek, Star Wars and DOOM target UNO Q only; Lunar Lander targets UNO R4 WiFi only |
-| Onboard LED matrix | Yes | 13x8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi, so frames and fonts adapt. Compiles with `arduino-cli`; not yet confirmed on hardware |
-| `Wifi` and `Udp` | Yes | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge` and `BridgeUDP` |
-| Juno HTTPS client API | Yes | TLS connections use `BridgeTCPClient` and the Linux system trust store |
-| Juno HTTP server and email APIs | No | Current intrinsics target the UNO R4 WiFi's `WiFiS3` libraries |
-| `@Watchdog` | No | The STM32U585 has watchdog hardware, but the current Arduino Zephyr firmware builds with `CONFIG_WATCHDOG` disabled, so sketches cannot safely use it |
-| USB mouse (`Mouse`) | No | The Zephyr core has no `HID.h`, which the `Mouse` library needs; Juno rejects `Mouse` for the UNO Q at compile time |
-| SD card, servo and email APIs | Untested | Do not assume UNO R4 library compatibility |
-| Linux applications | Not yet | Juno emits the MCU sketch; networking uses the board's existing `arduino-router` service |
+## Shields
 
-The Arduino linker report is authoritative for a generated sketch's usable memory. Its reported
-limits describe the Zephyr user-sketch partition and runtime budget, which are smaller than the
-STM32U585's complete physical flash and SRAM.
+### TFT Touch Shield
 
-## Official references
+<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
 
-- [UNO Q board page](https://docs.arduino.cc/hardware/uno-q/)
-- [UNO Q user manual](https://docs.arduino.cc/tutorials/uno-q/user-manual/)
-- [UNO Q datasheet](https://docs.arduino.cc/resources/datasheets/ABX00162-datasheet.pdf)
-- [UNO Q pinout](https://docs.arduino.cc/resources/pinouts/ABX00162-full-pinout.pdf)
-- [ArduinoCore-zephyr](https://github.com/arduino/ArduinoCore-zephyr)
+The ELEGOO 2.8" TFT touch shield is a 240 × 320 ILI9341 color display on an 8-bit parallel bus, with a resistive
+touch panel and a microSD socket. Seat it directly on the UNO Q; it needs no extra Arduino library.
+`TftTouchShield` draws through `ParallelBus`, a compiler intrinsic that writes a whole GPIO port per store through
+Zephyr's raw port API, so pixels stream from the runtime instead of costing one `digitalWrite` per pin. The TFT Touch Shield
+API, wiring and touch calibration are on the [Arduino Shields](../arduino-shields) page.
+
+#### Features
+
+##### Draw and read touch
+
+```java
+TftTouchShield.begin();
+TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+TftTouchShield.fillScreen(TftTouchShield.BLACK);
+TftTouchShield.setCursor(10, 10);
+TftTouchShield.setTextSize(2);
+TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+TftTouchShield.print("Hello, Juno");
+
+while (true) {
+    if (TftTouchShield.readTouch()) {
+        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    }
+}
+```
+
+[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) is a finger-paint program with a color palette; it builds for any
+board, so pass `-Djuno.board=arduino-uno-q`.
+
+##### Read the SD card
+
+The shield's microSD socket shares no pins with the display, so its card works alongside it, selected on D10:
+
+```java
+SdCard sd = TftTouchShield.getSdCard();
+if (sd.begin()) {
+    // read or write files on the microSD card
+}
+```
+
+[`WifiStatusSDTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java) reads `wifi.ssid` and `wifi.password` from `application.properties`
+on the shield's card and shows the connection status on the display.
+
+## Build and run
+
+Install the Zephyr core and the `Arduino_RouterBridge` library once; every UNO Q program needs both:
+
+```bash
+arduino-cli core install arduino:zephyr
+arduino-cli lib install Arduino_RouterBridge
+```
+
+Then compile and upload an example, for instance the virtual-threads demo:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
+  -Djuno.board=arduino-uno-q
+```
+
+Open the serial monitor in another terminal:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-q
+```
+
+The monitor uses 115200 baud by default, matching `Serial.begin(BaudRate.BAUD_115200)`.

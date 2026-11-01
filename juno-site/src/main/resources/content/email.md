@@ -1,96 +1,91 @@
 ---
-title: "Email (SMTP/POP3)"
-description: "Sending and reading email from a sketch with Smtp and Pop3Client."
+title: "Email"
+description: "Sending mail over SMTP with Smtp and reading a mailbox over POP3 with Pop3Client."
 layout: page
 ---
 
-Juno provides a small, allocation-free email stack for the Arduino UNO R4 WiFi. Programs can:
+Juno supports two email protocols: SMTP for sending mail and POP3 for reading it. Each has its own client, both are
+compiler intrinsics, and both need an active [`Wifi`](../wifi) connection. Every buffer belongs to the caller.
 
-- send a plain-text message to one recipient with
-  [`Smtp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java); and
-- report a mailbox's message count, read the newest message, and read any message's subject with
-  [`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Pop3Client.java).
+The host, username, password, and message fields come from the microSD card, as runtime `String` values. Each one holds at
+most 31 bytes, so keep them short (see [Credentials](#credentials)).
 
-Like `HttpClient` (see [the Internet access guide](../internet)), these are compiler
-intrinsics: Java declares them as `native` methods, and Juno emits their Arduino C++
-implementations only when the program uses them. Every buffer belongs to the caller; nothing here
-allocates a runtime `String` or a heap object.
+## Board support
 
-## Scope, deliberately
+`Smtp.sendTls` and `Pop3Client` work on the boards with the `TLS_EMAIL` capability: UNO R4 WiFi, UNO Q, UNO WiFi Rev2
+and Nano ESP32. `Smtp.send` (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
+boards have the `SMTP_STARTTLS` capability. The compiler rejects a call the board cannot run.
 
-This is a basic client, not a full mail library:
+## Credentials
 
-- one recipient, plain text only;
-- no attachments, HTML, multipart MIME, folders, or OAuth2;
-- `host`, `username`, `password`, and every message field must be compile-time strings (a
-  literal, or `System.getenv("NAME")` of a literal name) — Juno has no heap to build a runtime
-  `String` from;
-- responses (subjects, headers, bodies) are bounded to caller-owned buffers and may be truncated.
-
-## Requirements
-
-Both APIs need an UNO R4 WiFi entry point and an active `Wifi` connection:
-
-```java
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-import io.github.jabrena.juno.annotations.Board;
-
-@Board(ArduinoUnoR4WiFiBoard.class)
-public final class EmailExample {
-    // ...
-}
-```
-
-`Pop3Client` reuses the native `WiFiSSLClient` behind `HttpClient`'s `https://` requests (implicit TLS, POP3S on port 995) and
-needs no extra library. `Smtp` needs the third-party `ESP_SSLClient` library — see
-[Why `Smtp` needs an extra library](#why-smtp-needs-an-extra-library) below — installed once with:
-
-```bash
-./mvnw -f juno-examples/pom.xml juno:install-deps
-```
-
-(or on its own with `arduino-cli lib install ESP_SSLClient`; see
-[docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)).
-
-## Supplying mailbox credentials
-
-Do not put mailbox credentials directly in Java source. Read them the same way as any other
-compile-time credential — see
-[docs/APIS.md](../apis#supplying-compile-time-credentials-with-systemgetenv) for the full
-mechanism (either exported in the shell running `juno compile`, or via a git-ignored `.env` file
-and `juno-maven-plugin`'s `env` goal):
+Keep the mailbox settings and the password on the microSD card, not in the Java source. Put them in
+`application.properties` next to the Wi-Fi settings, and read the file once at startup, as the Nano ESP32 examples do
+(see [SD Card](../sdcard#reading-application-properties)):
 
 ```text
-SMTP_HOST=mail.example.com
-SMPT_USERNAME=me@example.com
-SMTP_PASSWORD=your-mailbox-password
+wifi.ssid=my-network
+wifi.password=my-wifi-password
+smtp.host=mail.example.com
+smtp.username=me@example.com
+smtp.password=your-mailbox-password
+smtp.from=me@example.com
+smtp.to=me@example.com
+smtp.subject=Arduino alert
+smtp.body=Alarm activated
+pop3.host=mail.example.com
+pop3.username=me@example.com
+pop3.password=your-mailbox-password
 ```
 
-`SMPT_USERNAME` (missing the `H`) is not a typo introduced here — it's whatever key name is
-already in this repository's own `.env`; rename it (and the `System.getenv(...)` calls that read
-it) if that was accidental. `Smtp`/`Pop3Client` take the port as a plain `int` literal, not a
-string, since Juno has no way to parse a compile-time string into a compile-time int — so a
-`POP3_PORT`/`SMTP_PORT` entry in `.env` is documentation at best, never something the compiler
-actually reads (see the port constants in the examples below).
+The SMTP calls use the `smtp.*` keys and the POP3 calls use the `pop3.*` keys. Load them with the card's `SdCard` and
+`Properties`:
 
-## Sending a message
+```java
+Properties properties = new Properties();
+try (InputStream file = SD_CARD.open("application.properties")) {
+    properties.load(file);
+}
+String host = properties.getProperty("smtp.host");
+String username = properties.getProperty("smtp.username");
+String password = properties.getProperty("smtp.password");
+```
 
-`Smtp.send` connects, upgrades to TLS with `STARTTLS`, authenticates with `AUTH LOGIN`, and sends
-one plain-text message:
+Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
+Values loaded this way are runtime `String`s, and a runtime `String` holds 31 bytes, so keep the password, the subject
+and the body within that length.
+
+The `InboxCount` and `EmailClient` examples read the same values from environment variables at compile time instead,
+with `host` and similar calls. Use that approach only on a board without an SD card.
+
+## SMTP
+
+[`Smtp`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java)
+sends one plain-text message to one recipient. It offers two ways to start the encrypted connection:
+
+| Method | Argument | Notes |
+|---|---|---|
+| `Smtp.send(...)` | host, port, username, password, from, to, subject, body | `STARTTLS` on port `587`; returns `0` or a step code (`-1` to `-12`) |
+| `Smtp.sendTls(...)` | the same arguments | implicit TLS, normally port `465`; the same codes, without `-11` and `-12` |
+
+### Sending with STARTTLS
+
+`Smtp.send` connects in plain TCP, asks the server to upgrade with `STARTTLS`, then authenticates with `AUTH LOGIN`
+over the encrypted connection. Port `587` is the usual submission port:
 
 ```java
 int sent = Smtp.send(
-        System.getenv("SMTP_HOST"), 587,
-        System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
-        System.getenv("SMPT_USERNAME"), System.getenv("SMPT_USERNAME"),
+        host, 587,
+        username, password,
+        username, username,
         "Arduino alert", "Alarm activated");
 ```
 
-Port 587 (mail submission over `STARTTLS`) is the common case; see
-[Why `Smtp` needs an extra library](#why-smtp-needs-an-extra-library) for why it isn't port 465's
-implicit TLS instead. `sent` is `0` on success, or a negative code identifying the failing step:
+`STARTTLS` needs the third-party `ESP_SSLClient` library, which the Maven plugin installs with
+`./mvnw -f juno-examples/pom.xml juno:install-deps`.
 
-| Code | Failing step |
+`send` returns `0` on success and a negative code naming the step that failed:
+
+| Code | Step |
 |---:|---|
 | `-1` | Connect |
 | `-2` | Server greeting |
@@ -100,53 +95,52 @@ implicit TLS instead. `sent` is `0` on success, or a negative code identifying t
 | `-6` | `MAIL FROM` |
 | `-7` | `RCPT TO` |
 | `-8` | `DATA` |
-| `-9` | The message body |
-| `-10` | Base64-encoding the username/password overflowed its internal buffer |
-| `-11` | `STARTTLS` itself |
-| `-12` | The TLS upgrade |
+| `-9` | Message body |
+| `-10` | Base64 encoding overflowed its buffer |
+| `-11` | `STARTTLS` |
+| `-12` | TLS upgrade |
 
-### Why `Smtp` needs an extra library
+### Sending over implicit TLS
 
-The UNO R4 WiFi's native `WiFiSSLClient` (the same class `HttpClient`'s `https://` requests and `Pop3Client` use) can only
-negotiate TLS from the very first byte of a connection — it has no way to start a plaintext
-connection and upgrade it to TLS mid-stream, which is exactly what `STARTTLS` requires. The
-third-party [`ESP_SSLClient`](https://github.com/mobizt/ESP_SSLClient) library adds that upgrade
-path (`connect()` in plain-TCP mode, then `connectSSL()` once `STARTTLS` is negotiated), backed by
-its own vendored BearSSL. Measured on real hardware, it fits comfortably in the UNO R4 WiFi's 32 KB
-of RAM (well under 60% flash, well under 50% RAM for the full send-and-verify example below) — but
-it is one more thing to install, so it stays a manual/`juno:install-deps` dependency rather than
-being vendored into this repository (see the discussion in
-[`InstallDepsMojo`](https://github.com/jabrena/juno/blob/main/juno-maven-plugin/src/main/java/io/github/jabrena/juno/maven/InstallDepsMojo.java)).
+`Smtp.sendTls` encrypts from the first byte, the way SMTPS on port `465` expects, so it needs no `STARTTLS` step and no
+extra library:
 
-One consequence: `ESP_SSLClient`'s software TLS stack validates the server's host name but not its
-full certificate chain (there is no CA bundle available to it on this board), unlike
-`HttpClient`'s `https://` requests and `Pop3Client`, which validate against the WiFi module's own firmware-backed CA bundle.
-This is a deliberate tradeoff to fit `STARTTLS` in the available RAM, not an oversight.
+```java
+int sent = Smtp.sendTls(
+        host, 465,
+        username, password,
+        username, username,
+        "Arduino alert", "Alarm activated");
+```
 
-## Reading a mailbox
+It returns the same codes as `send`, except `-11` and `-12`, which only apply to `STARTTLS`.
 
-### Message count
+## POP3
+
+[`Pop3Client`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Pop3Client.java)
+reads a mailbox over POP3S (implicit TLS, port `995`) and needs no extra library.
+
+| Method | Argument | Notes |
+|---|---|---|
+| `Pop3Client.messageCount(...)` | host, port, username, password | returns the message count or `-1` to `-5` |
+| `Pop3Client.readLatest(...)` | host, port, credentials, two buffers, `int[] status` | fills the headers and body buffers; returns the body length or `-1` to `-8` |
+| `Pop3Client.readSubject(...)` | host, port, credentials, message number, a buffer | sends `TOP n 0`, so only the headers travel; returns the subject length or `-1` to `-6` |
+
+### Counting messages
 
 ```java
 int count = Pop3Client.messageCount(
-        System.getenv("SMTP_HOST"), 995,
-        System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+        host, 995,
+        username, password);
 ```
 
-`count` is the mailbox's message count on success, or a negative code:
-
-| Code | Failing step |
-|---:|---|
-| `-1` | Connect |
-| `-2` | Server greeting |
-| `-3` | `USER` |
-| `-4` | `PASS` |
-| `-5` | `STAT` |
+`messageCount` returns the count, or `-1` (connect), `-2` (greeting), `-3` (`USER`), `-4` (`PASS`) or `-5` (`STAT`).
 
 ### The newest message
 
-`readLatest` retrieves the highest-numbered message (`RETR` after `STAT`), extracting `From`/
-`Subject` into one buffer and a bounded, dot-unstuffed plain-text body into another:
+`readLatest` retrieves the highest-numbered message. It writes the `From` and `Subject` lines into the headers buffer
+and the dot-unstuffed plain-text body into the body buffer, both truncated to their buffer; `status[0]` receives the
+headers length:
 
 ```java
 byte[] headers = new byte[Pop3Client.DEFAULT_HEADERS_BUFFER_SIZE];
@@ -154,105 +148,68 @@ byte[] body = new byte[Pop3Client.DEFAULT_BODY_BUFFER_SIZE];
 int[] status = new int[1];
 
 int bodyLength = Pop3Client.readLatest(
-        System.getenv("SMTP_HOST"), 995,
-        System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
+        host, 995,
+        username, password,
         headers, headers.length, body, body.length, status);
-int headersLength = status[0];
 ```
 
-`bodyLength` is the number of bytes written to `body` on success, or a negative code:
+`bodyLength` is the body length on success. A negative value is `-6` for an empty mailbox, `-7` for a failed `RETR`, or
+`-8` when the connection drops mid-message; the connection-stage codes match `messageCount`.
 
-| Code | Failing step |
-|---:|---|
-| `-1` | Connect |
-| `-2` | Server greeting |
-| `-3` | `USER` |
-| `-4` | `PASS` |
-| `-5` | `STAT` |
-| `-6` | Empty mailbox |
-| `-7` | `RETR` |
-| `-8` | Connection dropped while streaming the message |
+### One subject
 
-### A specific message's subject
-
-`readSubject` is the cheap alternative to `readLatest` for listing several messages: it sends
-`TOP messageNumber 0` (headers only, no body), so it costs far less bandwidth than downloading a
-whole message just to show its subject. `messageNumber` is 1-based POP3 numbering (`1` is the
-oldest message still in the mailbox):
+`readSubject` is the cheap way to list a mailbox: it asks for the headers of one message (`TOP n 0`), not its body. The
+message number is 1-based, so `1` is the oldest message still stored:
 
 ```java
 byte[] subject = new byte[32];
-int subjectLength = Pop3Client.readSubject(
-        System.getenv("SMTP_HOST"), 995,
-        System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
+int length = Pop3Client.readSubject(
+        host, 995,
+        username, password,
         1, subject, subject.length);
 ```
 
-`subjectLength` is the number of bytes written on success (`0` for a message with no `Subject`
-header), or a negative code:
+The result is the number of subject bytes written, `0` when the message has no `Subject` header, or `-5` (`TOP`) or
+`-6` (connection dropped while streaming the headers). The subject is raw bytes in your buffer, not a `String`.
 
-| Code | Failing step |
-|---:|---|
-| `-1` | Connect |
-| `-2` | Server greeting |
-| `-3` | `USER` |
-| `-4` | `PASS` |
-| `-5` | `TOP` |
-| `-6` | Connection dropped while streaming the headers |
+## Examples
 
-Since Juno cannot build a runtime `String`, printing a subject means printing its raw bytes
-directly — see `LcdKeypadShield.print(byte[], int)`, added for exactly this, in the `EmailClient`
-example below.
+The examples in
+[`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email)
+show each call in use:
 
-## A note on transient connection failures
+- [`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/InboxCount.java)
+  polls `Pop3Client.messageCount` and shows the count on an LCD Keypad Shield.
+- [`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldLCD.java)
+  and [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java)
+  send a message to the mailbox and then check that the count goes up.
+- [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java)
+  is a small menu with the message count, a list of subjects and a send action.
+- [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java),
+  [`NanoSmtpStarttlsSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpStarttlsSD.java)
+  and [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java)
+  run on a Nano ESP32 and read the Wi-Fi and mail settings from the SD card.
 
-The UNO R4 WiFi's `Wifi.status()` can report `STATUS_CONNECTED` slightly before the module's
-underlying TCP/IP stack (DHCP lease, routing) is actually ready to accept an outbound connection,
-so the very first `Smtp`/`Pop3Client` call right after `Wifi.begin` succeeds can fail with `-1`
-even though every later call works. Retrying a few times, a couple of seconds apart, absorbs this
-one-off race instead of surfacing it — see `pollMessageCount` in the examples below.
-
-## Complete examples
-
-Four examples in `juno-examples` build on each other, in
-[`juno-examples/src/main/java/io/github/jabrena/juno/hardware/net/email/`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/hardware/net/email/):
-
-- [`InboxCount`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/InboxCount.java) —
-  the simplest: polls `Pop3Client.messageCount` every 30 seconds and shows it on the LCD Keypad
-  Shield. Confirmed working on a real UNO R4 WiFi.
-- [`EmailHelloWorldLCD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldLCD.java) —
-  proves `Smtp.send` actually delivers, not just that the server accepted the message: reads the
-  inbox count *before* sending a "Hello World" message to itself, then polls the count *after*
-  sending until it goes up. Waits for a button press before sending.
-- [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java) —
-  the same send-and-verify flow on the ELEGOO TFT touch shield.
-- [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java) —
-  a small menu-driven client: Inbox (a submenu of message Count and a paginated Subject List, up
-  to the first 10 messages, 2 per screen), Send Email, and About.
-
-Build and upload any of them the same way as every other example:
+Build and upload one of them with the Maven plugin, then watch the output with `juno:monitor`:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.EmailClient
+
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Troubleshooting
 
-- **`Smtp.send` returns `-1` or `-2` only on the very first call after connecting:** see
-  [A note on transient connection failures](#a-note-on-transient-connection-failures) above.
-- **`Smtp.send` returns `-11` or `-12`:** the mail server didn't offer `STARTTLS` on port 587, or
-  the TLS upgrade itself failed. Confirm the host/port with another mail client first.
-  `ESP_SSLClient` validates the host name but not the full certificate chain (see
-  [Why `Smtp` needs an extra library](#why-smtp-needs-an-extra-library)), so this is not a
-  certificate-trust failure in the usual sense.
-  Confirm `arduino-cli lib install ESP_SSLClient` (or `juno:install-deps`) has actually run — a
-  missing library fails the `arduino-cli compile` step, not the upload.
-- **`Pop3Client` calls return `-5` on `readSubject`/`readLatest`:** the server may not support
-  `TOP` (rare, but it's an optional POP3 command) — try `messageCount`/`readLatest` alone to
-  confirm basic connectivity first.
-- **A subject/body/header looks truncated:** the caller-owned buffer was smaller than the actual
-  content; every read here is bounded, never dynamically sized.
-- **Compilation says `SMTP_HOST`/`SMPT_USERNAME`/`SMTP_PASSWORD` is not set:** see
-  [the Internet access guide's environment-variable troubleshooting](../internet#troubleshooting) —
-  the same rules apply (export it where `juno compile` runs, or use a `.env` file).
+- **`send` returns `-11` or `-12`:** the server did not offer `STARTTLS` on that port, or the upgrade failed. Confirm the
+  host and port with another mail client, or use port `465` with `sendTls`.
+- **`send` fails to build:** `ESP_SSLClient` is missing. Run `juno:install-deps`; without it, `arduino-cli` fails at
+  the compile step, not at upload.
+- **Connect fails (`-1`) right after `Wifi.begin`:** wait until `Wifi.status()` reports `Wifi.STATUS_CONNECTED` before
+  the first call, as in [Wifi](../wifi).
+- **`readSubject` returns `-5`:** the server may not support the `TOP` command. Check `messageCount` and `readLatest`
+  first to confirm basic access.
+- **A subject or body is cut short:** the buffer was smaller than the content. Enlarge it; the reads never grow.
+- **The examples stop with `application.properties not found` or a missing `smtp.*`/`pop3.*` entry:** check the file is
+  at the root of the card and that each key is spelled as in [Credentials](#credentials).

@@ -8,6 +8,8 @@ The Nano ESP32 puts an Espressif ESP32-S3 (in a u-blox NORA-W106 module) on the 
 Unlike the UNO boards, its CPU is an Xtensa LX7, so Juno generates Xtensa assembly for it with its
 own backend instead of the Thumb-2 or AVR one.
 
+<img src="../images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" width="280">
+
 ## Core specification
 
 | Characteristic | Nano ESP32 |
@@ -22,105 +24,84 @@ own backend instead of the Thumb-2 or AVR one.
 | USB connector | USB-C (native USB) |
 | Built-in LED | D13 (ESP32-S3 GPIO48) |
 | Arduino CLI FQBN | `arduino:esp32:nano_nora` |
+| Juno board id | `arduino-nano-esp32` |
 
 ## What Juno supports
 
-This is the first step of Nano ESP32 support: `Gpio`, `DigitalOutput`, `Delay` and `Serial` over
-the native USB port, with `int`, `long`, `float` and `double` arithmetic, objects, arrays, static and
-interface calls, lambdas and method references. Pins keep the numbers printed on the board: the core builds with
-`BOARD_HAS_PIN_REMAP`, and Juno calls `pinMode`/`digitalWrite` through wrappers compiled under
-that remapping, so `ArduinoNano.getGpio().getBuiltinLed()` is `13` and drives GPIO48. Analog pins keep
-Juno's UNO numbers: `Gpio.getA0()` to `Gpio.getA5()` (14 to 19) reach the Nano's A0 to A5, which its
-core numbers 17 to 22, so Grove drivers and pin maps such as `GroveBaseShield` work unchanged. As a
-result, the onboard RGB LED's core numbers (14 to 16) cannot be reached through `Gpio`.
-The runtime resolves these portable identifiers through the core's named `D0`–`D13` and `A0`–`A5`
-pins, so GPIO and SD chip-select still reach the same physical pins when the core is configured
-with **By GPIO number (legacy)**. Do not pass raw ESP32 GPIO numbers to Juno's GPIO or SD APIs.
+| Feature | Status | Notes | Example |
+|---|:---:|---|---|
+| `Gpio`, `DigitalOutput` | ✓ | Pins keep the numbers printed on the board: `getBuiltinLed()` is `13` (GPIO48), and `getA0()`–`getA5()` are 14–19, so Grove drivers and pin maps work unchanged. Never pass raw ESP32 GPIO numbers; the onboard RGB LED is not reachable. | |
+| `Delay`, `Serial` | ✓ | `Serial` over the native USB port. | |
+| `int`, `long`, `float`, `double` | ✓ | Java semantics kept (a `long` division by zero stops the program, float-to-int casts saturate). `float` uses the S3's FPU; `double` is soft-float. | [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java), [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
+| Double-precision `java.lang.Math` | ✓ | Uses the toolchain's libm. | [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
+| Objects, arrays, static and interface calls | ✓ | | |
+| Lambdas and method references | ✓ | Every shape. | [`SerialLambdas`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java) |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the arena with the JDK's rounding and text rules. | [`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java) |
+| Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Each thread is a FreeRTOS task with an 8 KiB stack (`-Djuno.Xss`); one runs Java at a time, handing over after a 1 ms slice. At most four threads including `main` (`-Djuno.maxThreads`). | [`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java) |
+| `UUID.randomUUID()` | ✓ | Hardware RNG through `esp_fill_random`; may be weaker before Wi-Fi or Bluetooth start. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
+| Wi-Fi station | ✓ | `begin`, `status`, `localIP`, `gatewayIP`, `macAddress`; credentials from the microSD card (see [SD Card](../sdcard)). | [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java) |
+| Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java) |
+| `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Through the core's `WiFiUDP`; optional `sntp.host`/`sntp.port` from the card. | [`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java) |
+| `HttpClient` (HTTP) | ✓ | Host is a literal in the program; the path can come from the card. | [`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java) |
+| `HttpClient.requestHttps` | ✓ | Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash); validity dates are not checked. | |
+| `HttpServer` | ✓ | Runs on the station address. | [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java) |
+| `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on ports 465 and 995, checked against the bundled roots. Password, subject and body must fit in 31 bytes each. | [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java), [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java) |
+| `Smtp.send` (STARTTLS) | ✓ | Needs `arduino-cli lib install ESP_SSLClient`; the server's certificate chain is not checked yet. | |
+| USB HID mouse | ✓ | `ArduinoNano.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) |
 
-`java.math` works too: `BigInteger`, `BigDecimal` and `MathContext` run in the arena with the JDK's
-rounding and text rules, and `BigDecimal.sqrt` and the `double` conversions use the core's `strtod`.
-[`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java)
-prints a few exact results once.
+## Features
 
-`long`, `float` and `double` operations go through the same runtime helpers as on the other boards, which
-keep Java semantics (a `long` division by zero stops the program, float-to-int casts saturate, NaN
-comparisons are false); the ESP32 toolchain compiles the `float` helpers to the ESP32-S3's
-single-precision FPU (`double` has no FPU and runs as soft-float), and the double-precision
-`java.lang.Math` functions use the toolchain's libm. [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java)
-prints a block of `long` and `float` results and
-[`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java)
-one of `double` and `Math` results, both to compare with a desktop JVM run;
-[`SerialLambdas`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java)
-exercises every lambda and method-reference shape.
+These need only the Nano ESP32 and its USB cable.
 
-Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope` and `ScopedValue` work too. Each
-Juno thread is a FreeRTOS task with its own 8 KiB stack (`-Djuno.Xss` changes it), and only one
-runs Java code at a time. A busy thread hands the CPU over at its next loop iteration or method
-call once its 1 ms time slice is over, so a spin loop cannot starve the others. At most four
-threads run at once, `main` included, unless `-Djuno.maxThreads` raises it; starting a fifth stops
-the program with `[juno-thread] too many threads`.
-[`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java)
-runs each of them once at startup and then prints the results.
+### Blink the built-in LED
 
-`SdCard` works over the board's SPI pins (D11 to D13) through the same SdFat runtime as the UNO
-boards; see the Nano Connector Carrier below for a ready-made slot.
+`getBuiltinLed()` is D13, the pin printed on the board (GPIO48 on the chip).
 
-`PoweredUpHubRemote` connects to a LEGO Powered UP hub over Bluetooth LE. The Nano's radio is driven by the
-core's BLE library through a small adapter, since `ArduinoBLE` (used on the UNO R4 WiFi and UNO Q) does not
-run on this chip. [`NanoPoweredUpHubInfo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/NanoPoweredUpHubInfo.java)
-prints the hub's type, battery and signal strength and only reads from the hub. The adapter is not yet confirmed on
-hardware.
+```java
+Serial.begin(BaudRate.BAUD_115200);
+DigitalOutput led = DigitalOutput.of(ArduinoNano.getGpio().getBuiltinLed());
 
-`UUID.randomUUID()` fills its 16 bytes from the ESP32-S3's hardware random-number generator through
-`esp_fill_random`.
-[`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java)
-prints a new one every two seconds. Espressif documents that the generator is only fully random while the
-radio is on; the Nano's UUIDs are therefore fresh but may be weaker before Wi-Fi or Bluetooth start.
+while (true) {
+    led.high();
+    Serial.println("on");
+    Delay.millis(500);
+    led.low();
+    Serial.println("off");
+    Delay.millis(500);
+}
+```
 
-Wi-Fi works in station mode through the module's onboard radio: `ArduinoNano.getWifi()` joins a network
-with `begin(ssid, password)` and reports `status()`, `localIP()`, `gatewayIP()` and `macAddress()`.
-[`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java)
-reads the credentials from `application.properties` on the carrier's microSD card (see
-[SD Card Storage](../storage)). UDP works over the core's `WiFiUDP`, so `Udp` and the SNTP clock behind
-`LocalDateTime.now()` run on the Nano too:
-[`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java)
-prints UTC with the Wi-Fi credentials and an optional `sntp.host`/`sntp.port` read from the card.
-Plain HTTP works through `HttpClient`: the host is a literal in the
-program and the request path can come from the card, as in
-[`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java).
-HTTPS works the same way through `HttpClient.requestHttps`, with the host and path read from the
-card. The Nano's TLS client checks the server's certificate chain against Mozilla's trusted root
-certificates, which Juno bundles into the program (about 55 KB of flash). A server whose chain does not
-end in one of them fails to connect. The core's TLS library has no calendar clock, so a certificate's
-validity dates are not checked.
+[`SerialBlink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBlink.java) also prints a cycle counter with each change.
 
-Email works over implicit TLS, `Smtp.sendTls` on port 465 and `Pop3Client` on port 995, with every
-server, credential and message field read from the card:
-[`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java)
-sends one message and [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java)
-counts the mailbox's messages. A runtime `String` holds 31 bytes, so the password, subject and body must fit in
-31 bytes each. STARTTLS (`Smtp.send`, port 587) upgrades a plain connection with the `ESP_SSLClient`
-library, as on the UNO R4 WiFi: install it once with `arduino-cli lib install ESP_SSLClient`. Implicit
-TLS checks the server's chain against the same bundled Mozilla roots as HTTPS; the STARTTLS wrapper does not
-check the server's certificate chain yet, on the Nano or the UNO R4 WiFi.
+### USB HID mouse
 
-`HttpServer` runs on the station address:
-[`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java)
-prints the board's address and answers `GET /status` on port 80.
+`ArduinoNano.getMouse()` makes the board a USB mouse for the computer it is plugged into; `Serial` keeps working on the
+same USB port. Call `begin()` once, then `move(x, y)` moves the pointer by that many pixels:
 
-`ArduinoNano.getWifi().beginAP(ssid, password)` starts the board's own access point, so a phone or laptop can
-join the Nano ESP32 directly, as in
-[`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java).
-`ArduinoNano.getMouse()` makes the board a USB HID mouse through the core's TinyUSB `USBHIDMouse`, so no
-`Mouse` library is needed. The board's default USB mode (Normal mode, TinyUSB) puts the mouse and the serial
-console on the same USB port, so `Serial` and `juno:monitor` keep working while the mouse is active.
-[`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java)
-moves the host's pointer around a square and prints each side over Serial. It is not yet confirmed on hardware.
+```java
+Mouse mouse = ArduinoNano.getMouse();
+mouse.begin();
 
-TCP and the other optional capabilities are not wired yet; Juno rejects a program that uses them at
-compile time.
+while (true) {
+    mouse.move(50, 0);   // right
+    Delay.millis(1000);
+    mouse.move(0, 50);   // down
+    Delay.millis(1000);
+    mouse.move(-50, 0);  // left
+    Delay.millis(1000);
+    mouse.move(0, -50);  // up
+    Delay.millis(1000);
+}
+```
 
-## Nano Connector Carrier
+Once uploaded, the program keeps moving the pointer; disconnect the board or upload another program to stop it.
+[`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) also prints each side over `Serial`.
+
+## Shields
+
+### Nano Connector Carrier
+
+<img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="280">
 
 The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a Nano header pin, and
 `NanoConnectorCarrier` names them so programs don't hard-code numbers:
@@ -142,19 +123,124 @@ the [ASX00061 datasheet](https://docs.arduino.cc/resources/datasheets/ASX00061-d
 The input selector switch sets the Grove connectors' VCC to 3.3 V or 5 V; use 3.3 V with the Nano
 ESP32. The Qwiic connector is always 3.3 V.
 
-```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier();
-SdCard sdCard = carrier.getSdCard();
-if (sdCard.begin()) {
-    // read or write files on the microSD card
-}
-int light = new GroveLightSensorV12().rawValue(carrier.getGroveA0());
+The carrier seen from its connector side, USB cable at the bottom; `*` marks each Grove socket's yellow
+signal wire (Grove pin 1):
+
+```text
++---------------------------------------------+
+|  Grove I2C                      Grove UART  |
+|  [ GND  ]                       [ RX * ]    |
+|  [ VCC  ]                       [ TX   ]    |
+|  [ SDA  ] A4                    [ VCC  ]    |
+|  [ SCL *] A5                    [ GND  ]    |
+|                 +-------------+             |
+|  Qwiic          |   microSD   |             |
+|  [ I2C  ]       |   slot      |             |
+|  A4/A5, 3.3 V   |   CS D4     |             |
+|                 +-------------+             |
+|  Grove A0/A1                    Grove A2/A3 |
+|  [ GND  ]                       [ A2 * ]    |
+|  [ VCC  ]                       [ A3   ]    |
+|  [ A1   ]                       [ VCC  ]    |
+|  [ A0 * ]                       [ GND  ]    |
++-------------------[ USB ]-------------------+
 ```
 
-[`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java)
-exercises the microSD slot end to end and reports each step over serial;
-[`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java)
-reads a Grove PIR in the A2/A3 socket and a light sensor in A0/A1.
+#### Features
+
+##### Read the SD card
+
+The Nano has no SD slot of its own, so `SdCard` needs the carrier: `getSdCard()` reaches its microSD
+slot (chip select D4, SPI D11–D13) through the same SdFat runtime as the UNO boards. The examples
+that read settings from the card (the `…SD` programs above) therefore need the carrier too.
+
+```java
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+SdCard sd = carrier.getSdCard();
+if (sd.begin() && sd.exists("application.properties")) {
+    InputStream in = sd.open("application.properties");
+    // read the file
+}
+```
+
+[`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) exercises every `SdCard` file
+operation end to end and reports each step over serial.
+
+##### Connect to Wi-Fi with credentials from the SD card
+
+Keep the network's credentials on the card rather than in the source: put them in `application.properties` at the
+card's root,
+
+```properties
+wifi.ssid=your-network
+wifi.password=your-password
+```
+
+then read the file with `java.util.Properties` and join the network:
+
+```java
+SdCard sd = new NanoConnectorCarrier().getSdCard();
+Wifi wifi = ArduinoNano.getWifi();
+
+if (sd.begin()) {
+    try (InputStream file = sd.open("application.properties")) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            wifi.begin(properties.getProperty("wifi.ssid"), properties.getProperty("wifi.password"));
+        }
+    }
+}
+while (wifi.status() != Wifi.STATUS_CONNECTED) {
+    Delay.millis(1000);
+}
+```
+
+[`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java) is the complete program: it joins the network and
+prints its status once a second.
+
+##### Read a Grove sensor
+
+Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.
+
+```java
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+GrovePirMotion pir = new GrovePirMotion();
+GroveLightSensorV12 light = new GroveLightSensorV12();
+pir.begin(carrier.getGroveA2());
+
+boolean motion = pir.motionDetected(carrier.getGroveA2());
+int level = light.rawValue(carrier.getGroveA0());
+```
+
+[`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java) prints a
+Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a second.
+
+##### Remote-control a LEGO RCX
+
+With a Grove infrared emitter in the A0/A1 socket and a Grove infrared receiver on the I2C socket's
+SCL line, the Nano talks to a LEGO Mindstorms RCX brick through `RemoteRcx` (see
+[LEGO](../lego-ecosystem)). Download Juno's RCX firmware to the brick once with
+[`NanoCarrierRcxFirmwareDownload`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxFirmwareDownload.java): keep the brick 10 to 50 cm away and still for about ten
+minutes. The brick then answers on channel 1:
+
+```java
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
+GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
+RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, emitter,
+        ArduinoNano.getClock());
+rcx.begin();
+
+RcxMotor motor = rcx.getMotorA();
+motor.setPower(4);
+motor.forward();
+```
+
+One example per part of the brick: [`NanoCarrierRcxMotorA`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxMotorA.java), [`NanoCarrierRcxButtons`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxButtons.java),
+[`NanoCarrierRcxTouchSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxTouchSensors.java), [`NanoCarrierRcxLightSensor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLightSensor.java),
+[`NanoCarrierRcxRotation`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRotation.java), [`NanoCarrierRcxTemperature`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxTemperature.java), [`NanoCarrierRcxLcd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLcd.java),
+[`NanoCarrierRcxLamps`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxLamps.java), [`NanoCarrierRcxSound`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxSound.java) and [`NanoCarrierRcxBattery`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxBattery.java).
 
 ## Build and run
 

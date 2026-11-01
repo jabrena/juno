@@ -1,16 +1,15 @@
 ---
 title: "Arduino UNO R3 WiFi Rev2"
-description: "Board notes for the Arduino UNO R3 WiFi Rev2."
+description: "Board notes for the Arduino UNO WiFi Rev2 (ATmega4809) and what Juno supports on it."
 layout: page
 ---
 
-> The linked board's official product name is **Arduino UNO WiFi Rev2**, not “UNO R3 WiFi.” This
-> file keeps `ARDUINO-ONE-R3-WIFI.md` as its requested filename, but the hardware is based on the
-> ATmega4809 and Arduino's megaAVR core rather than the UNO R3's ATmega328P and classic AVR core.
+The Arduino UNO WiFi Rev2 combines an 8-bit ATmega4809 microcontroller with a u-blox NINA-W102 radio module. It keeps
+the familiar UNO form factor and 5 V GPIO while adding Wi-Fi, Bluetooth, a secure element and a six-axis IMU. Juno
+compiles for the ATmega4809 with its **AVR backend** and links against the `arduino:megaavr` core and the `WiFiNINA`
+library; the `ArduinoUno` device facade is the entry point for the board's peripherals.
 
-The UNO WiFi Rev2 combines an 8-bit ATmega4809 application microcontroller with a u-blox
-NINA-W102 radio module. It retains the familiar UNO form factor and 5 V GPIO while adding Wi-Fi,
-Bluetooth, a secure element and a six-axis inertial measurement unit (IMU).
+<img src="../images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2" width="280">
 
 ## Core specification
 
@@ -24,233 +23,203 @@ Bluetooth, a secure element and a six-axis inertial measurement unit (IMU).
 | SRAM | 6,144 bytes |
 | EEPROM | 256 bytes |
 | Logic and operating voltage | 5 V |
-| Digital I/O | 14 pins, D0-D13 |
-| PWM-capable pins | 5: D3, D5, D6, D9 and D10 |
+| Digital I/O | 14 pins, D0-D13 (5 with PWM) |
 | Analog inputs | 6 pins, A0-A5 |
-| Analog output | No true DAC; `analogWrite` produces PWM |
 | USB connector | USB Type-B |
 | Built-in LED | Logical Arduino pin 25 |
-| Radio module | u-blox NINA-W102 |
+| Radio module | u-blox NINA-W102 (Wi-Fi and Bluetooth) |
 | Secure element | Microchip ATECC608A |
 | IMU | STMicroelectronics LSM6DS3TR |
 | Arduino CLI FQBN | `arduino:megaavr:uno2018` |
+| Juno board id | `arduino-uno-r3-wifi-rev2` |
 
-The ATmega4809 executes the Arduino sketch. The NINA-W102 is a separate radio processor with its
-own firmware and TCP/IP stack. Applications normally communicate with it through Arduino's WiFiNINA
-and ArduinoBLE libraries instead of programming the module directly.
+## What Juno supports
 
-## Power and electrical characteristics
+| Feature | Status | Notes | Example |
+|---|:---:|---|---|
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | ✓ | `getBuiltinLed()` is logical pin 25. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Serial` | ✓ | | |
+| Classes, interfaces, inheritance, exceptions | ✓ | | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Exceptions`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java) |
+| Threads, `synchronized`, `ReentrantLock`, atomics, `StructuredTaskScope`, `ScopedValue` | ✓ | At most four threads including `main`. | [`ThreadStartAndJoin`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java), [`Locks`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java) |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Limited by the 1 KB arena (3 KB at most, `-Djuno.Xmx=3k`). | |
+| `UUID.randomUUID()` | ✓ | The ATECC608A secure element's random-number generator. | |
+| `@Watchdog` | ✓ | ATmega4809 hardware watchdog, at most about 8.2 seconds. | |
+| `Wifi`, `Udp`, SNTP | ✓ | Through `WiFiNINA`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
+| `HttpClient` (HTTP and HTTPS), `Json` | ✓ | TLS runs on the NINA-W102, which trusts the root certificates in its firmware. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
+| `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
+| `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
+| TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields | ✓ | See [Shields](#shields). | |
+| `Servo`, `Infrared`, `RandomAccessFile` | Untested | Generated, but not yet run in the simulator or on hardware. | |
 
-| Item | Specification |
-|---|---|
-| GPIO logic level | 5 V |
-| Recommended VIN/barrel-jack input | 6-20 V |
-| USB power | 5 V through USB Type-B |
-| DC current per I/O pin | 20 mA |
-| 3.3 V pin maximum | 50 mA |
+## Features
 
-The traditional UNO headers use 5 V logic, but the radio and other onboard components operate in
-lower-voltage domains through board-level translation and regulation. Do not connect external
-loads directly to internal radio-module signals or exceed the documented header-pin limits.
+These need only the UNO WiFi Rev2 and its USB cable.
 
-Motors, relays and other high-current loads require an appropriate transistor, MOSFET or driver
-circuit and normally a separate power supply. The per-pin limit is not a power budget for the
-whole microcontroller; aggregate port and device-current limits also apply.
+### Blink the built-in LED
 
-## I/O and buses
+`getBuiltinLed()` is logical pin 25 on this board, not D13:
 
-- **Digital:** D0-D13. Unlike the UNO R3 and R4, the onboard LED is not attached to D13; Arduino
-  maps `LED_BUILTIN` to internal logical pin 25.
-- **PWM:** D3, D5, D6, D9 and D10.
-- **Analog:** A0-A5, backed by the ATmega4809 ADC.
-- **UART:** D0/RX and D1/TX expose the user hardware serial interface. The USB serial monitor uses
-  a separate internal serial path.
-- **I2C/TWI:** exposed through SDA/SCL and the matching UNO header positions.
-- **SPI:** exposed through the ICSP header; board-level SPI connections are also used to
-  communicate with the NINA-W102.
-- **USB:** used for programming and serial monitoring through the board's USB interface. The
-  ATmega4809 does not provide native USB HID to the application sketch.
+```java
+DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
 
-The ATmega4809 is not register-compatible with the UNO R3's ATmega328P. Arduino's megaAVR core
-provides a compatibility layer for portable sketches, but libraries that manipulate AVR registers,
-interrupt vectors or timers directly may require changes.
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
+```
 
-## Wireless, security and motion hardware
+[`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) is the complete program; it builds for any board, so pass
+`-Djuno.board=arduino-uno-r3-wifi-rev2`.
 
-### NINA-W102 radio
+## Shields
 
-The u-blox NINA-W102 is a self-contained radio module with 2.4 GHz Wi-Fi and Bluetooth/Bluetooth
-Low Energy support. Its network stack and Arduino firmware allow the ATmega4809 to use wireless
-features without implementing radio protocols itself. Wi-Fi is normally accessed through the
-`WiFiNINA` library and Bluetooth Low Energy through `ArduinoBLE`.
+Seat each shield directly on the UNO WiFi Rev2. Check which pins a shield uses before stacking two: the LCD Keypad
+Shield's backlight and the Data Logger Shield's SD chip select are both D10. With 6 KB of RAM and 48 KB of flash, keep
+shield programs small; the larger TFT games written for the UNO R4 WiFi and UNO Q do not fit.
 
-The module can be reflashed or programmed directly for advanced experiments, but doing so is
-outside the standard Arduino sketch workflow and can invalidate the module's radio certification.
+### TFT Touch Shield
 
-### ATECC608A secure element
+<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
 
-The secure element provides hardware-backed storage and cryptographic operations used for secure
-network identity and TLS-related workflows. Applications access it through compatible Arduino
-libraries; it is not ordinary EEPROM or general-purpose application memory.
+The ELEGOO 2.8" TFT touch shield is a 240 × 320 ILI9341 color display on an 8-bit parallel bus, with a resistive
+touch panel and a microSD socket; it needs no extra Arduino library. `TftTouchShield` draws through `ParallelBus`, a
+compiler intrinsic that streams pixels from the runtime instead of costing one `digitalWrite` per pin. The TFT Touch Shield
+API, wiring and touch calibration are on the [Arduino Shields](../arduino-shields) page.
 
-### LSM6DS3TR IMU
+```java
+TftTouchShield.begin();
+TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+TftTouchShield.fillScreen(TftTouchShield.BLACK);
+TftTouchShield.setCursor(10, 10);
+TftTouchShield.setTextSize(2);
+TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+TftTouchShield.print("Hello, Juno");
 
-The onboard LSM6DS3TR combines a three-axis accelerometer and three-axis gyroscope. It is connected
-internally to the application MCU and is supported by Arduino's IMU libraries. Its presence does
-not consume any of the six user-facing analog input pins.
+while (true) {
+    if (TftTouchShield.readTouch()) {
+        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    }
+}
+```
 
-## Memory and performance constraints
+[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) is a finger-paint program; it builds for any board, so pass
+`-Djuno.board=arduino-uno-r3-wifi-rev2`.
 
-The board has three times the SRAM and 50% more flash than the UNO R3, but it remains an 8-bit
-target with much less memory than either UNO R4 variant. SRAM is shared by global/static data, the
-heap and the call stack. Wireless and IMU libraries also need working memory, reducing the amount
-available to application code.
+### Grove Base Shield
 
-Class inheritance, inherited methods and default interface methods are available on this AVR target, but the
-smaller arena and 8-bit memory budget make larger object graphs more likely to fail at link time or runtime.
+<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
 
-Juno represents supported Java values and generated temporaries as 32-bit integers. On the
-ATmega4809, arithmetic on those values requires multiple 8-bit operations, and every live 32-bit
-local consumes four bytes. Larger generated methods therefore need careful flash, SRAM and stack
-budgeting even though the board is less constrained than the UNO R3.
+The Grove Base Shield is passive: every socket is an ordinary UNO pin, and `GroveBaseShield` names them so programs
+don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
+module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
-## Physical compatibility
+```java
+GroveBaseShield shield = new GroveBaseShield();
+GroveDht22 dht = new GroveDht22();
+int[] reading = new int[GroveDht22.READING_LENGTH];
+int[] frame = new int[GroveDht22.FRAME_LENGTH];
 
-The board follows the UNO shield outline and header arrangement. Its nominal dimensions are
-68.6 mm by 53.4 mm and its nominal weight is 25 g.
+if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
+    Serial.print(reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS]);
+    Serial.println(" tenths of a degree");
+}
+```
 
-Mechanical compatibility does not guarantee software compatibility. Shields and libraries can
-depend on R3-specific registers, timers or interrupt behavior, and the WiFi Rev2 reuses internal
-SPI and serial resources for its onboard peripherals. Check the board pinout and library support
-before selecting a shield.
+[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings, and
+[`GroveSensorBatchMonitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveSensorBatchMonitor.java) several Grove sensors at once. See
+[Grove](../grove-system) for the sensor drivers.
 
-## Arduino toolchain
+### Arduino 9 Axis Motion Shield
 
-The UNO WiFi Rev2 uses Arduino's **megaAVR** core, not the classic `arduino:avr` core used by the
-UNO R3:
+<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+
+The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
+`NineAxisMotionShield` reads it over I2C as plain Java, with no Arduino library. The heading is relative to the direction
+the sensor pointed at `begin()`. `begin()` drives D7, the sensor's reset line, so don't use D7 for anything else:
+
+```java
+NineAxisMotionShield imu = new NineAxisMotionShield();
+if (imu.begin()) {
+    int start = imu.headingDegrees();
+    while (true) {
+        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Delay.millis(200);
+    }
+}
+```
+
+[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, pitch, gyro and calibration readings.
+
+### LCD Keypad Shield
+
+<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+
+A 16 × 2 character LCD with five buttons read through one analog pin (A0). `LcdKeypadShield` needs no extra library:
+the LCD uses D4-D9 and its backlight D10.
+
+```java
+LcdKeypadShield lcd = new LcdKeypadShield();
+lcd.begin();
+lcd.print("Hello, Juno");
+
+while (true) {
+    if (lcd.readButton() == LcdKeypadShield.SELECT) {
+        lcd.setCursor(0, 1);
+        lcd.print("SELECT pressed");
+    }
+    Delay.millis(100);
+}
+```
+
+[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) shows each button press.
+
+### AZDelivery Data Logger Shield
+
+<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+
+A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
+that Juno does not drive. Format the card as FAT16 or FAT32. Keep the network's credentials on the card rather than
+in the source: put `wifi.ssid` and `wifi.password` in `application.properties` at the card's root, then:
+
+```java
+SdCard sd = new DataLoggerShield().getSdCard();
+Wifi wifi = ArduinoUno.getWifi();
+
+if (sd.begin()) {
+    try (InputStream file = sd.open("application.properties")) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            wifi.begin(properties.getProperty("wifi.ssid"), properties.getProperty("wifi.password"));
+        }
+    }
+}
+```
+
+[`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) joins the network this way and prints the time from an SNTP server;
+[`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) reports the card's used and free space.
+
+## Build and run
+
+Install the megaAVR core and the `WiFiNINA` library once, and run `juno:install-deps` for `SdFat` and the other
+optional libraries. Then compile and upload an example, for instance the thread start-and-join demo:
 
 ```bash
-arduino-cli core update-index
 arduino-cli core install arduino:megaavr
+arduino-cli lib install WiFiNINA
+./mvnw -f juno-examples/pom.xml juno:install-deps
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.language.concurrency.ThreadStartAndJoin \
+  -Djuno.board=arduino-uno-r3-wifi-rev2
 ```
 
-Generate a Juno sketch, then compile it for the board:
+Open the serial monitor in another terminal:
 
 ```bash
-java -jar juno-compiler/target/juno-compiler-0.1.0-SNAPSHOT.jar compile \
-  --main <ExampleClassName> \
-  --classpath juno-examples/target/classes:juno-api/target/classes
-
-arduino-cli compile \
-  --fqbn arduino:megaavr:uno2018 \
-  build/juno/<ExampleClassName>
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r3-wifi-rev2
 ```
 
-Uploading changes the firmware on a connected physical board. Find its port with
-`arduino-cli board list` before using `arduino-cli upload`.
-
-## Juno compatibility
-
-The UNO WiFi Rev2 is a Juno target: select it with `@Board(ArduinoUnoR3WiFiRev2Board.class)` (board id
-`arduino-uno-r3-wifi-rev2`). Juno compiles for it with a dedicated **AVR backend**, separate from the
-Thumb-2 one the UNO R4 WiFi and UNO Q share, and links against the `arduino:megaavr` core and the
-`WiFiNINA` library.
-
-### Java types on an 8-bit core
-
-Java's primitive types keep their JVM widths and semantics, even though avr-gcc's own `int` is 16
-bits and its `double` is 32 bits:
-
-- `int` is four bytes in four registers; add, subtract, logic and constant shifts are inline, and
-  multiply, divide, remainder and variable shifts follow Java's wrap-around and masking rules.
-- `long` is eight bytes, computed in the runtime shim.
-- `float` and `double` are IEEE 754 binary32/binary64 computed by Juno's own software
-  floating-point (round-to-nearest-even, subnormals, NaN, signed zero, saturating casts), so results
-  are bit-identical to a JVM's. Printing a `double` with `Serial` uses Arduino's two-decimal format,
-  as on the other boards.
-- References are 16-bit addresses kept in 32-bit words, so objects and arrays have the same layout
-  as on the 32-bit boards.
-
-`Math` supports `abs`, `min`, `max`, `clamp`, `floorDiv`, `floorMod`, `signum`, `round`, `floor`,
-`ceil`, `sqrt`, `toRadians` and `toDegrees`. The transcendental functions (`sin`, `cos`, `exp`,
-`log`, `pow`, ...) are rejected at compile time, because the AVR C library only has single-precision
-versions, which would silently change results.
-
-### `BigInteger` and `BigDecimal`
-
-`java.math` uses the same runtime as the 32-bit boards, with exact JDK results, and
-`BigInteger.doubleValue`/`BigDecimal.doubleValue` correctly rounded on the software `double`.
-The board's memory sets the practical limits:
-
-| Resource | Budget | What it means |
-|---|---|---|
-| Arena (heap) | 1 KB by default, at most 3 KB (`-Djuno.Xmx=3k`) | Counters past `long`, money-style decimals and conversions fit in the default; high-precision `sqrt`, long divisions or values near `double`'s limits need the 3 KB maximum, and anything larger panics with `[juno-big] OOM` |
-| Task stacks | 512 bytes for each of up to three forked tasks, at most 1 KB (`-Djuno.Xss=1k`) | 1.5 KB of RAM once a program forks; the last 128 bytes of each stack are kept for the C calls of its deepest frame, and a task that would recurse past them stops with `[juno-thread] stack overflow` |
-| Flash | 48 KB | The arithmetic runtime alone takes about 20 KB, so a sketch combining `java.math` with Wi-Fi may not fit; `arduino-cli` then reports the sketch as too big |
-
-Operations that run out of memory panic loudly; they never return a wrong value.
-
-### API support
-
-| Juno API or feature | UNO WiFi Rev2 | Notes |
-|---|---:|---|
-| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | Yes | `getBuiltinLed()` is logical pin 25 |
-| `Serial` | Yes | |
-| `Wifi`, `Udp` | Yes | Through WiFiNINA |
-| `HttpClient` with `http://` URLs, `Json` | Yes | |
-| `HttpClient` with `https://` URLs | Yes | TLS runs on the NINA-W102 module, which trusts the root certificates in its firmware; add others with the Arduino IDE's certificate uploader |
-| `Smtp.sendTls`, `Pop3Client` | Yes | Implicit TLS (usually ports 465 and 995) on the NINA-W102 module, as `WiFiSSLClient` does on the UNO R4 WiFi |
-| `Smtp.send` (STARTTLS, usually port 587) | No | Upgrading a plain connection needs a TLS stack on the board itself (the UNO R4 WiFi runs ESP_SSLClient), far beyond 6 KB of RAM; use `Smtp.sendTls` on port 465 |
-| `HttpServer` | No | Rejected at compile time |
-| `SdCard`, `Properties` | Yes | At most 2 open files; `Properties` of 8 entries, 15-character keys, 31-character values |
-| `RandomAccessFile` | Untested | Generated, but not yet run in the simulator |
-| `LcdKeypadShield`, `TftTouchShield` | Yes | |
-| `Servo`, `I2c`, `Infrared` | Untested | Generated, but not yet run in the simulator or on hardware |
-| `BigInteger`, `BigDecimal`, `MathContext` | Yes | See the limits above |
-| `UUID`, `UuidCodec` | Yes | Construction, bit access, version/variant, equality/ordering, canonical text and 16-byte network conversion; `randomUUID()` uses the onboard ATECC608 secure-element RNG |
-| `PortNoise` | Yes | Explicitly non-cryptographic startup sampling from a user-provided analog noise circuit and digital comparator; it is not a fallback for `randomUUID()` |
-| `StructuredTaskScope`, `ScopedValue`, `synchronized`, `ReentrantLock`, atomics | Yes | The same scheduler as the other boards: virtual threads preempted at loop back-edges and method entries (AVR safepoints), subtasks cooperative at loop back-edges, at most four threads including `main`; see the task stacks above |
-| `Mouse` | No | The application MCU has no native USB HID support |
-| `@Watchdog` | Yes | ATmega4809 hardware watchdog; requested timeouts round up to a supported period, at most approximately 8.2 seconds |
-| `LedMatrix` | No | |
-
-### How it is tested
-
-The AVR backend is checked by running programs, not only by compiling them: `SimavrRunIT` builds
-each program with avr-gcc against a stand-in megaavr core and runs it under the simavr simulator,
-then compares its serial output with OpenJDK's. It runs on a local `gcc-avr`/`libsimavr-dev`
-install or in Docker:
-
-```bash
-./mvnw -pl juno-compiler -am -Psimavr verify
-```
-
-The suite covers the language conformance programs (including every primitive type's edge cases,
-`java.math` and structured concurrency, scoped values, locks and atomics), plus a peripheral program that exercises HTTP, HTTPS, SMTP over TLS, POP3, JSON, UDP, the SD card,
-`Properties` and the LCD and TFT shields against simulated hardware. Generated sketches have not
-yet been run on a physical UNO WiFi Rev2.
-
-## Comparison with the UNO R3 and R4
-
-| Characteristic | UNO R3 | UNO WiFi Rev2 | UNO R4 |
-|---|---:|---:|---:|
-| Main MCU | ATmega328P | ATmega4809 | Renesas RA4M1 |
-| Architecture | 8-bit AVR | 8-bit megaAVR | 32-bit Arm Cortex-M4 |
-| Clock | 16 MHz | 16 MHz | 48 MHz |
-| Flash | 32 kB | 48 kB | 256 kB |
-| SRAM | 2 kB | 6 kB | 32 kB |
-| Built-in wireless | No | Wi-Fi and Bluetooth | WiFi variant only |
-| Native USB on sketch MCU | No | No | Yes |
-| Built-in LED pin | D13 | Logical pin 25 | D13 |
-| Arduino core | `arduino:avr` | `arduino:megaavr` | `arduino:renesas_uno` |
-
-## Official references
-
-- [UNO WiFi Rev2 product page](https://store.arduino.cc/products/arduino-uno-wifi-rev2)
-- [UNO WiFi Rev2 documentation](https://docs.arduino.cc/hardware/uno-wifi-rev2/)
-- [UNO WiFi Rev2 pinout](https://docs.arduino.cc/resources/pinouts/ABX00021-full-pinout.pdf)
-- [UNO WiFi Rev2 schematic](https://docs.arduino.cc/resources/schematics/ABX00021-schematics.pdf)
-- [ATmega4808/4809 datasheet](https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega4808-4809-Data-Sheet-DS40002173A.pdf)
-- [NINA-W10 series datasheet](https://content.arduino.cc/assets/Arduino_NINA-W10_DataSheet_%28UBX-17065507%29.pdf)
-- [LSM6DS3 datasheet](https://www.st.com/resource/en/datasheet/lsm6ds3.pdf)
-- [ArduinoCore-megaavr](https://github.com/arduino/ArduinoCore-megaavr)
+The monitor uses 115200 baud by default, matching `Serial.begin(BaudRate.BAUD_115200)`.

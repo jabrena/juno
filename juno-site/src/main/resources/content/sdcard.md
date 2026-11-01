@@ -1,5 +1,5 @@
 ---
-title: "SD Card Storage"
+title: "SD Card"
 description: "Loading configuration and credentials from an SD card at boot."
 layout: page
 ---
@@ -25,71 +25,61 @@ startup, and pass it to the classes that need it. A unit test passes `mock(SdCar
 
 The card's `begin()` selects it on its socket's pin; `begin(chipSelectPin)` takes any other pin.
 
-## Card contents
+| Method | Argument | Notes |
+|---|---|---|
+| `begin()` | none | initializes the card on its socket's chip-select pin; returns whether it was detected |
+| `begin(int)` | a chip-select pin | initializes the card on any other pin |
+| `exists(String)` | a path | returns whether the path exists on the card |
+| `createDirectory(String)` | a path | creates the path and its missing parent directories |
+| `size(String)` | a path | the file's size in bytes; reports `Integer.MAX_VALUE` for files larger than that |
+| `open(String)` | a path | opens the file for reading, or returns `null` when it cannot be opened |
+| `open(String, String)` | a directory and a file stem | opens `directory/stem.txt` for reading, or returns `null` |
+| `list(String, int, byte[], int)` | a directory, an index, a name buffer and its capacity | copies the name of the child at `index`; returns the number of bytes copied, `0` when there are no more children, or a negative value on failure |
+| `appendLine(String, String)` | a path and a line | appends the line and a newline, creating the file when needed; the line may be a runtime string |
+| `appendText(String, String)` | a path and text | appends the text with no newline added |
+| `appendText(String, String, String)` | a directory, a file stem and text | appends to `directory/stem.txt`, creating it when needed |
+| `remove(String)` | a path | deletes the file; returns whether it was removed |
+| `removeDirectory(String)` | a path | deletes an empty directory; returns `false` when it is missing or not empty |
+| `remove(String, String)` | a directory and a file stem | deletes `directory/stem.txt`; returns whether it was removed |
+| `totalKiB()` | none | the card's total capacity in KiB, or `-1` before a successful `begin()` |
+| `freeKiB()` | none | the free space in KiB; counts the whole allocation table, so it can take a while on a large card |
 
-Create `application.properties` in the SD card root:
+## Reading application properties
 
-```properties
-wifi.ssid=YOUR_WIFI_SSID
-wifi.password=YOUR_WIFI_PASSWORD
-```
-
-The embedded parser accepts blank lines, `#`/`!` comments, and `key=value` or `key:value` entries.
-It does not yet implement Java's escape, Unicode-escape, or continuation syntax. A document can
-contain at most 16 entries; keys are limited to 31 bytes, values to 63, and physical lines to 95.
-Exceeding a bound or encountering a card read failure invokes Juno's runtime panic handler.
-
-## AZDelivery Data Logger Module Data Recorder Shield
-
-`WifiStatusSD` is configured for the AZDelivery Data Logger Module Data Recorder Shield. Seat the
-shield directly on the UNO R4 WiFi; its SD interface uses the classic UNO SPI pin mapping:
-
-| SD module | UNO R4 WiFi |
-|---|---|
-| CS | D10 |
-| MOSI | D11 |
-| MISO | D12 |
-| SCK | D13 |
-| VCC | module-appropriate supply |
-| GND | GND |
-
-`new DataLoggerShield().getSdCard()` is this shield's card, and its `begin()` selects it on D10.
-The shield also contains an RTC, but this example does not initialize or use it. The card must be
-formatted as FAT16 or FAT32; exFAT is not supported by the shield's documented SD setup.
-
-If a different reader routes CS elsewhere, call the card's `begin(chipSelectPin)` explicitly.
-
-The ELEGOO 2.8" TFT touch screen shield's microSD socket (`TftTouchShield.getSdCard()`) also uses D10,
-and shares no pins with its display: see [`WifiStatusSDTFT`](../tft-touch-shield#examples) for the same flow shown on the TFT.
-On UNO WiFi Rev2, Juno automatically drives the shield's D11-D13 SD connection with software SPI,
-leaving the board's ICSP-routed hardware SPI bus available to the NINA-W102 Wi-Fi module.
-
-## Nano Connector Carrier
-
-On a Nano ESP32, the Arduino Nano Connector Carrier (ASX00061) has a microSD slot on the Nano's
-SPI pins, with its chip select on D4 rather than D10:
-
-| microSD slot | Nano pin |
-|---|---|
-| CS | D4 (solder jumpers can move it to D2 or D3) |
-| MOSI | D11 |
-| MISO | D12 |
-| SCK | D13 (also the built-in LED) |
-
-Take the card from `NanoConnectorCarrier`, whose `begin()` selects it on D4:
+`application.properties` is a plain text file of `key=value` lines on the card. Open it with `open()`, load it into a
+`java.util.Properties`, and read each value with `getProperty`. A key that is missing returns `null`, so check it
+before use. The example reads the Wi-Fi credentials used by the examples on this site:
 
 ```java
-SdCard sdCard = new NanoConnectorCarrier().getSdCard();
-if (sdCard.begin()) {
-    InputStream file = sdCard.open("application.properties");
-    // ...
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+SdCard sd = new DataLoggerShield().getSdCard();
+if (sd.begin()) {
+    try (InputStream file = sd.open("application.properties")) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            String ssid = properties.getProperty("wifi.ssid");
+            String password = properties.getProperty("wifi.password");
+        }
+    } catch (IOException exception) {
+        Serial.println("application.properties could not be read");
+    }
 }
 ```
 
-[`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java)
-creates, appends to, reads back and removes a file. It uses the carrier's card on the Nano ESP32 and a Data
-Logger Shield's on the UNO boards.
-Because SCK is the built-in LED's pin, a program using the card should not blink that LED.
+The properties file on the card holds the same keys:
+
+```properties
+wifi.ssid=your-network
+wifi.password=your-password
+```
+
+Juno's `Properties` support is bounded: a file may hold up to 8 entries, with keys of up to 15 characters and values of
+up to 31 characters. A larger file, or a longer key or value, is not loaded in full.
 
 ## Build
 
