@@ -74,6 +74,14 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <!-- Publish this module's Javadoc into the repository docs/ (the root pom resolves its output per module). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.basedir}/../docs/javadocs/${project.version}</outputDirectory>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
