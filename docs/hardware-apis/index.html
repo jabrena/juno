@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Hardware APIs - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Hardware APIs" />
+  <meta name="twitter:title" content="Hardware APIs">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC." />
+  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/hardware-apis/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/hardware-apis/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/hardware-apis/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/hardware-apis/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="active active" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="active" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="active" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Hardware APIs</h1>
+</header>
+    <div class="content-prose">
+<ul>
+<li><strong><a href="../delay">Delay</a>:</strong> pausing a program for a fixed time with <code>Delay.millis</code>, <code>Delay.micros</code> and <code>Delay.seconds</code>.</li>
+<li><strong><a href="../serial">Serial</a>:</strong> printing and reading over USB serial, the main way to see what a program is doing on a board.</li>
+<li><strong><a href="../gpio">Gpio</a>:</strong> driving and reading the board's pins, with <code>DigitalOutput</code> and the Blink example.</li>
+<li><strong><a href="../sdcard">SD Card</a>:</strong> loading configuration and credentials from a microSD card at boot, and reading and writing files.</li>
+<li><strong><a href="../wifi">Wifi</a>:</strong> joining a Wi-Fi network on the boards that have a radio, or on a UNO R3 with the Wi-Fi shield.</li>
+<li><strong><a href="../time">Time</a>:</strong> reading UTC with <code>LocalDateTime.now()</code> over SNTP, and measuring elapsed time with <code>Clock</code>.</li>
+<li><strong><a href="../httpclient">HTTP client</a>:</strong> HTTP and HTTPS requests (<code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> and <code>QUERY</code>) with caller-owned buffers, and reading JSON responses.</li>
+<li><strong><a href="../httpserver">HTTP server</a>:</strong> serving HTTP and HTTPS requests from a program, with routing by path and a certificate on the SD card.</li>
+<li><strong><a href="../email">Email</a>:</strong> sending mail over SMTP with <code>Smtp</code>, and reading a mailbox over POP3 with <code>Pop3Client</code>.</li>
+<li><strong><a href="../mvc">MVC</a>:</strong> organizing a multi-screen app with a model, views, a navigator and a router from <code>util.mvc</code>.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

@@ -132,8 +132,8 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000   # then open http://127.0.0.1:8000/
 ```
 
-See the [Arduino CLI Workflow](https://jabrena.github.io/juno/arduino) for the full
-`arduino-cli` install/build/upload/monitor walkthrough.
+See [Getting Started](https://jabrena.github.io/juno/getting-started) for the full
+`arduino-cli` install/build/upload walkthrough.
 
 ## Git workflow
 

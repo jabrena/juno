@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Board features - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Board features" />
+  <meta name="twitter:title" content="Board features">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="What each board supports beyond the Java language: Wi-Fi, HTTP and email, Bluetooth, USB, displays, shields and storage.">
+  <meta property="og:description" content="What each board supports beyond the Java language: Wi-Fi, HTTP and email, Bluetooth, USB, displays, shields and storage." />
+  <meta name="twitter:description" content="What each board supports beyond the Java language: Wi-Fi, HTTP and email, Bluetooth, USB, displays, shields and storage.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/board-features/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/board-features/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/board-features/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/board-features/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class=" active" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="active" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Features">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/features">Overview</a>
+    <a class="" href="/juno/java-subset">Java subset</a>
+    <a class="active" href="/juno/board-features">Board features</a>
+    <a class="" href="/juno/memory-model">Memory Model</a>
+    <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Board features</h1>
+</header>
+    <div class="content-prose">
+<p>Every board runs the same Java subset, but the hardware around the program differs. This page summarises the features
+that depend on the board rather than on the language: networking, Bluetooth, USB, displays, storage and shields. For the
+language itself, see the <a href="../java-subset">Java subset</a> page.</p>
+<h2 id="summary">Summary</h2>
+<p>✓ supported · – not available · the notes after the table explain the exceptions.</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">UNO R3</th>
+<th align="center">UNO WiFi Rev2</th>
+<th align="center">UNO R4 WiFi</th>
+<th align="center">UNO Q</th>
+<th align="center">Nano ESP32</th>
+<th align="center">M5Stack Cardputer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Wi-Fi</td>
+<td align="center">Shield</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Wi-Fi access point</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>HTTP client (plain)</td>
+<td align="center">Shield</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>HTTPS client</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>HTTP server</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>HTTPS server</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Email over TLS</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Email STARTTLS</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>SNTP clock (<code>LocalDateTime.now()</code>)</td>
+<td align="center">Shield</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">Not documented</td>
+</tr>
+<tr>
+<td>Bluetooth LE</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>USB HID mouse</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>LED matrix</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓ (12 × 8)</td>
+<td align="center">✓ (13 × 8)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Built-in display, keyboard, speaker, battery</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Hardware random numbers</td>
+<td align="center">Weak</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">Weak</td>
+</tr>
+<tr>
+<td>Watchdog</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>SD card</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Carrier</td>
+<td align="center">Built-in</td>
+</tr>
+<tr>
+<td>Grove sockets</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Carrier</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>9 Axis Motion Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>LCD Keypad Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>TFT Touch Shield</td>
+<td align="center">–</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Infrared link to LEGO RCX</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+</tr>
+</tbody>
+</table>
+<p>Notes:</p>
+<ul>
+<li><strong>Shield</strong> means the feature comes from an Arduino or ELEGOO shield on the board's headers: the WiFi Shield on the R3 for
+Wi-Fi, HTTP and the clock, and the Data Logger, TFT or LCD Keypad shields for storage and displays. See
+<a href="../arduino-shields">Arduino Shields</a>.</li>
+<li><strong>Carrier</strong> means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
+<a href="../arduino-nano-esp32#shields">Nano ESP32</a> page.</li>
+<li><strong>Weak</strong> means a non-cryptographic random source, suitable only for best-effort identities. See the
+<a href="../java-subset#data-types">Data types</a> section.</li>
+<li><strong>Email STARTTLS</strong> needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.</li>
+<li><strong>Bluetooth LE on the Nano ESP32</strong> reaches a Powered Up hub through the core's own BLE library; it is not yet confirmed
+on hardware.</li>
+<li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
+<a href="../lego-ecosystem">LEGO ecosystem</a> page.</li>
+</ul>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO R3 WiFi Rev2 - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO R3 WiFi Rev2" />
+  <meta name="twitter:title" content="Arduino UNO R3 WiFi Rev2">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO WiFi Rev2 (ATmega4809) and what Juno supports on it.">
+  <meta property="og:description" content="Board notes for the Arduino UNO WiFi Rev2 (ATmega4809) and what Juno supports on it." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO WiFi Rev2 (ATmega4809) and what Juno supports on it.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/arduino-uno-r3-wifi/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/arduino-uno-r3-wifi/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/arduino-uno-r3-wifi/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/arduino-uno-r3-wifi/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="active" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="active" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Arduino UNO R3 WiFi Rev2</h1>
+</header>
+    <div class="content-prose">
+<p>The Arduino UNO WiFi Rev2 combines an 8-bit ATmega4809 microcontroller with a u-blox NINA-W102 radio module. It keeps
+the familiar UNO form factor and 5 V GPIO while adding Wi-Fi, Bluetooth, a secure element and a six-axis IMU. Juno
+compiles for the ATmega4809 with its <strong>AVR backend</strong> and links against the <code>arduino:megaavr</code> core and the <code>WiFiNINA</code>
+library; the <code>ArduinoUno</code> device facade is the entry point for the board's peripherals.</p>
+<img src="../images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2" width="280">
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO WiFi Rev2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product SKU</td>
+<td align="right">ABX00021</td>
+</tr>
+<tr>
+<td>Main microcontroller</td>
+<td align="right">Microchip ATmega4809</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">8-bit megaAVR</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">16 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">48 kB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">6,144 bytes</td>
+</tr>
+<tr>
+<td>EEPROM</td>
+<td align="right">256 bytes</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">5 V</td>
+</tr>
+<tr>
+<td>Digital I/O</td>
+<td align="right">14 pins, D0-D13 (5 with PWM)</td>
+</tr>
+<tr>
+<td>Analog inputs</td>
+<td align="right">6 pins, A0-A5</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB Type-B</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">Logical Arduino pin 25</td>
+</tr>
+<tr>
+<td>Radio module</td>
+<td align="right">u-blox NINA-W102 (Wi-Fi and Bluetooth)</td>
+</tr>
+<tr>
+<td>Secure element</td>
+<td align="right">Microchip ATECC608A</td>
+</tr>
+<tr>
+<td>IMU</td>
+<td align="right">STMicroelectronics LSM6DS3TR</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:megaavr:uno2018</code></td>
+</tr>
+<tr>
+<td>Juno board id</td>
+<td align="right"><code>arduino-uno-r3-wifi-rev2</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code>, <code>DigitalOutput</code>, <code>Delay</code>, <code>Clock</code>, <code>Random</code></td>
+<td align="center">✓</td>
+<td><code>getBuiltinLed()</code> is logical pin 25.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Classes, interfaces, inheritance, exceptions</td>
+<td align="center">✓</td>
+<td></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java"><code>Inheritance</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java"><code>Exceptions</code></a></td>
+</tr>
+<tr>
+<td>Threads, <code>synchronized</code>, <code>ReentrantLock</code>, atomics, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
+<td align="center">✓</td>
+<td>At most four threads including <code>main</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java"><code>ThreadStartAndJoin</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java"><code>Locks</code></a></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td>Limited by the 1 KB arena (3 KB at most, <code>-Djuno.Xmx=3k</code>).</td>
+<td></td>
+</tr>
+<tr>
+<td><code>UUID.randomUUID()</code></td>
+<td align="center">✓</td>
+<td>The ATECC608A secure element's random-number generator.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>@Watchdog</code></td>
+<td align="center">✓</td>
+<td>ATmega4809 hardware watchdog, at most about 8.2 seconds.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Wifi</code>, <code>Udp</code>, SNTP</td>
+<td align="center">✓</td>
+<td>Through <code>WiFiNINA</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient</code> (HTTP and HTTPS), <code>Json</code></td>
+<td align="center">✓</td>
+<td>TLS runs on the NINA-W102, which trusts the root certificates in its firmware.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a></td>
+</tr>
+<tr>
+<td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
+<td align="center">✓</td>
+<td>Implicit TLS on the NINA-W102 (usually ports 465 and 995).</td>
+<td></td>
+</tr>
+<tr>
+<td><code>SdCard</code>, <code>Properties</code></td>
+<td align="center">✓</td>
+<td>On a shield's microSD slot; at most 2 open files, <code>Properties</code> of 8 entries.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java"><code>StorageOccupancy</code></a></td>
+</tr>
+<tr>
+<td>TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields</td>
+<td align="center">✓</td>
+<td>See <a href="#shields">Shields</a>.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Servo</code>, <code>Infrared</code>, <code>RandomAccessFile</code></td>
+<td align="center">Untested</td>
+<td>Generated, but not yet run in the simulator or on hardware.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="features">Features</h2>
+<p>These need only the UNO WiFi Rev2 and its USB cable.</p>
+<h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
+<p><code>getBuiltinLed()</code> is logical pin 25 on this board, not D13:</p>
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
+<code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
+<h2 id="shields">Shields</h2>
+<p>Seat each shield directly on the UNO WiFi Rev2. Check which pins a shield uses before stacking two: the LCD Keypad
+Shield's backlight and the Data Logger Shield's SD chip select are both D10. With 6 KB of RAM and 48 KB of flash, keep
+shield programs small; the larger TFT games written for the UNO R4 WiFi and UNO Q do not fit.</p>
+<h3 id="tft-touch-shield">TFT Touch Shield</h3>
+<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
+<p>The ELEGOO 2.8&quot; TFT touch shield is a 240 × 320 ILI9341 color display on an 8-bit parallel bus, with a resistive
+touch panel and a microSD socket; it needs no extra Arduino library. <code>TftTouchShield</code> draws through <code>ParallelBus</code>, a
+compiler intrinsic that streams pixels from the runtime instead of costing one <code>digitalWrite</code> per pin. The TFT Touch Shield
+API, wiring and touch calibration are on the <a href="../arduino-shields">Arduino Shields</a> page.</p>
+<pre><code class="language-java">TftTouchShield.begin();
+TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+TftTouchShield.fillScreen(TftTouchShield.BLACK);
+TftTouchShield.setCursor(10, 10);
+TftTouchShield.setTextSize(2);
+TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+TftTouchShield.print(&quot;Hello, Juno&quot;);
+
+while (true) {
+    if (TftTouchShield.readTouch()) {
+        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java"><code>TouchPaintTFT</code></a> is a finger-paint program; it builds for any board, so pass
+<code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
+<h3 id="grove-base-shield">Grove Base Shield</h3>
+<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
+<p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
+don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
+module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
+GroveDht22 dht = new GroveDht22();
+int[] reading = new int[GroveDht22.READING_LENGTH];
+int[] frame = new int[GroveDht22.FRAME_LENGTH];
+
+if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
+    Serial.print(reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS]);
+    Serial.println(&quot; tenths of a degree&quot;);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java"><code>GroveDht22Monitor</code></a> prints a DHT22's readings, and
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveSensorBatchMonitor.java"><code>GroveSensorBatchMonitor</code></a> several Grove sensors at once. See
+<a href="../grove-system">Grove</a> for the sensor drivers.</p>
+<h3 id="arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</h3>
+<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+<p>The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
+<code>NineAxisMotionShield</code> reads it over I2C as plain Java, with no Arduino library. The heading is relative to the direction
+the sensor pointed at <code>begin()</code>. <code>begin()</code> drives D7, the sensor's reset line, so don't use D7 for anything else:</p>
+<pre><code class="language-java">NineAxisMotionShield imu = new NineAxisMotionShield();
+if (imu.begin()) {
+    int start = imu.headingDegrees();
+    while (true) {
+        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Delay.millis(200);
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a> prints heading, pitch, gyro and calibration readings.</p>
+<h3 id="lcd-keypad-shield">LCD Keypad Shield</h3>
+<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+<p>A 16 × 2 character LCD with five buttons read through one analog pin (A0). <code>LcdKeypadShield</code> needs no extra library:
+the LCD uses D4-D9 and its backlight D10.</p>
+<pre><code class="language-java">LcdKeypadShield lcd = new LcdKeypadShield();
+lcd.begin();
+lcd.print(&quot;Hello, Juno&quot;);
+
+while (true) {
+    if (lcd.readButton() == LcdKeypadShield.SELECT) {
+        lcd.setCursor(0, 1);
+        lcd.print(&quot;SELECT pressed&quot;);
+    }
+    Delay.millis(100);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a> shows each button press.</p>
+<h3 id="azdelivery-data-logger-shield">AZDelivery Data Logger Shield</h3>
+<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+<p>A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
+that Juno does not drive. Format the card as FAT16 or FAT32. Keep the network's credentials on the card rather than
+in the source: put <code>wifi.ssid</code> and <code>wifi.password</code> in <code>application.properties</code> at the card's root, then:</p>
+<pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();
+Wifi wifi = ArduinoUno.getWifi();
+
+if (sd.begin()) {
+    try (InputStream file = sd.open(&quot;application.properties&quot;)) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            wifi.begin(properties.getProperty(&quot;wifi.ssid&quot;), properties.getProperty(&quot;wifi.password&quot;));
+        }
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a> joins the network this way and prints the time from an SNTP server;
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java"><code>StorageOccupancy</code></a> reports the card's used and free space.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Install the megaAVR core and the <code>WiFiNINA</code> library once, and run <code>juno:install-deps</code> for <code>SdFat</code> and the other
+optional libraries. Then compile and upload an example, for instance the thread start-and-join demo:</p>
+<pre><code class="language-bash">arduino-cli core install arduino:megaavr
+arduino-cli lib install WiFiNINA
+./mvnw -f juno-examples/pom.xml juno:install-deps
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.language.concurrency.ThreadStartAndJoin \
+  -Djuno.board=arduino-uno-r3-wifi-rev2
+</code></pre>
+<p>Open the serial monitor in another terminal:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r3-wifi-rev2
+</code></pre>
+<p>The monitor uses 115200 baud by default, matching <code>Serial.begin(BaudRate.BAUD_115200)</code>.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

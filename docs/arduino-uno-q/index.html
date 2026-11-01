@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO Q - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO Q" />
+  <meta name="twitter:title" content="Arduino UNO Q">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core) and what Juno supports on it.">
+  <meta property="og:description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core) and what Juno supports on it." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO Q (STM32U585, Zephyr core) and what Juno supports on it.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/arduino-uno-q/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/arduino-uno-q/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/arduino-uno-q/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/arduino-uno-q/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="active" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="active" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Arduino UNO Q</h1>
+</header>
+    <div class="content-prose">
+<p>The UNO Q combines two processors on one UNO-form-factor board. A Qualcomm Dragonwing QRB2210
+runs Debian Linux for application-level and multimedia workloads, while an STM32U585 runs Arduino
+sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller with its
+Thumb-2 backend; it does not run generated Java programs on the Linux processor. The <code>ArduinoUno</code> device facade is
+the entry point for the board's peripherals, the same one the UNO R4 WiFi uses.</p>
+<img src="../images/boards/arduino-uno-q.png" alt="Arduino UNO Q" width="280">
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th>Linux side</th>
+<th>Real-time side used by Juno</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Processor</td>
+<td>Qualcomm Dragonwing QRB2210</td>
+<td>STMicroelectronics STM32U585AIGT6</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td>Quad-core Arm Cortex-A53</td>
+<td>32-bit Arm Cortex-M33 with floating-point unit</td>
+</tr>
+<tr>
+<td>Maximum CPU clock</td>
+<td>2.0 GHz</td>
+<td>160 MHz</td>
+</tr>
+<tr>
+<td>Operating system</td>
+<td>Debian Linux</td>
+<td>Zephyr RTOS</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>2 GB or 4 GB LPDDR4</td>
+<td>786 kB SRAM</td>
+</tr>
+<tr>
+<td>Non-volatile storage</td>
+<td>16 GB or 32 GB eMMC</td>
+<td>2 MB flash</td>
+</tr>
+<tr>
+<td>Graphics</td>
+<td>Adreno GPU</td>
+<td>Not applicable</td>
+</tr>
+<tr>
+<td>Wireless</td>
+<td>Dual-band Wi-Fi 5 and Bluetooth 5.1</td>
+<td>Reached through the Linux side, not direct MCU radios</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td>Not applicable</td>
+<td><code>arduino:zephyr:unoq</code></td>
+</tr>
+<tr>
+<td>Juno board id</td>
+<td>Not applicable</td>
+<td><code>arduino-uno-q</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two processors communicate through Arduino's Bridge/RPC facilities: the Linux side handles networking and
+Bluetooth, and the MCU sketch reaches them through the bridge. The Arduino linker report is authoritative for a
+generated sketch's usable memory; its limits describe the Zephyr user-sketch partition, which is smaller than the
+STM32U585's complete flash and SRAM.</p>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code>, <code>DigitalOutput</code></td>
+<td align="center">✓</td>
+<td>The STM32's Arduino GPIO mapping.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+</tr>
+<tr>
+<td><code>Delay</code>, <code>Clock</code>, <code>Serial</code></td>
+<td align="center">✓</td>
+<td>Arduino/Zephyr timing and the MCU sketch's serial path.</td>
+<td></td>
+</tr>
+<tr>
+<td>Double-precision <code>java.lang.Math</code></td>
+<td align="center">✓</td>
+<td></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java"><code>MathFunctionsDoublePrecision</code></a></td>
+</tr>
+<tr>
+<td>Threads, <code>synchronized</code>, locks, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
+<td align="center">✓</td>
+<td></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java"><code>VirtualThreads</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java"><code>StructuredConcurrency</code></a></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>UUID.randomUUID()</code></td>
+<td align="center">✓</td>
+<td>Zephyr's cryptographic random service on the STM32U585's TRNG; no Linux, Wi-Fi or bridge involved.</td>
+<td></td>
+</tr>
+<tr>
+<td>Onboard LED matrix</td>
+<td align="center">✓</td>
+<td>13 × 8 through the Zephyr core's <code>Arduino_LED_Matrix</code>; <code>LedCanvas.width()</code> is 13 here and 12 on the UNO R4 WiFi.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a></td>
+</tr>
+<tr>
+<td><code>Wifi</code>, <code>Udp</code>, SNTP</td>
+<td align="center">✓</td>
+<td>Linux owns Wi-Fi; the MCU exchanges datagrams through <code>Arduino_RouterBridge</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient</code> (HTTPS)</td>
+<td align="center">✓</td>
+<td>TLS connections use <code>BridgeTCPClient</code> and the Linux system trust store.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a></td>
+</tr>
+<tr>
+<td><code>HttpServer</code> (HTTP and HTTPS)</td>
+<td align="center">✓</td>
+<td>The TLS session runs on the MCU; the Linux side is already on the network.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java"><code>QHttpsServer</code></a></td>
+</tr>
+<tr>
+<td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
+<td align="center">✓</td>
+<td>Email over implicit TLS.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a></td>
+</tr>
+<tr>
+<td>Bluetooth LE (LEGO Powered Up)</td>
+<td align="center">✓</td>
+<td><code>ArduinoBLE</code> reaches the Linux side's Bluetooth adapter through the bridge; see <a href="../lego-ecosystem">LEGO</a>.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>SdCard</code></td>
+<td align="center">✓</td>
+<td>On a shield's microSD slot, such as the TFT Touch Shield's or the Data Logger Shield's.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a></td>
+</tr>
+<tr>
+<td>LCD Keypad and TFT Touch shields</td>
+<td align="center">✓</td>
+<td>Built on GPIO, timing and analog input; see <a href="#shields">Shields</a>.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="features">Features</h2>
+<p>These need only the UNO Q and its USB-C cable.</p>
+<h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
+<code>-Djuno.board=arduino-uno-q</code>.</p>
+<h3 id="scroll-text-on-the-led-matrix">Scroll text on the LED matrix</h3>
+<p>The UNO Q's matrix is 13 columns by 8 rows. <code>LedCanvas</code> draws into a frame and <code>show</code> sends it to the matrix:</p>
+<pre><code class="language-java">LedMatrix matrix = ArduinoUno.getLedMatrix();
+matrix.begin();
+boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+
+for (int offset = 12; offset &gt;= -60; offset--) {
+    LedCanvas.clear(frame);
+    LedCanvas.drawText(frame, &quot;Hello, Juno&quot;, offset, 0);
+    LedCanvas.show(frame);
+    Delay.millis(80);
+}
+</code></pre>
+<p><code>drawText</code> takes a compile-time string literal. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
+message forever.</p>
+<h3 id="serve-https">Serve HTTPS</h3>
+<p>The Linux side is already on the network, so the program joins nothing: it starts a TLS listener on port 443 and
+answers requests. The certificate and key are PEM text, read at build time from the <code>JUNO_TLS_CERT</code> and
+<code>JUNO_TLS_KEY</code> environment variables so neither is committed:</p>
+<pre><code class="language-java">HttpServer.beginTls(443, certificate, certificateLength, key, keyLength);
+
+byte[] body = new byte[64];
+while (true) {
+    if (HttpServer.accept(body, body.length) &gt;= 0) {
+        if (HttpServer.path().equals(&quot;/status&quot;)) {
+            HttpServer.respond(HttpStatus.OK, &quot;text/plain&quot;, &quot;online&quot;);
+        } else {
+            HttpServer.respond(HttpStatus.NOT_FOUND, &quot;text/plain&quot;, &quot;not found&quot;);
+        }
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java"><code>QHttpsServer</code></a> is the complete program, including how to create the certificate with
+<code>openssl</code> and test it with <code>curl</code>.</p>
+<h2 id="shields">Shields</h2>
+<h3 id="tft-touch-shield">TFT Touch Shield</h3>
+<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
+<p>The ELEGOO 2.8&quot; TFT touch shield is a 240 × 320 ILI9341 color display on an 8-bit parallel bus, with a resistive
+touch panel and a microSD socket. Seat it directly on the UNO Q; it needs no extra Arduino library.
+<code>TftTouchShield</code> draws through <code>ParallelBus</code>, a compiler intrinsic that writes a whole GPIO port per store through
+Zephyr's raw port API, so pixels stream from the runtime instead of costing one <code>digitalWrite</code> per pin. The TFT Touch Shield
+API, wiring and touch calibration are on the <a href="../arduino-shields">Arduino Shields</a> page.</p>
+<h4 id="features-1">Features</h4>
+<h5 id="draw-and-read-touch">Draw and read touch</h5>
+<pre><code class="language-java">TftTouchShield.begin();
+TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+TftTouchShield.fillScreen(TftTouchShield.BLACK);
+TftTouchShield.setCursor(10, 10);
+TftTouchShield.setTextSize(2);
+TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+TftTouchShield.print(&quot;Hello, Juno&quot;);
+
+while (true) {
+    if (TftTouchShield.readTouch()) {
+        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java"><code>TouchPaintTFT</code></a> is a finger-paint program with a color palette; it builds for any
+board, so pass <code>-Djuno.board=arduino-uno-q</code>.</p>
+<h5 id="read-the-sd-card">Read the SD card</h5>
+<p>The shield's microSD socket shares no pins with the display, so its card works alongside it, selected on D10:</p>
+<pre><code class="language-java">SdCard sd = TftTouchShield.getSdCard();
+if (sd.begin()) {
+    // read or write files on the microSD card
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java"><code>WifiStatusSDTFT</code></a> reads <code>wifi.ssid</code> and <code>wifi.password</code> from <code>application.properties</code>
+on the shield's card and shows the connection status on the display.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Install the Zephyr core and the <code>Arduino_RouterBridge</code> library once; every UNO Q program needs both:</p>
+<pre><code class="language-bash">arduino-cli core install arduino:zephyr
+arduino-cli lib install Arduino_RouterBridge
+</code></pre>
+<p>Then compile and upload an example, for instance the virtual-threads demo:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
+  -Djuno.board=arduino-uno-q
+</code></pre>
+<p>Open the serial monitor in another terminal:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-q
+</code></pre>
+<p>The monitor uses 115200 baud by default, matching <code>Serial.begin(BaudRate.BAUD_115200)</code>.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

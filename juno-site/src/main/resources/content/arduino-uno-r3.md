@@ -1,15 +1,15 @@
 ---
 title: "Arduino UNO R3"
-description: "Board notes for the Arduino UNO R3."
+description: "Board notes for the Arduino UNO R3 (ATmega328P) and what Juno supports on it."
 layout: page
 ---
 
-> The official product name is **Arduino UNO R3** (also documented as UNO Rev3). This file keeps
-> `ONE` in its filename to match the repository's requested documentation naming convention.
+The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. Juno compiles for it with its **AVR
+backend** and links against the `arduino:avr` core; the `ArduinoUno` device facade is the entry point for the board's
+peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
+startup and stay small.
 
-The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. It shares the UNO
-shield form factor and most high-level Arduino APIs with the UNO R4, but its CPU architecture,
-memory capacity, USB implementation and available peripherals are substantially different.
+<img src="../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
 
 ## Core specification
 
@@ -22,150 +22,182 @@ memory capacity, USB implementation and available peripherals are substantially 
 | SRAM | 2 kB |
 | EEPROM | 1 kB |
 | Logic and operating voltage | 5 V |
-| Digital I/O | 14 pins, D0-D13 |
-| PWM-capable pins | 6: D3, D5, D6, D9, D10 and D11 |
+| Digital I/O | 14 pins, D0-D13 (6 with PWM: D3, D5, D6, D9, D10, D11) |
 | Analog inputs | 6 pins, A0-A5, 10-bit ADC |
-| Analog output | No true DAC; `analogWrite` produces PWM |
-| USB connector | USB Type-B |
-| USB interface | ATmega16U2 USB-to-serial converter |
+| USB connector | USB Type-B, through an ATmega16U2 USB-to-serial converter |
 | Built-in LED | D13 |
-| Wireless connectivity | None |
+| Wireless connectivity | None (Wi-Fi through the Arduino WiFi Shield) |
 | Arduino CLI FQBN | `arduino:avr:uno` |
+| Juno board id | `arduino-uno-r3` |
 
-The ATmega328P executes the sketch. The separate ATmega16U2 implements the board's normal USB
-serial connection; it is not a general-purpose coprocessor available to an ordinary UNO sketch.
+## What Juno supports
 
-## Power and electrical characteristics
+| Feature | Status | Notes | Example |
+|---|:---:|---|---|
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock` | ✓ | Standard Arduino GPIO and timing calls. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Serial` | ✓ | Through the ATmega16U2 USB-to-serial path. | |
+| Classes, interfaces and inheritance | ✓ | Larger object graphs may exceed the 1 KB arena or the flash. | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Interfaces`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java) |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Bounded by the 1 KB arena and 2 KB of SRAM. | |
+| `@Watchdog` | ✓ | ATmega328P hardware watchdog, at most 8 seconds. | |
+| Non-cryptographic UUIDs (`PortNoise`) | ✓ | The R3 has no hardware entropy, so `UUID.randomUUID()` is rejected; `PortNoise` gives best-effort node identities, never secrets. | [`WeakUuid`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java) |
+| `Wifi`, `Udp`, `Tcp`, plain-HTTP `HttpClient` | ✓ | Through the Arduino WiFi Shield; no access point or HTTPS. | [`UdpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java), [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) |
+| `SdCard` | ✓ | On the Data Logger Shield's microSD slot. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
+| Grove Base Shield | ✓ | Passive: every socket is an UNO pin. | |
+| 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line D7 is also the WiFi Shield's handshake. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
+| LCD Keypad Shield | ✓ | Cannot be stacked with the WiFi Shield. | [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) |
 
-| Item | Specification |
-|---|---|
-| GPIO logic level | 5 V |
-| Recommended external input | 7-12 V through VIN or the barrel jack |
-| External input limit | 6-20 V |
-| USB power | 5 V through USB Type-B |
-| DC current per I/O pin | 20 mA |
-| 3.3 V pin maximum | 50 mA |
+## Features
 
-Supplying less than 7 V through VIN can leave the regulated 5 V rail below its intended voltage.
-Supplying more than 12 V can overheat the linear regulator under load even though the documented
-absolute input range extends to 20 V.
+These need only the UNO R3 and its USB cable.
 
-Do not drive motors, relays or other high-current loads directly from an I/O pin. Use an
-appropriate transistor, MOSFET or driver circuit and observe both per-pin and aggregate
-microcontroller current limits.
+### Blink the built-in LED
 
-## I/O and buses
+```java
+DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
 
-- **Digital:** D0-D13; D13 also drives the built-in LED.
-- **PWM:** D3, D5, D6, D9, D10 and D11.
-- **External interrupts:** D2 and D3.
-- **Analog:** A0-A5 with 10-bit conversion, normally producing values from 0 through 1023.
-- **UART:** D0/RX and D1/TX. These signals are also connected to the ATmega16U2 USB-to-serial
-  interface.
-- **I2C/TWI:** A4/SDA and A5/SCL, duplicated on the SDA/SCL header pins.
-- **SPI:** D10/SS, D11/COPI, D12/CIPO and D13/SCK; also exposed on the ICSP header.
-- **USB:** ordinary sketches use serial through the ATmega16U2. The ATmega328P does not provide
-  native USB HID.
-
-The SPI pin names MOSI and MISO are still common in older UNO R3 material. COPI and CIPO are the
-controller/peripheral-neutral names for the same signals.
-
-Timers are scarce shared resources on the ATmega328P. PWM, timing functions, servo libraries and
-other libraries can compete for the same hardware timers even when their APIs compile correctly.
-
-## Memory and performance constraints
-
-The R3's 2 kB SRAM is shared by global/static data, the heap and the call stack. Stack exhaustion
-can corrupt memory without a clean diagnostic. This is especially relevant to Juno because its
-generated methods use 32-bit storage for Java locals and intermediate values, while the native AVR
-register width is only 8 bits.
-
-The AVR compiler implements 32-bit Java-style arithmetic using multiple 8-bit instructions and,
-for some operations, runtime helper routines. Correct programs can therefore be larger and slower
-than equivalent code targeting the 32-bit UNO R4. Division and remainder are notably more
-expensive than addition, subtraction and bitwise operations.
-
-## Physical compatibility
-
-The UNO R3 uses the standard UNO shield outline and header layout. Its nominal dimensions are
-approximately 68.6 mm by 53.4 mm and its nominal weight is 25 g. The unusual spacing between the
-digital header blocks is part of the established UNO shield layout.
-
-UNO-form-factor compatibility does not guarantee that an R4-specific shield or library works on
-the R3. Check required voltage levels, current, timers, memory, CPU-specific code and peripheral
-availability.
-
-## Arduino toolchain
-
-Install the AVR board core:
-
-```bash
-arduino-cli core update-index
-arduino-cli core install arduino:avr
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
 ```
 
-Generate and compile a Juno example for the R3 through the Maven plugin:
+[`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) is the complete program; it builds for any board, so pass `-Djuno.board=arduino-uno-r3`.
 
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r3
-```
+## Shields
 
-Uploading changes the firmware on a connected physical board. Find the port with
-`arduino-cli board list` before using `arduino-cli upload`.
+Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the WiFi Shield reserves
+D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a program that combines them, and the
+9 Axis Motion Shield's sensor reset is also D7.
 
-## Juno compatibility
+### Arduino WiFi Shield
 
-The UNO R3 is a declared Juno target. Select it with `@Board(ArduinoUnoR3Board.class)` or the board id
-`arduino-uno-r3`. Programs without `@Board` can target it with `-Djuno.board=arduino-uno-r3`.
-Gladiator remains an UNO Q/UNO R4 WiFi game and does not target the R3.
+<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="280">
 
-| Juno API or feature | UNO R3 | Notes |
-|---|---:|---|
-| `Gpio` and `DigitalOutput` | Yes | Uses standard Arduino GPIO calls |
-| `Delay` and `Clock` | Yes | Uses Arduino delay and time functions |
-| `Serial` | Yes | Uses the ATmega16U2 USB-to-serial path |
-| `@Watchdog` | Yes | ATmega328P hardware watchdog; requested timeouts round up to a supported period, at most 8 seconds |
-| `BigInteger`, `BigDecimal`, `MathContext` | Yes, bounded | Uses the shared `java.math` runtime, but the 1 kB arena and 2 kB SRAM limit practical values and program size |
-| `UUID.randomUUID()` | No | The R3 has no board-native cryptographic entropy source; Juno rejects this call at compile time |
-| `PortNoise.collectSeed(...)` | Yes, non-cryptographic | Samples a user-provided physical noise circuit, GPIO and timer jitter; it is unsuitable for secrets or UUID v4 generation |
-| `Mouse` | No | The sketch MCU has no native USB HID support |
-| `LedMatrix` | No | The R3 has no onboard 12x8 LED matrix |
-| `ArduinoUno.getWifi()` | No | The R3 has no onboard radio; Juno rejects this call at compile time |
-| Wi-Fi through the Arduino WiFi Shield | Yes | `new ArduinoWifiShield().getWifi()`, then `Udp`, `Tcp` and plain-HTTP `HttpClient`; no access point or HTTPS |
-| Bluetooth | Not applicable | No onboard wireless hardware |
-| DAC, RTC and CAN | Not applicable | These peripherals are not built into the R3 board |
-
-The most important practical limit is SRAM. Juno limits the R3 arena to 1 kB and rejects APIs that
-need task stacks, HTTPS, an LED matrix or native USB HID. Arbitrary-precision arithmetic is available
-for small programs. Class inheritance and inherited/default dispatch are available, but can make the generated
-sketch exceed the Arduino linker limits or the 1 kB arena. A single sketch that combines all type demonstrations does
-not fit. A sketch passing
-the Arduino compiler's global-memory report can still overflow at runtime because
-that report does not calculate the maximum Juno call stack.
-
-### Wi-Fi through the Arduino WiFi Shield
-
-The R3 has no radio, so `ArduinoUno.getWifi()` does not compile for it. Stack the retired
-[Arduino WiFi Shield](https://docs.arduino.cc/retired/shields/arduino-wifi-shield/) and take its
-`Wifi` from the shield instead:
+The R3 has no radio, so `ArduinoUno.getWifi()` does not compile for it: take the `Wifi` from the retired Arduino WiFi
+Shield instead. The shield runs Arduino's legacy `WiFi` library over SPI; it joins networks only (no access point) and
+speaks plain HTTP, not HTTPS. The credentials are read at build time from the `JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD`
+environment variables (or a `.env` file through `juno:env`):
 
 ```java
 Wifi wifi = new ArduinoWifiShield().getWifi();
 wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+
+while (wifi.status() != Wifi.STATUS_CONNECTED) {
+    Delay.millis(1000);
+}
 ```
 
-The shield runs Arduino's legacy `WiFi` library over SPI and reserves D10 (Wi-Fi chip select), D4
-(its SD card) and D7 (handshake), so it cannot be stacked with the LCD Keypad Shield. It joins
-networks only (no access point) and speaks plain HTTP, not HTTPS. Only small network programs fit
-next to the library: build them with `-Djuno.Xmx=512`, as `UdpEcho`, `TcpEcho`, `SntpTime` and
-`PlainHttpWeather` do.
+Only small network programs fit next to the library: build them with `-Djuno.Xmx=512`, as
+[`UdpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java), [`TcpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/tcp/TcpEcho.java),
+[`SntpTime`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) do.
 
-## Official references
+### Grove Base Shield
 
-- [UNO R3 board page](https://docs.arduino.cc/hardware/uno-rev3/)
-- [UNO R3 datasheet](https://docs.arduino.cc/resources/datasheets/A000066-datasheet.pdf)
-- [UNO R3 pinout](https://docs.arduino.cc/resources/pinouts/A000066-full-pinout.pdf)
-- [ATmega328P product page](https://www.microchip.com/en-us/product/ATmega328P)
-- [ArduinoCore-avr](https://github.com/arduino/ArduinoCore-avr)
+<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
+
+The Grove Base Shield is passive: every socket is an ordinary UNO pin, and `GroveBaseShield` names them so programs
+don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
+module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
+
+```java
+GroveBaseShield shield = new GroveBaseShield();
+GroveDht22 dht = new GroveDht22();
+int[] reading = new int[GroveDht22.READING_LENGTH];
+int[] frame = new int[GroveDht22.FRAME_LENGTH];
+
+if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
+    Serial.print(reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS]);
+    Serial.println(" tenths of a degree");
+}
+```
+
+[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings; it is written
+for the UNO WiFi Rev2, and the snippet above is the same read for the R3. See [Grove](../grove-system) for the
+sensor drivers. The WiFi Shield also uses D4, so plug sensors into other sockets when the two are stacked.
+
+### Arduino 9 Axis Motion Shield
+
+<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+
+The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
+`NineAxisMotionShield` reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
+direction the sensor pointed at `begin()`. `begin()` drives D7, the sensor's reset line, so don't use D7 for anything
+else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:
+
+```java
+NineAxisMotionShield imu = new NineAxisMotionShield();
+if (imu.begin()) {
+    int start = imu.headingDegrees();
+    while (true) {
+        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Delay.millis(200);
+    }
+}
+```
+
+[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, pitch, gyro
+and calibration readings.
+
+### LCD Keypad Shield
+
+<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+
+A 16 × 2 character LCD with five buttons read through one analog pin (A0). `LcdKeypadShield` needs no extra library:
+the LCD uses D4-D9 and its backlight D10.
+
+```java
+LcdKeypadShield lcd = new LcdKeypadShield();
+lcd.begin();
+lcd.print("Hello, Juno");
+
+while (true) {
+    if (lcd.readButton() == LcdKeypadShield.SELECT) {
+        lcd.setCursor(0, 1);
+        lcd.print("SELECT pressed");
+    }
+    Delay.millis(100);
+}
+```
+
+[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) shows each button press.
+
+### AZDelivery Data Logger Shield
+
+<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+
+A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
+that Juno does not drive. Format the card as FAT16 or FAT32.
+
+```java
+SdCard sd = new DataLoggerShield().getSdCard();
+if (sd.begin()) {
+    Serial.print("used KiB: ");
+    Serial.println(sd.totalKiB() - sd.freeKiB());
+}
+```
+
+[`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) reports the card's used and total space.
+
+## Build and run
+
+Install the AVR core once, and the legacy `WiFi` library for programs that use the WiFi Shield. Then compile and
+upload an example, for instance the UUID demo, which prints over serial:
+
+```bash
+arduino-cli core install arduino:avr
+arduino-cli lib install WiFi
+./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.language.WeakUuid \
+  -Djuno.board=arduino-uno-r3
+```
+
+Open the serial monitor in another terminal:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r3
+```
+
+The monitor uses 115200 baud by default, matching `Serial.begin(BaudRate.BAUD_115200)`.

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>M5Stack Cardputer - Juno: Java for Arduino</title>
+  <meta property="og:title" content="M5Stack Cardputer" />
+  <meta name="twitter:title" content="M5Stack Cardputer">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the M5Stack Cardputer and what Juno supports on it: display, keyboard, speaker, battery, microSD, Wi-Fi and USB HID.">
+  <meta property="og:description" content="Board notes for the M5Stack Cardputer and what Juno supports on it: display, keyboard, speaker, battery, microSD, Wi-Fi and USB HID." />
+  <meta name="twitter:description" content="Board notes for the M5Stack Cardputer and what Juno supports on it: display, keyboard, speaker, battery, microSD, Wi-Fi and USB HID.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/m5stack-cardputer/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/m5stack-cardputer/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/m5stack-cardputer/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/m5stack-cardputer/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="active" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="active" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>M5Stack Cardputer</h1>
+</header>
+    <div class="content-prose">
+<p>The M5Stack Cardputer is a pocket computer built around an Espressif ESP32-S3, with its own keyboard,
+color display, speaker, microSD slot and battery. Its CPU is an Xtensa LX7, so Juno compiles for it
+with the same Xtensa backend as the Nano ESP32. The <code>M5StackCardputer</code> device facade is the entry
+point for its peripherals.</p>
+<img src="../images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" width="280">
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">M5Stack Cardputer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Microcontroller</td>
+<td align="right">Espressif ESP32-S3</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">Dual-core 32-bit Xtensa LX7</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">240 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">8 MB</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">512 kB</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">3.3 V</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB-C (native USB)</td>
+</tr>
+<tr>
+<td>Display</td>
+<td align="right">240 × 135 pixel color</td>
+</tr>
+<tr>
+<td>Built-in hardware</td>
+<td align="right">Keyboard, speaker, microSD slot, battery</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>m5stack:esp32:m5stack_cardputer</code></td>
+</tr>
+<tr>
+<td>Juno board id</td>
+<td align="right"><code>m5stack-cardputer</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Delay</code>, <code>Serial</code></td>
+<td align="center">✓</td>
+<td><code>Serial</code> over the native USB port, at 115200 baud.</td>
+<td></td>
+</tr>
+<tr>
+<td>Classes, interfaces and inheritance</td>
+<td align="center">✓</td>
+<td></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java"><code>Inheritance</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java"><code>Interfaces</code></a></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>SdCard</code></td>
+<td align="center">✓</td>
+<td>Built-in microSD slot through <code>M5StackCardputer.getSd()</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/sd/M5CardputerSd.java"><code>M5CardputerSd</code></a></td>
+</tr>
+<tr>
+<td>Wi-Fi station and access point</td>
+<td align="center">✓</td>
+<td><code>M5StackCardputer.getWifi()</code>; credentials can come from the microSD card.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java"><code>M5CardputerWifi</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java"><code>M5CardputerWifiStatusSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient</code> (HTTP and HTTPS)</td>
+<td align="center">✓</td>
+<td>HTTPS with a trusted certificate set by the program.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java"><code>MailboxCardputer</code></a></td>
+</tr>
+<tr>
+<td><code>HttpServer</code> (HTTP and HTTPS)</td>
+<td align="center">✓</td>
+<td><code>HttpServer.beginTls</code> serves HTTPS on the station address.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpsServerSD.java"><code>CardputerHttpsServerSD</code></a></td>
+</tr>
+<tr>
+<td>Display</td>
+<td align="center">✓</td>
+<td>240 × 135 RGB565 through <code>M5StackCardputer.getDisplay()</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java"><code>M5CardputerDisplay</code></a></td>
+</tr>
+<tr>
+<td>Keyboard</td>
+<td align="center">✓</td>
+<td><code>M5StackCardputer.getKeyboard()</code>, polled without allocation.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java"><code>M5CardputerKeyboard</code></a></td>
+</tr>
+<tr>
+<td>Speaker</td>
+<td align="center">✓</td>
+<td><code>M5StackCardputer.getAudio()</code>: <code>tone</code>, <code>setVolume</code>, <code>stop</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a></td>
+</tr>
+<tr>
+<td>Battery</td>
+<td align="center">✓</td>
+<td><code>M5StackCardputer.getBattery()</code>: estimated level and voltage.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java"><code>M5CardputerBatteryLevel</code></a></td>
+</tr>
+<tr>
+<td>USB HID mouse</td>
+<td align="center">✓</td>
+<td><code>M5StackCardputer.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java"><code>M5RatonLoco</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="features">Features</h2>
+<h3 id="sd-card">SD card</h3>
+<p><code>M5StackCardputer.getSd()</code> returns the Cardputer's built-in microSD socket. Calling <code>begin()</code> uses its standard SPI wiring: chip
+select GPIO12, MOSI GPIO14, MISO GPIO39, and clock GPIO40.</p>
+<pre><code class="language-java">SdCard sd = M5StackCardputer.getSd();
+if (sd.begin()) {
+    Serial.println(&quot;SD card ready&quot;);
+}
+</code></pre>
+<h3 id="wi-fi">Wi-Fi</h3>
+<p><code>M5StackCardputer.getWifi()</code> returns the Cardputer's built-in ESP32-S3 radio. Keep the network's credentials on the
+microSD card rather than in the source: put them in <code>application.properties</code> at the card's root,</p>
+<pre><code class="language-properties">wifi.ssid=your-network
+wifi.password=your-password
+</code></pre>
+<p>then read the file with <code>java.util.Properties</code> and join the network:</p>
+<pre><code class="language-java">SdCard sd = M5StackCardputer.getSd();
+Wifi wifi = M5StackCardputer.getWifi();
+
+if (sd.begin()) {
+    try (InputStream file = sd.open(&quot;application.properties&quot;)) {
+        if (file != null) {
+            Properties properties = new Properties();
+            properties.load(file);
+            wifi.begin(properties.getProperty(&quot;wifi.ssid&quot;), properties.getProperty(&quot;wifi.password&quot;));
+        }
+    }
+}
+while (wifi.status() != Wifi.STATUS_CONNECTED) {
+    Delay.millis(1000);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java"><code>M5CardputerWifiStatusSD</code></a> is the complete program: it
+joins the network and shows the connection status on the display.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.M5CardputerWifiStatusSD
+</code></pre>
+<h3 id="display">Display</h3>
+<p><code>M5StackCardputer.getDisplay()</code> returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
+available as constants and <code>Display.color(red, green, blue)</code> for custom colors. Call <code>begin()</code> once before drawing.</p>
+<pre><code class="language-java">Display display = M5StackCardputer.getDisplay();
+display.begin();
+display.fillScreen(Display.BLACK);
+display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
+display.setCursor(12, 24);
+display.setTextColor(Display.GREEN, Display.BLACK);
+display.setTextSize(2);
+display.println(&quot;Hello, Juno!&quot;);
+</code></pre>
+<p>The display interface also provides <code>height()</code>, <code>drawPixel(...)</code>, <code>print(...)</code>, and <code>println(...)</code>. Applications can
+receive a mock <code>Display</code> in desktop unit tests.</p>
+<h3 id="keyboard">Keyboard</h3>
+<p><code>M5StackCardputer.getKeyboard()</code> returns the Cardputer's built-in keyboard. Initialize it once, call <code>update()</code> in the main loop,
+and inspect the state after <code>isChanged()</code> reports a transition.</p>
+<pre><code class="language-java">Keyboard keyboard = M5StackCardputer.getKeyboard();
+keyboard.begin();
+while (true) {
+    keyboard.update();
+    if (keyboard.isChanged() &amp;&amp; keyboard.isPressed()) {
+        for (int index = 0; index &lt; keyboard.keyCount(); index++) {
+            Serial.println(keyboard.keyAt(index));
+        }
+    }
+    Delay.millis(20);
+}
+</code></pre>
+<p><code>keyAt(...)</code> returns printable character codes or <code>Keyboard.BACKSPACE</code>, <code>Keyboard.TAB</code>, and <code>Keyboard.ENTER</code>.
+<code>isKeyPressed(...)</code> checks one character or control key. Shift, Control, Alt, Fn, and Option have dedicated state
+methods, so no array or collection needs to be allocated while polling.</p>
+<h3 id="speaker">Speaker</h3>
+<p><code>M5StackCardputer.getAudio()</code> returns the built-in speaker. <code>tone(frequencyHz, durationMillis)</code> plays a note,
+<code>setVolume(...)</code> sets the loudness and <code>stop()</code> silences it.</p>
+<pre><code class="language-java">Audio audio = M5StackCardputer.getAudio();
+audio.setVolume(128);
+audio.tone(440, 500);
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a> plays a melody on it.</p>
+<h3 id="battery">Battery</h3>
+<p><code>M5StackCardputer.getBattery()</code> reports the built-in battery's estimated charge level in percent and its voltage in
+millivolts.</p>
+<pre><code class="language-java">Battery battery = M5StackCardputer.getBattery();
+Serial.print(battery.levelPercent());
+Serial.println(&quot;%&quot;);
+</code></pre>
+<h3 id="usb-hid-mouse">USB HID mouse</h3>
+<p>The Cardputer's ESP32-S3 can act as a USB HID mouse through its core's TinyUSB stack. Call <code>begin()</code> once,
+then <code>move(x, y)</code> moves the computer's pointer by that many pixels:</p>
+<pre><code class="language-java">Mouse mouse = M5StackCardputer.getMouse();
+mouse.begin();
+
+while (true) {
+    mouse.move(50, 0);   // right
+    Delay.millis(1000);
+    mouse.move(0, 50);   // down
+    Delay.millis(1000);
+    mouse.move(-50, 0);  // left
+    Delay.millis(1000);
+    mouse.move(0, -50);  // up
+    Delay.millis(1000);
+}
+</code></pre>
+<p>Once uploaded, the program keeps moving the pointer of the computer it is plugged into; disconnect the board or upload
+another program to stop it.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java"><code>M5RatonLoco</code></a> moves the host pointer around a square and reports each side over the USB serial
+console. The native TinyUSB device may receive a new serial-port path after flashing: use <code>arduino-cli board list</code> and pass
+that new <code>/dev/cu.usbmodem...</code> path as <code>-Djuno.port</code> if the monitor does not attach.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Run <code>juno:install-deps</code> once to install the M5Stack ESP32 board package and the official M5Cardputer library along with
+the other supported board cores and libraries. Then compile and upload an example, for instance the battery report:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.battery.M5CardputerBatteryLevel \
+  -Djuno.board=m5stack-cardputer
+</code></pre>
+<p>Open the serial monitor in another terminal:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=m5stack-cardputer
+</code></pre>
+<p>The monitor uses 115200 baud by default, matching <code>Serial.begin(BaudRate.BAUD_115200)</code>.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

@@ -79,38 +79,3 @@ The annotation on every board-ready example names the three supported targets, s
 compile each class once per target. The Arduino CLI integration profile then builds and links the generated sketches
 with each target's real Arduino core. QEMU and simavr compare generated-code output with OpenJDK for the runtime layer;
 real hardware remains the final check for each scheduler port.
-
-## Run one example
-
-Choose a class and board:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.language.concurrency.VolatileHappensBefore \
-  -Djuno.board=arduino-uno-r4-wifi
-```
-
-The other scheduler-capable board IDs are `arduino-uno-q` and `arduino-uno-r3-wifi-rev2`.
-
-After receiving permission to overwrite a connected board, replace `juno:verify` with `juno:upload`, then monitor the
-same board and compare its one-line output with the matrix above:
-
-```bash
-./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi
-```
-
-## Run the automated checks
-
-```bash
-# OpenJDK behavior plus in-process Juno compilation for every declared board
-./mvnw -pl juno-examples -am test
-
-# Generate, build and link every Java language example with each declared Arduino core
-./mvnw -pl juno-examples -am -Parduino-cli verify \
-  -Dit.test=LanguageExamplesArduinoCliIT -Djuno.language=java
-
-# Execute generated Thumb-2 and AVR code in emulators
-./mvnw -pl juno-compiler -am -Pqemu verify
-./mvnw -pl juno-compiler -am -Psimavr verify
-```

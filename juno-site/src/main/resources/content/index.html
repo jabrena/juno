@@ -1,53 +1,138 @@
 ---
 title: "Juno: Java for Arduino"
-description: "An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board."
+description: "An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to AVR, Cortex-M4 and Xtensa assembly for Arduino and ESP32 boards — no JVM on the board."
 name: "Juno"
 simple-name: "Juno"
 social-github: "jabrena/juno"
-theme-color: "#0f6e63"
+theme-color: "#ffcd03"
 layout: home
 ---
 
-{#roq/hero}
-  {#title}Java, compiled straight to the board{/title}
-  {#tagline}Juno is an ahead-of-time compiler for a checked subset of Java{/tagline}
-  {#subtitle}
-    `javac` stays the frontend. Juno closed-world-links your `main` method on the
-    development machine and emits GNU ARM Cortex-M4 assembly plus a small C++ runtime
-    shim directly&nbsp;&mdash; no JVM, no interpreter, no dynamic class loading on the
-    Arduino UNO R4 WiFi or UNO Q.
-  {/subtitle}
-  <a href="getting-started" class="btn btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
-  <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="btn btn-secondary"><i class="fa-brands fa-github"></i> View on GitHub</a>
-{/}
+<section class="juno-hero" style="--juno-hero-image: url('{site.image('juno.png')}')">
+  <div class="juno-hero-inner">
+    <h1>Java, compiled straight to the board</h1>
+    <p class="juno-hero-tagline">Juno is an ahead-of-time compiler for running a practical subset of Java for microcontrollers.</p>
+    <div class="juno-hero-actions">
+      <a href="getting-started" class="juno-btn juno-btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
+      <a href="#try-juno" class="juno-btn juno-btn-secondary">Try Juno</a>
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="juno-btn juno-btn-ghost"><i class="fa-brands fa-github"></i> See the code</a>
+    </div>
+  </div>
+</section>
 
-<div class="roq-features">
-  {#roq/featureCard icon="fa-microchip" title="No JVM on the board" link="features" link-text="See the feature inventory"}
-    `javac` &rarr; `.class` &rarr; Juno's closed-world linker &rarr; Cortex-M4 (Thumb-2) assembly
-    plus an `extern "C"` runtime shim, assembled and linked by the board's own Arduino toolchain.
-  {/}
-  {#roq/featureCard icon="fa-bolt" title="Real hardware intrinsics" link="apis" link-text="Browse the hardware API"}
-    GPIO, timing, Serial, the LED matrix, Wi-Fi/HTTP/JSON, SD card storage, email, USB mouse, and
-    LCD/TFT shields &mdash; plain Java `native` methods lowered to shim calls at link time.
-  {/}
-  {#roq/featureCard icon="fa-gamepad" title="16 playable games" link="games" link-text="See the games"}
-    Pac-Man, Chess, Battleship, Blackjack, Texas Hold'em and more, running on an ELEGOO 2.8&Prime;
-    TFT touch shield &mdash; compiled ahead of time, not interpreted.
-  {/}
-  {#roq/featureCard icon="fa-microchip" title="Two boards, one backend" link="arduino-uno-r4" link-text="Compare the boards"}
-    The same Cortex-M4/Thumb-2 codegen targets the UNO R4 WiFi's Renesas RA4M1 and the UNO Q's
-    Zephyr-hosted STM32U585.
-  {/}
-</div>
+<section class="juno-band">
+  <div class="juno-container juno-split">
+    <div>
+      <h2><i class="fa-solid fa-microchip"></i> Embedded</h2>
+      <p>
+        Juno runs on the Arduino UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q, on the Arduino Nano
+        ESP32 and on the M5Stack Cardputer. GPIO, timing, Serial, the LED matrix, Wi-Fi, HTTP, JSON,
+        SD cards, USB HID and LCD/TFT shields are plain Java <code>native</code> methods lowered to
+        shim calls at link time.
+      </p>
+    </div>
+    <div>
+      <h2><i class="fa-solid fa-layer-group"></i> Ahead of time</h2>
+      <p>
+        <code>javac</code> &rarr; <code>.class</code> &rarr; Juno's closed-world linker &rarr; AVR,
+        Thumb-2 or Xtensa assembly plus an <code>extern "C"</code> runtime shim, assembled and linked
+        by the board's own Arduino toolchain. Everything runs from one fixed arena, so nothing is
+        interpreted and nothing is loaded at runtime.
+      </p>
+    </div>
+  </div>
+</section>
 
-<section class="roq-section">
-  <h2>How it works</h2>
-  <pre><code>Java source -&gt; javac -&gt; .class -&gt; Juno linker/AOT -&gt; .S + Shim.cpp + .ino -&gt; Arduino toolchain -&gt; RA4M1 (UNO R4 WiFi)
-                                                                                         -&gt; STM32U585 (UNO Q)</code></pre>
-  <p>
-    Juno is deliberately closed-world and minimal: no interpreter, no dynamic class loading, no
-    general objects or arrays yet. See the <a href="features">feature inventory</a> for exactly
-    what's supported today, or jump into <a href="getting-started">Getting Started</a> to flash
-    Blink in a few commands.
-  </p>
+<section class="juno-band juno-band-alt" id="try-juno">
+  <div class="juno-container">
+    <h2 class="juno-section-title">Try Juno</h2>
+    <p class="juno-section-lead">Write plain Java, then let the Maven plugin compile, verify and flash it.</p>
+    <div class="juno-try">
+      <div class="juno-code-window">
+        <div class="juno-code-bar"><span></span><span></span><span></span><em>Blink.java</em></div>
+<pre><code>{|import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.util.Delay;
+
+public class Blink {
+
+    public static void main(String[] args) {
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
+        while (true) {
+            led.high();
+            Delay.millis(500);
+            led.low();
+            Delay.millis(500);
+        }
+    }
+}|}</code></pre>
+      </div>
+      <ol class="juno-steps">
+        <li>
+          <h3>Generate</h3>
+          <p>Lower the bytecode to assembly and a runtime shim.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+        <li>
+          <h3>Verify</h3>
+          <p>Compile it with the real Arduino toolchain, without touching hardware.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+        <li>
+          <h3>Flash</h3>
+          <p>Upload to the board and watch the serial output.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="juno-band">
+  <div class="juno-container">
+    <h2 class="juno-section-title">Supported boards</h2>
+    <p class="juno-section-lead">Three backends, one compiler: AVR, Cortex-M4 (Thumb-2) and Xtensa.</p>
+    <div class="juno-boards">
+      <a class="juno-board" href="arduino-nano-esp32"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+      <a class="juno-board" href="m5stack-cardputer"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
+      <a class="juno-board" href="arduino-uno-q"><img src="{site.image('boards/arduino-uno-q.png')}" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
+      <a class="juno-board" href="arduino-uno-r4-wifi"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="Arduino UNO R4 WiFi" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
+      <a class="juno-board" href="arduino-uno-r3-wifi"><img src="{site.image('boards/arduino-uno-r3-wifi-rev2.png')}" alt="Arduino UNO WiFi Rev2" loading="lazy"><span>UNO WiFi Rev2</span><small>ATmega4809 &middot; AVR</small></a>
+      <a class="juno-board" href="arduino-uno-r3"><img src="{site.image('boards/arduino-uno-r3.png')}" alt="Arduino UNO R3" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
+    </div>
+  </div>
+</section>
+
+<section class="juno-band juno-band-alt">
+  <div class="juno-container">
+    <div class="juno-cards">
+      <a class="juno-card" href="memory-model">
+        <i class="fa-solid fa-memory"></i>
+        <h3>Memory model</h3>
+        <p>Where Juno programs keep their data, how the fixed arena and its garbage collector work, and what concurrent tasks can observe.</p>
+        <span>Explore the memory model <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="features">
+        <i class="fa-solid fa-list-check"></i>
+        <h3>Feature inventory</h3>
+        <p>Exactly which parts of the Java language and libraries Juno supports today.</p>
+        <span>Read more <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="https://github.com/jabrena/juno" target="_blank" rel="noopener">
+        <i class="fa-brands fa-github"></i>
+        <h3>Juno on GitHub</h3>
+        <p>Browse the compiler, the examples and the Maven plugin, or open an issue.</p>
+        <span>Open the repository <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+  </div>
 </section>

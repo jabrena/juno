@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino Shields - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino Shields" />
+  <meta name="twitter:title" content="Arduino Shields">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="The shields and carriers Juno drives, what each one does and which boards it works with.">
+  <meta property="og:description" content="The shields and carriers Juno drives, what each one does and which boards it works with." />
+  <meta name="twitter:description" content="The shields and carriers Juno drives, what each one does and which boards it works with.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/juno/arduino-shields/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/juno/arduino-shields/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/juno/arduino-shields/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/arduino-shields/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class=" active" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="active" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<nav class="juno-subnav" aria-label="Third parties">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/third-parties">Overview</a>
+    <a class="active" href="/juno/arduino-shields">Arduino Shields</a>
+    <a class="" href="/juno/grove-system">Grove system</a>
+    <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Arduino Shields</h1>
+</header>
+    <div class="content-prose">
+<p>A shield plugs onto a board's headers and adds hardware the board does not have. Juno drives each one from plain
+Java: most need no Arduino library, and every shield class hands its pins and devices to the program, so a unit test
+can pass mocks instead. Seat a shield directly on the board, and check the pins before stacking two.</p>
+<table>
+<thead>
+<tr>
+<th>Shield</th>
+<th>Adds</th>
+<th align="center">UNO R3</th>
+<th align="center">UNO WiFi Rev2</th>
+<th align="center">UNO R4 WiFi</th>
+<th align="center">UNO Q</th>
+<th align="center">Nano ESP32</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#tft-touch-shield">TFT Touch Shield</a></td>
+<td>2.8&quot; color touch display, microSD</td>
+<td align="center"></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#grove-base-shield">Grove Base Shield</a></td>
+<td>Grove sockets</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</a></td>
+<td>BNO055 orientation sensor</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#lcd-keypad-shield">LCD Keypad Shield</a></td>
+<td>16 × 2 character LCD, five buttons</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#azdelivery-data-logger-shield">AZDelivery Data Logger Shield</a></td>
+<td>microSD, real-time clock</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#arduino-wifi-shield">Arduino WiFi Shield</a></td>
+<td>Wi-Fi for a board without a radio</td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td><a href="#nano-connector-carrier">Nano Connector Carrier</a></td>
+<td>microSD, Grove and Qwiic sockets</td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center">✓</td>
+</tr>
+</tbody>
+</table>
+<h2 id="tft-touch-shield">TFT Touch Shield</h2>
+<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="240">
+<p>The ELEGOO 2.8&quot; shield: a 240 × 320 ILI9341 color display on an 8-bit parallel bus, a resistive touch panel and a
+microSD socket. <code>TftTouchShield</code> draws, prints text and reads touches, and <code>ParallelBus</code> streams pixels from the
+runtime. Juno's games run on it.</p>
+<h2 id="grove-base-shield">Grove Base Shield</h2>
+<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
+<p>Seeed Studio's passive adapter: every Grove socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them. Plug a
+Grove module in and pass the socket's getter to its driver. See <a href="../grove-system">Grove</a> for the sensors.</p>
+<h2 id="arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</h2>
+<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="240">
+<p>A Bosch BNO055 that fuses its accelerometer and gyroscope and reports the heading in degrees. <code>NineAxisMotionShield</code>
+reads it over I2C with no Arduino library, which suits measuring how far a vehicle has turned. It holds D7 as the
+sensor's reset line.</p>
+<h2 id="lcd-keypad-shield">LCD Keypad Shield</h2>
+<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="240">
+<p>A 16 × 2 character LCD on D4-D9, its backlight on D10, and five buttons read through one analog pin. <code>LcdKeypadShield</code>
+needs no library.</p>
+<h2 id="azdelivery-data-logger-shield">AZDelivery Data Logger Shield</h2>
+<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="240">
+<p>A microSD socket on the UNO's SPI pins with chip select D10, plus a DS1307 real-time clock that Juno does not drive.
+<code>DataLoggerShield.getSdCard()</code> gives the card, which programs use for files and for Wi-Fi credentials kept out of the
+source. Its D10 is also the LCD Keypad Shield's backlight.</p>
+<h2 id="arduino-wifi-shield">Arduino WiFi Shield</h2>
+<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="240">
+<p>The retired Arduino WiFi Shield gives the UNO R3, which has no radio, Wi-Fi, UDP, TCP and plain HTTP through
+<code>new ArduinoWifiShield().getWifi()</code>. It reserves D4, D7 and D10, so it cannot be stacked with the LCD Keypad Shield.</p>
+<h2 id="nano-connector-carrier">Nano Connector Carrier</h2>
+<img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="240">
+<p>Arduino's passive carrier for the Nano ESP32: a microSD slot, four Grove sockets and a Qwiic connector, all named by
+<code>NanoConnectorCarrier</code>. See the <a href="../arduino-nano-esp32#nano-connector-carrier">Nano ESP32</a> page for its pin map and
+examples, including remote-controlling a LEGO RCX over infrared.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

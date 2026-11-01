@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es-ES">
 <head>
 
 <meta charset="utf-8">
@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Juno: Java for Arduino">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.">
-  <meta property="og:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board." />
-  <meta name="twitter:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.">
+  <meta name="description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to AVR, Cortex-M4 and Xtensa assembly for Arduino and ESP32 boards — no JVM on the board.">
+  <meta property="og:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to AVR, Cortex-M4 and Xtensa assembly for Arduino and ESP32 boards — no JVM on the board." />
+  <meta name="twitter:description" content="An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to AVR, Cortex-M4 and Xtensa assembly for Arduino and ESP32 boards — no JVM on the board.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/juno/" />
@@ -41,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.1.9" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -49,156 +49,254 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-<meta name="theme-color" content="#0f6e63">
-<meta name="msapplication-navbutton-color" content="#0f6e63">
-<meta name="apple-mobile-web-app-status-bar-style" content="#0f6e63">
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
 
 
-    <script type="module" src="/juno/static/bundle/app-M3FE23ZS.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-3CON633O.css" />
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
 
 </head>
-<body >
+<body>
 
 
 
 <div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<!-- Overrides the roq-default home layout: full-width landing page, no docs sidebar. -->
+<main class="juno-home">
 
-
-<aside class="sidebar main">
-  <header>
-<!-- Theme configuration: https://iamroq.dev/theme/default/#site-data -->
-<section class="about">
-  <div class="site-name">Juno</div>
-  <p>An ahead-of-time compiler that lowers a checked subset of Java bytecode straight to Cortex-M4 assembly for the Arduino UNO R4 WiFi and UNO Q — no JVM on the board.</p>
-</section>
-<section class="menu">
-  <h3 class="section-title menu-title">MENU</h3>
-  <ul>
-    <li><a class="active" href="/juno/" ><i class="fa-solid fa-house"></i>Home</a></li>
-    <li><a class="" href="/juno/getting-started" ><i class="fa-solid fa-rocket"></i>Getting Started</a></li>
-    <li><a class="" href="/juno/features" ><i class="fa-solid fa-list-check"></i>Features</a></li>
-    <li><a class="" href="/juno/limitations" ><i class="fa-solid fa-triangle-exclamation"></i>Known Limitations</a></li>
-    <li><a class="" href="/juno/memory-model" ><i class="fa-solid fa-memory"></i>Memory Model</a></li>
-    <li><a class="" href="/juno/games" ><i class="fa-solid fa-gamepad"></i>Games</a></li>
-    <li class="menu-group"><span>Boards</span></li>
-    <li><a class="" href="/juno/arduino" ><i class="fa-solid fa-screwdriver-wrench"></i>Arduino CLI Setup</a></li>
-    <li><a class="" href="/juno/arduino-one-q" ><i class="fa-solid fa-microchip"></i>UNO Q</a></li>
-    <li><a class="" href="/juno/arduino-one-r4" ><i class="fa-solid fa-microchip"></i>UNO R4 WiFi</a></li>
-    <li><a class="" href="/juno/arduino-one-r3" ><i class="fa-solid fa-microchip"></i>UNO R3</a></li>
-    <li><a class="" href="/juno/arduino-one-r3-wifi" ><i class="fa-solid fa-microchip"></i>UNO R3 WiFi</a></li>
-    <li class="menu-group"><span>Hardware APIs</span></li>
-    <li><a class="" href="/juno/apis" ><i class="fa-solid fa-code"></i>APIs Overview</a></li>
-    <li><a class="" href="/juno/clock" ><i class="fa-regular fa-clock"></i>Clock &amp; Delay</a></li>
-    <li><a class="" href="/juno/serial" ><i class="fa-solid fa-terminal"></i>Serial</a></li>
-    <li><a class="" href="/juno/hid" ><i class="fa-solid fa-computer-mouse"></i>HID (Mouse)</a></li>
-    <li><a class="" href="/juno/lego" ><i class="fa-brands fa-bluetooth-b"></i>LEGO Powered Up</a></li>
-    <li><a class="" href="/juno/internet" ><i class="fa-solid fa-wifi"></i>Internet</a></li>
-    <li><a class="" href="/juno/email" ><i class="fa-solid fa-envelope"></i>Email</a></li>
-    <li><a class="" href="/juno/storage" ><i class="fa-solid fa-sd-card"></i>SD Card Storage</a></li>
-    <li><a class="" href="/juno/types" ><i class="fa-solid fa-code-branch"></i>Type Mapping</a></li>
-    <li class="menu-group"><span>Shields</span></li>
-    <li><a class="" href="/juno/lcd-keypad-shield" ><i class="fa-solid fa-table-cells"></i>LCD Keypad Shield</a></li>
-    <li><a class="" href="/juno/tft-touch-shield" ><i class="fa-solid fa-tablet-screen-button"></i>TFT Touch Shield</a></li>
-    <li class="menu-group"><span>Tooling</span></li>
-    <li><a class="" href="/juno/juno-maven-plugin" ><i class="fa-solid fa-gears"></i>Maven Plugin</a></li>
-    <li><a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank"><i class="fa-solid fa-book"></i>Javadocs</a></li>
-    <li><a class="" href="https://github.com/jabrena/juno" target="_blank"><i class="fa-brands fa-github"></i>GitHub</a></li>
-  </ul>
-</section>
-  </header> <!-- End Header -->
-  <footer>
-<section class="contact">
-    <h3 class="section-title contact-title">Contact me</h3>
-    <ul>
-        <li>
-            <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener noreferrer">
-                <i class="fa-brands fa-github" aria-hidden="true"></i>
-            </a>
-        </li>
-    </ul>
-</section>
-<section class="copyright">
-  <p>2026 &copy; Juno</p>
-</section>
-
-  </footer> <!-- End Footer -->
-</aside> <!-- End Sidebar -->
-<!-- Dark Mode Toggle - Fixed top-right for all screen sizes -->
-<button class="dark-mode-toggle" aria-label="Toggle dark mode">
-  <i class="fas fa-moon"></i>
-</button>
-<main class="main-content">
-<!-- Theme documentation: https://iamroq.dev/theme/default/#qute-user-tags -->
-<div class="home-content">
-
-<section class="roq-hero">
-  <div class="roq-hero-main">
+<section class="juno-hero" style="--juno-hero-image: url('/juno/images/juno.png')">
+  <div class="juno-hero-inner">
     <h1>Java, compiled straight to the board</h1>
-    <p class="roq-hero-tagline">Juno is an ahead-of-time compiler for a checked subset of Java</p>
-    <div class="roq-hero-sep"></div>
-    <p class="roq-hero-subtitle">
-    `javac` stays the frontend. Juno closed-world-links your `main` method on the
-    development machine and emits GNU ARM Cortex-M4 assembly plus a small C++ runtime
-    shim directly&nbsp;&mdash; no JVM, no interpreter, no dynamic class loading on the
-    Arduino UNO R4 WiFi or UNO Q.
-</p>
-    <div class="roq-hero-actions">
-        
-  
-  
-  <a href="getting-started" class="btn btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
-  <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="btn btn-secondary"><i class="fa-brands fa-github"></i> View on GitHub</a>
-
+    <p class="juno-hero-tagline">Juno is an ahead-of-time compiler for running a practical subset of Java for microcontrollers.</p>
+    <div class="juno-hero-actions">
+      <a href="getting-started" class="juno-btn juno-btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
+      <a href="#try-juno" class="juno-btn juno-btn-secondary">Try Juno</a>
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" class="juno-btn juno-btn-ghost"><i class="fa-brands fa-github"></i> See the code</a>
     </div>
   </div>
 </section>
 
-<div class="roq-features">
-<div class="card roq-feature">
-  <div class="roq-feature-icon"><i class="fa-solid fa-microchip"></i></div>
-  <h3>No JVM on the board</h3>
-  <p>    `javac` &rarr; `.class` &rarr; Juno's closed-world linker &rarr; Cortex-M4 (Thumb-2) assembly
-    plus an `extern "C"` runtime shim, assembled and linked by the board's own Arduino toolchain.
-</p>
-  <a href="features" class="btn btn-link">See the feature inventory <i class="fa-solid fa-arrow-right"></i></a>
-</div><div class="card roq-feature">
-  <div class="roq-feature-icon"><i class="fa-solid fa-bolt"></i></div>
-  <h3>Real hardware intrinsics</h3>
-  <p>    GPIO, timing, Serial, the LED matrix, Wi-Fi/HTTP/JSON, SD card storage, email, USB mouse, and
-    LCD/TFT shields &mdash; plain Java `native` methods lowered to shim calls at link time.
-</p>
-  <a href="apis" class="btn btn-link">Browse the hardware API <i class="fa-solid fa-arrow-right"></i></a>
-</div><div class="card roq-feature">
-  <div class="roq-feature-icon"><i class="fa-solid fa-gamepad"></i></div>
-  <h3>16 playable games</h3>
-  <p>    Pac-Man, Chess, Battleship, Blackjack, Texas Hold'em and more, running on an ELEGOO 2.8&Prime;
-    TFT touch shield &mdash; compiled ahead of time, not interpreted.
-</p>
-  <a href="games" class="btn btn-link">See the games <i class="fa-solid fa-arrow-right"></i></a>
-</div><div class="card roq-feature">
-  <div class="roq-feature-icon"><i class="fa-solid fa-microchip"></i></div>
-  <h3>Two boards, one backend</h3>
-  <p>    The same Cortex-M4/Thumb-2 codegen targets the UNO R4 WiFi's Renesas RA4M1 and the UNO Q's
-    Zephyr-hosted STM32U585.
-</p>
-  <a href="arduino-one-r4" class="btn btn-link">Compare the boards <i class="fa-solid fa-arrow-right"></i></a>
-</div></div>
-
-<section class="roq-section">
-  <h2>How it works</h2>
-  <pre><code>Java source -&gt; javac -&gt; .class -&gt; Juno linker/AOT -&gt; .S + Shim.cpp + .ino -&gt; Arduino toolchain -&gt; RA4M1 (UNO R4 WiFi)
-                                                                                         -&gt; STM32U585 (UNO Q)</code></pre>
-  <p>
-    Juno is deliberately closed-world and minimal: no interpreter, no dynamic class loading, no
-    general objects or arrays yet. See the <a href="features">feature inventory</a> for exactly
-    what's supported today, or jump into <a href="getting-started">Getting Started</a> to flash
-    Blink in a few commands.
-  </p>
+<section class="juno-band">
+  <div class="juno-container juno-split">
+    <div>
+      <h2><i class="fa-solid fa-microchip"></i> Embedded</h2>
+      <p>
+        Juno runs on the Arduino UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q, on the Arduino Nano
+        ESP32 and on the M5Stack Cardputer. GPIO, timing, Serial, the LED matrix, Wi-Fi, HTTP, JSON,
+        SD cards, USB HID and LCD/TFT shields are plain Java <code>native</code> methods lowered to
+        shim calls at link time.
+      </p>
+    </div>
+    <div>
+      <h2><i class="fa-solid fa-layer-group"></i> Ahead of time</h2>
+      <p>
+        <code>javac</code> &rarr; <code>.class</code> &rarr; Juno's closed-world linker &rarr; AVR,
+        Thumb-2 or Xtensa assembly plus an <code>extern "C"</code> runtime shim, assembled and linked
+        by the board's own Arduino toolchain. Everything runs from one fixed arena, so nothing is
+        interpreted and nothing is loaded at runtime.
+      </p>
+    </div>
+  </div>
 </section>
 
-</div>
+<section class="juno-band juno-band-alt" id="try-juno">
+  <div class="juno-container">
+    <h2 class="juno-section-title">Try Juno</h2>
+    <p class="juno-section-lead">Write plain Java, then let the Maven plugin compile, verify and flash it.</p>
+    <div class="juno-try">
+      <div class="juno-code-window">
+        <div class="juno-code-bar"><span></span><span></span><span></span><em>Blink.java</em></div>
+<pre><code>import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.util.Delay;
+
+public class Blink {
+
+    public static void main(String[] args) {
+        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+
+        while (true) {
+            led.high();
+            Delay.millis(500);
+            led.low();
+            Delay.millis(500);
+        }
+    }
+}</code></pre>
+      </div>
+      <ol class="juno-steps">
+        <li>
+          <h3>Generate</h3>
+          <p>Lower the bytecode to assembly and a runtime shim.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+        <li>
+          <h3>Verify</h3>
+          <p>Compile it with the real Arduino toolchain, without touching hardware.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+        <li>
+          <h3>Flash</h3>
+          <p>Upload to the board and watch the serial output.</p>
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<section class="juno-band">
+  <div class="juno-container">
+    <h2 class="juno-section-title">Supported boards</h2>
+    <p class="juno-section-lead">Three backends, one compiler: AVR, Cortex-M4 (Thumb-2) and Xtensa.</p>
+    <div class="juno-boards">
+      <a class="juno-board" href="arduino-nano-esp32"><img src="/juno/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+      <a class="juno-board" href="m5stack-cardputer"><img src="/juno/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
+      <a class="juno-board" href="arduino-uno-q"><img src="/juno/images/boards/arduino-uno-q.png" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
+      <a class="juno-board" href="arduino-uno-r4-wifi"><img src="/juno/images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
+      <a class="juno-board" href="arduino-uno-r3-wifi"><img src="/juno/images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2" loading="lazy"><span>UNO WiFi Rev2</span><small>ATmega4809 &middot; AVR</small></a>
+      <a class="juno-board" href="arduino-uno-r3"><img src="/juno/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
+    </div>
+  </div>
+</section>
+
+<section class="juno-band juno-band-alt">
+  <div class="juno-container">
+    <div class="juno-cards">
+      <a class="juno-card" href="memory-model">
+        <i class="fa-solid fa-memory"></i>
+        <h3>Memory model</h3>
+        <p>Where Juno programs keep their data, how the fixed arena and its garbage collector work, and what concurrent tasks can observe.</p>
+        <span>Explore the memory model <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="features">
+        <i class="fa-solid fa-list-check"></i>
+        <h3>Feature inventory</h3>
+        <p>Exactly which parts of the Java language and libraries Juno supports today.</p>
+        <span>Read more <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="https://github.com/jabrena/juno" target="_blank" rel="noopener">
+        <i class="fa-brands fa-github"></i>
+        <h3>Juno on GitHub</h3>
+        <p>Browse the compiler, the examples and the Maven plugin, or open an issue.</p>
+        <span>Open the repository <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+  </div>
+</section>
+
 </main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
 
 </div>
 
