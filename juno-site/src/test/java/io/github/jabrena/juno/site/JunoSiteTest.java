@@ -174,6 +174,7 @@ class JunoSiteTest {
                 .body(containsString("juno-subnav"))
                 .body(containsString("/images/games/gladiator-solo.gif"))
                 .body(containsString("/images/games/lichess-daily.gif"))
+                .body(containsString("/images/showcase/mailbox1.png"))
                 .body(containsString("Polyphonic RCX"));
     }
 

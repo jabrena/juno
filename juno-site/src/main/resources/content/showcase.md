@@ -8,6 +8,20 @@ Showcase programs are complete, working applications built with Juno. Each one r
 parts of the API together, and is the best place to see how a larger program is organized. Their source is in
 [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases).
 
+## Mailbox
+
+Mailbox is a remote messaging system for Claude. Run Mailbox and define an API key to be shared with Claude and the M5Stack Cardputer. On the M5Stack Cardputer you can send messages to Mailbox, and Claude periodically reviews the mailbox to process them and notify the status.
+
+<img src="../images/showcase/mailbox2.png" alt="The M5Stack Cardputer ADV running the Mailbox client, its screen showing a message and the keyboard below it" width="480">
+
+<img src="../images/showcase/mailbox1.png" alt="The Mailbox setup: a Java logo on one TFT shield, the mailbox screen on another with its message count and address, and the Cardputer below" width="480">
+
+| Field | Value |
+|---|---|
+| Sources | [`usecases/mailbox`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox) |
+| Board supported | [`Arduino Q`](../arduino-uno-q) (server), [`M5Stack Cardputer`](../m5stack-cardputer) (client) |
+| Features used | HTTPS server, HTTPS client, self-signed certificates, Wi-Fi, SD card, API key header, TFT touch screen, Cardputer keyboard, MVC view router, JSON, serial output, clock, delays |
+
 ## Gladiator
 
 [Gladiator](../games#gladiator) is a game for the ELEGOO 2.8" TFT touch shield. Two gladiators fight in a Roman arena,
