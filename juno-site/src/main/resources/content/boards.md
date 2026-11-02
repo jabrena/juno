@@ -35,7 +35,7 @@ by memory.
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | GPIO, delays, clock, `Serial` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Double-precision `Math` functions | ✓ | — | ✓ | ✓ | — | — |
+| Double-precision `Math` functions | ✓ | ✓ | ✓ | ✓ | — | — |
 | Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | WiFi Shield |
 | Wi-Fi access point | ✓ | ✓ | ✓ | ✓ | ✓ | — |
