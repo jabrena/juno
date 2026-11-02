@@ -41,7 +41,7 @@ by memory.
 | Wi-Fi access point | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP client | ✓ | ✓ | — | ✓ | ✓ | WiFi Shield |
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP server | ✓ | ✓ | ✓ | ✓ | — | — |
+| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | — | — |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | — | ✓ | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | — | — | ✓ | — | — |

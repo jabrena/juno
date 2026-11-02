@@ -45,6 +45,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | `UUID.randomUUID()` | ✓ | The ATECC608A secure element's random-number generator. | |
 | `@Watchdog` | ✓ | ATmega4809 hardware watchdog, at most about 8.2 seconds. | |
 | `Wifi`, `Udp`, SNTP | ✓ | Through `WiFiNINA`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
+| `HttpServer` (plain HTTP) | ✓ | A WiFiNINA server on the station address, one request at a time; no HTTPS. Build with `-Djuno.Xmx=3k`. | [`HttpServerStatusSDTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatusSDTFT.java) |
 | `HttpClient` (HTTP and HTTPS), `Json` | ✓ | TLS runs on the NINA-W102, which trusts the root certificates in its firmware. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
 | `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
