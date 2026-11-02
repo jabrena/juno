@@ -27,7 +27,7 @@ language itself, see the [Java subset](../java-subset) page.
 | USB HID mouse | – | – | ✓ | – | ✓ | ✓ |
 | LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – |
 | Built-in display, keyboard, speaker, battery | – | – | – | – | – | ✓ |
-| Hardware random numbers | Weak | ✓ | ✓ | ✓ | ✓ | Weak |
+| Hardware random numbers | Weak | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Watchdog | ✓ | ✓ | ✓ | – | ✓ | ✓ |
 | SD card | Shield | Shield | Shield | Shield | Carrier | Built-in |
 | Grove sockets | Shield | Shield | Shield | Shield | Carrier | – |

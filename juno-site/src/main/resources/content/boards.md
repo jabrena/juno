@@ -49,7 +49,7 @@ by memory.
 | USB HID mouse | ✓ | ✓ | — | ✓ | — | — |
 | Onboard LED matrix | — | — | ✓ | ✓ | — | — |
 | `@Watchdog` | ✓ | ✓ | — | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | ✓ | — | ✓ | ✓ | ✓ | — |
+| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | ✓ | — | — | — | — |
 
 The compiler checks this table for you: a program that uses an API its target board does not

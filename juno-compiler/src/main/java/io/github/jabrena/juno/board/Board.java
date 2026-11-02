@@ -73,7 +73,7 @@ public enum Board {
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.M5STACK_ESP32,
             UnoGeneration.NANO,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.USB_HID));
