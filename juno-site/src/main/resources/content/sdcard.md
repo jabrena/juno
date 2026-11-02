@@ -18,7 +18,7 @@ startup, and pass it to the classes that need it. A unit test passes `mock(SdCar
 | Socket | Card | Chip select |
 |---|---|---|
 | AZDelivery Data Logger Shield | `new DataLoggerShield().getSdCard()` | D10 |
-| ELEGOO 2.8" TFT touch shield | `TftTouchShield.getSdCard()` | D10 |
+| ELEGOO 2.8" TFT touch shield | `new TftTouchShield().getSdCard()` | D10 |
 | LCD Keypad Shield (stacked on a data logger) | `new LcdKeypadShield().getSdCard()` | D10 |
 | Arduino WiFi Shield (UNO R3) | `new ArduinoWifiShield().getSdCard()` | D4 |
 | Nano Connector Carrier | `new NanoConnectorCarrier().getSdCard()` | D4 |
@@ -127,7 +127,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 byte[] header = new byte[12];
-if (TftTouchShield.getSdCard().begin()) {
+TftTouchShield tft = new TftTouchShield();
+if (tft.getSdCard().begin()) {
     try (RandomAccessFile file = new RandomAccessFile("DATA.BIN", "r")) {
         file.readFully(header);                // the first 12 bytes
         file.seek(file.length() - 16);         // jump anywhere in the file

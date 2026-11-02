@@ -131,24 +131,25 @@ compiler intrinsic that writes a whole GPIO port per store through the RA4M1's p
 API, wiring and touch calibration are on the [Arduino Shields](../arduino-shields) page.
 
 ```java
-TftTouchShield.begin();
-TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-TftTouchShield.fillScreen(TftTouchShield.BLACK);
-TftTouchShield.setCursor(10, 10);
-TftTouchShield.setTextSize(2);
-TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-TftTouchShield.print("Hello, Juno");
+TftTouchShield tft = new TftTouchShield();
+tft.begin();
+tft.setRotation(TftTouchShield.LANDSCAPE);
+tft.fillScreen(TftTouchShield.BLACK);
+tft.setCursor(10, 10);
+tft.setTextSize(2);
+tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+tft.print("Hello, Juno");
 
 while (true) {
-    if (TftTouchShield.readTouch()) {
-        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    if (tft.readTouch()) {
+        tft.fillCircle(tft.touchX(), tft.touchY(), 3, TftTouchShield.WHITE);
     }
 }
 ```
 
 [`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) is a finger-paint program, and
 [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java) a desk weather station that reads its Wi-Fi credentials from the
-shield's microSD card (`TftTouchShield.getSdCard()`, chip select D10).
+shield's microSD card (`TftTouchShield.getSdCard()` on the shield instance, chip select D10).
 
 ### Grove Base Shield
 
