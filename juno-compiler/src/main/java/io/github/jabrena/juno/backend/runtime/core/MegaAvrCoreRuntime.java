@@ -17,8 +17,9 @@ import io.github.jabrena.juno.board.ArduinoCore;
  * 16-bit parameters, so the generated code reaches them through the {@code juno_*} wrappers {@link AvrRuntimeShim}
  * defines; its own weak {@code yield()} serves the loop backedges. Networking is the NINA-W102 module through
  * {@code WiFiNINA}: Wi-Fi, UDP, HTTP, HTTPS and the implicit-TLS email clients (TLS on the module). Tasks run on the
- * preemptive scheduler over {@link ThreadRuntime#avrPort}, preempted at safepoints. The board has no LED matrix, no HTTP server and no
- * STARTTLS mail submission; the linker's capability checks keep programs needing them from reaching this class.
+ * preemptive scheduler over {@link ThreadRuntime#avrPort}, preempted at safepoints. The HTTP server is plain HTTP
+ * only, and the board has no LED matrix and no STARTTLS mail submission; the linker's capability checks keep programs
+ * needing the rest from reaching this class.
  */
 final class MegaAvrCoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
@@ -107,9 +108,10 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
         return shimLibraries.wifiHelpers();
     }
 
+    /** A {@code WiFiNINA} {@code WiFiServer} on the module's station address, one request at a time. */
     @Override
     public String httpServerTransport() {
-        throw unsupported("an HTTP server");
+        return runtimeSource.load("megaavr/http-server-transport.cpp");
     }
 
     @Override

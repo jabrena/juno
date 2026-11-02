@@ -33,6 +33,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final ArduinoCore core;
+
+    /** @param core the ESP32 core this runtime serves: {@link ArduinoCore#ESP32} or {@link ArduinoCore#M5STACK_ESP32} */
+    Esp32CoreRuntime(ArduinoCore core) {
+        this.core = core;
+    }
 
     @Override
     public String delayMillisFunction() {
@@ -134,9 +140,15 @@ final class Esp32CoreRuntime implements CoreRuntime {
         } else {
             defaultTrust = CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem"))
                     .cArray("juno_ca_bundle");
-            defaultTrustConfiguration = "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));";
+            // The Arduino-ESP32 2.x core takes the bundle alone; the ESP-IDF 5 core behind the M5Stack adds its size.
+            defaultTrustConfiguration = this.core == ArduinoCore.M5STACK_ESP32
+                    ? "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));"
+                    : "setCACertBundle(juno_ca_bundle);";
         }
+        // The default client also checks this runtime anchor, which only programs using HttpClient.setTrustedCertificate
+        // define; without them it stays null and the bundle is used.
         return defaultTrust + """
+                static const char* juno_runtime_trusted_ca = nullptr;
                 struct JunoEspTlsClient : WiFiClientSecure {
                   JunoEspTlsClient() {
                     if (juno_runtime_trusted_ca != nullptr) {
@@ -167,6 +179,32 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return "JunoEspTlsClient client;";
     }
 
+    /**
+     * The STARTTLS client checks the server's chain against the same Mozilla roots as {@link #httpsHelpers}. They go in
+     * as one PEM string: {@code ESP_SSLClient}'s {@code setCACert} builds a trust anchor for every certificate in it.
+     * Unlike the core's TLS client, BearSSL also checks the certificate dates against {@code time()}, which the board
+     * leaves near 1970, so the system clock is set once over SNTP first. Without a clock it fails closed with {@code -13}.
+     */
+    @Override
+    public String smtpStarttlsTrust() {
+        return CertificateBundle.cPem("juno_smtp_ca", runtimeSource.load("esp32/ca-certificates.pem")) + """
+                  if (time(nullptr) < 1700000000) {
+                    configTime(0, 0, "pool.ntp.org", "time.google.com");
+                    for (int attempt = 0; attempt < 100 && time(nullptr) < 1700000000; attempt++) delay(100);
+                  }
+                  if (time(nullptr) < 1700000000) return -13;
+                  client.setCACert(juno_smtp_ca);""";
+    }
+
+    /**
+     * The ESP32's task watchdog fires from an interrupt, so the halt keeps interrupts on: the main task stays subscribed
+     * and is never fed again, and the watchdog resets the board after its timeout instead of the board hanging.
+     */
+    @Override
+    public String panicHalt() {
+        return "for (;;) {}";
+    }
+
     @Override
     public String yieldFunction() {
         return runtimeSource.load("esp32/core-glue.cpp");
@@ -180,9 +218,23 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
         int timeoutSeconds = Math.ceilDiv(timeoutMillis, 1000);
-        return new WatchdogRuntime("#include <esp_task_wdt.h>\n",
-                "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);",
+        return new WatchdogRuntime("#include <esp_task_wdt.h>\n", taskWatchdogSetup(timeoutSeconds),
                 "esp_task_wdt_reset();", Math.multiplyExact(timeoutSeconds, 1000));
+    }
+
+    /**
+     * Arduino-ESP32 2.x takes the timeout in seconds; the ESP-IDF 5 core behind the M5Stack takes a configuration
+     * structure ({@code timeout_ms}, {@code idle_core_mask}, {@code trigger_panic}) with the idle tasks unsubscribed.
+     * That core starts the task watchdog itself at boot, so {@code esp_task_wdt_init} reports
+     * {@code ESP_ERR_INVALID_STATE} and leaves its own timeout in place; {@code esp_task_wdt_reconfigure} applies ours.
+     */
+    private String taskWatchdogSetup(int timeoutSeconds) {
+        return switch (core) {
+            case M5STACK_ESP32 -> "esp_task_wdt_config_t config = {" + timeoutSeconds * 1000 + "u, 0u, true};\n"
+                    + "if (esp_task_wdt_init(&config) == ESP_ERR_INVALID_STATE) esp_task_wdt_reconfigure(&config);\n"
+                    + "esp_task_wdt_add(nullptr);";
+            default -> "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);";
+        };
     }
 
     @Override
@@ -249,7 +301,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public String threadPort(RuntimeConfig config) {
         return threadRuntime.esp32Port(config.maxThreads(),
-                config.threadStackBytes(ArduinoCore.ESP32.defaultThreadStackBytes()));
+                config.threadStackBytes(core.defaultThreadStackBytes()));
     }
 
     @Override

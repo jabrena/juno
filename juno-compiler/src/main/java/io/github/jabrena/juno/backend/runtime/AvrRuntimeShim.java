@@ -53,7 +53,7 @@ public final class AvrRuntimeShim {
 
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
-            ShimFeature.LEGO_POWERED_UP, ShimFeature.HTTP_SERVER, ShimFeature.SMTP);
+            ShimFeature.LEGO_POWERED_UP, ShimFeature.SMTP);
 
     private final CoreRuntime core;
     private final RuntimeConfig config;
@@ -121,8 +121,8 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
-        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.SMTP_TLS,
-                ShimFeature.POP3)) {
+        if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS,
+                ShimFeature.HTTP_SERVER, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
         }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
@@ -291,9 +291,14 @@ public final class AvrRuntimeShim {
         } else if (uses(ShimFeature.HTTP_TIMEOUT)) {
             shim.append(networkShimLibraries.httpTimeoutStub());
         }
+        if (uses(ShimFeature.HTTP_SERVER)) {
+            shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),
+                    ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
+        }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
         if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),
+                    core.smtpStarttlsTrust()));
         }
     }
 

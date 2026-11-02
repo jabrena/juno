@@ -18,6 +18,11 @@ class BLEAddress {
   BLEAddress() = default;
   explicit BLEAddress(uint8_t* address) { memcpy(bytes, address, 6); }
   uint8_t (*getNative())[6] { return &bytes; }
+  std::string toString() const {
+    char text[18];
+    snprintf(text, sizeof(text), "%02x:%02x:%02x:%02x:%02x:%02x", bytes[0], bytes[1], bytes[2], bytes[3], bytes[4], bytes[5]);
+    return text;
+  }
 };
 class BLEUUID {
  public:

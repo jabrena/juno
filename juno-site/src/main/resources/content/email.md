@@ -98,7 +98,8 @@ int sent = Smtp.send(
 | `-9` | Message body |
 | `-10` | Base64 encoding overflowed its buffer |
 | `-11` | `STARTTLS` |
-| `-12` | TLS upgrade |
+| `-12` | TLS upgrade, for example an untrusted certificate |
+| `-13` | Clock not set: on the Nano ESP32 the certificate dates cannot be checked without it |
 
 ### Sending over implicit TLS
 
@@ -113,7 +114,7 @@ int sent = Smtp.sendTls(
         "Arduino alert", "Alarm activated");
 ```
 
-It returns the same codes as `send`, except `-11` and `-12`, which only apply to `STARTTLS`.
+It returns the same codes as `send`, except `-11`, `-12` and `-13`, which only apply to `STARTTLS`.
 
 ## POP3
 

@@ -103,6 +103,14 @@ public interface CoreRuntime {
         return httpsHelpers();
     }
 
+    /**
+     * The STARTTLS client's trust setup, placed before it connects. Cores that do not check the server's certificate
+     * chain yet keep {@code setInsecure()}; a core that checks it overrides this with its trust anchors.
+     */
+    default String smtpStarttlsTrust() {
+        return "client.setInsecure();";
+    }
+
     /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
     default String httpsTrustHelpers() {
         return """
@@ -110,6 +118,14 @@ public interface CoreRuntime {
                   return 0;
                 }
                 """;
+    }
+
+    /**
+     * How {@code juno_panic} stops the program once its diagnostic is printed: with interrupts off, so nothing runs
+     * again and a hardware watchdog, if enabled, resets the board.
+     */
+    default String panicHalt() {
+        return "noInterrupts();\n  for (;;) {}";
     }
 
     /** Safe number of simultaneous HTTP transport leases; excess callers wait cooperatively. */

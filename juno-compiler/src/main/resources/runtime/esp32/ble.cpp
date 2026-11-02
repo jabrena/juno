@@ -1,7 +1,23 @@
+#include <utility>
 // A BLE central with the calls the LEGO runtime makes on ArduinoBLE, over the core's BLE library. Scan results and
 // notifications arrive on the BLE task: they are stored here, and the program's handler runs from poll(), on the
 // program's own task.
 enum JunoBleEvent { BLEUpdated = 1 };
+
+// The address-type type of the core's BLE library: an enum on the Bluedroid build (Nano ESP32) and uint8_t on the
+// NimBLE build (M5Stack core). Both number a public address 0.
+using JunoBleAddressType = decltype(std::declval<BLEAdvertisedDevice&>().getAddressType());
+static constexpr JunoBleAddressType JUNO_BLE_ADDRESS_PUBLIC = static_cast<JunoBleAddressType>(0);
+
+// The address bytes in display order ("90:84:2b:..."), which is what BLEAddress's byte constructor takes on both builds.
+// getNative() cannot be used: the NimBLE build keeps its bytes reversed, and its constructor reverses them again.
+template <typename Text>
+static void juno_ble_address_from_text(const Text& text, uint8_t* out) {
+  const char* digits = text.c_str();
+  for (int i = 0; i < 6; i++) {
+    out[i] = static_cast<uint8_t>(strtoul(digits + i * 3, nullptr, 16));
+  }
+}
 
 class JunoBLEDevice;
 class JunoBLECharacteristic;
@@ -17,7 +33,7 @@ static std::string juno_ble_scan_uuid;
 // The latest advertisement that matched the scan's service UUID, handed out once by available().
 static bool juno_ble_found = false;
 static uint8_t juno_ble_found_address[6];
-static esp_ble_addr_type_t juno_ble_found_type = BLE_ADDR_TYPE_PUBLIC;
+static JunoBleAddressType juno_ble_found_type = JUNO_BLE_ADDRESS_PUBLIC;
 static uint8_t juno_ble_found_manufacturer[JUNO_BLE_BYTES];
 static int32_t juno_ble_found_manufacturer_length = 0;
 
@@ -87,7 +103,7 @@ class JunoBLEDevice {
  public:
   bool valid = false;
   uint8_t address[6] = {0, 0, 0, 0, 0, 0};
-  esp_ble_addr_type_t addressType = BLE_ADDR_TYPE_PUBLIC;
+  JunoBleAddressType addressType = JUNO_BLE_ADDRESS_PUBLIC;
   uint8_t manufacturer[JUNO_BLE_BYTES] = {};
   int32_t manufacturerLength = 0;
 
@@ -141,10 +157,14 @@ class JunoBLEDevice {
 class JunoBleScanCallbacks : public BLEAdvertisedDeviceCallbacks {
  public:
   void onResult(BLEAdvertisedDevice advertised) override {
-    if (!advertised.isAdvertisingService(BLEUUID(juno_ble_scan_uuid))) return;
-    std::string manufacturer = advertised.haveManufacturerData() ? advertised.getManufacturerData() : std::string();
+    if (!advertised.isAdvertisingService(BLEUUID(juno_ble_scan_uuid.c_str()))) return;
+    std::string manufacturer;
+    if (advertised.haveManufacturerData()) {
+      auto data = advertised.getManufacturerData();
+      manufacturer.assign(data.c_str(), data.length());
+    }
     portENTER_CRITICAL(&juno_ble_mux);
-    memcpy(juno_ble_found_address, *advertised.getAddress().getNative(), 6);
+    juno_ble_address_from_text(advertised.getAddress().toString(), juno_ble_found_address);
     juno_ble_found_type = advertised.getAddressType();
     int32_t stored = manufacturer.size() < JUNO_BLE_BYTES ? static_cast<int32_t>(manufacturer.size()) : JUNO_BLE_BYTES;
     memcpy(juno_ble_found_manufacturer, manufacturer.data(), stored);

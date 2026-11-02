@@ -178,6 +178,7 @@ public final class RuntimeShim {
                 .replace("${JUNO_YIELD_FUNCTION}", watchdogRefreshDeclaration + yieldFunction)
                 .replace("${JUNO_WATCHDOG_REFRESH}", watchdogRefresh)
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
+                .replace("${JUNO_PANIC_HALT}", core.panicHalt())
                 .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogFunctions)
                 + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
                 + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
@@ -293,7 +294,8 @@ public final class RuntimeShim {
                     ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),
+                    core.smtpStarttlsTrust()));
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),

@@ -55,6 +55,8 @@ class BoardTest {
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTP_SERVER, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTPS_SERVER, false),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
@@ -86,6 +88,12 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.M5_KEYBOARD, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_AUDIO, true),
                 arguments(Board.M5_CARDPUTER, Capability.M5_BATTERY, true),
+                arguments(Board.M5_CARDPUTER, Capability.WATCHDOG, true),
+                arguments(Board.M5_CARDPUTER, Capability.SECURE_ENTROPY, true),
+                arguments(Board.M5_CARDPUTER, Capability.STRUCTURED_CONCURRENCY, true),
+                arguments(Board.M5_CARDPUTER, Capability.DOUBLE_MATH, true),
+                arguments(Board.M5_CARDPUTER, Capability.BLUETOOTH_LE, true),
+                arguments(Board.M5_CARDPUTER, Capability.TLS_EMAIL, true),
                 arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false),
                 arguments(Board.NANO_ESP32, Capability.M5_BATTERY, false));
     }
@@ -101,7 +109,7 @@ class BoardTest {
         assertThat(board.annotationArgument()).isEqualTo("M5StackCardputerBoard.class");
         assertThat(board.fqbn())
                 .isEqualTo("m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc");
-        assertThat(board.core()).isEqualTo(ArduinoCore.ESP32);
+        assertThat(board.core()).isEqualTo(ArduinoCore.M5STACK_ESP32);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/M5StackCardputerBoard")).isEqualTo(board);
     }
 

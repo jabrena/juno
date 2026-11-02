@@ -84,9 +84,8 @@ The program reads both files at startup into buffers it allocates once, then pas
 them and keeps its own copy, so the program does not hold the key afterwards. Each buffer must hold its whole file, so
 keep the PEM text small: the examples use 2048-byte buffers.
 
-On the UNO Q there is no SD card in the example. `QHttpsServer` builds the certificate and key into the program: pass
-their PEM text as the `JUNO_TLS_CERT` and `JUNO_TLS_KEY` environment variables when you build it, so neither file is
-committed to the repository.
+On the UNO Q, `QHttpsServer` reads `server.crt` and `server.key` from the root of the Data Logger Shield's microSD card at
+startup, so neither file is built into the program or committed to the repository.
 
 ### Testing the server
 

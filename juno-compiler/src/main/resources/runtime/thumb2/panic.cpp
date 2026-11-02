@@ -5,8 +5,7 @@ ${JUNO_YIELD_FUNCTION}extern "C" [[noreturn]] void juno_panic() {
   // printed after would be silently lost, same as the arena/bounds/etc. panics that
   // already print their own diagnostic before calling this function.
   ${JUNO_WATCHDOG_PANIC_MESSAGE}
-  noInterrupts();
-  for (;;) {}
+  ${JUNO_PANIC_HALT}
 }
 // Called by the generated juno_array_check when an index is outside the length stored in front of an array's
 // elements. `site` is the check's return address, printed relative to juno_panic so it can be matched against the

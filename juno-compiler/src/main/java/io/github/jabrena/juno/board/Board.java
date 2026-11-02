@@ -40,13 +40,14 @@ public enum Board {
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     /**
-     * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), and the
-     * GPIO, SPI and analog pins shields such as the SD card, TFT touch and LCD keypad shields use.
+     * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), a
+     * plain-HTTP server on its station address, and the GPIO, SPI and analog pins shields such as the SD card, TFT touch
+     * and LCD keypad shields use.
      */
     UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
             "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
-                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
+                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL, Capability.HTTP_SERVER,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG)),
     /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
@@ -67,15 +68,16 @@ public enum Board {
     /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial and HID, GPIO, SD storage, onboard Wi-Fi, plain HTTP and
      * HTTPS clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and
-     * battery.
+     * battery, and the ESP32 task watchdog behind {@code @Watchdog}.
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
-            "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.ESP32,
+            "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.M5STACK_ESP32,
             UnoGeneration.NANO,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
-                    Capability.M5_BATTERY, Capability.USB_HID));
+                    Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
+                    Capability.TLS_EMAIL, Capability.USB_HID));
 
     private final String apiClassName;
     private final String id;

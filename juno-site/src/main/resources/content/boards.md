@@ -35,21 +35,21 @@ by memory.
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | GPIO, delays, clock, `Serial` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Double-precision `Math` functions | ✓ | — | ✓ | ✓ | — | — |
-| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | — | ✓ | ✓ | ✓ | — |
+| Double-precision `Math` functions | ✓ | ✓ | ✓ | ✓ | — | — |
+| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | WiFi Shield |
 | Wi-Fi access point | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP client | ✓ | ✓ | — | ✓ | ✓ | WiFi Shield |
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP server | ✓ | ✓ | ✓ | ✓ | — | — |
+| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | — | ✓ | ✓ | ✓ | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | ✓ | — | ✓ | ✓ | — | — |
+| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | — | — |
 | USB HID mouse | ✓ | ✓ | — | ✓ | — | — |
 | Onboard LED matrix | — | — | ✓ | ✓ | — | — |
-| `@Watchdog` | ✓ | — | — | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | ✓ | — | ✓ | ✓ | ✓ | — |
+| `@Watchdog` | ✓ | ✓ | — | ✓ | ✓ | ✓ |
+| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | ✓ | — | — | — | — |
 
 The compiler checks this table for you: a program that uses an API its target board does not
