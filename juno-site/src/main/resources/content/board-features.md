@@ -22,7 +22,7 @@ language itself, see the [Java subset](../java-subset) page.
 | HTTPS server | – | – | – | ✓ | ✓ | ✓ |
 | Email over TLS | – | ✓ | ✓ | ✓ | ✓ | – |
 | Email STARTTLS | – | – | ✓ | – | ✓ | – |
-| SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | Not documented |
+| SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Bluetooth LE | – | – | ✓ | ✓ | ✓ | – |
 | USB HID mouse | – | – | ✓ | – | ✓ | ✓ |
 | LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – |
