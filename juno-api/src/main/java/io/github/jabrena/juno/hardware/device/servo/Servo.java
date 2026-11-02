@@ -14,7 +14,9 @@ public final class Servo {
     private Servo() {
     }
 
+    /** Returns the servo on {@code pin}. The pin is attached to the servo driver on first use. */
     public static native Servo of(int pin);
 
+    /** Turns the servo to {@code angleDegrees}, from {@code 0} to {@code 180}. */
     public native void write(int angleDegrees);
 }

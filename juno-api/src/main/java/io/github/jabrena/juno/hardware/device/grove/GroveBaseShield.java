@@ -35,6 +35,7 @@ public final class GroveBaseShield {
     private static final int I2C_SDA = Gpio.getA4();
     private static final int I2C_SCL = Gpio.getA5();
 
+    /** Creates the shield handle. Create it once, at startup, and reuse it. */
     public GroveBaseShield() {
     }
 

@@ -232,15 +232,18 @@ public final class PoweredUpHubRemote {
         return (version >> 28) & 0xF;
     }
 
+    /** The minor version of a packed version number: 4 bits. */
     public int versionMinor(int version) {
         return (version >> 24) & 0xF;
     }
 
+    /** The bug-fix number of a packed version number, decoded from two binary-coded-decimal digits. */
     public int versionBugfix(int version) {
         int bcd = (version >> 16) & 0xFF;
         return (bcd >> 4) * 10 + (bcd & 0xF);
     }
 
+    /** The 16-bit build number of a packed version number. */
     public int versionBuild(int version) {
         return version & 0xFFFF;
     }

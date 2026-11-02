@@ -83,7 +83,10 @@ initTheme();
 <section class="package-description" id="package-description">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics. Each one holds the
 <code>native</code> methods that Juno lowers to Arduino core calls, and the public types in the other API packages
-(such as <code>Gpio</code> and <code>Clock</code>) forward to them. A native method cannot run on a desktop JVM.</div>
+(such as <code>Gpio</code> and <code>Clock</code>) forward to them. A native method cannot run on a desktop JVM.
+
+<p><strong>Internal.</strong> This package is not part of the programming model: compiler-facing natives that
+application code must not call directly. Use the public types in the other API packages instead.</div>
 </section>
 </div>
 <section class="summary">
@@ -184,7 +187,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </section>
 <footer>
 <hr>
-<p class="legal-copy"><small>Copyright &#169; 1980. All rights reserved.</small></p>
+<p class="legal-copy"><small>Copyright © 2026 Juan Antonio Breña Moral. Licensed under the Apache License 2.0.</small></p>
 </footer>
 </main>
 </div>

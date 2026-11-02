@@ -13,11 +13,15 @@ public interface DigitalOutput {
         return NativeDigitalOutput.of(pin);
     }
 
+    /** Drives the pin high. */
     void high();
 
+    /** Drives the pin low. */
     void low();
 
+    /** Inverts the level the pin is driven to. */
     void toggle();
 
+    /** Returns whether the pin is driven high. */
     boolean isHigh();
 }
