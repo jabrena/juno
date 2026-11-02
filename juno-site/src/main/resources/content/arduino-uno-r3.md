@@ -35,6 +35,7 @@ startup and stay small.
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
 | `Gpio`, `DigitalOutput`, `Delay`, `Clock` | ✓ | Standard Arduino GPIO and timing calls. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `analogRead`, `analogWrite` | ✓ | Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9, D10 and D11. | |
 | `Serial` | ✓ | Through the ATmega16U2 USB-to-serial path. | |
 | Classes, interfaces and inheritance | ✓ | Larger object graphs may exceed the 1 KB arena or the flash. | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Interfaces`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java) |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Bounded by the 1 KB arena and 2 KB of SRAM. | |
