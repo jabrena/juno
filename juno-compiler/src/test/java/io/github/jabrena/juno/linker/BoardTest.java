@@ -55,6 +55,8 @@ class BoardTest {
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTP_SERVER, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTPS_SERVER, false),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),

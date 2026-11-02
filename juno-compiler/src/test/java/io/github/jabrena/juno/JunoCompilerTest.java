@@ -888,6 +888,44 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("The UNO WiFi Rev2 serves plain HTTP through a WiFiNINA server on its station address")
+        void shouldServePlainHttpOnTheUnoWifiRev2WithWifiNina() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    public final class Rev2HttpServer {
+                        public static void main(String[] args) {
+                            HttpServer.begin(80);
+                            byte[] body = new byte[16];
+                            while (true) {
+                                if (HttpServer.accept(body, body.length) >= 0) {
+                                    HttpServer.respond(200, "text/plain", "online");
+                                }
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Rev2HttpServer", source);
+            Path assembly = temporaryDirectory.resolve("Rev2HttpServer.S");
+            Path shim = temporaryDirectory.resolve("Rev2HttpServerShim.cpp");
+
+            // When
+            CompilationResult result = new JunoCompiler().compileTo(
+                    CompilerTestSupport.classpath(temporaryDirectory), "demo.Rev2HttpServer", assembly, shim);
+
+            // Then
+            assertThat(result.runtimeShim()).contains(
+                    "#include <WiFiNINA.h>",
+                    "WiFiServer(static_cast<uint16_t>(port))",
+                    "extern \"C\" int32_t juno_http_server_accept(",
+                    "extern \"C\" void juno_http_server_respond(");
+        }
+
+        @Test
         @DisplayName("A watchdog annotation without an explicit timeout uses its declared default")
         void shouldUseTheDeclaredDefaultWatchdogTimeoutWhenNoneIsGiven() throws Exception {
             // Given
