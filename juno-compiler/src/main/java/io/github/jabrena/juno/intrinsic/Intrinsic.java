@@ -133,6 +133,8 @@ public enum Intrinsic {
     I2C_WRITE_REGISTER,
     I2C_READ_REGISTER,
     I2C_READ_REGISTER16,
+    SPI_BEGIN,
+    SPI_TRANSFER,
     WIFI_BEGIN,
     WIFI_BEGIN_AP,
     WIFI_STATUS,
@@ -439,16 +441,17 @@ public enum Intrinsic {
     ATOMIC_LONG_GET_AND_ADD;
 
     /**
-     * The pin, bus, USB HID, LED matrix and timer reads and writes behind {@code Gpio}, {@code I2c}, {@code Mouse},
-     * {@code LedMatrix} and {@code Clock}, the board queries behind {@code BoardModel} and the arena and flash figures
-     * behind {@code BoardMemory}, declared on the stateless {@code NativeGpio}, {@code NativeI2c}, {@code NativeMouse},
+     * The pin, bus, USB HID, LED matrix and timer reads and writes behind {@code Gpio}, {@code I2c}, {@code Spi},
+     * {@code Mouse}, {@code LedMatrix} and {@code Clock}, the board queries behind {@code BoardModel} and the arena and
+     * flash figures behind {@code BoardMemory}, declared on the stateless {@code NativeGpio}, {@code NativeI2c},
+     * {@code NativeSpi}, {@code NativeMouse},
      * {@code NativeLedMatrix}, {@code NativeClock}, {@code NativeBoardModel} and {@code NativeBoardMemory}: plain
      * Arduino core calls or board constants that never throw, recurse, yield or allocate, and never read the port
      * object they are called on.
      */
     private static final Set<Intrinsic> PORT_OPERATIONS = EnumSet.of(GPIO_PIN_MODE, GPIO_DIGITAL_WRITE,
             GPIO_DIGITAL_READ, GPIO_ANALOG_READ, GPIO_ANALOG_WRITE, GPIO_TOGGLE, GPIO_BUILTIN_LED, I2C_BEGIN,
-            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, MOUSE_BEGIN, MOUSE_MOVE, LED_MATRIX_BEGIN,
+            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, SPI_BEGIN, SPI_TRANSFER, MOUSE_BEGIN, MOUSE_MOVE, LED_MATRIX_BEGIN,
             LED_MATRIX_LOAD_FRAME, LED_MATRIX_COLUMNS, LED_MATRIX_CLEAR, CLOCK_MILLIS, CLOCK_MICROS, BOARD_IS_Q, BOARD_IS_R4,
             BOARD_IS_R3, MEMORY_ARENA_USED, MEMORY_ARENA_CAPACITY, MEMORY_FLASH_USED, MEMORY_FLASH_CAPACITY);
 

@@ -52,6 +52,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
 | `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields | ✓ | See [Shields](#shields). | |
+| `ArduinoUno.getImu()` (LSM6DS3TR, over `ArduinoUno.getSpi()`) | ✓ | Yaw, roll and pitch from the onboard accelerometer and gyroscope; no magnetometer, so the heading is integrated gyro yaw and drifts. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
 | `Servo`, `Infrared`, `RandomAccessFile` | Untested | Generated, but not yet run in the simulator or on hardware. | |
 
 ## Features
@@ -75,6 +76,29 @@ while (true) {
 
 [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) is the complete program; it builds for any board, so pass
 `-Djuno.board=arduino-uno-r3-wifi-rev2`.
+
+### Read the onboard IMU
+
+The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. `ArduinoUno.getImu()` returns a driver that is
+started once and then read into a caller-owned `ImuSample`:
+
+```java
+Imu imu = ArduinoUno.getImu();
+imu.begin();                      // keep the board still for about 2 s: it measures the gyroscope's bias
+ImuSample sample = new ImuSample();
+
+while (true) {
+    if (imu.read(sample)) {
+        Serial.print(sample.headingMillidegrees());
+    }
+    Delay.millis(200);
+}
+```
+
+The sensor has no magnetometer, so the heading is the gyroscope's yaw rate integrated from power-up, clockwise positive.
+It drifts a little with every minute of use. Roll and pitch come from gravity and are right only while the board is not
+accelerating. [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java)
+prints all four values; build it with `-Djuno.board=arduino-uno-r3-wifi-rev2`.
 
 ## Shields
 

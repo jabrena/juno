@@ -28,8 +28,8 @@ io.github.jabrena.juno.hardware.net.tcp
 io.github.jabrena.juno.hardware.net.udp
 io.github.jabrena.juno.hardware.power
 io.github.jabrena.juno.hardware.serial
+io.github.jabrena.juno.hardware.spi
 io.github.jabrena.juno.hardware.time
-io.github.jabrena.juno.remote.lego
 io.github.jabrena.juno.remote.lego.pf
 io.github.jabrena.juno.remote.lego.poweredup
 io.github.jabrena.juno.remote.lego.rcx

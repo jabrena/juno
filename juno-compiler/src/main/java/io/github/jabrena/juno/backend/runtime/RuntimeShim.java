@@ -108,6 +108,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
+        if (uses(ShimFeature.SPI)) {
+            shim.append("#include <SPI.h>\n");
+        }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
@@ -242,6 +245,9 @@ public final class RuntimeShim {
         }
         if (uses(ShimFeature.I2C)) {
             shim.append(shimLibraries.i2cHelpers());
+        }
+        if (uses(ShimFeature.SPI)) {
+            shim.append(shimLibraries.spiHelpers());
         }
     }
 

@@ -28,6 +28,8 @@ public enum ShimFeature {
     INFRARED,
     /** {@code I2c}: register access on the primary {@code Wire} bus, with the core-bundled library. */
     I2C,
+    /** {@code Spi}: full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled library. */
+    SPI,
     WIFI,
     UDP,
     /** Caller-owned, single-connection TCP transport. */

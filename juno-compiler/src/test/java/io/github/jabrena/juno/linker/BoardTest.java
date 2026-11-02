@@ -57,6 +57,9 @@ class BoardTest {
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTP_SERVER, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTPS_SERVER, false),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.ONBOARD_IMU, true),
+                arguments(Board.UNO_R4_WIFI, Capability.ONBOARD_IMU, false),
+                arguments(Board.UNO_Q, Capability.ONBOARD_IMU, false),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
@@ -602,12 +605,13 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware and the TLS server")
+    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware, its IMU and the TLS server")
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
-                        && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER)
+                        && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
+                        && capability != Capability.ONBOARD_IMU)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

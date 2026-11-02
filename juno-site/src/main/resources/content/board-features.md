@@ -32,6 +32,7 @@ language itself, see the [Java subset](../java-subset) page.
 | SD card | Shield | Shield | Shield | Shield | Carrier | Built-in |
 | Grove sockets | Shield | Shield | Shield | Shield | Carrier | – |
 | 9 Axis Motion Shield | Shield | Shield | Shield | Shield | – | – |
+| Onboard IMU (`ArduinoUno.getImu()`) | – | ✓ | – | – | – | – |
 | LCD Keypad Shield | Shield | Shield | Shield | Shield | – | – |
 | TFT Touch Shield | – | Shield | Shield | Shield | – | – |
 | Infrared link to LEGO RCX | – | – | ✓ | ✓ | ✓ | – |

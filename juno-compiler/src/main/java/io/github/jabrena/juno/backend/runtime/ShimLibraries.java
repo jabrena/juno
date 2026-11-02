@@ -30,6 +30,11 @@ public final class ShimLibraries {
         return runtimeSource.load("common/i2c.cpp");
     }
 
+    /** Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library. */
+    String spiHelpers() {
+        return runtimeSource.load("common/spi.cpp");
+    }
+
     /**
      * Framed bytes over 38 kHz infrared, bit-banged on two plain pins: 8 data bits LSB first, odd parity
      * and one stop bit at the configured baud rate, with a software carrier for a 0 bit when transmitting.
