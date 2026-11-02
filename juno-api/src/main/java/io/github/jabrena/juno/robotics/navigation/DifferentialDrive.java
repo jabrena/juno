@@ -1,6 +1,6 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
-import io.github.jabrena.juno.hardware.motor.Motor;
+import io.github.jabrena.juno.robotics.Motor;
 
 /**
  * Coordinates two independently controlled motors as a differential drive. The drive only knows the

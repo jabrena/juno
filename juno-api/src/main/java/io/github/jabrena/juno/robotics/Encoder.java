@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.motor;
+package io.github.jabrena.juno.robotics;
 
 /**
  * Position feedback for a motor or wheel. Implementations may be integrated into a motor controller

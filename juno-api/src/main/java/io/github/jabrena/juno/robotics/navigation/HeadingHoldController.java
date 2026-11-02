@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
 /**
  * Applies a bounded proportional correction to keep a differential drive on a target heading. The

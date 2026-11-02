@@ -1,6 +1,6 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
-import io.github.jabrena.juno.hardware.motor.Motor;
+import io.github.jabrena.juno.robotics.Motor;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

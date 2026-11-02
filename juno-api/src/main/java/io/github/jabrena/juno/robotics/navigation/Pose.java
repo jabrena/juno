@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
 /** Mutable, allocation-free planar pose for a differential-drive robot. */
 public final class Pose {

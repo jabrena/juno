@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
 /**
  * Fixed geometry and encoder ratios for a two-wheel differential drive. Values are expressed in

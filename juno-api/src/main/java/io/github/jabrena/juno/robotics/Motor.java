@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.motor;
+package io.github.jabrena.juno.robotics;
 
 /**
  * A basic motor that can be driven by power. Implementations are supplied by a motor controller or

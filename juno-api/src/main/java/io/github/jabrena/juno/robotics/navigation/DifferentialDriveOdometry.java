@@ -1,8 +1,8 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
 import io.github.jabrena.juno.hardware.imu.Imu;
 import io.github.jabrena.juno.hardware.imu.ImuSample;
-import io.github.jabrena.juno.hardware.motor.Encoder;
+import io.github.jabrena.juno.robotics.Encoder;
 
 /**
  * Updates a caller-owned pose from two wheel encoders and an IMU. The IMU supplies the preferred

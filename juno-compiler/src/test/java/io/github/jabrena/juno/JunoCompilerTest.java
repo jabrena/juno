@@ -81,15 +81,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.drive.DifferentialDrive;
-                    import io.github.jabrena.juno.hardware.drive.DifferentialDriveOdometry;
-                    import io.github.jabrena.juno.hardware.drive.DriveGeometry;
-                    import io.github.jabrena.juno.hardware.drive.HeadingHoldController;
-                    import io.github.jabrena.juno.hardware.drive.Pose;
+                    import io.github.jabrena.juno.robotics.navigation.DifferentialDrive;
+                    import io.github.jabrena.juno.robotics.navigation.DifferentialDriveOdometry;
+                    import io.github.jabrena.juno.robotics.navigation.DriveGeometry;
+                    import io.github.jabrena.juno.robotics.navigation.HeadingHoldController;
+                    import io.github.jabrena.juno.robotics.navigation.Pose;
                     import io.github.jabrena.juno.hardware.imu.Imu;
                     import io.github.jabrena.juno.hardware.imu.ImuSample;
-                    import io.github.jabrena.juno.hardware.motor.Encoder;
-                    import io.github.jabrena.juno.hardware.motor.RegulatedMotor;
+                    import io.github.jabrena.juno.robotics.Encoder;
+                    import io.github.jabrena.juno.robotics.RegulatedMotor;
                     import io.github.jabrena.juno.util.Delay;
                     public final class MotorContracts {
                         static final class TestMotor implements RegulatedMotor {

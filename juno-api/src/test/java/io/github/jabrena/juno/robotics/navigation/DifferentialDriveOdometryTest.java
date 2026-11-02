@@ -1,8 +1,8 @@
-package io.github.jabrena.juno.hardware.drive;
+package io.github.jabrena.juno.robotics.navigation;
 
 import io.github.jabrena.juno.hardware.imu.Imu;
 import io.github.jabrena.juno.hardware.imu.ImuSample;
-import io.github.jabrena.juno.hardware.motor.Encoder;
+import io.github.jabrena.juno.robotics.Encoder;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

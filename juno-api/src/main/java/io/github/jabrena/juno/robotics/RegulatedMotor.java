@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.motor;
+package io.github.jabrena.juno.robotics;
 
 /**
  * A motor with encoder feedback and closed-loop speed/position control.
