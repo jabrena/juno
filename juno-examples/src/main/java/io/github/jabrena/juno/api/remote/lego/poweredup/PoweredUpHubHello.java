@@ -49,6 +49,8 @@ public class PoweredUpHubHello {
                     Serial.println("Hub disconnected");
                     break;
                 }
+                Serial.print("color index=");
+                Serial.println(i);
                 HUB.setLedColor(COLORS[i]);
                 Delay.millis(COLOR_MILLIS);
             }
