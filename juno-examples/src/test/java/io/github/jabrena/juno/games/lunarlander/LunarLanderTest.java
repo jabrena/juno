@@ -6,10 +6,6 @@ import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jabrena.juno.hardware.device.tft.Internals.call;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -29,7 +25,7 @@ class LunarLanderTest {
         byte[] pads = new byte[240];
         for (int seed = 0; seed < 300; seed++) {
             Random.seed(seed);
-            call(Terrain.class, "generate", ground, pads);
+            Terrain.generate(ground, pads);
             verifyTerrain(seed, ground, pads);
         }
     }
@@ -55,50 +51,50 @@ class LunarLanderTest {
         short[] ground = new short[240];
         byte[] pads = new byte[240];
         Random.seed(11);
-        call(Terrain.class, "generate", ground, pads);
+        Terrain.generate(ground, pads);
         int center = padCenter(pads);
         int multiplier = pads[center];
-        set(Flight.class, "x", (float) center);
-        set(Flight.class, "y", (float) (ground[center] - 7));
-        set(Flight.class, "tilt", 0);
-        set(Flight.class, "vx", 0.1f);
-        set(Flight.class, "vy", 0.4f);
-        assertThat(callBoolean(LanderRenderer.class, "touchesGround", (Object) ground)).isTrue();
-        assertThat(callInt(Flight.class, "landingMultiplier", ground, pads)).isEqualTo(multiplier);
-        set(Flight.class, "vy", 0.8f);
-        assertThat(callInt(Flight.class, "landingMultiplier", ground, pads)).isZero();
-        set(Flight.class, "vy", 0.4f);
-        set(Flight.class, "tilt", 1);
-        assertThat(callInt(Flight.class, "landingMultiplier", ground, pads)).isZero();
-        set(Flight.class, "tilt", 0);
-        set(Flight.class, "y", (float) (ground[center] - 9));
-        assertThat(callBoolean(LanderRenderer.class, "touchesGround", (Object) ground)).isFalse();
+        Flight.x = (float) center;
+        Flight.y = (float) (ground[center] - 7);
+        Flight.tilt = 0;
+        Flight.vx = 0.1f;
+        Flight.vy = 0.4f;
+        assertThat(LanderRenderer.touchesGround(ground)).isTrue();
+        assertThat(Flight.landingMultiplier(ground, pads)).isEqualTo(multiplier);
+        Flight.vy = 0.8f;
+        assertThat(Flight.landingMultiplier(ground, pads)).isZero();
+        Flight.vy = 0.4f;
+        Flight.tilt = 1;
+        assertThat(Flight.landingMultiplier(ground, pads)).isZero();
+        Flight.tilt = 0;
+        Flight.y = (float) (ground[center] - 9);
+        assertThat(LanderRenderer.touchesGround(ground)).isFalse();
     }
 
     @Test
     void pilotScreenOffersHumanAndCpu() {
-        assertThat(callInt(Controls.class, "choiceAt", 60, 140)).isZero();
-        assertThat(callInt(Controls.class, "choiceAt", 180, 140)).isEqualTo(1);
-        assertThat(callInt(Controls.class, "choiceAt", 120, 140)).isEqualTo(-1);
+        assertThat(Controls.choiceAt(60, 140)).isZero();
+        assertThat(Controls.choiceAt(180, 140)).isEqualTo(1);
+        assertThat(Controls.choiceAt(120, 140)).isEqualTo(-1);
     }
 
     @Test
     void cpuLandsRepeatedly() {
         short[] ground = new short[240];
         byte[] pads = new byte[240];
-        set(Controls.class, "autopilot", true);
+        Controls.autopilot = true;
         for (int descent = 0; descent < 3; descent++) {
             Random.seed(40 + descent);
-            set(Flight.class, "fuel", 3000);
-            int landed = callInt(Flight.class, "fly", tft, ground, pads);
-            int x = Math.round((float) io.github.jabrena.juno.hardware.device.tft.Internals.get(Flight.class, "x"));
+            Flight.fuel = 3000;
+            int landed = Flight.fly(tft, ground, pads);
+            int x = Math.round(Flight.x);
             assertThat(landed)
                     .as("descent %d at x %.2f (pads %d/%d) with velocity %.2f, %.2f and tilt %d", descent,
-                            (float) io.github.jabrena.juno.hardware.device.tft.Internals.get(Flight.class, "x"),
+                            Flight.x,
                             pads[x - 6], pads[x + 6],
-                            (float) io.github.jabrena.juno.hardware.device.tft.Internals.get(Flight.class, "vx"),
-                            (float) io.github.jabrena.juno.hardware.device.tft.Internals.get(Flight.class, "vy"),
-                            io.github.jabrena.juno.hardware.device.tft.Internals.getInt(Flight.class, "tilt"))
+                            Flight.vx,
+                            Flight.vy,
+                            Flight.tilt)
                     .isPositive();
         }
     }

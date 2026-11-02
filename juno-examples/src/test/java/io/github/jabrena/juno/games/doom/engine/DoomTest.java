@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import java.util.HashSet;
 import java.util.Set;
 
-import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -273,10 +272,10 @@ class DoomTest {
         Player.angle = 0;
         Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         short[] gun = gunLines();
-        int walls = getInt(DisplayList.class, "shown");
+        int walls = DisplayList.shown;
         Player.angle = (float) Math.PI;
         Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
-        assertThat(getInt(DisplayList.class, "shown")).as("the view changed").isNotEqualTo(walls);
+        assertThat(DisplayList.shown).as("the view changed").isNotEqualTo(walls);
         assertThat(gunLines()).isEqualTo(gun);
     }
 
@@ -541,7 +540,7 @@ class DoomTest {
 
     /** The shown frame's first ten slots: the crosshair and the pistol, pinned at the head of the list. */
     private short[] gunLines() {
-        int base = getInt(DisplayList.class, "front") * DisplayList.LIST_SIZE;
+        int base = DisplayList.front * DisplayList.LIST_SIZE;
         short[] gun = new short[10 * 5];
         System.arraycopy(lines, base, gun, 0, gun.length);
         return gun;
@@ -550,8 +549,8 @@ class DoomTest {
     /** Colors of the line fragments the last render built: after present() that half is the front one. */
     private Set<Integer> colors() {
         Set<Integer> colors = new HashSet<>();
-        int base = getInt(DisplayList.class, "front") * DisplayList.LIST_SIZE;
-        for (int i = 0; i < getInt(DisplayList.class, "shown"); i++) {
+        int base = DisplayList.front * DisplayList.LIST_SIZE;
+        for (int i = 0; i < DisplayList.shown; i++) {
             colors.add(lines[base + i * 5 + 4] & 0xFFFF);
         }
         return colors;

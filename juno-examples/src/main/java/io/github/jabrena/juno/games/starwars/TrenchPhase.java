@@ -25,8 +25,8 @@ final class TrenchPhase {
     private static final int TRENCH_TOP = 150;
     private static final int SEGMENT = 320;
 
-    private static int trenchLength;
-    private static boolean portSpawned;
+    static int trenchLength;
+    static boolean portSpawned;
     static boolean portDestroyed;
     static boolean portMissed;
     static int trenchShots;

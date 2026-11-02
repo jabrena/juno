@@ -111,7 +111,7 @@ public final class RedBaron {
         }
     }
 
-    private static void startRound(Round which, int[] ents) {
+    static void startRound(Round which, int[] ents) {
         Session.round = which;
         Session.dead = false;
         Session.shotDown = false;
@@ -125,14 +125,14 @@ public final class RedBaron {
         Entities.startRound(ents);
     }
 
-    private static boolean roundOver(int[] ents) {
+    static boolean roundOver(int[] ents) {
         return switch (Session.round) {
             case DOGFIGHT -> DogfightRound.isOver(ents);
             default -> GroundAttackRound.isOver(ents);
         };
     }
 
-    private static void step(int[] ents) {
+    static void step(int[] ents) {
         switch (Session.round) {
             case DOGFIGHT -> DogfightRound.spawn(ents);
             default -> GroundAttackRound.spawn(ents);

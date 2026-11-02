@@ -126,7 +126,7 @@ public final class StarTrek {
         }
     }
 
-    private static void step(TftTouchShield tft, int[] ents) {
+    static void step(TftTouchShield tft, int[] ents) {
         Enterprise.steer();
         Enterprise.move();
         Combat.recharge();

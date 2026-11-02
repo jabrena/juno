@@ -158,7 +158,7 @@ public final class StarWars {
         }
     }
 
-    private static void startPhase(Phase which, int[] ents) {
+    static void startPhase(Phase which, int[] ents) {
         Session.phase = which;
         Session.dead = false;
         Entities.clear(ents);
@@ -172,7 +172,7 @@ public final class StarWars {
         }
     }
 
-    private static boolean phaseOver(int[] ents) {
+    static boolean phaseOver(int[] ents) {
         return switch (Session.phase) {
             case SPACE -> SpacePhase.isOver(ents);
             case SURFACE -> SurfacePhase.isOver(ents);
@@ -181,7 +181,7 @@ public final class StarWars {
     }
 
     /** One frame of flight: the world moves nearer, the phase spawns what comes next, and all act. */
-    private static void step(TftTouchShield tft, int[] ents) {
+    static void step(TftTouchShield tft, int[] ents) {
         int speed = Session.flightSpeed();
         Session.travel = Session.travel + speed;
         if (Session.phase == Phase.TRENCH) {

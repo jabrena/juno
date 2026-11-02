@@ -6,10 +6,6 @@ import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static io.github.jabrena.juno.hardware.device.tft.Internals.call;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -32,27 +28,27 @@ class PacManTest {
         tiles = new byte[Maze.TILES];
         ghosts = new int[Session.GHOSTS * Session.G_STRIDE];
         Maze.loadMaze(tiles);
-        call(Session.class, "newGame");
-        set(Session.class, "dotsEaten", 0);
-        call(Session.class, "resetActors", (Object) ghosts);
+        Session.newGame();
+        Session.dotsEaten = 0;
+        Session.resetActors(ghosts);
     }
 
     @Test
     void eatingAnEnergizerFrightensGhostsAndScores() {
         ghosts[Session.G_STATE] = Session.ACTIVE;
         // Row 3, column 1 is the top-left energizer: "#o####.#####.##.#####.####o#".
-        call(Session.class, "eat", tft, tiles, ghosts, 1, 3);
-        assertThat(getInt(Session.class, "score")).isEqualTo(50);
+        Session.eat(tft, tiles, ghosts, 1, 3);
+        assertThat(Session.score).isEqualTo(50);
         assertThat(ghosts[Session.G_FRIGHTENED]).isEqualTo(1);
-        assertThat(getInt(Session.class, "frightTimer")).isPositive();
+        assertThat(Session.frightTimer).isPositive();
     }
 
     @Test
     void eatingADotScoresTenAndCountsTowardsTheMaze() {
         // Row 5 is an open corridor of dots: "#..........................#".
-        call(Session.class, "eat", tft, tiles, ghosts, 5, 5);
-        assertThat(getInt(Session.class, "score")).isEqualTo(10);
-        assertThat(getInt(Session.class, "dotsEaten")).isEqualTo(1);
+        Session.eat(tft, tiles, ghosts, 5, 5);
+        assertThat(Session.score).isEqualTo(10);
+        assertThat(Session.dotsEaten).isEqualTo(1);
     }
 
     @Test
@@ -60,7 +56,7 @@ class PacManTest {
         ghosts[Session.G_STATE] = Session.ACTIVE;
         ghosts[Session.G_X] = Session.pacX;
         ghosts[Session.G_Y] = Session.pacY;
-        assertThat(callInt(Session.class, "checkCollisions", tft, tiles, ghosts)).isEqualTo(-1);
+        assertThat(Session.checkCollisions(tft, tiles, ghosts)).isEqualTo(-1);
     }
 
     @Test
@@ -70,19 +66,19 @@ class PacManTest {
         ghosts[Session.G_X] = Session.pacX;
         ghosts[Session.G_Y] = Session.pacY;
 
-        int eaten = callInt(Session.class, "checkCollisions", tft, tiles, ghosts);
+        int eaten = Session.checkCollisions(tft, tiles, ghosts);
 
         assertThat(eaten).isEqualTo(1);
         assertThat(ghosts[Session.G_STATE]).isEqualTo(Session.EYES);
-        assertThat(getInt(Session.class, "score")).isEqualTo(200);
+        assertThat(Session.score).isEqualTo(200);
     }
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat(callInt(Controls.class, "choiceAt", 60, 180)).isZero();
-        assertThat(callInt(Controls.class, "choiceAt", 180, 180)).isEqualTo(1);
-        assertThat(callInt(Controls.class, "choiceAt", 120, 180)).isEqualTo(-1);
-        assertThat(callInt(Controls.class, "choiceAt", 60, 40)).isEqualTo(-1);
+        assertThat(Controls.choiceAt(60, 180)).isZero();
+        assertThat(Controls.choiceAt(180, 180)).isEqualTo(1);
+        assertThat(Controls.choiceAt(120, 180)).isEqualTo(-1);
+        assertThat(Controls.choiceAt(60, 40)).isEqualTo(-1);
     }
 
     /**
@@ -101,16 +97,16 @@ class PacManTest {
         while (frame < 30_000 && Session.dotsEaten < Maze.TOTAL_DOTS) {
             frame = frame + 1;
             Session.sinceLastDot = Session.sinceLastDot + 1;
-            call(Session.class, "updatePhase", (Object) ghosts);
+            Session.updatePhase(ghosts);
             AutopilotPacMan.fly(tiles, ghosts);
-            call(Session.class, "movePac", tft, tiles, ghosts);
-            call(Ghosts.class, "releaseGhosts", (Object) ghosts);
+            Session.movePac(tft, tiles, ghosts);
+            Ghosts.releaseGhosts(ghosts);
             for (int g = 0; g < Session.GHOSTS; g++) {
-                call(Ghosts.class, "moveGhost", tiles, ghosts, g);
+                Ghosts.moveGhost(tiles, ghosts, g);
             }
-            int collision = callInt(Session.class, "checkCollisions", tft, tiles, ghosts);
+            int collision = Session.checkCollisions(tft, tiles, ghosts);
             if (collision < 0) {
-                call(Session.class, "resetActors", (Object) ghosts);
+                Session.resetActors(ghosts);
             }
         }
         assertThat(Session.dotsEaten).as("dots eaten within %d frames", frame).isGreaterThanOrEqualTo(230);

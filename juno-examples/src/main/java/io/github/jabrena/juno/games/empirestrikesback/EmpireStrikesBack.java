@@ -135,7 +135,7 @@ public final class EmpireStrikesBack {
         }
     }
 
-    private static void startRound(Round which, int[] ents) {
+    static void startRound(Round which, int[] ents) {
         Session.round = which;
         Session.dead = false;
         Session.hitThisRound = false;
@@ -150,7 +150,7 @@ public final class EmpireStrikesBack {
         }
     }
 
-    private static boolean roundOver(int[] ents) {
+    static boolean roundOver(int[] ents) {
         return switch (Session.round) {
             case PROBES -> ProbesRound.isOver(ents);
             case WALKERS -> WalkersRound.isOver(ents);
@@ -159,7 +159,7 @@ public final class EmpireStrikesBack {
     }
 
     /** Round bonuses and the JEDI letter for a round flown without losing a shield. */
-    private static void finishRound(TftTouchShield tft) {
+    static void finishRound(TftTouchShield tft) {
         Hud.drawHeader(tft);
         DisplayList.clearView(tft);
         int y = 90;
@@ -186,7 +186,7 @@ public final class EmpireStrikesBack {
     }
 
     /** One frame of flight: the craft steers, the round spawns what comes next, and all act. */
-    private static void step(TftTouchShield tft, int[] ents) {
+    static void step(TftTouchShield tft, int[] ents) {
         int speed = Session.flightSpeed();
         Session.travel = Session.travel + speed;
         Camera.steer();

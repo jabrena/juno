@@ -9,11 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static io.github.jabrena.juno.hardware.device.tft.Internals.call;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -41,9 +36,9 @@ class MissileCommandTest {
         blasts = new int[Session.BLASTS * Session.B_STRIDE];
         alive = new boolean[Session.TARGETS];
         ammo = new int[3];
-        set(Session.class, "wave", 0);
-        call(Session.class, "newGame", (Object) alive);
-        call(Session.class, "startWave", missiles, shots, blasts, alive, ammo);
+        Session.wave = 0;
+        Session.newGame(alive);
+        Session.startWave(missiles, shots, blasts, alive, ammo);
     }
 
     @Test
@@ -58,9 +53,9 @@ class MissileCommandTest {
         blasts[base + Session.B_Y] = 150;
         blasts[base + Session.B_AGE] = 5;
         blasts[base + Session.B_RADIUS] = 5;
-        call(Blasts.class, "updateBlasts", tft, missiles, blasts, alive, ammo);
+        Blasts.updateBlasts(tft, missiles, blasts, alive, ammo);
         assertThat(missiles[Session.T_ACTIVE]).isZero();
-        assertThat(getInt(Session.class, "score")).isEqualTo(Session.MISSILE_POINTS);
+        assertThat(Session.score).isEqualTo(Session.MISSILE_POINTS);
     }
 
     @Test
@@ -69,7 +64,7 @@ class MissileCommandTest {
                 Session.targetY(0), 1000);
         missiles[Session.T_TARGET] = 0;
         for (int i = 0; i < 30 && missiles[Session.T_ACTIVE] != 0; i++) {
-            call(Session.class, "moveMissiles", tft, missiles, blasts, alive, ammo);
+            Session.moveMissiles(tft, missiles, blasts, alive, ammo);
         }
         assertThat(alive[0]).isFalse();
     }
@@ -81,7 +76,7 @@ class MissileCommandTest {
                 Session.targetY(target), 1000);
         missiles[Session.T_TARGET] = target;
         for (int i = 0; i < 30 && missiles[Session.T_ACTIVE] != 0; i++) {
-            call(Session.class, "moveMissiles", tft, missiles, blasts, alive, ammo);
+            Session.moveMissiles(tft, missiles, blasts, alive, ammo);
         }
         assertThat(alive[target]).isFalse();
         assertThat(ammo[0]).isZero();
@@ -100,10 +95,10 @@ class MissileCommandTest {
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat(callInt(Controls.class, "choiceAt", 60, 180)).isZero();
-        assertThat(callInt(Controls.class, "choiceAt", 200, 180)).isEqualTo(1);
-        assertThat(callInt(Controls.class, "choiceAt", 120, 180)).isEqualTo(-1);
-        assertThat(callInt(Controls.class, "choiceAt", 60, 40)).isEqualTo(-1);
+        assertThat(Controls.choiceAt(60, 180)).isZero();
+        assertThat(Controls.choiceAt(200, 180)).isEqualTo(1);
+        assertThat(Controls.choiceAt(120, 180)).isEqualTo(-1);
+        assertThat(Controls.choiceAt(60, 40)).isEqualTo(-1);
     }
 
     @Test
@@ -131,16 +126,16 @@ class MissileCommandTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4})
     void anAutopilotClearsAWave(int wave) {
-        set(Session.class, "wave", wave - 1);
-        call(Session.class, "startWave", missiles, shots, blasts, alive, ammo);
+        Session.wave = wave - 1;
+        Session.startWave(missiles, shots, blasts, alive, ammo);
         for (int frame = 0; frame < 6000; frame++) {
-            call(AutopilotMissileCommand.class, "fly", tft, missiles, shots, ammo);
-            call(Session.class, "spawnEnemies", missiles, (Object) alive);
-            call(Session.class, "moveShots", tft, shots, blasts);
-            call(Session.class, "moveMissiles", tft, missiles, blasts, alive, ammo);
-            call(Blasts.class, "updateBlasts", tft, missiles, blasts, alive, ammo);
-            if (callBoolean(Session.class, "waveOver", missiles, shots, blasts)) {
-                assertThat(callInt(Session.class, "countCities", (Object) alive))
+            AutopilotMissileCommand.fly(tft, missiles, shots, ammo);
+            Session.spawnEnemies(missiles, alive);
+            Session.moveShots(tft, shots, blasts);
+            Session.moveMissiles(tft, missiles, blasts, alive, ammo);
+            Blasts.updateBlasts(tft, missiles, blasts, alive, ammo);
+            if (Session.waveOver(missiles, shots, blasts)) {
+                assertThat(Session.countCities(alive))
                         .as("wave %d", wave).isPositive();
                 return;
             }

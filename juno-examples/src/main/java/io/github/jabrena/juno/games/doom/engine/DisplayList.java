@@ -24,8 +24,8 @@ final class DisplayList {
     private static final int L_STRIDE = 5;
     static final int LIST_SIZE = MAX_LINES * L_STRIDE;
 
-    private static int front;
-    private static int shown;
+    static int front;
+    static int shown;
     private static int built;
     private static int pinned;
 

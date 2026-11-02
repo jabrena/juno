@@ -223,7 +223,7 @@ final class Session {
         pacSteps = pacSteps + 1;
     }
 
-    private static void eat(TftTouchShield tft, byte[] tiles, int[] ghosts, int column, int row) {
+    static void eat(TftTouchShield tft, byte[] tiles, int[] ghosts, int column, int row) {
         int tile = Maze.tileAt(tiles, column, row);
         if (tile != Maze.DOT && tile != Maze.ENERGIZER) {
             return;
