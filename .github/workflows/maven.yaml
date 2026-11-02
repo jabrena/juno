@@ -291,6 +291,37 @@ jobs:
       - name: Build
         run: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
 
+      - name: Javadoc gate for juno-api
+        env:
+          # Ratchet: undocumented public members and empty package descriptions may not grow past this count.
+          # Lower it as members are documented; never raise it.
+          NO_COMMENT_BASELINE: "232"
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./mvnw --batch-mode --no-transfer-progress -q -pl juno-api dependency:build-classpath \
+            -Dmdep.outputFile="$RUNNER_TEMP/juno-api.classpath"
+          sources="$(find juno-api/src/main/java -name '*.java')"
+          log="$RUNNER_TEMP/javadoc-gate.log"
+          # doclint reports undocumented members as warnings, so javadoc's exit status is ignored and the log is counted.
+          javadoc -Xdoclint:all -Xmaxwarns 100000 -Xmaxerrs 100000 -quiet \
+            -d "$RUNNER_TEMP/javadoc-gate" -cp "$(cat "$RUNNER_TEMP/juno-api.classpath")" $sources > "$log" 2>&1 || true
+          errors="$(grep -c ': error: ' "$log" || true)"
+          undocumented="$(grep -c ': warning: no comment' "$log" || true)"
+          echo "doclint errors: $errors; undocumented (no comment): $undocumented; baseline: $NO_COMMENT_BASELINE"
+          if (( errors > 0 )); then
+            grep ': error: ' "$log"
+            exit 1
+          fi
+          if (( undocumented > NO_COMMENT_BASELINE )); then
+            grep ': warning: no comment' "$log"
+            echo "::error::undocumented public members rose from $NO_COMMENT_BASELINE to $undocumented"
+            exit 1
+          fi
+          if (( undocumented < NO_COMMENT_BASELINE )); then
+            echo "::notice::undocumented count dropped below the baseline; lower NO_COMMENT_BASELINE to $undocumented"
+          fi
+
   qemu:
     name: Run programs under QEMU
     needs: [changes, qemu-image]
