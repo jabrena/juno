@@ -47,7 +47,7 @@ own backend instead of the Thumb-2 or AVR one.
 | `HttpClient.requestHttps` | ✓ | Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash); validity dates are not checked. | |
 | `HttpServer` | ✓ | Runs on the station address. | [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java) |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on ports 465 and 995, checked against the bundled roots. Password, subject and body must fit in 31 bytes each. | [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java), [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java) |
-| `Smtp.send` (STARTTLS) | ✓ | Needs `arduino-cli lib install ESP_SSLClient`; the server's certificate chain is not checked yet. | |
+| `Smtp.send` (STARTTLS) | ✓ | Needs `arduino-cli lib install ESP_SSLClient`. After the upgrade the server's chain, and its dates, are checked against the bundled Mozilla roots; the first send sets the board's clock over SNTP (`pool.ntp.org`). | [`NanoSmtpStarttlsCredentialsSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpStarttlsCredentialsSD.java) |
 | USB HID mouse | ✓ | `ArduinoNano.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) |
 
 ## Features
