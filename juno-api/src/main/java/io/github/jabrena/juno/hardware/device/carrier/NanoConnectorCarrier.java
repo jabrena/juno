@@ -88,6 +88,7 @@ public final class NanoConnectorCarrier {
 
     private @Nullable SdCard sdCard;
 
+    /** Creates the carrier handle. Create it once, at startup, and reuse it. */
     public NanoConnectorCarrier() {
     }
 

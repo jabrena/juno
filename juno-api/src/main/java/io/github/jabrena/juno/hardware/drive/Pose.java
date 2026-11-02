@@ -17,14 +17,17 @@ public final class Pose {
         this.headingMillidegrees = normalizeHeading(headingMillidegrees);
     }
 
+    /** The x position, in millimetres from the origin. */
     public int xMillimetres() {
         return xMillimetres;
     }
 
+    /** The y position, in millimetres from the origin. */
     public int yMillimetres() {
         return yMillimetres;
     }
 
+    /** The heading, in millidegrees, normalised to {@code 0} through {@code 359_999}. */
     public int headingMillidegrees() {
         return headingMillidegrees;
     }

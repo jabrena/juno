@@ -24,6 +24,7 @@ public final class LedCanvas {
         return ArduinoUno.getLedMatrix().columns();
     }
 
+    /** Returns whether {@code (x, y)} lies on the matrix: {@code x} below {@link #width()}, {@code y} below {@link #HEIGHT}. */
     public static boolean inBounds(int x, int y) {
         return x >= 0 && x < width() && y >= 0 && y < HEIGHT;
     }

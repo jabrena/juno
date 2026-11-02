@@ -25,6 +25,7 @@ public final class ArduinoWifiShield {
 
     private @Nullable SdCard sdCard;
 
+    /** Creates the shield handle. Create it once, at startup, and reuse it. */
     public ArduinoWifiShield() {
     }
 

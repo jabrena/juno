@@ -33,18 +33,22 @@ public final class DriveGeometry {
         this.rightEncoderDegreesPerWheelRevolution = rightEncoderDegreesPerWheelRevolution;
     }
 
+    /** The wheel diameter, in millimetres. */
     public int wheelDiameterMillimetres() {
         return wheelDiameterMillimetres;
     }
 
+    /** The distance between the two wheels' contact points, in millimetres. */
     public int trackWidthMillimetres() {
         return trackWidthMillimetres;
     }
 
+    /** The left encoder's degrees for one revolution of the left wheel. */
     public int leftEncoderDegreesPerWheelRevolution() {
         return leftEncoderDegreesPerWheelRevolution;
     }
 
+    /** The right encoder's degrees for one revolution of the right wheel. */
     public int rightEncoderDegreesPerWheelRevolution() {
         return rightEncoderDegreesPerWheelRevolution;
     }

@@ -36,6 +36,7 @@ public final class KeyboardViewRouter implements Navigator {
         this.clock = clock;
     }
 
+    /** Registers {@code view} under {@code viewId}, so that {@link #show} can switch to it. */
     public void register(int viewId, KeyboardView view) {
         views[viewId] = view;
     }
