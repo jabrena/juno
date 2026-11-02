@@ -14,6 +14,9 @@ import org.jspecify.annotations.Nullable;
  * socket, wired for the shield's standard UNO pinout as used by ELEGOO's {@code Elegoo_TFTLCD} and
  * {@code TouchScreen} libraries.
  *
+ * <p>Create one instance at startup and pass it to every class that draws: the display's rotation, cursor, text
+ * style and touch calibration belong to that one screen, so two instances would disagree about them.
+ *
  * <p>The display bus is a {@link io.github.jabrena.juno.hardware.device.tft.ParallelBus}: each byte is a few GPIO port writes
  * and a run of one color is a single call, so pixels stream from the runtime without a call per byte. Commands
  * still toggle the RS line with {@link Gpio#digitalWrite}, and the touch panel uses {@link Gpio#analogRead}.
@@ -30,12 +33,6 @@ import org.jspecify.annotations.Nullable;
  * the screen's edges) if a particular panel reports offset or mirrored positions.
  */
 public final class TftTouchShield {
-    /**
-     * The pins the whole driver drives, {@code TftTouch} and {@code TftBus} included; a unit test in this package swaps
-     * in {@code mock}.
-     */
-    static Gpio gpio = ArduinoUno.getGpio();
-
     /** Native (portrait) width in pixels. */
     public static final int NATIVE_WIDTH = 240;
     /** Native (portrait) height in pixels. */
@@ -111,35 +108,50 @@ public final class TftTouchShield {
     private static final int MADCTL_BGR = 0x08;
     private static final int PIXEL_FORMAT_16_BIT = 0x55;
 
-    private static int width;
-    private static int height;
-    private static int rotation;
-    private static int cursorX;
-    private static int cursorY;
-    private static int textSize;
-    private static int textColor;
-    private static int textBackground;
+    private final Gpio gpio;
+    private final TftBus bus;
+    private final TftTouch touch;
+    private final TftGraphics graphics;
 
-    private static int touchMinX;
-    private static int touchMaxX;
-    private static int touchMinY;
-    private static int touchMaxY;
-    private static int touchX;
-    private static int touchY;
-    private static int touchRawX;
-    private static int touchRawY;
-    private static int touchPressure;
+    private int width;
+    private int height;
+    private int rotation;
+    private int cursorX;
+    private int cursorY;
+    private int textSize;
+    private int textColor;
+    private int textBackground;
 
-    private static @Nullable SdCard sdCard;
+    private int touchMinX;
+    private int touchMaxX;
+    private int touchMinY;
+    private int touchMaxY;
+    private int touchX;
+    private int touchY;
+    private int touchRawX;
+    private int touchRawY;
+    private int touchPressure;
 
-    private TftTouchShield() {
+    private @Nullable SdCard sdCard;
+
+    /** A shield on the board's own pins. Create it once, at startup, and pass it to every class that draws. */
+    public TftTouchShield() {
+        this(ArduinoUno.getGpio());
+    }
+
+    /** A shield driven through {@code gpio}: a mocked one in a unit test. */
+    public TftTouchShield(Gpio gpio) {
+        this.gpio = gpio;
+        this.bus = new TftBus(gpio);
+        this.touch = new TftTouch(gpio, bus);
+        this.graphics = new TftGraphics(this, bus);
     }
 
     /**
      * The card in the shield's microSD socket; its {@link SdCard#begin()} selects it on D10. The same
      * instance every call.
      */
-    public static SdCard getSdCard() {
+    public SdCard getSdCard() {
         SdCard card = sdCard;
         if (card == null) {
             card = NativeSdCard.sdCard(SD_CHIP_SELECT);
@@ -153,7 +165,7 @@ public final class TftTouchShield {
      * {@link #PORTRAIT} rotation, a size-1 white-on-black text style, and ELEGOO's default touch
      * calibration. The screen contents are undefined until the first {@link #fillScreen}.
      */
-    public static void begin() {
+    public void begin() {
         gpio.pinMode(PIN_RD, Gpio.getOutput());
         gpio.pinMode(PIN_WR, Gpio.getOutput());
         gpio.pinMode(PIN_RS, Gpio.getOutput());
@@ -163,8 +175,8 @@ public final class TftTouchShield {
         gpio.digitalWrite(PIN_WR, true);
         gpio.digitalWrite(PIN_RS, true);
         gpio.digitalWrite(PIN_CS, true);
-        TftBus.restoreDataPins();
-        TftBus.begin();
+        bus.restoreDataPins();
+        bus.begin();
 
         gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(5);
@@ -174,19 +186,19 @@ public final class TftTouchShield {
         Delay.millis(150);
         gpio.digitalWrite(PIN_CS, false);
 
-        TftBus.command(SOFT_RESET);
+        bus.command(SOFT_RESET);
         Delay.millis(50);
-        TftBus.command(DISPLAY_OFF);
-        TftBus.command8(POWER_CONTROL_1, 0x23);
-        TftBus.command8(POWER_CONTROL_2, 0x10);
-        TftBus.command16(VCOM_CONTROL_1, 0x2B2B);
-        TftBus.command8(VCOM_CONTROL_2, 0xC0);
-        TftBus.command8(PIXEL_FORMAT, PIXEL_FORMAT_16_BIT);
-        TftBus.command16(FRAME_CONTROL, 0x001B);
-        TftBus.command8(ENTRY_MODE, 0x07);
-        TftBus.command(SLEEP_OUT);
+        bus.command(DISPLAY_OFF);
+        bus.command8(POWER_CONTROL_1, 0x23);
+        bus.command8(POWER_CONTROL_2, 0x10);
+        bus.command16(VCOM_CONTROL_1, 0x2B2B);
+        bus.command8(VCOM_CONTROL_2, 0xC0);
+        bus.command8(PIXEL_FORMAT, PIXEL_FORMAT_16_BIT);
+        bus.command16(FRAME_CONTROL, 0x001B);
+        bus.command8(ENTRY_MODE, 0x07);
+        bus.command(SLEEP_OUT);
         Delay.millis(150);
-        TftBus.command(DISPLAY_ON);
+        bus.command(DISPLAY_ON);
         Delay.millis(50);
 
         setRotation(PORTRAIT);
@@ -203,7 +215,7 @@ public final class TftTouchShield {
      * {@link #LANDSCAPE_FLIPPED}. Coordinates, {@link #width()}/{@link #height()}, and touch
      * positions all follow the current rotation. Existing screen contents are not redrawn.
      */
-    public static void setRotation(int value) {
+    public void setRotation(int value) {
         rotation = value & 3;
         int madctl = MADCTL_MY | MADCTL_BGR;
         width = NATIVE_WIDTH;
@@ -219,16 +231,16 @@ public final class TftTouchShield {
             width = NATIVE_HEIGHT;
             height = NATIVE_WIDTH;
         }
-        TftBus.command8(MEMORY_ACCESS_CONTROL, madctl);
+        bus.command8(MEMORY_ACCESS_CONTROL, madctl);
     }
 
     /** Current width in pixels, for the current rotation. */
-    public static int width() {
+    public int width() {
         return width;
     }
 
     /** Current height in pixels, for the current rotation. */
-    public static int height() {
+    public int height() {
         return height;
     }
 
@@ -238,43 +250,43 @@ public final class TftTouchShield {
     }
 
     /** Fills the whole screen with {@code color}. */
-    public static void fillScreen(int color) {
-        TftGraphics.fillScreen(color);
+    public void fillScreen(int color) {
+        graphics.fillScreen(color);
     }
 
     /** Sets the pixel at ({@code x}, {@code y}) to {@code color}; off-screen pixels are ignored. */
-    public static void drawPixel(int x, int y, int color) {
-        TftGraphics.drawPixel(x, y, color);
+    public void drawPixel(int x, int y, int color) {
+        graphics.drawPixel(x, y, color);
     }
 
     /** Fills a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}), clipped to the screen. */
-    public static void fillRect(int x, int y, int w, int h, int color) {
-        TftGraphics.fillRect(x, y, w, h, color);
+    public void fillRect(int x, int y, int w, int h, int color) {
+        graphics.fillRect(x, y, w, h, color);
     }
 
     /** Draws a horizontal line of {@code w} pixels starting at ({@code x}, {@code y}). */
-    public static void drawHorizontalLine(int x, int y, int w, int color) {
-        TftGraphics.drawHorizontalLine(x, y, w, color);
+    public void drawHorizontalLine(int x, int y, int w, int color) {
+        graphics.drawHorizontalLine(x, y, w, color);
     }
 
     /** Draws a vertical line of {@code h} pixels starting at ({@code x}, {@code y}). */
-    public static void drawVerticalLine(int x, int y, int h, int color) {
-        TftGraphics.drawVerticalLine(x, y, h, color);
+    public void drawVerticalLine(int x, int y, int h, int color) {
+        graphics.drawVerticalLine(x, y, h, color);
     }
 
     /** Draws the 1-pixel outline of a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}). */
-    public static void drawRect(int x, int y, int w, int h, int color) {
-        TftGraphics.drawRect(x, y, w, h, color);
+    public void drawRect(int x, int y, int w, int h, int color) {
+        graphics.drawRect(x, y, w, h, color);
     }
 
     /** Fills a circle of radius {@code r} centered on ({@code cx}, {@code cy}), clipped to the screen. */
-    public static void fillCircle(int cx, int cy, int r, int color) {
-        TftGraphics.fillCircle(cx, cy, r, color);
+    public void fillCircle(int cx, int cy, int r, int color) {
+        graphics.fillCircle(cx, cy, r, color);
     }
 
     /** Draws the 1-pixel outline of a circle of radius {@code r} centered on ({@code cx}, {@code cy}). */
-    public static void drawCircle(int cx, int cy, int r, int color) {
-        TftGraphics.drawCircle(cx, cy, r, color);
+    public void drawCircle(int cx, int cy, int r, int color) {
+        graphics.drawCircle(cx, cy, r, color);
     }
 
     /**
@@ -283,23 +295,23 @@ public final class TftTouchShield {
      * a small custom bitmap. Returns {@code false}, opening nothing, unless the window lies entirely
      * on screen. Push exactly {@code w * h} pixels before any other drawing call.
      */
-    public static boolean beginPixels(int x, int y, int w, int h) {
-        return TftGraphics.beginPixels(x, y, w, h);
+    public boolean beginPixels(int x, int y, int w, int h) {
+        return graphics.beginPixels(x, y, w, h);
     }
 
     /** Writes the next pixel of the window opened by {@link #beginPixels}. */
-    public static void pushPixel(int color) {
-        TftGraphics.pushPixel(color);
+    public void pushPixel(int color) {
+        graphics.pushPixel(color);
     }
 
     /** Moves the text cursor so the next character's top-left corner is at ({@code x}, {@code y}) pixels. */
-    public static void setCursor(int x, int y) {
+    public void setCursor(int x, int y) {
         cursorX = x;
         cursorY = y;
     }
 
     /** Scales text by an integer factor (1 = 6x8-pixel cells, 2 = 12x16, ...); values below 1 are treated as 1. */
-    public static void setTextSize(int size) {
+    public void setTextSize(int size) {
         textSize = Math.max(size, 1);
     }
 
@@ -307,7 +319,7 @@ public final class TftTouchShield {
      * Sets the text foreground and background colors. Characters always paint their whole cell, so
      * printing over older text replaces it — pad shorter strings with spaces to erase leftovers.
      */
-    public static void setTextColor(int foreground, int background) {
+    public void setTextColor(int foreground, int background) {
         textColor = foreground;
         textBackground = background;
     }
@@ -317,7 +329,7 @@ public final class TftTouchShield {
      * cursor. {@code '\n'} moves to the start of the next text line, and text wraps at the right
      * edge. Characters outside printable ASCII (32-126) are drawn as spaces.
      */
-    public static void print(String text) {
+    public void print(String text) {
         int length = text.length();
         for (int i = 0; i < length; i++) {
             writeChar(text.charAt(i));
@@ -325,7 +337,7 @@ public final class TftTouchShield {
     }
 
     /** Prints {@code value} in decimal at the cursor. */
-    public static void print(int value) {
+    public void print(int value) {
         print(String.valueOf(value));
     }
 
@@ -335,14 +347,14 @@ public final class TftTouchShield {
      * {@link io.github.jabrena.juno.hardware.net.http.Json#getString(byte[], int, String, byte[], int)}'s
      * output) and would otherwise need a runtime {@code String}.
      */
-    public static void print(byte[] buffer, int length) {
+    public void print(byte[] buffer, int length) {
         for (int i = 0; i < length; i++) {
             writeChar(buffer[i] & 0xFF);
         }
     }
 
     /** Prints {@code text} and then moves the cursor to the start of the next text line. */
-    public static void println(String text) {
+    public void println(String text) {
         print(text);
         newLine();
     }
@@ -354,15 +366,15 @@ public final class TftTouchShield {
      * {@link #touchX()}/{@link #touchY()} hold the pressed position in screen coordinates for the
      * current rotation. Always leaves the display bus ready for drawing again.
      */
-    public static boolean readTouch() {
-        touchPressure = TftTouch.readTouchPressure();
+    public boolean readTouch() {
+        touchPressure = touch.readTouchPressure();
         boolean pressed = touchPressure >= MIN_PRESSURE && touchPressure <= MAX_PRESSURE;
         if (pressed) {
-            int firstX = TftTouch.readTouchRawX();
-            int firstY = TftTouch.readTouchRawY();
-            int secondX = TftTouch.readTouchRawX();
-            int secondY = TftTouch.readTouchRawY();
-            int secondPressure = TftTouch.readTouchPressure();
+            int firstX = touch.readTouchRawX();
+            int firstY = touch.readTouchRawY();
+            int secondX = touch.readTouchRawX();
+            int secondY = touch.readTouchRawY();
+            int secondPressure = touch.readTouchPressure();
             // A real press gives steady readings; residual charge or a glancing contact does not.
             pressed = secondPressure >= MIN_PRESSURE && secondPressure <= MAX_PRESSURE
                     && Math.abs(firstX - secondX) <= TOUCH_TOLERANCE
@@ -373,7 +385,7 @@ public final class TftTouchShield {
                 touchPressure = 0;
             }
         }
-        TftTouch.restoreBusAfterTouch();
+        touch.restoreBusAfterTouch();
         if (!pressed) {
             return false;
         }
@@ -396,27 +408,27 @@ public final class TftTouchShield {
     }
 
     /** X coordinate of the last successful {@link #readTouch()}, for the current rotation. */
-    public static int touchX() {
+    public int touchX() {
         return touchX;
     }
 
     /** Y coordinate of the last successful {@link #readTouch()}, for the current rotation. */
-    public static int touchY() {
+    public int touchY() {
         return touchY;
     }
 
     /** Raw 10-bit X reading of the last successful {@link #readTouch()}, for calibration. */
-    public static int touchRawX() {
+    public int touchRawX() {
         return touchRawX;
     }
 
     /** Raw 10-bit Y reading of the last successful {@link #readTouch()}, for calibration. */
-    public static int touchRawY() {
+    public int touchRawY() {
         return touchRawY;
     }
 
     /** Pressure estimate of the last {@link #readTouch()} (0 when untouched; higher is firmer). */
-    public static int touchPressure() {
+    public int touchPressure() {
         return touchPressure;
     }
 
@@ -424,14 +436,14 @@ public final class TftTouchShield {
      * Replaces the touch calibration: the raw readings at portrait x = 0, x = 239, y = 0, and
      * y = 319. Passing a larger "left" than "right" reading mirrors that axis.
      */
-    public static void calibrateTouch(int rawLeft, int rawRight, int rawTop, int rawBottom) {
+    public void calibrateTouch(int rawLeft, int rawRight, int rawTop, int rawBottom) {
         touchMinX = rawLeft;
         touchMaxX = rawRight;
         touchMinY = rawTop;
         touchMaxY = rawBottom;
     }
 
-    private static void writeChar(int character) {
+    private void writeChar(int character) {
         if (character == '\n') {
             newLine();
             return;
@@ -444,12 +456,12 @@ public final class TftTouchShield {
         cursorX = cursorX + cellWidth;
     }
 
-    private static void newLine() {
+    private void newLine() {
         cursorX = 0;
         cursorY = cursorY + CHAR_HEIGHT * textSize;
     }
 
-    private static void drawChar(int x, int y, int character) {
+    private void drawChar(int x, int y, int character) {
         int code = character;
         if (code < 32 || code > 126) {
             code = 32;
@@ -459,7 +471,7 @@ public final class TftTouchShield {
         if (x < 0 || y < 0 || x + cellWidth > width || y + cellHeight > height) {
             return;
         }
-        TftBus.setAddressWindow(x, y, x + cellWidth - 1, y + cellHeight - 1);
+        bus.setAddressWindow(x, y, x + cellWidth - 1, y + cellHeight - 1);
         for (int row = 0; row < CHAR_HEIGHT; row++) {
             int rowBits = glyphRowBits(code, row);
             for (int repeat = 0; repeat < textSize; repeat++) {
@@ -469,7 +481,7 @@ public final class TftTouchShield {
                         color = textColor;
                     }
                     for (int dot = 0; dot < textSize; dot++) {
-                        TftBus.writePixel(color);
+                        bus.writePixel(color);
                     }
                 }
             }

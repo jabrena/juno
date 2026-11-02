@@ -21,6 +21,7 @@ public final class ViewRouter implements Navigator {
     private static final int HISTORY_DEPTH = 4;
 
     private final View[] views = new View[MAX_VIEWS];
+    private final TftTouchShield tft;
     private final int framePeriodMs;
     private final Clock clock;
     private final int[] history = new int[HISTORY_DEPTH];
@@ -32,13 +33,14 @@ public final class ViewRouter implements Navigator {
     /** Until {@link #background} sets one, a task that does nothing: Juno needs a linked implementation to call. */
     private Task task = new Idle();
 
-    /** A router that renders a frame every {@code framePeriodMs} of the board's clock. */
-    public ViewRouter(int framePeriodMs) {
-        this(framePeriodMs, ArduinoUno.getClock());
+    /** A router that reads touch from {@code tft} and renders a frame every {@code framePeriodMs} of the board's clock. */
+    public ViewRouter(TftTouchShield tft, int framePeriodMs) {
+        this(tft, framePeriodMs, ArduinoUno.getClock());
     }
 
     /** A router that renders a frame every {@code framePeriodMs} of {@code clock}: a mocked one in a unit test. */
-    public ViewRouter(int framePeriodMs, Clock clock) {
+    public ViewRouter(TftTouchShield tft, int framePeriodMs, Clock clock) {
+        this.tft = tft;
         this.framePeriodMs = framePeriodMs;
         this.clock = clock;
     }
@@ -97,9 +99,9 @@ public final class ViewRouter implements Navigator {
     }
 
     private void handleTouch() {
-        boolean touched = TftTouchShield.readTouch();
+        boolean touched = tft.readTouch();
         if (touched && !touchWasDown) {
-            views[active].touch(TftTouchShield.touchX(), TftTouchShield.touchY());
+            views[active].touch(tft.touchX(), tft.touchY());
         }
         touchWasDown = touched;
     }
