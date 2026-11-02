@@ -27,16 +27,16 @@ final class Controls {
         touching = false;
     }
 
-    static int read(byte[] pads) {
-        if (TftTouchShield.readTouch()) {
-            int y = TftTouchShield.touchY();
+    static int read(TftTouchShield tft, byte[] pads) {
+        if (tft.readTouch()) {
+            int y = tft.touchY();
             if (!touching && y < Hud.HEADER_HEIGHT) {
                 autopilot = !autopilot;
                 Hud.invalidate();
             }
             touching = true;
             if (!autopilot && y >= BUTTON_Y - 10) {
-                return Math.min(2, TftTouchShield.touchX() * 3 / Terrain.WIDTH);
+                return Math.min(2, tft.touchX() * 3 / Terrain.WIDTH);
             }
         } else {
             touching = false;
@@ -77,20 +77,20 @@ final class Controls {
         return bestCenter;
     }
 
-    static void choosePilot() {
-        drawPilotChoice(-1);
-        waitForRelease();
+    static void choosePilot(TftTouchShield tft) {
+        drawPilotChoice(tft, -1);
+        waitForRelease(tft);
         int choice = -1;
         while (choice < 0) {
-            if (TftTouchShield.readTouch()) {
-                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            if (tft.readTouch()) {
+                choice = choiceAt(tft.touchX(), tft.touchY());
             }
             Delay.millis(10);
         }
         autopilot = choice == 1;
-        drawPilotChoice(choice);
+        drawPilotChoice(tft, choice);
         Delay.millis(350);
-        waitForRelease();
+        waitForRelease(tft);
     }
 
     static int choiceAt(int x, int y) {
@@ -103,25 +103,25 @@ final class Controls {
         return x >= 128 && x < 232 ? 1 : -1;
     }
 
-    private static void drawPilotChoice(int selected) {
-        TftTouchShield.fillScreen(Terrain.SKY);
-        Hud.showCentered("CHOOSE PILOT", 55, 2, TftTouchShield.YELLOW);
-        Hud.drawChoice(8, "HUMAN", selected == 0);
-        Hud.drawChoice(128, "CPU", selected == 1);
-        Hud.showCentered("Tap header to switch", 205, 1, TftTouchShield.CYAN);
+    private static void drawPilotChoice(TftTouchShield tft, int selected) {
+        tft.fillScreen(Terrain.SKY);
+        Hud.showCentered(tft, "CHOOSE PILOT", 55, 2, TftTouchShield.YELLOW);
+        Hud.drawChoice(tft, 8, "HUMAN", selected == 0);
+        Hud.drawChoice(tft, 128, "CPU", selected == 1);
+        Hud.showCentered(tft, "Tap header to switch", 205, 1, TftTouchShield.CYAN);
     }
 
-    static void waitForTap() {
-        while (!TftTouchShield.readTouch()) {
+    static void waitForTap(TftTouchShield tft) {
+        while (!tft.readTouch()) {
             Delay.millis(10);
         }
-        waitForRelease();
+        waitForRelease(tft);
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

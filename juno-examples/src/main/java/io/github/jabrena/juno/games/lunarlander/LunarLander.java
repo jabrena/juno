@@ -23,36 +23,37 @@ public final class LunarLander {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         short[] ground = new short[Terrain.WIDTH];
         byte[] pads = new byte[Terrain.WIDTH];
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
-            Interludes.cover();
-            Controls.waitForTap();
-            Controls.choosePilot();
+            Interludes.cover(tft);
+            Controls.waitForTap(tft);
+            Controls.choosePilot(tft);
             Random.seed(CLOCK.micros());
             Flight.newGame(Controls.autopilot ? CPU_START_FUEL : START_FUEL);
             while (Flight.fuel > 0) {
                 Flight.descent = Flight.descent + 1;
-                finishDescent(Flight.fly(ground, pads), ground, pads);
+                finishDescent(tft, Flight.fly(tft, ground, pads), ground, pads);
             }
             Flight.best = Math.max(Flight.best, Flight.score);
-            Hud.drawHeader();
-            Interludes.outOfFuel();
+            Hud.drawHeader(tft);
+            Interludes.outOfFuel(tft);
         }
     }
 
-    private static void finishDescent(int multiplier, short[] ground, byte[] pads) {
+    private static void finishDescent(TftTouchShield tft, int multiplier, short[] ground, byte[] pads) {
         if (multiplier > 0) {
             Flight.score = Flight.score + 50 * multiplier;
-            Interludes.landed(50 * multiplier);
+            Interludes.landed(tft, 50 * multiplier);
         } else {
-            LanderRenderer.explode(ground, pads);
+            LanderRenderer.explode(tft, ground, pads);
             Flight.fuel = Math.max(0, Flight.fuel - CRASH_PENALTY);
-            Interludes.crashed();
+            Interludes.crashed(tft);
         }
-        Hud.drawHeader();
+        Hud.drawHeader(tft);
         Delay.millis(1500);
     }
 }

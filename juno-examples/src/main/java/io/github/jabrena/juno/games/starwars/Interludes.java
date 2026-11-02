@@ -26,23 +26,23 @@ final class Interludes {
      * The opening, after the film: "A long time ago in a galaxy far, far away....", the STAR WARS
      * logo receding into the distance until it is gone, then the first shot of the film.
      */
-    static void opening(short[] lines, byte[] letter) {
-        TftTouchShield.fillScreen(DisplayList.SPACE);
+    static void opening(TftTouchShield tft, short[] lines, byte[] letter) {
+        tft.fillScreen(DisplayList.SPACE);
         DisplayList.forget();
-        typeCentered(OPENING_LINE_1, 104, letter);
-        typeCentered(OPENING_LINE_2, 120, letter);
+        typeCentered(tft, OPENING_LINE_1, 104, letter);
+        typeCentered(tft, OPENING_LINE_2, 120, letter);
         Delay.millis(900);
-        TftTouchShield.fillScreen(DisplayList.SPACE);
+        tft.fillScreen(DisplayList.SPACE);
         Delay.millis(300);
         for (int size = 5; size >= 1; size--) {
-            TftTouchShield.fillRect(0, 60, DisplayList.WIDTH, 60, DisplayList.SPACE);
-            Hud.showCentered("STAR WARS", 90 - 4 * size, size, TftTouchShield.YELLOW);
+            tft.fillRect(0, 60, DisplayList.WIDTH, 60, DisplayList.SPACE);
+            Hud.showCentered(tft, "STAR WARS", 90 - 4 * size, size, TftTouchShield.YELLOW);
             Delay.millis(size == 5 ? 500 : 260);
         }
-        TftTouchShield.fillRect(0, 60, DisplayList.WIDTH, 60, DisplayList.SPACE);
+        tft.fillRect(0, 60, DisplayList.WIDTH, 60, DisplayList.SPACE);
         Delay.millis(300);
-        flyover(lines);
-        TftTouchShield.fillScreen(DisplayList.SPACE);
+        flyover(tft, lines);
+        tft.fillScreen(DisplayList.SPACE);
         DisplayList.forget();
         Delay.millis(250);
     }
@@ -51,8 +51,8 @@ final class Interludes {
      * The first shot of the film: above a planet's horizon a small rebel ship flees into the
      * distance, and the wedge of an Imperial Star Destroyer slides in overhead after it, firing.
      */
-    private static void flyover(short[] lines) {
-        TftTouchShield.fillScreen(DisplayList.SPACE);
+    private static void flyover(TftTouchShield tft, short[] lines) {
+        tft.fillScreen(DisplayList.SPACE);
         DisplayList.forget();
         for (int f = 0; f < SCENE_FRAMES; f++) {
             DisplayList.begin();
@@ -86,7 +86,7 @@ final class Interludes {
                 int toY = apexY + (runnerY - apexY) * (step * 30 + 25) / 100;
                 DisplayList.addLine(lines, fromX, fromY, toX, toY, SceneRenderer.LASER);
             }
-            DisplayList.present(lines);
+            DisplayList.present(tft, lines);
             Delay.millis(30);
         }
         Delay.millis(400);
@@ -109,13 +109,13 @@ final class Interludes {
     }
 
     /** Types a line of the opening letter by letter, centered. */
-    private static void typeCentered(String text, int y, byte[] letter) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(OPENING, DisplayList.SPACE);
-        TftTouchShield.setCursor((DisplayList.WIDTH - text.length() * 6) / 2, y);
+    private static void typeCentered(TftTouchShield tft, String text, int y, byte[] letter) {
+        tft.setTextSize(1);
+        tft.setTextColor(OPENING, DisplayList.SPACE);
+        tft.setCursor((DisplayList.WIDTH - text.length() * 6) / 2, y);
         for (int i = 0; i < text.length(); i++) {
             letter[0] = (byte) text.charAt(i);
-            TftTouchShield.print(letter, 1);
+            tft.print(letter, 1);
             Delay.millis(35);
         }
     }
@@ -124,7 +124,7 @@ final class Interludes {
      * The title screen: yellow frames close in on "STAR WARS" as the logo settles into place, then
      * the TIE fighters.
      */
-    static void drawTitle(short[] lines) {
+    static void drawTitle(TftTouchShield tft, short[] lines) {
         int width = DisplayList.WIDTH;
         int textLeft = (width - 9 * 24) / 2;
         for (int k = 10; k >= 0; k--) {
@@ -132,13 +132,13 @@ final class Interludes {
             int top = 26 - k * 26 / 10;
             int right = width - 1 - left;
             int bottom = 74 + k * (DisplayList.HEIGHT - 75) / 10;
-            TftTouchShield.drawRect(left, top, right - left + 1, bottom - top + 1, TftTouchShield.YELLOW);
+            tft.drawRect(left, top, right - left + 1, bottom - top + 1, TftTouchShield.YELLOW);
             Delay.millis(45);
-            TftTouchShield.drawRect(left, top, right - left + 1, bottom - top + 1, DisplayList.SPACE);
+            tft.drawRect(left, top, right - left + 1, bottom - top + 1, DisplayList.SPACE);
         }
-        Hud.showCentered("STAR WARS", 34, 4, TftTouchShield.WHITE);
+        Hud.showCentered(tft, "STAR WARS", 34, 4, TftTouchShield.WHITE);
         Delay.millis(120);
-        Hud.showCentered("STAR WARS", 34, 4, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "STAR WARS", 34, 4, TftTouchShield.YELLOW);
         Delay.millis(300);
         Session.phase = Phase.SPACE;
         DisplayList.begin();
@@ -146,33 +146,33 @@ final class Interludes {
         SceneRenderer.drawTie(lines, Camera.projectX(0, 420), Camera.projectY(-10, 420), 420, false);
         SceneRenderer.drawTie(lines, Camera.projectX(-520, 1500), Camera.projectY(160, 1500), 1500, false);
         SceneRenderer.drawTie(lines, Camera.projectX(560, 1800), Camera.projectY(120, 1800), 1800, true);
-        DisplayList.present(lines);
-        Hud.showCentered("Drag to aim, tap to fire", 198, 1, TftTouchShield.WHITE);
-        Hud.showCentered("Tap to start", 214, 1, TftTouchShield.CYAN);
+        DisplayList.present(tft, lines);
+        Hud.showCentered(tft, "Drag to aim, tap to fire", 198, 1, TftTouchShield.WHITE);
+        Hud.showCentered(tft, "Tap to start", 214, 1, TftTouchShield.CYAN);
     }
 
-    private static void drawDeathStar(int color) {
-        TftTouchShield.drawCircle(Camera.CENTER_X, Camera.CENTER_Y, 62, color);
-        TftTouchShield.drawHorizontalLine(Camera.CENTER_X - 62, Camera.CENTER_Y + 4, 124, color);
-        TftTouchShield.drawCircle(Camera.CENTER_X - 24, Camera.CENTER_Y - 24, 14, color);
+    private static void drawDeathStar(TftTouchShield tft, int color) {
+        tft.drawCircle(Camera.CENTER_X, Camera.CENTER_Y, 62, color);
+        tft.drawHorizontalLine(Camera.CENTER_X - 62, Camera.CENTER_Y + 4, 124, color);
+        tft.drawCircle(Camera.CENTER_X - 24, Camera.CENTER_Y - 24, 14, color);
     }
 
-    static void approachDeathStar() {
-        DisplayList.clearView();
+    static void approachDeathStar(TftTouchShield tft) {
+        DisplayList.clearView(tft);
         for (int step = 0; step < 3; step++) {
-            drawDeathStar(TftTouchShield.GRAY);
+            drawDeathStar(tft, TftTouchShield.GRAY);
             Delay.millis(250);
-            drawDeathStar(TftTouchShield.WHITE);
+            drawDeathStar(tft, TftTouchShield.WHITE);
             Delay.millis(250);
         }
-        Hud.showCentered("APPROACHING THE DEATH STAR", 212, 1, TftTouchShield.WHITE);
+        Hud.showCentered(tft, "APPROACHING THE DEATH STAR", 212, 1, TftTouchShield.WHITE);
         Delay.millis(900);
     }
 
     /** The Death Star explodes; the shields left and the Force pay bonuses, and a shield is restored. */
-    static void destroyDeathStar() {
-        DisplayList.clearView();
-        drawDeathStar(TftTouchShield.GRAY);
+    static void destroyDeathStar(TftTouchShield tft) {
+        DisplayList.clearView(tft);
+        drawDeathStar(tft, TftTouchShield.GRAY);
         Delay.millis(300);
         for (int r = 4; r < 150; r = r + 5) {
             int color = TftTouchShield.WHITE;
@@ -181,7 +181,7 @@ final class Interludes {
             } else if (r % 15 == 14) {
                 color = TftTouchShield.ORANGE;
             }
-            TftTouchShield.drawCircle(Camera.CENTER_X, Camera.CENTER_Y, r, color);
+            tft.drawCircle(Camera.CENTER_X, Camera.CENTER_Y, r, color);
             Delay.millis(20);
         }
         int shieldBonus = Session.shields * Session.SHIELD_BONUS;
@@ -191,16 +191,16 @@ final class Interludes {
             Session.score = Session.score + Session.FORCE_BONUS;
         }
         Session.shields = Math.min(Session.shields + 1, Session.MAX_SHIELDS);
-        Hud.drawHeader();
-        DisplayList.clearView();
-        Hud.showCentered("DEATH STAR DESTROYED", 80, 2, TftTouchShield.YELLOW);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, DisplayList.SPACE);
-        TftTouchShield.setCursor(106, 120);
-        TftTouchShield.print("SHIELD BONUS ");
-        TftTouchShield.print(shieldBonus);
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
+        Hud.showCentered(tft, "DEATH STAR DESTROYED", 80, 2, TftTouchShield.YELLOW);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, DisplayList.SPACE);
+        tft.setCursor(106, 120);
+        tft.print("SHIELD BONUS ");
+        tft.print(shieldBonus);
         if (force) {
-            Hud.showCentered("THE FORCE IS WITH YOU  +50000", 140, 1, TftTouchShield.CYAN);
+            Hud.showCentered(tft, "THE FORCE IS WITH YOU  +50000", 140, 1, TftTouchShield.CYAN);
         }
         Delay.millis(2500);
     }

@@ -26,7 +26,7 @@ public final class TftFpsWidget {
     }
 
     /** Counts this frame, and redraws the label if the rate changed. */
-    public void update() {
+    public void update(TftTouchShield tft) {
         framesInWindow = framesInWindow + 1;
         int now = CLOCK.millis();
         if (now - windowStart >= WINDOW_MS) {
@@ -38,16 +38,16 @@ public final class TftFpsWidget {
         }
         if (framesPerSecond != shownFramesPerSecond) {
             shownFramesPerSecond = framesPerSecond;
-            draw();
+            draw(tft);
         }
     }
 
-    private void draw() {
-        TftTouchShield.fillRect(12, 212, 150, 20, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, 216);
-        TftTouchShield.print("FPS ");
-        TftTouchShield.print(framesPerSecond);
+    private void draw(TftTouchShield tft) {
+        tft.fillRect(12, 212, 150, 20, TftTouchShield.NAVY);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(12, 216);
+        tft.print("FPS ");
+        tft.print(framesPerSecond);
     }
 }

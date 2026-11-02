@@ -13,10 +13,10 @@ final class LanderRenderer {
     private LanderRenderer() {
     }
 
-    static void startDescent(short[] ground, byte[] pads) {
-        TftTouchShield.fillScreen(Terrain.SKY);
-        TftTouchShield.fillRect(0, 0, Terrain.WIDTH, Hud.HEADER_HEIGHT, Hud.HEADER_BACKGROUND);
-        Terrain.draw(ground, pads);
+    static void startDescent(TftTouchShield tft, short[] ground, byte[] pads) {
+        tft.fillScreen(Terrain.SKY);
+        tft.fillRect(0, 0, Terrain.WIDTH, Hud.HEADER_HEIGHT, Hud.HEADER_BACKGROUND);
+        Terrain.draw(tft, ground, pads);
     }
 
     static void reset() {
@@ -39,18 +39,18 @@ final class LanderRenderer {
         return false;
     }
 
-    static void draw(short[] ground, byte[] pads) {
+    static void draw(TftTouchShield tft, short[] ground, byte[] pads) {
         int left = Math.round(Flight.x) - HALF;
         int top = Math.round(Flight.y) - HALF;
-        if (shownX >= 0 && (shownX != left || shownY != top)) erase(ground, pads, left, top);
+        if (shownX >= 0 && (shownX != left || shownY != top)) erase(tft, ground, pads, left, top);
         float angle = (float) Math.toRadians(Flight.tilt * 15);
         float sin = (float) Math.sin(angle);
         float cos = (float) Math.cos(angle);
-        if (!TftTouchShield.beginPixels(left, top, SPRITE, SPRITE)) return;
+        if (!tft.beginPixels(left, top, SPRITE, SPRITE)) return;
         for (int dy = -HALF; dy <= HALF; dy++) {
             for (int dx = -HALF; dx <= HALF; dx++) {
                 int color = LanderSprite.color(dx, dy, sin, cos, Flight.burning);
-                TftTouchShield.pushPixel(color < 0 ? background(ground, pads, left + dx + HALF, top + dy + HALF)
+                tft.pushPixel(color < 0 ? background(ground, pads, left + dx + HALF, top + dy + HALF)
                         : color);
             }
         }
@@ -58,7 +58,7 @@ final class LanderRenderer {
         shownY = top;
     }
 
-    private static void erase(short[] ground, byte[] pads, int left, int top) {
+    private static void erase(TftTouchShield tft, short[] ground, byte[] pads, int left, int top) {
         for (int column = shownX; column < shownX + SPRITE; column++) {
             int from = shownY;
             int to = shownY + SPRITE;
@@ -66,16 +66,16 @@ final class LanderRenderer {
                 if (top > shownY) to = Math.min(to, top);
                 else from = Math.max(from, top + SPRITE);
             }
-            repaintRange(ground, pads, column, from, to);
+            repaintRange(tft, ground, pads, column, from, to);
         }
     }
 
-    private static void repaintRange(short[] ground, byte[] pads, int column, int from, int to) {
+    private static void repaintRange(TftTouchShield tft, short[] ground, byte[] pads, int column, int from, int to) {
         if (from >= to || column < 0 || column >= Terrain.WIDTH) return;
         int sky = Math.min(to, ground[column]);
-        if (sky > from) TftTouchShield.drawVerticalLine(column, from, sky - from, Terrain.SKY);
+        if (sky > from) tft.drawVerticalLine(column, from, sky - from, Terrain.SKY);
         for (int row = Math.max(from, ground[column]); row < to; row++) {
-            TftTouchShield.drawPixel(column, row, background(ground, pads, column, row));
+            tft.drawPixel(column, row, background(ground, pads, column, row));
         }
     }
 
@@ -85,20 +85,20 @@ final class LanderRenderer {
         return Terrain.GROUND;
     }
 
-    static void explode(short[] ground, byte[] pads) {
+    static void explode(TftTouchShield tft, short[] ground, byte[] pads) {
         int centerX = Math.round(Flight.x);
         int centerY = Math.min(Math.round(Flight.y), Terrain.PLAY_BOTTOM - 16);
         for (int radius = 3; radius <= 15; radius = radius + 3) {
-            TftTouchShield.fillCircle(centerX, centerY, radius, TftTouchShield.YELLOW);
-            TftTouchShield.fillCircle(centerX, centerY, radius - 2, TftTouchShield.RED);
+            tft.fillCircle(centerX, centerY, radius, TftTouchShield.YELLOW);
+            tft.fillCircle(centerX, centerY, radius - 2, TftTouchShield.RED);
             Delay.millis(60);
         }
         int left = Math.max(0, centerX - 15);
         int right = Math.min(Terrain.WIDTH - 1, centerX + 15);
-        if (TftTouchShield.beginPixels(left, centerY - 15, right - left + 1, 31)) {
+        if (tft.beginPixels(left, centerY - 15, right - left + 1, 31)) {
             for (int row = centerY - 15; row <= centerY + 15; row++) {
                 for (int column = left; column <= right; column++) {
-                    TftTouchShield.pushPixel(background(ground, pads, column, row));
+                    tft.pushPixel(background(ground, pads, column, row));
                 }
             }
         }

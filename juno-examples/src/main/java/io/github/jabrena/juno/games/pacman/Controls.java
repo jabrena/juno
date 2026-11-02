@@ -27,13 +27,13 @@ final class Controls {
     }
 
     /** While held below the header, turns Pac-Man towards the finger; a tap on the header switches pilot. */
-    static void steer() {
-        if (!TftTouchShield.readTouch()) {
+    static void steer(TftTouchShield tft) {
+        if (!tft.readTouch()) {
             headerTouching = false;
             return;
         }
-        int x = TftTouchShield.touchX();
-        int y = TftTouchShield.touchY();
+        int x = tft.touchX();
+        int y = tft.touchY();
         if (y < Maze.MAZE_Y) {
             if (!headerTouching) {
                 autopilot = !autopilot;
@@ -59,20 +59,20 @@ final class Controls {
 
     // ---- Pilot choice ----
 
-    static void choosePilot() {
-        drawPilotChoice(-1);
-        waitForRelease();
+    static void choosePilot(TftTouchShield tft) {
+        drawPilotChoice(tft, -1);
+        waitForRelease(tft);
         int choice = -1;
         while (choice < 0) {
-            if (TftTouchShield.readTouch()) {
-                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            if (tft.readTouch()) {
+                choice = choiceAt(tft.touchX(), tft.touchY());
             }
             Delay.millis(10);
         }
         autopilot = choice == 1;
-        drawPilotChoice(choice);
+        drawPilotChoice(tft, choice);
         Delay.millis(350);
-        waitForRelease();
+        waitForRelease(tft);
     }
 
     static int choiceAt(int x, int y) {
@@ -86,45 +86,45 @@ final class Controls {
         return x >= cpuX && x < cpuX + CHOICE_WIDTH ? 1 : -1;
     }
 
-    private static void drawPilotChoice(int selected) {
+    private static void drawPilotChoice(TftTouchShield tft, int selected) {
         // Tall enough to also erase the cover's "TAP TO CHOOSE A PILOT" / steering-hint lines below it.
-        TftTouchShield.fillRect(0, CHOICE_Y - 40, Session.WIDTH, CHOICE_HEIGHT + 110, SceneRenderer.SPACE);
-        Hud.showCentered("WHO EATS THE DOTS?", CHOICE_Y - 28, 1, TftTouchShield.YELLOW);
-        drawChoice(CHOICE_X, "HUMAN", selected == 0);
-        drawChoice(CHOICE_X + CHOICE_WIDTH + CHOICE_GAP, "CPU", selected == 1);
-        Hud.showCentered("Tap the header to switch", CHOICE_Y + CHOICE_HEIGHT + 16, 1, TftTouchShield.CYAN);
+        tft.fillRect(0, CHOICE_Y - 40, Session.WIDTH, CHOICE_HEIGHT + 110, SceneRenderer.SPACE);
+        Hud.showCentered(tft, "WHO EATS THE DOTS?", CHOICE_Y - 28, 1, TftTouchShield.YELLOW);
+        drawChoice(tft, CHOICE_X, "HUMAN", selected == 0);
+        drawChoice(tft, CHOICE_X + CHOICE_WIDTH + CHOICE_GAP, "CPU", selected == 1);
+        Hud.showCentered(tft, "Tap the header to switch", CHOICE_Y + CHOICE_HEIGHT + 16, 1, TftTouchShield.CYAN);
     }
 
-    private static void drawChoice(int x, String label, boolean selected) {
+    private static void drawChoice(TftTouchShield tft, int x, String label, boolean selected) {
         int color = selected ? CHOICE_CHOSEN : CHOICE;
-        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
-        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 12) / 2, CHOICE_Y + 22);
-        TftTouchShield.print(label);
+        tft.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        tft.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(x + (CHOICE_WIDTH - label.length() * 12) / 2, CHOICE_Y + 22);
+        tft.print(label);
     }
 
     // ---- Taps ----
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
-    static boolean waitForTap(int timeoutMillis) {
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
         int start = CLOCK.millis();
-        while (!TftTouchShield.readTouch()) {
+        while (!tft.readTouch()) {
             if (CLOCK.millis() - start >= timeoutMillis) {
                 return false;
             }
             Delay.millis(10);
         }
-        waitForRelease();
+        waitForRelease(tft);
         headerTouching = false;
         return true;
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

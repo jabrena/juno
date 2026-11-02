@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.startrek.Entities.E_STRIDE;
 import static io.github.jabrena.juno.games.startrek.Entities.E_TYPE;
@@ -31,10 +33,10 @@ final class AutopilotST {
      * ahead, adds a photon torpedo now and then, and warps away when a Klingon torpedo is about to
      * finish off the shields.
      */
-    static void fly(int[] ents) {
+    static void fly(TftTouchShield tft, int[] ents) {
         if (Enterprise.warps > 0 && Enterprise.shields <= WARP_SHIELDS
                 && nearestDistance(ents, T_TORPEDO) < WARP_THREAT) {
-            Enterprise.warp();
+            Enterprise.warp(tft);
             return;
         }
         int base = Entities.find(ents, T_STARBASE);
@@ -66,7 +68,7 @@ final class AutopilotST {
         if (!needDock && off < AIM && nearest < Combat.PHASER_RANGE) {
             Combat.firePhasers(ents);
             if (nearest > 120 && Session.frame % PHOTON_EVERY == 0) {
-                Combat.firePhoton(ents);
+                Combat.firePhoton(tft, ents);
             }
         }
     }

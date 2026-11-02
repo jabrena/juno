@@ -44,19 +44,20 @@ public final class Miner2 {
     private static final int FRAME_MILLIS = 25;
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
         Serial.println("Miner2 example");
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT);
 
-        new Miner2().run();
+        new Miner2().run(tft);
     }
 
-    private void run() {
+    private void run(TftTouchShield tft) {
 
-        Miner2Persistence persistence = new Miner2Persistence(TftTouchShield.getSdCard());
+        Miner2Persistence persistence = new Miner2Persistence(tft.getSdCard());
         UUID uuid = persistence.loadOrCreateIdentity();
         Miner2State model = new Miner2State(new BlockPool(INITIAL_BITS, RETARGET_INTERVAL, TARGET_SECONDS), uuid);
         int color = persistence.loadColor(BitBoard.COLORS);
@@ -75,13 +76,13 @@ public final class Miner2 {
         node.connect();
         Miner2Header header = new Miner2Header(model);
 
-        ViewRouter controller = new ViewRouter(FRAME_MILLIS);
-        controller.register(Miner2Views.BLOCKS, new BlocksView(controller, model, header, node));
-        controller.register(Miner2Views.CHAIN, new ChainView(controller, model, header, node));
-        controller.register(Miner2Views.PEERS, new PeersView(controller, model, header, node));
-        controller.register(Miner2Views.NETWORK, new NetworkView(controller, model, header, node));
-        controller.register(Miner2Views.COVER, new CoverView(controller, node, header));
-        controller.register(Miner2Views.INTRO, new IntroView(controller));
+        ViewRouter controller = new ViewRouter(tft, FRAME_MILLIS);
+        controller.register(Miner2Views.BLOCKS, new BlocksView(tft, controller, model, header, node));
+        controller.register(Miner2Views.CHAIN, new ChainView(tft, controller, model, header, node));
+        controller.register(Miner2Views.PEERS, new PeersView(tft, controller, model, header, node));
+        controller.register(Miner2Views.NETWORK, new NetworkView(tft, controller, model, header, node));
+        controller.register(Miner2Views.COVER, new CoverView(tft, controller, node, header));
+        controller.register(Miner2Views.INTRO, new IntroView(tft, controller));
         controller.start(Miner2Views.INTRO);
         controller.background(node);
         controller.run();

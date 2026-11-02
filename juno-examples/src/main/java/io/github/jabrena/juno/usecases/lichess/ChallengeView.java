@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.lichess;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
@@ -18,11 +19,14 @@ final class ChallengeView implements View {
     private int feedbackAt;
     private boolean dirty;
 
-    ChallengeView(Navigator navigator, LichessModel model) {
-        this(navigator, model, ArduinoUno.getClock());
+    private final TftTouchShield tft;
+
+    ChallengeView(TftTouchShield tft, Navigator navigator, LichessModel model) {
+        this(tft, navigator, model, ArduinoUno.getClock());
     }
 
-    ChallengeView(Navigator navigator, LichessModel model, Clock clock) {
+    ChallengeView(TftTouchShield tft, Navigator navigator, LichessModel model, Clock clock) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         boardView = new LichessBoardView(model);
@@ -46,7 +50,7 @@ final class ChallengeView implements View {
             dirty = true;
         }
         if (dirty) {
-            boardView.draw(selected, feedback);
+            boardView.draw(tft, selected, feedback);
             dirty = false;
         }
     }

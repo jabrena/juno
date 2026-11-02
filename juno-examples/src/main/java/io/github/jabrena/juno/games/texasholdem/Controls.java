@@ -19,12 +19,12 @@ final class Controls {
     private Controls() {
     }
 
-    static int waitForButton() {
+    static int waitForButton(TftTouchShield tft) {
         while (true) {
-            if (TftTouchShield.readTouch()) {
-                int x = TftTouchShield.touchX();
-                int y = TftTouchShield.touchY();
-                waitForRelease();
+            if (tft.readTouch()) {
+                int x = tft.touchX();
+                int y = tft.touchY();
+                waitForRelease(tft);
                 if (y < HEADER_HEIGHT && x >= NEW_X) {
                     return 6;
                 }
@@ -47,9 +47,9 @@ final class Controls {
         }
     }
 
-    static boolean waitForDeal() {
+    static boolean waitForDeal(TftTouchShield tft) {
         while (true) {
-            int button = waitForButton();
+            int button = waitForButton(tft);
             if (button == 6) {
                 return true;
             }
@@ -59,16 +59,16 @@ final class Controls {
         }
     }
 
-    static void waitForNew() {
-        while (waitForButton() != 6) {
+    static void waitForNew(TftTouchShield tft) {
+        while (waitForButton(tft) != 6) {
             Delay.millis(10);
         }
     }
 
-    static void waitForRelease() {
+    static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;
@@ -77,11 +77,11 @@ final class Controls {
         }
     }
 
-    static boolean waitForTap(int timeoutMillis) {
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
         int started = CLOCK.millis();
         while (CLOCK.millis() - started < timeoutMillis) {
-            if (TftTouchShield.readTouch()) {
-                waitForRelease();
+            if (tft.readTouch()) {
+                waitForRelease(tft);
                 return true;
             }
             Delay.millis(10);
@@ -89,19 +89,19 @@ final class Controls {
         return false;
     }
 
-    static void choosePlayer() {
-        TftTouchShield.fillScreen(0x0366);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, 0x0366);
-        TftTouchShield.setCursor(48, 74);
-        TftTouchShield.print("CHOOSE PLAYER");
-        drawChoice(18, "HUMAN", TftTouchShield.CYAN);
-        drawChoice(126, "CPU", TftTouchShield.ORANGE);
+    static void choosePlayer(TftTouchShield tft) {
+        tft.fillScreen(0x0366);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, 0x0366);
+        tft.setCursor(48, 74);
+        tft.print("CHOOSE PLAYER");
+        drawChoice(tft, 18, "HUMAN", TftTouchShield.CYAN);
+        drawChoice(tft, 126, "CPU", TftTouchShield.ORANGE);
         while (true) {
-            if (TftTouchShield.readTouch()) {
-                int x = TftTouchShield.touchX();
-                int y = TftTouchShield.touchY();
-                waitForRelease();
+            if (tft.readTouch()) {
+                int x = tft.touchX();
+                int y = tft.touchY();
+                waitForRelease(tft);
                 if (y >= 132 && y < 226) {
                     autopilot = x >= 120;
                     return;
@@ -111,12 +111,12 @@ final class Controls {
         }
     }
 
-    private static void drawChoice(int x, String label, int color) {
-        TftTouchShield.fillRect(x, 132, 96, 94, color);
-        TftTouchShield.fillRect(x + 3, 135, 90, 88, 0x0366);
-        TftTouchShield.setTextColor(color, 0x0366);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(x + 12, 164);
-        TftTouchShield.print(label);
+    private static void drawChoice(TftTouchShield tft, int x, String label, int color) {
+        tft.fillRect(x, 132, 96, 94, color);
+        tft.fillRect(x + 3, 135, 90, 88, 0x0366);
+        tft.setTextColor(color, 0x0366);
+        tft.setTextSize(2);
+        tft.setCursor(x + 12, 164);
+        tft.print(label);
     }
 }

@@ -7,6 +7,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
  * A palette of RGB565 colours and, row after row, runs of (palette index, length) byte pairs.
  */
 public final class JavaLogoImage implements Drawable {
+    private final TftTouchShield tft;
+
     public static final int WIDTH = 200;
     public static final int HEIGHT = 200;
     private static final int LENGTH = 3254;
@@ -232,19 +234,20 @@ public final class JavaLogoImage implements Drawable {
                 0, -56, 0, -56, 0, -56
         };
 
-    public JavaLogoImage() {
+    public JavaLogoImage(TftTouchShield tft) {
+        this.tft = tft;
     }
 
     /** Draws the image centred over the current TFT viewport. */
     @Override
     public void draw() {
-        draw(0, 0, TftTouchShield.width() - 1, TftTouchShield.height() - 1);
+        draw(0, 0, tft.width() - 1, tft.height() - 1);
     }
 
     @Override
     public void draw(int clipLeft, int clipTop, int clipRight, int clipBottom) {
-        int left = (TftTouchShield.width() - WIDTH) / 2;
-        int top = (TftTouchShield.height() - HEIGHT) / 2;
+        int left = (tft.width() - WIDTH) / 2;
+        int top = (tft.height() - HEIGHT) / 2;
         int x = 0;
         int y = 0;
         for (int i = 0; i < LENGTH; i += 2) {
@@ -256,7 +259,7 @@ public final class JavaLogoImage implements Drawable {
             if (index != BACKGROUND && screenY >= clipTop && screenY <= clipBottom && screenRight >= clipLeft && screenX <= clipRight) {
                 int drawLeft = Math.max(screenX, clipLeft);
                 int drawRight = Math.min(screenRight, clipRight);
-                TftTouchShield.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
+                tft.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
             }
             x = x + length;
             if (x >= WIDTH) {

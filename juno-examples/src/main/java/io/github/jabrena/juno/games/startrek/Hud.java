@@ -34,48 +34,48 @@ final class Hud {
     }
 
     /** The bridge window's frame and the three buttons, with the torpedoes and warps left. */
-    static void drawPanel() {
-        TftTouchShield.drawRect(PANEL_X, BRIDGE_TOP - 1, WIDTH - PANEL_X, BRIDGE_BOTTOM - BRIDGE_TOP + 2, FRAME);
-        TftTouchShield.drawVerticalLine(TACTICAL_RIGHT + 1, HEADER, HEIGHT - HEADER, FRAME);
-        drawButton(0, "PHASER", -1, true);
-        drawButton(1, "PHOTON", Enterprise.photons, Enterprise.photons > 0);
-        drawButton(2, "WARP", Enterprise.warps, Enterprise.warps > 0);
+    static void drawPanel(TftTouchShield tft) {
+        tft.drawRect(PANEL_X, BRIDGE_TOP - 1, WIDTH - PANEL_X, BRIDGE_BOTTOM - BRIDGE_TOP + 2, FRAME);
+        tft.drawVerticalLine(TACTICAL_RIGHT + 1, HEADER, HEIGHT - HEADER, FRAME);
+        drawButton(tft, 0, "PHASER", -1, true);
+        drawButton(tft, 1, "PHOTON", Enterprise.photons, Enterprise.photons > 0);
+        drawButton(tft, 2, "WARP", Enterprise.warps, Enterprise.warps > 0);
     }
 
-    private static void drawButton(int index, String label, int count, boolean ready) {
+    private static void drawButton(TftTouchShield tft, int index, String label, int count, boolean ready) {
         int y = BUTTON_Y + index * BUTTON_HEIGHT;
         int color = ready ? BUTTON : BUTTON_EMPTY;
-        TftTouchShield.fillRect(PANEL_X + 2, y + 2, WIDTH - PANEL_X - 4, BUTTON_HEIGHT - 4, color);
-        TftTouchShield.drawRect(PANEL_X + 2, y + 2, WIDTH - PANEL_X - 4, BUTTON_HEIGHT - 4, FRAME);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(ready ? TftTouchShield.YELLOW : TftTouchShield.GRAY, color);
-        TftTouchShield.setCursor(PANEL_X + (WIDTH - PANEL_X - label.length() * 12) / 2, y + 8);
-        TftTouchShield.print(label);
+        tft.fillRect(PANEL_X + 2, y + 2, WIDTH - PANEL_X - 4, BUTTON_HEIGHT - 4, color);
+        tft.drawRect(PANEL_X + 2, y + 2, WIDTH - PANEL_X - 4, BUTTON_HEIGHT - 4, FRAME);
+        tft.setTextSize(2);
+        tft.setTextColor(ready ? TftTouchShield.YELLOW : TftTouchShield.GRAY, color);
+        tft.setCursor(PANEL_X + (WIDTH - PANEL_X - label.length() * 12) / 2, y + 8);
+        tft.print(label);
         if (count >= 0) {
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-            TftTouchShield.setCursor(PANEL_X + 44, y + 28);
-            TftTouchShield.print(count);
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.WHITE, color);
+            tft.setCursor(PANEL_X + 44, y + 28);
+            tft.print(count);
         }
     }
 
-    static void drawHeader(int[] ents) {
+    static void drawHeader(TftTouchShield tft, int[] ents) {
         headerFlashed = false;
-        TftTouchShield.fillRect(0, 0, WIDTH, HEADER - 1, SPACE);
-        TftTouchShield.drawHorizontalLine(0, HEADER - 1, WIDTH, FRAME);
+        tft.fillRect(0, 0, WIDTH, HEADER - 1, SPACE);
+        tft.drawHorizontalLine(0, HEADER - 1, WIDTH, FRAME);
         status = -1;
-        drawStatus(ents);
+        drawStatus(tft, ents);
     }
 
     /** A hit flashes the header red until the next frame redraws it. */
-    static void flashHit() {
-        TftTouchShield.fillRect(0, 0, WIDTH, HEADER - 1, TftTouchShield.RED);
+    static void flashHit(TftTouchShield tft) {
+        tft.fillRect(0, 0, WIDTH, HEADER - 1, TftTouchShield.RED);
         Delay.millis(40);
         headerFlashed = true;
     }
 
     /** Score, sector, what is left to destroy, and the shields. */
-    static void drawStatus(int[] ents) {
+    static void drawStatus(TftTouchShield tft, int[] ents) {
         int klingons = Entities.count(ents, T_KLINGON) + Entities.count(ents, T_NOMAD);
         int shields = Enterprise.shields;
         int combined = klingons * 1000 + shields + (Session.baseLost ? 100000 : 0)
@@ -85,49 +85,49 @@ final class Hud {
         }
         status = combined;
         shownScore = Session.score;
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, SPACE);
-        TftTouchShield.setCursor(4, 2);
-        TftTouchShield.print("SCORE ");
-        TftTouchShield.print(Session.score);
-        TftTouchShield.print("   ");
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, SPACE);
-        TftTouchShield.setCursor(136, 2);
-        TftTouchShield.print("HI ");
-        TftTouchShield.print(Session.best);
-        TftTouchShield.setCursor(250, 2);
-        TftTouchShield.print("SECTOR ");
-        TftTouchShield.print(Session.sector);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, SPACE);
+        tft.setCursor(4, 2);
+        tft.print("SCORE ");
+        tft.print(Session.score);
+        tft.print("   ");
+        tft.setTextColor(TftTouchShield.CYAN, SPACE);
+        tft.setCursor(136, 2);
+        tft.print("HI ");
+        tft.print(Session.best);
+        tft.setCursor(250, 2);
+        tft.print("SECTOR ");
+        tft.print(Session.sector);
         int color = TftTouchShield.GREEN;
         if (shields <= 25) {
             color = TftTouchShield.RED;
         } else if (shields <= 50) {
             color = TftTouchShield.YELLOW;
         }
-        TftTouchShield.setTextColor(color, SPACE);
-        TftTouchShield.setCursor(4, 11);
-        TftTouchShield.print("SHIELDS ");
-        TftTouchShield.print(shields);
-        TftTouchShield.print("%  ");
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, SPACE);
-        TftTouchShield.setCursor(136, 11);
-        TftTouchShield.print("ENEMY SHIPS ");
-        TftTouchShield.print(klingons);
-        TftTouchShield.print("  ");
-        TftTouchShield.setTextColor(TftTouchShield.MAGENTA, SPACE);
-        TftTouchShield.setCursor(228, 11);
-        TftTouchShield.print(Controls.autopilot ? "CPU" : "   ");
+        tft.setTextColor(color, SPACE);
+        tft.setCursor(4, 11);
+        tft.print("SHIELDS ");
+        tft.print(shields);
+        tft.print("%  ");
+        tft.setTextColor(TftTouchShield.WHITE, SPACE);
+        tft.setCursor(136, 11);
+        tft.print("ENEMY SHIPS ");
+        tft.print(klingons);
+        tft.print("  ");
+        tft.setTextColor(TftTouchShield.MAGENTA, SPACE);
+        tft.setCursor(228, 11);
+        tft.print(Controls.autopilot ? "CPU" : "   ");
         if (Session.baseLost) {
-            TftTouchShield.setTextColor(TftTouchShield.RED, SPACE);
-            TftTouchShield.setCursor(250, 11);
-            TftTouchShield.print("BASE LOST");
+            tft.setTextColor(TftTouchShield.RED, SPACE);
+            tft.setCursor(250, 11);
+            tft.print("BASE LOST");
         }
     }
 
-    static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, SPACE);
-        TftTouchShield.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, SPACE);
+        tft.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 }

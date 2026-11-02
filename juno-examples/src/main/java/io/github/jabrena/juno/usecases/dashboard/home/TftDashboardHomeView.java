@@ -11,6 +11,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** The home screen: a menu whose buttons ask the navigator for the status and storage views. */
 public final class TftDashboardHomeView implements View {
+
+    private final TftTouchShield tft;
     private final Navigator navigator;
     private final TftFpsWidget fps;
     private final TftHeaderWidget header = new TftHeaderWidget("JUNO DASHBOARD");
@@ -20,24 +22,25 @@ public final class TftDashboardHomeView implements View {
     private final TftButtonWidget storageButton =
             new TftButtonWidget(72, 146, 176, 42, "VIEW STORAGE", TftTouchShield.BLUE);
 
-    public TftDashboardHomeView(Navigator navigator, TftFpsWidget fps) {
+    public TftDashboardHomeView(TftTouchShield tft, Navigator navigator, TftFpsWidget fps) {
+        this.tft = tft;
         this.navigator = navigator;
         this.fps = fps;
     }
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(TftTouchShield.NAVY);
-        header.draw();
-        prompt.draw("Select a view", TftTouchShield.WHITE);
-        statusButton.draw();
-        storageButton.draw();
+        tft.fillScreen(TftTouchShield.NAVY);
+        header.draw(tft);
+        prompt.draw(tft, "Select a view", TftTouchShield.WHITE);
+        statusButton.draw(tft);
+        storageButton.draw(tft);
         fps.reset();
     }
 
     @Override
     public void render() {
-        fps.update();
+        fps.update(tft);
     }
 
     @Override

@@ -29,7 +29,7 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void refresh(byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
+    static void refresh(TftTouchShield tft, byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
             int selected) {
         for (int square = 0; square < 64; square++) {
             deco[square] = 0;
@@ -51,14 +51,14 @@ final class SceneRenderer {
         }
         for (int square = 0; square < 64; square++) {
             if (board[square] != shownPiece[square] || deco[square] != shownDeco[square]) {
-                drawSquare(square, board[square], deco[square]);
+                drawSquare(tft, square, board[square], deco[square]);
                 shownPiece[square] = board[square];
                 shownDeco[square] = deco[square];
             }
         }
     }
 
-    static void drawSquare(int square, int piece, int decoration) {
+    static void drawSquare(TftTouchShield tft, int square, int piece, int decoration) {
         int row = square >> 3;
         int column = square & 7;
         int x = BOARD_X + column * CELL;
@@ -74,48 +74,48 @@ final class SceneRenderer {
                 color = LIGHT_LAST;
             }
         }
-        TftTouchShield.fillRect(x, y, CELL, CELL, color);
+        tft.fillRect(x, y, CELL, CELL, color);
         if ((decoration & DECO_SELECTED) != 0) {
-            TftTouchShield.drawRect(x, y, CELL, CELL, SELECTED);
-            TftTouchShield.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, SELECTED);
+            tft.drawRect(x, y, CELL, CELL, SELECTED);
+            tft.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, SELECTED);
         }
         if (piece != 0) {
-            ChessPieceRenderer.draw(x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
+            ChessPieceRenderer.draw(tft, x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
                     y + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2, piece, color);
         }
         if ((decoration & DECO_TARGET) != 0) {
             if (piece != 0) {
-                TftTouchShield.drawRect(x, y, CELL, CELL, CAPTURE_TARGET);
-                TftTouchShield.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, CAPTURE_TARGET);
+                tft.drawRect(x, y, CELL, CELL, CAPTURE_TARGET);
+                tft.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, CAPTURE_TARGET);
             } else {
-                TftTouchShield.fillCircle(x + CELL / 2, y + CELL / 2, 4, TARGET);
+                tft.fillCircle(x + CELL / 2, y + CELL / 2, 4, TARGET);
             }
         }
     }
 
-    static void showStatus(String text, int color) {
-        TftTouchShield.fillRect(0, 0, TftTouchShield.width(), 36, HEADER_BACKGROUND);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(8, 10);
-        TftTouchShield.print(text);
+    static void showStatus(TftTouchShield tft, String text, int color) {
+        tft.fillRect(0, 0, tft.width(), 36, HEADER_BACKGROUND);
+        tft.setTextSize(2);
+        tft.setTextColor(color, HEADER_BACKGROUND);
+        tft.setCursor(8, 10);
+        tft.print(text);
     }
 
-    static void showLastMove() {
-        TftTouchShield.fillRect(0, FOOTER_Y, UNDO_X - 4, BUTTON_HEIGHT, TftTouchShield.BLACK);
+    static void showLastMove(TftTouchShield tft) {
+        tft.fillRect(0, FOOTER_Y, UNDO_X - 4, BUTTON_HEIGHT, TftTouchShield.BLACK);
         if (lastFrom < 0) {
             return;
         }
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(BOARD_X, FOOTER_Y + 8);
-        drawSquareName(lastFrom);
-        drawSquareName(lastTo);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(BOARD_X, FOOTER_Y + 8);
+        drawSquareName(tft, lastFrom);
+        drawSquareName(tft, lastTo);
     }
 
-    static void drawSquareName(int square) {
-        TftTouchShield.print(fileName(square & 7));
-        TftTouchShield.print(8 - (square >> 3));
+    static void drawSquareName(TftTouchShield tft, int square) {
+        tft.print(fileName(square & 7));
+        tft.print(8 - (square >> 3));
     }
 
     static void printSquare(int square) {

@@ -309,12 +309,13 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
                 public final class AsmTft {
                     public static void main(String[] args) {
-                        TftTouchShield.begin();
-                        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-                        TftTouchShield.drawRect(0, 0, 20, 20, TftTouchShield.GREEN);
-                        TftTouchShield.println("Juno");
-                        if (TftTouchShield.readTouch()) {
-                            TftTouchShield.drawPixel(TftTouchShield.touchX(), TftTouchShield.touchY(), TftTouchShield.RED);
+                        TftTouchShield tft = new TftTouchShield();
+                        tft.begin();
+                        tft.fillScreen(TftTouchShield.BLACK);
+                        tft.drawRect(0, 0, 20, 20, TftTouchShield.GREEN);
+                        tft.println("Juno");
+                        if (tft.readTouch()) {
+                            tft.drawPixel(tft.touchX(), tft.touchY(), TftTouchShield.RED);
                         }
                     }
                 }

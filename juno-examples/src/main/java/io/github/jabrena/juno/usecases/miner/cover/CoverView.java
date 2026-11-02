@@ -15,6 +15,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * separate view, shown once.
  */
 public final class CoverView implements View {
+
+    private final TftTouchShield tft;
     private static final int WIDTH = 240;
     private static final int TITLE_SIZE = 6;
     private static final int TITLE_Y = 80;
@@ -27,7 +29,8 @@ public final class CoverView implements View {
     private final NodeService node;
     private final Miner2Header header;
 
-    public CoverView(Navigator navigator, NodeService node, Miner2Header header) {
+    public CoverView(TftTouchShield tft, Navigator navigator, NodeService node, Miner2Header header) {
+        this.tft = tft;
         this.navigator = navigator;
         this.node = node;
         this.header = header;
@@ -35,13 +38,13 @@ public final class CoverView implements View {
 
     @Override
     public void enter() {
-        drawTitle();
-        header.redrawIcons();
+        drawTitle(tft);
+        header.redrawIcons(tft);
     }
 
     @Override
     public void render() {
-        header.render();
+        header.render(tft);
     }
 
     @Override
@@ -58,17 +61,17 @@ public final class CoverView implements View {
         return x >= PLAY_X && x < PLAY_X + PLAY_WIDTH && y >= PLAY_Y && y < PLAY_Y + PLAY_HEIGHT;
     }
 
-    private static void drawTitle() {
-        TftTouchShield.fillScreen(GameScreen.BACKGROUND);
-        TftTouchShield.setTextSize(TITLE_SIZE);
-        TftTouchShield.setTextColor(TftTouchShield.GREEN, GameScreen.BACKGROUND);
-        TftTouchShield.setCursor((WIDTH - 5 * 6 * TITLE_SIZE) / 2, TITLE_Y);
-        TftTouchShield.print("MINER");
-        TftTouchShield.fillRect(PLAY_X, PLAY_Y, PLAY_WIDTH, PLAY_HEIGHT, GameScreen.PANEL);
-        TftTouchShield.drawRect(PLAY_X, PLAY_Y, PLAY_WIDTH, PLAY_HEIGHT, TftTouchShield.GREEN);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, GameScreen.PANEL);
-        TftTouchShield.setCursor(PLAY_X + (PLAY_WIDTH - 4 * 18) / 2, PLAY_Y + (PLAY_HEIGHT - 21) / 2);
-        TftTouchShield.print("PLAY");
+    private static void drawTitle(TftTouchShield tft) {
+        tft.fillScreen(GameScreen.BACKGROUND);
+        tft.setTextSize(TITLE_SIZE);
+        tft.setTextColor(TftTouchShield.GREEN, GameScreen.BACKGROUND);
+        tft.setCursor((WIDTH - 5 * 6 * TITLE_SIZE) / 2, TITLE_Y);
+        tft.print("MINER");
+        tft.fillRect(PLAY_X, PLAY_Y, PLAY_WIDTH, PLAY_HEIGHT, GameScreen.PANEL);
+        tft.drawRect(PLAY_X, PLAY_Y, PLAY_WIDTH, PLAY_HEIGHT, TftTouchShield.GREEN);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, GameScreen.PANEL);
+        tft.setCursor(PLAY_X + (PLAY_WIDTH - 4 * 18) / 2, PLAY_Y + (PLAY_HEIGHT - 21) / 2);
+        tft.print("PLAY");
     }
 }

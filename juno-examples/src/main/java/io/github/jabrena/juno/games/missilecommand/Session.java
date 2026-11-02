@@ -113,14 +113,14 @@ final class Session {
         return countCities(alive) * CITY_BONUS * multiplier();
     }
 
-    static void addScore(int points, boolean[] alive) {
+    static void addScore(TftTouchShield tft, int points, boolean[] alive) {
         score = score + points;
         while (score >= nextBonusCity) {
             nextBonusCity = nextBonusCity + BONUS_CITY_SCORE;
             for (int city = 0; city < CITIES; city++) {
                 if (!alive[city]) {
                     alive[city] = true;
-                    SceneRenderer.drawCity(city, true);
+                    SceneRenderer.drawCity(tft, city, true);
                     break;
                 }
             }
@@ -165,16 +165,16 @@ final class Session {
         return true;
     }
 
-    static void moveMissiles(int[] missiles, int[] blasts, boolean[] alive, int[] ammo) {
+    static void moveMissiles(TftTouchShield tft, int[] missiles, int[] blasts, boolean[] alive, int[] ammo) {
         for (int slot = 0; slot < MISSILES; slot++) {
             int base = slot * T_STRIDE;
             if (missiles[base + T_ACTIVE] == 0) {
                 continue;
             }
-            if (SceneRenderer.advanceTrail(missiles, slot, SceneRenderer.ENEMY_TRAIL)) {
+            if (SceneRenderer.advanceTrail(tft, missiles, slot, SceneRenderer.ENEMY_TRAIL)) {
                 int target = missiles[base + T_TARGET];
-                SceneRenderer.eraseTrail(missiles, slot);
-                hitTarget(target, alive, ammo);
+                SceneRenderer.eraseTrail(tft, missiles, slot);
+                hitTarget(tft, target, alive, ammo);
                 Blasts.startBlast(blasts, targetX(target), targetY(target));
                 continue;
             }
@@ -192,14 +192,14 @@ final class Session {
         }
     }
 
-    private static void hitTarget(int target, boolean[] alive, int[] ammo) {
+    private static void hitTarget(TftTouchShield tft, int target, boolean[] alive, int[] ammo) {
         if (target >= FIRST_BASE) {
             ammo[target - FIRST_BASE] = 0;
             alive[target] = false;
-            SceneRenderer.drawBase(target - FIRST_BASE, ammo);
+            SceneRenderer.drawBase(tft, target - FIRST_BASE, ammo);
         } else if (alive[target]) {
             alive[target] = false;
-            SceneRenderer.drawCity(target, false);
+            SceneRenderer.drawCity(tft, target, false);
         }
     }
 
@@ -220,30 +220,30 @@ final class Session {
     }
 
     /** Fires from the nearest base with ammunition; returns the shot's slot, or -1 if it couldn't fire. */
-    static int fire(int[] shots, int[] ammo, int targetX, int targetY) {
+    static int fire(TftTouchShield tft, int[] shots, int[] ammo, int targetX, int targetY) {
         int chosen = nearestBase(ammo, targetX);
         int slot = firstInactive(shots, SHOTS, T_STRIDE);
         if (chosen < 0 || slot < 0) {
             return -1;
         }
         ammo[chosen] = ammo[chosen] - 1;
-        SceneRenderer.drawAmmo(chosen, ammo);
+        SceneRenderer.drawAmmo(tft, chosen, ammo);
         SceneRenderer.startTrail(shots, slot, SceneRenderer.baseX(chosen), GROUND_Y - 14, targetX, targetY,
                 SHOT_SPEED);
-        SceneRenderer.drawMarker(targetX, targetY, TftTouchShield.WHITE);
+        SceneRenderer.drawMarker(tft, targetX, targetY, TftTouchShield.WHITE);
         // No target claimed yet; the caller can note one afterwards keyed on this slot.
         shots[slot * T_STRIDE + T_TARGET] = -1;
         return slot;
     }
 
-    static void moveShots(int[] shots, int[] blasts) {
+    static void moveShots(TftTouchShield tft, int[] shots, int[] blasts) {
         for (int slot = 0; slot < SHOTS; slot++) {
             int base = slot * T_STRIDE;
-            if (shots[base + T_ACTIVE] != 0 && SceneRenderer.advanceTrail(shots, slot, SceneRenderer.SHOT_TRAIL)) {
+            if (shots[base + T_ACTIVE] != 0 && SceneRenderer.advanceTrail(tft, shots, slot, SceneRenderer.SHOT_TRAIL)) {
                 int x = shots[base + T_END_X];
                 int y = shots[base + T_END_Y];
-                SceneRenderer.eraseTrail(shots, slot);
-                SceneRenderer.drawMarker(x, y, SceneRenderer.SKY);
+                SceneRenderer.eraseTrail(tft, shots, slot);
+                SceneRenderer.drawMarker(tft, x, y, SceneRenderer.SKY);
                 Blasts.startBlast(blasts, x, y);
             }
         }

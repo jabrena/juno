@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -44,9 +46,9 @@ final class WadLevel {
     }
 
     /** Reads map EeMm from the card's {@code DOOM1.WAD}; {@code false} when the file or map is missing, broken or too large. */
-    static boolean load(int episode, int map) {
+    static boolean load(TftTouchShield tft, int episode, int map) {
         try (RandomAccessFile wad = new RandomAccessFile("DOOM1.WAD", "r")) {
-            return read(wad, episode, map);
+            return read(tft, wad, episode, map);
         } catch (IOException missingOrBroken) {
             return false;
         }
@@ -79,12 +81,12 @@ final class WadLevel {
     }
 
     /** Reads E1M1 from an open WAD into {@link World}'s WAD-sized tables. */
-    static boolean read(RandomAccessFile wad) throws IOException {
-        return read(wad, 1, 1);
+    static boolean read(TftTouchShield tft, RandomAccessFile wad) throws IOException {
+        return read(tft, wad, 1, 1);
     }
 
     /** Reads map EeMm from an open WAD into {@link World}'s WAD-sized tables. */
-    static boolean read(RandomAccessFile wad, int episode, int map) throws IOException {
+    static boolean read(TftTouchShield tft, RandomAccessFile wad, int episode, int map) throws IOException {
         byte[] record = new byte[NODE_BYTES];
         int[] lumps = new int[2 * LUMPS];
         wad.readFully(record, 0, HEADER_BYTES);
@@ -104,27 +106,27 @@ final class WadLevel {
             return false;
         }
         int things = lumps[2 * THINGS + 1] / WadThings.THING_BYTES;
-        Loading.beginLoad(World.vertices + 2 * World.sectors + 3 * World.lines + World.segs + World.subsectors
+        Loading.beginLoad(tft, World.vertices + 2 * World.sectors + 3 * World.lines + World.segs + World.subsectors
                 + World.nodes + things, World.subsectors);
-        boolean read = readRecords(wad, record, lumps, things);
+        boolean read = readRecords(tft, wad, record, lumps, things);
         Loading.endLoad();
         return read;
     }
 
     /** The map's lumps into {@link World}, each record advancing {@link Loading}'s bar. */
-    private static boolean readRecords(RandomAccessFile wad, byte[] record, int[] lumps, int things)
+    private static boolean readRecords(TftTouchShield tft, RandomAccessFile wad, byte[] record, int[] lumps, int things)
             throws IOException {
-        readVertices(wad, record, lumps[2 * VERTEXES]);
-        readSectors(wad, record, lumps[2 * SECTORS]);
-        if (!readLines(wad, record, lumps[2 * LINEDEFS], lumps[2 * SIDEDEFS])
-                || !Lifts.resolve(wad, record, lumps[2 * SECTORS], SECTOR_BYTES)) {
+        readVertices(tft, wad, record, lumps[2 * VERTEXES]);
+        readSectors(tft, wad, record, lumps[2 * SECTORS]);
+        if (!readLines(tft, wad, record, lumps[2 * LINEDEFS], lumps[2 * SIDEDEFS])
+                || !Lifts.resolve(tft, wad, record, lumps[2 * SECTORS], SECTOR_BYTES)) {
             return false;
         }
         placeDoors();
-        readSegs(wad, record, lumps[2 * SEGS]);
-        readSubsectors(wad, record, lumps[2 * SSECTORS]);
-        readNodes(wad, record, lumps[2 * NODES]);
-        if (!WadThings.read(wad, record, lumps[2 * THINGS], things)) {
+        readSegs(tft, wad, record, lumps[2 * SEGS]);
+        readSubsectors(tft, wad, record, lumps[2 * SSECTORS]);
+        readNodes(tft, wad, record, lumps[2 * NODES]);
+        if (!WadThings.read(tft, wad, record, lumps[2 * THINGS], things)) {
             return false;
         }
         // Until RoutePlanner replaces it, the route is just the start: the CPU stands and fights.
@@ -162,22 +164,22 @@ final class WadLevel {
                 && World.nodes <= World.MAX_NODES && World.sectors <= World.MAX_SECTORS;
     }
 
-    private static void readVertices(RandomAccessFile wad, byte[] record, int offset) throws IOException {
+    private static void readVertices(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
         for (int i = 0; i < World.vertices; i++) {
             wad.readFully(record, 0, VERTEX_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             World.vertexX[i] = int16(record, 0);
             World.vertexY[i] = int16(record, 2);
         }
     }
 
-    private static void readSectors(RandomAccessFile wad, byte[] record, int offset) throws IOException {
+    private static void readSectors(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
         World.clearSectorSecrets();
         for (int i = 0; i < World.sectors; i++) {
             wad.readFully(record, 0, SECTOR_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             World.sectorFloor[i] = int16(record, 0);
             World.sectorCeiling[i] = int16(record, 2);
             if (int16(record, 22) == 9) {
@@ -191,7 +193,7 @@ final class WadLevel {
      * seek into SIDEDEFS. Also collects the door sectors and the exit switch from the line specials, and hands lift and
      * remote door lines to {@link Lifts}.
      */
-    private static boolean readLines(RandomAccessFile wad, byte[] record, int offset, int sidedefs)
+    private static boolean readLines(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset, int sidedefs)
             throws IOException {
         World.doors = 0;
         Lifts.clear();
@@ -207,7 +209,7 @@ final class WadLevel {
         for (int line = 0; line < World.lines; line++) {
             wad.seek(offset + line * LINEDEF_BYTES);
             wad.readFully(record, 0, LINEDEF_BYTES);
-            Loading.advance(3);
+            Loading.advance(tft, 3);
             int v1 = int16(record, 0) & 0xFFFF;
             int v2 = int16(record, 2) & 0xFFFF;
             World.setLineFlags(line, int16(record, 4));
@@ -289,11 +291,11 @@ final class WadLevel {
         }
     }
 
-    private static void readSegs(RandomAccessFile wad, byte[] record, int offset) throws IOException {
+    private static void readSegs(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
         for (int i = 0; i < World.segs; i++) {
             wad.readFully(record, 0, SEG_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             World.segV1[i] = int16(record, 0);
             World.segV2[i] = int16(record, 2);
             World.segLine[i] = int16(record, 6);
@@ -302,11 +304,11 @@ final class WadLevel {
     }
 
     /** A subsector's sector is the one on the side its first seg runs along. */
-    private static void readSubsectors(RandomAccessFile wad, byte[] record, int offset) throws IOException {
+    private static void readSubsectors(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
         for (int i = 0; i < World.subsectors; i++) {
             wad.readFully(record, 0, SUBSECTOR_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             int first = int16(record, 2);
             World.subsectorCount[i] = int16(record, 0);
             World.subsectorFirst[i] = (short) first;
@@ -315,11 +317,11 @@ final class WadLevel {
         }
     }
 
-    private static void readNodes(RandomAccessFile wad, byte[] record, int offset) throws IOException {
+    private static void readNodes(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset) throws IOException {
         wad.seek(offset);
         for (int i = 0; i < World.nodes; i++) {
             wad.readFully(record, 0, NODE_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             World.nodeX[i] = int16(record, 0);
             World.nodeY[i] = int16(record, 2);
             World.nodeDx[i] = int16(record, 4);

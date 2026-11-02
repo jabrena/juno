@@ -58,10 +58,11 @@ public final class SupabaseGroveTemperaturesHistogram {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         byte[] path = new byte[PATH_CAPACITY];
         byte[] requestHeaders = new byte[REQUEST_HEADERS_CAPACITY];
@@ -104,11 +105,11 @@ public final class SupabaseGroveTemperaturesHistogram {
                 supabase, response, RESPONSE_BODY_CAPACITY,
                 nextSupabase, nextResponse,
                 model);
-        ViewRouter controller = new ViewRouter(FRAME_PERIOD_MILLIS);
+        ViewRouter controller = new ViewRouter(tft, FRAME_PERIOD_MILLIS);
         controller.register(INTRO_VIEW,
-                new IntroView(controller, GATHERING_VIEW));
-        controller.register(GATHERING_VIEW, new TemperatureGatheringView(model, service, controller, DASHBOARD_VIEW));
-        controller.register(DASHBOARD_VIEW, new TemperatureHistogramView(model));
+                new IntroView(tft, controller, GATHERING_VIEW));
+        controller.register(GATHERING_VIEW, new TemperatureGatheringView(tft, model, service, controller, DASHBOARD_VIEW));
+        controller.register(DASHBOARD_VIEW, new TemperatureHistogramView(tft, model));
         controller.start(INTRO_VIEW);
 
         controller.background(service);

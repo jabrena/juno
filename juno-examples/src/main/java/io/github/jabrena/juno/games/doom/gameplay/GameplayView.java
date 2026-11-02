@@ -3,6 +3,7 @@ package io.github.jabrena.juno.games.doom.gameplay;
 import io.github.jabrena.juno.games.doom.commons.DoomState;
 import io.github.jabrena.juno.games.doom.commons.DoomViews;
 import io.github.jabrena.juno.games.doom.engine.DoomEngine;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import io.github.jabrena.juno.util.mvc.View;
@@ -14,11 +15,14 @@ import io.github.jabrena.juno.util.mvc.View;
  * cover.
  */
 public final class GameplayView implements View {
+
+    private final TftTouchShield tft;
     private final Navigator navigator;
     private final DoomState model;
     private final DoomEngine engine;
 
-    public GameplayView(Navigator navigator, DoomState model, DoomEngine engine) {
+    public GameplayView(TftTouchShield tft, Navigator navigator, DoomState model, DoomEngine engine) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.engine = engine;
@@ -26,13 +30,13 @@ public final class GameplayView implements View {
 
     @Override
     public void enter() {
-        engine.start(model.autopilot(), model.takeNewGame());
+        engine.start(tft, model.autopilot(), model.takeNewGame());
         Serial.println("Doom: gameplay view active");
     }
 
     @Override
     public void render() {
-        int outcome = engine.frame();
+        int outcome = engine.frame(tft);
         if (outcome == DoomEngine.PLAYING) {
             return;
         }

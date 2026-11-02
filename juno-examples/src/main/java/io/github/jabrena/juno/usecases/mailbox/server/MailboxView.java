@@ -73,43 +73,43 @@ public final class MailboxView {
         this.securityView = new MailboxSecurityView(security);
     }
 
-    public void drawCover(boolean storageReady, int messageCount) {
+    public void drawCover(TftTouchShield tft, boolean storageReady, int messageCount) {
         this.storageReady = storageReady;
         this.messageCount = messageCount;
-        drawCoverScreen();
+        drawCoverScreen(tft);
     }
 
     /** Publishes SD readiness without redrawing the mailbox art while startup work is still active. */
-    public void updateStorageReady(boolean storageReady) {
+    public void updateStorageReady(TftTouchShield tft, boolean storageReady) {
         this.storageReady = storageReady;
         if (screen == STATUS) {
-            drawStorageStatus();
+            drawStorageStatus(tft);
         }
     }
 
-    public void drawInternetConnecting() {
-        drawInternet("CONNECTING", TftTouchShield.ORANGE);
+    public void drawInternetConnecting(TftTouchShield tft) {
+        drawInternet(tft, "CONNECTING", TftTouchShield.ORANGE);
     }
 
     /** The board joined the network and was given an address. */
-    public void drawInternetOnline() {
-        drawInternet("ONLINE", DARK_GREEN);
+    public void drawInternetOnline(TftTouchShield tft) {
+        drawInternet(tft, "ONLINE", DARK_GREEN);
     }
 
-    public void drawInternetOffline() {
-        drawInternet("OFFLINE", TftTouchShield.RED);
+    public void drawInternetOffline(TftTouchShield tft) {
+        drawInternet(tft, "OFFLINE", TftTouchShield.RED);
     }
 
-    public void drawMessageCount(int messageCount) {
+    public void drawMessageCount(TftTouchShield tft, int messageCount) {
         this.messageCount = messageCount;
         if (screen == STATUS) {
-            drawStatusScreen();
+            drawStatusScreen(tft);
         } else if (screen == COVER) {
-            drawCountRow();
+            drawCountRow(tft);
         }
     }
 
-    public void drawIp(int[] octets) {
+    public void drawIp(TftTouchShield tft, int[] octets) {
         ipMissing = false;
         ipLength = 0;
         for (int index = 0; index < octets.length; index++) {
@@ -118,14 +118,14 @@ public final class MailboxView {
             }
             appendIpNumber(octets[index]);
         }
-        redrawIp();
+        redrawIp(tft);
     }
 
     /** The UNO Q's address from {@code JUNO_Q_IP}, or {@code null} when it is not configured. */
-    public void drawIp(String address) {
+    public void drawIp(TftTouchShield tft, String address) {
         ipMissing = address == null || address.length() > IP_CAPACITY;
         ipLength = ipMissing ? 0 : copy(address);
-        redrawIp();
+        redrawIp(tft);
     }
 
     /**
@@ -133,171 +133,171 @@ public final class MailboxView {
      * goes back to the cover; on the Security screen the keypad edits the key, and the header goes back to the status
      * screen without changing it.
      */
-    public void touch(int x, int y) {
+    public void touch(TftTouchShield tft, int x, int y) {
         if (screen == COVER) {
             if (x >= GEAR_TOUCH_LEFT && y >= GEAR_TOUCH_TOP) {
                 screen = STATUS;
-                drawStatusScreen();
+                drawStatusScreen(tft);
             }
         } else if (screen == STATUS) {
             if (x >= SECURITY_BUTTON_LEFT && y >= BUTTON_TOP && storageReady) {
                 screen = SECURITY;
-                securityView.show();
+                securityView.show(tft);
             } else {
                 screen = COVER;
-                drawCoverScreen();
+                drawCoverScreen(tft);
             }
-        } else if (securityView.touch(x, y)) {
+        } else if (securityView.touch(tft, x, y)) {
             screen = STATUS;
-            drawStatusScreen();
+            drawStatusScreen(tft);
         }
     }
 
-    private void drawInternet(String state, int color) {
+    private void drawInternet(TftTouchShield tft, String state, int color) {
         internetState = state;
         internetColor = color;
         if (screen == STATUS) {
-            drawStatusScreen();
+            drawStatusScreen(tft);
         } else if (screen == COVER) {
-            drawInternetRow();
+            drawInternetRow(tft);
         }
     }
 
     /** The cover's third row shows the HTTPS listener state without hiding the configured IP. */
-    private void drawInternetRow() {
-        startRow(HTTPS_Y, HTTPS_LABEL.length() + internetState.length());
-        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.print(HTTPS_LABEL);
-        TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
-        TftTouchShield.print(internetState);
+    private void drawInternetRow(TftTouchShield tft) {
+        startRow(tft, HTTPS_Y, HTTPS_LABEL.length() + internetState.length());
+        tft.setTextColor(TEXT, TftTouchShield.WHITE);
+        tft.print(HTTPS_LABEL);
+        tft.setTextColor(internetColor, TftTouchShield.WHITE);
+        tft.print(internetState);
     }
 
-    private void redrawIp() {
+    private void redrawIp(TftTouchShield tft) {
         if (screen == STATUS) {
-            drawStatusScreen();
+            drawStatusScreen(tft);
         } else if (screen == COVER) {
-            drawIpRow();
+            drawIpRow(tft);
         }
     }
 
-    private void drawCoverScreen() {
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        art.draw();
-        drawCountRow();
-        drawIpRow();
-        drawInternetRow();
-        drawKeyHint();
-        drawGear();
+    private void drawCoverScreen(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.WHITE);
+        art.draw(tft);
+        drawCountRow(tft);
+        drawIpRow(tft);
+        drawInternetRow(tft);
+        drawKeyHint(tft);
+        drawGear(tft);
     }
 
     /** While the API key is still the default, the cover says so, so changing it is the obvious first step. */
-    private void drawKeyHint() {
+    private void drawKeyHint(TftTouchShield tft) {
         if (!security.isDefault()) {
             return;
         }
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(8, KEY_HINT_Y);
-        TftTouchShield.setTextColor(TftTouchShield.RED, TftTouchShield.WHITE);
-        TftTouchShield.print(DEFAULT_KEY_HINT);
+        tft.setTextSize(1);
+        tft.setCursor(8, KEY_HINT_Y);
+        tft.setTextColor(TftTouchShield.RED, TftTouchShield.WHITE);
+        tft.print(DEFAULT_KEY_HINT);
     }
 
-    private void drawCountRow() {
-        startRow(COUNT_Y, MESSAGES_LABEL.length() + digits(messageCount));
-        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.print(MESSAGES_LABEL);
-        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
-        TftTouchShield.print(messageCount);
+    private void drawCountRow(TftTouchShield tft) {
+        startRow(tft, COUNT_Y, MESSAGES_LABEL.length() + digits(messageCount));
+        tft.setTextColor(TEXT, TftTouchShield.WHITE);
+        tft.print(MESSAGES_LABEL);
+        tft.setTextColor(BLUE, TftTouchShield.WHITE);
+        tft.print(messageCount);
     }
 
     /** The hint for a missing {@code JUNO_Q_IP} is too long for the row, so it falls back to the small font. */
-    private void drawIpRow() {
+    private void drawIpRow(TftTouchShield tft) {
         if (ipMissing) {
-            TftTouchShield.fillRect(0, IP_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setCursor((SCREEN_WIDTH - IP_HINT.length() * TftTouchShield.CHAR_WIDTH) / 2,
+            tft.fillRect(0, IP_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
+            tft.setTextSize(1);
+            tft.setCursor((SCREEN_WIDTH - IP_HINT.length() * TftTouchShield.CHAR_WIDTH) / 2,
                     IP_Y + TftTouchShield.CHAR_HEIGHT / 2);
-            TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-            TftTouchShield.print(IP_HINT);
+            tft.setTextColor(TEXT, TftTouchShield.WHITE);
+            tft.print(IP_HINT);
             return;
         }
-        startRow(IP_Y, ipLength);
-        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.print(ip, ipLength);
+        startRow(tft, IP_Y, ipLength);
+        tft.setTextColor(TEXT, TftTouchShield.WHITE);
+        tft.print(ip, ipLength);
     }
 
-    private void drawGear() {
+    private void drawGear(TftTouchShield tft) {
         for (int tooth = 0; tooth < GEAR_TOOTH_X.length; tooth++) {
-            TftTouchShield.fillCircle(GEAR_X + GEAR_TOOTH_X[tooth], GEAR_Y + GEAR_TOOTH_Y[tooth], GEAR_TOOTH_RADIUS,
+            tft.fillCircle(GEAR_X + GEAR_TOOTH_X[tooth], GEAR_Y + GEAR_TOOTH_Y[tooth], GEAR_TOOTH_RADIUS,
                     TEXT);
         }
-        TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_RADIUS, TEXT);
-        TftTouchShield.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
+        tft.fillCircle(GEAR_X, GEAR_Y, GEAR_RADIUS, TEXT);
+        tft.fillCircle(GEAR_X, GEAR_Y, GEAR_TOOTH_RADIUS, TftTouchShield.WHITE);
     }
 
     /** SD card, network, IP, message count and API key, one labelled row each, above the BACK and SECURITY buttons. */
-    private void drawStatusScreen() {
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        drawHeader("STATUS");
+    private void drawStatusScreen(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.WHITE);
+        drawHeader(tft, "STATUS");
 
-        drawStorageStatus();
-        statusLabel("NET", 1);
-        TftTouchShield.setTextColor(internetColor, TftTouchShield.WHITE);
-        TftTouchShield.print(internetState);
-        statusLabel("IP", 2);
-        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
+        drawStorageStatus(tft);
+        statusLabel(tft, "NET", 1);
+        tft.setTextColor(internetColor, TftTouchShield.WHITE);
+        tft.print(internetState);
+        statusLabel(tft, "IP", 2);
+        tft.setTextColor(BLUE, TftTouchShield.WHITE);
         if (ipMissing) {
-            TftTouchShield.print("SET JUNO_Q_IP");
+            tft.print("SET JUNO_Q_IP");
         } else {
-            TftTouchShield.print(ip, ipLength);
+            tft.print(ip, ipLength);
         }
-        statusLabel("MAIL", 3);
-        TftTouchShield.setTextColor(BLUE, TftTouchShield.WHITE);
-        TftTouchShield.print(messageCount);
-        statusLabel("KEY", 4);
-        TftTouchShield.setTextColor(security.isDefault() ? TftTouchShield.RED : DARK_GREEN, TftTouchShield.WHITE);
-        TftTouchShield.print(security.isDefault() ? "DEFAULT" : "SET");
+        statusLabel(tft, "MAIL", 3);
+        tft.setTextColor(BLUE, TftTouchShield.WHITE);
+        tft.print(messageCount);
+        statusLabel(tft, "KEY", 4);
+        tft.setTextColor(security.isDefault() ? TftTouchShield.RED : DARK_GREEN, TftTouchShield.WHITE);
+        tft.print(security.isDefault() ? "DEFAULT" : "SET");
 
-        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
-        TftTouchShield.setTextColor(MOTION, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(LABEL_X, BACK_Y);
-        TftTouchShield.print("BACK");
-        TftTouchShield.fillRect(SECURITY_BUTTON_LEFT, BUTTON_TOP, SCREEN_WIDTH - SECURITY_BUTTON_LEFT, 40, BLUE);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
-        TftTouchShield.setCursor(SECURITY_BUTTON_LEFT + 12, BACK_Y);
-        TftTouchShield.print("SECURITY");
+        tft.setTextSize(STATUS_TEXT_SIZE);
+        tft.setTextColor(MOTION, TftTouchShield.WHITE);
+        tft.setCursor(LABEL_X, BACK_Y);
+        tft.print("BACK");
+        tft.fillRect(SECURITY_BUTTON_LEFT, BUTTON_TOP, SCREEN_WIDTH - SECURITY_BUTTON_LEFT, 40, BLUE);
+        tft.setTextColor(TftTouchShield.WHITE, BLUE);
+        tft.setCursor(SECURITY_BUTTON_LEFT + 12, BACK_Y);
+        tft.print("SECURITY");
     }
 
     /** The blue title bar the status and Security screens share. */
-    static void drawHeader(String title) {
-        TftTouchShield.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BLUE);
-        TftTouchShield.setCursor((SCREEN_WIDTH - title.length() * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
-        TftTouchShield.print(title);
+    static void drawHeader(TftTouchShield tft, String title) {
+        tft.fillRect(0, 0, SCREEN_WIDTH, HEADER_HEIGHT, BLUE);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, BLUE);
+        tft.setCursor((SCREEN_WIDTH - title.length() * 3 * TftTouchShield.CHAR_WIDTH) / 2, 10);
+        tft.print(title);
     }
 
-    private void statusLabel(String label, int row) {
+    private void statusLabel(TftTouchShield tft, String label, int row) {
         int y = FIRST_ROW_Y + row * ROW_GAP;
-        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
-        TftTouchShield.setTextColor(TEXT, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(LABEL_X, y);
-        TftTouchShield.print(label);
-        TftTouchShield.setCursor(VALUE_X, y);
+        tft.setTextSize(STATUS_TEXT_SIZE);
+        tft.setTextColor(TEXT, TftTouchShield.WHITE);
+        tft.setCursor(LABEL_X, y);
+        tft.print(label);
+        tft.setCursor(VALUE_X, y);
     }
 
-    private void drawStorageStatus() {
-        TftTouchShield.fillRect(VALUE_X, FIRST_ROW_Y, SCREEN_WIDTH - VALUE_X, STATUS_ROW_HEIGHT,
+    private void drawStorageStatus(TftTouchShield tft) {
+        tft.fillRect(VALUE_X, FIRST_ROW_Y, SCREEN_WIDTH - VALUE_X, STATUS_ROW_HEIGHT,
                 TftTouchShield.WHITE);
-        statusLabel("SD", 0);
-        TftTouchShield.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
-        TftTouchShield.print(storageReady ? "READY" : "UNAVAILABLE");
+        statusLabel(tft, "SD", 0);
+        tft.setTextColor(storageReady ? DARK_GREEN : TftTouchShield.RED, TftTouchShield.WHITE);
+        tft.print(storageReady ? "READY" : "UNAVAILABLE");
     }
 
     /** Clears a status row and puts the cursor where {@code characters} at the status size end up centered. */
-    private void startRow(int y, int characters) {
-        TftTouchShield.fillRect(0, y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(STATUS_TEXT_SIZE);
-        TftTouchShield.setCursor(Math.max(0, (SCREEN_WIDTH - characters * STATUS_CHAR_WIDTH) / 2), y);
+    private void startRow(TftTouchShield tft, int y, int characters) {
+        tft.fillRect(0, y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(STATUS_TEXT_SIZE);
+        tft.setCursor(Math.max(0, (SCREEN_WIDTH - characters * STATUS_CHAR_WIDTH) / 2), y);
     }
 
     private int copy(String text) {

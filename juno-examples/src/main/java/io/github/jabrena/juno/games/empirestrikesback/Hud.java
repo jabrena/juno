@@ -14,26 +14,26 @@ final class Hud {
     private Hud() {
     }
 
-    static void drawHeader() {
+    static void drawHeader(TftTouchShield tft) {
         int space = DisplayList.SPACE;
-        TftTouchShield.fillRect(0, 0, DisplayList.WIDTH, DisplayList.HEADER - 1, space);
-        TftTouchShield.drawHorizontalLine(0, DisplayList.HEADER - 1, DisplayList.WIDTH, SceneRenderer.HUD);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, space);
-        TftTouchShield.setCursor(4, 2);
-        TftTouchShield.print("SCORE ");
-        TftTouchShield.print(Session.score);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, space);
-        TftTouchShield.setCursor(136, 2);
-        TftTouchShield.print("HI ");
-        TftTouchShield.print(Session.best);
-        TftTouchShield.setCursor(262, 2);
-        TftTouchShield.print("WAVE ");
-        TftTouchShield.print(Session.wave);
+        tft.fillRect(0, 0, DisplayList.WIDTH, DisplayList.HEADER - 1, space);
+        tft.drawHorizontalLine(0, DisplayList.HEADER - 1, DisplayList.WIDTH, SceneRenderer.HUD);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, space);
+        tft.setCursor(4, 2);
+        tft.print("SCORE ");
+        tft.print(Session.score);
+        tft.setTextColor(TftTouchShield.CYAN, space);
+        tft.setCursor(136, 2);
+        tft.print("HI ");
+        tft.print(Session.best);
+        tft.setCursor(262, 2);
+        tft.print("WAVE ");
+        tft.print(Session.wave);
         if (Controls.autopilot) {
-            TftTouchShield.setTextColor(TftTouchShield.MAGENTA, space);
-            TftTouchShield.setCursor(226, 2);
-            TftTouchShield.print("CPU");
+            tft.setTextColor(TftTouchShield.MAGENTA, space);
+            tft.setCursor(226, 2);
+            tft.print("CPU");
         }
         int color = TftTouchShield.GREEN;
         if (Session.shields == 0) {
@@ -41,26 +41,26 @@ final class Hud {
         } else if (Session.shields <= 2) {
             color = TftTouchShield.YELLOW;
         }
-        TftTouchShield.setTextColor(color, space);
-        TftTouchShield.setCursor(4, 11);
-        TftTouchShield.print("SHIELDS ");
-        TftTouchShield.print(Session.shields);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, space);
-        TftTouchShield.setCursor(262, 11);
-        TftTouchShield.print(Session.jediWord());
+        tft.setTextColor(color, space);
+        tft.setCursor(4, 11);
+        tft.print("SHIELDS ");
+        tft.print(Session.shields);
+        tft.setTextColor(TftTouchShield.CYAN, space);
+        tft.setCursor(262, 11);
+        tft.print(Session.jediWord());
         status = -1;
-        drawStatus();
+        drawStatus(tft);
     }
 
     /** Flashes the header red for a hit on your craft, then shows the shields left. */
-    static void flashHit() {
-        TftTouchShield.fillRect(0, 0, DisplayList.WIDTH, DisplayList.HEADER - 1, TftTouchShield.RED);
+    static void flashHit(TftTouchShield tft) {
+        tft.fillRect(0, 0, DisplayList.WIDTH, DisplayList.HEADER - 1, TftTouchShield.RED);
         Delay.millis(60);
-        drawHeader();
+        drawHeader(tft);
     }
 
     /** The round's goal in the header's second row. */
-    static void drawStatus() {
+    static void drawStatus(TftTouchShield tft) {
         int value = switch (Session.round) {
             case PROBES -> ProbesRound.probesLeft();
             case WALKERS -> WalkersRound.atatsLeft();
@@ -70,22 +70,22 @@ final class Hud {
             return;
         }
         status = value;
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, DisplayList.SPACE);
-        TftTouchShield.setCursor(86, 11);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, DisplayList.SPACE);
+        tft.setCursor(86, 11);
         switch (Session.round) {
-            case PROBES -> TftTouchShield.print("PROBE DROIDS ");
-            case WALKERS -> TftTouchShield.print("AT-ATS LEFT ");
-            default -> TftTouchShield.print("OUT OF THE FIELD ");
+            case PROBES -> tft.print("PROBE DROIDS ");
+            case WALKERS -> tft.print("AT-ATS LEFT ");
+            default -> tft.print("OUT OF THE FIELD ");
         }
-        TftTouchShield.print(value);
-        TftTouchShield.print("  ");
+        tft.print(value);
+        tft.print("  ");
     }
 
-    static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, DisplayList.SPACE);
-        TftTouchShield.setCursor((DisplayList.WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, DisplayList.SPACE);
+        tft.setCursor((DisplayList.WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 }

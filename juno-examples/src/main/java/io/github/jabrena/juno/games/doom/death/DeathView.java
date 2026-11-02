@@ -13,6 +13,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * cannot skip it; then a blinking prompt asks for the tap that returns to the cover and a new game.
  */
 public final class DeathView implements View {
+
+    private final TftTouchShield tft;
     private static final int HOLD_MILLIS = 2000;
     private static final int BLINK_FRAMES = 21;
     private static final int VISIBLE_FRAMES = 13;
@@ -26,14 +28,15 @@ public final class DeathView implements View {
     private int enteredAt;
     private int frame;
 
-    public DeathView(Navigator navigator) {
+    public DeathView(TftTouchShield tft, Navigator navigator) {
+        this.tft = tft;
         this.navigator = navigator;
     }
 
     @Override
     public void enter() {
-        Screen.plaque(PLAQUE_X, PLAQUE_Y, PLAQUE_WIDTH, PLAQUE_HEIGHT);
-        Screen.showCentered("YOU DIED", PLAQUE_Y + 12, 4, TftTouchShield.RED);
+        Screen.plaque(tft, PLAQUE_X, PLAQUE_Y, PLAQUE_WIDTH, PLAQUE_HEIGHT);
+        Screen.showCentered(tft, "YOU DIED", PLAQUE_Y + 12, 4, TftTouchShield.RED);
         enteredAt = DoomEngine.CLOCK.millis();
         frame = 0;
         Serial.println("Doom: death view active");
@@ -46,7 +49,7 @@ public final class DeathView implements View {
         }
         int phase = frame % BLINK_FRAMES;
         if (phase == 0 || phase == VISIBLE_FRAMES) {
-            Screen.showCentered(phase == 0 ? "TAP TO RETURN TO TITLE" : "                      ", PROMPT_Y, 1,
+            Screen.showCentered(tft, phase == 0 ? "TAP TO RETURN TO TITLE" : "                      ", PROMPT_Y, 1,
                     TftTouchShield.YELLOW);
         }
         frame = frame + 1;

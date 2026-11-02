@@ -30,49 +30,50 @@ public final class RedBaron {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         int[] ents = new int[Entities.ENTITIES * Entities.E_STRIDE];
         byte[] letter = new byte[1];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.opening(lines);
-                Interludes.drawTitle(lines, letter);
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.opening(tft, lines);
+                Interludes.drawTitle(tft, lines, letter);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
             Random.seed(CLOCK.micros());
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Session.newGame();
             boolean alive = true;
             while (alive) {
-                alive = runRound(Round.DOGFIGHT, lines, ents)
-                        && runRound(Round.GROUND_ATTACK, lines, ents);
+                alive = runRound(tft, Round.DOGFIGHT, lines, ents)
+                        && runRound(tft, Round.GROUND_ATTACK, lines, ents);
                 if (alive) {
                     Session.wave = Session.wave + 1;
                 }
             }
             Session.endGame();
-            Hud.drawHeader();
-            DisplayList.clearView();
-            Hud.showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
+            Hud.drawHeader(tft);
+            DisplayList.clearView(tft);
+            Hud.showCentered(tft, "GAME OVER", 100, 3, TftTouchShield.RED);
             Delay.millis(3000);
         }
     }
 
-    private static boolean runRound(Round which, short[] lines, int[] ents) {
+    private static boolean runRound(TftTouchShield tft, Round which, short[] lines, int[] ents) {
         startRound(which, ents);
-        Hud.drawHeader();
-        DisplayList.clearView();
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
         switch (which) {
-            case DOGFIGHT -> DogfightRound.announce();
-            default -> GroundAttackRound.announce();
+            case DOGFIGHT -> DogfightRound.announce(tft);
+            default -> GroundAttackRound.announce(tft);
         }
         Delay.millis(1400);
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
 
         int next = CLOCK.millis();
         while (true) {
@@ -84,33 +85,33 @@ public final class RedBaron {
                 next = CLOCK.millis();
             }
             Session.frame = Session.frame + 1;
-            Controls.handleTouch(ents);
+            Controls.handleTouch(tft, ents);
             if (Controls.autopilot) {
                 AutopilotRB.fly(ents);
             }
             Camera.steer(ents);
             step(ents);
-            Combat.resolveBullets(ents);
-            SceneRenderer.render(lines, ents);
+            Combat.resolveBullets(tft, ents);
+            SceneRenderer.render(tft, lines, ents);
             if (Session.shotDown) {
-                if (!Session.loseAPlane(ents)) {
+                if (!Session.loseAPlane(tft, ents)) {
                     return false;
                 }
                 next = CLOCK.millis();
             }
             if (roundOver(ents)) {
                 if (which == Round.GROUND_ATTACK) {
-                    GroundAttackRound.awardAllTargetsBonus();
+                    GroundAttackRound.awardAllTargetsBonus(tft);
                 }
                 return true;
             }
             if ((Session.frame & 7) == 0) {
-                Hud.drawStatus();
+                Hud.drawStatus(tft);
             }
         }
     }
 
-    private static void startRound(Round which, int[] ents) {
+    static void startRound(Round which, int[] ents) {
         Session.round = which;
         Session.dead = false;
         Session.shotDown = false;
@@ -124,14 +125,14 @@ public final class RedBaron {
         Entities.startRound(ents);
     }
 
-    private static boolean roundOver(int[] ents) {
+    static boolean roundOver(int[] ents) {
         return switch (Session.round) {
             case DOGFIGHT -> DogfightRound.isOver(ents);
             default -> GroundAttackRound.isOver(ents);
         };
     }
 
-    private static void step(int[] ents) {
+    static void step(int[] ents) {
         switch (Session.round) {
             case DOGFIGHT -> DogfightRound.spawn(ents);
             default -> GroundAttackRound.spawn(ents);

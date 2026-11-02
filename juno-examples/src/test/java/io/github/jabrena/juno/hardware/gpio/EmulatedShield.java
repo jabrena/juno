@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.hardware.gpio;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 
@@ -47,6 +49,14 @@ public final class EmulatedShield implements Gpio {
     private static final int COLUMN_ADDRESS_SET = 0x2A;
     private static final int PAGE_ADDRESS_SET = 0x2B;
     private static final int MEMORY_WRITE = 0x2C;
+    private static final int MEMORY_ACCESS_CONTROL = 0x36;
+    private static final int MADCTL_MX = 0x40;
+    private static final int MADCTL_MV = 0x20;
+
+    /** The rotation the driver last set, decoded from its MADCTL byte (one of the shield's rotation constants). */
+    public static int rotation = TftTouchShield.PORTRAIT;
+    /** Whether the driver has set a rotation yet, so the panel's size is known. */
+    public static boolean rotationSet;
 
     private static final boolean[] LEVEL = new boolean[32];
     private static final int[] MODE = new int[32];
@@ -122,6 +132,22 @@ public final class EmulatedShield implements Gpio {
         }
     }
 
+    /** Reads the rotation back from MADCTL: the driver sets MX and MV the same way for each rotation. */
+    private static int rotationOf(int madctl) {
+        boolean mx = (madctl & MADCTL_MX) != 0;
+        boolean mv = (madctl & MADCTL_MV) != 0;
+        if (mx && mv) {
+            return TftTouchShield.LANDSCAPE;
+        }
+        if (mx) {
+            return TftTouchShield.PORTRAIT_FLIPPED;
+        }
+        if (mv) {
+            return TftTouchShield.LANDSCAPE_FLIPPED;
+        }
+        return TftTouchShield.PORTRAIT;
+    }
+
     private void data(int value) {
         if (command == COLUMN_ADDRESS_SET || command == PAGE_ADDRESS_SET) {
             if (parameterCount < 4) {
@@ -138,6 +164,9 @@ public final class EmulatedShield implements Gpio {
                     pageStart = start;
                 }
             }
+        } else if (command == MEMORY_ACCESS_CONTROL) {
+            rotation = rotationOf(value);
+            rotationSet = true;
         } else if (command == MEMORY_WRITE) {
             if (pixelHighByte < 0) {
                 pixelHighByte = value;

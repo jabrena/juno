@@ -58,7 +58,7 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void render(short[] lines, int[] ents) {
+    static void render(TftTouchShield tft, short[] lines, int[] ents) {
         DisplayList.begin();
         switch (Session.phase) {
             case SPACE -> drawStars(lines);
@@ -82,7 +82,7 @@ final class SceneRenderer {
             }
         }
         drawCrosshair(lines);
-        DisplayList.present(lines);
+        DisplayList.present(tft, lines);
     }
 
     static void drawStars(short[] lines) {

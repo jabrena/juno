@@ -7,6 +7,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
  * A palette of RGB565 colours and, row after row, runs of (palette index, length) byte pairs.
  */
 public final class ArduinoUnoBoardImage implements Drawable {
+    private final TftTouchShield tft;
+
     public static final int WIDTH = 189;
     public static final int HEIGHT = 266;
     private static final int LENGTH = 13500;
@@ -14,6 +16,11 @@ public final class ArduinoUnoBoardImage implements Drawable {
     private static final int BACKGROUND = 0;
     private static final int CHUNK_SIZE = 4096;
     private static final int[] PALETTE = {0xFFFF, 0x03B0, 0x0000, 0x9D14, 0xC638, 0x8BCC, 0x0209, 0x5411, 0x2103, 0xED40, 0x5A68, 0x32EC, 0xACA7, 0x33F0, 0x8471, 0x6CF4};
+
+    /** Draws on {@code tft}, the program's one shield instance. */
+    public ArduinoUnoBoardImage(TftTouchShield tft) {
+        this.tft = tft;
+    }
 
     @Override
     public int getWidth() {
@@ -28,13 +35,13 @@ public final class ArduinoUnoBoardImage implements Drawable {
     /** Draws the image centred over the current TFT viewport. */
     @Override
     public void draw() {
-        draw(0, 0, TftTouchShield.width() - 1, TftTouchShield.height() - 1);
+        draw(0, 0, tft.width() - 1, tft.height() - 1);
     }
 
     @Override
     public void draw(int clipLeft, int clipTop, int clipRight, int clipBottom) {
-        int left = (TftTouchShield.width() - WIDTH) / 2;
-        int top = (TftTouchShield.height() - HEIGHT) / 2;
+        int left = (tft.width() - WIDTH) / 2;
+        int top = (tft.height() - HEIGHT) / 2;
         int x = 0;
         int y = 0;
         for (int i = 0; i < LENGTH; i += 2) {
@@ -46,7 +53,7 @@ public final class ArduinoUnoBoardImage implements Drawable {
             if (index != BACKGROUND && screenY >= clipTop && screenY <= clipBottom && screenRight >= clipLeft && screenX <= clipRight) {
                 int drawLeft = Math.max(screenX, clipLeft);
                 int drawRight = Math.min(screenRight, clipRight);
-                TftTouchShield.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
+                tft.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
             }
             x = x + length;
             if (x >= WIDTH) {

@@ -20,15 +20,16 @@ public final class LichessDailyChallenges {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
         Serial.println("Lichess daily challenges");
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         LichessModel model = new LichessModel();
         LichessApi api = new LichessApi();
-        api.connect(TftTouchShield.getSdCard());
-        new LichessController(model, api).run();
+        api.connect(tft.getSdCard());
+        new LichessController(tft, model, api).run();
     }
 }

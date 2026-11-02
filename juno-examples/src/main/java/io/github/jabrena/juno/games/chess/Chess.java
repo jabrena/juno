@@ -127,6 +127,7 @@ public final class Chess {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] board = new byte[64];
         byte[] shownPiece = new byte[64];
         byte[] shownDeco = new byte[64];
@@ -136,55 +137,55 @@ public final class Chess {
         int[] historyUndos = new int[HISTORY_SIZE];
 
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover();
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.choosePlayer();
-            newGame(board, shownPiece, shownDeco, deco, moves);
-            playGame(board, shownPiece, shownDeco, deco, moves, historyMoves, historyUndos);
+            Controls.choosePlayer(tft);
+            newGame(tft, board, shownPiece, shownDeco, deco, moves);
+            playGame(tft, board, shownPiece, shownDeco, deco, moves, historyMoves, historyUndos);
             Delay.millis(3000);
         }
     }
 
-    private static void playGame(byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
+    private static void playGame(TftTouchShield tft, byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
             int[] historyMoves, int[] historyUndos) {
         int selected = -1;
         while (!gameOver) {
             if (Controls.autopilot || side == BLACK) {
-                engineMove(board, shownPiece, shownDeco, deco, moves, historyMoves, historyUndos);
+                engineMove(tft, board, shownPiece, shownDeco, deco, moves, historyMoves, historyUndos);
                 Delay.millis(Controls.autopilot ? 650 : 120);
                 continue;
             }
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int x = TftTouchShield.touchX();
-            int y = TftTouchShield.touchY();
-            waitForRelease();
+            int x = tft.touchX();
+            int y = tft.touchY();
+            waitForRelease(tft);
 
             if (y < 36) {
                 Controls.autopilot = !Controls.autopilot;
-                showStatus(Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
+                showStatus(tft, Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
                 continue;
             }
 
             if (y >= FOOTER_Y && x >= BUTTON_X) {
-                newGame(board, shownPiece, shownDeco, deco, moves);
+                newGame(tft, board, shownPiece, shownDeco, deco, moves);
                 selected = -1;
                 continue;
             }
             if (y >= FOOTER_Y && x >= UNDO_X && x < UNDO_X + UNDO_WIDTH) {
-                takeBack(board, historyMoves, historyUndos);
+                takeBack(tft, board, historyMoves, historyUndos);
                 selected = -1;
-                refresh(board, shownPiece, shownDeco, deco, moves, -1);
-                if (!showOutcome(board, moves)) {
-            showStatus(Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
+                refresh(tft, board, shownPiece, shownDeco, deco, moves, -1);
+                if (!showOutcome(tft, board, moves)) {
+            showStatus(tft, Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
                 }
                 continue;
             }
@@ -194,10 +195,10 @@ public final class Chess {
             }
 
             if (selected >= 0 && isLegal(board, moves, selected, square)) {
-                playMove(board, historyMoves, historyUndos, selected | (square << 6));
+                playMove(tft, board, historyMoves, historyUndos, selected | (square << 6));
                 selected = -1;
-                refresh(board, shownPiece, shownDeco, deco, moves, -1);
-                if (showOutcome(board, moves)) {
+                refresh(tft, board, shownPiece, shownDeco, deco, moves, -1);
+                if (showOutcome(tft, board, moves)) {
                     continue;
                 }
                 continue;
@@ -207,13 +208,13 @@ public final class Chess {
             } else {
                 selected = -1;
             }
-            refresh(board, shownPiece, shownDeco, deco, moves, selected);
+            refresh(tft, board, shownPiece, shownDeco, deco, moves, selected);
         }
     }
 
     // ---- Game flow ----
 
-    static void newGame(byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves) {
+    static void newGame(TftTouchShield tft, byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves) {
         for (int square = 0; square < 64; square++) {
             board[square] = 0;
             shownDeco[square] = -1;
@@ -235,19 +236,19 @@ public final class Chess {
         gameOver = false;
         historyCount = 0;
 
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, TftTouchShield.width(), 36, HEADER_BACKGROUND);
-        showStatus("Your move", TftTouchShield.WHITE);
-        TftTouchShield.fillRect(BUTTON_X, FOOTER_Y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(BUTTON_X + 12, FOOTER_Y + 8);
-        TftTouchShield.print("NEW");
-        TftTouchShield.fillRect(UNDO_X, FOOTER_Y, UNDO_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(UNDO_X + 14, FOOTER_Y + 8);
-        TftTouchShield.print("UNDO");
-        showLastMove();
-        refresh(board, shownPiece, shownDeco, deco, moves, -1);
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, tft.width(), 36, HEADER_BACKGROUND);
+        showStatus(tft, "Your move", TftTouchShield.WHITE);
+        tft.fillRect(BUTTON_X, FOOTER_Y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+        tft.setCursor(BUTTON_X + 12, FOOTER_Y + 8);
+        tft.print("NEW");
+        tft.fillRect(UNDO_X, FOOTER_Y, UNDO_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
+        tft.setCursor(UNDO_X + 14, FOOTER_Y + 8);
+        tft.print("UNDO");
+        showLastMove(tft);
+        refresh(tft, board, shownPiece, shownDeco, deco, moves, -1);
     }
 
     static int backRankPiece(int column) {
@@ -266,7 +267,7 @@ public final class Chess {
         return KING;
     }
 
-    static void playMove(byte[] board, int[] historyMoves, int[] historyUndos, int move) {
+    static void playMove(TftTouchShield tft, byte[] board, int[] historyMoves, int[] historyUndos, int move) {
         if (historyCount == HISTORY_SIZE) {
             for (int i = 2; i < HISTORY_SIZE; i++) {
                 historyMoves[i - 2] = historyMoves[i];
@@ -279,14 +280,14 @@ public final class Chess {
         historyCount = historyCount + 1;
         lastFrom = move & 63;
         lastTo = (move >> 6) & 63;
-        showLastMove();
+        showLastMove(tft);
     }
 
     /**
      * Takes back plies until it is White's turn again: normally the engine's reply and your move
      * before it, or just your move when the game ended on it.
      */
-    static void takeBack(byte[] board, int[] historyMoves, int[] historyUndos) {
+    static void takeBack(TftTouchShield tft, byte[] board, int[] historyMoves, int[] historyUndos) {
         if (historyCount == 0) {
             return;
         }
@@ -304,12 +305,12 @@ public final class Chess {
             lastFrom = previous & 63;
             lastTo = (previous >> 6) & 63;
         }
-        showLastMove();
+        showLastMove(tft);
     }
 
-    static void engineMove(byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
+    static void engineMove(TftTouchShield tft, byte[] board, byte[] shownPiece, byte[] shownDeco, byte[] deco, int[] moves,
             int[] historyMoves, int[] historyUndos) {
-        showStatus("Thinking...", TftTouchShield.YELLOW);
+        showStatus(tft, "Thinking...", TftTouchShield.YELLOW);
         int started = CLOCK.millis();
         Random.seed(CLOCK.micros());
         bestMove = -1;
@@ -324,29 +325,29 @@ public final class Chess {
         Serial.print(CLOCK.millis() - started);
         Serial.println(" ms");
 
-        playMove(board, historyMoves, historyUndos, bestMove);
-        refresh(board, shownPiece, shownDeco, deco, moves, -1);
-        if (!showOutcome(board, moves)) {
-            showStatus(Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
+        playMove(tft, board, historyMoves, historyUndos, bestMove);
+        refresh(tft, board, shownPiece, shownDeco, deco, moves, -1);
+        if (!showOutcome(tft, board, moves)) {
+            showStatus(tft, Controls.autopilot ? "CPU plays" : "Your move", TftTouchShield.WHITE);
         }
     }
 
     /** Shows check, checkmate or stalemate for the side to move; returns whether the game ended. */
-    static boolean showOutcome(byte[] board, int[] moves) {
+    static boolean showOutcome(TftTouchShield tft, byte[] board, int[] moves) {
         boolean check = inCheck(board, side);
         if (countLegalMoves(board, moves) > 0) {
             if (check) {
-                showStatus("Check!", TftTouchShield.ORANGE);
+                showStatus(tft, "Check!", TftTouchShield.ORANGE);
             }
             return false;
         }
         gameOver = true;
         if (!check) {
-            showStatus("Stalemate", TftTouchShield.CYAN);
+            showStatus(tft, "Stalemate", TftTouchShield.CYAN);
         } else if (side == WHITE) {
-            showStatus(Controls.autopilot ? "Black wins" : "Checkmate: you lose", TftTouchShield.RED);
+            showStatus(tft, Controls.autopilot ? "Black wins" : "Checkmate: you lose", TftTouchShield.RED);
         } else {
-            showStatus(Controls.autopilot ? "White wins" : "Checkmate: you win!", TftTouchShield.GREEN);
+            showStatus(tft, Controls.autopilot ? "White wins" : "Checkmate: you win!", TftTouchShield.GREEN);
         }
         return true;
     }

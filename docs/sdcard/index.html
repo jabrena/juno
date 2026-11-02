@@ -190,7 +190,7 @@ startup, and pass it to the classes that need it. A unit test passes <code>mock(
 </tr>
 <tr>
 <td>ELEGOO 2.8&quot; TFT touch shield</td>
-<td><code>TftTouchShield.getSdCard()</code></td>
+<td><code>new TftTouchShield().getSdCard()</code></td>
 <td>D10</td>
 </tr>
 <tr>
@@ -366,7 +366,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 byte[] header = new byte[12];
-if (TftTouchShield.getSdCard().begin()) {
+TftTouchShield tft = new TftTouchShield();
+if (tft.getSdCard().begin()) {
     try (RandomAccessFile file = new RandomAccessFile(&quot;DATA.BIN&quot;, &quot;r&quot;)) {
         file.readFully(header);                // the first 12 bytes
         file.seek(file.length() - 16);         // jump anywhere in the file

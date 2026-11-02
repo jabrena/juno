@@ -20,7 +20,7 @@ final class PoweredUpMotors {
     private PoweredUpMotors() {
     }
 
-    static void onTouch(PoweredUpState s, int x, int y) {
+    static void onTouch(TftTouchShield tft, PoweredUpState s, int x, int y) {
         if (PoweredUpUi.inBox(x, y, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
             for (int port = 0; port < PORTS; port++) {
                 s.zero[port] = HUB.readSensor(port);
@@ -41,7 +41,7 @@ final class PoweredUpMotors {
                 }
             }
         }
-        drawRows(s);
+        drawRows(tft, s);
     }
 
     private static int rowOf(int port) {
@@ -60,22 +60,22 @@ final class PoweredUpMotors {
     }
 
     /** The buttons that stay the same until a device changes: STOP, ZERO and the - / + of each motor. */
-    static void drawButtons(PoweredUpState s) {
-        PoweredUpUi.drawButton(MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.RED, "STOP", MARGIN + 28);
-        PoweredUpUi.drawButton(WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.GRAY,
+    static void drawButtons(TftTouchShield tft, PoweredUpState s) {
+        PoweredUpUi.drawButton(tft, MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.RED, "STOP", MARGIN + 28);
+        PoweredUpUi.drawButton(tft, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.GRAY,
                 "ZERO", WIDTH - MARGIN - WIDE_BUTTON_WIDTH + 28);
         for (int port = 0; port < PORTS; port++) {
             if (PoweredUpUi.isMotor(s.device[port])) {
-                PoweredUpUi.drawButton(MARGIN, rowOf(port), SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "-", MARGIN + 20);
-                PoweredUpUi.drawButton(WIDTH - MARGIN - SMALL_BUTTON_WIDTH, rowOf(port), SMALL_BUTTON_WIDTH,
+                PoweredUpUi.drawButton(tft, MARGIN, rowOf(port), SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "-", MARGIN + 20);
+                PoweredUpUi.drawButton(tft, WIDTH - MARGIN - SMALL_BUTTON_WIDTH, rowOf(port), SMALL_BUTTON_WIDTH,
                         TftTouchShield.BLUE, "+", WIDTH - MARGIN - SMALL_BUTTON_WIDTH + 20);
             }
         }
     }
 
-    static void drawRows(PoweredUpState s) {
+    static void drawRows(TftTouchShield tft, PoweredUpState s) {
         for (int port = 0; port < PORTS; port++) {
-            drawPortRow(s, port, rowOf(port));
+            drawPortRow(tft, s, port, rowOf(port));
         }
     }
 
@@ -83,30 +83,30 @@ final class PoweredUpMotors {
      * One port: its letter and the detected device, then for a motor its power and tacho value (position
      * minus the zero offset) between the - and + buttons.
      */
-    static void drawPortRow(PoweredUpState s, int port, int row) {
+    static void drawPortRow(TftTouchShield tft, PoweredUpState s, int port, int row) {
         int x = MARGIN + SMALL_BUTTON_WIDTH + 8;
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
         if (!PoweredUpUi.isMotor(s.device[port])) {
-            TftTouchShield.setCursor(MARGIN, row + 8);
-            TftTouchShield.print("Port ");
-            TftTouchShield.print(PoweredUpUi.portLetter(port));
-            TftTouchShield.print("  ");
-            PoweredUpUi.printDevice(s.device[port]);
+            tft.setCursor(MARGIN, row + 8);
+            tft.print("Port ");
+            tft.print(PoweredUpUi.portLetter(port));
+            tft.print("  ");
+            PoweredUpUi.printDevice(tft, s.device[port]);
             return;
         }
-        TftTouchShield.setCursor(x, row);
-        TftTouchShield.print(PoweredUpUi.portLetter(port));
-        TftTouchShield.print(": ");
-        PoweredUpUi.printDevice(s.device[port]);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(x, row + 10);
-        TftTouchShield.print(s.power[port]);
-        TftTouchShield.print("%   ");
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(x, row + 26);
-        TftTouchShield.print("tacho ");
-        TftTouchShield.print(HUB.readSensor(port) - s.zero[port]);
-        TftTouchShield.print("     ");
+        tft.setCursor(x, row);
+        tft.print(PoweredUpUi.portLetter(port));
+        tft.print(": ");
+        PoweredUpUi.printDevice(tft, s.device[port]);
+        tft.setTextSize(2);
+        tft.setCursor(x, row + 10);
+        tft.print(s.power[port]);
+        tft.print("%   ");
+        tft.setTextSize(1);
+        tft.setCursor(x, row + 26);
+        tft.print("tacho ");
+        tft.print(HUB.readSensor(port) - s.zero[port]);
+        tft.print("     ");
     }
 }

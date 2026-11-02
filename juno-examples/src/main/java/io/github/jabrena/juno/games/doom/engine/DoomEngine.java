@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.doom.engine;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Random;
@@ -72,17 +73,17 @@ public final class DoomEngine {
      * plans the CPU's route to its exit; {@code false} when the map is missing, broken or too large. It takes seconds, as in {@link Doom}; a bar from {@link #showProgress}
      * shows how far it has got.
      */
-    public boolean load(int episode, int map, int skill) {
+    public boolean load(TftTouchShield tft, int episode, int map, int skill) {
         if (!available) {
             return false;
         }
         World.episode = episode;
         World.map = map;
         World.skill = skill;
-        if (!World.loadMap()) {
+        if (!World.loadMap(tft)) {
             return false;
         }
-        World.planRoute();
+        World.planRoute(tft);
         return true;
     }
 
@@ -90,8 +91,8 @@ public final class DoomEngine {
      * Draws the next {@link #load}'s progress bar at ({@code x}, {@code y}), {@code width} pixels long and 6 high, with
      * the estimated seconds left after it; the load holds the caller until it ends, updating the bar as it reads.
      */
-    public void showProgress(int x, int y, int width) {
-        Loading.show(x, y, width);
+    public void showProgress(TftTouchShield tft, int x, int y, int width) {
+        Loading.show(tft, x, y, width);
     }
 
     /**
@@ -99,7 +100,7 @@ public final class DoomEngine {
      * drawn. A {@code newGame} starts with the fist and pistol; otherwise the marine keeps his arsenal from the last
      * map. Waits for the tap that started it to be released, so it is not read as a step or a shot.
      */
-    public void start(boolean autopilot, boolean newGame) {
+    public void start(TftTouchShield tft, boolean autopilot, boolean newGame) {
         Controls.autopilot = autopilot;
         if (newGame) {
             Weapon.reset();
@@ -112,9 +113,9 @@ public final class DoomEngine {
         Weapon.enterMap();
         Autopilot.restart();
         FrameStats.reset();
-        Controls.waitForRelease();
-        Hud.drawBar();
-        DisplayList.clearView();
+        Controls.waitForRelease(tft);
+        Hud.drawBar(tft);
+        DisplayList.clearView(tft);
         frame = 0;
         mapStarted = CLOCK.millis();
     }
@@ -124,7 +125,7 @@ public final class DoomEngine {
      * fourth frame, the status bar. A tap on the marine's face opens the pause menu, which holds the frame until the
      * player continues or quits. Returns {@link #PLAYING}, {@link #WON}, {@link #DIED} or {@link #QUIT}.
      */
-    public int frame() {
+    public int frame(TftTouchShield tft) {
         short[] ceilings = World.ceilings;
         short[] monsters = World.monsterStates;
         byte[] taken = World.taken;
@@ -134,14 +135,14 @@ public final class DoomEngine {
         if (Player.hurt > 0) {
             Player.hurt = Player.hurt - 1;
         }
-        if (Controls.handle(ceilings, monsters)) {
-            Hud.drawBar();
+        if (Controls.handle(tft, ceilings, monsters)) {
+            Hud.drawBar(tft);
         }
         if (Controls.pauseTapped()) {
-            return pause();
+            return pause(tft);
         }
         if (Controls.autopilot) {
-            Autopilot.step(ceilings, monsters, taken);
+            Autopilot.step(tft, ceilings, monsters, taken);
         }
         Doors.operate(ceilings);
         Lifts.operate(Player.x, Player.y);
@@ -151,31 +152,31 @@ public final class DoomEngine {
         int building = CLOCK.micros();
         Renderer.build(lines, clips, depths, stack, ceilings, monsters, shots, taken);
         int presenting = CLOCK.micros();
-        DisplayList.present(lines, changes);
+        DisplayList.present(tft, lines, changes);
         FrameStats.record(started, building, presenting, CLOCK.micros());
         if ((frame & 3) == 0) {
-            Hud.drawStatus();
+            Hud.drawStatus(tft);
         }
         if (Campaign.mapWon(monsters)) {
             elapsedMillis = CLOCK.millis() - mapStarted;
             return WON;
         }
         if (Player.health == 0) {
-            Hud.drawStatus();
+            Hud.drawStatus(tft);
             return DIED;
         }
         return PLAYING;
     }
 
-    private int pause() {
+    private int pause(TftTouchShield tft) {
         int pausedAt = CLOCK.millis();
-        if (Interludes.paused()) {
+        if (Interludes.paused(tft)) {
             return QUIT;
         }
         // Back where it stopped: the view and status bar drawn afresh, the pause left out of the map's time.
         FrameStats.reset();
-        Hud.drawBar();
-        DisplayList.clearView();
+        Hud.drawBar(tft);
+        DisplayList.clearView(tft);
         mapStarted = mapStarted + CLOCK.millis() - pausedAt;
         return PLAYING;
     }

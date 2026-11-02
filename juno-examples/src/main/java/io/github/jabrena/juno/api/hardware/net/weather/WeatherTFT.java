@@ -40,7 +40,6 @@ import java.util.Properties;
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class WeatherTFT {
     private static final Wifi WIFI = ArduinoUno.getWifi();
-    private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
     private final Clock clock = ArduinoUno.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
@@ -68,14 +67,15 @@ public final class WeatherTFT {
     }
 
     public static void main(String[] args) throws IOException {
-        new WeatherTFT().run();
+        TftTouchShield tft = new TftTouchShield();
+        new WeatherTFT().run(tft);
     }
 
-    private void run() throws IOException {
+    private void run(TftTouchShield tft) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
+        tft.fillScreen(TftTouchShield.BLACK);
 
         byte[] response = new byte[1024];
         byte[] headers = new byte[512];
@@ -85,13 +85,13 @@ public final class WeatherTFT {
         byte[] path = new byte[256];
         byte[] publicIp = new byte[48];
 
-        WeatherScreen.showStatus("Connecting WiFi...");
-        while (!connectWifi()) {
-            WeatherScreen.showStatus("WiFi error, retry ");
+        WeatherScreen.showStatus(tft, "Connecting WiFi...");
+        while (!connectWifi(tft.getSdCard())) {
+            WeatherScreen.showStatus(tft, "WiFi error, retry ");
             Delay.millis(5000);
         }
 
-        WeatherScreen.showStatus("Locating IP...    ");
+        WeatherScreen.showStatus(tft, "Locating IP...    ");
         Delay.millis(NETWORK_SETTLE_MILLIS);
         int cityLength = -1;
         int locateAttempts = 0;
@@ -99,14 +99,14 @@ public final class WeatherTFT {
             cityLength = locate(response, headers, statusAndHeaders, city, location, publicIp);
             if (cityLength < 0) {
                 locateAttempts = locateAttempts + 1;
-                WeatherScreen.showStatus("Location retry ");
-                TftTouchShield.print(locateAttempts);
+                WeatherScreen.showStatus(tft, "Location retry ");
+                tft.print(locateAttempts);
                 Delay.millis(LOCATION_RETRY_MILLIS);
             }
         }
         int pathLength = buildWeatherPath(path, location);
-        WeatherScreen.drawCity(city, cityLength);
-        WeatherScreen.drawNetworkInfo(publicIp, location);
+        WeatherScreen.drawCity(tft, city, cityLength);
+        WeatherScreen.drawNetworkInfo(tft, publicIp, location);
 
         int lastFetchMillis = 0;
         boolean haveWeather = false;
@@ -119,17 +119,17 @@ public final class WeatherTFT {
             if (!haveWeather && lastFetchMillis != 0 && now - lastFetchMillis < RETRY_MILLIS) {
                 due = false;
             }
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 due = true;
             }
             if (due) {
-                WeatherScreen.showStatus("Updating...       ");
+                WeatherScreen.showStatus(tft, "Updating...       ");
                 if (fetchWeather(path, pathLength, response, headers, statusAndHeaders)) {
                     haveWeather = true;
-                    WeatherScreen.drawWeather(temperature, humidity, windSpeed, condition, isDay);
-                    WeatherScreen.showStatus("                  ");
+                    WeatherScreen.drawWeather(tft, temperature, humidity, windSpeed, condition, isDay);
+                    WeatherScreen.showStatus(tft, "                  ");
                 } else {
-                    WeatherScreen.showStatus("Weather error     ");
+                    WeatherScreen.showStatus(tft, "Weather error     ");
                 }
                 lastFetchMillis = clock.millis();
                 if (lastFetchMillis == 0) {
@@ -143,16 +143,16 @@ public final class WeatherTFT {
                 int secondOfDay = localSeconds - days * CivilCalendar.SECONDS_PER_DAY;
                 int minuteOfDay = secondOfDay / 60;
                 if (minuteOfDay != shownMinute) {
-                    SevenSegmentClock.drawClock(minuteOfDay / 60, minuteOfDay % 60);
+                    SevenSegmentClock.drawClock(tft, minuteOfDay / 60, minuteOfDay % 60);
                     shownMinute = minuteOfDay;
                 }
                 if (days != shownDay) {
-                    WeatherScreen.drawDate(days);
+                    WeatherScreen.drawDate(tft, days);
                     shownDay = days;
                 }
                 boolean colon = secondOfDay % 2 == 0;
                 if (colon != colonOn) {
-                    SevenSegmentClock.drawColon(colon);
+                    SevenSegmentClock.drawColon(tft, colon);
                     colonOn = colon;
                 }
             }
@@ -162,12 +162,12 @@ public final class WeatherTFT {
 
     // ---- Network ----
 
-    private boolean connectWifi() throws IOException {
-        if (!SD_CARD.begin()) {
+    private boolean connectWifi(SdCard sdCard) throws IOException {
+        if (!sdCard.begin()) {
             Serial.println("SD card initialization failed");
             return false;
         }
-        try (InputStream file = SD_CARD.open("application.properties")) {
+        try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");
                 return false;

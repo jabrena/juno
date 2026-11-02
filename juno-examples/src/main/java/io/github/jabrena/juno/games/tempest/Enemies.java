@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import io.github.jabrena.juno.util.Random;
 
 /**
@@ -39,7 +41,7 @@ final class Enemies {
      * Climbs, flips, fires and crawls; each enemy is redrawn on alternate frames. Returns true when
      * a flipper grabs the claw.
      */
-    static boolean moveEnemies(int[] tube, int[] enemies, int[] bullets, int frame) {
+    static boolean moveEnemies(TftTouchShield tft, int[] tube, int[] enemies, int[] bullets, int frame) {
         boolean caught = false;
         for (int slot = 0; slot < Session.ENEMIES; slot++) {
             int base = slot * Session.E_STRIDE;
@@ -53,7 +55,7 @@ final class Enemies {
             } else {
                 crawlAlongRim(enemies, base);
             }
-            SceneRenderer.drawEnemy(tube, enemies, slot);
+            SceneRenderer.drawEnemy(tft, tube, enemies, slot);
         }
         return caught;
     }
@@ -99,8 +101,8 @@ final class Enemies {
         enemies[base + Session.E_TIMER] = lane == Session.playerLane ? 10 : Math.max(4, 14 - Session.level);
     }
 
-    static void killEnemy(int[] tube, int[] enemies, int slot) {
+    static void killEnemy(TftTouchShield tft, int[] tube, int[] enemies, int slot) {
         enemies[slot * Session.E_STRIDE + Session.E_ACTIVE] = 0;
-        SceneRenderer.eraseEnemy(tube, enemies, slot);
+        SceneRenderer.eraseEnemy(tft, tube, enemies, slot);
     }
 }

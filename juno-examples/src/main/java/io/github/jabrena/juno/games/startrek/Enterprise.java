@@ -74,7 +74,7 @@ final class Enterprise {
     }
 
     /** Jumps the Enterprise far ahead, out of trouble. */
-    static void warp() {
+    static void warp(TftTouchShield tft) {
         if (warps == 0) {
             return;
         }
@@ -82,31 +82,31 @@ final class Enterprise {
         float radians = (float) Math.toRadians(heading);
         x = Geometry.wrapPosition(x + Math.round((float) Math.sin(radians) * WARP_DISTANCE * FIX));
         y = Geometry.wrapPosition(y - Math.round((float) Math.cos(radians) * WARP_DISTANCE * FIX));
-        TftTouchShield.fillRect(0, DisplayList.HEADER, DisplayList.TACTICAL_RIGHT + 1,
+        tft.fillRect(0, DisplayList.HEADER, DisplayList.TACTICAL_RIGHT + 1,
                 DisplayList.HEIGHT - DisplayList.HEADER, TftTouchShield.WHITE);
         Delay.millis(40);
-        DisplayList.clearView();
-        Hud.drawPanel();
+        DisplayList.clearView(tft);
+        Hud.drawPanel(tft);
     }
 
     /** Docking restores shields, photon torpedoes and warp jumps, once per sector. */
-    static void dockIfClose(int[] ents, int b) {
+    static void dockIfClose(TftTouchShield tft, int[] ents, int b) {
         if (!docked && Entities.distanceToShip(ents, b) < DOCK_RANGE) {
             docked = true;
             shields = 100;
             photons = MAX_PHOTONS;
             warps = MAX_WARPS;
             Hud.invalidate();
-            Hud.drawPanel();
+            Hud.drawPanel(tft);
         }
     }
 
     /** One hit on the Enterprise: shields drop, and at zero the Enterprise is lost. */
-    static void damage(int percent) {
+    static void damage(TftTouchShield tft, int percent) {
         shields = Math.max(0, shields - percent);
         if (shields == 0) {
             Session.dead = true;
         }
-        Hud.flashHit();
+        Hud.flashHit(tft);
     }
 }

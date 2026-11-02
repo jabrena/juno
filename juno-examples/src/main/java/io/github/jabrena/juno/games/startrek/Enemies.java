@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.startrek.Entities.E_AUX;
@@ -75,7 +76,7 @@ final class Enemies {
     }
 
     /** Anti-matter saucers home in on the Enterprise; touching it drains its shields. */
-    static void flySaucer(int[] ents, int b) {
+    static void flySaucer(TftTouchShield tft, int[] ents, int b) {
         int dx = Geometry.wrap(Enterprise.x - ents[b + E_X]);
         int dy = Geometry.wrap(Enterprise.y - ents[b + E_Y]);
         float length = (float) Math.sqrt((float) dx * dx + (float) dy * dy);
@@ -86,7 +87,7 @@ final class Enemies {
         }
         if (length / FIX < HIT_RADIUS + 6) {
             ents[b + E_TYPE] = T_NONE;
-            Enterprise.damage(SAUCER_DAMAGE);
+            Enterprise.damage(tft, SAUCER_DAMAGE);
         }
     }
 
@@ -108,10 +109,10 @@ final class Enemies {
     }
 
     /** A mine goes off when the Enterprise flies into it. */
-    static void touchMine(int[] ents, int b) {
+    static void touchMine(TftTouchShield tft, int[] ents, int b) {
         if (Entities.distanceToShip(ents, b) < HIT_RADIUS + 6) {
             ents[b + E_TYPE] = T_NONE;
-            Enterprise.damage(MINE_DAMAGE);
+            Enterprise.damage(tft, MINE_DAMAGE);
         }
     }
 }

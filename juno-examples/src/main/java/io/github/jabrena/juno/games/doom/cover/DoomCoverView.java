@@ -10,6 +10,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** DOOM's lava cover and blinking prompt, isolated as the first Doom view. */
 public final class DoomCoverView implements View {
+
+    private final TftTouchShield tft;
     private static final int HEIGHT = 240;
     private static final int CELL = 8;
     private static final int TITLE_SIZE = 8;
@@ -25,22 +27,23 @@ public final class DoomCoverView implements View {
     private final DoomState model;
     private boolean shownPrompt;
 
-    public DoomCoverView(Navigator navigator, DoomState model) {
+    public DoomCoverView(TftTouchShield tft, Navigator navigator, DoomState model) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
     }
 
     @Override
     public void enter() {
-        paintLava();
+        paintLava(tft);
         int titleWidth = 4 * 6 * TITLE_SIZE;
-        Screen.plaque((Screen.WIDTH - titleWidth) / 2 - PLAQUE_MARGIN, TITLE_Y - PLAQUE_MARGIN,
+        Screen.plaque(tft, (Screen.WIDTH - titleWidth) / 2 - PLAQUE_MARGIN, TITLE_Y - PLAQUE_MARGIN,
                 titleWidth + 2 * PLAQUE_MARGIN, 7 * TITLE_SIZE + 2 * PLAQUE_MARGIN);
-        Screen.showCentered("DOOM", TITLE_Y, TITLE_SIZE, TftTouchShield.RED);
-        Screen.plaque(PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT);
+        Screen.showCentered(tft, "DOOM", TITLE_Y, TITLE_SIZE, TftTouchShield.RED);
+        Screen.plaque(tft, PROMPT_X, PROMPT_Y, PROMPT_WIDTH, PROMPT_HEIGHT);
         model.resetCover();
         shownPrompt = model.coverPromptVisible();
-        drawPrompt(shownPrompt);
+        drawPrompt(tft, shownPrompt);
         Serial.println("Doom: cover view active");
     }
 
@@ -50,7 +53,7 @@ public final class DoomCoverView implements View {
         boolean promptVisible = model.coverPromptVisible();
         if (promptVisible != shownPrompt) {
             shownPrompt = promptVisible;
-            drawPrompt(promptVisible);
+            drawPrompt(tft, promptVisible);
         }
     }
 
@@ -66,10 +69,10 @@ public final class DoomCoverView implements View {
         return x >= PROMPT_X && x < PROMPT_X + PROMPT_WIDTH && y >= PROMPT_Y && y < PROMPT_Y + PROMPT_HEIGHT;
     }
 
-    private void paintLava() {
+    private void paintLava(TftTouchShield tft) {
         for (int y = 0; y < HEIGHT; y += CELL) {
             for (int x = 0; x < Screen.WIDTH; x += CELL) {
-                TftTouchShield.fillRect(x, y, CELL, CELL, lavaTone(x, y));
+                tft.fillRect(x, y, CELL, CELL, lavaTone(x, y));
             }
         }
     }
@@ -78,8 +81,8 @@ public final class DoomCoverView implements View {
         return LAVA[((x / CELL + y / CELL) / 2 + (x + y) / 64) % LAVA.length];
     }
 
-    private void drawPrompt(boolean visible) {
-        Screen.showCentered(visible ? "TAP TO PLAY" : "           ", PROMPT_Y + 8, 2, TftTouchShield.WHITE);
+    private void drawPrompt(TftTouchShield tft, boolean visible) {
+        Screen.showCentered(tft, visible ? "TAP TO PLAY" : "           ", PROMPT_Y + 8, 2, TftTouchShield.WHITE);
     }
 
 }

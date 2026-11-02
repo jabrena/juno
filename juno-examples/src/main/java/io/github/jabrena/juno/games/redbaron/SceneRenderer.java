@@ -45,7 +45,7 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void render(short[] lines, int[] ents) {
+    static void render(TftTouchShield tft, short[] lines, int[] ents) {
         DisplayList.begin();
         drawLandscape(lines);
         for (int pass = 0; pass < 2; pass++) {
@@ -59,7 +59,7 @@ final class SceneRenderer {
             }
         }
         drawCockpit(lines);
-        DisplayList.present(lines);
+        DisplayList.present(tft, lines);
     }
 
     static void drawLandscape(short[] lines) {

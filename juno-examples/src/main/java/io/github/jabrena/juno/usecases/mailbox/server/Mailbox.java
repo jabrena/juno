@@ -43,18 +43,19 @@ public final class Mailbox {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
-        SdCard sdCard = TftTouchShield.getSdCard();
+        SdCard sdCard = tft.getSdCard();
         MailboxModel model = new MailboxModel(sdCard);
         MailboxSecurity security = new MailboxSecurity(sdCard);
         MailboxView view = new MailboxView(security);
         String address = System.getenv("JUNO_Q_IP");
-        view.drawCover(false, 0);
-        view.drawIp(address);
+        view.drawCover(tft, false, 0);
+        view.drawIp(tft, address);
         printLocalIP(address);
 
         MailboxUiState uiState = new MailboxUiState();
@@ -64,11 +65,11 @@ public final class Mailbox {
         Clock clock = ArduinoUno.getClock();
         MailboxServerTask serverTask = new MailboxServerTask(controller, requestBody, clock);
         Thread.startVirtualThread(new MailboxStartupTask(sdCard, model, security, startupState, uiState, serverTask));
-        runUserInterface(view, uiState, startupState, clock);
+        runUserInterface(tft, view, uiState, startupState, clock);
     }
 
     /** The main task owns all TFT operations; a tap counts once, when the press starts. */
-    private static void runUserInterface(MailboxView view, MailboxUiState uiState, MailboxStartupState startupState,
+    private static void runUserInterface(TftTouchShield tft, MailboxView view, MailboxUiState uiState, MailboxStartupState startupState,
                                          Clock clock) {
         int nextTouchPoll = clock.millis();
         int renderedRevision = uiState.revision();
@@ -78,28 +79,28 @@ public final class Mailbox {
             int now = clock.millis();
             if (now - nextTouchPoll >= 0) {
                 nextTouchPoll = now + TOUCH_POLL_MILLIS;
-                boolean pressed = TftTouchShield.readTouch();
+                boolean pressed = tft.readTouch();
                 if (pressed && !touched) {
                     Serial.print("Touch ");
-                    Serial.print(TftTouchShield.touchX());
+                    Serial.print(tft.touchX());
                     Serial.print(",");
-                    Serial.println(TftTouchShield.touchY());
-                    view.touch(TftTouchShield.touchX(), TftTouchShield.touchY());
+                    Serial.println(tft.touchY());
+                    view.touch(tft, tft.touchX(), tft.touchY());
                 }
                 touched = pressed;
                 int startupStatus = startupState.status();
                 if (startupStatus != renderedStartupStatus) {
                     if (startupStatus == MailboxStartupState.READY) {
-                        view.updateStorageReady(true);
-                        view.drawInternetOnline();
+                        view.updateStorageReady(tft, true);
+                        view.drawInternetOnline(tft);
                     } else if (startupStatus == MailboxStartupState.FAILED) {
-                        view.drawInternetOffline();
+                        view.drawInternetOffline(tft);
                     }
                     renderedStartupStatus = startupStatus;
                 }
                 int revision = uiState.revision();
                 if (revision != renderedRevision) {
-                    view.drawMessageCount(uiState.messageCount());
+                    view.drawMessageCount(tft, uiState.messageCount());
                     renderedRevision = revision;
                 }
             }

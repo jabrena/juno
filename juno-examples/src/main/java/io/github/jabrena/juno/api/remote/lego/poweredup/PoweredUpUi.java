@@ -46,49 +46,49 @@ final class PoweredUpUi {
         return x >= left && x < left + width && y >= top && y < top + height;
     }
 
-    static void drawStatus(String text, int color) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(color, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(WIDTH - 90, 8);
-        TftTouchShield.print("             ");
-        TftTouchShield.setCursor(WIDTH - 90, 8);
-        TftTouchShield.print(text);
+    static void drawStatus(TftTouchShield tft, String text, int color) {
+        tft.setTextSize(1);
+        tft.setTextColor(color, TftTouchShield.NAVY);
+        tft.setCursor(WIDTH - 90, 8);
+        tft.print("             ");
+        tft.setCursor(WIDTH - 90, 8);
+        tft.print(text);
     }
 
-    static void drawTabs(PoweredUpState s) {
-        drawTab(s, VIEW_INFO, "INFO");
-        drawTab(s, VIEW_LED, "LED");
-        drawTab(s, VIEW_MOTORS, "MOTORS");
-        drawTab(s, VIEW_PAIR, "PAIR");
+    static void drawTabs(TftTouchShield tft, PoweredUpState s) {
+        drawTab(tft, s, VIEW_INFO, "INFO");
+        drawTab(tft, s, VIEW_LED, "LED");
+        drawTab(tft, s, VIEW_MOTORS, "MOTORS");
+        drawTab(tft, s, VIEW_PAIR, "PAIR");
     }
 
-    private static void drawTab(PoweredUpState s, int tab, String label) {
+    private static void drawTab(TftTouchShield tft, PoweredUpState s, int tab, String label) {
         int color = tab == s.view ? TftTouchShield.BLUE : TftTouchShield.GRAY;
-        TftTouchShield.fillRect(tab * TAB_WIDTH, TAB_Y, TAB_WIDTH, TAB_HEIGHT, color);
-        TftTouchShield.drawRect(tab * TAB_WIDTH, TAB_Y, TAB_WIDTH, TAB_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(tab * TAB_WIDTH + 6, TAB_Y + 12);
-        TftTouchShield.print(label);
+        tft.fillRect(tab * TAB_WIDTH, TAB_Y, TAB_WIDTH, TAB_HEIGHT, color);
+        tft.drawRect(tab * TAB_WIDTH, TAB_Y, TAB_WIDTH, TAB_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(tab * TAB_WIDTH + 6, TAB_Y + 12);
+        tft.print(label);
     }
 
-    static void drawConnectButton(boolean connected) {
+    static void drawConnectButton(TftTouchShield tft, boolean connected) {
         int color = connected ? TftTouchShield.RED : TftTouchShield.GREEN;
-        TftTouchShield.fillRect(MARGIN, BOTTOM_Y, WIDTH - 2 * MARGIN, BOTTOM_HEIGHT, color);
-        TftTouchShield.drawRect(MARGIN, BOTTOM_Y, WIDTH - 2 * MARGIN, BOTTOM_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(WIDTH / 2 - (connected ? 60 : 42), BOTTOM_Y + 8);
-        TftTouchShield.print(connected ? "DISCONNECT" : "CONNECT");
+        tft.fillRect(MARGIN, BOTTOM_Y, WIDTH - 2 * MARGIN, BOTTOM_HEIGHT, color);
+        tft.drawRect(MARGIN, BOTTOM_Y, WIDTH - 2 * MARGIN, BOTTOM_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(WIDTH / 2 - (connected ? 60 : 42), BOTTOM_Y + 8);
+        tft.print(connected ? "DISCONNECT" : "CONNECT");
     }
 
-    static void drawButton(int x, int y, int width, int color, String label, int textX) {
-        TftTouchShield.fillRect(x, y, width, BUTTON_HEIGHT_MOTOR, color);
-        TftTouchShield.drawRect(x, y, width, BUTTON_HEIGHT_MOTOR, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(textX, y + 9);
-        TftTouchShield.print(label);
+    static void drawButton(TftTouchShield tft, int x, int y, int width, int color, String label, int textX) {
+        tft.fillRect(x, y, width, BUTTON_HEIGHT_MOTOR, color);
+        tft.drawRect(x, y, width, BUTTON_HEIGHT_MOTOR, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(textX, y + 9);
+        tft.print(label);
     }
 
     static String portLetter(int port) {
@@ -108,33 +108,33 @@ final class PoweredUpUi {
      * The device's name, short enough (at most 18 characters) to end before the + button of a motor row.
      * It is not padded: a changed device redraws the whole view first, so no older text is left behind.
      */
-    static void printDevice(int type) {
+    static void printDevice(TftTouchShield tft, int type) {
         if (type == PoweredUpHubRemote.DEVICE_NONE) {
-            TftTouchShield.print("-- empty --");
+            tft.print("-- empty --");
         } else if (isMotor(type)) {
-            printMotorName(type);
+            printMotorName(tft, type);
         } else if (type == PoweredUpHubRemote.DEVICE_COLOR_DISTANCE_SENSOR) {
-            TftTouchShield.print("Color/dist. sensor");
+            tft.print("Color/dist. sensor");
         } else if (type == PoweredUpHubRemote.DEVICE_MOTION_SENSOR) {
-            TftTouchShield.print("Motion sensor");
+            tft.print("Motion sensor");
         } else {
-            TftTouchShield.print("Device 0x");
-            TftTouchShield.print(type);
+            tft.print("Device 0x");
+            tft.print(type);
         }
     }
 
-    private static void printMotorName(int type) {
+    private static void printMotorName(TftTouchShield tft, int type) {
         if (type == PoweredUpHubRemote.DEVICE_TECHNIC_XL_MOTOR) {
-            TftTouchShield.print("Technic XL motor");
+            tft.print("Technic XL motor");
         } else if (type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR
                 || type == PoweredUpHubRemote.DEVICE_LARGE_ANGULAR_MOTOR
                 || type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR) {
-            TftTouchShield.print("Large motor");
+            tft.print("Large motor");
         } else if (type == PoweredUpHubRemote.DEVICE_MEDIUM_ANGULAR_MOTOR
                 || type == PoweredUpHubRemote.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR) {
-            TftTouchShield.print("Medium ang. motor");
+            tft.print("Medium ang. motor");
         } else {
-            TftTouchShield.print("Medium motor");
+            tft.print("Medium motor");
         }
     }
 }

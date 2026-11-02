@@ -52,7 +52,7 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void render(short[] lines, int[] ents) {
+    static void render(TftTouchShield tft, short[] lines, int[] ents) {
         DisplayList.begin();
         if (Session.round == Round.ASTEROIDS) {
             drawStars(lines);
@@ -76,7 +76,7 @@ final class SceneRenderer {
             }
         }
         drawCrosshair(lines);
-        DisplayList.present(lines);
+        DisplayList.present(tft, lines);
     }
 
     private static void drawStars(short[] lines) {

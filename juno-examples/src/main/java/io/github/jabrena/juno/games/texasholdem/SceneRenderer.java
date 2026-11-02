@@ -60,61 +60,61 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void drawTable(byte[] cards, int[] seats, int[] work, boolean reveal) {
-        TftTouchShield.fillRect(0, HEADER_HEIGHT, WIDTH, ROW1_Y - HEADER_HEIGHT - 2, FELT);
-        drawHeader();
+    static void drawTable(TftTouchShield tft, byte[] cards, int[] seats, int[] work, boolean reveal) {
+        tft.fillRect(0, HEADER_HEIGHT, WIDTH, ROW1_Y - HEADER_HEIGHT - 2, FELT);
+        drawHeader(tft);
         for (int seat = 0; seat < SEATS; seat++) {
-            drawSeat(cards, seats, work, seat, reveal);
+            drawSeat(tft, cards, seats, work, seat, reveal);
         }
         for (int i = 0; i < 5; i++) {
             int x = 8 + i * 46;
             if (i < boardCount) {
-                drawCard(x, BOARD_Y, cards[BOARD + i]);
+                drawCard(tft, x, BOARD_Y, cards[BOARD + i]);
             } else {
-                TftTouchShield.drawRect(x, BOARD_Y, CARD_WIDTH, CARD_HEIGHT, SEAT_BACKGROUND);
+                tft.drawRect(x, BOARD_Y, CARD_WIDTH, CARD_HEIGHT, SEAT_BACKGROUND);
             }
         }
-        drawPot(seats);
+        drawPot(tft, seats);
     }
 
-    static void drawHeader() {
-        TftTouchShield.fillRect(0, 0, WIDTH, HEADER_HEIGHT, HEADER_BACKGROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(4, 5);
-        TftTouchShield.print("HAND ");
-        TftTouchShield.print(handNumber);
-        TftTouchShield.print("   BLINDS ");
-        TftTouchShield.print(smallBlind);
-        TftTouchShield.print("/");
-        TftTouchShield.print(smallBlind * 2);
-        TftTouchShield.fillRect(NEW_X, 1, WIDTH - NEW_X - 2, HEADER_HEIGHT - 2, BUTTON);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, BUTTON);
-        TftTouchShield.setCursor(NEW_X + 12, 5);
-        TftTouchShield.print("NEW");
+    static void drawHeader(TftTouchShield tft) {
+        tft.fillRect(0, 0, WIDTH, HEADER_HEIGHT, HEADER_BACKGROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.setCursor(4, 5);
+        tft.print("HAND ");
+        tft.print(handNumber);
+        tft.print("   BLINDS ");
+        tft.print(smallBlind);
+        tft.print("/");
+        tft.print(smallBlind * 2);
+        tft.fillRect(NEW_X, 1, WIDTH - NEW_X - 2, HEADER_HEIGHT - 2, BUTTON);
+        tft.setTextColor(TftTouchShield.BLACK, BUTTON);
+        tft.setCursor(NEW_X + 12, 5);
+        tft.print("NEW");
     }
 
-    static void drawPot(int[] seats) {
+    static void drawPot(TftTouchShield tft, int[] seats) {
         int pot = 0;
         for (int seat = 0; seat < SEATS; seat++) {
             pot = pot + seats[TOTAL + seat];
         }
-        TftTouchShield.fillRect(0, POT_Y, WIDTH, 18, FELT);
+        tft.fillRect(0, POT_Y, WIDTH, 18, FELT);
         if (pot == 0) {
             return;
         }
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(CHIP_TEXT, FELT);
+        tft.setTextSize(2);
+        tft.setTextColor(CHIP_TEXT, FELT);
         int digits = String.valueOf(pot).length();
-        TftTouchShield.setCursor((WIDTH - (4 + digits) * 12) / 2, POT_Y + 1);
-        TftTouchShield.print("Pot ");
-        TftTouchShield.print(pot);
+        tft.setCursor((WIDTH - (4 + digits) * 12) / 2, POT_Y + 1);
+        tft.print("Pot ");
+        tft.print(pot);
     }
 
-    static void drawSeat(byte[] cards, int[] seats, int[] work, int seat, boolean reveal) {
+    static void drawSeat(TftTouchShield tft, byte[] cards, int[] seats, int[] work, int seat, boolean reveal) {
         int state = seats[STATE + seat];
         if (seat == 0) {
-            drawPlayer(cards, seats, work, reveal);
+            drawPlayer(tft, cards, seats, work, reveal);
             return;
         }
         int x = 2 + (seat - 1) * (SEAT_WIDTH + 1);
@@ -124,135 +124,135 @@ final class SceneRenderer {
         } else if (seats[ACTION + seat] == WINNER) {
             border = TftTouchShield.GREEN;
         }
-        TftTouchShield.fillRect(x, SEAT_Y, SEAT_WIDTH, SEAT_HEIGHT, SEAT_BACKGROUND);
-        TftTouchShield.drawRect(x, SEAT_Y, SEAT_WIDTH, SEAT_HEIGHT, border);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, SEAT_BACKGROUND);
-        TftTouchShield.setCursor(x + 4, SEAT_Y + 4);
-        TftTouchShield.print(seatName(seat));
+        tft.fillRect(x, SEAT_Y, SEAT_WIDTH, SEAT_HEIGHT, SEAT_BACKGROUND);
+        tft.drawRect(x, SEAT_Y, SEAT_WIDTH, SEAT_HEIGHT, border);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, SEAT_BACKGROUND);
+        tft.setCursor(x + 4, SEAT_Y + 4);
+        tft.print(seatName(seat));
         if (seat == dealer && state != OUT && handNumber > 0) {
-            drawDealerButton(x + SEAT_WIDTH - 10, SEAT_Y + 7);
+            drawDealerButton(tft, x + SEAT_WIDTH - 10, SEAT_Y + 7);
         }
-        TftTouchShield.setTextColor(CHIP_TEXT, SEAT_BACKGROUND);
-        TftTouchShield.setCursor(x + 4, SEAT_Y + 14);
-        TftTouchShield.print(seats[CHIPS + seat]);
+        tft.setTextColor(CHIP_TEXT, SEAT_BACKGROUND);
+        tft.setCursor(x + 4, SEAT_Y + 14);
+        tft.print(seats[CHIPS + seat]);
         if (state == OUT) {
-            TftTouchShield.setTextColor(TftTouchShield.GRAY, SEAT_BACKGROUND);
-            TftTouchShield.setCursor(x + 4, SEAT_Y + 36);
-            TftTouchShield.print("OUT");
+            tft.setTextColor(TftTouchShield.GRAY, SEAT_BACKGROUND);
+            tft.setCursor(x + 4, SEAT_Y + 36);
+            tft.print("OUT");
             return;
         }
         if (state != FOLDED) {
             for (int i = 0; i < 2; i++) {
                 int cardX = x + 14 + i * (SMALL_WIDTH + 4);
                 if (reveal) {
-                    drawSmallCard(cardX, SEAT_Y + 25, cards[HOLE + seat * 2 + i]);
+                    drawSmallCard(tft, cardX, SEAT_Y + 25, cards[HOLE + seat * 2 + i]);
                 } else {
-                    drawSmallBack(cardX, SEAT_Y + 25);
+                    drawSmallBack(tft, cardX, SEAT_Y + 25);
                 }
             }
         }
-        TftTouchShield.setCursor(x + 4, SEAT_Y + 62);
-        drawActionText(seats, seat, SEAT_BACKGROUND, reveal, cards, work);
+        tft.setCursor(x + 4, SEAT_Y + 62);
+        drawActionText(tft, seats, seat, SEAT_BACKGROUND, reveal, cards, work);
     }
 
-    static void drawPlayer(byte[] cards, int[] seats, int[] work, boolean reveal) {
-        TftTouchShield.fillRect(0, PLAYER_Y - 2, WIDTH, ROW1_Y - PLAYER_Y, FELT);
+    static void drawPlayer(TftTouchShield tft, byte[] cards, int[] seats, int[] work, boolean reveal) {
+        tft.fillRect(0, PLAYER_Y - 2, WIDTH, ROW1_Y - PLAYER_Y, FELT);
         int state = seats[STATE];
         if (toAct == 0) {
-            TftTouchShield.drawRect(4, PLAYER_Y - 2, 2 * CARD_WIDTH + 12, CARD_HEIGHT + 4, HIGHLIGHT);
+            tft.drawRect(4, PLAYER_Y - 2, 2 * CARD_WIDTH + 12, CARD_HEIGHT + 4, HIGHLIGHT);
         }
         if (state != OUT && state != FOLDED && handNumber > 0) {
-            drawCard(8, PLAYER_Y, cards[HOLE]);
-            drawCard(8 + CARD_WIDTH + 4, PLAYER_Y, cards[HOLE + 1]);
+            drawCard(tft, 8, PLAYER_Y, cards[HOLE]);
+            drawCard(tft, 8 + CARD_WIDTH + 4, PLAYER_Y, cards[HOLE + 1]);
         }
         int x = 2 * CARD_WIDTH + 22;
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(CHIP_TEXT, FELT);
-        TftTouchShield.setCursor(x, PLAYER_Y + 2);
-        TftTouchShield.print(seats[CHIPS]);
+        tft.setTextSize(2);
+        tft.setTextColor(CHIP_TEXT, FELT);
+        tft.setCursor(x, PLAYER_Y + 2);
+        tft.print(seats[CHIPS]);
         if (dealer == 0 && handNumber > 0) {
-            drawDealerButton(WIDTH - 12, PLAYER_Y + 8);
+            drawDealerButton(tft, WIDTH - 12, PLAYER_Y + 8);
         }
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(x, PLAYER_Y + 24);
-        drawActionText(seats, 0, FELT, reveal, cards, work);
+        tft.setTextSize(1);
+        tft.setCursor(x, PLAYER_Y + 24);
+        drawActionText(tft, seats, 0, FELT, reveal, cards, work);
         if (state != OUT && state != FOLDED && boardCount >= 3) {
-            TftTouchShield.setTextColor(TftTouchShield.CYAN, FELT);
-            TftTouchShield.setCursor(x, PLAYER_Y + 40);
-            TftTouchShield.print(categoryName(scoreSeat(cards, work, 0, boardCount)));
+            tft.setTextColor(TftTouchShield.CYAN, FELT);
+            tft.setCursor(x, PLAYER_Y + 40);
+            tft.print(categoryName(scoreSeat(cards, work, 0, boardCount)));
         }
     }
 
-    static void drawActionText(int[] seats, int seat, int background, boolean reveal, byte[] cards,
+    static void drawActionText(TftTouchShield tft, int[] seats, int seat, int background, boolean reveal, byte[] cards,
                                        int[] work) {
         int action = seats[ACTION + seat];
         int bet = seats[BET + seat];
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, background);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, background);
         if (action == WINNER) {
-            TftTouchShield.setTextColor(TftTouchShield.GREEN, background);
-            TftTouchShield.print("WINS");
+            tft.setTextColor(TftTouchShield.GREEN, background);
+            tft.print("WINS");
         } else if (seats[STATE + seat] == ALL_IN) {
-            TftTouchShield.setTextColor(TftTouchShield.ORANGE, background);
-            TftTouchShield.print("ALL IN ");
-            TftTouchShield.print(seats[TOTAL + seat]);
+            tft.setTextColor(TftTouchShield.ORANGE, background);
+            tft.print("ALL IN ");
+            tft.print(seats[TOTAL + seat]);
         } else if (action == FOLD) {
-            TftTouchShield.setTextColor(TftTouchShield.GRAY, background);
-            TftTouchShield.print("Fold");
+            tft.setTextColor(TftTouchShield.GRAY, background);
+            tft.print("Fold");
         } else if (action == CHECK) {
-            TftTouchShield.print("Check");
+            tft.print("Check");
         } else if (action == CALL) {
-            TftTouchShield.print("Call ");
-            TftTouchShield.print(bet);
+            tft.print("Call ");
+            tft.print(bet);
         } else if (action == RAISE) {
-            TftTouchShield.setTextColor(TftTouchShield.ORANGE, background);
-            TftTouchShield.print("Raise ");
-            TftTouchShield.print(bet);
+            tft.setTextColor(TftTouchShield.ORANGE, background);
+            tft.print("Raise ");
+            tft.print(bet);
         } else if (action == SMALL_BLIND) {
-            TftTouchShield.print("SB ");
-            TftTouchShield.print(bet);
+            tft.print("SB ");
+            tft.print(bet);
         } else if (action == BIG_BLIND) {
-            TftTouchShield.print("BB ");
-            TftTouchShield.print(bet);
+            tft.print("BB ");
+            tft.print(bet);
         }
     }
 
-    static void drawDealerButton(int cx, int cy) {
-        TftTouchShield.fillCircle(cx, cy, 6, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(cx - 2, cy - 3);
-        TftTouchShield.print("D");
+    static void drawDealerButton(TftTouchShield tft, int cx, int cy) {
+        tft.fillCircle(cx, cy, 6, TftTouchShield.WHITE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.BLACK, TftTouchShield.WHITE);
+        tft.setCursor(cx - 2, cy - 3);
+        tft.print("D");
     }
 
-    static void showWinner(int seat, int amount, int score) {
+    static void showWinner(TftTouchShield tft, int seat, int amount, int score) {
         if (seat < 0) {
             return;
         }
-        TftTouchShield.fillRect(0, MESSAGE_Y - 2, WIDTH, 14, FELT);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GREEN, FELT);
-        TftTouchShield.setCursor(8, MESSAGE_Y);
-        TftTouchShield.print(seatName(seat));
+        tft.fillRect(0, MESSAGE_Y - 2, WIDTH, 14, FELT);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GREEN, FELT);
+        tft.setCursor(8, MESSAGE_Y);
+        tft.print(seatName(seat));
         if (seat == 0) {
-            TftTouchShield.print(" win ");
+            tft.print(" win ");
         } else {
-            TftTouchShield.print(" wins ");
+            tft.print(" wins ");
         }
-        TftTouchShield.print(amount);
+        tft.print(amount);
         if (score >= 0) {
-            TftTouchShield.print(" - ");
-            TftTouchShield.print(categoryName(score));
+            tft.print(" - ");
+            tft.print(categoryName(score));
         }
     }
 
-    static void showMessage(String text, int color) {
-        TftTouchShield.fillRect(0, MESSAGE_Y - 2, WIDTH, 14, FELT);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(color, FELT);
-        TftTouchShield.setCursor(8, MESSAGE_Y);
-        TftTouchShield.print(text);
+    static void showMessage(TftTouchShield tft, String text, int color) {
+        tft.fillRect(0, MESSAGE_Y - 2, WIDTH, 14, FELT);
+        tft.setTextSize(1);
+        tft.setTextColor(color, FELT);
+        tft.setCursor(8, MESSAGE_Y);
+        tft.print(text);
     }
 
     static String seatName(int seat) {
@@ -268,75 +268,75 @@ final class SceneRenderer {
         return "Cal";
     }
 
-    static void clearControls() {
-        TftTouchShield.fillRect(0, ROW1_Y - 2, WIDTH, 320 - ROW1_Y + 2, HEADER_BACKGROUND);
+    static void clearControls(TftTouchShield tft) {
+        tft.fillRect(0, ROW1_Y - 2, WIDTH, 320 - ROW1_Y + 2, HEADER_BACKGROUND);
     }
 
-    static void drawDealButtons(boolean dealEnabled) {
-        clearControls();
-        drawButton(1, ROW2_Y, "DEAL", dealEnabled);
+    static void drawDealButtons(TftTouchShield tft, boolean dealEnabled) {
+        clearControls(tft);
+        drawButton(tft, 1, ROW2_Y, "DEAL", dealEnabled);
     }
 
-    static void drawActionButtons(int[] seats, int toCall, boolean canRaise) {
-        clearControls();
-        drawSmallButton(4, 40, "-", canRaise);
-        TftTouchShield.fillRect(48, ROW1_Y, 80, BUTTON_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(CHIP_TEXT, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(52, ROW1_Y + 7);
+    static void drawActionButtons(TftTouchShield tft, int[] seats, int toCall, boolean canRaise) {
+        clearControls(tft);
+        drawSmallButton(tft, 4, 40, "-", canRaise);
+        tft.fillRect(48, ROW1_Y, 80, BUTTON_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(CHIP_TEXT, TftTouchShield.BLACK);
+        tft.setCursor(52, ROW1_Y + 7);
         if (canRaise) {
-            TftTouchShield.print(raiseTo);
+            tft.print(raiseTo);
         }
-        drawSmallButton(132, 40, "+", canRaise);
-        drawSmallButton(176, 60, "ALL", canRaise);
-        drawButton(0, ROW2_Y, "FOLD", toCall > 0);
+        drawSmallButton(tft, 132, 40, "+", canRaise);
+        drawSmallButton(tft, 176, 60, "ALL", canRaise);
+        drawButton(tft, 0, ROW2_Y, "FOLD", toCall > 0);
         if (toCall == 0) {
-            drawButton(1, ROW2_Y, "CHECK", true);
+            drawButton(tft, 1, ROW2_Y, "CHECK", true);
         } else {
-            drawCallButton(Math.min(toCall, seats[CHIPS]));
+            drawCallButton(tft, Math.min(toCall, seats[CHIPS]));
         }
         if (currentBet == 0) {
-            drawButton(2, ROW2_Y, "BET", canRaise);
+            drawButton(tft, 2, ROW2_Y, "BET", canRaise);
         } else {
-            drawButton(2, ROW2_Y, "RAISE", canRaise);
+            drawButton(tft, 2, ROW2_Y, "RAISE", canRaise);
         }
     }
 
-    static void drawCallButton(int amount) {
+    static void drawCallButton(TftTouchShield tft, int amount) {
         int x = 4 + 78;
-        TftTouchShield.fillRect(x, ROW2_Y, 72, BUTTON_HEIGHT, BUTTON);
-        TftTouchShield.drawRect(x, ROW2_Y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, BUTTON);
-        TftTouchShield.setCursor(x + 6, ROW2_Y + 10);
-        TftTouchShield.print("CALL ");
-        TftTouchShield.print(amount);
+        tft.fillRect(x, ROW2_Y, 72, BUTTON_HEIGHT, BUTTON);
+        tft.drawRect(x, ROW2_Y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.BLACK, BUTTON);
+        tft.setCursor(x + 6, ROW2_Y + 10);
+        tft.print("CALL ");
+        tft.print(amount);
     }
 
-    static void drawButton(int index, int y, String label, boolean enabled) {
+    static void drawButton(TftTouchShield tft, int index, int y, String label, boolean enabled) {
         int x = 4 + index * 78;
         int color = BUTTON_DISABLED;
         if (enabled) {
             color = BUTTON;
         }
-        TftTouchShield.fillRect(x, y, 72, BUTTON_HEIGHT, color);
-        TftTouchShield.drawRect(x, y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, color);
-        TftTouchShield.setCursor(x + (72 - label.length() * 12) / 2, y + 7);
-        TftTouchShield.print(label);
+        tft.fillRect(x, y, 72, BUTTON_HEIGHT, color);
+        tft.drawRect(x, y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.BLACK, color);
+        tft.setCursor(x + (72 - label.length() * 12) / 2, y + 7);
+        tft.print(label);
     }
 
-    static void drawSmallButton(int x, int width, String label, boolean enabled) {
+    static void drawSmallButton(TftTouchShield tft, int x, int width, String label, boolean enabled) {
         int color = BUTTON_DISABLED;
         if (enabled) {
             color = BUTTON;
         }
-        TftTouchShield.fillRect(x, ROW1_Y, width, BUTTON_HEIGHT, color);
-        TftTouchShield.drawRect(x, ROW1_Y, width, BUTTON_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, color);
-        TftTouchShield.setCursor(x + (width - label.length() * 12) / 2, ROW1_Y + 7);
-        TftTouchShield.print(label);
+        tft.fillRect(x, ROW1_Y, width, BUTTON_HEIGHT, color);
+        tft.drawRect(x, ROW1_Y, width, BUTTON_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.BLACK, color);
+        tft.setCursor(x + (width - label.length() * 12) / 2, ROW1_Y + 7);
+        tft.print(label);
     }
 }

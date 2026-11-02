@@ -156,22 +156,22 @@ final class Sprites {
     // ---- Small decorative icons: the footer's spare lives and the title screen's chase demo ----
 
     /** A plain filled circle with a triangular mouth wedge cut from one side, open or closed. */
-    static void drawPacIcon(int cx, int cy, int radius, boolean open, boolean facingLeft) {
-        TftTouchShield.fillCircle(cx, cy, radius, SceneRenderer.PAC_COLOR);
+    static void drawPacIcon(TftTouchShield tft, int cx, int cy, int radius, boolean open, boolean facingLeft) {
+        tft.fillCircle(cx, cy, radius, SceneRenderer.PAC_COLOR);
         if (!open) {
             return;
         }
         for (int i = 0; i < radius; i++) {
             int width = radius - i;
             int x = facingLeft ? cx - radius : cx + i;
-            TftTouchShield.fillRect(x, cy - i / 2, width, 1 + i, SceneRenderer.SPACE);
+            tft.fillRect(x, cy - i / 2, width, 1 + i, SceneRenderer.SPACE);
         }
     }
 
     /** A plain filled circle with two small white eyes, for the title screen's chase demo only. */
-    static void drawGhostIcon(int cx, int cy, int radius, int color) {
-        TftTouchShield.fillCircle(cx, cy, radius, color);
-        TftTouchShield.fillRect(cx - radius / 2 - 1, cy - radius / 2, 2, 3, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(cx + radius / 2 - 1, cy - radius / 2, 2, 3, TftTouchShield.WHITE);
+    static void drawGhostIcon(TftTouchShield tft, int cx, int cy, int radius, int color) {
+        tft.fillCircle(cx, cy, radius, color);
+        tft.fillRect(cx - radius / 2 - 1, cy - radius / 2, 2, 3, TftTouchShield.WHITE);
+        tft.fillRect(cx + radius / 2 - 1, cy - radius / 2, 2, 3, TftTouchShield.WHITE);
     }
 }

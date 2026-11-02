@@ -1226,17 +1226,18 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
                     public final class TftDemo {
                         public static void main(String[] args) {
-                            TftTouchShield.begin();
-                            TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-                            TftTouchShield.fillScreen(TftTouchShield.BLACK);
-                            TftTouchShield.setTextSize(2);
-                            TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
-                            TftTouchShield.setCursor(10, 10);
-                            TftTouchShield.print("Hi ");
-                            TftTouchShield.print(42);
+                            TftTouchShield tft = new TftTouchShield();
+                            tft.begin();
+                            tft.setRotation(TftTouchShield.LANDSCAPE);
+                            tft.fillScreen(TftTouchShield.BLACK);
+                            tft.setTextSize(2);
+                            tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
+                            tft.setCursor(10, 10);
+                            tft.print("Hi ");
+                            tft.print(42);
                             while (true) {
-                                if (TftTouchShield.readTouch()) {
-                                    TftTouchShield.fillRect(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, 3,
+                                if (tft.readTouch()) {
+                                    tft.fillRect(tft.touchX(), tft.touchY(), 3, 3,
                                             TftTouchShield.color(255, 0, 0));
                                 }
                             }

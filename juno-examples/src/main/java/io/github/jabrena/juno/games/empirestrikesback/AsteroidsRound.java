@@ -34,9 +34,9 @@ final class AsteroidsRound {
         fieldLength = 30000 + 4000 * Math.min(Session.wave, 6);
     }
 
-    static void announce() {
-        Hud.showCentered("THE ASTEROID FIELD", 104, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("Never tell me the odds!", 136, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "THE ASTEROID FIELD", 104, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Never tell me the odds!", 136, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {

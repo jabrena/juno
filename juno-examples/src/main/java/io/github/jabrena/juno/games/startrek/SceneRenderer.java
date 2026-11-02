@@ -55,7 +55,7 @@ final class SceneRenderer {
     private SceneRenderer() {
     }
 
-    static void render(short[] lines, int[] ents) {
+    static void render(TftTouchShield tft, short[] lines, int[] ents) {
         DisplayList.begin();
         DisplayList.setClip(0, HEADER, TACTICAL_RIGHT, HEIGHT - 1);
         drawTacticalStars(lines);
@@ -72,7 +72,7 @@ final class SceneRenderer {
         DisplayList.setClip(DisplayList.PANEL_X + 1, DisplayList.BRIDGE_TOP + 1, DisplayList.WIDTH - 2,
                 DisplayList.BRIDGE_BOTTOM - 1);
         BridgeView.draw(lines, ents);
-        DisplayList.present(lines);
+        DisplayList.present(tft, lines);
     }
 
     /** Stars fixed in the sector, so the tactical view shows the Enterprise's motion. */

@@ -28,7 +28,6 @@ import java.util.Properties;
  */
 public final class WifiStatusSDTFT {
     private static final Wifi WIFI = ArduinoUno.getWifi();
-    private static final SdCard SD_CARD = TftTouchShield.getSdCard();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -44,84 +43,85 @@ public final class WifiStatusSDTFT {
     private static final String HEX = "0123456789ABCDEF";
 
     public static void main(String[] args) throws IOException {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, TftTouchShield.width(), 40, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(MARGIN, 8);
-        TftTouchShield.print("WiFi connection");
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, tft.width(), 40, TftTouchShield.NAVY);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(MARGIN, 8);
+        tft.print("WiFi connection");
 
-        while (!connect()) {
-            showHint("Tap screen to retry");
-            waitForTap();
-            showHint("                   ");
+        while (!connect(tft)) {
+            showHint(tft, "Tap screen to retry");
+            waitForTap(tft);
+            showHint(tft, "                   ");
         }
 
-        showState("Connected ", TftTouchShield.GREEN);
+        showState(tft, "Connected ", TftTouchShield.GREEN);
         while (true) {
-            showWifiStatus();
+            showWifiStatus(tft);
             Delay.millis(1000);
         }
     }
 
-    private static boolean connect() throws IOException {
-        showState("Connecting", TftTouchShield.YELLOW);
+    private static boolean connect(TftTouchShield tft) throws IOException {
+        showState(tft, "Connecting", TftTouchShield.YELLOW);
 
-        WifiCredentials credentials = loadCredentials();
+        WifiCredentials credentials = loadCredentials(tft.getSdCard());
         if (credentials == null) {
-            showState("Error     ", TftTouchShield.RED);
+            showState(tft, "Error     ", TftTouchShield.RED);
             return false;
         }
 
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, SSID_Y);
-        TftTouchShield.print("SSID: ");
-        TftTouchShield.print(credentials.ssid());
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, SSID_Y);
+        tft.print("SSID: ");
+        tft.print(credentials.ssid());
 
         Serial.println("Starting WiFi from SD properties");
         WIFI.begin(credentials.ssid(), credentials.password());
 
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
-            showWifiStatus();
+            showWifiStatus(tft);
             Delay.millis(1000);
             attempts = attempts + 1;
         }
-        showWifiStatus();
+        showWifiStatus(tft);
 
         if (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Serial.println("WiFi connection failed");
-            showState("Error     ", TftTouchShield.RED);
+            showState(tft, "Error     ", TftTouchShield.RED);
             return false;
         }
         return true;
     }
 
-    private static void showState(String state, int color) {
-        TftTouchShield.setTextSize(4);
-        TftTouchShield.setTextColor(color, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, STATE_Y);
-        TftTouchShield.print(state);
+    private static void showState(TftTouchShield tft, String state, int color) {
+        tft.setTextSize(4);
+        tft.setTextColor(color, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, STATE_Y);
+        tft.print(state);
     }
 
-    private static void showWifiStatus() {
+    private static void showWifiStatus(TftTouchShield tft) {
         int status = WIFI.status();
         Serial.print("WiFi status: ");
         Serial.println(status);
 
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, STATUS_Y);
-        TftTouchShield.print("Status: ");
-        TftTouchShield.print(status);
-        TftTouchShield.print("   ");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, STATUS_Y);
+        tft.print("Status: ");
+        tft.print(status);
+        tft.print("   ");
 
-        showAddresses();
+        showAddresses(tft);
     }
 
     /**
@@ -129,48 +129,48 @@ public final class WifiStatusSDTFT {
      * are what to compare against the router's client list when a board cannot reach its peers: two boards with
      * the same IP, or a gateway outside the board's subnet, explain a lot.
      */
-    private static void showAddresses() {
+    private static void showAddresses(TftTouchShield tft) {
         int[] address = new int[4];
         WIFI.localIP(address);
-        showAddress("IP:  ", address, IP_Y);
+        showAddress(tft, "IP:  ", address, IP_Y);
         WIFI.gatewayIP(address);
-        showAddress("GW:  ", address, GATEWAY_Y);
+        showAddress(tft, "GW:  ", address, GATEWAY_Y);
         int[] mac = new int[6];
         WIFI.macAddress(mac);
-        showMac(mac);
+        showMac(tft, mac);
     }
 
-    private static void showAddress(String label, int[] octets, int y) {
+    private static void showAddress(TftTouchShield tft, String label, int[] octets, int y) {
         Serial.print(label);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, y);
-        TftTouchShield.print(label);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, y);
+        tft.print(label);
         for (int i = 0; i < 4; i++) {
             if (i > 0) {
                 Serial.print(".");
-                TftTouchShield.print(".");
+                tft.print(".");
             }
             Serial.print(octets[i]);
-            TftTouchShield.print("" + octets[i]);
+            tft.print("" + octets[i]);
         }
         Serial.println("");
-        TftTouchShield.print("   ");
+        tft.print("   ");
     }
 
-    private static void showMac(int[] mac) {
+    private static void showMac(TftTouchShield tft, int[] mac) {
         Serial.print("MAC: ");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, MAC_Y);
-        TftTouchShield.print("MAC: ");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, MAC_Y);
+        tft.print("MAC: ");
         for (int i = 0; i < 6; i++) {
             if (i > 0) {
                 Serial.print(":");
-                TftTouchShield.print(":");
+                tft.print(":");
             }
             Serial.print(hexByte(mac[i]));
-            TftTouchShield.print(hexByte(mac[i]));
+            tft.print(hexByte(mac[i]));
         }
         Serial.println("");
     }
@@ -179,33 +179,33 @@ public final class WifiStatusSDTFT {
         return "" + HEX.charAt(value >>> 4 & 0xf) + HEX.charAt(value & 0xf);
     }
 
-    private static void showHint(String hint) {
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.ORANGE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, HINT_Y);
-        TftTouchShield.print(hint);
+    private static void showHint(TftTouchShield tft, String hint) {
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.ORANGE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, HINT_Y);
+        tft.print(hint);
     }
 
-    private static void waitForTap() {
-        while (!TftTouchShield.readTouch()) {
+    private static void waitForTap(TftTouchShield tft) {
+        while (!tft.readTouch()) {
             Delay.millis(50);
         }
         Serial.print("Touch at ");
-        Serial.print(TftTouchShield.touchX());
+        Serial.print(tft.touchX());
         Serial.print(",");
-        Serial.println(TftTouchShield.touchY());
-        while (TftTouchShield.readTouch()) {
+        Serial.println(tft.touchY());
+        while (tft.readTouch()) {
             Delay.millis(50);
         }
     }
 
-    private static WifiCredentials loadCredentials() throws IOException {
-        if (!SD_CARD.begin()) {
+    private static WifiCredentials loadCredentials(SdCard sdCard) throws IOException {
+        if (!sdCard.begin()) {
             Serial.println("SD card initialization failed");
             return null;
         }
 
-        try (InputStream file = SD_CARD.open("application.properties")) {
+        try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");
                 return null;

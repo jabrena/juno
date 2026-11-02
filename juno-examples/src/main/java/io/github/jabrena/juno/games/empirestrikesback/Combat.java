@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATAT_HEAD_Y;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ATST_HEAD_Y;
 import static io.github.jabrena.juno.games.empirestrikesback.Entities.ENTITIES;
@@ -62,7 +64,7 @@ final class Combat {
      * Lasers take {@value #SHOT_FRAMES} frames to converge, then hit the target that was under the
      * crosshair when they were fired, if it is still there.
      */
-    static void resolveShots(int[] ents) {
+    static void resolveShots(TftTouchShield tft, int[] ents) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             if (ents[b + E_TYPE] != T_SHOT) {
@@ -75,7 +77,7 @@ final class Combat {
             ents[b + E_TYPE] = T_NONE;
             int target = ents[b + E_AUX];
             if (target >= 0 && ents[target * E_STRIDE + E_TYPE] == ents[b + E_FLAG]) {
-                hit(ents, target);
+                hit(tft, ents, target);
             }
         }
     }
@@ -101,7 +103,7 @@ final class Combat {
         return found;
     }
 
-    private static void hit(int[] ents, int slot) {
+    private static void hit(TftTouchShield tft, int[] ents, int slot) {
         int b = slot * E_STRIDE;
         int type = ents[b + E_TYPE];
         int x = ents[b + E_X];
@@ -118,7 +120,7 @@ final class Combat {
             Session.score = Session.score + Session.ATAT_POINTS;
             ents[b + E_TYPE] = T_NONE;
             Entities.debris(ents, x, GROUND + 130, z, 160);
-            Hud.drawHeader();
+            Hud.drawHeader(tft);
             return;
         }
         ents[b + E_TYPE] = T_NONE;
@@ -139,6 +141,6 @@ final class Combat {
             Session.score = Session.score + Session.FIREBALL_POINTS;
             Entities.debris(ents, x, y, z, 30);
         }
-        Hud.drawHeader();
+        Hud.drawHeader(tft);
     }
 }

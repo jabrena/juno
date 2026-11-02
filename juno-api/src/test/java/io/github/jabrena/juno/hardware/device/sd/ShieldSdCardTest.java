@@ -27,9 +27,10 @@ class ShieldSdCardTest {
         LcdKeypadShield lcd = new LcdKeypadShield(mock(Gpio.class));
         ArduinoWifiShield wifi = new ArduinoWifiShield();
         NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
         return Stream.of(
                 arguments("Data Logger Shield", (Supplier<SdCard>) dataLogger::getSdCard, 10),
-                arguments("TFT touch shield", (Supplier<SdCard>) TftTouchShield::getSdCard, 10),
+                arguments("TFT touch shield", (Supplier<SdCard>) tft::getSdCard, 10),
                 arguments("LCD Keypad Shield", (Supplier<SdCard>) lcd::getSdCard, 10),
                 arguments("Arduino WiFi Shield", (Supplier<SdCard>) wifi::getSdCard, 4),
                 arguments("Nano Connector Carrier", (Supplier<SdCard>) carrier::getSdCard, 4));

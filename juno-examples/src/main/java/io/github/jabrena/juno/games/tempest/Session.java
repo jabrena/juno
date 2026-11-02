@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 
 /** Score, lives, level progress, cooldowns, and the rules governing enemies, shots and bullets. */
 final class Session {
@@ -98,13 +100,13 @@ final class Session {
     }
 
     /** Steps the claw one lane towards {@code target}, if the cooldown allows it. */
-    static void moveToward(int[] tube, int target) {
+    static void moveToward(TftTouchShield tft, int[] tube, int target) {
         if (target == playerLane || moveCooldown > 0) {
             return;
         }
         int previous = playerLane;
         playerLane = Tube.stepToward(playerLane, target);
-        SceneRenderer.moveClaw(tube, previous, playerLane);
+        SceneRenderer.moveClaw(tft, tube, previous, playerLane);
         moveCooldown = MOVE_COOLDOWN;
     }
 
@@ -137,10 +139,10 @@ final class Session {
         return requested;
     }
 
-    static void zapAllEnemies(int[] tube, int[] enemies) {
+    static void zapAllEnemies(TftTouchShield tft, int[] tube, int[] enemies) {
         for (int slot = 0; slot < ENEMIES; slot++) {
             if (enemies[slot * E_STRIDE + E_ACTIVE] != 0) {
-                Enemies.killEnemy(tube, enemies, slot);
+                Enemies.killEnemy(tft, tube, enemies, slot);
                 score = score + FLIPPER_POINTS;
             }
         }
@@ -149,36 +151,36 @@ final class Session {
     // ---- Shots and bullets ----
 
     /** Moves your shots inward; scores and destroys any enemy or bullet they meet. */
-    static void moveShots(int[] tube, int[] shots, int[] enemies, int[] bullets) {
+    static void moveShots(TftTouchShield tft, int[] tube, int[] shots, int[] enemies, int[] bullets) {
         for (int slot = 0; slot < SHOTS; slot++) {
             if (shots[slot * S_STRIDE + S_ACTIVE] != 0) {
-                advanceShot(tube, shots, enemies, bullets, slot);
+                advanceShot(tft, tube, shots, enemies, bullets, slot);
             }
         }
     }
 
-    private static void advanceShot(int[] tube, int[] shots, int[] enemies, int[] bullets, int slot) {
+    private static void advanceShot(TftTouchShield tft, int[] tube, int[] shots, int[] enemies, int[] bullets, int slot) {
         int base = slot * S_STRIDE;
         int lane = shots[base + S_LANE];
         int depth = shots[base + S_DEPTH] - SHOT_SPEED;
         shots[base + S_DEPTH] = depth;
         boolean spent = depth <= ENEMY_HALF_DEPTH / 2
-                || hitsEnemy(tube, enemies, lane, depth)
-                || hitsBullet(bullets, lane, depth);
+                || hitsEnemy(tft, tube, enemies, lane, depth)
+                || hitsBullet(tft, bullets, lane, depth);
         if (spent) {
             shots[base + S_ACTIVE] = 0;
-            SceneRenderer.eraseShot(shots, slot);
+            SceneRenderer.eraseShot(tft, shots, slot);
         } else {
-            SceneRenderer.showShot(tube, shots, slot);
+            SceneRenderer.showShot(tft, tube, shots, slot);
         }
     }
 
-    private static boolean hitsEnemy(int[] tube, int[] enemies, int lane, int depth) {
+    private static boolean hitsEnemy(TftTouchShield tft, int[] tube, int[] enemies, int lane, int depth) {
         for (int e = 0; e < ENEMIES; e++) {
             int base = e * E_STRIDE;
             if (enemies[base + E_ACTIVE] != 0 && enemies[base + E_LANE] == lane
                     && Math.abs(enemies[base + E_DEPTH] - depth) <= HIT_DEPTH) {
-                Enemies.killEnemy(tube, enemies, e);
+                Enemies.killEnemy(tft, tube, enemies, e);
                 score = score + FLIPPER_POINTS;
                 return true;
             }
@@ -186,13 +188,13 @@ final class Session {
         return false;
     }
 
-    private static boolean hitsBullet(int[] bullets, int lane, int depth) {
+    private static boolean hitsBullet(TftTouchShield tft, int[] bullets, int lane, int depth) {
         for (int b = 0; b < BULLETS; b++) {
             int base = b * S_STRIDE;
             if (bullets[base + S_ACTIVE] != 0 && bullets[base + S_LANE] == lane
                     && Math.abs(bullets[base + S_DEPTH] - depth) <= HIT_DEPTH) {
                 bullets[base + S_ACTIVE] = 0;
-                SceneRenderer.eraseShot(bullets, b);
+                SceneRenderer.eraseShot(tft, bullets, b);
                 return true;
             }
         }
@@ -200,7 +202,7 @@ final class Session {
     }
 
     /** Moves the enemies' bullets outward; returns true when one reaches the claw. */
-    static boolean moveBullets(int[] tube, int[] bullets) {
+    static boolean moveBullets(TftTouchShield tft, int[] tube, int[] bullets) {
         boolean hit = false;
         for (int slot = 0; slot < BULLETS; slot++) {
             int base = slot * S_STRIDE;
@@ -211,10 +213,10 @@ final class Session {
             bullets[base + S_DEPTH] = depth;
             if (depth >= Tube.DEPTH - ENEMY_HALF_DEPTH / 2) {
                 bullets[base + S_ACTIVE] = 0;
-                SceneRenderer.eraseShot(bullets, slot);
+                SceneRenderer.eraseShot(tft, bullets, slot);
                 hit = hit || bullets[base + S_LANE] == playerLane;
             } else {
-                SceneRenderer.showBullet(tube, bullets, slot);
+                SceneRenderer.showBullet(tft, tube, bullets, slot);
             }
         }
         return hit;

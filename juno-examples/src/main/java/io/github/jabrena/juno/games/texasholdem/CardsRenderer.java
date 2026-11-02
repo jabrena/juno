@@ -13,34 +13,34 @@ final class CardsRenderer {
     private CardsRenderer() {
     }
 
-    static void drawCard(int x, int y, int card) {
+    static void drawCard(TftTouchShield tft, int x, int y, int card) {
         int suit = card / 13;
         int ink = inkOf(card);
-        TftTouchShield.fillRect(x, y, CARD_WIDTH, CARD_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.drawRect(x, y, CARD_WIDTH, CARD_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(ink, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(x + 3, y + 3);
-        TftTouchShield.print(rankName(card % 13));
-        drawSuit(x + 4, y + 21, suit, 1, ink);
-        drawSuit(x + CARD_WIDTH - 22, y + CARD_HEIGHT - 22, suit, 2, ink);
+        tft.fillRect(x, y, CARD_WIDTH, CARD_HEIGHT, TftTouchShield.WHITE);
+        tft.drawRect(x, y, CARD_WIDTH, CARD_HEIGHT, TftTouchShield.GRAY);
+        tft.setTextSize(2);
+        tft.setTextColor(ink, TftTouchShield.WHITE);
+        tft.setCursor(x + 3, y + 3);
+        tft.print(rankName(card % 13));
+        drawSuit(tft, x + 4, y + 21, suit, 1, ink);
+        drawSuit(tft, x + CARD_WIDTH - 22, y + CARD_HEIGHT - 22, suit, 2, ink);
     }
 
-    static void drawSmallCard(int x, int y, int card) {
+    static void drawSmallCard(TftTouchShield tft, int x, int y, int card) {
         int ink = inkOf(card);
-        TftTouchShield.fillRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.drawRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(ink, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(x + 3, y + 3);
-        TftTouchShield.print(rankName(card % 13));
-        drawSuit(x + 7, y + 16, card / 13, 1, ink);
+        tft.fillRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.WHITE);
+        tft.drawRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.GRAY);
+        tft.setTextSize(1);
+        tft.setTextColor(ink, TftTouchShield.WHITE);
+        tft.setCursor(x + 3, y + 3);
+        tft.print(rankName(card % 13));
+        drawSuit(tft, x + 7, y + 16, card / 13, 1, ink);
     }
 
-    static void drawSmallBack(int x, int y) {
-        TftTouchShield.fillRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.fillRect(x + 2, y + 2, SMALL_WIDTH - 4, SMALL_HEIGHT - 4, CARD_BACK);
-        TftTouchShield.drawRect(x + 5, y + 5, SMALL_WIDTH - 10, SMALL_HEIGHT - 10, TftTouchShield.WHITE);
+    static void drawSmallBack(TftTouchShield tft, int x, int y) {
+        tft.fillRect(x, y, SMALL_WIDTH, SMALL_HEIGHT, TftTouchShield.WHITE);
+        tft.fillRect(x + 2, y + 2, SMALL_WIDTH - 4, SMALL_HEIGHT - 4, CARD_BACK);
+        tft.drawRect(x + 5, y + 5, SMALL_WIDTH - 10, SMALL_HEIGHT - 10, TftTouchShield.WHITE);
     }
 
     static int inkOf(int card) {
@@ -51,9 +51,9 @@ final class CardsRenderer {
         return TftTouchShield.BLACK;
     }
 
-    static void drawSuit(int x, int y, int suit, int scale, int ink) {
+    static void drawSuit(TftTouchShield tft, int x, int y, int suit, int scale, int ink) {
         int size = 9 * scale;
-        if (!TftTouchShield.beginPixels(x, y, size, size)) {
+        if (!tft.beginPixels(x, y, size, size)) {
             return;
         }
         for (int row = 0; row < 9; row++) {
@@ -65,7 +65,7 @@ final class CardsRenderer {
                         color = ink;
                     }
                     for (int repeatColumn = 0; repeatColumn < scale; repeatColumn++) {
-                        TftTouchShield.pushPixel(color);
+                        tft.pushPixel(color);
                     }
                 }
             }

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.missilecommand;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import io.github.jabrena.juno.util.Random;
 
 /** The CPU pilot: intercepts whichever warhead is closest to the ground, leading its aim to meet it. */
@@ -16,7 +18,7 @@ final class AutopilotMissileCommand {
     }
 
     /** Picks the most urgent unengaged warhead, leads its aim to meet it, and fires. */
-    static void fly(int[] missiles, int[] shots, int[] ammo) {
+    static void fly(TftTouchShield tft, int[] missiles, int[] shots, int[] ammo) {
         if (cooldown > 0) {
             cooldown = cooldown - 1;
             return;
@@ -49,7 +51,7 @@ final class AutopilotMissileCommand {
         }
         aimX = Math.max(3, Math.min(aimX, Session.WIDTH - 4));
         aimY = Math.max(Session.HEADER + 4, Math.min(aimY, Session.LOWEST_TARGET_Y));
-        int shot = Session.fire(shots, ammo, aimX, aimY);
+        int shot = Session.fire(tft, shots, ammo, aimX, aimY);
         if (shot >= 0) {
             // Claims the target for as long as this shot is in flight, so a still-falling warhead
             // already covered by a travelling interceptor isn't fired at again.

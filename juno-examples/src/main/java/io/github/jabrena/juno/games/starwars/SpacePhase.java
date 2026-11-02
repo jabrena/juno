@@ -37,11 +37,11 @@ final class SpacePhase {
         vaderSpawned = false;
     }
 
-    static void announce() {
-        Hud.showCentered("WAVE", 88, 3, TftTouchShield.YELLOW);
-        TftTouchShield.setCursor(Session.wave < 10 ? 151 : 142, 120);
-        TftTouchShield.print(Session.wave);
-        Hud.showCentered("Destroy the TIE fighters", 156, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "WAVE", 88, 3, TftTouchShield.YELLOW);
+        tft.setCursor(Session.wave < 10 ? 151 : 142, 120);
+        tft.print(Session.wave);
+        Hud.showCentered(tft, "Destroy the TIE fighters", 156, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {

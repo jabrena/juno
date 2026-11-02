@@ -16,39 +16,39 @@ final class SevenSegmentClock {
     private SevenSegmentClock() {
     }
 
-    static void drawClock(int hour, int minute) {
-        drawDigit(MARGIN, hour / 10, CLOCK_HOURS);
-        drawDigit(MARGIN + DIGIT_WIDTH + 6, hour % 10, CLOCK_HOURS);
-        drawDigit(COLON_X + 14, minute / 10, CLOCK_MINUTES);
-        drawDigit(COLON_X + 14 + DIGIT_WIDTH + 6, minute % 10, CLOCK_MINUTES);
+    static void drawClock(TftTouchShield tft, int hour, int minute) {
+        drawDigit(tft, MARGIN, hour / 10, CLOCK_HOURS);
+        drawDigit(tft, MARGIN + DIGIT_WIDTH + 6, hour % 10, CLOCK_HOURS);
+        drawDigit(tft, COLON_X + 14, minute / 10, CLOCK_MINUTES);
+        drawDigit(tft, COLON_X + 14 + DIGIT_WIDTH + 6, minute % 10, CLOCK_MINUTES);
     }
 
-    static void drawColon(boolean on) {
+    static void drawColon(TftTouchShield tft, boolean on) {
         int color = TftTouchShield.BLACK;
         if (on) {
             color = TftTouchShield.WHITE;
         }
-        TftTouchShield.fillRect(COLON_X, CLOCK_Y + 20, 6, 6, color);
-        TftTouchShield.fillRect(COLON_X, CLOCK_Y + DIGIT_HEIGHT - 26, 6, 6, color);
+        tft.fillRect(COLON_X, CLOCK_Y + 20, 6, 6, color);
+        tft.fillRect(COLON_X, CLOCK_Y + DIGIT_HEIGHT - 26, 6, 6, color);
     }
 
     // Segments a-g as bits 0-6: a top, b upper right, c lower right, d bottom, e lower left,
     // f upper left, g middle. Unlit segments are painted black, so no separate erase is needed.
-    private static void drawDigit(int x, int digit, int color) {
+    private static void drawDigit(TftTouchShield tft, int x, int digit, int color) {
         int segments = segmentsOf(digit);
         int half = DIGIT_HEIGHT / 2;
         int vertical = half - SEGMENT - SEGMENT / 2;
         int horizontal = DIGIT_WIDTH - 2 * SEGMENT;
-        TftTouchShield.fillRect(x + SEGMENT, CLOCK_Y, horizontal, SEGMENT, segmentColor(segments, 0, color));
-        TftTouchShield.fillRect(x + DIGIT_WIDTH - SEGMENT, CLOCK_Y + SEGMENT, SEGMENT, vertical,
+        tft.fillRect(x + SEGMENT, CLOCK_Y, horizontal, SEGMENT, segmentColor(segments, 0, color));
+        tft.fillRect(x + DIGIT_WIDTH - SEGMENT, CLOCK_Y + SEGMENT, SEGMENT, vertical,
                 segmentColor(segments, 1, color));
-        TftTouchShield.fillRect(x + DIGIT_WIDTH - SEGMENT, CLOCK_Y + half + SEGMENT / 2, SEGMENT, vertical,
+        tft.fillRect(x + DIGIT_WIDTH - SEGMENT, CLOCK_Y + half + SEGMENT / 2, SEGMENT, vertical,
                 segmentColor(segments, 2, color));
-        TftTouchShield.fillRect(x + SEGMENT, CLOCK_Y + DIGIT_HEIGHT - SEGMENT, horizontal, SEGMENT,
+        tft.fillRect(x + SEGMENT, CLOCK_Y + DIGIT_HEIGHT - SEGMENT, horizontal, SEGMENT,
                 segmentColor(segments, 3, color));
-        TftTouchShield.fillRect(x, CLOCK_Y + half + SEGMENT / 2, SEGMENT, vertical, segmentColor(segments, 4, color));
-        TftTouchShield.fillRect(x, CLOCK_Y + SEGMENT, SEGMENT, vertical, segmentColor(segments, 5, color));
-        TftTouchShield.fillRect(x + SEGMENT, CLOCK_Y + half - SEGMENT / 2, horizontal, SEGMENT,
+        tft.fillRect(x, CLOCK_Y + half + SEGMENT / 2, SEGMENT, vertical, segmentColor(segments, 4, color));
+        tft.fillRect(x, CLOCK_Y + SEGMENT, SEGMENT, vertical, segmentColor(segments, 5, color));
+        tft.fillRect(x + SEGMENT, CLOCK_Y + half - SEGMENT / 2, horizontal, SEGMENT,
                 segmentColor(segments, 6, color));
     }
 

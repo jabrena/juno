@@ -59,32 +59,32 @@ public final class TftOccupancyBar {
         shownCapacity = UNSHOWN;
     }
 
-    public void update(int used, int capacity) {
+    public void update(TftTouchShield tft, int used, int capacity) {
         if (capacity <= 0 || used < 0) {
-            showUnavailable();
+            showUnavailable(tft);
         } else if (changed(used, capacity)) {
             int percent = percent(used, capacity);
             int color = levelColor(percent);
-            clear();
-            drawPercent(percent, color);
-            drawBar(percent, color);
-            drawDetail(used, capacity);
+            clear(tft);
+            drawPercent(tft, percent, color);
+            drawBar(tft, percent, color);
+            drawDetail(tft, used, capacity);
         }
     }
 
-    public void showPending() {
+    public void showPending(TftTouchShield tft) {
         if (changed(PENDING, PENDING)) {
-            clear();
-            drawBar(0, TftTouchShield.GRAY);
-            drawMessage(pendingText);
+            clear(tft);
+            drawBar(tft, 0, TftTouchShield.GRAY);
+            drawMessage(tft, pendingText);
         }
     }
 
-    public void showUnavailable() {
+    public void showUnavailable(TftTouchShield tft) {
         if (changed(UNAVAILABLE, UNAVAILABLE)) {
-            clear();
-            drawBar(0, TftTouchShield.GRAY);
-            drawMessage(unavailableText);
+            clear(tft);
+            drawBar(tft, 0, TftTouchShield.GRAY);
+            drawMessage(tft, unavailableText);
         }
     }
 
@@ -98,50 +98,50 @@ public final class TftOccupancyBar {
     }
 
     /** Blanks the row and draws its accent dot and label, which every state shows. */
-    private void clear() {
-        TftTouchShield.fillRect(X, y, WIDTH, HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.fillCircle(X + 5, y + 7, 5, accentColor);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(X + 16, y);
-        TftTouchShield.print(label);
+    private void clear(TftTouchShield tft) {
+        tft.fillRect(X, y, WIDTH, HEIGHT, TftTouchShield.NAVY);
+        tft.fillCircle(X + 5, y + 7, 5, accentColor);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(X + 16, y);
+        tft.print(label);
     }
 
-    private void drawPercent(int percent, int color) {
+    private void drawPercent(TftTouchShield tft, int percent, int color) {
         int digits = percent >= 100 ? 3 : percent >= 10 ? 2 : 1;
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(X + WIDTH - (digits + 1) * 12, y);
-        TftTouchShield.print(percent);
-        TftTouchShield.print("%");
+        tft.setTextSize(2);
+        tft.setTextColor(color, TftTouchShield.NAVY);
+        tft.setCursor(X + WIDTH - (digits + 1) * 12, y);
+        tft.print(percent);
+        tft.print("%");
     }
 
-    private void drawBar(int percent, int color) {
+    private void drawBar(TftTouchShield tft, int percent, int color) {
         int lit = (percent * SEGMENTS + 99) / 100;
         int barY = y + BAR_OFFSET_Y;
         for (int segment = 0; segment < SEGMENTS; segment++) {
             int x = X + segment * SEGMENT_STEP + (WIDTH - SEGMENTS * SEGMENT_STEP) / 2;
-            TftTouchShield.fillRect(x, barY, SEGMENT_WIDTH, BAR_HEIGHT, segment < lit ? color : TRACK);
+            tft.fillRect(x, barY, SEGMENT_WIDTH, BAR_HEIGHT, segment < lit ? color : TRACK);
         }
     }
 
-    private void drawDetail(int used, int capacity) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(X + 4, y + DETAIL_OFFSET_Y);
-        TftTouchShield.print(used / divisor);
-        TftTouchShield.print(" / ");
-        TftTouchShield.print(capacity / divisor);
-        TftTouchShield.print(" ");
-        TftTouchShield.print(unit);
-        TftTouchShield.print(" used");
+    private void drawDetail(TftTouchShield tft, int used, int capacity) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(X + 4, y + DETAIL_OFFSET_Y);
+        tft.print(used / divisor);
+        tft.print(" / ");
+        tft.print(capacity / divisor);
+        tft.print(" ");
+        tft.print(unit);
+        tft.print(" used");
     }
 
-    private void drawMessage(String message) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(X + 4, y + DETAIL_OFFSET_Y);
-        TftTouchShield.print(message);
+    private void drawMessage(TftTouchShield tft, String message) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.NAVY);
+        tft.setCursor(X + 4, y + DETAIL_OFFSET_Y);
+        tft.print(message);
     }
 
     /** {@code used} as a share of {@code capacity}, 0..100, without overflowing on an SD card's KiB count. */

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.usecases.lichess;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.mvc.Navigator;
 import org.junit.jupiter.api.Test;
@@ -9,6 +11,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class LichessModelTest {
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
+
     @Test
     void readsThePublicLichessPuzzleShape() {
         LichessModel model = new LichessModel();
@@ -103,7 +107,7 @@ class LichessModelTest {
         model.loadPuzzle(fen, fen.length, moves, moves.length, 1200, 42);
         Navigator navigator = mock(Navigator.class);
         Clock clock = mock(Clock.class);
-        ChallengeView view = new ChallengeView(navigator, model, clock);
+        ChallengeView view = new ChallengeView(tft, navigator, model, clock);
 
         view.enter();
         view.touch(134, 226);
@@ -121,7 +125,7 @@ class LichessModelTest {
         model.loadResponse(response, response.length, 200, LichessModel.FRESH);
         Navigator navigator = mock(Navigator.class);
         Clock clock = mock(Clock.class);
-        ChallengeView view = new ChallengeView(navigator, model, clock);
+        ChallengeView view = new ChallengeView(tft, navigator, model, clock);
 
         view.enter();
         view.touch(162, 198);

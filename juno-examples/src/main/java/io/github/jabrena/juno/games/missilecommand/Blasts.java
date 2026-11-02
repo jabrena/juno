@@ -25,7 +25,7 @@ final class Blasts {
         blasts[base + Session.B_RADIUS] = 0;
     }
 
-    static void updateBlasts(int[] missiles, int[] blasts, boolean[] alive, int[] ammo) {
+    static void updateBlasts(TftTouchShield tft, int[] missiles, int[] blasts, boolean[] alive, int[] ammo) {
         boolean groundTouched = false;
         boolean headerTouched = false;
         for (int slot = 0; slot < Session.BLASTS; slot++) {
@@ -40,13 +40,13 @@ final class Blasts {
             int radius = blastRadius(age);
             int shown = blasts[base + Session.B_RADIUS];
             if (age >= Session.BLAST_LIFE) {
-                TftTouchShield.fillCircle(x, y, shown, SceneRenderer.SKY);
+                tft.fillCircle(x, y, shown, SceneRenderer.SKY);
                 blasts[base + Session.B_ACTIVE] = 0;
                 groundTouched = groundTouched || y + Session.BLAST_RADIUS >= Session.GROUND_Y - 16;
                 headerTouched = headerTouched || y - Session.BLAST_RADIUS <= Session.HEADER;
                 continue;
             }
-            SceneRenderer.drawBlast(x, y, shown, radius, age);
+            SceneRenderer.drawBlast(tft, x, y, shown, radius, age);
             blasts[base + Session.B_RADIUS] = radius;
 
             // Any warhead inside the fireball explodes too.
@@ -60,18 +60,18 @@ final class Blasts {
                 if (dx * dx + dy * dy <= radius * radius) {
                     int headX = missiles[mBase + Session.T_HEAD_X];
                     int headY = missiles[mBase + Session.T_HEAD_Y];
-                    SceneRenderer.eraseTrail(missiles, m);
-                    Session.addScore(Session.MISSILE_POINTS * Session.multiplier(), alive);
-                    Hud.drawHeader();
+                    SceneRenderer.eraseTrail(tft, missiles, m);
+                    Session.addScore(tft, Session.MISSILE_POINTS * Session.multiplier(), alive);
+                    Hud.drawHeader(tft);
                     startBlast(blasts, headX, headY);
                 }
             }
         }
         if (groundTouched) {
-            SceneRenderer.drawGround(alive, ammo);
+            SceneRenderer.drawGround(tft, alive, ammo);
         }
         if (headerTouched) {
-            Hud.drawHeader();
+            Hud.drawHeader(tft);
         }
     }
 

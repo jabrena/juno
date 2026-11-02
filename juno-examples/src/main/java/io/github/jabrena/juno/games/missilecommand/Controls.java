@@ -29,8 +29,8 @@ final class Controls {
     }
 
     /** Fires on each new press in the sky; holding a touch does not repeat. */
-    static void pollTouch(int[] shots, int[] ammo) {
-        if (!TftTouchShield.readTouch()) {
+    static void pollTouch(TftTouchShield tft, int[] shots, int[] ammo) {
+        if (!tft.readTouch()) {
             releaseMisses = releaseMisses + 1;
             if (releaseMisses >= 3) {
                 touching = false;
@@ -42,8 +42,8 @@ final class Controls {
             return;
         }
         touching = true;
-        int x = TftTouchShield.touchX();
-        int y = TftTouchShield.touchY();
+        int x = tft.touchX();
+        int y = tft.touchY();
         if (y < Session.HEADER) {
             autopilot = !autopilot;
             return;
@@ -53,25 +53,25 @@ final class Controls {
         }
         int clampedX = Math.max(3, Math.min(x, Session.WIDTH - 4));
         int clampedY = Math.max(Session.HEADER + 4, Math.min(y, Session.LOWEST_TARGET_Y));
-        Session.fire(shots, ammo, clampedX, clampedY);
+        Session.fire(tft, shots, ammo, clampedX, clampedY);
     }
 
     // ---- Pilot choice ----
 
-    static void choosePilot() {
-        drawPilotChoice(-1);
-        waitForRelease();
+    static void choosePilot(TftTouchShield tft) {
+        drawPilotChoice(tft, -1);
+        waitForRelease(tft);
         int choice = -1;
         while (choice < 0) {
-            if (TftTouchShield.readTouch()) {
-                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            if (tft.readTouch()) {
+                choice = choiceAt(tft.touchX(), tft.touchY());
             }
             Delay.millis(10);
         }
         autopilot = choice == 1;
-        drawPilotChoice(choice);
+        drawPilotChoice(tft, choice);
         Delay.millis(350);
-        waitForRelease();
+        waitForRelease(tft);
     }
 
     static int choiceAt(int x, int y) {
@@ -85,44 +85,44 @@ final class Controls {
         return x >= cpuX && x < cpuX + CHOICE_WIDTH ? 1 : -1;
     }
 
-    private static void drawPilotChoice(int selected) {
-        TftTouchShield.fillRect(0, CHOICE_Y - 40, Session.WIDTH, CHOICE_HEIGHT + 70, SceneRenderer.SKY);
-        Hud.showCentered("WHO MANS THE BATTERY?", CHOICE_Y - 28, 1, TftTouchShield.YELLOW);
-        drawChoice(CHOICE_X, "HUMAN", selected == 0);
-        drawChoice(CHOICE_X + CHOICE_WIDTH + CHOICE_GAP, "CPU", selected == 1);
-        Hud.showCentered("Tap the header to switch", CHOICE_Y + CHOICE_HEIGHT + 16, 1, TftTouchShield.CYAN);
+    private static void drawPilotChoice(TftTouchShield tft, int selected) {
+        tft.fillRect(0, CHOICE_Y - 40, Session.WIDTH, CHOICE_HEIGHT + 70, SceneRenderer.SKY);
+        Hud.showCentered(tft, "WHO MANS THE BATTERY?", CHOICE_Y - 28, 1, TftTouchShield.YELLOW);
+        drawChoice(tft, CHOICE_X, "HUMAN", selected == 0);
+        drawChoice(tft, CHOICE_X + CHOICE_WIDTH + CHOICE_GAP, "CPU", selected == 1);
+        Hud.showCentered(tft, "Tap the header to switch", CHOICE_Y + CHOICE_HEIGHT + 16, 1, TftTouchShield.CYAN);
     }
 
-    private static void drawChoice(int x, String label, boolean selected) {
+    private static void drawChoice(TftTouchShield tft, int x, String label, boolean selected) {
         int color = selected ? CHOICE_CHOSEN : CHOICE;
-        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
-        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 12) / 2, CHOICE_Y + 22);
-        TftTouchShield.print(label);
+        tft.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        tft.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(x + (CHOICE_WIDTH - label.length() * 12) / 2, CHOICE_Y + 22);
+        tft.print(label);
     }
 
     // ---- Taps ----
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
-    static boolean waitForTap(int timeoutMillis) {
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
         int start = CLOCK.millis();
-        while (!TftTouchShield.readTouch()) {
+        while (!tft.readTouch()) {
             if (CLOCK.millis() - start >= timeoutMillis) {
                 return false;
             }
             Delay.millis(10);
         }
-        waitForRelease();
+        waitForRelease(tft);
         touching = false;
         return true;
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

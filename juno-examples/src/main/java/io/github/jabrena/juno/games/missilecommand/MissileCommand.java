@@ -44,42 +44,43 @@ public final class MissileCommand {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         int[] missiles = new int[Session.MISSILES * Session.T_STRIDE];
         int[] shots = new int[Session.SHOTS * Session.T_STRIDE];
         int[] blasts = new int[Session.BLASTS * Session.B_STRIDE];
         boolean[] alive = new boolean[Session.TARGETS];
         int[] ammo = new int[3];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover(alive, ammo);
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft, alive, ammo);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Random.seed(CLOCK.micros());
             Session.newGame(alive);
             boolean citiesStanding = true;
             while (citiesStanding) {
                 Session.startWave(missiles, shots, blasts, alive, ammo);
                 Controls.resetForWave();
-                TftTouchShield.fillScreen(SceneRenderer.SKY);
-                Hud.drawHeader();
-                SceneRenderer.drawGround(alive, ammo);
-                Interludes.waveCard(Session.wave);
-                playWave(missiles, shots, blasts, alive, ammo);
-                Interludes.waveCleared(alive, ammo);
+                tft.fillScreen(SceneRenderer.SKY);
+                Hud.drawHeader(tft);
+                SceneRenderer.drawGround(tft, alive, ammo);
+                Interludes.waveCard(tft, Session.wave);
+                playWave(tft, missiles, shots, blasts, alive, ammo);
+                Interludes.waveCleared(tft, alive, ammo);
                 citiesStanding = Session.countCities(alive) > 0;
             }
             Session.finishGame();
-            Interludes.gameOver();
-            Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            Interludes.gameOver(tft);
+            Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
         }
     }
 
-    private static void playWave(int[] missiles, int[] shots, int[] blasts, boolean[] alive, int[] ammo) {
+    private static void playWave(TftTouchShield tft, int[] missiles, int[] shots, int[] blasts, boolean[] alive, int[] ammo) {
         int next = CLOCK.millis();
         while (true) {
             while (CLOCK.millis() - next < 0) {
@@ -87,14 +88,14 @@ public final class MissileCommand {
             }
             next = next + FRAME_MILLIS;
 
-            Controls.pollTouch(shots, ammo);
+            Controls.pollTouch(tft, shots, ammo);
             if (Controls.autopilot) {
-                AutopilotMissileCommand.fly(missiles, shots, ammo);
+                AutopilotMissileCommand.fly(tft, missiles, shots, ammo);
             }
             Session.spawnEnemies(missiles, alive);
-            Session.moveShots(shots, blasts);
-            Session.moveMissiles(missiles, blasts, alive, ammo);
-            Blasts.updateBlasts(missiles, blasts, alive, ammo);
+            Session.moveShots(tft, shots, blasts);
+            Session.moveMissiles(tft, missiles, blasts, alive, ammo);
+            Blasts.updateBlasts(tft, missiles, blasts, alive, ammo);
 
             if (Session.waveOver(missiles, shots, blasts)) {
                 return;

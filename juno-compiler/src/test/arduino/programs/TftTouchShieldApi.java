@@ -5,17 +5,18 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 /** The 2.8" TFT touch shield: setup, geometry and the drawing primitives. */
 public final class TftTouchShieldApi {
     public static void main(String[] args) {
-        TftTouchShield.begin();
+        TftTouchShield tft = new TftTouchShield();
+        tft.begin();
         
-        TftTouchShield.setRotation(1);
+        tft.setRotation(1);
         int red = TftTouchShield.color(255, 0, 0);
-        TftTouchShield.fillScreen(0);
-        TftTouchShield.fillRect(10, 10, TftTouchShield.width() / 2, TftTouchShield.height() / 2, red);
-        TftTouchShield.drawRect(5, 5, 20, 20, red);
-        TftTouchShield.drawCircle(60, 60, 10, red);
-        TftTouchShield.fillCircle(90, 60, 10, red);
-        TftTouchShield.drawHorizontalLine(0, 100, 50, red);
-        TftTouchShield.drawVerticalLine(100, 0, 50, red);
-        TftTouchShield.drawPixel(1, 1, red);
+        tft.fillScreen(0);
+        tft.fillRect(10, 10, tft.width() / 2, tft.height() / 2, red);
+        tft.drawRect(5, 5, 20, 20, red);
+        tft.drawCircle(60, 60, 10, red);
+        tft.fillCircle(90, 60, 10, red);
+        tft.drawHorizontalLine(0, 100, 50, red);
+        tft.drawVerticalLine(100, 0, 50, red);
+        tft.drawPixel(1, 1, red);
     }
 }

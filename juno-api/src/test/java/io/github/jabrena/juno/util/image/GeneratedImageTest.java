@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.util.image;
 
 import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
-import io.github.jabrena.juno.hardware.device.tft.TftPins;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.ImmediateDelay;
@@ -20,34 +19,35 @@ import static org.mockito.Mockito.mock;
 
 @DisplayName("Generated TFT images")
 class GeneratedImageTest {
+    private static final TftTouchShield TFT = new TftTouchShield(mock(Gpio.class));
+
     @BeforeEach
     void initialiseTheDisplay() {
         Wire.resetBoard();
-        TftPins.use(mock(Gpio.class));
         ParallelBus.reset();
-        ImmediateDelay.run(TftTouchShield::begin);
+        ImmediateDelay.run(TFT::begin);
         ParallelBus.bytes.clear();
         ParallelBus.runs.clear();
     }
 
     static Stream<Arguments> images() {
         return Stream.of(
-                arguments("Java logo", new JavaLogoImage(), JavaLogoImage.WIDTH, JavaLogoImage.HEIGHT, 5_872),
+                arguments("Java logo", new JavaLogoImage(TFT), JavaLogoImage.WIDTH, JavaLogoImage.HEIGHT, 5_872),
                 arguments(
                         "Arduino UNO board",
-                        new ArduinoUnoBoardImage(),
+                        new ArduinoUnoBoardImage(TFT),
                         ArduinoUnoBoardImage.WIDTH,
                         ArduinoUnoBoardImage.HEIGHT,
                         46_190),
                 arguments(
                         "M5Stack Cardputer",
-                        new M5StackCardputerImage(),
+                        new M5StackCardputerImage(TFT),
                         M5StackCardputerImage.WIDTH,
                         M5StackCardputerImage.HEIGHT,
                         60_796),
                 arguments(
                         "Arduino Nano ESP32",
-                        new ArduinoNanoEsp32Image(),
+                        new ArduinoNanoEsp32Image(TFT),
                         ArduinoNanoEsp32Image.WIDTH,
                         ArduinoNanoEsp32Image.HEIGHT,
                         35_515));
@@ -64,8 +64,8 @@ class GeneratedImageTest {
         // Then
         assertThat(image.getWidth()).isEqualTo(width);
         assertThat(image.getHeight()).isEqualTo(height);
-        assertThat(width).isLessThanOrEqualTo(TftTouchShield.width());
-        assertThat(height).isLessThanOrEqualTo(TftTouchShield.height());
+        assertThat(width).isLessThanOrEqualTo(TFT.width());
+        assertThat(height).isLessThanOrEqualTo(TFT.height());
         assertThat(ParallelBus.bytes).isNotEmpty();
         assertThat(ParallelBus.runs)
                 .as(name + " should produce visible pixel runs")

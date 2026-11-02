@@ -43,11 +43,11 @@ final class DogfightRound {
         blimpSpawned = false;
     }
 
-    static void announce() {
-        Hud.showCentered("WAVE", 84, 3, TftTouchShield.YELLOW);
-        TftTouchShield.setCursor(Session.wave < 10 ? 151 : 142, 116);
-        TftTouchShield.print(Session.wave);
-        Hud.showCentered("DOGFIGHT", 152, 2, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "WAVE", 84, 3, TftTouchShield.YELLOW);
+        tft.setCursor(Session.wave < 10 ? 151 : 142, 116);
+        tft.print(Session.wave);
+        Hud.showCentered(tft, "DOGFIGHT", 152, 2, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {

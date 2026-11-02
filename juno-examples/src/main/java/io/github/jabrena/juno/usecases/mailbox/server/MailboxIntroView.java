@@ -11,16 +11,22 @@ public final class MailboxIntroView {
     /** How long each image stays on screen after it has been drawn. */
     static final int STEP_MILLIS = 3000;
 
-    private final Drawable javaLogo = new JavaLogoImage();
-    private final Drawable arduinoBoard = new ArduinoUnoBoardImage();
+    private final Drawable javaLogo;
+    private final Drawable arduinoBoard;
 
-    public void show() {
-        showImage(javaLogo);
-        showImage(arduinoBoard);
+    /** Builds both images on {@code tft}, the program's one shield instance. */
+    public MailboxIntroView(TftTouchShield tft) {
+        javaLogo = new JavaLogoImage(tft);
+        arduinoBoard = new ArduinoUnoBoardImage(tft);
     }
 
-    private void showImage(Drawable image) {
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+    public void show(TftTouchShield tft) {
+        showImage(tft, javaLogo);
+        showImage(tft, arduinoBoard);
+    }
+
+    private void showImage(TftTouchShield tft, Drawable image) {
+        tft.fillScreen(TftTouchShield.WHITE);
         image.draw();
         Delay.millis(STEP_MILLIS);
     }

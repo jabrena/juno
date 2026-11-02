@@ -45,23 +45,23 @@ public final class TabBar {
     }
 
     /** Draws every tab, highlighting {@code selected}. */
-    public static void draw(int selected) {
-        TftTouchShield.fillRect(0, TOP, EDGES[TABS], HEIGHT, GameScreen.BACKGROUND);
+    public static void draw(TftTouchShield tft, int selected) {
+        tft.fillRect(0, TOP, EDGES[TABS], HEIGHT, GameScreen.BACKGROUND);
         for (int tab = 0; tab < TABS; tab++) {
             String label = label(tab);
             int x = EDGES[tab];
             int width = EDGES[tab + 1] - x;
             int color = tab == selected ? SELECTED : GameScreen.PANEL;
-            TftTouchShield.fillRect(x + GAP, TOP + GAP, width - 2 * GAP, HEIGHT - 2 * GAP, color);
+            tft.fillRect(x + GAP, TOP + GAP, width - 2 * GAP, HEIGHT - 2 * GAP, color);
             if (tab > 0) {
                 // The labels nearly fill their tabs, so a divider keeps neighbours apart.
-                TftTouchShield.drawVerticalLine(x, TOP + 6, HEIGHT - 12, TftTouchShield.GRAY);
+                tft.drawVerticalLine(x, TOP + 6, HEIGHT - 12, TftTouchShield.GRAY);
             }
-            TftTouchShield.setTextSize(2);
-            TftTouchShield.setTextColor(tab == selected ? TftTouchShield.WHITE : TftTouchShield.GRAY, color);
+            tft.setTextSize(2);
+            tft.setTextColor(tab == selected ? TftTouchShield.WHITE : TftTouchShield.GRAY, color);
             // A size-2 glyph is 12 pixels wide, the last two of them blank spacing.
-            TftTouchShield.setCursor(x + (width - label.length() * 12 + 2) / 2, TOP + (HEIGHT - 14) / 2);
-            TftTouchShield.print(label);
+            tft.setCursor(x + (width - label.length() * 12 + 2) / 2, TOP + (HEIGHT - 14) / 2);
+            tft.print(label);
         }
     }
 

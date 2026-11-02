@@ -43,7 +43,7 @@ final class SceneRenderer {
     }
 
     /** Draws the steps the trail has advanced this frame; returns true once it reaches its end. */
-    static boolean advanceTrail(int[] trails, int slot, int color) {
+    static boolean advanceTrail(TftTouchShield tft, int[] trails, int slot, int color) {
         int base = slot * Session.T_STRIDE;
         int steps = trails[base + Session.T_STEPS];
         int progress = trails[base + Session.T_PROGRESS] + trails[base + Session.T_RATE];
@@ -51,7 +51,7 @@ final class SceneRenderer {
         int reached = Math.min(progress / 64, steps) + 1;
         int drawn = trails[base + Session.T_DRAWN];
         if (reached > drawn) {
-            traceLine(trails[base + Session.T_START_X], trails[base + Session.T_START_Y],
+            traceLine(tft, trails[base + Session.T_START_X], trails[base + Session.T_START_Y],
                     trails[base + Session.T_END_X], trails[base + Session.T_END_Y], drawn, reached, color);
             trails[base + Session.T_DRAWN] = reached;
             trails[base + Session.T_HEAD_X] = traceX;
@@ -61,10 +61,10 @@ final class SceneRenderer {
     }
 
     /** Retraces exactly the pixels the trail has drawn, in the sky's color, and frees its slot. */
-    static void eraseTrail(int[] trails, int slot) {
+    static void eraseTrail(TftTouchShield tft, int[] trails, int slot) {
         int base = slot * Session.T_STRIDE;
         trails[base + Session.T_ACTIVE] = 0;
-        traceLine(trails[base + Session.T_START_X], trails[base + Session.T_START_Y],
+        traceLine(tft, trails[base + Session.T_START_X], trails[base + Session.T_START_Y],
                 trails[base + Session.T_END_X], trails[base + Session.T_END_Y], 0, trails[base + Session.T_DRAWN],
                 SKY);
     }
@@ -75,7 +75,7 @@ final class SceneRenderer {
      * per frame and erased in one pass covers exactly the same pixels. Runs of plotted pixels on the
      * same row become one fill; the last plotted pixel is left in {@link #traceX}/{@link #traceY}.
      */
-    private static void traceLine(int x0, int y0, int x1, int y1, int from, int to, int color) {
+    private static void traceLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int from, int to, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = -Math.abs(y1 - y0);
         int stepX = x0 > x1 ? -1 : 1;
@@ -94,7 +94,7 @@ final class SceneRenderer {
             }
             if (step == to - 1 || (x == x1 && y == y1)) {
                 if (step >= from) {
-                    fillRun(runStart, x, y, color);
+                    fillRun(tft, runStart, x, y, color);
                 }
                 return;
             }
@@ -110,7 +110,7 @@ final class SceneRenderer {
                 nextY = y + stepY;
             }
             if (nextY != y && step >= from) {
-                fillRun(runStart, x, y, color);
+                fillRun(tft, runStart, x, y, color);
             }
             if (nextY != y) {
                 runStart = nextX;
@@ -121,32 +121,32 @@ final class SceneRenderer {
     }
 
     /** Draws a whole line in one call, for a static tableau like the cover, never a per-frame trail. */
-    static void drawFullLine(int x0, int y0, int x1, int y1, int color) {
+    static void drawFullLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int color) {
         int steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) + 1;
-        traceLine(x0, y0, x1, y1, 0, steps, color);
+        traceLine(tft, x0, y0, x1, y1, 0, steps, color);
     }
 
-    private static void fillRun(int from, int to, int y, int color) {
+    private static void fillRun(TftTouchShield tft, int from, int to, int y, int color) {
         int left = Math.min(from, to);
         int right = Math.max(from, to);
-        TftTouchShield.fillRect(left, y, right - left + 1, 1, color);
+        tft.fillRect(left, y, right - left + 1, 1, color);
     }
 
-    static void drawMarker(int x, int y, int color) {
-        TftTouchShield.drawPixel(x - 2, y - 2, color);
-        TftTouchShield.drawPixel(x + 2, y - 2, color);
-        TftTouchShield.drawPixel(x - 2, y + 2, color);
-        TftTouchShield.drawPixel(x + 2, y + 2, color);
+    static void drawMarker(TftTouchShield tft, int x, int y, int color) {
+        tft.drawPixel(x - 2, y - 2, color);
+        tft.drawPixel(x + 2, y - 2, color);
+        tft.drawPixel(x - 2, y + 2, color);
+        tft.drawPixel(x + 2, y + 2, color);
     }
 
     // ---- Explosions ----
 
-    static void drawBlast(int x, int y, int shown, int radius, int age) {
+    static void drawBlast(TftTouchShield tft, int x, int y, int shown, int radius, int age) {
         if (radius < shown) {
-            TftTouchShield.fillCircle(x, y, shown, SKY);
+            tft.fillCircle(x, y, shown, SKY);
         }
         if (radius != shown || (age & 3) == 0) {
-            TftTouchShield.fillCircle(x, y, radius, blastColor(age));
+            tft.fillCircle(x, y, radius, blastColor(age));
         }
     }
 
@@ -174,56 +174,56 @@ final class SceneRenderer {
         return city < 3 ? 46 + city * 24 : 146 + (city - 3) * 24;
     }
 
-    static void drawGround(boolean[] alive, int[] ammo) {
-        TftTouchShield.fillRect(0, Session.GROUND_Y, Session.WIDTH, 320 - Session.GROUND_Y, GROUND);
-        TftTouchShield.fillRect(0, Session.GROUND_Y - 30, Session.WIDTH, 30, SKY);
+    static void drawGround(TftTouchShield tft, boolean[] alive, int[] ammo) {
+        tft.fillRect(0, Session.GROUND_Y, Session.WIDTH, 320 - Session.GROUND_Y, GROUND);
+        tft.fillRect(0, Session.GROUND_Y - 30, Session.WIDTH, 30, SKY);
         for (int base = 0; base < 3; base++) {
-            drawBase(base, ammo);
+            drawBase(tft, base, ammo);
         }
         for (int city = 0; city < Session.CITIES; city++) {
-            drawCity(city, alive[city]);
+            drawCity(tft, city, alive[city]);
         }
     }
 
-    static void drawBase(int base, int[] ammo) {
+    static void drawBase(TftTouchShield tft, int base, int[] ammo) {
         int x = baseX(base);
         for (int row = 0; row < 12; row++) {
             int half = 9 + row;
-            TftTouchShield.fillRect(x - half, Session.GROUND_Y - 12 + row, 2 * half + 1, 1, GROUND);
+            tft.fillRect(x - half, Session.GROUND_Y - 12 + row, 2 * half + 1, 1, GROUND);
         }
-        drawAmmo(base, ammo);
+        drawAmmo(tft, base, ammo);
     }
 
-    static void drawAmmo(int base, int[] ammo) {
+    static void drawAmmo(TftTouchShield tft, int base, int[] ammo) {
         int x = baseX(base);
-        TftTouchShield.fillRect(x - 9, Session.GROUND_Y - 11, 19, 9, GROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.NAVY, GROUND);
+        tft.fillRect(x - 9, Session.GROUND_Y - 11, 19, 9, GROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.NAVY, GROUND);
         if (ammo[base] == 0) {
-            TftTouchShield.setTextColor(TftTouchShield.RED, GROUND);
-            TftTouchShield.setCursor(x - 8, Session.GROUND_Y - 10);
-            TftTouchShield.print("OUT");
+            tft.setTextColor(TftTouchShield.RED, GROUND);
+            tft.setCursor(x - 8, Session.GROUND_Y - 10);
+            tft.print("OUT");
             return;
         }
-        TftTouchShield.setCursor(ammo[base] < 10 ? x - 2 : x - 5, Session.GROUND_Y - 10);
-        TftTouchShield.print(ammo[base]);
+        tft.setCursor(ammo[base] < 10 ? x - 2 : x - 5, Session.GROUND_Y - 10);
+        tft.print(ammo[base]);
     }
 
-    static void drawCity(int city, boolean standing) {
+    static void drawCity(TftTouchShield tft, int city, boolean standing) {
         int x = cityX(city) - 9;
-        TftTouchShield.fillRect(x, Session.GROUND_Y - 14, 19, 14, SKY);
+        tft.fillRect(x, Session.GROUND_Y - 14, 19, 14, SKY);
         if (!standing) {
-            TftTouchShield.fillRect(x + 1, Session.GROUND_Y - 3, 17, 3, RUBBLE);
-            TftTouchShield.fillRect(x + 5, Session.GROUND_Y - 5, 5, 2, RUBBLE);
+            tft.fillRect(x + 1, Session.GROUND_Y - 3, 17, 3, RUBBLE);
+            tft.fillRect(x + 5, Session.GROUND_Y - 5, 5, 2, RUBBLE);
             return;
         }
-        TftTouchShield.fillRect(x, Session.GROUND_Y - 6, 19, 6, CITY_COLOR);
-        TftTouchShield.fillRect(x + 2, Session.GROUND_Y - 11, 4, 5, CITY_COLOR);
-        TftTouchShield.fillRect(x + 8, Session.GROUND_Y - 14, 4, 8, CITY_COLOR);
-        TftTouchShield.fillRect(x + 14, Session.GROUND_Y - 9, 3, 3, CITY_COLOR);
-        TftTouchShield.drawPixel(x + 9, Session.GROUND_Y - 12, CITY_WINDOWS);
-        TftTouchShield.drawPixel(x + 9, Session.GROUND_Y - 9, CITY_WINDOWS);
-        TftTouchShield.drawPixel(x + 3, Session.GROUND_Y - 9, CITY_WINDOWS);
-        TftTouchShield.drawPixel(x + 15, Session.GROUND_Y - 4, CITY_WINDOWS);
+        tft.fillRect(x, Session.GROUND_Y - 6, 19, 6, CITY_COLOR);
+        tft.fillRect(x + 2, Session.GROUND_Y - 11, 4, 5, CITY_COLOR);
+        tft.fillRect(x + 8, Session.GROUND_Y - 14, 4, 8, CITY_COLOR);
+        tft.fillRect(x + 14, Session.GROUND_Y - 9, 3, 3, CITY_COLOR);
+        tft.drawPixel(x + 9, Session.GROUND_Y - 12, CITY_WINDOWS);
+        tft.drawPixel(x + 9, Session.GROUND_Y - 9, CITY_WINDOWS);
+        tft.drawPixel(x + 3, Session.GROUND_Y - 9, CITY_WINDOWS);
+        tft.drawPixel(x + 15, Session.GROUND_Y - 4, CITY_WINDOWS);
     }
 }

@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -137,18 +139,18 @@ final class Lifts {
      * Reads every sector's tag (its last field) and makes each sector a lift line names a lift, and each one a door
      * line names a door; {@code false} when the map has more lifts, tagged lines or doors than the tables hold.
      */
-    static boolean resolve(RandomAccessFile wad, byte[] record, int sectors, int sectorBytes) throws IOException {
+    static boolean resolve(TftTouchShield tft, RandomAccessFile wad, byte[] record, int sectors, int sectorBytes) throws IOException {
         if (overflow) {
             return false;
         }
         if (lines == 0 && doorTags == 0) {
-            Loading.advance(World.sectors);
+            Loading.advance(tft, World.sectors);
             return true;
         }
         for (int s = 0; s < World.sectors; s++) {
             wad.seek(sectors + s * sectorBytes + sectorBytes - 2);
             wad.readFully(record, 0, 2);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             int sectorTag = WadLevel.int16(record, 0);
             if (sectorTag == 0) {
                 continue;

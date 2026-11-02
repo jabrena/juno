@@ -25,10 +25,10 @@ final class Controls {
         return row * 8 + column;
     }
 
-    static void waitForRelease() {
+    static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;
@@ -37,11 +37,11 @@ final class Controls {
         }
     }
 
-    static boolean waitForTap(int timeoutMillis) {
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
         int started = CLOCK.millis();
         while (CLOCK.millis() - started < timeoutMillis) {
-            if (TftTouchShield.readTouch()) {
-                waitForRelease();
+            if (tft.readTouch()) {
+                waitForRelease(tft);
                 return true;
             }
             Delay.millis(10);
@@ -49,19 +49,19 @@ final class Controls {
         return false;
     }
 
-    static void choosePlayer() {
-        TftTouchShield.fillScreen(0x0841);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, 0x0841);
-        TftTouchShield.setCursor(42, 72);
-        TftTouchShield.print("WHO PLAYS WHITE?");
-        drawChoice(18, "HUMAN", "You move", TftTouchShield.CYAN);
-        drawChoice(126, "CPU", "Auto match", TftTouchShield.ORANGE);
+    static void choosePlayer(TftTouchShield tft) {
+        tft.fillScreen(0x0841);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, 0x0841);
+        tft.setCursor(42, 72);
+        tft.print("WHO PLAYS WHITE?");
+        drawChoice(tft, 18, "HUMAN", "You move", TftTouchShield.CYAN);
+        drawChoice(tft, 126, "CPU", "Auto match", TftTouchShield.ORANGE);
         while (true) {
-            if (TftTouchShield.readTouch()) {
-                int x = TftTouchShield.touchX();
-                int y = TftTouchShield.touchY();
-                waitForRelease();
+            if (tft.readTouch()) {
+                int x = tft.touchX();
+                int y = tft.touchY();
+                waitForRelease(tft);
                 if (y >= 132 && y < 226) {
                     autopilot = x >= 120;
                     return;
@@ -71,15 +71,15 @@ final class Controls {
         }
     }
 
-    private static void drawChoice(int x, String label, String detail, int color) {
-        TftTouchShield.fillRect(x, 132, 96, 94, color);
-        TftTouchShield.fillRect(x + 3, 135, 90, 88, 0x0841);
-        TftTouchShield.setTextColor(color, 0x0841);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(x + 12, 158);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(x + 18, 193);
-        TftTouchShield.print(detail);
+    private static void drawChoice(TftTouchShield tft, int x, String label, String detail, int color) {
+        tft.fillRect(x, 132, 96, 94, color);
+        tft.fillRect(x + 3, 135, 90, 88, 0x0841);
+        tft.setTextColor(color, 0x0841);
+        tft.setTextSize(2);
+        tft.setCursor(x + 12, 158);
+        tft.print(label);
+        tft.setTextSize(1);
+        tft.setCursor(x + 18, 193);
+        tft.print(detail);
     }
 }

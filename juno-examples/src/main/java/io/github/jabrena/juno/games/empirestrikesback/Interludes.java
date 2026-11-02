@@ -27,8 +27,8 @@ final class Interludes {
      * The opening, after the film: snow falls on Hoth as an Imperial probe streaks down and lands in
      * a flash, then two AT-ATs stride in from the distance to where the title screen shows them.
      */
-    static void opening(short[] lines, int[] ents) {
-        TftTouchShield.fillScreen(DisplayList.SPACE);
+    static void opening(TftTouchShield tft, short[] lines, int[] ents) {
+        tft.fillScreen(DisplayList.SPACE);
         DisplayList.forget();
         Session.round = Round.PROBES;
         Camera.center();
@@ -47,15 +47,15 @@ final class Interludes {
             DisplayList.addLine(lines, x + 1, y + 1, x + 22, y - 10, SceneRenderer.FIRE_B);
             DisplayList.addLine(lines, x - 1, y, x + 1, y, TftTouchShield.WHITE);
             impactX = x;
-            DisplayList.present(lines);
+            DisplayList.present(tft, lines);
             Delay.millis(30);
         }
         for (int r = 3; r <= 36; r = r + 3) {
-            TftTouchShield.drawCircle(impactX, Camera.CENTER_Y, r, (r & 4) == 0 ? TftTouchShield.WHITE : SceneRenderer.FIRE_A);
+            tft.drawCircle(impactX, Camera.CENTER_Y, r, (r & 4) == 0 ? TftTouchShield.WHITE : SceneRenderer.FIRE_A);
             Delay.millis(25);
         }
         Delay.millis(200);
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
         // The walkers: the near one ends at z 1500, the far one at 2300, as on the title screen.
         ents[E_TYPE] = T_ATAT;
         ents[E_X] = 120;
@@ -75,7 +75,7 @@ final class Interludes {
             ents[E_STRIDE + E_Z] = far + 900 - (far + 900 - 2300) * f / WALK_FRAMES;
             WalkersRound.drawAtat(lines, ents, E_STRIDE);
             WalkersRound.drawAtat(lines, ents, 0);
-            DisplayList.present(lines);
+            DisplayList.present(tft, lines);
             Delay.millis(30);
         }
         Entities.clear(ents);
@@ -94,32 +94,32 @@ final class Interludes {
      * The title screen, over the last frame of the opening: the two title lines assemble letter by
      * letter, their spacing tightening until they lock into place, then flash from white to yellow.
      */
-    static void drawTitle(byte[] letter) {
+    static void drawTitle(TftTouchShield tft, byte[] letter) {
         // At 27 pixels apart "STRIKES BACK" still fits the screen; any wider and it would wrap.
         for (int spacing = 27; spacing >= 18; spacing = spacing - 3) {
-            TftTouchShield.fillRect(0, 28, DisplayList.WIDTH, 56, DisplayList.SPACE);
-            spaceOut(TITLE_TOP, 30, spacing, letter);
-            spaceOut(TITLE_BOTTOM, 58, spacing, letter);
+            tft.fillRect(0, 28, DisplayList.WIDTH, 56, DisplayList.SPACE);
+            spaceOut(tft, TITLE_TOP, 30, spacing, letter);
+            spaceOut(tft, TITLE_BOTTOM, 58, spacing, letter);
             Delay.millis(110);
         }
-        Hud.showCentered(TITLE_TOP, 30, 3, TftTouchShield.WHITE);
-        Hud.showCentered(TITLE_BOTTOM, 58, 3, TftTouchShield.WHITE);
+        Hud.showCentered(tft, TITLE_TOP, 30, 3, TftTouchShield.WHITE);
+        Hud.showCentered(tft, TITLE_BOTTOM, 58, 3, TftTouchShield.WHITE);
         Delay.millis(100);
-        Hud.showCentered(TITLE_TOP, 30, 3, TftTouchShield.YELLOW);
-        Hud.showCentered(TITLE_BOTTOM, 58, 3, TftTouchShield.YELLOW);
-        Hud.showCentered("Drag to steer and aim, tap to fire", 204, 1, TftTouchShield.WHITE);
-        Hud.showCentered("Tap to start", 218, 1, TftTouchShield.CYAN);
+        Hud.showCentered(tft, TITLE_TOP, 30, 3, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, TITLE_BOTTOM, 58, 3, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Drag to steer and aim, tap to fire", 204, 1, TftTouchShield.WHITE);
+        Hud.showCentered(tft, "Tap to start", 218, 1, TftTouchShield.CYAN);
     }
 
     /** One title line at text size 3 with its letters {@code spacing} pixels apart, centered. */
-    private static void spaceOut(String text, int y, int spacing, byte[] letter) {
+    private static void spaceOut(TftTouchShield tft, String text, int y, int spacing, byte[] letter) {
         int left = (DisplayList.WIDTH - (text.length() - 1) * spacing - 18) / 2;
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(SceneRenderer.SNOW, DisplayList.SPACE);
+        tft.setTextSize(3);
+        tft.setTextColor(SceneRenderer.SNOW, DisplayList.SPACE);
         for (int i = 0; i < text.length(); i++) {
             letter[0] = (byte) text.charAt(i);
-            TftTouchShield.setCursor(left + i * spacing, y);
-            TftTouchShield.print(letter, 1);
+            tft.setCursor(left + i * spacing, y);
+            tft.print(letter, 1);
         }
     }
 }

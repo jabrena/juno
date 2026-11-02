@@ -37,29 +37,30 @@ public final class Doom {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
         Serial.println("Doom: starting MVC cover");
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         // First, so the WAD-sized tables and renderer buffers find the arena empty.
         DoomEngine engine = new DoomEngine();
 
         DoomState model = new DoomState();
-        ViewRouter controller = new ViewRouter(FRAME_MILLIS);
-        controller.register(DoomViews.COVER, new DoomCoverView(controller, model));
-        controller.register(DoomViews.PILOT, new PilotSelectionView(controller, model));
-        controller.register(DoomViews.EPISODES, new EpisodeSelectionView(controller, model));
-        controller.register(DoomViews.SKILL, new SkillSelectionView(controller, model));
-        DoomMapLoader mapLoader = new DoomMapLoader(new EngineMapReader(engine));
-        controller.register(DoomViews.MAP_LOADING, new DoomMapLoadingView(controller, model, mapLoader));
-        controller.register(DoomViews.GAMEPLAY, new GameplayView(controller, model, engine));
-        controller.register(DoomViews.DEATH, new DeathView(controller));
-        controller.register(DoomViews.REPORT, new ReportView(controller, model, engine, mapLoader));
+        ViewRouter controller = new ViewRouter(tft, FRAME_MILLIS);
+        controller.register(DoomViews.COVER, new DoomCoverView(tft, controller, model));
+        controller.register(DoomViews.PILOT, new PilotSelectionView(tft, controller, model));
+        controller.register(DoomViews.EPISODES, new EpisodeSelectionView(tft, controller, model));
+        controller.register(DoomViews.SKILL, new SkillSelectionView(tft, controller, model));
+        DoomMapLoader mapLoader = new DoomMapLoader(new EngineMapReader(tft, engine));
+        controller.register(DoomViews.MAP_LOADING, new DoomMapLoadingView(tft, controller, model, mapLoader));
+        controller.register(DoomViews.GAMEPLAY, new GameplayView(tft, controller, model, engine));
+        controller.register(DoomViews.DEATH, new DeathView(tft, controller));
+        controller.register(DoomViews.REPORT, new ReportView(tft, controller, model, engine, mapLoader));
         controller.start(DoomViews.COVER);
 
-        DoomStartupService startup = new DoomStartupService(model, TftTouchShield.getSdCard());
+        DoomStartupService startup = new DoomStartupService(model, tft.getSdCard());
         startup.begin();
         controller.background(startup);
         controller.run();

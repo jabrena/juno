@@ -61,14 +61,14 @@ final class Sector {
         }
     }
 
-    static void announce() {
-        Hud.showCentered("SECTOR", 84, 3, TftTouchShield.YELLOW);
-        TftTouchShield.setCursor(Session.sector < 10 ? 151 : 142, 114);
-        TftTouchShield.print(Session.sector);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "SECTOR", 84, 3, TftTouchShield.YELLOW);
+        tft.setCursor(Session.sector < 10 ? 151 : 142, 114);
+        tft.print(Session.sector);
         if (Session.sector % 4 == 0) {
-            Hud.showCentered("Nomad is laying mines", 150, 1, SceneRenderer.NOMAD);
+            Hud.showCentered(tft, "Nomad is laying mines", 150, 1, SceneRenderer.NOMAD);
         } else {
-            Hud.showCentered("Destroy the Klingons", 150, 1, TftTouchShield.WHITE);
+            Hud.showCentered(tft, "Destroy the Klingons", 150, 1, TftTouchShield.WHITE);
         }
     }
 
@@ -77,9 +77,9 @@ final class Sector {
     }
 
     /** Awards the bonus for the sector and the shields left, then warps to the next sector. */
-    static void finish() {
+    static void finish(TftTouchShield tft) {
         int bonus = SECTOR_BONUS + Enterprise.shields * 50;
         Session.score = Session.score + bonus;
-        Interludes.sectorCleared(bonus);
+        Interludes.sectorCleared(tft, bonus);
     }
 }

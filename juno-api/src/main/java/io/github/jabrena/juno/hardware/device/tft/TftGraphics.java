@@ -6,53 +6,58 @@ package io.github.jabrena.juno.hardware.device.tft;
  * {@link TftTouchShield#width()}/{@link TftTouchShield#height()} for the current rotation.
  */
 final class TftGraphics {
-    private TftGraphics() {
+    private final TftTouchShield shield;
+    private final TftBus bus;
+
+    TftGraphics(TftTouchShield shield, TftBus bus) {
+        this.shield = shield;
+        this.bus = bus;
     }
 
     static int color(int red, int green, int blue) {
         return ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ((blue & 0xFF) >> 3);
     }
 
-    static void fillScreen(int color) {
-        fillRect(0, 0, TftTouchShield.width(), TftTouchShield.height(), color);
+    void fillScreen(int color) {
+        fillRect(0, 0, shield.width(), shield.height(), color);
     }
 
-    static void drawPixel(int x, int y, int color) {
-        if (x < 0 || y < 0 || x >= TftTouchShield.width() || y >= TftTouchShield.height()) {
+    void drawPixel(int x, int y, int color) {
+        if (x < 0 || y < 0 || x >= shield.width() || y >= shield.height()) {
             return;
         }
-        TftBus.setAddressWindow(x, y, x, y);
-        TftBus.writePixels(color, 1);
+        bus.setAddressWindow(x, y, x, y);
+        bus.writePixels(color, 1);
     }
 
-    static void fillRect(int x, int y, int w, int h, int color) {
+    void fillRect(int x, int y, int w, int h, int color) {
         int left = Math.max(x, 0);
         int top = Math.max(y, 0);
-        int right = Math.min(x + w, TftTouchShield.width()) - 1;
-        int bottom = Math.min(y + h, TftTouchShield.height()) - 1;
+        int right = Math.min(x + w, shield.width()) - 1;
+        int bottom = Math.min(y + h, shield.height()) - 1;
         if (right < left || bottom < top) {
             return;
         }
-        TftBus.setAddressWindow(left, top, right, bottom);
-        TftBus.writePixels(color, (right - left + 1) * (bottom - top + 1));
+        bus.setAddressWindow(left, top, right, bottom);
+        bus.writePixels(color, (right - left + 1) * (bottom - top + 1));
     }
 
-    static void drawHorizontalLine(int x, int y, int w, int color) {
+    void drawHorizontalLine(int x, int y, int w, int color) {
         fillRect(x, y, w, 1, color);
     }
 
-    static void drawVerticalLine(int x, int y, int h, int color) {
+    void drawVerticalLine(int x, int y, int h, int color) {
         fillRect(x, y, 1, h, color);
     }
 
-    static void drawRect(int x, int y, int w, int h, int color) {
+    void drawRect(int x, int y, int w, int h, int color) {
         drawHorizontalLine(x, y, w, color);
         drawHorizontalLine(x, y + h - 1, w, color);
         drawVerticalLine(x, y, h, color);
         drawVerticalLine(x + w - 1, y, h, color);
     }
 
-    static void fillCircle(int cx, int cy, int r, int color) {
+    void fillCircle(int cx, int cy, int r, int color) {
         int dx = r;
         for (int dy = 0; dy <= r; dy++) {
             while (dx * dx + dy * dy > r * r) {
@@ -65,7 +70,7 @@ final class TftGraphics {
         }
     }
 
-    static void drawCircle(int cx, int cy, int r, int color) {
+    void drawCircle(int cx, int cy, int r, int color) {
         int x = r;
         int y = 0;
         int error = 1 - r;
@@ -88,15 +93,15 @@ final class TftGraphics {
         }
     }
 
-    static boolean beginPixels(int x, int y, int w, int h) {
-        if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > TftTouchShield.width() || y + h > TftTouchShield.height()) {
+    boolean beginPixels(int x, int y, int w, int h) {
+        if (w <= 0 || h <= 0 || x < 0 || y < 0 || x + w > shield.width() || y + h > shield.height()) {
             return false;
         }
-        TftBus.setAddressWindow(x, y, x + w - 1, y + h - 1);
+        bus.setAddressWindow(x, y, x + w - 1, y + h - 1);
         return true;
     }
 
-    static void pushPixel(int color) {
-        TftBus.writePixel(color);
+    void pushPixel(int color) {
+        bus.writePixel(color);
     }
 }

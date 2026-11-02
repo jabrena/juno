@@ -8,6 +8,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Displays bounded Supabase page collection progress, opening the histogram only after a complete collection. */
 public final class TemperatureGatheringView implements View {
+
+    private final TftTouchShield tft;
     private static final int UNSHOWN = -2;
 
     private final TemperatureDashboardState model;
@@ -18,8 +20,8 @@ public final class TemperatureGatheringView implements View {
     private int shownPage = UNSHOWN;
     private int shownTotalPages = UNSHOWN;
 
-    public TemperatureGatheringView(
-            TemperatureDashboardState model, SupabaseTemperatureService service, Navigator navigator, int nextViewId) {
+    public TemperatureGatheringView(TftTouchShield tft, TemperatureDashboardState model, SupabaseTemperatureService service, Navigator navigator, int nextViewId) {
+        this.tft = tft;
         this.model = model;
         this.service = service;
         this.navigator = navigator;
@@ -31,7 +33,7 @@ public final class TemperatureGatheringView implements View {
         shownStatus = UNSHOWN;
         shownPage = UNSHOWN;
         shownTotalPages = UNSHOWN;
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         service.begin();
     }
 
@@ -48,56 +50,56 @@ public final class TemperatureGatheringView implements View {
         shownStatus = status;
         shownPage = model.page();
         shownTotalPages = model.totalPages();
-        draw();
+        draw(tft);
     }
 
     @Override
     public void touch(int x, int y) {
     }
 
-    private void draw() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(18, 54);
-        TftTouchShield.print("SUPABASE");
-        TftTouchShield.setCursor(18, 82);
-        TftTouchShield.print("GATHERING");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(18, 132);
+    private void draw(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
+        tft.setCursor(18, 54);
+        tft.print("SUPABASE");
+        tft.setCursor(18, 82);
+        tft.print("GATHERING");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(18, 132);
         if (model.status() == TemperatureDashboardState.CONNECTING) {
-            TftTouchShield.print("Connecting WiFi...");
+            tft.print("Connecting WiFi...");
             return;
         }
         if (model.status() == TemperatureDashboardState.WIFI_FAILED) {
-            TftTouchShield.print("WiFi failed");
+            tft.print("WiFi failed");
             return;
         }
         if (model.status() == TemperatureDashboardState.PARTIAL) {
-            TftTouchShield.print("HTTP request failed");
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-            TftTouchShield.setCursor(18, 172);
-            TftTouchShield.print("See serial monitor");
+            tft.print("HTTP request failed");
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+            tft.setCursor(18, 172);
+            tft.print("See serial monitor");
             return;
         }
-        TftTouchShield.print("page ");
-        TftTouchShield.print(model.page());
-        TftTouchShield.print("/");
+        tft.print("page ");
+        tft.print(model.page());
+        tft.print("/");
         if (model.totalPages() >= 0) {
-            TftTouchShield.print(model.totalPages());
+            tft.print(model.totalPages());
         } else {
-            TftTouchShield.print("?");
+            tft.print("?");
         }
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(18, 172);
-        TftTouchShield.print("rows ");
-        TftTouchShield.print(model.readings() + model.missing());
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+        tft.setCursor(18, 172);
+        tft.print("rows ");
+        tft.print(model.readings() + model.missing());
         if (model.totalRows() >= 0) {
-            TftTouchShield.print("/");
-            TftTouchShield.print(model.totalRows());
+            tft.print("/");
+            tft.print(model.totalRows());
         }
     }
 }

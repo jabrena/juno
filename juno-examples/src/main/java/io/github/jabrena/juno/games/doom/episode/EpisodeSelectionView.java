@@ -11,6 +11,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Doom1-style episode selection, enabled from the E?M1 markers discovered in DOOM1.WAD. */
 public final class EpisodeSelectionView implements View {
+
+    private final TftTouchShield tft;
     private static final int UNSHOWN = Integer.MIN_VALUE;
 
     private final Navigator navigator;
@@ -20,26 +22,27 @@ public final class EpisodeSelectionView implements View {
     private int shownEpisode = UNSHOWN;
     private boolean shownScanComplete;
 
-    public EpisodeSelectionView(Navigator navigator, DoomState model) {
+    public EpisodeSelectionView(TftTouchShield tft, Navigator navigator, DoomState model) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
     }
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(Screen.BACKGROUND);
-        Screen.showCentered("CHOOSE EPISODE", 8, 3, TftTouchShield.RED);
-        Screen.drawBack();
+        tft.fillScreen(Screen.BACKGROUND);
+        Screen.showCentered(tft, "CHOOSE EPISODE", 8, 3, TftTouchShield.RED);
+        Screen.drawBack(tft);
         shownEpisodes = UNSHOWN;
         shownEpisode = UNSHOWN;
         shownScanComplete = !model.wadScanComplete();
-        refresh();
+        refresh(tft);
         Serial.println("Doom: episode view active");
     }
 
     @Override
     public void render() {
-        refresh();
+        refresh(tft);
     }
 
     @Override
@@ -53,7 +56,7 @@ public final class EpisodeSelectionView implements View {
         int episode = row + 1;
         if (row >= 0 && model.episodeAvailable(episode)) {
             model.chooseEpisode(episode);
-            drawEpisodes(model.episodesInWad());
+            drawEpisodes(tft, model.episodesInWad());
             shownEpisode = episode;
             Serial.print("Doom: episode selected E");
             Serial.println(episode);
@@ -61,7 +64,7 @@ public final class EpisodeSelectionView implements View {
         }
     }
 
-    private void refresh() {
+    private void refresh(TftTouchShield tft) {
         boolean scanComplete = model.wadScanComplete();
         int episodes = model.episodesInWad();
         int episode = model.episode();
@@ -71,21 +74,21 @@ public final class EpisodeSelectionView implements View {
         shownScanComplete = scanComplete;
         shownEpisodes = episodes;
         shownEpisode = episode;
-        TftTouchShield.fillRect(0, 38, Screen.WIDTH, 160, Screen.BACKGROUND);
+        tft.fillRect(0, 38, Screen.WIDTH, 160, Screen.BACKGROUND);
         if (!scanComplete) {
-            Screen.showCentered("SCANNING DOOM1.WAD...", 102, 2, TftTouchShield.YELLOW);
+            Screen.showCentered(tft, "SCANNING DOOM1.WAD...", 102, 2, TftTouchShield.YELLOW);
         } else if (episodes == 0) {
-            Screen.showCentered("DOOM1.WAD NOT FOUND", 92, 2, TftTouchShield.RED);
-            Screen.showCentered("Copy a valid WAD to the SD root", 122, 1, TftTouchShield.WHITE);
+            Screen.showCentered(tft, "DOOM1.WAD NOT FOUND", 92, 2, TftTouchShield.RED);
+            Screen.showCentered(tft, "Copy a valid WAD to the SD root", 122, 1, TftTouchShield.WHITE);
         } else {
-            drawEpisodes(episodes);
+            drawEpisodes(tft, episodes);
         }
     }
 
-    private void drawEpisodes(int episodes) {
+    private void drawEpisodes(TftTouchShield tft, int episodes) {
         for (int episode = 1; episode <= 4; episode++) {
             boolean enabled = (episodes & 1 << episode) != 0;
-            list.draw(episode - 1, name(episode), enabled ? map(episode) : "Not in this DOOM1.WAD", enabled,
+            list.draw(tft, episode - 1, name(episode), enabled ? map(episode) : "Not in this DOOM1.WAD", enabled,
                     model.episode() == episode);
         }
     }

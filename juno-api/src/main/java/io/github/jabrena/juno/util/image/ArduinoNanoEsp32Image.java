@@ -8,6 +8,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
  * A palette of RGB565 colours and, row after row, runs of (palette index, length) byte pairs.
  */
 public final class ArduinoNanoEsp32Image implements Drawable {
+    private final TftTouchShield tft;
+
     public static final int WIDTH = 150;
     public static final int HEIGHT = 320;
     private static final int LENGTH = 48522;
@@ -15,6 +17,11 @@ public final class ArduinoNanoEsp32Image implements Drawable {
     private static final int BACKGROUND = 0;
     private static final int CHUNK_SIZE = 4096;
     private static final int[] PALETTE = {0xFFFF, 0xF79E, 0xEF7D, 0x338A, 0xE6FA, 0xB595, 0xD699, 0xCE58, 0xD6FC, 0x2146, 0xBDF7, 0xCA68, 0x3249, 0x6C52, 0x33AF, 0x42CB, 0xBE7A, 0x2A8B, 0x4208, 0x332E, 0x4A69, 0x0863, 0x31C7, 0x538F, 0x8CB2, 0x5B0B, 0x840F, 0x10E4, 0x6B8D, 0xA514, 0xEF3C, 0x21C8};
+
+    /** Draws on {@code tft}, the program's one shield instance. */
+    public ArduinoNanoEsp32Image(TftTouchShield tft) {
+        this.tft = tft;
+    }
 
     @Override
     public int getWidth() {
@@ -29,13 +36,13 @@ public final class ArduinoNanoEsp32Image implements Drawable {
     /** Draws the image centred over the current TFT viewport. */
     @Override
     public void draw() {
-        draw(0, 0, TftTouchShield.width() - 1, TftTouchShield.height() - 1);
+        draw(0, 0, tft.width() - 1, tft.height() - 1);
     }
 
     @Override
     public void draw(int clipLeft, int clipTop, int clipRight, int clipBottom) {
-        int left = (TftTouchShield.width() - WIDTH) / 2;
-        int top = (TftTouchShield.height() - HEIGHT) / 2;
+        int left = (tft.width() - WIDTH) / 2;
+        int top = (tft.height() - HEIGHT) / 2;
         int x = 0;
         int y = 0;
         for (int i = 0; i < LENGTH; i += 2) {
@@ -47,7 +54,7 @@ public final class ArduinoNanoEsp32Image implements Drawable {
             if (index != BACKGROUND && screenY >= clipTop && screenY <= clipBottom && screenRight >= clipLeft && screenX <= clipRight) {
                 int drawLeft = Math.max(screenX, clipLeft);
                 int drawRight = Math.min(screenRight, clipRight);
-                TftTouchShield.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
+                tft.drawHorizontalLine(drawLeft, screenY, drawRight - drawLeft + 1, PALETTE[index]);
             }
             x = x + length;
             if (x >= WIDTH) { x = 0; y = y + 1; }

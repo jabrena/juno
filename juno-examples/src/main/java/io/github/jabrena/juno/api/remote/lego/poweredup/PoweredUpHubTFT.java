@@ -57,69 +57,70 @@ public class PoweredUpHubTFT {
     private final PoweredUpState s = new PoweredUpState();
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         PoweredUpHubTFT app = new PoweredUpHubTFT();
-        app.drawScreen();
+        app.drawScreen(tft);
 
         int lastTouch = CLOCK.millis();
         int lastRefresh = CLOCK.millis();
         while (true) {
-            if (TftTouchShield.readTouch() && CLOCK.millis() - lastTouch > TOUCH_LOCKOUT_MILLIS) {
+            if (tft.readTouch() && CLOCK.millis() - lastTouch > TOUCH_LOCKOUT_MILLIS) {
                 lastTouch = CLOCK.millis();
-                app.onTouch(TftTouchShield.touchX(), TftTouchShield.touchY());
+                app.onTouch(tft, tft.touchX(), tft.touchY());
             }
             if (CLOCK.millis() - lastRefresh > REFRESH_MILLIS) {
                 lastRefresh = CLOCK.millis();
-                app.checkLink();
-                app.refresh();
+                app.checkLink(tft);
+                app.refresh(tft);
             }
         }
     }
 
-    private void onTouch(int x, int y) {
+    private void onTouch(TftTouchShield tft, int x, int y) {
         if (PoweredUpUi.inBox(x, y, MARGIN, BOTTOM_Y, WIDTH - 2 * MARGIN, BOTTOM_HEIGHT)) {
-            toggleConnection();
+            toggleConnection(tft);
         } else if (y >= TAB_Y && y < TAB_Y + TAB_HEIGHT) {
-            selectView(x / TAB_WIDTH);
+            selectView(tft, x / TAB_WIDTH);
         } else if (HUB.isConnected()) {
             if (s.view == VIEW_LED) {
-                PoweredUpLed.onTouch(s, x, y);
+                PoweredUpLed.onTouch(tft, s, x, y);
             } else if (s.view == VIEW_MOTORS) {
-                PoweredUpMotors.onTouch(s, x, y);
+                PoweredUpMotors.onTouch(tft, s, x, y);
             } else if (s.view == VIEW_PAIR) {
-                PoweredUpPair.onTouch(s, x, y);
+                PoweredUpPair.onTouch(tft, s, x, y);
             }
         }
     }
 
-    private void selectView(int tab) {
+    private void selectView(TftTouchShield tft, int tab) {
         if (tab < 0 || tab > VIEW_PAIR || tab == s.view) {
             return;
         }
         s.view = tab;
-        PoweredUpUi.drawTabs(s);
-        drawContent();
+        PoweredUpUi.drawTabs(tft, s);
+        drawContent(tft);
     }
 
-    private void toggleConnection() {
+    private void toggleConnection(TftTouchShield tft) {
         if (HUB.isConnected()) {
             HUB.disconnect();
             Serial.println("Disconnected");
-            linkLost();
+            linkLost(tft);
         } else {
-            PoweredUpUi.drawStatus("Scanning...", TftTouchShield.YELLOW);
+            PoweredUpUi.drawStatus(tft, "Scanning...", TftTouchShield.YELLOW);
             if (HUB.connect(CONNECT_MILLIS)) {
-                onConnected();
+                onConnected(tft);
             } else {
                 Serial.println("No hub found");
-                linkLost();
+                linkLost(tft);
             }
         }
     }
 
-    private void onConnected() {
+    private void onConnected(TftTouchShield tft) {
         Serial.println("Connected");
         s.hubType = HUB.hubType();
         resetPorts();
@@ -127,21 +128,21 @@ public class PoweredUpHubTFT {
             HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
         }
         HUB.setLedColor(PoweredUpLed.LED_COLORS[s.ledIndex]);
-        drawScreen();
+        drawScreen(tft);
     }
 
     /** If the hub went away on its own, show it the same way as a disconnect. */
-    private void checkLink() {
+    private void checkLink(TftTouchShield tft) {
         if (s.hubType != 0 && !HUB.isConnected()) {
             Serial.println("Link lost");
-            linkLost();
+            linkLost(tft);
         }
     }
 
-    private void linkLost() {
+    private void linkLost(TftTouchShield tft) {
         s.hubType = 0;
         resetPorts();
-        drawScreen();
+        drawScreen(tft);
     }
 
     private void resetPorts() {
@@ -182,55 +183,55 @@ public class PoweredUpHubTFT {
         return changed;
     }
 
-    private void drawScreen() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, WIDTH, HEADER_HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(MARGIN, 4);
-        TftTouchShield.print("Powered Up");
+    private void drawScreen(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, WIDTH, HEADER_HEIGHT, TftTouchShield.NAVY);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(MARGIN, 4);
+        tft.print("Powered Up");
         boolean connected = HUB.isConnected();
-        PoweredUpUi.drawStatus(connected ? "Connected" : "Not connected",
+        PoweredUpUi.drawStatus(tft, connected ? "Connected" : "Not connected",
                 connected ? TftTouchShield.GREEN : TftTouchShield.RED);
-        PoweredUpUi.drawTabs(s);
-        PoweredUpUi.drawConnectButton(connected);
-        drawContent();
+        PoweredUpUi.drawTabs(tft, s);
+        PoweredUpUi.drawConnectButton(tft, connected);
+        drawContent(tft);
     }
 
     /** Clears the area between the tabs and the connect button and draws the selected view. */
-    private void drawContent() {
-        TftTouchShield.fillRect(0, CONTENT_Y, WIDTH, CONTENT_HEIGHT, TftTouchShield.BLACK);
+    private void drawContent(TftTouchShield tft) {
+        tft.fillRect(0, CONTENT_Y, WIDTH, CONTENT_HEIGHT, TftTouchShield.BLACK);
         if (!HUB.isConnected()) {
-            TftTouchShield.setTextSize(2);
-            TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-            TftTouchShield.setCursor(MARGIN, CONTENT_Y + 8);
-            TftTouchShield.print("No hub connected");
+            tft.setTextSize(2);
+            tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+            tft.setCursor(MARGIN, CONTENT_Y + 8);
+            tft.print("No hub connected");
         } else if (s.view == VIEW_INFO) {
-            PoweredUpInfo.draw(s);
+            PoweredUpInfo.draw(tft, s);
         } else if (s.view == VIEW_LED) {
-            PoweredUpLed.draw(s);
+            PoweredUpLed.draw(tft, s);
         } else if (s.view == VIEW_MOTORS) {
-            PoweredUpMotors.drawButtons(s);
-            PoweredUpMotors.drawRows(s);
+            PoweredUpMotors.drawButtons(tft, s);
+            PoweredUpMotors.drawRows(tft, s);
         } else {
-            PoweredUpPair.draw(s);
+            PoweredUpPair.draw(tft, s);
         }
     }
 
     /** Redraws only what changes by itself: the info values or the tacho values. */
-    private void refresh() {
+    private void refresh(TftTouchShield tft) {
         if (!HUB.isConnected()) {
             return;
         }
         boolean changed = detectDevices();
         if (s.view == VIEW_INFO) {
-            PoweredUpInfo.draw(s);
+            PoweredUpInfo.draw(tft, s);
         } else if ((s.view == VIEW_MOTORS || s.view == VIEW_PAIR) && changed) {
-            drawContent();
+            drawContent(tft);
         } else if (s.view == VIEW_MOTORS) {
-            PoweredUpMotors.drawRows(s);
+            PoweredUpMotors.drawRows(tft, s);
         } else if (s.view == VIEW_PAIR && s.pairB >= 0) {
-            PoweredUpPair.drawRows(s);
+            PoweredUpPair.drawRows(tft, s);
         }
     }
 }

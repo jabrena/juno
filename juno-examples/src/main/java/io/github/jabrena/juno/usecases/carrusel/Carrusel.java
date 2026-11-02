@@ -20,14 +20,15 @@ public final class Carrusel {
     }
 
     public static void main() {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
         Serial.println("Java image carousel");
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
-        ViewRouter controller = new ViewRouter(FRAME_PERIOD_MILLIS);
-        controller.register(CAROUSEL_VIEW, new CarruselView(ArduinoUno.getClock()));
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT);
+        ViewRouter controller = new ViewRouter(tft, FRAME_PERIOD_MILLIS);
+        controller.register(CAROUSEL_VIEW, new CarruselView(tft, ArduinoUno.getClock()));
         controller.start(CAROUSEL_VIEW);
         controller.run();
     }

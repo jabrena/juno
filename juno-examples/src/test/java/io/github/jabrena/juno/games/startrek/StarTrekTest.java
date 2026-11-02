@@ -1,25 +1,23 @@
 package io.github.jabrena.juno.games.startrek;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static io.github.jabrena.juno.hardware.device.tft.Internals.call;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callBoolean;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.get;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
-import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of Star Trek: the wrapping sector, phasers, photon torpedoes, Klingon torpedoes, docking, the
  * starbase, saucers, Nomad's mines, the pilot screen, and the CPU pilot that clears whole sectors.
  */
 class StarTrekTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final Class<?> GAME = StarTrek.class;
     private static final int FIX = 16;
     private static final int STRIDE = 10;
@@ -41,27 +39,27 @@ class StarTrekTest {
 
     @BeforeEach
     void newGame() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(42);
         lines = new short[2 * 200 * 5];
         ents = new int[24 * STRIDE];
-        set(Session.class, "score", 0);
-        set(Session.class, "sector", 1);
-        set(Enterprise.class, "shields", 100);
-        set(Enterprise.class, "photons", 5);
-        set(Enterprise.class, "warps", 3);
-        set(DisplayList.class, "shown", 0);
-        set(DisplayList.class, "built", 0);
-        call(Sector.class, "start", (Object) ents);
+        Session.score = 0;
+        Session.sector = 1;
+        Enterprise.shields = 100;
+        Enterprise.photons = 5;
+        Enterprise.warps = 3;
+        DisplayList.shown = 0;
+        DisplayList.built = 0;
+        Sector.start(ents);
         clearAll();
     }
 
     @Test
     void theSectorWrapsAround() {
-        assertThat(callInt(Geometry.class, "wrap", 2000 * FIX)).isEqualTo(-48 * FIX);
-        assertThat(callInt(Geometry.class, "wrap", -2000 * FIX)).isEqualTo(48 * FIX);
-        assertThat(callInt(Geometry.class, "wrapPosition", -16)).isEqualTo(2048 * FIX - 16);
+        assertThat(Geometry.wrap(2000 * FIX)).isEqualTo(-48 * FIX);
+        assertThat(Geometry.wrap(-2000 * FIX)).isEqualTo(48 * FIX);
+        assertThat(Geometry.wrapPosition(-16)).isEqualTo(2048 * FIX - 16);
     }
 
     @Test
@@ -73,7 +71,7 @@ class StarTrekTest {
         assertThat(ents[far * STRIDE + HP]).as("the beam stops at the first ship").isEqualTo(2);
         fireAndRecharge();
         assertThat(ents[near * STRIDE + TYPE]).isNotEqualTo(KLINGON);
-        assertThat(getInt(Session.class, "score")).isEqualTo(1000);
+        assertThat(Session.score).isEqualTo(1000);
     }
 
     @Test
@@ -90,8 +88,8 @@ class StarTrekTest {
     @Test
     void phasersNeedToRecharge() {
         int klingon = spawn(KLINGON, CENTER, CENTER - 150 * FIX, 2);
-        call(Combat.class, "firePhasers", (Object) ents);
-        call(Combat.class, "firePhasers", (Object) ents);
+        Combat.firePhasers(ents);
+        Combat.firePhasers(ents);
         assertThat(ents[klingon * STRIDE + HP]).isEqualTo(1);
     }
 
@@ -101,11 +99,11 @@ class StarTrekTest {
         int b = spawn(KLINGON, CENTER + 40 * FIX, CENTER - 220 * FIX, 2);
         int c = spawn(SAUCER, CENTER - 30 * FIX, CENTER - 190 * FIX, 1);
         int spared = spawn(KLINGON, CENTER + 300 * FIX, CENTER - 200 * FIX, 2);
-        call(Combat.class, "firePhoton", (Object) ents);
-        assertThat(getInt(Enterprise.class, "photons")).isEqualTo(4);
+        Combat.firePhoton(tft, ents);
+        assertThat(Enterprise.photons).isEqualTo(4);
         for (int i = 0; i < 30; i++) {
             freeze(a, b, c, spared);
-            call(GAME, "step", (Object) ents);
+            StarTrek.step(tft, ents);
         }
         assertThat(ents[a * STRIDE + TYPE]).isNotEqualTo(KLINGON);
         assertThat(ents[b * STRIDE + TYPE]).isNotEqualTo(KLINGON);
@@ -115,93 +113,93 @@ class StarTrekTest {
 
     @Test
     void photonTorpedoesRunOut() {
-        set(Enterprise.class, "photons", 0);
-        call(Combat.class, "firePhoton", (Object) ents);
-        assertThat(callInt(Entities.class, "count", ents, PHOTON)).isZero();
+        Enterprise.photons = 0;
+        Combat.firePhoton(tft, ents);
+        assertThat(Entities.count(ents, PHOTON)).isZero();
     }
 
     @Test
     void klingonTorpedoesDrainTheShieldsAndTheLastHitDestroysTheEnterprise() {
-        call(Combat.class, "fireTorpedo", ents, CENTER, CENTER - 100 * FIX, 180);
+        Combat.fireTorpedo(ents, CENTER, CENTER - 100 * FIX, 180);
         for (int i = 0; i < 40; i++) {
-            call(GAME, "step", (Object) ents);
+            StarTrek.step(tft, ents);
         }
-        assertThat(getInt(Enterprise.class, "shields")).isEqualTo(90);
-        set(Enterprise.class, "shields", 10);
-        call(Combat.class, "fireTorpedo", ents, CENTER, CENTER - 100 * FIX, 180);
+        assertThat(Enterprise.shields).isEqualTo(90);
+        Enterprise.shields = 10;
+        Combat.fireTorpedo(ents, CENTER, CENTER - 100 * FIX, 180);
         for (int i = 0; i < 40; i++) {
-            call(GAME, "step", (Object) ents);
+            StarTrek.step(tft, ents);
         }
-        assertThat((boolean) get(Session.class, "dead")).isTrue();
+        assertThat((boolean) Session.dead).isTrue();
     }
 
     @Test
     void dockingRestoresShieldsTorpedoesAndWarps() {
-        set(Enterprise.class, "shields", 30);
-        set(Enterprise.class, "photons", 1);
-        set(Enterprise.class, "warps", 0);
+        Enterprise.shields = 30;
+        Enterprise.photons = 1;
+        Enterprise.warps = 0;
         spawn(STARBASE, CENTER, CENTER - 20 * FIX, 6);
-        call(GAME, "step", (Object) ents);
-        assertThat(getInt(Enterprise.class, "shields")).isEqualTo(100);
-        assertThat(getInt(Enterprise.class, "photons")).isEqualTo(5);
-        assertThat(getInt(Enterprise.class, "warps")).isEqualTo(3);
+        StarTrek.step(tft, ents);
+        assertThat(Enterprise.shields).isEqualTo(100);
+        assertThat(Enterprise.photons).isEqualTo(5);
+        assertThat(Enterprise.warps).isEqualTo(3);
     }
 
     @Test
     void theStarbaseFallsAfterSixTorpedoHits() {
         int base = spawn(STARBASE, CENTER + 600 * FIX, CENTER, 6);
         for (int shot = 0; shot < 6; shot++) {
-            call(Combat.class, "fireTorpedo", ents, CENTER + 500 * FIX, CENTER, 90);
+            Combat.fireTorpedo(ents, CENTER + 500 * FIX, CENTER, 90);
             for (int i = 0; i < 40; i++) {
-                call(GAME, "step", (Object) ents);
+                StarTrek.step(tft, ents);
             }
         }
         assertThat(ents[base * STRIDE + TYPE]).isNotEqualTo(STARBASE);
-        assertThat((boolean) get(Session.class, "baseLost")).isTrue();
+        assertThat((boolean) Session.baseLost).isTrue();
     }
 
     @Test
     void saucersHomeInAndDrainTheShieldsOnContact() {
         spawn(SAUCER, CENTER + 200 * FIX, CENTER + 150 * FIX, 1);
-        for (int i = 0; i < 300 && getInt(Enterprise.class, "shields") == 100; i++) {
-            call(GAME, "step", (Object) ents);
+        for (int i = 0; i < 300 && Enterprise.shields == 100; i++) {
+            StarTrek.step(tft, ents);
         }
-        assertThat(getInt(Enterprise.class, "shields")).isEqualTo(92);
-        assertThat(callInt(Entities.class, "count", ents, SAUCER)).isZero();
+        assertThat(Enterprise.shields).isEqualTo(92);
+        assertThat(Entities.count(ents, SAUCER)).isZero();
     }
 
     @Test
     void nomadLaysMinesThatDamageTheEnterprise() {
         int nomad = spawn(NOMAD, CENTER + 500 * FIX, CENTER, 4);
         ents[nomad * STRIDE + COOL] = 1;
-        call(GAME, "step", (Object) ents);
-        assertThat(callInt(Entities.class, "count", ents, MINE)).isEqualTo(1);
+        StarTrek.step(tft, ents);
+        assertThat(Entities.count(ents, MINE)).isEqualTo(1);
         spawn(MINE, CENTER, CENTER - 5 * FIX, 1);
-        call(GAME, "step", (Object) ents);
-        assertThat(getInt(Enterprise.class, "shields")).isEqualTo(88);
+        StarTrek.step(tft, ents);
+        assertThat(Enterprise.shields).isEqualTo(88);
     }
 
     @Test
     void everyFourthSectorBringsNomad() {
         for (int sector = 1; sector <= 8; sector++) {
-            set(Session.class, "sector", sector);
-            call(Sector.class, "start", (Object) ents);
-            assertThat(callInt(Entities.class, "count", ents, NOMAD)).as("sector %d", sector)
+            Session.sector = sector;
+            Sector.start(ents);
+            assertThat(Entities.count(ents, NOMAD)).as("sector %d", sector)
                     .isEqualTo(sector % 4 == 0 ? 1 : 0);
-            assertThat(callInt(Entities.class, "count", ents, STARBASE)).isEqualTo(1);
-            assertThat(callInt(Entities.class, "count", ents, KLINGON)).isPositive();
+            assertThat(Entities.count(ents, STARBASE)).isEqualTo(1);
+            assertThat(Entities.count(ents, KLINGON)).isPositive();
         }
     }
 
     @Test
     void linesStayInsideTheirViews() {
-        call(Sector.class, "start", (Object) ents);
-        set(Enterprise.class, "heading", 45);
+        Sector.start(ents);
+        Enterprise.heading = 45;
         spawn(KLINGON, CENTER + 60 * FIX, CENTER - 80 * FIX, 2);
-        call(SceneRenderer.class, "render", lines, ents);
-        int built = getInt(DisplayList.class, "shown");
+        SceneRenderer.render(tft, lines, ents);
+        int built = DisplayList.shown;
         assertThat(built).isPositive();
-        int base = getInt(DisplayList.class, "front") * 200 * 5;
+        int base = DisplayList.front * 200 * 5;
         for (int i = 0; i < built; i++) {
             int x0 = lines[base + i * 5];
             int y0 = lines[base + i * 5 + 1];
@@ -219,20 +217,20 @@ class StarTrekTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 4, 6, 8})
     void theCpuPilotClearsWholeSectors(int sector) {
-        set(Session.class, "sector", sector);
-        set(Controls.class, "autopilot", true);
-        call(Sector.class, "start", (Object) ents);
+        Session.sector = sector;
+        Controls.autopilot = true;
+        Sector.start(ents);
         boolean cleared = false;
         for (int frame = 0; frame < 9000; frame++) {
-            set(Session.class, "frame", frame);
-            call(AutopilotST.class, "fly", (Object) ents);
-            call(GAME, "step", (Object) ents);
-            call(SceneRenderer.class, "render", lines, ents);
-            if ((boolean) get(Session.class, "dead")) {
-                set(Session.class, "dead", false);
-                set(Enterprise.class, "shields", 100);
+            Session.frame = frame;
+            AutopilotST.fly(tft, ents);
+            StarTrek.step(tft, ents);
+            SceneRenderer.render(tft, lines, ents);
+            if ((boolean) Session.dead) {
+                Session.dead = false;
+                Enterprise.shields = 100;
             }
-            if (callBoolean(Sector.class, "isCleared", (Object) ents)) {
+            if (Sector.isCleared(ents)) {
                 cleared = true;
                 break;
             }
@@ -242,36 +240,36 @@ class StarTrekTest {
 
     @Test
     void theCpuPilotDocksWhenItsShieldsRunLow() {
-        set(Enterprise.class, "shields", 40);
+        Enterprise.shields = 40;
         spawn(STARBASE, CENTER + 300 * FIX, CENTER, 6);
         spawn(KLINGON, CENTER, CENTER - 150 * FIX, 2);
-        for (int frame = 0; frame < 600 && !(boolean) get(Enterprise.class, "docked"); frame++) {
-            call(AutopilotST.class, "fly", (Object) ents);
-            call(GAME, "step", (Object) ents);
+        for (int frame = 0; frame < 600 && !(boolean) Enterprise.docked; frame++) {
+            AutopilotST.fly(tft, ents);
+            StarTrek.step(tft, ents);
         }
-        assertThat((boolean) get(Enterprise.class, "docked")).isTrue();
-        assertThat(getInt(Enterprise.class, "shields")).isEqualTo(100);
+        assertThat((boolean) Enterprise.docked).isTrue();
+        assertThat(Enterprise.shields).isEqualTo(100);
     }
 
     @Test
     void theCpuPilotWarpsAwayFromATorpedoWhenItsShieldsAreLow() {
-        set(Enterprise.class, "shields", 20);
-        call(Combat.class, "fireTorpedo", ents, CENTER, CENTER - 60 * FIX, 180);
-        call(AutopilotST.class, "fly", (Object) ents);
-        assertThat(getInt(Enterprise.class, "warps")).isEqualTo(2);
+        Enterprise.shields = 20;
+        Combat.fireTorpedo(ents, CENTER, CENTER - 60 * FIX, 180);
+        AutopilotST.fly(tft, ents);
+        assertThat(Enterprise.warps).isEqualTo(2);
     }
 
     @Test
     void thePilotScreenHasAHumanAndACpuButton() {
-        assertThat(callInt(Controls.class, "choiceAt", 80, 140)).isZero();
-        assertThat(callInt(Controls.class, "choiceAt", 230, 140)).isEqualTo(1);
-        assertThat(callInt(Controls.class, "choiceAt", 160, 140)).as("between the buttons").isEqualTo(-1);
-        assertThat(callInt(Controls.class, "choiceAt", 80, 40)).as("above the buttons").isEqualTo(-1);
+        assertThat(Controls.choiceAt(80, 140)).isZero();
+        assertThat(Controls.choiceAt(230, 140)).isEqualTo(1);
+        assertThat(Controls.choiceAt(160, 140)).as("between the buttons").isEqualTo(-1);
+        assertThat(Controls.choiceAt(80, 40)).as("above the buttons").isEqualTo(-1);
     }
 
     private void fireAndRecharge() {
-        call(Combat.class, "firePhasers", (Object) ents);
-        set(Combat.class, "phaserCooldown", 0);
+        Combat.firePhasers(ents);
+        Combat.phaserCooldown = 0;
     }
 
     /** Keeps the given ships where they are while a test steps the simulation. */
@@ -286,7 +284,7 @@ class StarTrekTest {
     }
 
     private int spawn(int type, int x, int y, int hp) {
-        int slot = callInt(Entities.class, "spawn", ents, type, x, y, hp);
+        int slot = Entities.spawn(ents, type, x, y, hp);
         ents[slot * STRIDE + HEADING] = 0;
         ents[slot * STRIDE + COOL] = 1000;
         return slot;

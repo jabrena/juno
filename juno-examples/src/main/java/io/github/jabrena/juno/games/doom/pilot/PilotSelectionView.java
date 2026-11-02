@@ -11,6 +11,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Lets the player select the HUMAN or CPU pilot and return to the cover. */
 public final class PilotSelectionView implements View {
+
+    private final TftTouchShield tft;
     static final int HUMAN = 0;
     static final int CPU = 1;
 
@@ -21,19 +23,20 @@ public final class PilotSelectionView implements View {
     private final Navigator navigator;
     private final DoomState model;
 
-    public PilotSelectionView(Navigator navigator, DoomState model) {
+    public PilotSelectionView(TftTouchShield tft, Navigator navigator, DoomState model) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
     }
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(Screen.BACKGROUND);
-        Screen.drawBack();
-        Screen.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
-        Screen.showCentered("Who walks the map?", 74, 1, TftTouchShield.WHITE);
-        drawChoices();
-        Screen.showCentered("Tap a pilot", 188, 1, WALL_FAR);
+        tft.fillScreen(Screen.BACKGROUND);
+        Screen.drawBack(tft);
+        Screen.showCentered(tft, "CHOOSE PILOT", 36, 3, TftTouchShield.RED);
+        Screen.showCentered(tft, "Who walks the map?", 74, 1, TftTouchShield.WHITE);
+        drawChoices(tft);
+        Screen.showCentered(tft, "Tap a pilot", 188, 1, WALL_FAR);
         Serial.println("Doom: pilot view active");
     }
 
@@ -51,19 +54,19 @@ public final class PilotSelectionView implements View {
         int choice = PILOTS.rowAt(x, y);
         if (choice == HUMAN) {
             model.chooseHuman();
-            drawChoices();
+            drawChoices(tft);
             Serial.println("Doom: pilot HUMAN");
             navigator.show(DoomViews.EPISODES);
         } else if (choice == CPU) {
             model.chooseCpu();
-            drawChoices();
+            drawChoices(tft);
             Serial.println("Doom: pilot CPU");
             navigator.show(DoomViews.EPISODES);
         }
     }
 
-    private void drawChoices() {
-        PILOTS.draw(HUMAN, "HUMAN", "You walk and shoot", true, !model.autopilot());
-        PILOTS.draw(CPU, "CPU", "Autopilot plays", true, model.autopilot());
+    private void drawChoices(TftTouchShield tft) {
+        PILOTS.draw(tft, HUMAN, "HUMAN", "You walk and shoot", true, !model.autopilot());
+        PILOTS.draw(tft, CPU, "CPU", "Autopilot plays", true, model.autopilot());
     }
 }

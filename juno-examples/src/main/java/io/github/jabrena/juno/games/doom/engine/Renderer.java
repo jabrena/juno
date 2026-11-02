@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 /**
  * DOOM's renderer, drawing edges instead of textured columns. The BSP tree is walked front to back
  * from the marine's position; each wall seg is transformed into view space, clipped at the near
@@ -49,10 +51,10 @@ final class Renderer {
     }
 
     /** Builds the frame seen from the marine's eye and presents it. */
-    static void render(short[] lines, byte[] clips, short[] columnDepths, short[] stack, short[] ceilings,
+    static void render(TftTouchShield tft, short[] lines, byte[] clips, short[] columnDepths, short[] stack, short[] ceilings,
                        short[] monsters, short[] shots, byte[] taken, byte[] changes) {
         build(lines, clips, columnDepths, stack, ceilings, monsters, shots, taken);
-        DisplayList.present(lines, changes);
+        DisplayList.present(tft, lines, changes);
     }
 
     /** Builds the frame seen from the marine's eye into the display list, without drawing it. */

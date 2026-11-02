@@ -14,6 +14,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Shows flash, RAM-arena and SD-card occupancy as three {@link TftOccupancyBar} rows; the SD row reads the model. */
 public final class TftDashboardStorageView implements View {
+
+    private final TftTouchShield tft;
     private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
     private static final int FIRST_ROW_Y = 44;
     private static final int ROW_HEIGHT = 52;
@@ -30,7 +32,8 @@ public final class TftDashboardStorageView implements View {
     private final TftOccupancyBar sdBar = new TftOccupancyBar(FIRST_ROW_Y + 2 * ROW_HEIGHT, "SD CARD",
             TftTouchShield.ORANGE, 1024, "MiB", "scanning card...", "no card");
 
-    public TftDashboardStorageView(Navigator navigator, TftDashboardState model, TftFpsWidget fps) {
+    public TftDashboardStorageView(TftTouchShield tft, Navigator navigator, TftDashboardState model, TftFpsWidget fps) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.fps = fps;
@@ -38,29 +41,29 @@ public final class TftDashboardStorageView implements View {
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(TftTouchShield.NAVY);
-        header.draw();
-        homeButton.draw();
+        tft.fillScreen(TftTouchShield.NAVY);
+        header.draw(tft);
+        homeButton.draw(tft);
         fps.reset();
 
         flashBar.reset();
         ramBar.reset();
         sdBar.reset();
-        flashBar.update(MEMORY.flashUsedBytes(), MEMORY.flashCapacityBytes());
+        flashBar.update(tft, MEMORY.flashUsedBytes(), MEMORY.flashCapacityBytes());
     }
 
     @Override
     public void render() {
-        ramBar.update(MEMORY.arenaUsedBytes(), MEMORY.arenaCapacityBytes());
+        ramBar.update(tft, MEMORY.arenaUsedBytes(), MEMORY.arenaCapacityBytes());
         SdCapacity capacity = model.sdCapacity();
         if (!model.cardReady() || capacity != null && !capacity.known()) {
-            sdBar.showUnavailable();
+            sdBar.showUnavailable(tft);
         } else if (capacity == null) {
-            sdBar.showPending();
+            sdBar.showPending(tft);
         } else {
-            sdBar.update(capacity.totalKiB() - capacity.freeKiB(), capacity.totalKiB());
+            sdBar.update(tft, capacity.totalKiB() - capacity.freeKiB(), capacity.totalKiB());
         }
-        fps.update();
+        fps.update(tft);
     }
 
     @Override

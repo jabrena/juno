@@ -45,52 +45,53 @@ public final class PacMan {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] tiles = new byte[Maze.TILES];
         int[] ghosts = new int[Session.GHOSTS * Session.G_STRIDE];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover();
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Random.seed(CLOCK.micros());
             Session.newGame();
-            TftTouchShield.fillScreen(SceneRenderer.SPACE);
+            tft.fillScreen(SceneRenderer.SPACE);
             while (Session.lives > 0) {
                 Maze.loadMaze(tiles);
                 Session.dotsEaten = 0;
-                SceneRenderer.drawMaze(tiles, ghosts);
-                Hud.drawHeader();
+                SceneRenderer.drawMaze(tft, tiles, ghosts);
+                Hud.drawHeader(tft);
                 boolean cleared = false;
                 while (Session.lives > 0 && !cleared) {
-                    cleared = playLife(tiles, ghosts);
+                    cleared = playLife(tft, tiles, ghosts);
                     if (!cleared) {
                         Session.lives = Session.lives - 1;
                     }
                 }
                 if (cleared) {
-                    Interludes.flashMaze(tiles, ghosts);
+                    Interludes.flashMaze(tft, tiles, ghosts);
                     Session.level = Session.level + 1;
                 }
             }
             Session.finishGame();
-            Interludes.gameOver();
-            Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+            Interludes.gameOver(tft);
+            Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
         }
     }
 
     /** Plays from the starting positions until Pac-Man dies (false) or the maze is cleared (true). */
-    private static boolean playLife(byte[] tiles, int[] ghosts) {
+    private static boolean playLife(TftTouchShield tft, byte[] tiles, int[] ghosts) {
         Session.resetActors(ghosts);
         Controls.resetForLife();
-        Hud.drawFooter();
-        SceneRenderer.redrawActors(tiles, ghosts, true);
-        Interludes.readyCard();
-        SceneRenderer.redrawArea(tiles, ghosts, 80, 17 * Maze.TILE, 72, Maze.TILE);
+        Hud.drawFooter(tft);
+        SceneRenderer.redrawActors(tft, tiles, ghosts, true);
+        Interludes.readyCard(tft);
+        SceneRenderer.redrawArea(tft, tiles, ghosts, 80, 17 * Maze.TILE, 72, Maze.TILE);
 
         int next = CLOCK.millis();
         while (true) {
@@ -99,21 +100,21 @@ public final class PacMan {
             }
             next = next + Session.FRAME_MILLIS;
 
-            Controls.steer();
+            Controls.steer(tft);
             if (Controls.autopilot) {
                 AutopilotPacMan.fly(tiles, ghosts);
             }
             Session.sinceLastDot = Session.sinceLastDot + 1;
             Session.updatePhase(ghosts);
-            Session.movePac(tiles, ghosts);
+            Session.movePac(tft, tiles, ghosts);
             Ghosts.releaseGhosts(ghosts);
             for (int g = 0; g < Session.GHOSTS; g++) {
                 Ghosts.moveGhost(tiles, ghosts, g);
             }
-            int collision = Session.checkCollisions(tiles, ghosts);
-            SceneRenderer.redrawActors(tiles, ghosts, false);
+            int collision = Session.checkCollisions(tft, tiles, ghosts);
+            SceneRenderer.redrawActors(tft, tiles, ghosts, false);
             if (collision < 0) {
-                Interludes.dieAnimation(tiles, ghosts);
+                Interludes.dieAnimation(tft, tiles, ghosts);
                 return false;
             }
             if (collision > 0) {

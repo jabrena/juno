@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
@@ -17,14 +19,14 @@ final class WadThings {
     }
 
     /** The player start, plus the monsters and pickups the chosen skill ({@link World#skill}) places in single player. */
-    static boolean read(RandomAccessFile wad, byte[] record, int offset, int things)
+    static boolean read(TftTouchShield tft, RandomAccessFile wad, byte[] record, int offset, int things)
             throws IOException {
         World.monsters = 0;
         World.items = 0;
         wad.seek(offset);
         for (int thing = 0; thing < things; thing++) {
             wad.readFully(record, 0, THING_BYTES);
-            Loading.advance(1);
+            Loading.advance(tft, 1);
             int x = WadLevel.int16(record, 0);
             int y = WadLevel.int16(record, 2);
             int type = WadLevel.int16(record, 6);

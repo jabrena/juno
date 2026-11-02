@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import io.github.jabrena.juno.util.Random;
 
 /**
@@ -51,7 +53,7 @@ final class Entities {
     }
 
     /** Moves every entity {@code speed} units nearer, and lets each act. */
-    static void move(int[] ents, int speed) {
+    static void move(TftTouchShield tft, int[] ents, int speed) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             int type = ents[b + E_TYPE];
@@ -69,7 +71,7 @@ final class Entities {
                     ents[b + E_TYPE] = T_NONE;
                     if (Math.abs(ents[b + E_X] - Camera.camX) < FIREBALL_REACH
                             && Math.abs(ents[b + E_Y] - Camera.camY) < FIREBALL_REACH) {
-                        Session.shieldHit();
+                        Session.shieldHit(tft);
                     }
                 }
             } else if (type == T_TOWER || type == T_TURRET) {
@@ -82,7 +84,7 @@ final class Entities {
                 if (z <= Camera.NEAR) {
                     ents[b + E_TYPE] = T_NONE;
                     if (Math.abs(ents[b + E_Y] - Camera.camY) < CATWALK_CLEARANCE) {
-                        Session.shieldHit();
+                        Session.shieldHit(tft);
                     }
                 }
             } else if (type == T_PORT) {

@@ -43,38 +43,38 @@ final class Hud {
     }
 
     /** Repaints the whole bar: the stone panels, their labels, the arms grid and the map table. */
-    static void drawBar() {
-        TftTouchShield.fillRect(0, BAR_Y, DisplayList.WIDTH, BAR_HEIGHT, STONE);
-        TftTouchShield.drawHorizontalLine(0, BAR_Y, DisplayList.WIDTH, STONE_LIGHT);
-        TftTouchShield.drawHorizontalLine(0, BAR_Y + 1, DisplayList.WIDTH, STONE_DARK);
+    static void drawBar(TftTouchShield tft) {
+        tft.fillRect(0, BAR_Y, DisplayList.WIDTH, BAR_HEIGHT, STONE);
+        tft.drawHorizontalLine(0, BAR_Y, DisplayList.WIDTH, STONE_LIGHT);
+        tft.drawHorizontalLine(0, BAR_Y + 1, DisplayList.WIDTH, STONE_DARK);
         for (int divider = 0; divider < DIVIDERS.length; divider++) {
-            TftTouchShield.drawVerticalLine(DIVIDERS[divider] - 1, BAR_Y + 2, BAR_HEIGHT - 2, STONE_DARK);
-            TftTouchShield.drawVerticalLine(DIVIDERS[divider], BAR_Y + 2, BAR_HEIGHT - 2, STONE_LIGHT);
+            tft.drawVerticalLine(DIVIDERS[divider] - 1, BAR_Y + 2, BAR_HEIGHT - 2, STONE_DARK);
+            tft.drawVerticalLine(DIVIDERS[divider], BAR_Y + 2, BAR_HEIGHT - 2, STONE_LIGHT);
         }
-        label("AMMO", 0, 56);
-        label("HEALTH", 56, 124);
-        label("ARMOR", 212, 276);
-        table();
+        label(tft, "AMMO", 0, 56);
+        label(tft, "HEALTH", 56, 124);
+        label(tft, "ARMOR", 212, 276);
+        table(tft);
         shownHealth = Integer.MIN_VALUE;
         shownArms = Integer.MIN_VALUE;
         shownFace = Integer.MIN_VALUE;
-        drawStatus();
+        drawStatus(tft);
     }
 
     /** Redraws only the numbers and the face that changed since the last call. */
-    static void drawStatus() {
+    static void drawStatus(TftTouchShield tft) {
         int face = faceState();
         int ammo = Weapon.ammoInHand();
         if (Player.health != shownHealth || ammo != shownAmmo || Player.armor != shownArmor || face != shownFace) {
             if (ammo < 0) {
-                TftTouchShield.fillRect(2, NUMBER_Y, 53, 16, STONE);
+                tft.fillRect(2, NUMBER_Y, 53, 16, STONE);
             } else {
-                number(ammo, false, 0, 56);
+                number(tft, ammo, false, 0, 56);
             }
-            number(Player.health, true, 56, 124);
-            number(Player.armor, true, 212, 276);
+            number(tft, Player.health, true, 56, 124);
+            number(tft, Player.armor, true, 212, 276);
             if (face != shownFace) {
-                face(face);
+                face(tft, face);
             }
             shownHealth = Player.health;
             shownAmmo = ammo;
@@ -83,54 +83,54 @@ final class Hud {
         }
         int arms = Weapon.owned << 3 | Weapon.wanted();
         if (arms != shownArms) {
-            arms();
+            arms(tft);
             shownArms = arms;
         }
-        performance();
+        performance(tft);
     }
 
-    static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, DisplayList.BACKGROUND);
-        TftTouchShield.setCursor((DisplayList.WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, DisplayList.BACKGROUND);
+        tft.setCursor((DisplayList.WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 
-    private static void label(String text, int from, int to) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(LABEL, STONE);
-        TftTouchShield.setCursor((from + to - text.length() * 6) / 2 + 1, LABEL_Y);
-        TftTouchShield.print(text);
+    private static void label(TftTouchShield tft, String text, int from, int to) {
+        tft.setTextSize(1);
+        tft.setTextColor(LABEL, STONE);
+        tft.setCursor((from + to - text.length() * 6) / 2 + 1, LABEL_Y);
+        tft.print(text);
     }
 
     /** A big red number centered in its panel, with a percent sign when {@code percent}. */
-    private static void number(int value, boolean percent, int from, int to) {
+    private static void number(TftTouchShield tft, int value, boolean percent, int from, int to) {
         int digits = value >= 100 ? 3 : value >= 10 ? 2 : 1;
         int width = (digits + (percent ? 1 : 0)) * 12;
         int x = (from + to - width) / 2 + 1;
-        TftTouchShield.fillRect(from + 2, NUMBER_Y, to - from - 3, 16, STONE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(NUMBER, STONE);
-        TftTouchShield.setCursor(x, NUMBER_Y);
-        TftTouchShield.print(value);
+        tft.fillRect(from + 2, NUMBER_Y, to - from - 3, 16, STONE);
+        tft.setTextSize(2);
+        tft.setTextColor(NUMBER, STONE);
+        tft.setCursor(x, NUMBER_Y);
+        tft.print(value);
         if (percent) {
-            TftTouchShield.print("%");
+            tft.print("%");
         }
     }
 
     /** The 2-7 weapon slots: yellow when carried, white for the one in hand, dark otherwise. */
-    private static void arms() {
-        TftTouchShield.setTextSize(1);
+    private static void arms(TftTouchShield tft) {
+        tft.setTextSize(1);
         for (int slot = 2; slot <= 7; slot++) {
             int color = slot == Weapon.wanted() ? TftTouchShield.WHITE
                     : Weapon.carries(slot) ? TftTouchShield.YELLOW : OFF;
-            TftTouchShield.setTextColor(color, STONE);
-            TftTouchShield.setCursor(131 + (slot - 2) % 3 * 14, BAR_Y + 7 + (slot - 2) / 3 * 11);
-            TftTouchShield.print(slot);
+            tft.setTextColor(color, STONE);
+            tft.setCursor(131 + (slot - 2) % 3 * 14, BAR_Y + 7 + (slot - 2) / 3 * 11);
+            tft.print(slot);
         }
-        TftTouchShield.setTextColor(Weapon.wanted() <= Weapon.CHAINSAW ? TftTouchShield.WHITE : LABEL, STONE);
-        TftTouchShield.setCursor((ARMS_LEFT + ARMS_RIGHT - 4 * 6) / 2 + 1, LABEL_Y);
-        TftTouchShield.print("ARMS");
+        tft.setTextColor(Weapon.wanted() <= Weapon.CHAINSAW ? TftTouchShield.WHITE : LABEL, STONE);
+        tft.setCursor((ARMS_LEFT + ARMS_RIGHT - 4 * 6) / 2 + 1, LABEL_Y);
+        tft.print("ARMS");
     }
 
     /** The weapon slot under a tap on the arms panel: 2-7 on its numbers, 1 on its label, -1 elsewhere. */
@@ -146,35 +146,35 @@ final class Hud {
     }
 
     /** The current map, pilot and measured frame rate, without labels in the narrow panel. */
-    private static void table() {
-        TftTouchShield.fillRect(278, BAR_Y + 2, 42, BAR_HEIGHT - 2, STONE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 4);
+    private static void table(TftTouchShield tft) {
+        tft.fillRect(278, BAR_Y + 2, 42, BAR_HEIGHT - 2, STONE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, STONE);
+        tft.setCursor(281, BAR_Y + 4);
         if (World.fromWad) {
-            TftTouchShield.print("E");
-            TftTouchShield.print(World.episode);
-            TftTouchShield.print("M");
-            TftTouchShield.print(World.map);
+            tft.print("E");
+            tft.print(World.episode);
+            tft.print("M");
+            tft.print(World.map);
         } else {
-            TftTouchShield.print(Level.NAME);
+            tft.print(Level.NAME);
         }
-        TftTouchShield.setTextColor(Controls.autopilot ? TftTouchShield.MAGENTA : TftTouchShield.CYAN, STONE);
-        TftTouchShield.setCursor(281, BAR_Y + 15);
-        TftTouchShield.print(Controls.autopilot ? "CPU  " : "HUMAN");
+        tft.setTextColor(Controls.autopilot ? TftTouchShield.MAGENTA : TftTouchShield.CYAN, STONE);
+        tft.setCursor(281, BAR_Y + 15);
+        tft.print(Controls.autopilot ? "CPU  " : "HUMAN");
         shownFps = Integer.MIN_VALUE;
-        performance();
+        performance(tft);
     }
 
-    private static void performance() {
+    private static void performance(TftTouchShield tft) {
         int fps = FrameStats.fps();
         if (fps != shownFps) {
-            TftTouchShield.fillRect(280, BAR_Y + 26, 39, 10, STONE);
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(LABEL, STONE);
-            TftTouchShield.setCursor(281, BAR_Y + 27);
-            TftTouchShield.print(Math.min(999, fps));
-            TftTouchShield.print("FPS");
+            tft.fillRect(280, BAR_Y + 26, 39, 10, STONE);
+            tft.setTextSize(1);
+            tft.setTextColor(LABEL, STONE);
+            tft.setCursor(281, BAR_Y + 27);
+            tft.print(Math.min(999, fps));
+            tft.print("FPS");
             shownFps = fps;
         }
     }
@@ -189,49 +189,49 @@ final class Hud {
     }
 
     /** The marine's face, 28x32 pixels of skin, hair, eyes and a mouth that grimaces as he is hurt. */
-    private static void face(int state) {
+    private static void face(TftTouchShield tft, int state) {
         int x = 178;
         int y = BAR_Y + 4;
         int tier = state & 3;
         boolean grimace = state >= 4;
-        TftTouchShield.fillRect(x - 2, y - 1, 32, 36, STONE_DARK);
-        TftTouchShield.fillRect(x, y, 28, 33, SKIN);
-        TftTouchShield.fillRect(x, y, 28, 7, HAIR);
-        TftTouchShield.fillRect(x, y + 7, 3, 8, HAIR);
-        TftTouchShield.fillRect(x + 25, y + 7, 3, 8, HAIR);
-        TftTouchShield.fillRect(x + 4, y + 11, 8, 2, HAIR);
-        TftTouchShield.fillRect(x + 16, y + 11, 8, 2, HAIR);
+        tft.fillRect(x - 2, y - 1, 32, 36, STONE_DARK);
+        tft.fillRect(x, y, 28, 33, SKIN);
+        tft.fillRect(x, y, 28, 7, HAIR);
+        tft.fillRect(x, y + 7, 3, 8, HAIR);
+        tft.fillRect(x + 25, y + 7, 3, 8, HAIR);
+        tft.fillRect(x + 4, y + 11, 8, 2, HAIR);
+        tft.fillRect(x + 16, y + 11, 8, 2, HAIR);
         if (state == 8) {
             for (int k = 0; k < 4; k++) {
-                TftTouchShield.fillRect(x + 5 + k * 2, y + 14 + k * 2, 2, 2, BLOOD);
-                TftTouchShield.fillRect(x + 11 - k * 2, y + 14 + k * 2, 2, 2, BLOOD);
-                TftTouchShield.fillRect(x + 17 + k * 2, y + 14 + k * 2, 2, 2, BLOOD);
-                TftTouchShield.fillRect(x + 23 - k * 2, y + 14 + k * 2, 2, 2, BLOOD);
+                tft.fillRect(x + 5 + k * 2, y + 14 + k * 2, 2, 2, BLOOD);
+                tft.fillRect(x + 11 - k * 2, y + 14 + k * 2, 2, 2, BLOOD);
+                tft.fillRect(x + 17 + k * 2, y + 14 + k * 2, 2, 2, BLOOD);
+                tft.fillRect(x + 23 - k * 2, y + 14 + k * 2, 2, 2, BLOOD);
             }
         } else {
-            TftTouchShield.fillRect(x + 5, y + 14, 7, 4, TftTouchShield.WHITE);
-            TftTouchShield.fillRect(x + 17, y + 14, 7, 4, TftTouchShield.WHITE);
-            TftTouchShield.fillRect(x + (grimace ? 6 : 8), y + 14, 3, 4, STONE_DARK);
-            TftTouchShield.fillRect(x + 20, y + 14, 3, 4, STONE_DARK);
+            tft.fillRect(x + 5, y + 14, 7, 4, TftTouchShield.WHITE);
+            tft.fillRect(x + 17, y + 14, 7, 4, TftTouchShield.WHITE);
+            tft.fillRect(x + (grimace ? 6 : 8), y + 14, 3, 4, STONE_DARK);
+            tft.fillRect(x + 20, y + 14, 3, 4, STONE_DARK);
         }
-        TftTouchShield.fillRect(x + 13, y + 17, 3, 8, SKIN_DARK);
+        tft.fillRect(x + 13, y + 17, 3, 8, SKIN_DARK);
         if (grimace || state == 8) {
-            TftTouchShield.fillRect(x + 7, y + 25, 14, 5, STONE_DARK);
-            TftTouchShield.fillRect(x + 8, y + 25, 12, 2, TftTouchShield.WHITE);
+            tft.fillRect(x + 7, y + 25, 14, 5, STONE_DARK);
+            tft.fillRect(x + 8, y + 25, 12, 2, TftTouchShield.WHITE);
         } else {
-            TftTouchShield.fillRect(x + 8, y + 26, 12, 2, STONE_DARK);
+            tft.fillRect(x + 8, y + 26, 12, 2, STONE_DARK);
         }
         if (tier >= 1 && state != 0) {
-            TftTouchShield.fillRect(x + 3, y + 8, 3, 9, BLOOD);
+            tft.fillRect(x + 3, y + 8, 3, 9, BLOOD);
         }
         if (tier >= 2) {
-            TftTouchShield.fillRect(x + 22, y + 10, 3, 12, BLOOD);
-            TftTouchShield.fillRect(x + 4, y + 22, 6, 3, BLOOD);
+            tft.fillRect(x + 22, y + 10, 3, 12, BLOOD);
+            tft.fillRect(x + 4, y + 22, 6, 3, BLOOD);
         }
         if (tier >= 3 || state == 8) {
-            TftTouchShield.fillRect(x + 11, y + 2, 4, 16, BLOOD);
-            TftTouchShield.fillRect(x + 18, y + 20, 6, 4, BLOOD);
-            TftTouchShield.fillRect(x + 2, y + 18, 5, 8, BLOOD);
+            tft.fillRect(x + 11, y + 2, 4, 16, BLOOD);
+            tft.fillRect(x + 18, y + 20, 6, 4, BLOOD);
+            tft.fillRect(x + 2, y + 18, 5, 8, BLOOD);
         }
     }
 }

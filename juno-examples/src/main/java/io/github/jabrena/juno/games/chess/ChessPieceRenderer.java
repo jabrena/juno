@@ -11,16 +11,16 @@ public final class ChessPieceRenderer {
     }
 
     /** Draws one signed chess piece into an already opened square background. */
-    public static void draw(int x, int y, int piece, int background) {
-        drawScaled(x, y, 1, piece, background);
+    public static void draw(TftTouchShield tft, int x, int y, int piece, int background) {
+        drawScaled(tft, x, y, 1, piece, background);
     }
 
     /** Draws the shared knight bitmap enlarged by {@code scale} without allocating a new bitmap. */
-    public static void drawKnight(int x, int y, int scale, int background) {
-        drawScaled(x, y, scale, 2, background);
+    public static void drawKnight(TftTouchShield tft, int x, int y, int scale, int background) {
+        drawScaled(tft, x, y, scale, 2, background);
     }
 
-    private static void drawScaled(int x, int y, int scale, int piece, int background) {
+    private static void drawScaled(TftTouchShield tft, int x, int y, int scale, int piece, int background) {
         int type = Math.abs(piece);
         int fill = TftTouchShield.WHITE;
         int ink = TftTouchShield.BLACK;
@@ -29,7 +29,7 @@ public final class ChessPieceRenderer {
             ink = BLACK_PIECE_EDGE;
         }
         int size = PIECE_SIZE * scale;
-        if (!TftTouchShield.beginPixels(x, y, size, size)) {
+        if (!tft.beginPixels(x, y, size, size)) {
             return;
         }
         int above = 0;
@@ -50,7 +50,7 @@ public final class ChessPieceRenderer {
                         color = fill;
                     }
                     for (int repeatColumn = 0; repeatColumn < scale; repeatColumn++) {
-                        TftTouchShield.pushPixel(color);
+                        tft.pushPixel(color);
                     }
                 }
             }

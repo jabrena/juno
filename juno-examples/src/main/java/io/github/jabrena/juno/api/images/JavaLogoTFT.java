@@ -18,16 +18,17 @@ import io.github.jabrena.juno.util.image.JavaLogoImage;
  * }</pre>
  */
 public final class JavaLogoTFT {
-    private static final Drawable LOGO = new JavaLogoImage();
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        LOGO.draw();
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.fillScreen(TftTouchShield.WHITE);
+        Drawable logo = new JavaLogoImage(tft);
+        logo.draw();
         Serial.println("Java logo drawn");
 
         while (true) {

@@ -52,8 +52,7 @@ final class TftEmulator {
             sdCard.getMethod("install").invoke(null);
             Method elapsed = clock.getMethod("elapsed");
             Field touch = gpio.getField("touch");
-            Field rotation = shield.getDeclaredField("rotation");
-            rotation.setAccessible(true);
+            Field rotation = gpio.getField("rotation");
 
             Runnable script = () -> {
                 try {
@@ -109,8 +108,7 @@ final class TftEmulator {
             sdCard.getMethod("install").invoke(null);
             Method elapsed = clock.getMethod("elapsed");
             Field touch = gpio.getField("touch");
-            Field rotation = shield.getDeclaredField("rotation");
-            rotation.setAccessible(true);
+            Field rotation = gpio.getField("rotation");
             int[] nextFrame = {0};
 
             Runnable script = () -> {
@@ -118,7 +116,7 @@ final class TftEmulator {
                     int now = (int) elapsed.invoke(null);
                     Tap current = currentTap(taps, now);
                     touch.set(null, current == null ? null : toPanel(current, rotation.getInt(null)));
-                    if ((int) shield.getMethod("width").invoke(null) > 0) {
+                    if (gpio.getField("rotationSet").getBoolean(null)) {
                         while (now >= nextFrame[0] && nextFrame[0] <= stopAtMillis) {
                             frames.add(capture(gpio, shield));
                             nextFrame[0] = nextFrame[0] + frameMillis;
@@ -154,8 +152,13 @@ final class TftEmulator {
     }
 
     private static BufferedImage capture(Class<?> gpio, Class<?> shield) throws ReflectiveOperationException {
-        int width = (int) shield.getMethod("width").invoke(null);
-        int height = (int) shield.getMethod("height").invoke(null);
+        int rotation = gpio.getField("rotation").getInt(null);
+        boolean landscape = rotation == (int) shield.getField("LANDSCAPE").get(null)
+                || rotation == (int) shield.getField("LANDSCAPE_FLIPPED").get(null);
+        int nativeWidth = (int) shield.getField("NATIVE_WIDTH").get(null);
+        int nativeHeight = (int) shield.getField("NATIVE_HEIGHT").get(null);
+        int width = landscape ? nativeHeight : nativeWidth;
+        int height = landscape ? nativeWidth : nativeHeight;
         int stride = gpio.getField("STRIDE").getInt(null);
         int[] framebuffer = (int[]) gpio.getField("FRAMEBUFFER").get(null);
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);

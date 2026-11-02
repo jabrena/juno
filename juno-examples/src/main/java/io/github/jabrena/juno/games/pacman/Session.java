@@ -191,7 +191,7 @@ final class Session {
 
     // ---- Pac-Man ----
 
-    static void movePac(byte[] tiles, int[] ghosts) {
+    static void movePac(TftTouchShield tft, byte[] tiles, int[] ghosts) {
         int speed = Math.min(16 + level, 21);
         if (frightTimer > 0) {
             speed = speed + 2;
@@ -199,18 +199,18 @@ final class Session {
         pacAcc = pacAcc + speed;
         while (pacAcc >= 16) {
             pacAcc = pacAcc - 16;
-            stepPac(tiles, ghosts);
+            stepPac(tft, tiles, ghosts);
         }
     }
 
-    private static void stepPac(byte[] tiles, int[] ghosts) {
+    private static void stepPac(TftTouchShield tft, byte[] tiles, int[] ghosts) {
         if (pacNext == ((pacDir + 2) & 3)) {
             pacDir = pacNext;
         }
         if (atTileCenter(pacX, pacY)) {
             int column = Math.floorDiv(pacX, Maze.TILE);
             int row = Math.floorDiv(pacY, Maze.TILE);
-            eat(tiles, ghosts, column, row);
+            eat(tft, tiles, ghosts, column, row);
             if (!blockedForPac(tiles, column + dx(pacNext), row + dy(pacNext))) {
                 pacDir = pacNext;
             }
@@ -223,7 +223,7 @@ final class Session {
         pacSteps = pacSteps + 1;
     }
 
-    private static void eat(byte[] tiles, int[] ghosts, int column, int row) {
+    static void eat(TftTouchShield tft, byte[] tiles, int[] ghosts, int column, int row) {
         int tile = Maze.tileAt(tiles, column, row);
         if (tile != Maze.DOT && tile != Maze.ENERGIZER) {
             return;
@@ -232,20 +232,20 @@ final class Session {
         dotsEaten = dotsEaten + 1;
         sinceLastDot = 0;
         if (tile == Maze.ENERGIZER) {
-            addScore(50);
+            addScore(tft, 50);
             frighten(ghosts);
         } else {
-            addScore(10);
+            addScore(tft, 10);
         }
-        Hud.drawScore();
+        Hud.drawScore(tft);
     }
 
-    static void addScore(int points) {
+    static void addScore(TftTouchShield tft, int points) {
         score = score + points;
         if (score >= nextExtraLife) {
             nextExtraLife = nextExtraLife + EXTRA_LIFE_SCORE;
             lives = lives + 1;
-            Hud.drawFooter();
+            Hud.drawFooter(tft);
         }
     }
 
@@ -255,7 +255,7 @@ final class Session {
     }
 
     /** Returns -1 when a ghost catches Pac-Man, otherwise the number of ghosts eaten this frame. */
-    static int checkCollisions(byte[] tiles, int[] ghosts) {
+    static int checkCollisions(TftTouchShield tft, byte[] tiles, int[] ghosts) {
         int eaten = 0;
         for (int g = 0; g < GHOSTS; g++) {
             int base = g * G_STRIDE;
@@ -268,28 +268,28 @@ final class Session {
             if (ghosts[base + G_FRIGHTENED] == 0) {
                 return -1;
             }
-            eaten = eaten + eatGhost(tiles, ghosts, base);
+            eaten = eaten + eatGhost(tft, tiles, ghosts, base);
         }
         return eaten;
     }
 
-    private static int eatGhost(byte[] tiles, int[] ghosts, int base) {
+    private static int eatGhost(TftTouchShield tft, byte[] tiles, int[] ghosts, int base) {
         ghostsEatenInFright = ghostsEatenInFright + 1;
         int points = 100 << ghostsEatenInFright;
-        addScore(points);
-        Hud.drawHeader();
+        addScore(tft, points);
+        Hud.drawHeader(tft);
         ghosts[base + G_STATE] = EYES;
         ghosts[base + G_FRIGHTENED] = 0;
         // Show the points where the ghost was, for a moment.
         ghostsVisible = false;
         pacVisible = false;
-        SceneRenderer.redrawActors(tiles, ghosts, false);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, SceneRenderer.SPACE);
-        TftTouchShield.setCursor(Maze.MAZE_X + ghosts[base + G_X] - 9, Maze.MAZE_Y + ghosts[base + G_Y] - 3);
-        TftTouchShield.print(points);
+        SceneRenderer.redrawActors(tft, tiles, ghosts, false);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.CYAN, SceneRenderer.SPACE);
+        tft.setCursor(Maze.MAZE_X + ghosts[base + G_X] - 9, Maze.MAZE_Y + ghosts[base + G_Y] - 3);
+        tft.print(points);
         Delay.millis(600);
-        SceneRenderer.redrawArea(tiles, ghosts, ghosts[base + G_X] - 10, ghosts[base + G_Y] - 4, 21, 9);
+        SceneRenderer.redrawArea(tft, tiles, ghosts, ghosts[base + G_X] - 10, ghosts[base + G_Y] - 4, 21, 9);
         ghostsVisible = true;
         pacVisible = true;
         return 1;

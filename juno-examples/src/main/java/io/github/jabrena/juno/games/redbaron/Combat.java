@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.redbaron;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.redbaron.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_HP;
 import static io.github.jabrena.juno.games.redbaron.Entities.E_STRIDE;
@@ -53,7 +55,7 @@ final class Combat {
         }
     }
 
-    static void resolveBullets(int[] ents) {
+    static void resolveBullets(TftTouchShield tft, int[] ents) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             if (ents[b + E_TYPE] != T_BULLET) {
@@ -62,7 +64,7 @@ final class Combat {
             int target = targetHitBy(ents, ents[b + E_X], ents[b + E_Y], ents[b + E_Z]);
             if (target >= 0) {
                 ents[b + E_TYPE] = T_NONE;
-                hit(ents, target);
+                hit(tft, ents, target);
             }
         }
     }
@@ -91,7 +93,7 @@ final class Combat {
         return -1;
     }
 
-    static void hit(int[] ents, int slot) {
+    static void hit(TftTouchShield tft, int[] ents, int slot) {
         int b = slot * E_STRIDE;
         int type = ents[b + E_TYPE];
         if (type == T_PLANE) {
@@ -100,18 +102,18 @@ final class Combat {
             ents[b + E_VY] = -12;
             ents[b + E_VZ] = FLIGHT_SPEED;
             DogfightRound.kills = DogfightRound.kills + 1;
-            Session.addScore(Session.PLANE_POINTS);
+            Session.addScore(tft, Session.PLANE_POINTS);
         } else if (type == T_BLIMP) {
             ents[b + E_HP] = ents[b + E_HP] - 1;
             ents[b + E_TIMER] = 4;
             if (ents[b + E_HP] <= 0) {
                 Entities.debris(ents, slot, 140);
-                Session.addScore(Session.BLIMP_POINTS);
+                Session.addScore(tft, Session.BLIMP_POINTS);
             }
         } else if (type == T_HANGAR || type == T_FLAK) {
             GroundAttackRound.targetsHit = GroundAttackRound.targetsHit + 1;
             Entities.debris(ents, slot, 70);
-            Session.addScore(type == T_FLAK ? Session.FLAK_POINTS : Session.HANGAR_POINTS);
+            Session.addScore(tft, type == T_FLAK ? Session.FLAK_POINTS : Session.HANGAR_POINTS);
         }
     }
 }

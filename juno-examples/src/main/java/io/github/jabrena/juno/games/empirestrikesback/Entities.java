@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 /**
  * Everything in the world, packed as {@value #ENTITIES} records of {@value #E_STRIDE} ints: probe
  * droids, walkers, asteroids, TIE fighters, fireballs, debris and the lasers in flight. Each frame
@@ -50,7 +52,7 @@ final class Entities {
     }
 
     /** Moves every entity {@code speed} units nearer, and lets each act. */
-    static void move(int[] ents, int speed) {
+    static void move(TftTouchShield tft, int[] ents, int speed) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             int type = ents[b + E_TYPE];
@@ -79,7 +81,7 @@ final class Entities {
                     ents[b + E_TYPE] = T_NONE;
                     int reach = type == T_FIREBALL ? FIREBALL_REACH : ents[b + E_AUX];
                     if (Math.abs(ents[b + E_X] - Camera.camX) < reach && Math.abs(ents[b + E_Y] - Camera.camY) < reach) {
-                        Session.shieldHit();
+                        Session.shieldHit(tft);
                     }
                 }
             } else if (type == T_DEBRIS) {

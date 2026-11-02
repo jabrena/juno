@@ -82,53 +82,54 @@ public final class Battleship {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] myFleet = new byte[CELLS];
         byte[] enemyFleet = new byte[CELLS];
         byte[] myShots = new byte[CELLS];
         byte[] enemyShots = new byte[CELLS];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover();
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.chooseCommander();
-            newGame(myFleet, enemyFleet, myShots, enemyShots);
-            playGame(myFleet, enemyFleet, myShots, enemyShots);
+            Controls.chooseCommander(tft);
+            newGame(tft, myFleet, enemyFleet, myShots, enemyShots);
+            playGame(tft, myFleet, enemyFleet, myShots, enemyShots);
             Delay.millis(3000);
         }
     }
 
-    private static void playGame(byte[] myFleet, byte[] enemyFleet, byte[] myShots, byte[] enemyShots) {
+    private static void playGame(TftTouchShield tft, byte[] myFleet, byte[] enemyFleet, byte[] myShots, byte[] enemyShots) {
         while (!gameOver) {
             if (Controls.autopilot) {
-                playerShot(chooseTarget(myShots), enemyFleet, myShots);
+                playerShot(tft, chooseTarget(myShots), enemyFleet, myShots);
                 Delay.millis(450);
                 if (!gameOver) {
-                    computerShot(myFleet, enemyShots);
+                    computerShot(tft, myFleet, enemyShots);
                     Delay.millis(450);
                 }
                 continue;
             }
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int x = TftTouchShield.touchX();
-            int y = TftTouchShield.touchY();
-            waitForRelease();
+            int x = tft.touchX();
+            int y = tft.touchY();
+            waitForRelease(tft);
 
             if (y < HEADER_HEIGHT) {
                 Controls.autopilot = true;
-                showStatus("CPU commander", TftTouchShield.CYAN);
+                showStatus(tft, "CPU commander", TftTouchShield.CYAN);
                 continue;
             }
 
             if (x >= NEW_X && y >= NEW_Y) {
-                newGame(myFleet, enemyFleet, myShots, enemyShots);
+                newGame(tft, myFleet, enemyFleet, myShots, enemyShots);
                 continue;
             }
             if (gameOver || x < GRID_X || y < GRID_Y || x >= GRID_X + SIZE * CELL || y >= GRID_Y + SIZE * CELL) {
@@ -138,18 +139,18 @@ public final class Battleship {
             if (myShots[cell] != UNKNOWN) {
                 continue;
             }
-            playerShot(cell, enemyFleet, myShots);
+            playerShot(tft, cell, enemyFleet, myShots);
             if (gameOver) {
                 continue;
             }
             Delay.millis(500);
-            computerShot(myFleet, enemyShots);
+            computerShot(tft, myFleet, enemyShots);
         }
     }
 
     // ---- Game flow ----
 
-    static void newGame(byte[] myFleet, byte[] enemyFleet, byte[] myShots, byte[] enemyShots) {
+    static void newGame(TftTouchShield tft, byte[] myFleet, byte[] enemyFleet, byte[] myShots, byte[] enemyShots) {
         if (!seeded) {
             Random.seed(CLOCK.micros());
             seeded = true;
@@ -162,66 +163,66 @@ public final class Battleship {
         }
         gameOver = false;
 
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+        tft.fillScreen(TftTouchShield.BLACK);
         for (int i = 0; i < CELLS; i++) {
-            drawEnemyCell(i, UNKNOWN);
-            drawMyCell(i, myFleet[i], UNKNOWN);
+            drawEnemyCell(tft, i, UNKNOWN);
+            drawMyCell(tft, i, myFleet[i], UNKNOWN);
         }
-        TftTouchShield.fillRect(NEW_X, NEW_Y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(NEW_X + 12, NEW_Y + 7);
-        TftTouchShield.print("NEW");
-        drawShipsLeft(myFleet, enemyFleet, myShots, enemyShots);
-        showStatus("Fire at will!", TftTouchShield.WHITE);
+        tft.fillRect(NEW_X, NEW_Y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.GRAY);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+        tft.setCursor(NEW_X + 12, NEW_Y + 7);
+        tft.print("NEW");
+        drawShipsLeft(tft, myFleet, enemyFleet, myShots, enemyShots);
+        showStatus(tft, "Fire at will!", TftTouchShield.WHITE);
     }
 
-    static void playerShot(int cell, byte[] enemyFleet, byte[] myShots) {
+    static void playerShot(TftTouchShield tft, int cell, byte[] enemyFleet, byte[] myShots) {
         int ship = enemyFleet[cell];
         if (ship == 0) {
             myShots[cell] = MISS;
-            drawEnemyCell(cell, MISS);
-            showStatus("Miss", TftTouchShield.GRAY);
+            drawEnemyCell(tft, cell, MISS);
+            showStatus(tft, "Miss", TftTouchShield.GRAY);
             return;
         }
         myShots[cell] = HIT;
-        drawEnemyCell(cell, HIT);
+        drawEnemyCell(tft, cell, HIT);
         if (!isSunk(enemyFleet, myShots, ship)) {
-            showStatus("Hit!", TftTouchShield.RED);
+            showStatus(tft, "Hit!", TftTouchShield.RED);
             return;
         }
         markSunk(enemyFleet, myShots, ship);
         for (int i = 0; i < CELLS; i++) {
             if (enemyFleet[i] == ship) {
-                drawEnemyCell(i, SUNK);
+                drawEnemyCell(tft, i, SUNK);
             }
         }
-        showStatus2("You sank ", shipName(ship), TftTouchShield.YELLOW);
-        drawShipsLeftCounts(enemyFleet, myShots, false);
+        showStatus2(tft, "You sank ", shipName(ship), TftTouchShield.YELLOW);
+        drawShipsLeftCounts(tft, enemyFleet, myShots, false);
         if (fleetDestroyed(enemyFleet, myShots)) {
             gameOver = true;
-            showStatus("You win!", TftTouchShield.GREEN);
+            showStatus(tft, "You win!", TftTouchShield.GREEN);
         }
     }
 
-    static void computerShot(byte[] myFleet, byte[] enemyShots) {
+    static void computerShot(TftTouchShield tft, byte[] myFleet, byte[] enemyShots) {
         int cell = chooseTarget(enemyShots);
         int ship = myFleet[cell];
         if (ship == 0) {
             enemyShots[cell] = MISS;
-            drawMyCell(cell, 0, MISS);
+            drawMyCell(tft, cell, 0, MISS);
         } else {
             enemyShots[cell] = HIT;
-            drawMyCell(cell, ship, HIT);
+            drawMyCell(tft, cell, ship, HIT);
             if (isSunk(myFleet, enemyShots, ship)) {
                 markSunk(myFleet, enemyShots, ship);
-                showStatus2("CPU sank ", shipName(ship), TftTouchShield.RED);
+                showStatus2(tft, "CPU sank ", shipName(ship), TftTouchShield.RED);
                 if (fleetDestroyed(myFleet, enemyShots)) {
                     gameOver = true;
-                    showStatus("Computer wins", TftTouchShield.RED);
+                    showStatus(tft, "Computer wins", TftTouchShield.RED);
                 }
             }
         }
-        drawShipsLeftCounts(myFleet, enemyShots, true);
+        drawShipsLeftCounts(tft, myFleet, enemyShots, true);
     }
 }

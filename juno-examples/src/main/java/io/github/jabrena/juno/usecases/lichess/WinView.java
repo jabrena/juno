@@ -20,11 +20,14 @@ final class WinView implements View {
     private final Clock clock;
     private int enteredAt;
 
-    WinView(Navigator navigator) {
-        this(navigator, ArduinoUno.getClock());
+    private final TftTouchShield tft;
+
+    WinView(TftTouchShield tft, Navigator navigator) {
+        this(tft, navigator, ArduinoUno.getClock());
     }
 
-    WinView(Navigator navigator, Clock clock) {
+    WinView(TftTouchShield tft, Navigator navigator, Clock clock) {
+        this.tft = tft;
         this.navigator = navigator;
         this.clock = clock;
     }
@@ -32,7 +35,7 @@ final class WinView implements View {
     @Override
     public void enter() {
         enteredAt = clock.millis();
-        draw();
+        draw(tft);
     }
 
     @Override
@@ -47,31 +50,31 @@ final class WinView implements View {
         // Keep the celebration visible for the full two seconds.
     }
 
-    private void draw() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, WIDTH, 36, HEADER_BACKGROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(8, 2);
-        TftTouchShield.print("LICHESS");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(8, 17);
-        TftTouchShield.print("DAILY PUZZLE");
+    private void draw(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, WIDTH, 36, HEADER_BACKGROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.setCursor(8, 2);
+        tft.print("LICHESS");
+        tft.setTextSize(2);
+        tft.setCursor(8, 17);
+        tft.print("DAILY PUZZLE");
 
-        TftTouchShield.fillRect(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.drawRect(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.GREEN, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(centeredX("YOU WIN!", 3), 94);
-        TftTouchShield.print("YOU WIN!");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(centeredX("PUZZLE SOLVED", 2), 140);
-        TftTouchShield.print("PUZZLE SOLVED");
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(centeredX("RETURNING TO MENU", 1), 180);
-        TftTouchShield.print("RETURNING TO MENU");
+        tft.fillRect(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, TftTouchShield.NAVY);
+        tft.drawRect(PANEL_X, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.GREEN, TftTouchShield.NAVY);
+        tft.setCursor(centeredX("YOU WIN!", 3), 94);
+        tft.print("YOU WIN!");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(centeredX("PUZZLE SOLVED", 2), 140);
+        tft.print("PUZZLE SOLVED");
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.NAVY);
+        tft.setCursor(centeredX("RETURNING TO MENU", 1), 180);
+        tft.print("RETURNING TO MENU");
     }
 
     private static int centeredX(String text, int size) {

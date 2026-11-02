@@ -42,46 +42,47 @@ public final class EmailHelloWorldTFT {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        drawFrame();
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
+        drawFrame(tft);
 
-        showStatus("Connecting WiFi", TftTouchShield.YELLOW);
+        showStatus(tft, "Connecting WiFi", TftTouchShield.YELLOW);
         connectWifi();
-        showPrompt();
-        waitForTap();
-        sendAndVerify();
+        showPrompt(tft);
+        waitForTap(tft);
+        sendAndVerify(tft);
 
         while (true) {
             Delay.seconds(1);
         }
     }
 
-    private static void drawFrame() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, TftTouchShield.width(), HEADER_HEIGHT, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(MARGIN, 12);
-        TftTouchShield.print("Email Hello World");
+    private static void drawFrame(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, tft.width(), HEADER_HEIGHT, TftTouchShield.NAVY);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(MARGIN, 12);
+        tft.print("Email Hello World");
     }
 
-    private static void showPrompt() {
-        clearBody();
-        showStatus("Ready to send", TftTouchShield.GREEN);
-        showLine(HINT_Y, "Tap screen to send", TftTouchShield.CYAN);
+    private static void showPrompt(TftTouchShield tft) {
+        clearBody(tft);
+        showStatus(tft, "Ready to send", TftTouchShield.GREEN);
+        showLine(tft, HINT_Y, "Tap screen to send", TftTouchShield.CYAN);
     }
 
-    private static void sendAndVerify() {
-        clearBody();
-        showStatus("Checking inbox...", TftTouchShield.YELLOW);
+    private static void sendAndVerify(TftTouchShield tft) {
+        clearBody(tft);
+        showStatus(tft, "Checking inbox...", TftTouchShield.YELLOW);
         int before = pollMessageCount();
-        showValue(BEFORE_Y, "Before: ", before, TftTouchShield.WHITE);
+        showValue(tft, BEFORE_Y, "Before: ", before, TftTouchShield.WHITE);
         Serial.print("Inbox count before send: ");
         Serial.println(before);
 
-        showLine(SEND_Y, "Sending...", TftTouchShield.YELLOW);
+        showLine(tft, SEND_Y, "Sending...", TftTouchShield.YELLOW);
         int sent = Smtp.sendTls(
                 System.getenv("SMTP_HOST"), SMTP_PORT,
                 System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
@@ -91,22 +92,22 @@ public final class EmailHelloWorldTFT {
         Serial.println(sent);
 
         if (sent != 0) {
-            showValue(SEND_Y, "Send error: ", sent, TftTouchShield.RED);
-            showStatus("Delivery failed", TftTouchShield.RED);
+            showValue(tft, SEND_Y, "Send error: ", sent, TftTouchShield.RED);
+            showStatus(tft, "Delivery failed", TftTouchShield.RED);
             return;
         }
 
-        showLine(SEND_Y, "Sent, verifying...", TftTouchShield.CYAN);
-        int after = awaitDelivery(before);
-        showValue(AFTER_Y, "After: ", after, TftTouchShield.WHITE);
+        showLine(tft, SEND_Y, "Sent, verifying...", TftTouchShield.CYAN);
+        int after = awaitDelivery(tft, before);
+        showValue(tft, AFTER_Y, "After: ", after, TftTouchShield.WHITE);
         if (after > before) {
-            showStatus("Delivery confirmed", TftTouchShield.GREEN);
+            showStatus(tft, "Delivery confirmed", TftTouchShield.GREEN);
         } else {
-            showStatus("Delivery not seen", TftTouchShield.ORANGE);
+            showStatus(tft, "Delivery not seen", TftTouchShield.ORANGE);
         }
     }
 
-    private static int awaitDelivery(int before) {
+    private static int awaitDelivery(TftTouchShield tft, int before) {
         int after = before;
         for (int attempt = 0; attempt < DELIVERY_POLL_ATTEMPTS; attempt++) {
             Delay.seconds(DELIVERY_POLL_DELAY_SECONDS);
@@ -115,7 +116,7 @@ public final class EmailHelloWorldTFT {
                     System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
             Serial.print("Inbox count after send: ");
             Serial.println(after);
-            showValue(AFTER_Y, "Checking: ", after, TftTouchShield.WHITE);
+            showValue(tft, AFTER_Y, "Checking: ", after, TftTouchShield.WHITE);
             if (after > before) {
                 Serial.println("Delivery confirmed");
                 return after;
@@ -148,42 +149,42 @@ public final class EmailHelloWorldTFT {
         Serial.println("WiFi connected");
     }
 
-    private static void waitForTap() {
-        while (!TftTouchShield.readTouch()) {
+    private static void waitForTap(TftTouchShield tft) {
+        while (!tft.readTouch()) {
             Delay.millis(TOUCH_POLL_MILLIS);
         }
-        while (TftTouchShield.readTouch()) {
+        while (tft.readTouch()) {
             Delay.millis(TOUCH_POLL_MILLIS);
         }
     }
 
-    private static void clearBody() {
-        TftTouchShield.fillRect(0, HEADER_HEIGHT, TftTouchShield.width(),
-                TftTouchShield.height() - HEADER_HEIGHT, TftTouchShield.BLACK);
+    private static void clearBody(TftTouchShield tft) {
+        tft.fillRect(0, HEADER_HEIGHT, tft.width(),
+                tft.height() - HEADER_HEIGHT, TftTouchShield.BLACK);
     }
 
-    private static void showStatus(String text, int color) {
-        TftTouchShield.fillRect(0, STATUS_Y, TftTouchShield.width(), 28, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, STATUS_Y);
-        TftTouchShield.print(text);
+    private static void showStatus(TftTouchShield tft, String text, int color) {
+        tft.fillRect(0, STATUS_Y, tft.width(), 28, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(color, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, STATUS_Y);
+        tft.print(text);
     }
 
-    private static void showLine(int y, String text, int color) {
-        TftTouchShield.fillRect(0, y, TftTouchShield.width(), 22, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, y);
-        TftTouchShield.print(text);
+    private static void showLine(TftTouchShield tft, int y, String text, int color) {
+        tft.fillRect(0, y, tft.width(), 22, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(color, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, y);
+        tft.print(text);
     }
 
-    private static void showValue(int y, String label, int value, int color) {
-        TftTouchShield.fillRect(0, y, TftTouchShield.width(), 22, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, y);
-        TftTouchShield.print(label);
-        TftTouchShield.print(value);
+    private static void showValue(TftTouchShield tft, int y, String label, int value, int color) {
+        tft.fillRect(0, y, tft.width(), 22, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(color, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, y);
+        tft.print(label);
+        tft.print(value);
     }
 }

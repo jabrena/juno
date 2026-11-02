@@ -37,93 +37,93 @@ public final class MailboxSecurityView {
     }
 
     /** Draws the screen with an empty new key. */
-    void show() {
+    void show(TftTouchShield tft) {
         newKeyLength = 0;
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
-        MailboxView.drawHeader("SECURITY");
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
-        TftTouchShield.setCursor(4, 4);
-        TftTouchShield.print("< BACK");
+        tft.fillScreen(TftTouchShield.WHITE);
+        MailboxView.drawHeader(tft, "SECURITY");
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
+        tft.setCursor(4, 4);
+        tft.print("< BACK");
 
-        TftTouchShield.setTextSize(TEXT_SIZE);
-        TftTouchShield.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(LABEL_X, CURRENT_KEY_Y);
-        TftTouchShield.print("KEY ");
-        TftTouchShield.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
-        TftTouchShield.print(currentKey, security.copyKey(currentKey));
-        drawNewKey();
-        drawMessage("TYPE A NEW KEY, THEN OK", MailboxView.TEXT);
+        tft.setTextSize(TEXT_SIZE);
+        tft.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
+        tft.setCursor(LABEL_X, CURRENT_KEY_Y);
+        tft.print("KEY ");
+        tft.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
+        tft.print(currentKey, security.copyKey(currentKey));
+        drawNewKey(tft);
+        drawMessage(tft, "TYPE A NEW KEY, THEN OK", MailboxView.TEXT);
         for (int key = 0; key < KEY_LABELS.length; key++) {
-            drawKey(key);
+            drawKey(tft, key);
         }
     }
 
     /** Handles a tap; true when the screen is done, after a tap on the header or a saved key. */
-    boolean touch(int x, int y) {
+    boolean touch(TftTouchShield tft, int x, int y) {
         if (y < MailboxView.HEADER_HEIGHT) {
             return true;
         }
         int key = keyAt(x, y);
         if (key == OK_KEY) {
-            return save();
+            return save(tft);
         }
         if (key == DELETE_KEY) {
             if (newKeyLength > 0) {
                 newKeyLength = newKeyLength - 1;
-                drawNewKey();
+                drawNewKey(tft);
             }
         } else if (key >= 0 && newKeyLength < newKey.length) {
             newKey[newKeyLength] = (byte) (key == ZERO_KEY ? '0' : '1' + key);
             newKeyLength = newKeyLength + 1;
-            drawNewKey();
+            drawNewKey(tft);
         }
         return false;
     }
 
-    private boolean save() {
+    private boolean save(TftTouchShield tft) {
         if (newKeyLength < MailboxSecurity.MIN_KEY_BYTES) {
-            drawMessage("USE AT LEAST 6 DIGITS", TftTouchShield.RED);
+            drawMessage(tft, "USE AT LEAST 6 DIGITS", TftTouchShield.RED);
             return false;
         }
         if (!security.change(newKey, newKeyLength)) {
-            drawMessage("COULD NOT SAVE TO THE SD CARD", TftTouchShield.RED);
+            drawMessage(tft, "COULD NOT SAVE TO THE SD CARD", TftTouchShield.RED);
             return false;
         }
         Serial.println("Mailbox API key changed");
         return true;
     }
 
-    private void drawKey(int key) {
+    private void drawKey(TftTouchShield tft, int key) {
         int x = KEYPAD_LEFT + key % 3 * (KEY_WIDTH + KEY_GAP);
         int y = KEYPAD_TOP + key / 3 * (KEY_HEIGHT + KEY_GAP);
         int color = key == OK_KEY ? MailboxView.DARK_GREEN : key == DELETE_KEY ? TftTouchShield.RED : MailboxView.BLUE;
-        TftTouchShield.fillRect(x, y, KEY_WIDTH, KEY_HEIGHT, color);
+        tft.fillRect(x, y, KEY_WIDTH, KEY_HEIGHT, color);
         String label = KEY_LABELS[key];
-        TftTouchShield.setTextSize(TEXT_SIZE);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (KEY_WIDTH - label.length() * CHAR_WIDTH) / 2, y + (KEY_HEIGHT - ROW_HEIGHT) / 2);
-        TftTouchShield.print(label);
+        tft.setTextSize(TEXT_SIZE);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(x + (KEY_WIDTH - label.length() * CHAR_WIDTH) / 2, y + (KEY_HEIGHT - ROW_HEIGHT) / 2);
+        tft.print(label);
     }
 
-    private void drawNewKey() {
-        TftTouchShield.fillRect(0, NEW_KEY_Y, MailboxView.SCREEN_WIDTH, ROW_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(TEXT_SIZE);
-        TftTouchShield.setCursor(LABEL_X, NEW_KEY_Y);
-        TftTouchShield.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
-        TftTouchShield.print("NEW ");
-        TftTouchShield.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
-        TftTouchShield.print(newKey, newKeyLength);
-        TftTouchShield.print("_");
+    private void drawNewKey(TftTouchShield tft) {
+        tft.fillRect(0, NEW_KEY_Y, MailboxView.SCREEN_WIDTH, ROW_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(TEXT_SIZE);
+        tft.setCursor(LABEL_X, NEW_KEY_Y);
+        tft.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
+        tft.print("NEW ");
+        tft.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
+        tft.print(newKey, newKeyLength);
+        tft.print("_");
     }
 
-    private void drawMessage(String message, int color) {
-        TftTouchShield.fillRect(0, MESSAGE_Y, MailboxView.SCREEN_WIDTH, TftTouchShield.CHAR_HEIGHT,
+    private void drawMessage(TftTouchShield tft, String message, int color) {
+        tft.fillRect(0, MESSAGE_Y, MailboxView.SCREEN_WIDTH, TftTouchShield.CHAR_HEIGHT,
                 TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(LABEL_X, MESSAGE_Y);
-        TftTouchShield.setTextColor(color, TftTouchShield.WHITE);
-        TftTouchShield.print(message);
+        tft.setTextSize(1);
+        tft.setCursor(LABEL_X, MESSAGE_Y);
+        tft.setTextColor(color, TftTouchShield.WHITE);
+        tft.print(message);
     }
 
     /** The keypad key under the tap, or -1 between keys. */

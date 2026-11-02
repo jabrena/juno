@@ -89,17 +89,18 @@ compiler intrinsic that streams pixels from the runtime instead of costing one `
 API, wiring and touch calibration are on the [Arduino Shields](../arduino-shields) page.
 
 ```java
-TftTouchShield.begin();
-TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-TftTouchShield.fillScreen(TftTouchShield.BLACK);
-TftTouchShield.setCursor(10, 10);
-TftTouchShield.setTextSize(2);
-TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-TftTouchShield.print("Hello, Juno");
+TftTouchShield tft = new TftTouchShield();
+tft.begin();
+tft.setRotation(TftTouchShield.LANDSCAPE);
+tft.fillScreen(TftTouchShield.BLACK);
+tft.setCursor(10, 10);
+tft.setTextSize(2);
+tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+tft.print("Hello, Juno");
 
 while (true) {
-    if (TftTouchShield.readTouch()) {
-        TftTouchShield.fillCircle(TftTouchShield.touchX(), TftTouchShield.touchY(), 3, TftTouchShield.WHITE);
+    if (tft.readTouch()) {
+        tft.fillCircle(tft.touchX(), tft.touchY(), 3, TftTouchShield.WHITE);
     }
 }
 ```

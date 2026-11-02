@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.util.mvc;
 
 import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
-import io.github.jabrena.juno.hardware.device.tft.TftPins;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.FrameClock;
@@ -36,15 +35,16 @@ class ViewRouterTest {
     private final List<String> log = new ArrayList<>();
     private final Deque<Consumer<ViewRouter>> script = new ArrayDeque<>();
     private final FrameClock clock = new FrameClock();
+    private TftTouchShield tft;
     private ViewRouter router;
 
     @BeforeEach
     void startWithAnIdleTouchPanel() {
         Wire.resetBoard();
         ParallelBus.reset();
-        TftPins.use(pins);
-        ImmediateDelay.run(TftTouchShield::begin);
-        router = new ViewRouter(10, clock);
+        tft = new TftTouchShield(pins);
+        ImmediateDelay.run(tft::begin);
+        router = new ViewRouter(tft, 10, clock);
         for (int id = 0; id < 4; id++) {
             router.register(id, new Recorder(id));
         }
