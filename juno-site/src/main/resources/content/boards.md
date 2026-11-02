@@ -48,7 +48,7 @@ by memory.
 | Bluetooth LE (LEGO Powered Up) | ✓ | — | ✓ | ✓ | — | — |
 | USB HID mouse | ✓ | ✓ | — | ✓ | — | — |
 | Onboard LED matrix | — | — | ✓ | ✓ | — | — |
-| `@Watchdog` | ✓ | — | — | ✓ | ✓ | ✓ |
+| `@Watchdog` | ✓ | ✓ | — | ✓ | ✓ | ✓ |
 | Cryptographic `UUID.randomUUID()` | ✓ | — | ✓ | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | ✓ | — | — | — | — |
 

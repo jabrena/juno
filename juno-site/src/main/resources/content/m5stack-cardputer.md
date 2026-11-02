@@ -41,6 +41,7 @@ point for its peripherals.
 | Display | ✓ | 240 × 135 RGB565 through `M5StackCardputer.getDisplay()`. | [`M5CardputerDisplay`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java) |
 | Keyboard | ✓ | `M5StackCardputer.getKeyboard()`, polled without allocation. | [`M5CardputerKeyboard`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java) |
 | Speaker | ✓ | `M5StackCardputer.getAudio()`: `tone`, `setVolume`, `stop`. | [`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java) |
+| `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
 | Battery | ✓ | `M5StackCardputer.getBattery()`: estimated level and voltage. | [`M5CardputerBatteryLevel`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java) |
 | USB HID mouse | ✓ | `M5StackCardputer.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) |
 

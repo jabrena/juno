@@ -28,7 +28,7 @@ language itself, see the [Java subset](../java-subset) page.
 | LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – |
 | Built-in display, keyboard, speaker, battery | – | – | – | – | – | ✓ |
 | Hardware random numbers | Weak | ✓ | ✓ | ✓ | ✓ | Weak |
-| Watchdog | ✓ | ✓ | ✓ | – | ✓ | – |
+| Watchdog | ✓ | ✓ | ✓ | – | ✓ | ✓ |
 | SD card | Shield | Shield | Shield | Shield | Carrier | Built-in |
 | Grove sockets | Shield | Shield | Shield | Shield | Carrier | – |
 | 9 Axis Motion Shield | Shield | Shield | Shield | Shield | – | – |

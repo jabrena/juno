@@ -41,6 +41,7 @@ STM32U585's complete flash and SRAM.
 | Double-precision `java.lang.Math` | ✓ | | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
+| `@Watchdog` | – | Not available: the Zephyr firmware does not enable its watchdog subsystem, so the compiler rejects `@Watchdog` for this board. | |
 | `UUID.randomUUID()` | ✓ | Zephyr's cryptographic random service on the STM32U585's TRNG; no Linux, Wi-Fi or bridge involved. | |
 | Onboard LED matrix | ✓ | 13 × 8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
 | `Wifi`, `Udp`, SNTP | ✓ | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
