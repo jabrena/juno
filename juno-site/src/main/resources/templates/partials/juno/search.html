@@ -1,0 +1,9 @@
+{! Site search box. Rendered twice by topbar.html: the desktop copy sits in the top bar before the GitHub icon, the
+   mobile copy opens the navigation panel. Both share one index, loaded on first focus; the CSS shows one copy per width. !}
+<form class="juno-search juno-search-{variant}" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-{variant}" aria-autocomplete="list"
+         data-index-src="{site.url('search-index.js')}">
+  <ul class="juno-search-results" id="juno-search-results-{variant}" role="listbox" hidden></ul>
+</form>
