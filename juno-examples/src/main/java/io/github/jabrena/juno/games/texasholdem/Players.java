@@ -36,7 +36,7 @@ final class Players {
     private Players() {
     }
 
-    static void humanTurn(byte[] cards, int[] seats, int[] work) {
+    static void humanTurn(TftTouchShield tft, byte[] cards, int[] seats, int[] work) {
         int toCall = currentBet - seats[BET];
         int stack = seats[BET] + seats[CHIPS];
         int minimum = currentBet + minRaise;
@@ -46,13 +46,13 @@ final class Players {
         boolean canRaise = seats[CHIPS] > toCall && raises < MAX_RAISES;
         raiseTo = Math.min(minimum, stack);
         if (toCall > 0) {
-            showMessage("Your turn", TftTouchShield.YELLOW);
+            showMessage(tft, "Your turn", TftTouchShield.YELLOW);
         } else {
-            showMessage("Your turn: check or bet", TftTouchShield.YELLOW);
+            showMessage(tft, "Your turn: check or bet", TftTouchShield.YELLOW);
         }
-        drawActionButtons(seats, toCall, canRaise);
+        drawActionButtons(tft, seats, toCall, canRaise);
         while (true) {
-            int button = waitForButton();
+            int button = waitForButton(tft);
             if (button == 0 && toCall > 0) {
                 fold(seats, 0);
                 break;
@@ -73,11 +73,11 @@ final class Players {
                 } else {
                     raiseTo = stack;
                 }
-                drawActionButtons(seats, toCall, canRaise);
+                drawActionButtons(tft, seats, toCall, canRaise);
             }
         }
-        showMessage("", TftTouchShield.WHITE);
-        clearControls();
+        showMessage(tft, "", TftTouchShield.WHITE);
+        clearControls(tft);
     }
 
     static void computerTurn(byte[] cards, int[] seats, int[] work, int seat) {

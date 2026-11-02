@@ -22,14 +22,14 @@ public final class TftButtonWidget {
         this.color = color;
     }
 
-    public void draw() {
-        TftTouchShield.fillRect(x, y, width, height, color);
-        TftTouchShield.drawRect(x, y, width, height, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(TEXT_SIZE);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
+    public void draw(TftTouchShield tft) {
+        tft.fillRect(x, y, width, height, color);
+        tft.drawRect(x, y, width, height, TftTouchShield.WHITE);
+        tft.setTextSize(TEXT_SIZE);
+        tft.setTextColor(TftTouchShield.WHITE, color);
         int labelWidth = label.length() * TftTouchShield.CHAR_WIDTH * TEXT_SIZE;
-        TftTouchShield.setCursor(x + (width - labelWidth) / 2, y + (height - TftTouchShield.CHAR_HEIGHT * TEXT_SIZE) / 2);
-        TftTouchShield.print(label);
+        tft.setCursor(x + (width - labelWidth) / 2, y + (height - TftTouchShield.CHAR_HEIGHT * TEXT_SIZE) / 2);
+        tft.print(label);
     }
 
     /** Whether a touch at ({@code touchX}, {@code touchY}) lands on the button. */

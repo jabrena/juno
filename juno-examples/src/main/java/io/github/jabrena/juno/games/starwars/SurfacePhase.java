@@ -37,9 +37,9 @@ final class SurfacePhase {
         topsHit = 0;
     }
 
-    static void announce() {
-        Hud.showCentered("DEATH STAR SURFACE", 104, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("Shoot the tower tops", 136, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "DEATH STAR SURFACE", 104, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Shoot the tower tops", 136, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {
@@ -52,19 +52,19 @@ final class SurfacePhase {
     }
 
     /** Pays the bonus when every tower top of the wave was destroyed. */
-    static void awardAllTopsBonus() {
+    static void awardAllTopsBonus(TftTouchShield tft) {
         if (topsHit != towersTotal) {
             return;
         }
         Session.score = Session.score + Session.ALL_TOWERS_BONUS;
-        Hud.drawHeader();
-        DisplayList.clearView();
-        Hud.showCentered("ALL TOWER TOPS DESTROYED", 110, 1, SceneRenderer.TOWER_TOP);
-        Hud.showCentered("BONUS 50000", 126, 1, TftTouchShield.WHITE);
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
+        Hud.showCentered(tft, "ALL TOWER TOPS DESTROYED", 110, 1, SceneRenderer.TOWER_TOP);
+        Hud.showCentered(tft, "BONUS 50000", 126, 1, TftTouchShield.WHITE);
         Delay.millis(1500);
     }
 
-    static void spawn(int[] ents) {
+    static void spawn(TftTouchShield tft, int[] ents) {
         if (towersToSpawn == 0) {
             return;
         }
@@ -90,7 +90,7 @@ final class SurfacePhase {
         ents[b + E_FLAG] = 1;
         ents[b + E_TIMER] = Random.nextInt(10, 50);
         towersToSpawn = towersToSpawn - 1;
-        Hud.drawStatus();
+        Hud.drawStatus(tft);
     }
 
     /** The horizon and the surface's grid, streaming towards the camera. */

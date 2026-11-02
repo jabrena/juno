@@ -22,9 +22,9 @@ public final class FighterSetup {
     private FighterSetup() {
     }
 
-    public static FighterProfile choose() {
-        int name = choose(NAME);
-        return new FighterProfile(name, choose(CLASS));
+    public static FighterProfile choose(TftTouchShield tft) {
+        int name = choose(tft, NAME);
+        return new FighterProfile(name, choose(tft, CLASS));
     }
 
     public static int choiceAt(int page, int x, int y) {
@@ -35,63 +35,63 @@ public final class FighterSetup {
         return column < 0 || row < 0 ? -1 : row * 2 + column;
     }
 
-    private static int choose(int page) {
-        draw(page);
+    private static int choose(TftTouchShield tft, int page) {
+        draw(tft, page);
         while (true) {
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int choice = choiceAt(page, TftTouchShield.touchX(), TftTouchShield.touchY());
-            waitForRelease();
+            int choice = choiceAt(page, tft.touchX(), tft.touchY());
+            waitForRelease(tft);
             if (choice >= 0) {
                 return choice;
             }
         }
     }
 
-    private static void draw(int page) {
-        TftTouchShield.fillScreen(ViewList.BACKGROUND);
-        Hud.centered(page == NAME ? "CHOOSE YOUR NAME" : "CHOOSE YOUR CLASS", 15, 2, View.WALL, ViewList.BACKGROUND);
+    private static void draw(TftTouchShield tft, int page) {
+        tft.fillScreen(ViewList.BACKGROUND);
+        Hud.centered(tft, page == NAME ? "CHOOSE YOUR NAME" : "CHOOSE YOUR CLASS", 15, 2, View.WALL, ViewList.BACKGROUND);
         if (page == NAME) {
             for (int choice = 0; choice < FighterProfile.NAMES; choice++) {
-                button(choice, FighterProfile.name(choice), FighterProfile.history(choice), TftTouchShield.YELLOW);
+                button(tft, choice, FighterProfile.name(choice), FighterProfile.history(choice), TftTouchShield.YELLOW);
             }
         } else {
-            classButton(GladiatorClass.MURMILLO, "GLADIUS + SCUTUM");
-            classButton(GladiatorClass.THRAEX, "SICA + PARMULA");
-            classButton(GladiatorClass.RETIARIUS, "TRIDENT + NET");
-            classButton(GladiatorClass.SECUTOR, "GLADIUS + SCUTUM");
+            classButton(tft, GladiatorClass.MURMILLO, "GLADIUS + SCUTUM");
+            classButton(tft, GladiatorClass.THRAEX, "SICA + PARMULA");
+            classButton(tft, GladiatorClass.RETIARIUS, "TRIDENT + NET");
+            classButton(tft, GladiatorClass.SECUTOR, "GLADIUS + SCUTUM");
         }
     }
 
-    private static void classButton(int kind, String arms) {
-        button(kind, Opening.className(kind), arms, Opening.classColor(kind));
+    private static void classButton(TftTouchShield tft, int kind, String arms) {
+        button(tft, kind, Opening.className(kind), arms, Opening.classColor(kind));
     }
 
-    private static void button(int choice, String label, String detail, int color) {
+    private static void button(TftTouchShield tft, int choice, String label, String detail, int color) {
         int x = (choice & 1) == 0 ? LEFT_X : RIGHT_X;
         int y = choice < 2 ? TOP_Y : BOTTOM_Y;
-        drawButton(x, y, BUTTON_WIDTH, label, detail, color);
+        drawButton(tft, x, y, BUTTON_WIDTH, label, detail, color);
     }
 
-    private static void drawButton(int x, int y, int width, String label, String detail, int color) {
-        TftTouchShield.fillRect(x, y, width, BUTTON_HEIGHT, Hud.PANEL);
-        TftTouchShield.fillRect(x, y, 5, BUTTON_HEIGHT, color);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, Hud.PANEL);
-        TftTouchShield.setCursor(x + 12, y + 10);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
-        TftTouchShield.setCursor(x + 12, y + 39);
-        TftTouchShield.print(detail);
+    private static void drawButton(TftTouchShield tft, int x, int y, int width, String label, String detail, int color) {
+        tft.fillRect(x, y, width, BUTTON_HEIGHT, Hud.PANEL);
+        tft.fillRect(x, y, 5, BUTTON_HEIGHT, color);
+        tft.setTextSize(2);
+        tft.setTextColor(color, Hud.PANEL);
+        tft.setCursor(x + 12, y + 10);
+        tft.print(label);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
+        tft.setCursor(x + 12, y + 39);
+        tft.print(detail);
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

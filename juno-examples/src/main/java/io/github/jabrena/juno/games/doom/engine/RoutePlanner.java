@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 /**
  * Plans the CPU marine's route through any map with an exit switch, so {@link Autopilot} needs no hand-made walk.
  *
@@ -63,8 +65,8 @@ final class RoutePlanner {
     }
 
     /** Replaces the route with a walk from the start to the exit; {@code false} when the map has none. */
-    static boolean plan() {
-        return planToExit(World.startX, World.startY);
+    static boolean plan(TftTouchShield tft) {
+        return planToExit(tft, World.startX, World.startY);
     }
 
     /**
@@ -73,7 +75,7 @@ final class RoutePlanner {
      * explores most of the map, which froze the board for up to a minute. {@code false}, leaving the route as it was,
      * when the waypoint cannot be reached: the CPU then picks its route up again elsewhere.
      */
-    static boolean planFrom(float startX, float startY) {
+    static boolean planFrom(TftTouchShield tft, float startX, float startY) {
         plans = plans + 1;
         shortOfExit = false;
         if (World.exitLine < 0 || World.routeLength < 2) {
@@ -90,7 +92,7 @@ final class RoutePlanner {
         Lifts.beginPlanning();
         float goalX = keptX[from];
         float goalY = keptY[from];
-        int goalLeaf = search(startX, startY, goalX, goalY);
+        int goalLeaf = search(tft, startX, startY, goalX, goalY);
         boolean planned = goalLeaf >= 0 && straighten(startX, startY, goalLeaf, goalX, goalY)
                 && World.routeLength + kept - from - 1 <= World.MAX_ROUTE;
         Lifts.endPlanning();
@@ -110,7 +112,7 @@ final class RoutePlanner {
      * Plans a walk from the map's start to the exit; when none reaches it, the route leads as close to it as the
      * marine can walk instead ({@link #shortOfExit}).
      */
-    private static boolean planToExit(float startX, float startY) {
+    private static boolean planToExit(TftTouchShield tft, float startX, float startY) {
         plans = plans + 1;
         shortOfExit = false;
         if (World.exitLine < 0) {
@@ -125,13 +127,13 @@ final class RoutePlanner {
         // A line's front side, where its switch is used from, lies to the right of its direction.
         float goalX = World.exitX + dy / length * EXIT_STANDOFF;
         float goalY = World.exitY - dx / length * EXIT_STANDOFF;
-        int goalLeaf = search(startX, startY, goalX, goalY);
+        int goalLeaf = search(tft, startX, startY, goalX, goalY);
         boolean planned = goalLeaf >= 0 && straighten(startX, startY, goalLeaf, goalX, goalY);
         if (!planned) {
             // Walk-over exits and some one-sided exit lines are reachable only from the reverse side.
             goalX = World.exitX - dy / length * EXIT_STANDOFF;
             goalY = World.exitY + dx / length * EXIT_STANDOFF;
-            goalLeaf = search(startX, startY, goalX, goalY);
+            goalLeaf = search(tft, startX, startY, goalX, goalY);
             planned = goalLeaf >= 0 && straighten(startX, startY, goalLeaf, goalX, goalY);
         }
         if (!planned) {
@@ -214,7 +216,7 @@ final class RoutePlanner {
     }
 
     /** Dijkstra from the start's subsector; returns the goal's subsector once reached, or -1. */
-    private static int search(float startX, float startY, float goalX, float goalY) {
+    private static int search(TftTouchShield tft, float startX, float startY, float goalX, float goalY) {
         for (int leaf = 0; leaf < World.subsectors; leaf++) {
             distance[leaf] = UNSEEN;
             parent[leaf] = UNREACHED;
@@ -230,7 +232,7 @@ final class RoutePlanner {
         while (leaf >= 0 && !(leaf == goalLeaf
                 && !Player.blocked(entryX[leaf], entryY[leaf], goalX, goalY, open))) {
             settled[leaf] = 1;
-            Loading.advancePlan();
+            Loading.advancePlan(tft);
             leaveThrough(leaf);
             leaf = closest();
         }

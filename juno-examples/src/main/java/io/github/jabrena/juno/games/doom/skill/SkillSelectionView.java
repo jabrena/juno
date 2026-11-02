@@ -11,21 +11,24 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** DOOM's skill menu, after the episode: which monsters and pickups each map places, and how hard they hit. */
 public final class SkillSelectionView implements View {
+
+    private final TftTouchShield tft;
     private final Navigator navigator;
     private final DoomState model;
     private final ChoiceList list = new ChoiceList(42, 28, DoomState.SKILLS);
 
-    public SkillSelectionView(Navigator navigator, DoomState model) {
+    public SkillSelectionView(TftTouchShield tft, Navigator navigator, DoomState model) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
     }
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(Screen.BACKGROUND);
-        Screen.showCentered("CHOOSE SKILL", 8, 3, TftTouchShield.RED);
-        Screen.drawBack();
-        drawSkills();
+        tft.fillScreen(Screen.BACKGROUND);
+        Screen.showCentered(tft, "CHOOSE SKILL", 8, 3, TftTouchShield.RED);
+        Screen.drawBack(tft);
+        drawSkills(tft);
         Serial.println("Doom: skill view active");
     }
 
@@ -44,16 +47,16 @@ public final class SkillSelectionView implements View {
         int row = list.rowAt(x, y);
         if (row >= 0) {
             model.chooseSkill(row + 1);
-            drawSkills();
+            drawSkills(tft);
             Serial.print("Doom: skill selected ");
             Serial.println(row + 1);
             navigator.show(DoomViews.MAP_LOADING);
         }
     }
 
-    private void drawSkills() {
+    private void drawSkills(TftTouchShield tft) {
         for (int skill = 1; skill <= DoomState.SKILLS; skill++) {
-            list.draw(skill - 1, name(skill), detail(skill), true, model.skill() == skill);
+            list.draw(tft, skill - 1, name(skill), detail(skill), true, model.skill() == skill);
         }
     }
 

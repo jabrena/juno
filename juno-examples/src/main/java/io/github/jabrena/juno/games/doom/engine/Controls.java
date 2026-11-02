@@ -32,28 +32,28 @@ final class Controls {
     }
 
     /** Asks who walks the map, HUMAN or CPU, and waits for the answer. */
-    static void choosePilot() {
-        TftTouchShield.fillScreen(DisplayList.BACKGROUND);
-        Hud.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
+    static void choosePilot(TftTouchShield tft) {
+        tft.fillScreen(DisplayList.BACKGROUND);
+        Hud.showCentered(tft, "CHOOSE PILOT", 36, 3, TftTouchShield.RED);
         if (World.fromWad) {
-            Hud.showCentered("Who walks the episode?", 74, 1, TftTouchShield.WHITE);
+            Hud.showCentered(tft, "Who walks the episode?", 74, 1, TftTouchShield.WHITE);
         } else {
-            Hud.showCentered("Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
+            Hud.showCentered(tft, "Who walks " + Level.NAME + "?", 74, 1, TftTouchShield.WHITE);
         }
-        drawChoice(0, "HUMAN", "You walk and shoot", false);
-        drawChoice(1, "CPU", "Autopilot plays", false);
-        Hud.showCentered("Tap CPU/HUMAN in game to switch", 206, 1, Renderer.WALL_FAR);
+        drawChoice(tft, 0, "HUMAN", "You walk and shoot", false);
+        drawChoice(tft, 1, "CPU", "Autopilot plays", false);
+        Hud.showCentered(tft, "Tap CPU/HUMAN in game to switch", 206, 1, Renderer.WALL_FAR);
         int choice = -1;
         while (choice < 0) {
-            if (TftTouchShield.readTouch()) {
-                choice = choiceAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            if (tft.readTouch()) {
+                choice = choiceAt(tft.touchX(), tft.touchY());
             }
             Delay.millis(10);
         }
         autopilot = choice == 1;
-        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You walk and shoot" : "Autopilot plays", true);
-        waitForRelease();
-        Interludes.flood();
+        drawChoice(tft, choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You walk and shoot" : "Autopilot plays", true);
+        waitForRelease(tft);
+        Interludes.flood(tft);
         barPressed = false;
     }
 
@@ -96,13 +96,13 @@ final class Controls {
     }
 
     /** Applies this frame's touch; returns whether the status bar needs redrawing. */
-    static boolean handle(short[] ceilings, short[] monsters) {
-        if (!TftTouchShield.readTouch()) {
+    static boolean handle(TftTouchShield tft, short[] ceilings, short[] monsters) {
+        if (!tft.readTouch()) {
             barPressed = false;
             return false;
         }
-        int x = TftTouchShield.touchX();
-        int y = TftTouchShield.touchY();
+        int x = tft.touchX();
+        int y = tft.touchY();
         if (pausesAt(x, y)) {
             pauseTapped = pauseTapped || !barPressed;
             barPressed = true;
@@ -142,17 +142,17 @@ final class Controls {
     }
 
     /** Waits for a tap anywhere and its release. */
-    static void waitForTap() {
-        while (!TftTouchShield.readTouch()) {
+    static void waitForTap(TftTouchShield tft) {
+        while (!tft.readTouch()) {
             Delay.millis(10);
         }
-        waitForRelease();
+        waitForRelease(tft);
     }
 
-    static void waitForRelease() {
+    static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;
@@ -161,19 +161,19 @@ final class Controls {
         }
     }
 
-    private static void drawChoice(int index, String label, String hint, boolean chosen) {
+    private static void drawChoice(TftTouchShield tft, int index, String label, String hint, boolean chosen) {
         int x = CHOICE_X + index * (CHOICE_WIDTH + CHOICE_GAP);
         int color = chosen ? CHOICE_CHOSEN : CHOICE;
-        TftTouchShield.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
-        TftTouchShield.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT,
+        tft.fillRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT, color);
+        tft.drawRect(x, CHOICE_Y, CHOICE_WIDTH, CHOICE_HEIGHT,
                 chosen ? TftTouchShield.WHITE : Renderer.WALL_FAR);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, color);
-        TftTouchShield.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
-        TftTouchShield.print(hint);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(x + (CHOICE_WIDTH - label.length() * 18) / 2, CHOICE_Y + 16);
+        tft.print(label);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.YELLOW, color);
+        tft.setCursor(x + (CHOICE_WIDTH - hint.length() * 6) / 2, CHOICE_Y + 52);
+        tft.print(hint);
     }
 }

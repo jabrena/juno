@@ -17,12 +17,12 @@ final class Interludes {
     private Interludes() {
     }
 
-    static void opening(short[] lines) {
-        TftTouchShield.fillScreen(DisplayList.SKY);
+    static void opening(TftTouchShield tft, short[] lines) {
+        tft.fillScreen(DisplayList.SKY);
         DisplayList.forget();
         Camera.bankCos = 1024;
         Camera.bankSin = 0;
-        Hud.showCentered("CONTACT!", 28, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "CONTACT!", 28, 2, TftTouchShield.YELLOW);
         int angle = 0;
         for (int f = 0; f < SPIN_FRAMES; f++) {
             int speed = 2 + f * f / 45;
@@ -53,18 +53,18 @@ final class Interludes {
                 DisplayList.addLine(lines, Camera.CENTER_X - dx, Camera.CENTER_Y - dy,
                         Camera.CENTER_X + dx, Camera.CENTER_Y + dy, PROPELLER);
             }
-            DisplayList.present(lines);
+            DisplayList.present(tft, lines);
             Delay.millis(30);
         }
         Delay.millis(200);
-        takeOff(lines);
-        TftTouchShield.fillScreen(DisplayList.SKY);
+        takeOff(tft, lines);
+        tft.fillScreen(DisplayList.SKY);
         DisplayList.forget();
         Delay.millis(250);
     }
 
-    private static void takeOff(short[] lines) {
-        TftTouchShield.fillScreen(DisplayList.SKY);
+    private static void takeOff(TftTouchShield tft, short[] lines) {
+        tft.fillScreen(DisplayList.SKY);
         DisplayList.forget();
         int pitch = 0;
         int travel = 0;
@@ -89,13 +89,13 @@ final class Interludes {
                         Camera.CENTER_X, horizon + EYE_HEIGHT * Camera.FOCAL / (z + 50), SceneRenderer.LINE);
             }
             SceneRenderer.drawCockpit(lines);
-            DisplayList.present(lines);
+            DisplayList.present(tft, lines);
             Delay.millis(30);
         }
         Delay.millis(200);
     }
 
-    static void drawTitle(short[] lines, byte[] letter) {
+    static void drawTitle(TftTouchShield tft, short[] lines, byte[] letter) {
         DisplayList.begin();
         Camera.altitude = 300;
         Camera.heading = 30;
@@ -104,22 +104,22 @@ final class Interludes {
         SceneRenderer.drawLandscape(lines);
         SceneRenderer.drawBiplane(lines, -120, 330, 520, 150, TftTouchShield.WHITE);
         SceneRenderer.drawBiplane(lines, 260, 420, 1400, 200, TftTouchShield.WHITE);
-        DisplayList.present(lines);
+        DisplayList.present(tft, lines);
         int left = (DisplayList.WIDTH - TITLE.length() * 24) / 2;
-        TftTouchShield.setTextSize(4);
+        tft.setTextSize(4);
         for (int i = 0; i < TITLE.length(); i++) {
             letter[0] = (byte) TITLE.charAt(i);
-            TftTouchShield.setTextColor(TftTouchShield.WHITE, DisplayList.SKY);
-            TftTouchShield.setCursor(left + i * 24, 34);
-            TftTouchShield.print(letter, 1);
+            tft.setTextColor(TftTouchShield.WHITE, DisplayList.SKY);
+            tft.setCursor(left + i * 24, 34);
+            tft.print(letter, 1);
             Delay.millis(50);
-            TftTouchShield.setTextColor(TftTouchShield.RED, DisplayList.SKY);
-            TftTouchShield.setCursor(left + i * 24, 34);
-            TftTouchShield.print(letter, 1);
+            tft.setTextColor(TftTouchShield.RED, DisplayList.SKY);
+            tft.setCursor(left + i * 24, 34);
+            tft.print(letter, 1);
             Delay.millis(70);
         }
         Delay.millis(200);
-        Hud.showCentered("Drag to fly, tap to fire", 198, 1, TftTouchShield.WHITE);
-        Hud.showCentered("Tap to start", 214, 1, TftTouchShield.CYAN);
+        Hud.showCentered(tft, "Drag to fly, tap to fire", 198, 1, TftTouchShield.WHITE);
+        Hud.showCentered(tft, "Tap to start", 214, 1, TftTouchShield.CYAN);
     }
 }

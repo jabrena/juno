@@ -21,62 +21,62 @@ public final class MailboxArt {
     private static final int BODY_BOTTOM = 175;
     private static final int LEG_HEIGHT = 18;
 
-    void draw() {
-        TftTouchShield.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
-        TftTouchShield.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
-        drawMailbox();
+    void draw(TftTouchShield tft) {
+        tft.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
+        tft.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
+        drawMailbox(tft);
     }
 
-    private void drawMailbox() {
-        rect(-10, BODY_BOTTOM + LEG_HEIGHT, BODY_WIDTH + 20, 3, SHADOW);
-        circle(DOME_RADIUS, DOME_RADIUS, DOME_RADIUS, MailboxView.BLUE);
-        circle(DOME_RADIUS, DOME_RADIUS, 47, DARK_BLUE);
-        circle(DOME_RADIUS, DOME_RADIUS, 43, MailboxView.BLUE);
-        rect(32, SLOT_Y, BODY_WIDTH - 64, SLOT_HEIGHT, DARK_BLUE);
+    private void drawMailbox(TftTouchShield tft) {
+        rect(tft, -10, BODY_BOTTOM + LEG_HEIGHT, BODY_WIDTH + 20, 3, SHADOW);
+        circle(tft, DOME_RADIUS, DOME_RADIUS, DOME_RADIUS, MailboxView.BLUE);
+        circle(tft, DOME_RADIUS, DOME_RADIUS, 47, DARK_BLUE);
+        circle(tft, DOME_RADIUS, DOME_RADIUS, 43, MailboxView.BLUE);
+        rect(tft, 32, SLOT_Y, BODY_WIDTH - 64, SLOT_HEIGHT, DARK_BLUE);
 
-        drawEnvelope();
+        drawEnvelope(tft);
 
         // The body below the slot is drawn after the envelope, so the letter disappears into the slot.
         int bodyTop = SLOT_Y + SLOT_HEIGHT;
-        rect(0, bodyTop, BODY_WIDTH, BODY_BOTTOM - bodyTop, MailboxView.BLUE);
-        rect(0, DOME_RADIUS, 10, BODY_BOTTOM + LEG_HEIGHT - DOME_RADIUS, LIGHT_BLUE);
-        rect(10, BODY_BOTTOM, 16, LEG_HEIGHT, MailboxView.BLUE);
-        rect(BODY_WIDTH - 26, BODY_BOTTOM, 26, LEG_HEIGHT, DARK_BLUE);
+        rect(tft, 0, bodyTop, BODY_WIDTH, BODY_BOTTOM - bodyTop, MailboxView.BLUE);
+        rect(tft, 0, DOME_RADIUS, 10, BODY_BOTTOM + LEG_HEIGHT - DOME_RADIUS, LIGHT_BLUE);
+        rect(tft, 10, BODY_BOTTOM, 16, LEG_HEIGHT, MailboxView.BLUE);
+        rect(tft, BODY_WIDTH - 26, BODY_BOTTOM, 26, LEG_HEIGHT, DARK_BLUE);
 
-        TftTouchShield.drawRect(MAILBOX_X + 10, MAILBOX_Y + 98, 110, 40, TftTouchShield.WHITE);
-        TftTouchShield.drawRect(MAILBOX_X + 11, MAILBOX_Y + 99, 108, 38, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
-        TftTouchShield.setCursor(MAILBOX_X + 17, MAILBOX_Y + 110);
-        TftTouchShield.print("MAIL BOX");
+        tft.drawRect(MAILBOX_X + 10, MAILBOX_Y + 98, 110, 40, TftTouchShield.WHITE);
+        tft.drawRect(MAILBOX_X + 11, MAILBOX_Y + 99, 108, 38, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
+        tft.setCursor(MAILBOX_X + 17, MAILBOX_Y + 110);
+        tft.print("MAIL BOX");
     }
 
-    private void drawEnvelope() {
+    private void drawEnvelope(TftTouchShield tft) {
         // A 60x40 letter tilted 35 degrees, its lower corner already inside the slot.
-        fillTriangle(34, 39, 83, 4, 106, 37, ENVELOPE);
-        fillTriangle(34, 39, 106, 37, 59, 72, ENVELOPE);
-        fillTriangle(34, 39, 83, 4, 70, 38, ENVELOPE_FLAP);
-        drawMotionLine(110, 6);
-        drawMotionLine(120, 14);
-        drawMotionLine(130, 22);
+        fillTriangle(tft, 34, 39, 83, 4, 106, 37, ENVELOPE);
+        fillTriangle(tft, 34, 39, 106, 37, 59, 72, ENVELOPE);
+        fillTriangle(tft, 34, 39, 83, 4, 70, 38, ENVELOPE_FLAP);
+        drawMotionLine(tft, 110, 6);
+        drawMotionLine(tft, 120, 14);
+        drawMotionLine(tft, 130, 22);
     }
 
-    private void rect(int x, int y, int w, int h, int color) {
-        TftTouchShield.fillRect(MAILBOX_X + x, MAILBOX_Y + y, w, h, color);
+    private void rect(TftTouchShield tft, int x, int y, int w, int h, int color) {
+        tft.fillRect(MAILBOX_X + x, MAILBOX_Y + y, w, h, color);
     }
 
-    private void circle(int cx, int cy, int r, int color) {
-        TftTouchShield.fillCircle(MAILBOX_X + cx, MAILBOX_Y + cy, r, color);
+    private void circle(TftTouchShield tft, int cx, int cy, int r, int color) {
+        tft.fillCircle(MAILBOX_X + cx, MAILBOX_Y + cy, r, color);
     }
 
-    private void drawMotionLine(int x, int y) {
+    private void drawMotionLine(TftTouchShield tft, int x, int y) {
         for (int i = 0; i < 10; i++) {
-            TftTouchShield.drawPixel(MAILBOX_X + x + i, MAILBOX_Y + y - i, MailboxView.MOTION);
-            TftTouchShield.drawPixel(MAILBOX_X + x + i + 1, MAILBOX_Y + y - i, MailboxView.MOTION);
+            tft.drawPixel(MAILBOX_X + x + i, MAILBOX_Y + y - i, MailboxView.MOTION);
+            tft.drawPixel(MAILBOX_X + x + i + 1, MAILBOX_Y + y - i, MailboxView.MOTION);
         }
     }
 
-    private void fillTriangle(int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+    private void fillTriangle(TftTouchShield tft, int x0, int y0, int x1, int y1, int x2, int y2, int color) {
         boolean clockwise = edge(x0, y0, x1, y1, x2, y2) > 0;
         int minX = Math.min(x0, Math.min(x1, x2));
         int maxX = Math.max(x0, Math.max(x1, x2));
@@ -95,7 +95,7 @@ public final class MailboxArt {
                 }
             }
             if (left >= 0) {
-                TftTouchShield.drawHorizontalLine(MAILBOX_X + left, MAILBOX_Y + y, right - left + 1, color);
+                tft.drawHorizontalLine(MAILBOX_X + left, MAILBOX_Y + y, right - left + 1, color);
             }
         }
     }

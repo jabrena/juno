@@ -86,7 +86,7 @@ public final class FighterFlow {
     }
 
     /** Fights until MENU is tapped. */
-    public void run(byte[] incoming, byte[] outgoing, int[] source) {
+    public void run(TftTouchShield tft, byte[] incoming, byte[] outgoing, int[] source) {
         nodeId = CLOCK.micros();
         if (nodeId == 0) {
             nodeId = 1;
@@ -98,7 +98,7 @@ public final class FighterFlow {
         Serial.println(nodeId);
         human = false;
         touching = true;
-        searchArena();
+        searchArena(tft);
 
         int lastJoin = CLOCK.millis() - JOIN_MILLIS;
         int lastState = 0;
@@ -112,7 +112,7 @@ public final class FighterFlow {
                 next = CLOCK.millis();
             }
             int now = CLOCK.millis();
-            receive(incoming, source, now);
+            receive(tft, incoming, source, now);
             if (screen != IN_ARENA) {
                 if (now - lastJoin >= JOIN_MILLIS) {
                     GladiatorProtocol.begin(outgoing, GladiatorProtocol.JOIN, 0, nodeId);
@@ -120,17 +120,17 @@ public final class FighterFlow {
                     Udp.broadcast(GladiatorProtocol.PORT, outgoing, GladiatorProtocol.PACKET_SIZE);
                     lastJoin = now;
                 }
-                if (menuTapped()) {
+                if (menuTapped(tft)) {
                     return;
                 }
                 continue;
             }
             if (now - heardAt > LOST_MILLIS) {
                 Serial.println("Arena lost");
-                searchArena();
+                searchArena(tft);
                 continue;
             }
-            int action = touch();
+            int action = touch(tft);
             if (action < 0) {
                 return;
             }
@@ -142,11 +142,11 @@ public final class FighterFlow {
                 sendState(outgoing);
                 lastState = now;
             }
-            show();
-            hud.own(behaviour, report.health(), report.wins());
-            hud.opponent(report.opponentPresent(), report.opponentKind(), report.opponentHealth(),
+            show(tft);
+            hud.own(tft, behaviour, report.health(), report.wins());
+            hud.opponent(tft, report.opponentPresent(), report.opponentKind(), report.opponentHealth(),
                     report.opponentWins());
-            hud.pilot(human);
+            hud.pilot(tft, human);
         }
     }
 
@@ -179,32 +179,32 @@ public final class FighterFlow {
         return swung;
     }
 
-    private void show() {
+    private void show(TftTouchShield tft) {
         if (report.phase() == Match.WAITING) {
             if (viewing) {
                 viewing = false;
-                view.list().clearView();
-                Hud.centered("WAITING FOR AN OPPONENT", 92, 1, TftTouchShield.YELLOW, ViewList.BACKGROUND);
+                view.list().clearView(tft);
+                Hud.centered(tft, "WAITING FOR AN OPPONENT", 92, 1, TftTouchShield.YELLOW, ViewList.BACKGROUND);
             }
-            hud.status(0, "WAITING", TftTouchShield.GRAY);
+            hud.status(tft, 0, "WAITING", TftTouchShield.GRAY);
             return;
         }
         if (!viewing) {
             viewing = true;
-            view.list().clearView();
+            view.list().clearView(tft);
         }
         view.build(body, report.visible(), report.opponentX(), report.opponentY(), report.opponentAngle(),
                 report.opponentKind(), thrust > 0, swing, hurt);
-        view.list().present();
-        hud.fighterStatus(report, slot, human, brain.mode(), hurt > 0);
+        view.list().present(tft);
+        hud.fighterStatus(tft, report, slot, human, brain.mode(), hurt > 0);
     }
 
-    private void searchArena() {
+    private void searchArena(TftTouchShield tft) {
         screen = SEARCHING_ARENA;
-        Hud.message("FINDING ARENA", "Waiting for a board in the ARENA role", TftTouchShield.YELLOW);
+        Hud.message(tft, "FINDING ARENA", "Waiting for a board in the ARENA role", TftTouchShield.YELLOW);
     }
 
-    private void receive(byte[] incoming, int[] source, int now) {
+    private void receive(TftTouchShield tft, byte[] incoming, int[] source, int now) {
         for (int i = 0; i < PACKETS_PER_FRAME; i++) {
             int length = Udp.receive(incoming, GladiatorProtocol.PACKET_SIZE, source);
             if (length <= 0) {
@@ -224,11 +224,11 @@ public final class FighterFlow {
                 report.clear();
                 Serial.print("Map received: " + coliseum.pillars() + " pillars, ");
                 Serial.println(slot == 0 ? "left gate" : "right gate");
-                hud.bar();
+                hud.bar(tft);
                 viewing = true;
             } else if (type == GladiatorProtocol.FULL && screen == SEARCHING_ARENA) {
                 screen = ARENA_FULL;
-                Hud.message("ARENA FULL", "Two gladiators are fighting; waiting", TftTouchShield.ORANGE);
+                Hud.message(tft, "ARENA FULL", "Two gladiators are fighting; waiting", TftTouchShield.ORANGE);
             } else if (type == GladiatorProtocol.WORLD && screen == IN_ARENA) {
                 heardAt = now;
                 react(report.read(incoming), now);
@@ -285,13 +285,13 @@ public final class FighterFlow {
      * This frame's touch: -1 when MENU was tapped, 1 when a HUMAN swings, 0 otherwise. A HUMAN gladiator turns and
      * walks here.
      */
-    private int touch() {
-        if (!TftTouchShield.readTouch()) {
+    private int touch(TftTouchShield tft) {
+        if (!tft.readTouch()) {
             touching = false;
             return 0;
         }
-        int x = TftTouchShield.touchX();
-        int y = TftTouchShield.touchY();
+        int x = tft.touchX();
+        int y = tft.touchY();
         boolean tap = !touching;
         touching = true;
         if (Hud.onMenu(x, y)) {
@@ -318,13 +318,13 @@ public final class FighterFlow {
         return 0;
     }
 
-    private boolean menuTapped() {
-        if (!TftTouchShield.readTouch()) {
+    private boolean menuTapped(TftTouchShield tft) {
+        if (!tft.readTouch()) {
             touching = false;
             return false;
         }
         boolean tap = !touching;
         touching = true;
-        return tap && TftTouchShield.touchY() >= ViewList.VIEW_BOTTOM;
+        return tap && tft.touchY() >= ViewList.VIEW_BOTTOM;
     }
 }

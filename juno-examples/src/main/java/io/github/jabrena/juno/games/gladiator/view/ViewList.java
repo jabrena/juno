@@ -63,7 +63,7 @@ public final class ViewList {
     }
 
     /** Erases the lines that changed since the last frame and draws the new ones. */
-    public void present() {
+    public void present(TftTouchShield tft) {
         int slots = Math.max(shown, built);
         for (int i = 0; i < slots; i++) {
             changes[i] = (byte) (changed(i) ? 1 : 0);
@@ -71,26 +71,26 @@ public final class ViewList {
         int oldBase = front * LIST_SIZE;
         for (int i = 0; i < shown; i++) {
             if (changes[i] != 0) {
-                drawListed(oldBase + i * STRIDE, BACKGROUND);
+                drawListed(tft, oldBase + i * STRIDE, BACKGROUND);
             }
         }
         for (int j = pinned; j < built; j++) {
-            show(j, false);
+            show(tft, j, false);
         }
         for (int j = 0; j < pinned; j++) {
-            show(j, true);
+            show(tft, j, true);
         }
         front = 1 - front;
         shown = built;
     }
 
-    public void clearView() {
-        TftTouchShield.fillRect(0, VIEW_TOP, WIDTH, VIEW_BOTTOM - VIEW_TOP, BACKGROUND);
+    public void clearView(TftTouchShield tft) {
+        tft.fillRect(0, VIEW_TOP, WIDTH, VIEW_BOTTOM - VIEW_TOP, BACKGROUND);
         shown = 0;
     }
 
     /** Draws new line {@code j} when it changed or an erased line crossed it; the overlay also under a new line. */
-    private void show(int j, boolean overlay) {
+    private void show(TftTouchShield tft, int j, boolean overlay) {
         int oldBase = front * LIST_SIZE;
         int newBase = (1 - front) * LIST_SIZE;
         int at = newBase + j * STRIDE;
@@ -102,7 +102,7 @@ public final class ViewList {
             draw = changes[i] != 0 && overlaps(newBase + i * STRIDE, at);
         }
         if (draw) {
-            drawListed(at, lines[at + 4] & 0xFFFF);
+            drawListed(tft, at, lines[at + 4] & 0xFFFF);
         }
     }
 
@@ -127,12 +127,12 @@ public final class ViewList {
                 && Math.min(lines[b + 1], lines[b + 3]) <= Math.max(lines[a + 1], lines[a + 3]);
     }
 
-    private void drawListed(int at, int color) {
-        drawLine(lines[at], lines[at + 1], lines[at + 2], lines[at + 3], color);
+    private void drawListed(TftTouchShield tft, int at, int color) {
+        drawLine(tft, lines[at], lines[at + 1], lines[at + 2], lines[at + 3], color);
     }
 
     /** Bresenham, drawn as runs along the line's major axis: one address window per run. */
-    public static void drawLine(int x0, int y0, int x1, int y1, int color) {
+    public static void drawLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int color) {
         boolean steep = Math.abs(y1 - y0) > Math.abs(x1 - x0);
         int a0 = steep ? y0 : x0;
         int b0 = steep ? x0 : y0;
@@ -159,22 +159,22 @@ public final class ViewList {
                 nextB = b + stepB;
             }
             if (nextB != b) {
-                fillRun(runStart, a, b, steep, color);
+                fillRun(tft, runStart, a, b, steep, color);
                 runStart = nextA;
             }
             a = nextA;
             b = nextB;
         }
-        fillRun(runStart, a, b, steep, color);
+        fillRun(tft, runStart, a, b, steep, color);
     }
 
-    private static void fillRun(int from, int to, int across, boolean steep, int color) {
+    private static void fillRun(TftTouchShield tft, int from, int to, int across, boolean steep, int color) {
         int low = Math.min(from, to);
         int length = Math.max(from, to) - low + 1;
         if (steep) {
-            TftTouchShield.fillRect(across, low, 1, length, color);
+            tft.fillRect(across, low, 1, length, color);
         } else {
-            TftTouchShield.fillRect(low, across, length, 1, color);
+            tft.fillRect(low, across, length, 1, color);
         }
     }
 }

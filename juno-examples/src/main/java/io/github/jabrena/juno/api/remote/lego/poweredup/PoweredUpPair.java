@@ -29,7 +29,7 @@ final class PoweredUpPair {
     private PoweredUpPair() {
     }
 
-    static void onTouch(PoweredUpState s, int x, int y) {
+    static void onTouch(TftTouchShield tft, PoweredUpState s, int x, int y) {
         if (s.pairB < 0) {
             return;
         }
@@ -48,7 +48,7 @@ final class PoweredUpPair {
         } else {
             changePower(s, PoweredUpMotors.motorDelta(x, y, PAIR_ROW_A), PoweredUpMotors.motorDelta(x, y, PAIR_ROW_B));
         }
-        draw(s);
+        draw(tft, s);
     }
 
     /** With SYNC on, either row's button changes both motors with one linked command; otherwise each its own. */
@@ -134,49 +134,49 @@ final class PoweredUpPair {
     }
 
     /** The whole view: the SYNC switch, the two motors, the stop level choice and the STOP button. */
-    static void draw(PoweredUpState s) {
-        TftTouchShield.fillRect(0, CONTENT_Y, WIDTH, CONTENT_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+    static void draw(TftTouchShield tft, PoweredUpState s) {
+        tft.fillRect(0, CONTENT_Y, WIDTH, CONTENT_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
         if (s.pairB < 0) {
-            TftTouchShield.setCursor(MARGIN, CONTENT_Y + 8);
-            TftTouchShield.print("Plug in two motors");
-            TftTouchShield.setCursor(MARGIN, CONTENT_Y + 34);
-            TftTouchShield.print("to use a pair");
+            tft.setCursor(MARGIN, CONTENT_Y + 8);
+            tft.print("Plug in two motors");
+            tft.setCursor(MARGIN, CONTENT_Y + 34);
+            tft.print("to use a pair");
             return;
         }
-        TftTouchShield.setCursor(MARGIN, PAIR_ROW_SYNC + 10);
-        TftTouchShield.print(PoweredUpUi.portLetter(s.pairA));
-        TftTouchShield.print(" + ");
-        TftTouchShield.print(PoweredUpUi.portLetter(s.pairB));
-        PoweredUpUi.drawButton(WIDTH - MARGIN - WIDE_BUTTON_WIDTH, PAIR_ROW_SYNC, WIDE_BUTTON_WIDTH,
+        tft.setCursor(MARGIN, PAIR_ROW_SYNC + 10);
+        tft.print(PoweredUpUi.portLetter(s.pairA));
+        tft.print(" + ");
+        tft.print(PoweredUpUi.portLetter(s.pairB));
+        PoweredUpUi.drawButton(tft, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, PAIR_ROW_SYNC, WIDE_BUTTON_WIDTH,
                 s.pairSync ? TftTouchShield.GREEN : TftTouchShield.GRAY, s.pairSync ? "SYNC ON" : "SYNC OFF",
                 WIDTH - MARGIN - WIDE_BUTTON_WIDTH + (s.pairSync ? 14 : 8));
-        drawPlusMinus(PAIR_ROW_A);
-        drawPlusMinus(PAIR_ROW_B);
-        drawLevel(s, STOP_COAST, "COAST");
-        drawLevel(s, STOP_BRAKE, "BRAKE");
-        drawLevel(s, STOP_HOLD, "HOLD");
-        PoweredUpUi.drawButton(MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.RED, "STOP", MARGIN + 28);
-        PoweredUpUi.drawButton(WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.GRAY,
+        drawPlusMinus(tft, PAIR_ROW_A);
+        drawPlusMinus(tft, PAIR_ROW_B);
+        drawLevel(tft, s, STOP_COAST, "COAST");
+        drawLevel(tft, s, STOP_BRAKE, "BRAKE");
+        drawLevel(tft, s, STOP_HOLD, "HOLD");
+        PoweredUpUi.drawButton(tft, MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.RED, "STOP", MARGIN + 28);
+        PoweredUpUi.drawButton(tft, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, TftTouchShield.GRAY,
                 "ZERO", WIDTH - MARGIN - WIDE_BUTTON_WIDTH + 28);
-        drawRows(s);
+        drawRows(tft, s);
     }
 
-    private static void drawPlusMinus(int row) {
-        PoweredUpUi.drawButton(MARGIN, row, SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "-", MARGIN + 20);
-        PoweredUpUi.drawButton(WIDTH - MARGIN - SMALL_BUTTON_WIDTH, row, SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "+",
+    private static void drawPlusMinus(TftTouchShield tft, int row) {
+        PoweredUpUi.drawButton(tft, MARGIN, row, SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "-", MARGIN + 20);
+        PoweredUpUi.drawButton(tft, WIDTH - MARGIN - SMALL_BUTTON_WIDTH, row, SMALL_BUTTON_WIDTH, TftTouchShield.BLUE, "+",
                 WIDTH - MARGIN - SMALL_BUTTON_WIDTH + 20);
     }
 
-    private static void drawLevel(PoweredUpState s, int level, String label) {
-        PoweredUpUi.drawButton(MARGIN + level * (LEVEL_WIDTH + LEVEL_GAP), ROW_LEVELS, LEVEL_WIDTH,
+    private static void drawLevel(TftTouchShield tft, PoweredUpState s, int level, String label) {
+        PoweredUpUi.drawButton(tft, MARGIN + level * (LEVEL_WIDTH + LEVEL_GAP), ROW_LEVELS, LEVEL_WIDTH,
                 level == s.stopLevel ? TftTouchShield.BLUE : TftTouchShield.GRAY, label,
                 MARGIN + level * (LEVEL_WIDTH + LEVEL_GAP) + (level == STOP_HOLD ? 12 : 6));
     }
 
-    static void drawRows(PoweredUpState s) {
-        PoweredUpMotors.drawPortRow(s, s.pairA, PAIR_ROW_A);
-        PoweredUpMotors.drawPortRow(s, s.pairB, PAIR_ROW_B);
+    static void drawRows(TftTouchShield tft, PoweredUpState s) {
+        PoweredUpMotors.drawPortRow(tft, s, s.pairA, PAIR_ROW_A);
+        PoweredUpMotors.drawPortRow(tft, s, s.pairB, PAIR_ROW_B);
     }
 }

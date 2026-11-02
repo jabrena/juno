@@ -47,18 +47,18 @@ final class Loading {
     }
 
     /** Draws the next load's bar at ({@code x}, {@code y}), {@code width} pixels long, with the seconds left after it. */
-    static void show(int x, int y, int width) {
+    static void show(TftTouchShield tft, int x, int y, int width) {
         visible = true;
         barX = x;
         barY = y;
         barWidth = width;
         drawn = 0;
         secondsShown = -1;
-        TftTouchShield.drawRect(x - 1, y - 1, width + 2, BAR_HEIGHT + 2, TftTouchShield.YELLOW);
+        tft.drawRect(x - 1, y - 1, width + 2, BAR_HEIGHT + 2, TftTouchShield.YELLOW);
     }
 
     /** A map is about to be read: {@code units} records, then a route over {@code subsectors}. */
-    static void beginLoad(int units, int subsectors) {
+    static void beginLoad(TftTouchShield tft, int units, int subsectors) {
         loading = true;
         loadUnits = Math.max(1, units);
         loadDone = 0;
@@ -68,14 +68,14 @@ final class Loading {
         barPlanRate = planRate;
         estimateMillis = (loadUnits * barLoadRate + planUnits * barPlanRate) / 1000;
         started = DoomEngine.CLOCK.millis();
-        redraw();
+        redraw(tft);
     }
 
     /** {@code units} more records read. */
-    static void advance(int units) {
+    static void advance(TftTouchShield tft, int units) {
         if (loading) {
             loadDone = loadDone + units;
-            redraw();
+            redraw(tft);
         }
     }
 
@@ -93,24 +93,24 @@ final class Loading {
     }
 
     /** The route is about to be planned for the map just read. */
-    static void beginPlan() {
+    static void beginPlan(TftTouchShield tft) {
         planning = true;
         planDone = 0;
         started = DoomEngine.CLOCK.millis();
         loadDone = loadUnits;
-        redraw();
+        redraw(tft);
     }
 
     /** One more subsector settled by the planner's search. */
-    static void advancePlan() {
+    static void advancePlan(TftTouchShield tft) {
         if (planning) {
             planDone = Math.min(planUnits, planDone + 1);
-            redraw();
+            redraw(tft);
         }
     }
 
     /** The route is planned: reports the time, recalibrates, fills the bar and stops drawing it. */
-    static void endPlan() {
+    static void endPlan(TftTouchShield tft) {
         if (!planning) {
             return;
         }
@@ -120,18 +120,18 @@ final class Loading {
         planRate = (planRate + rate) / 2;
         report(" planned over ", planUnits, " subsectors in ", elapsed,
                 (planUnits * PLAN_MICROS_PER_SUBSECTOR) / 1000, rate);
-        finish();
+        finish(tft);
     }
 
     /** Fills the bar and clears the seconds left: the map is ready, whatever the estimate said. */
-    private static void finish() {
+    private static void finish(TftTouchShield tft) {
         if (visible) {
-            TftTouchShield.fillRect(barX + drawn, barY, barWidth - drawn, BAR_HEIGHT, TftTouchShield.YELLOW);
+            tft.fillRect(barX + drawn, barY, barWidth - drawn, BAR_HEIGHT, TftTouchShield.YELLOW);
             drawn = barWidth;
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
-            TftTouchShield.setCursor(barX + barWidth + 6, barY - 1);
-            TftTouchShield.print("     ");
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
+            tft.setCursor(barX + barWidth + 6, barY - 1);
+            tft.print("     ");
         }
         visible = false;
     }
@@ -153,7 +153,7 @@ final class Loading {
     }
 
     /** Grows the bar to the estimated share of the work done and updates the seconds left. */
-    private static void redraw() {
+    private static void redraw(TftTouchShield tft) {
         if (!visible) {
             return;
         }
@@ -161,18 +161,18 @@ final class Loading {
         int totalMicros = Math.max(1, estimateMillis * 1000);
         int width = (int) Math.min(barWidth, (long) doneMicros * barWidth / totalMicros);
         if (width > drawn) {
-            TftTouchShield.fillRect(barX + drawn, barY, width - drawn, BAR_HEIGHT, TftTouchShield.YELLOW);
+            tft.fillRect(barX + drawn, barY, width - drawn, BAR_HEIGHT, TftTouchShield.YELLOW);
             drawn = width;
         }
         int seconds = Math.max(0, (totalMicros - doneMicros + 999_999) / 1_000_000);
         if (seconds != secondsShown) {
             secondsShown = seconds;
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
-            TftTouchShield.setCursor(barX + barWidth + 6, barY - 1);
-            TftTouchShield.print("~");
-            TftTouchShield.print(seconds);
-            TftTouchShield.print("s ");
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.YELLOW, DisplayList.BACKGROUND);
+            tft.setCursor(barX + barWidth + 6, barY - 1);
+            tft.print("~");
+            tft.print(seconds);
+            tft.print("s ");
         }
     }
 }

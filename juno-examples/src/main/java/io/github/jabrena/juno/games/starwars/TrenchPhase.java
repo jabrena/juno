@@ -42,15 +42,15 @@ final class TrenchPhase {
         trenchShots = 0;
     }
 
-    static void announce() {
-        Hud.showCentered("THE TRENCH", 104, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("Steer with the crosshair and hit the port", 136, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "THE TRENCH", 104, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Steer with the crosshair and hit the port", 136, 1, TftTouchShield.WHITE);
     }
 
-    static void announceMiss() {
-        DisplayList.clearView();
-        Hud.showCentered("YOU MISSED", 100, 2, TftTouchShield.RED);
-        Hud.showCentered("Fly the trench again", 130, 1, TftTouchShield.WHITE);
+    static void announceMiss(TftTouchShield tft) {
+        DisplayList.clearView(tft);
+        Hud.showCentered(tft, "YOU MISSED", 100, 2, TftTouchShield.RED);
+        Hud.showCentered(tft, "Fly the trench again", 130, 1, TftTouchShield.WHITE);
         Delay.millis(1500);
     }
 

@@ -60,27 +60,27 @@ public final class ArenaView {
     }
 
     /** Paints the title, the whole map and the empty panels. */
-    public void drawAll() {
+    public void drawAll(TftTouchShield tft) {
         scale = Math.min(WIDTH / 2f / (coliseum.radiusX() * RIM_REACH),
                 (MAP_BOTTOM - MAP_TOP) / 2f / (coliseum.radiusY() * RIM_REACH));
-        TftTouchShield.fillScreen(BACKGROUND);
-        TftTouchShield.fillRect(0, 0, WIDTH, TITLE_HEIGHT, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, PANEL);
-        TftTouchShield.setCursor(6, 3);
-        TftTouchShield.print("GLADIATOR ARENA");
-        TftTouchShield.drawRect(MENU_LEFT, 2, WIDTH - MENU_LEFT - 2, TITLE_HEIGHT - 4, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(MENU_LEFT + 13, 7);
-        TftTouchShield.print("MENU");
+        tft.fillScreen(BACKGROUND);
+        tft.fillRect(0, 0, WIDTH, TITLE_HEIGHT, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.YELLOW, PANEL);
+        tft.setCursor(6, 3);
+        tft.print("GLADIATOR ARENA");
+        tft.drawRect(MENU_LEFT, 2, WIDTH - MENU_LEFT - 2, TITLE_HEIGHT - 4, TftTouchShield.WHITE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(MENU_LEFT + 13, 7);
+        tft.print("MENU");
         for (int y = MAP_TOP; y < MAP_BOTTOM; y++) {
             int runStart = 0;
             int runColor = floorAt(0, y);
             for (int x = 1; x <= WIDTH; x++) {
                 int color = x < WIDTH ? floorAt(x, y) : -1;
                 if (color != runColor) {
-                    TftTouchShield.fillRect(runStart, y, x - runStart, 1, runColor);
+                    tft.fillRect(runStart, y, x - runStart, 1, runColor);
                     runStart = x;
                     runColor = color;
                 }
@@ -94,11 +94,11 @@ public final class ArenaView {
     }
 
     /** Moves both gladiators' marks to where the match has them now and refreshes the panels. */
-    public void update(Match match, int now) {
+    public void update(TftTouchShield tft, Match match, int now) {
         // Erase both before forgetting either: a line of sight ends at the other gladiator's old dot.
         for (int slot = 0; slot < 2; slot++) {
             if (drawn[slot]) {
-                marks(slot, drawnX[slot], drawnY[slot], drawnAngle[slot], drawnSees[slot], 0, true);
+                marks(tft, slot, drawnX[slot], drawnY[slot], drawnAngle[slot], drawnSees[slot], 0, true);
             }
         }
         drawn[0] = false;
@@ -116,14 +116,14 @@ public final class ArenaView {
         }
         for (int slot = 0; slot < 2; slot++) {
             if (drawn[slot]) {
-                marks(slot, drawnX[slot], drawnY[slot], drawnAngle[slot], drawnSees[slot],
+                marks(tft, slot, drawnX[slot], drawnY[slot], drawnAngle[slot], drawnSees[slot],
                         Figure.color(match.side(slot).behaviour()), false);
-                panel(match, slot);
+                panel(tft, match, slot);
             } else {
-                emptyPanel(slot);
+                emptyPanel(tft, slot);
             }
         }
-        status(match, now);
+        status(tft, match, now);
     }
 
     public static boolean menuTapped(int x, int y) {
@@ -164,30 +164,30 @@ public final class ArenaView {
     }
 
     /** A gladiator's dot, facing line and field of view, and its line of sight; or, erasing, the map under them. */
-    private void marks(int slot, int x, int y, int wireAngle, boolean sees, int color, boolean erase) {
+    private void marks(TftTouchShield tft, int slot, int x, int y, int wireAngle, boolean sees, int color, boolean erase) {
         float angle = GladiatorProtocol.fromWire(wireAngle);
         int other = 1 - slot;
         if (sees && drawn[other]) {
-            line(x, y, drawnX[other], drawnY[other], TftTouchShield.YELLOW, erase, 3);
+            line(tft, x, y, drawnX[other], drawnY[other], TftTouchShield.YELLOW, erase, 3);
         }
         for (int side = -1; side <= 1; side += 2) {
             float edge = angle + side * Eyes.HALF_VIEW;
-            line(x, y, x + Math.round((float) Math.cos(edge) * SIGHT), y - Math.round((float) Math.sin(edge) * SIGHT),
+            line(tft, x, y, x + Math.round((float) Math.cos(edge) * SIGHT), y - Math.round((float) Math.sin(edge) * SIGHT),
                     TftTouchShield.GRAY, erase, 2);
         }
-        line(x, y, x + Math.round((float) Math.cos(angle) * FACING), y - Math.round((float) Math.sin(angle) * FACING),
+        line(tft, x, y, x + Math.round((float) Math.cos(angle) * FACING), y - Math.round((float) Math.sin(angle) * FACING),
                 TftTouchShield.WHITE, erase, 1);
         for (int dy = -DOT; dy <= DOT; dy++) {
             for (int dx = -DOT; dx <= DOT; dx++) {
                 if (dx * dx + dy * dy <= DOT * DOT) {
-                    plot(x + dx, y + dy, color, erase);
+                    plot(tft, x + dx, y + dy, color, erase);
                 }
             }
         }
     }
 
     /** A line of every {@code step}-th pixel, so a dotted one shows the map through it. */
-    private void line(int x0, int y0, int x1, int y1, int color, boolean erase, int step) {
+    private void line(TftTouchShield tft, int x0, int y0, int x1, int y1, int color, boolean erase, int step) {
         int dx = Math.abs(x1 - x0);
         int dy = -Math.abs(y1 - y0);
         int sx = x0 < x1 ? 1 : -1;
@@ -198,7 +198,7 @@ public final class ArenaView {
         int skip = 0;
         while (true) {
             if (skip == 0) {
-                plot(x, y, color, erase);
+                plot(tft, x, y, color, erase);
                 skip = step;
             }
             skip = skip - 1;
@@ -217,14 +217,14 @@ public final class ArenaView {
         }
     }
 
-    private void plot(int x, int y, int color, boolean erase) {
+    private void plot(TftTouchShield tft, int x, int y, int color, boolean erase) {
         if (x < 0 || x >= WIDTH || y < MAP_TOP || y >= MAP_BOTTOM) {
             return;
         }
-        TftTouchShield.drawPixel(x, y, erase ? floorAt(x, y) : color);
+        tft.drawPixel(x, y, erase ? floorAt(x, y) : color);
     }
 
-    private void panel(Match match, int slot) {
+    private void panel(TftTouchShield tft, Match match, int slot) {
         Side side = match.side(slot);
         int key = side.behaviour() << 24 | side.health() << 16 | side.wins() << 8 | side.mode() << 1
                 | (side.human() ? 1 : 0);
@@ -234,44 +234,44 @@ public final class ArenaView {
         panelKey[slot] = key;
         int x = panelX(slot);
         int color = Figure.color(side.behaviour());
-        TftTouchShield.fillRect(x, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, PANEL);
-        TftTouchShield.fillRect(x, PANEL_Y, 4, PANEL_HEIGHT, color);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(color, PANEL);
-        TftTouchShield.setCursor(x + 10, PANEL_Y + 5);
-        TftTouchShield.print((slot == 0 ? "LEFT  " : "RIGHT ") + Figure.name(side.behaviour()));
-        TftTouchShield.drawRect(x + 10, PANEL_Y + 17, 100, 8, TftTouchShield.GRAY);
+        tft.fillRect(x, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, PANEL);
+        tft.fillRect(x, PANEL_Y, 4, PANEL_HEIGHT, color);
+        tft.setTextSize(1);
+        tft.setTextColor(color, PANEL);
+        tft.setCursor(x + 10, PANEL_Y + 5);
+        tft.print((slot == 0 ? "LEFT  " : "RIGHT ") + Figure.name(side.behaviour()));
+        tft.drawRect(x + 10, PANEL_Y + 17, 100, 8, TftTouchShield.GRAY);
         int health = side.health();
         int bar = health > 50 ? TftTouchShield.GREEN : health > 20 ? TftTouchShield.YELLOW : TftTouchShield.RED;
-        TftTouchShield.fillRect(x + 11, PANEL_Y + 18, 98 * health / Match.HEALTH, 6, bar);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(x + 116, PANEL_Y + 17);
-        TftTouchShield.print("W " + side.wins());
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, PANEL);
-        TftTouchShield.setCursor(x + 10, PANEL_Y + 34);
-        TftTouchShield.print((side.human() ? "HUMAN " : "CPU ") + Hud.modeName(side.mode()));
+        tft.fillRect(x + 11, PANEL_Y + 18, 98 * health / Match.HEALTH, 6, bar);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(x + 116, PANEL_Y + 17);
+        tft.print("W " + side.wins());
+        tft.setTextColor(TftTouchShield.GRAY, PANEL);
+        tft.setCursor(x + 10, PANEL_Y + 34);
+        tft.print((side.human() ? "HUMAN " : "CPU ") + Hud.modeName(side.mode()));
     }
 
-    private void emptyPanel(int slot) {
+    private void emptyPanel(TftTouchShield tft, int slot) {
         if (panelKey[slot] == 0) {
             return;
         }
         panelKey[slot] = 0;
         int x = panelX(slot);
-        TftTouchShield.fillRect(x, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, PANEL);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, PANEL);
-        TftTouchShield.setCursor(x + 10, PANEL_Y + 5);
-        TftTouchShield.print(slot == 0 ? "LEFT GATE" : "RIGHT GATE");
-        TftTouchShield.setCursor(x + 10, PANEL_Y + 21);
-        TftTouchShield.print("waiting for a gladiator");
+        tft.fillRect(x, PANEL_Y, PANEL_WIDTH, PANEL_HEIGHT, PANEL);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, PANEL);
+        tft.setCursor(x + 10, PANEL_Y + 5);
+        tft.print(slot == 0 ? "LEFT GATE" : "RIGHT GATE");
+        tft.setCursor(x + 10, PANEL_Y + 21);
+        tft.print("waiting for a gladiator");
     }
 
     private int panelX(int slot) {
         return slot == 0 ? 4 : WIDTH - 4 - PANEL_WIDTH;
     }
 
-    private void status(Match match, int now) {
+    private void status(TftTouchShield tft, Match match, int now) {
         int gladiators = (match.side(0).present() ? 1 : 0) + (match.side(1).present() ? 1 : 0);
         int countdown = match.countdown(now);
         int key = match.phase() << 24 | (match.round() & 0xFF) << 16 | countdown << 8 | match.winner() << 2 | gladiators;
@@ -294,10 +294,10 @@ public final class ArenaView {
             text = Figure.name(style) + (match.winner() == 0 ? " (LEFT)" : " (RIGHT)") + " WINS";
             color = Figure.color(style);
         }
-        TftTouchShield.fillRect(0, STATUS_Y, WIDTH, 11, BACKGROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(color, BACKGROUND);
-        TftTouchShield.setCursor((WIDTH - text.length() * TftTouchShield.CHAR_WIDTH) / 2, STATUS_Y + 2);
-        TftTouchShield.print(text);
+        tft.fillRect(0, STATUS_Y, WIDTH, 11, BACKGROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(color, BACKGROUND);
+        tft.setCursor((WIDTH - text.length() * TftTouchShield.CHAR_WIDTH) / 2, STATUS_Y + 2);
+        tft.print(text);
     }
 }

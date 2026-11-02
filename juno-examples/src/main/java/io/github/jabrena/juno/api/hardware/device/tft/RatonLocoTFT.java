@@ -57,6 +57,7 @@ public final class RatonLocoTFT {
      * @param args ignored; Juno programs do not receive command-line arguments
      */
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         DigitalOutput led = DigitalOutput.of(LED);
         Mouse mouse = ArduinoUno.getMouse();
         mouse.begin();
@@ -64,48 +65,48 @@ public final class RatonLocoTFT {
         ArduinoUno.getLedMatrix().begin();
         MouseIcon.draw();
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
+        tft.fillScreen(TftTouchShield.BLACK);
         running = false;
-        drawSwitch();
+        drawSwitch(tft);
 
         while (true) {
-            pollTouch();
+            pollTouch(tft);
             if (!running) {
                 Delay.millis(POLL_DELAY);
                 continue;
             }
 
             led.high();
-            if (!pausableDelay(100)) {
+            if (!pausableDelay(tft, 100)) {
                 continue;
             }
             led.low();
-            if (!pausableDelay(100)) {
+            if (!pausableDelay(tft, 100)) {
                 continue;
             }
 
-            if (!walkSide(mouse, STEP, 0)) { // Right
+            if (!walkSide(tft, mouse, STEP, 0)) { // Right
                 continue;
             }
-            if (!walkSide(mouse, 0, STEP)) { // Down
+            if (!walkSide(tft, mouse, 0, STEP)) { // Down
                 continue;
             }
-            if (!walkSide(mouse, -STEP, 0)) { // Left
+            if (!walkSide(tft, mouse, -STEP, 0)) { // Left
                 continue;
             }
-            if (!walkSide(mouse, 0, -STEP)) { // Up
+            if (!walkSide(tft, mouse, 0, -STEP)) { // Up
                 continue;
             }
         }
     }
 
     /** Moves the pointer {@link #STEPS_PER_SIDE} times by ({@code dx}, {@code dy}), pausable between steps. */
-    private static boolean walkSide(Mouse mouse, int dx, int dy) {
+    private static boolean walkSide(TftTouchShield tft, Mouse mouse, int dx, int dy) {
         int i = 0;
         while (i < STEPS_PER_SIDE) {
-            if (!pausableDelay(MOVE_DELAY)) {
+            if (!pausableDelay(tft, MOVE_DELAY)) {
                 return false;
             }
             mouse.move(dx, dy);
@@ -119,7 +120,7 @@ public final class RatonLocoTFT {
      * takes effect promptly. Returns {@code false} as soon as the switch is turned Off, leaving the
      * remaining time unslept.
      */
-    private static boolean pausableDelay(int totalMs) {
+    private static boolean pausableDelay(TftTouchShield tft, int totalMs) {
         int elapsed = 0;
         while (elapsed < totalMs) {
             int chunk = totalMs - elapsed;
@@ -128,7 +129,7 @@ public final class RatonLocoTFT {
             }
             Delay.millis(chunk);
             elapsed = elapsed + chunk;
-            pollTouch();
+            pollTouch(tft);
             if (!running) {
                 return false;
             }
@@ -140,15 +141,15 @@ public final class RatonLocoTFT {
      * Samples the touch panel once and, on a tap anywhere on the screen, flips {@link #running}, redraws the
      * switch and waits for the finger to lift so one press toggles exactly once.
      */
-    private static void pollTouch() {
-        if (!TftTouchShield.readTouch()) {
+    private static void pollTouch(TftTouchShield tft) {
+        if (!tft.readTouch()) {
             return;
         }
         running = !running;
-        drawSwitch();
+        drawSwitch(tft);
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;
@@ -158,7 +159,7 @@ public final class RatonLocoTFT {
     }
 
     /** Fills the whole display red ("OFF") or green ("ON") according to {@link #running}. */
-    private static void drawSwitch() {
+    private static void drawSwitch(TftTouchShield tft) {
         int background = TftTouchShield.RED;
         String title = "OFF";
         String hint = "Tap to turn on";
@@ -172,13 +173,13 @@ public final class RatonLocoTFT {
             hintX = ON_HINT_X;
         }
 
-        TftTouchShield.fillScreen(background);
-        TftTouchShield.setTextSize(TITLE_SIZE);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, background);
-        TftTouchShield.setCursor(titleX, TITLE_Y);
-        TftTouchShield.print(title);
-        TftTouchShield.setTextSize(HINT_SIZE);
-        TftTouchShield.setCursor(hintX, HINT_Y);
-        TftTouchShield.print(hint);
+        tft.fillScreen(background);
+        tft.setTextSize(TITLE_SIZE);
+        tft.setTextColor(TftTouchShield.WHITE, background);
+        tft.setCursor(titleX, TITLE_Y);
+        tft.print(title);
+        tft.setTextSize(HINT_SIZE);
+        tft.setCursor(hintX, HINT_Y);
+        tft.print(hint);
     }
 }

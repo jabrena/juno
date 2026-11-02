@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.starwars.Entities.CAP_HEIGHT;
 import static io.github.jabrena.juno.games.starwars.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.starwars.Entities.E_AUX;
@@ -63,7 +65,7 @@ final class Combat {
      * Lasers take {@value #SHOT_FRAMES} frames to converge, then hit the target that was under the
      * crosshair when they were fired, if it is still there (a tower top still standing).
      */
-    static void resolveShots(int[] ents) {
+    static void resolveShots(TftTouchShield tft, int[] ents) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             if (ents[b + E_TYPE] != T_SHOT) {
@@ -79,7 +81,7 @@ final class Combat {
                 int t = target * E_STRIDE;
                 boolean standing = ents[t + E_TYPE] != T_TOWER || ents[t + E_FLAG] != 0;
                 if (ents[t + E_TYPE] == ents[b + E_FLAG] && standing) {
-                    hit(ents, target);
+                    hit(tft, ents, target);
                 }
             }
         }
@@ -106,7 +108,7 @@ final class Combat {
         return found;
     }
 
-    private static void hit(int[] ents, int slot) {
+    private static void hit(TftTouchShield tft, int[] ents, int slot) {
         int b = slot * E_STRIDE;
         int type = ents[b + E_TYPE];
         int x = ents[b + E_X];
@@ -124,7 +126,7 @@ final class Combat {
             SurfacePhase.topsHit = SurfacePhase.topsHit + 1;
             Session.score = Session.score + Session.TOWER_POINTS;
             Entities.debris(ents, x, GROUND + ents[b + E_AUX] + CAP_HEIGHT / 2, z, 40);
-            Hud.drawHeader();
+            Hud.drawHeader(tft);
             return;
         }
         ents[b + E_TYPE] = T_NONE;
@@ -143,6 +145,6 @@ final class Combat {
             Session.score = Session.score + Session.PORT_POINTS;
             Entities.debris(ents, x, y, z, 120);
         }
-        Hud.drawHeader();
+        Hud.drawHeader(tft);
     }
 }

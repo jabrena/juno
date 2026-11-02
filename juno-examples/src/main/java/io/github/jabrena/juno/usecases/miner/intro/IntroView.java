@@ -15,6 +15,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * for as long, then it hands over to the cover. Returning to the cover from the chain never shows it again.
  */
 public final class IntroView implements View {
+
+    private final TftTouchShield tft;
     private static final Clock CLOCK = ArduinoUno.getClock();
     /** How long each image stays on screen after it has been drawn, so slow drawing does not eat into it. */
     static final int STEP_MILLIS = 3000;
@@ -23,12 +25,15 @@ public final class IntroView implements View {
     static final int BOARD = 1;
 
     private final Navigator navigator;
-    private final Drawable javaLogo = new JavaLogoImage();
-    private final Drawable arduinoBoard = new ArduinoUnoBoardImage();
+    private final Drawable javaLogo;
+    private final Drawable arduinoBoard;
     private int shownStep;
     private int shownAt;
 
-    public IntroView(Navigator navigator) {
+    public IntroView(TftTouchShield tft, Navigator navigator) {
+        this.tft = tft;
+        javaLogo = new JavaLogoImage(tft);
+        arduinoBoard = new ArduinoUnoBoardImage(tft);
         this.navigator = navigator;
     }
 
@@ -47,7 +52,7 @@ public final class IntroView implements View {
             return;
         }
         shownStep = shownStep + 1;
-        TftTouchShield.fillScreen(TftTouchShield.WHITE);
+        tft.fillScreen(TftTouchShield.WHITE);
         if (shownStep == LOGO) {
             javaLogo.draw();
         } else {

@@ -16,25 +16,25 @@ final class Menu {
     private Menu() {
     }
 
-    static void open(String title, String question) {
-        TftTouchShield.fillScreen(DisplayList.BACKGROUND);
-        Hud.showCentered(title, 14, 3, TftTouchShield.RED);
-        Hud.showCentered(question, 46, 1, TftTouchShield.WHITE);
+    static void open(TftTouchShield tft, String title, String question) {
+        tft.fillScreen(DisplayList.BACKGROUND);
+        Hud.showCentered(tft, title, 14, 3, TftTouchShield.RED);
+        Hud.showCentered(tft, question, 46, 1, TftTouchShield.WHITE);
     }
 
-    static void row(int index, int top, int height, String name, String detail, boolean enabled, boolean chosen) {
+    static void row(TftTouchShield tft, int index, int top, int height, String name, String detail, boolean enabled, boolean chosen) {
         int y = top + index * (height + GAP);
         int color = !enabled ? DISABLED : chosen ? Controls.CHOICE_CHOSEN : Controls.CHOICE;
-        TftTouchShield.fillRect(LEFT, y, WIDTH, height, color);
-        TftTouchShield.drawRect(LEFT, y, WIDTH, height, chosen ? TftTouchShield.WHITE : Renderer.WALL_FAR);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(enabled ? TftTouchShield.WHITE : Renderer.WALL_FAR, color);
-        TftTouchShield.setCursor(LEFT + (WIDTH - name.length() * 12) / 2, y + 3);
-        TftTouchShield.print(name);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(enabled ? TftTouchShield.YELLOW : Renderer.WALL_FAR, color);
-        TftTouchShield.setCursor(LEFT + (WIDTH - detail.length() * 6) / 2, y + height - 10);
-        TftTouchShield.print(detail);
+        tft.fillRect(LEFT, y, WIDTH, height, color);
+        tft.drawRect(LEFT, y, WIDTH, height, chosen ? TftTouchShield.WHITE : Renderer.WALL_FAR);
+        tft.setTextSize(2);
+        tft.setTextColor(enabled ? TftTouchShield.WHITE : Renderer.WALL_FAR, color);
+        tft.setCursor(LEFT + (WIDTH - name.length() * 12) / 2, y + 3);
+        tft.print(name);
+        tft.setTextSize(1);
+        tft.setTextColor(enabled ? TftTouchShield.YELLOW : Renderer.WALL_FAR, color);
+        tft.setCursor(LEFT + (WIDTH - detail.length() * 6) / 2, y + height - 10);
+        tft.print(detail);
     }
 
     /** The row under ({@code x}, {@code y}), or -1. */
@@ -48,11 +48,11 @@ final class Menu {
     }
 
     /** Waits until an enabled row (a set bit of {@code enabled}) is tapped, and returns it. */
-    static int choose(int top, int height, int count, int enabled) {
+    static int choose(TftTouchShield tft, int top, int height, int count, int enabled) {
         int chosen = -1;
         while (chosen < 0) {
-            if (TftTouchShield.readTouch()) {
-                int row = rowAt(TftTouchShield.touchX(), TftTouchShield.touchY(), top, height, count);
+            if (tft.readTouch()) {
+                int row = rowAt(tft.touchX(), tft.touchY(), top, height, count);
                 chosen = row >= 0 && (enabled >> row & 1) != 0 ? row : -1;
             }
             Delay.millis(10);

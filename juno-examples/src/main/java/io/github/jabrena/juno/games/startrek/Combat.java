@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import static io.github.jabrena.juno.games.startrek.Entities.ENTITIES;
 import static io.github.jabrena.juno.games.startrek.Entities.E_HP;
 import static io.github.jabrena.juno.games.startrek.Entities.E_STRIDE;
@@ -100,7 +102,7 @@ final class Combat {
         }
     }
 
-    static void firePhoton(int[] ents) {
+    static void firePhoton(TftTouchShield tft, int[] ents) {
         if (Enterprise.photons == 0) {
             return;
         }
@@ -114,7 +116,7 @@ final class Combat {
         ents[b + E_VX] = Enterprise.vx + Math.round((float) Math.sin(radians) * PHOTON_SPEED * FIX);
         ents[b + E_VY] = Enterprise.vy - Math.round((float) Math.cos(radians) * PHOTON_SPEED * FIX);
         ents[b + E_TIMER] = PHOTON_FRAMES;
-        Hud.drawPanel();
+        Hud.drawPanel(tft);
     }
 
     /** A photon torpedo flies straight until it meets an enemy or burns out, then its blast hits all around. */
@@ -158,7 +160,7 @@ final class Combat {
     }
 
     /** Klingon torpedoes hit the Enterprise or the starbase, or burn out. */
-    static void flyTorpedo(int[] ents, int b) {
+    static void flyTorpedo(TftTouchShield tft, int[] ents, int b) {
         ents[b + E_TIMER] = ents[b + E_TIMER] - 1;
         if (ents[b + E_TIMER] <= 0) {
             ents[b + E_TYPE] = T_NONE;
@@ -166,7 +168,7 @@ final class Combat {
         }
         if (Entities.distanceToShip(ents, b) < HIT_RADIUS) {
             ents[b + E_TYPE] = T_NONE;
-            Enterprise.damage(TORPEDO_DAMAGE);
+            Enterprise.damage(tft, TORPEDO_DAMAGE);
             return;
         }
         int base = Entities.find(ents, T_STARBASE);

@@ -15,10 +15,10 @@ final class Lava {
     }
 
     /** The whole screen covered with lava, in coarse cells so it stays cheap. */
-    static void paint() {
+    static void paint(TftTouchShield tft) {
         for (int y = 0; y < DisplayList.HEIGHT; y += CELL) {
             for (int x = 0; x < DisplayList.WIDTH; x += CELL) {
-                TftTouchShield.fillRect(x, y, CELL, CELL, tone(x, y));
+                tft.fillRect(x, y, CELL, CELL, tone(x, y));
             }
         }
     }

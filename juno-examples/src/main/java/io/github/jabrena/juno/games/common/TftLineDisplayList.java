@@ -125,12 +125,12 @@ public final class TftLineDisplayList {
     }
 
     /** Shows the list just built, erasing changed lines and redrawing crossed lines. */
-    public void present(short[] lines) {
+    public void present(TftTouchShield tft, short[] lines) {
         int oldBase = front * listSize;
         int newBase = (1 - front) * listSize;
         for (int i = 0; i < shown; i++) {
             if (changed(lines, i)) {
-                drawListed(lines, oldBase + i * L_STRIDE, background);
+                drawListed(tft, lines, oldBase + i * L_STRIDE, background);
             }
         }
         for (int j = 0; j < built; j++) {
@@ -142,7 +142,7 @@ public final class TftLineDisplayList {
                 }
             }
             if (draw) {
-                drawListed(lines, at, lines[at + 4] & 0xFFFF);
+                drawListed(tft, lines, at, lines[at + 4] & 0xFFFF);
             }
         }
         front = 1 - front;
@@ -150,13 +150,13 @@ public final class TftLineDisplayList {
     }
 
     /** Blanks the view and forgets what the display list had drawn there. */
-    public void clearView() {
-        TftTouchShield.fillRect(0, viewTop, width, height - viewTop, background);
+    public void clearView(TftTouchShield tft) {
+        tft.fillRect(0, viewTop, width, height - viewTop, background);
         shown = 0;
     }
 
     /** Draws a clipped-list-independent Bresenham line. */
-    public void drawLine(int x0, int y0, int x1, int y1, int color) {
+    public void drawLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = -Math.abs(y1 - y0);
         int stepX = x0 > x1 ? -1 : 1;
@@ -178,13 +178,13 @@ public final class TftLineDisplayList {
                 nextY = y + stepY;
             }
             if (nextY != y) {
-                fillRun(runStart, x, y, color);
+                fillRun(tft, runStart, x, y, color);
                 runStart = nextX;
             }
             x = nextX;
             y = nextY;
         }
-        fillRun(runStart, x, y, color);
+        fillRun(tft, runStart, x, y, color);
     }
 
     private int outCode(int x, int y) {
@@ -223,13 +223,13 @@ public final class TftLineDisplayList {
                 && Math.min(lines[b + 1], lines[b + 3]) <= Math.max(lines[a + 1], lines[a + 3]);
     }
 
-    private void drawListed(short[] lines, int at, int color) {
-        drawLine(lines[at], lines[at + 1], lines[at + 2], lines[at + 3], color);
+    private void drawListed(TftTouchShield tft, short[] lines, int at, int color) {
+        drawLine(tft, lines[at], lines[at + 1], lines[at + 2], lines[at + 3], color);
     }
 
-    private void fillRun(int from, int to, int y, int color) {
+    private void fillRun(TftTouchShield tft, int from, int to, int y, int color) {
         int left = Math.min(from, to);
         int right = Math.max(from, to);
-        TftTouchShield.fillRect(left, y, right - left + 1, 1, color);
+        tft.fillRect(left, y, right - left + 1, 1, color);
     }
 }

@@ -31,15 +31,15 @@ public final class RoleMenu {
     private RoleMenu() {
     }
 
-    public static int choose() {
-        draw();
+    public static int choose(TftTouchShield tft) {
+        draw(tft);
         while (true) {
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int role = roleAt(TftTouchShield.touchX(), TftTouchShield.touchY());
-            waitForRelease();
+            int role = roleAt(tft.touchX(), tft.touchY());
+            waitForRelease(tft);
             if (role >= 0) {
                 return role;
             }
@@ -63,37 +63,37 @@ public final class RoleMenu {
         return -1;
     }
 
-    private static void draw() {
-        TftTouchShield.fillScreen(ViewList.BACKGROUND);
-        Hud.centered("GLADIATOR", 10, 3, View.WALL, ViewList.BACKGROUND);
-        Hud.centered("One arena, two players, every board its role", 42, 1, TftTouchShield.GRAY,
+    private static void draw(TftTouchShield tft) {
+        tft.fillScreen(ViewList.BACKGROUND);
+        Hud.centered(tft, "GLADIATOR", 10, 3, View.WALL, ViewList.BACKGROUND);
+        Hud.centered(tft, "One arena, two players, every board its role", 42, 1, TftTouchShield.GRAY,
                 ViewList.BACKGROUND);
-        button(ARENA, "ARENA", "Keeps the battle, map from above (UNO Q)", TftTouchShield.YELLOW);
-        button(PLAYER_1, "PLAYER 1", "Secutor: charges and presses the attack", Figure.AGGRESSIVE_COLOR);
-        button(PLAYER_2, "PLAYER 2", "Retiarius: nets and strikes from cover", Figure.AMBUSH_COLOR);
-        TftTouchShield.fillRect(RETURN_X, RETURN_Y, RETURN_WIDTH, RETURN_HEIGHT, Hud.PANEL);
-        TftTouchShield.drawRect(RETURN_X, RETURN_Y, RETURN_WIDTH, RETURN_HEIGHT, TftTouchShield.WHITE);
-        Hud.centered("RETURN", RETURN_Y + 9, 2, TftTouchShield.WHITE, Hud.PANEL);
+        button(tft, ARENA, "ARENA", "Keeps the battle, map from above (UNO Q)", TftTouchShield.YELLOW);
+        button(tft, PLAYER_1, "PLAYER 1", "Secutor: charges and presses the attack", Figure.AGGRESSIVE_COLOR);
+        button(tft, PLAYER_2, "PLAYER 2", "Retiarius: nets and strikes from cover", Figure.AMBUSH_COLOR);
+        tft.fillRect(RETURN_X, RETURN_Y, RETURN_WIDTH, RETURN_HEIGHT, Hud.PANEL);
+        tft.drawRect(RETURN_X, RETURN_Y, RETURN_WIDTH, RETURN_HEIGHT, TftTouchShield.WHITE);
+        Hud.centered(tft, "RETURN", RETURN_Y + 9, 2, TftTouchShield.WHITE, Hud.PANEL);
     }
 
-    private static void button(int role, String label, String detail, int color) {
+    private static void button(TftTouchShield tft, int role, String label, String detail, int color) {
         int y = FIRST_BUTTON_Y + role * (BUTTON_HEIGHT + BUTTON_GAP);
-        TftTouchShield.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, Hud.PANEL);
-        TftTouchShield.fillRect(BUTTON_X, y, 6, BUTTON_HEIGHT, color);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, Hud.PANEL);
-        TftTouchShield.setCursor(BUTTON_X + 16, y + 5);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
-        TftTouchShield.setCursor(BUTTON_X + 16, y + 27);
-        TftTouchShield.print(detail);
+        tft.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, Hud.PANEL);
+        tft.fillRect(BUTTON_X, y, 6, BUTTON_HEIGHT, color);
+        tft.setTextSize(2);
+        tft.setTextColor(color, Hud.PANEL);
+        tft.setCursor(BUTTON_X + 16, y + 5);
+        tft.print(label);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
+        tft.setCursor(BUTTON_X + 16, y + 27);
+        tft.print(detail);
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

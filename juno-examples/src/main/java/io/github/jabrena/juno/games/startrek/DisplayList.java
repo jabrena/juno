@@ -45,9 +45,9 @@ final class DisplayList {
         saveState();
     }
 
-    static void present(short[] lines) {
+    static void present(TftTouchShield tft, short[] lines) {
         loadState();
-        LINES.present(lines);
+        LINES.present(tft, lines);
         saveState();
     }
 
@@ -57,14 +57,14 @@ final class DisplayList {
         saveState();
     }
 
-    static void clearView() {
+    static void clearView(TftTouchShield tft) {
         loadState();
-        LINES.clearView();
+        LINES.clearView(tft);
         saveState();
     }
 
-    static void drawLine(int x0, int y0, int x1, int y1, int color) {
-        LINES.drawLine(x0, y0, x1, y1, color);
+    static void drawLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int color) {
+        LINES.drawLine(tft, x0, y0, x1, y1, color);
     }
 
     private static void loadState() {

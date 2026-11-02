@@ -106,15 +106,15 @@ final class Terrain {
         }
     }
 
-    static void draw(short[] ground, byte[] pads) {
+    static void draw(TftTouchShield tft, short[] ground, byte[] pads) {
         for (int column = 0; column < WIDTH; column++) {
-            drawColumn(ground, pads, column, ground[column]);
+            drawColumn(tft, ground, pads, column, ground[column]);
         }
-        drawMultipliers(ground, pads);
+        drawMultipliers(tft, ground, pads);
     }
 
-    private static void drawMultipliers(short[] ground, byte[] pads) {
-        TftTouchShield.setTextSize(1);
+    private static void drawMultipliers(TftTouchShield tft, short[] ground, byte[] pads) {
+        tft.setTextSize(1);
         int column = 0;
         while (column < WIDTH) {
             if (pads[column] == 0) {
@@ -124,24 +124,24 @@ final class Terrain {
                 while (column < WIDTH && pads[column] == pads[start]) {
                     column = column + 1;
                 }
-                TftTouchShield.setTextColor(PAD, GROUND);
-                TftTouchShield.setCursor((start + column) / 2 - 6, ground[start] + 6);
-                TftTouchShield.print("x");
-                TftTouchShield.print(pads[start]);
+                tft.setTextColor(PAD, GROUND);
+                tft.setCursor((start + column) / 2 - 6, ground[start] + 6);
+                tft.print("x");
+                tft.print(pads[start]);
             }
         }
     }
 
-    static void drawColumn(short[] ground, byte[] pads, int column, int fromY) {
+    static void drawColumn(TftTouchShield tft, short[] ground, byte[] pads, int column, int fromY) {
         int top = ground[column];
         int start = Math.max(fromY, top);
         if (start >= PLAY_BOTTOM) {
             return;
         }
         if (pads[column] != 0 && start < top + 2) {
-            TftTouchShield.drawVerticalLine(column, start, top + 2 - start, PAD);
+            tft.drawVerticalLine(column, start, top + 2 - start, PAD);
             start = top + 2;
         }
-        TftTouchShield.drawVerticalLine(column, start, PLAY_BOTTOM - start, GROUND);
+        tft.drawVerticalLine(column, start, PLAY_BOTTOM - start, GROUND);
     }
 }

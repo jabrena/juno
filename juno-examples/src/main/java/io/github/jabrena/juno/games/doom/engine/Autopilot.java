@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import io.github.jabrena.juno.util.Random;
 
 /**
@@ -80,9 +82,9 @@ final class Autopilot {
         goalX = Float.MAX_VALUE;
     }
 
-    static void step(short[] ceilings, short[] monsters, byte[] taken) {
+    static void step(TftTouchShield tft, short[] ceilings, short[] monsters, byte[] taken) {
         if (committedToExit()) {
-            followRoute(ceilings);
+            followRoute(tft, ceilings);
             return;
         }
         if (Combat.fight(ceilings, monsters, sway)) {
@@ -95,19 +97,19 @@ final class Autopilot {
                 detourX = Player.x;
                 detourY = Player.y;
             }
-            walkTo(World.itemX[item], World.itemY[item], ceilings);
+            walkTo(tft, World.itemX[item], World.itemY[item], ceilings);
             return;
         }
         if (detouring) {
             float backX = detourX - Player.x;
             float backY = detourY - Player.y;
             if (backX * backX + backY * backY > ARRIVED * ARRIVED) {
-                walkTo(detourX, detourY, ceilings);
+                walkTo(tft, detourX, detourY, ceilings);
                 return;
             }
             detouring = false;
         }
-        followRoute(ceilings);
+        followRoute(tft, ceilings);
     }
 
     /** Once the exit is close on the final approach, finishing the map takes priority over combat and pickups. */
@@ -121,7 +123,7 @@ final class Autopilot {
         return dx * dx + dy * dy < EXIT_COMMIT * EXIT_COMMIT;
     }
 
-    private static void followRoute(short[] ceilings) {
+    private static void followRoute(TftTouchShield tft, short[] ceilings) {
         float dx = World.routeX[target] - Player.x;
         float dy = World.routeY[target] - Player.y;
         float distance = dx * dx + dy * dy;
@@ -129,7 +131,7 @@ final class Autopilot {
             target = next();
             return;
         }
-        walkTo(World.routeX[target], World.routeY[target], ceilings);
+        walkTo(tft, World.routeX[target], World.routeY[target], ceilings);
     }
 
     private static int next() {
@@ -145,7 +147,7 @@ final class Autopilot {
         return !Player.blocked(Player.x, Player.y, World.routeX[next], World.routeY[next], ceilings);
     }
 
-    private static void walkTo(float x, float y, short[] ceilings) {
+    private static void walkTo(TftTouchShield tft, float x, float y, short[] ceilings) {
         float dx = x - Player.x;
         float dy = y - Player.y;
         if (goalX != x || goalY != y) {
@@ -175,7 +177,7 @@ final class Autopilot {
             stuck = 0;
             if (detouring) {
                 detouring = false;
-            } else if (World.fromWad && RoutePlanner.planFrom(Player.x, Player.y)) {
+            } else if (World.fromWad && RoutePlanner.planFrom(tft, Player.x, Player.y)) {
                 target = Math.min(1, World.routeLength - 1);
                 goalX = Float.MAX_VALUE;
             } else {

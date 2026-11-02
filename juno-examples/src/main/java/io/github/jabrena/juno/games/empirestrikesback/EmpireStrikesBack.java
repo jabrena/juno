@@ -57,51 +57,52 @@ public final class EmpireStrikesBack {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         int[] ents = new int[Entities.ENTITIES * Entities.E_STRIDE];
         byte[] letter = new byte[1];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.opening(lines, ents);
-                Interludes.drawTitle(letter);
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.opening(tft, lines, ents);
+                Interludes.drawTitle(tft, letter);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
             Random.seed(CLOCK.micros());
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Session.newGame();
             boolean alive = true;
             while (alive) {
-                alive = runRound(Round.PROBES, lines, ents) && runRound(Round.WALKERS, lines, ents)
-                        && runRound(Round.ASTEROIDS, lines, ents);
+                alive = runRound(tft, Round.PROBES, lines, ents) && runRound(tft, Round.WALKERS, lines, ents)
+                        && runRound(tft, Round.ASTEROIDS, lines, ents);
                 if (alive) {
                     Session.nextWave();
                 }
             }
             Session.endGame();
-            Hud.drawHeader();
-            DisplayList.clearView();
-            Hud.showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
+            Hud.drawHeader(tft);
+            DisplayList.clearView(tft);
+            Hud.showCentered(tft, "GAME OVER", 100, 3, TftTouchShield.RED);
             Delay.millis(3000);
         }
     }
 
     /** Runs one round frame by frame; returns false when the last shield is lost. */
-    private static boolean runRound(Round which, short[] lines, int[] ents) {
+    private static boolean runRound(TftTouchShield tft, Round which, short[] lines, int[] ents) {
         startRound(which, ents);
-        Hud.drawHeader();
-        DisplayList.clearView();
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
         switch (which) {
-            case PROBES -> ProbesRound.announce();
-            case WALKERS -> WalkersRound.announce();
-            default -> AsteroidsRound.announce();
+            case PROBES -> ProbesRound.announce(tft);
+            case WALKERS -> WalkersRound.announce(tft);
+            default -> AsteroidsRound.announce(tft);
         }
         Delay.millis(1400);
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
 
         int next = CLOCK.millis();
         while (true) {
@@ -114,22 +115,22 @@ public final class EmpireStrikesBack {
                 next = CLOCK.millis();
             }
             Session.frame = Session.frame + 1;
-            Controls.handleTouch(ents);
+            Controls.handleTouch(tft, ents);
             if (Controls.autopilot) {
                 AutopilotESB.fly(ents);
             }
-            step(ents);
-            Combat.resolveShots(ents);
-            SceneRenderer.render(lines, ents);
+            step(tft, ents);
+            Combat.resolveShots(tft, ents);
+            SceneRenderer.render(tft, lines, ents);
             if (Session.dead) {
                 return false;
             }
             if (roundOver(ents)) {
-                finishRound();
+                finishRound(tft);
                 return true;
             }
             if ((Session.frame & 7) == 0) {
-                Hud.drawStatus();
+                Hud.drawStatus(tft);
             }
         }
     }
@@ -158,34 +159,34 @@ public final class EmpireStrikesBack {
     }
 
     /** Round bonuses and the JEDI letter for a round flown without losing a shield. */
-    private static void finishRound() {
-        Hud.drawHeader();
-        DisplayList.clearView();
+    private static void finishRound(TftTouchShield tft) {
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
         int y = 90;
         if (Session.round == Round.WALKERS && WalkersRound.allAtatsDown()) {
             Session.score = Session.score + Session.ALL_ATATS_BONUS;
-            Hud.showCentered("ALL AT-ATS DOWN  +20000", y, 1, SceneRenderer.WALKER_HEAD);
+            Hud.showCentered(tft, "ALL AT-ATS DOWN  +20000", y, 1, SceneRenderer.WALKER_HEAD);
             y = y + 18;
         }
         if (!Session.hitThisRound) {
             Session.jedi = Session.jedi + 1;
-            Hud.showCentered("NO SHIELDS LOST", y, 1, TftTouchShield.WHITE);
-            Hud.showCentered(Session.jediWord(), y + 14, 2, TftTouchShield.CYAN);
+            Hud.showCentered(tft, "NO SHIELDS LOST", y, 1, TftTouchShield.WHITE);
+            Hud.showCentered(tft, Session.jediWord(), y + 14, 2, TftTouchShield.CYAN);
             if (Session.jedi == 4) {
                 Session.score = Session.score + Session.JEDI_BONUS;
-                Hud.showCentered("JEDI BONUS  +50000", y + 40, 1, TftTouchShield.CYAN);
+                Hud.showCentered(tft, "JEDI BONUS  +50000", y + 40, 1, TftTouchShield.CYAN);
                 Session.jedi = 0;
             }
             y = y + 60;
         }
-        Hud.drawHeader();
+        Hud.drawHeader(tft);
         if (y > 90) {
             Delay.millis(1600);
         }
     }
 
     /** One frame of flight: the craft steers, the round spawns what comes next, and all act. */
-    private static void step(int[] ents) {
+    private static void step(TftTouchShield tft, int[] ents) {
         int speed = Session.flightSpeed();
         Session.travel = Session.travel + speed;
         Camera.steer();
@@ -197,6 +198,6 @@ public final class EmpireStrikesBack {
                 default -> AsteroidsRound.spawn(ents);
             }
         }
-        Entities.move(ents, speed);
+        Entities.move(tft, ents, speed);
     }
 }

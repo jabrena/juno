@@ -18,72 +18,73 @@ public final class TouchPaintTFT {
     private static final int BRUSH = 4;
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
 
-        TftTouchShield.begin();
+        tft.begin();
         // Portrait with the palette on the edge opposite the shield's native row 0.
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        clearCanvas();
-        drawPalette();
-        selectSwatch(0);
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        clearCanvas(tft);
+        drawPalette(tft);
+        selectSwatch(tft, 0);
 
         int brushColor = paletteColor(0);
         while (true) {
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 continue;
             }
-            int x = TftTouchShield.touchX();
-            int y = TftTouchShield.touchY();
-            logTouch(x, y);
+            int x = tft.touchX();
+            int y = tft.touchY();
+            logTouch(tft, x, y);
 
             if (y < PALETTE_SIZE) {
                 int selected = x / PALETTE_SIZE;
                 if (selected == CLEAR) {
-                    clearCanvas();
+                    clearCanvas(tft);
                 } else {
                     brushColor = paletteColor(selected);
-                    selectSwatch(selected);
+                    selectSwatch(tft, selected);
                 }
             } else if (y - BRUSH / 2 >= PALETTE_SIZE) {
-                TftTouchShield.fillRect(x - BRUSH / 2, y - BRUSH / 2, BRUSH, BRUSH, brushColor);
+                tft.fillRect(x - BRUSH / 2, y - BRUSH / 2, BRUSH, BRUSH, brushColor);
             }
         }
     }
 
-    private static void logTouch(int x, int y) {
+    private static void logTouch(TftTouchShield tft, int x, int y) {
         Serial.print("x=");
         Serial.print(x);
         Serial.print(" y=");
         Serial.print(y);
         Serial.print(" rawX=");
-        Serial.print(TftTouchShield.touchRawX());
+        Serial.print(tft.touchRawX());
         Serial.print(" rawY=");
-        Serial.print(TftTouchShield.touchRawY());
+        Serial.print(tft.touchRawY());
         Serial.print(" z=");
-        Serial.println(TftTouchShield.touchPressure());
+        Serial.println(tft.touchPressure());
     }
 
     /** Paints every swatch, with the eraser's black center on the last one. */
-    private static void drawPalette() {
+    private static void drawPalette(TftTouchShield tft) {
         for (int i = 0; i < PALETTE_COLORS; i++) {
-            TftTouchShield.fillRect(i * PALETTE_SIZE, 0, PALETTE_SIZE, PALETTE_SIZE, paletteColor(i));
+            tft.fillRect(i * PALETTE_SIZE, 0, PALETTE_SIZE, PALETTE_SIZE, paletteColor(i));
         }
-        TftTouchShield.fillRect(CLEAR * PALETTE_SIZE + PALETTE_SIZE / 4, PALETTE_SIZE / 4,
+        tft.fillRect(CLEAR * PALETTE_SIZE + PALETTE_SIZE / 4, PALETTE_SIZE / 4,
                 PALETTE_SIZE / 2, PALETTE_SIZE / 2, TftTouchShield.BLACK);
     }
 
     /** Outlines the selected color swatch in white and every other color swatch in its own color. */
-    private static void selectSwatch(int selected) {
+    private static void selectSwatch(TftTouchShield tft, int selected) {
         for (int i = 0; i < CLEAR; i++) {
             int outline = i == selected ? TftTouchShield.WHITE : paletteColor(i);
-            TftTouchShield.drawRect(i * PALETTE_SIZE, 0, PALETTE_SIZE, PALETTE_SIZE, outline);
+            tft.drawRect(i * PALETTE_SIZE, 0, PALETTE_SIZE, PALETTE_SIZE, outline);
         }
     }
 
     /** Blanks everything below the palette. */
-    private static void clearCanvas() {
-        TftTouchShield.fillRect(0, PALETTE_SIZE, TftTouchShield.width(),
-                TftTouchShield.height() - PALETTE_SIZE, TftTouchShield.BLACK);
+    private static void clearCanvas(TftTouchShield tft) {
+        tft.fillRect(0, PALETTE_SIZE, tft.width(),
+                tft.height() - PALETTE_SIZE, TftTouchShield.BLACK);
     }
 
     private static int paletteColor(int index) {

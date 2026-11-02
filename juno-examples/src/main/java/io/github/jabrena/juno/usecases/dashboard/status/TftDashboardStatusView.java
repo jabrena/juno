@@ -13,6 +13,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** The network status screen: the Wi-Fi, SD-card and STATUS.TXT state from the model, each line redrawn on change. */
 public final class TftDashboardStatusView implements View {
+
+    private final TftTouchShield tft;
     private static final int LABEL_X = 12;
     private static final int VALUE_X = 90;
     private static final int WIFI_Y = 56;
@@ -31,7 +33,8 @@ public final class TftDashboardStatusView implements View {
     private final TftTextWidget sdValue = new TftTextWidget(VALUE_X, SD_Y, 2);
     private final TftTextWidget fileValue = new TftTextWidget(VALUE_X, FILE_Y, 2);
 
-    public TftDashboardStatusView(Navigator navigator, TftDashboardState model, TftFpsWidget fps) {
+    public TftDashboardStatusView(TftTouchShield tft, Navigator navigator, TftDashboardState model, TftFpsWidget fps) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.fps = fps;
@@ -39,12 +42,12 @@ public final class TftDashboardStatusView implements View {
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(TftTouchShield.NAVY);
-        header.draw();
-        wifiLabel.draw("WIFI", TftTouchShield.WHITE);
-        sdLabel.draw("SD", TftTouchShield.WHITE);
-        fileLabel.draw("FILE", TftTouchShield.WHITE);
-        homeButton.draw();
+        tft.fillScreen(TftTouchShield.NAVY);
+        header.draw(tft);
+        wifiLabel.draw(tft, "WIFI", TftTouchShield.WHITE);
+        sdLabel.draw(tft, "SD", TftTouchShield.WHITE);
+        fileLabel.draw(tft, "FILE", TftTouchShield.WHITE);
+        homeButton.draw(tft);
         fps.reset();
         wifiValue.reset();
         sdValue.reset();
@@ -55,28 +58,28 @@ public final class TftDashboardStatusView implements View {
     public void render() {
         WifiStatus wifi = model.wifiStatus();
         if (wifi == null) {
-            wifiValue.set("STARTING", TftTouchShield.YELLOW);
+            wifiValue.set(tft, "STARTING", TftTouchShield.YELLOW);
         } else if (wifi.connected()) {
-            wifiValue.set("OK", TftTouchShield.GREEN);
+            wifiValue.set(tft, "OK", TftTouchShield.GREEN);
         } else {
-            wifiValue.set("FAILED", TftTouchShield.RED);
+            wifiValue.set(tft, "FAILED", TftTouchShield.RED);
         }
         StatusFile file = model.statusFile();
         if (!model.cardReady()) {
-            sdValue.set("FAILED", TftTouchShield.RED);
+            sdValue.set(tft, "FAILED", TftTouchShield.RED);
         } else if (file == null) {
-            sdValue.set("STARTING", TftTouchShield.YELLOW);
+            sdValue.set(tft, "STARTING", TftTouchShield.YELLOW);
         } else if (file.readable()) {
-            sdValue.set("OK", TftTouchShield.GREEN);
+            sdValue.set(tft, "OK", TftTouchShield.GREEN);
         } else {
-            sdValue.set("FAILED", TftTouchShield.RED);
+            sdValue.set(tft, "FAILED", TftTouchShield.RED);
         }
         if (file == null || !file.readable()) {
-            fileValue.set("-", TftTouchShield.WHITE);
+            fileValue.set(tft, "-", TftTouchShield.WHITE);
         } else {
-            fileValue.set(file.bytes(), " B", TftTouchShield.WHITE);
+            fileValue.set(tft, file.bytes(), " B", TftTouchShield.WHITE);
         }
-        fps.update();
+        fps.update(tft);
     }
 
     @Override

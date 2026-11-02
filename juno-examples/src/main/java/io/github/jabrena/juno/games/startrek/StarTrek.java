@@ -54,43 +54,44 @@ public final class StarTrek {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         int[] ents = new int[Entities.ENTITIES * Entities.E_STRIDE];
         byte[] letter = new byte[1];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.warpIntro(ents);
-                Interludes.drawTitle(lines, ents, letter);
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.warpIntro(tft, ents);
+                Interludes.drawTitle(tft, lines, ents, letter);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
             Random.seed(CLOCK.micros());
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Session.newGame();
-            while (playSector(lines, ents)) {
+            while (playSector(tft, lines, ents)) {
                 Session.sector = Session.sector + 1;
             }
             Session.endGame();
-            Hud.drawHeader(ents);
-            DisplayList.clearView();
-            Hud.showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
+            Hud.drawHeader(tft, ents);
+            DisplayList.clearView(tft);
+            Hud.showCentered(tft, "GAME OVER", 100, 3, TftTouchShield.RED);
             Delay.millis(3000);
         }
     }
 
     /** Plays one sector; returns false when the Enterprise is destroyed. */
-    private static boolean playSector(short[] lines, int[] ents) {
+    private static boolean playSector(TftTouchShield tft, short[] lines, int[] ents) {
         Sector.start(ents);
-        Hud.drawHeader(ents);
-        DisplayList.clearView();
-        Sector.announce();
+        Hud.drawHeader(tft, ents);
+        DisplayList.clearView(tft);
+        Sector.announce(tft);
         Delay.millis(1500);
-        DisplayList.clearView();
-        Hud.drawPanel();
+        DisplayList.clearView(tft);
+        Hud.drawPanel(tft);
 
         int next = CLOCK.millis();
         while (true) {
@@ -103,32 +104,32 @@ public final class StarTrek {
                 next = CLOCK.millis();
             }
             Session.frame = Session.frame + 1;
-            Controls.handleTouch(ents);
+            Controls.handleTouch(tft, ents);
             if (Controls.autopilot) {
-                AutopilotST.fly(ents);
+                AutopilotST.fly(tft, ents);
             }
-            step(ents);
-            SceneRenderer.render(lines, ents);
+            step(tft, ents);
+            SceneRenderer.render(tft, lines, ents);
             if (Session.dead) {
-                Interludes.explodeEnterprise();
+                Interludes.explodeEnterprise(tft);
                 return false;
             }
             if (Sector.isCleared(ents)) {
-                Sector.finish();
+                Sector.finish(tft);
                 return true;
             }
             if (Hud.headerFlashed) {
-                Hud.drawHeader(ents);
+                Hud.drawHeader(tft, ents);
             } else {
-                Hud.drawStatus(ents);
+                Hud.drawStatus(tft, ents);
             }
         }
     }
 
-    private static void step(int[] ents) {
+    private static void step(TftTouchShield tft, int[] ents) {
         Enterprise.steer();
         Enterprise.move();
         Combat.recharge();
-        Entities.move(ents);
+        Entities.move(tft, ents);
     }
 }

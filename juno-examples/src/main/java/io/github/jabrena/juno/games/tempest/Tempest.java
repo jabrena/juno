@@ -50,39 +50,40 @@ public final class Tempest {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         int[] tube = new int[Tube.SIZE];
         int[] enemies = new int[Session.ENEMIES * Session.E_STRIDE];
         int[] shots = new int[Session.SHOTS * Session.S_STRIDE];
         int[] bullets = new int[Session.BULLETS * Session.S_STRIDE];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
-            Interludes.cover(tube);
-            Controls.waitForTap();
-            Controls.choosePilot();
+            Interludes.cover(tft, tube);
+            Controls.waitForTap(tft);
+            Controls.choosePilot(tft);
             Random.seed(CLOCK.micros());
             Session.newGame();
             boolean playing = true;
             while (playing) {
-                playing = playLevel(tube, enemies, shots, bullets);
+                playing = playLevel(tft, tube, enemies, shots, bullets);
             }
             Session.finishGame();
-            Interludes.gameOver(tube);
-            Controls.waitForTap();
+            Interludes.gameOver(tft, tube);
+            Controls.waitForTap(tft);
         }
     }
 
     /** Plays one level; returns false when the last life is lost. */
-    private static boolean playLevel(int[] tube, int[] enemies, int[] shots, int[] bullets) {
+    private static boolean playLevel(TftTouchShield tft, int[] tube, int[] enemies, int[] shots, int[] bullets) {
         Session.startLevel(enemies, shots, bullets);
         Controls.resetForLevel();
         Tube.build((Session.level - 1) % 4, tube);
-        TftTouchShield.fillScreen(SceneRenderer.SPACE);
-        Hud.drawHeader();
-        Interludes.emergeFromTube(tube, Session.playerLane);
-        SceneRenderer.drawClaw(tube, Session.playerLane, SceneRenderer.CLAW);
-        Interludes.levelCard(tube, Session.level, Session.playerLane);
+        tft.fillScreen(SceneRenderer.SPACE);
+        Hud.drawHeader(tft);
+        Interludes.emergeFromTube(tft, tube, Session.playerLane);
+        SceneRenderer.drawClaw(tft, tube, Session.playerLane, SceneRenderer.CLAW);
+        Interludes.levelCard(tft, tube, Session.level, Session.playerLane);
 
         int next = CLOCK.millis();
         int frame = 0;
@@ -96,27 +97,27 @@ public final class Tempest {
             frame = frame + 1;
 
             Session.tickCooldowns();
-            Controls.update(tube, shots);
+            Controls.update(tft, tube, shots);
             if (Controls.autopilot) {
-                AutopilotTempest.fly(tube, enemies, shots);
+                AutopilotTempest.fly(tft, tube, enemies, shots);
             }
             if (Session.consumeZapRequest()) {
-                superzap(tube, enemies, bullets);
+                superzap(tft, tube, enemies, bullets);
             }
-            Session.moveShots(tube, shots, enemies, bullets);
+            Session.moveShots(tft, tube, shots, enemies, bullets);
             Enemies.spawnEnemies(enemies);
-            boolean caught = Enemies.moveEnemies(tube, enemies, bullets, frame);
-            if (Session.moveBullets(tube, bullets)) {
+            boolean caught = Enemies.moveEnemies(tft, tube, enemies, bullets, frame);
+            if (Session.moveBullets(tft, tube, bullets)) {
                 caught = true;
             }
             if (Session.score != shownScore || Controls.autopilot != shownPilot) {
                 shownScore = Session.score;
                 shownPilot = Controls.autopilot;
-                Hud.drawHeader();
+                Hud.drawHeader(tft);
             }
             if (caught) {
                 Session.lives = Session.lives - 1;
-                loseLife(tube, enemies, shots, bullets);
+                loseLife(tft, tube, enemies, shots, bullets);
                 if (Session.lives == 0) {
                     return false;
                 }
@@ -124,33 +125,33 @@ public final class Tempest {
             }
             if (Session.levelCleared(enemies)) {
                 int bonus = Session.finishLevel();
-                Hud.drawHeader();
-                SceneRenderer.clearShots(shots, Session.SHOTS);
-                SceneRenderer.clearShots(bullets, Session.BULLETS);
+                Hud.drawHeader(tft);
+                SceneRenderer.clearShots(tft, shots, Session.SHOTS);
+                SceneRenderer.clearShots(tft, bullets, Session.BULLETS);
                 Delay.millis(400);
-                Interludes.levelCleared(tube, Session.playerLane, bonus);
+                Interludes.levelCleared(tft, tube, Session.playerLane, bonus);
                 return true;
             }
         }
     }
 
-    private static void superzap(int[] tube, int[] enemies, int[] bullets) {
-        SceneRenderer.zapFlash(tube);
-        Session.zapAllEnemies(tube, enemies);
-        SceneRenderer.clearShots(bullets, Session.BULLETS);
-        SceneRenderer.drawWeb(tube, Session.playerLane);
-        Hud.drawHeader();
+    private static void superzap(TftTouchShield tft, int[] tube, int[] enemies, int[] bullets) {
+        SceneRenderer.zapFlash(tft, tube);
+        Session.zapAllEnemies(tft, tube, enemies);
+        SceneRenderer.clearShots(tft, bullets, Session.BULLETS);
+        SceneRenderer.drawWeb(tft, tube, Session.playerLane);
+        Hud.drawHeader(tft);
     }
 
-    private static void loseLife(int[] tube, int[] enemies, int[] shots, int[] bullets) {
-        SceneRenderer.deathFlash(tube, Session.playerLane);
+    private static void loseLife(TftTouchShield tft, int[] tube, int[] enemies, int[] shots, int[] bullets) {
+        SceneRenderer.deathFlash(tft, tube, Session.playerLane);
         Delay.millis(500);
         Session.recycleAfterDeath(enemies, shots, bullets);
-        TftTouchShield.fillScreen(SceneRenderer.SPACE);
-        SceneRenderer.drawWeb(tube, Session.playerLane);
-        Hud.drawHeader();
+        tft.fillScreen(SceneRenderer.SPACE);
+        SceneRenderer.drawWeb(tft, tube, Session.playerLane);
+        Hud.drawHeader(tft);
         if (Session.lives > 0) {
-            Interludes.clawLost(tube, Session.playerLane, Session.lives);
+            Interludes.clawLost(tft, tube, Session.playerLane, Session.lives);
         }
     }
 }

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.games.startrek;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.util.Random;
 
 import static io.github.jabrena.juno.games.startrek.Geometry.FIX;
@@ -44,7 +45,7 @@ final class Entities {
     }
 
     /** Moves everything one frame, then lets each object act. */
-    static void move(int[] ents) {
+    static void move(TftTouchShield tft, int[] ents) {
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             int type = ents[b + E_TYPE];
@@ -56,17 +57,17 @@ final class Entities {
             if (type == T_KLINGON) {
                 Enemies.flyKlingon(ents, b);
             } else if (type == T_SAUCER) {
-                Enemies.flySaucer(ents, b);
+                Enemies.flySaucer(tft, ents, b);
             } else if (type == T_NOMAD) {
                 Enemies.flyNomad(ents, b);
             } else if (type == T_TORPEDO) {
-                Combat.flyTorpedo(ents, b);
+                Combat.flyTorpedo(tft, ents, b);
             } else if (type == T_PHOTON) {
                 Combat.flyPhoton(ents, slot);
             } else if (type == T_MINE) {
-                Enemies.touchMine(ents, b);
+                Enemies.touchMine(tft, ents, b);
             } else if (type == T_STARBASE) {
-                Enterprise.dockIfClose(ents, b);
+                Enterprise.dockIfClose(tft, ents, b);
             } else if (type == T_DEBRIS) {
                 ents[b + E_TIMER] = ents[b + E_TIMER] - 1;
                 if (ents[b + E_TIMER] <= 0) {

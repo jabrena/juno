@@ -6,6 +6,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** The Lichess picker: daily puzzle, another public puzzle, or a live TV game. */
 final class ChallengeMenuView implements View {
+
+    private final TftTouchShield tft;
     private static final int WIDTH = 240;
     private static final int BUTTON_X = 18;
     private static final int BUTTON_WIDTH = 204;
@@ -27,7 +29,8 @@ final class ChallengeMenuView implements View {
     private final TvModel tvModel;
     private boolean error;
 
-    ChallengeMenuView(Navigator navigator, LichessApi api, LichessModel model, TvModel tvModel) {
+    ChallengeMenuView(TftTouchShield tft, Navigator navigator, LichessApi api, LichessModel model, TvModel tvModel) {
+        this.tft = tft;
         this.navigator = navigator;
         this.api = api;
         this.model = model;
@@ -37,7 +40,7 @@ final class ChallengeMenuView implements View {
     @Override
     public void enter() {
         error = false;
-        drawMenu();
+        drawMenu(tft);
     }
 
     @Override
@@ -53,92 +56,92 @@ final class ChallengeMenuView implements View {
             return;
         }
         if (y >= DAILY_Y && y < DAILY_Y + BUTTON_HEIGHT) {
-            load(true);
+            load(tft, true);
         } else if (y >= FRESH_Y && y < FRESH_Y + BUTTON_HEIGHT) {
-            load(false);
+            load(tft, false);
         } else if (y >= TV_Y && y < TV_Y + BUTTON_HEIGHT) {
-            loadTv();
+            loadTv(tft);
         } else if (isBackTouch(x, y)) {
             navigator.show(LichessViews.COVER);
         }
     }
 
-    private void load(boolean daily) {
-        drawLoading(daily ? "DOWNLOADING DAILY PUZZLE" : "DOWNLOADING FRESH PUZZLE");
+    private void load(TftTouchShield tft, boolean daily) {
+        drawLoading(tft, daily ? "DOWNLOADING DAILY PUZZLE" : "DOWNLOADING FRESH PUZZLE");
         boolean loaded = daily ? api.loadDaily(model) : api.loadFresh(model);
         if (loaded) {
             navigator.show(LichessViews.CHALLENGE);
         } else {
             error = true;
-            drawError();
+            drawError(tft);
         }
     }
 
-    private void loadTv() {
-        drawLoading("CONNECTING TO LICHESS TV");
+    private void loadTv(TftTouchShield tft) {
+        drawLoading(tft, "CONNECTING TO LICHESS TV");
         if (api.loadTv(tvModel)) {
             navigator.show(LichessViews.TV);
         } else {
             error = true;
-            drawError();
+            drawError(tft);
         }
     }
 
-    private void drawLoading(String detail) {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
+    private void drawLoading(TftTouchShield tft, String detail) {
+        tft.fillScreen(TftTouchShield.BLACK);
         for (int dot = 0; dot < DOT_X.length; dot++) {
-            drawDot(dot, DIM_DOT);
+            drawDot(tft, dot, DIM_DOT);
         }
-        drawSpinner();
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
+        drawSpinner(tft);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
         String title = "ASKING LICHESS...";
-        TftTouchShield.setCursor(centeredX(title, 2), 132);
-        TftTouchShield.print(title);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(centeredX(detail, 1), 158);
-        TftTouchShield.print(detail);
+        tft.setCursor(centeredX(title, 2), 132);
+        tft.print(title);
+        tft.setTextSize(1);
+        tft.setCursor(centeredX(detail, 1), 158);
+        tft.print(detail);
     }
 
-    private void drawSpinner() {
+    private void drawSpinner(TftTouchShield tft) {
         for (int trail = TAIL_COLORS.length; trail >= 0; trail--) {
             int dot = (-trail + DOT_X.length) % DOT_X.length;
-            drawDot(dot, trail == TAIL_COLORS.length ? DIM_DOT : TAIL_COLORS[trail]);
+            drawDot(tft, dot, trail == TAIL_COLORS.length ? DIM_DOT : TAIL_COLORS[trail]);
         }
     }
 
-    private void drawDot(int dot, int color) {
-        TftTouchShield.fillRect(SPINNER_X + DOT_X[dot] - DOT_SIZE / 2, SPINNER_Y + DOT_Y[dot] - DOT_SIZE / 2,
+    private void drawDot(TftTouchShield tft, int dot, int color) {
+        tft.fillRect(SPINNER_X + DOT_X[dot] - DOT_SIZE / 2, SPINNER_Y + DOT_Y[dot] - DOT_SIZE / 2,
                 DOT_SIZE, DOT_SIZE, color);
     }
 
-    private void drawMenu() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.fillRect(0, 0, 240, 48, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(centeredX("CHALLENGES", 3), 13);
-        TftTouchShield.print("CHALLENGES");
-        drawButton(DAILY_Y, "DAILY PUZZLE", "THE featured move", TftTouchShield.ORANGE);
-        drawButton(FRESH_Y, "FRESH PUZZLE", "A new public tactic", TftTouchShield.ORANGE);
-        drawButton(TV_Y, "LIVE TV", "WATCH A LICHESS GAME", TftTouchShield.ORANGE);
-        drawBackButton();
+    private void drawMenu(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.fillRect(0, 0, 240, 48, TftTouchShield.NAVY);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(centeredX("CHALLENGES", 3), 13);
+        tft.print("CHALLENGES");
+        drawButton(tft, DAILY_Y, "DAILY PUZZLE", "THE featured move", TftTouchShield.ORANGE);
+        drawButton(tft, FRESH_Y, "FRESH PUZZLE", "A new public tactic", TftTouchShield.ORANGE);
+        drawButton(tft, TV_Y, "LIVE TV", "WATCH A LICHESS GAME", TftTouchShield.ORANGE);
+        drawBackButton(tft);
     }
 
-    private void drawButton(int y, String title, String subtitle, int background) {
-        TftTouchShield.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, background);
-        TftTouchShield.drawRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, background);
-        TftTouchShield.setCursor(BUTTON_X + 14, y + 10);
-        TftTouchShield.print(title);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(BUTTON_X + 14, y + 36);
-        TftTouchShield.print(subtitle);
+    private void drawButton(TftTouchShield tft, int y, String title, String subtitle, int background) {
+        tft.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, background);
+        tft.drawRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, background);
+        tft.setCursor(BUTTON_X + 14, y + 10);
+        tft.print(title);
+        tft.setTextSize(1);
+        tft.setCursor(BUTTON_X + 14, y + 36);
+        tft.print(subtitle);
     }
 
-    private void drawBackButton() {
-        drawButton(BACK_Y, "BACK TO COVER", "", TftTouchShield.GRAY);
+    private void drawBackButton(TftTouchShield tft) {
+        drawButton(tft, BACK_Y, "BACK TO COVER", "", TftTouchShield.GRAY);
     }
 
     private boolean isBackTouch(int x, int y) {
@@ -149,18 +152,18 @@ final class ChallengeMenuView implements View {
         return (WIDTH - text.length() * TftTouchShield.CHAR_WIDTH * size) / 2;
     }
 
-    private void drawError() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.RED, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(66, 84);
-        TftTouchShield.print("OFFLINE");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(24, 140);
-        TftTouchShield.print(model.loadError() == LichessModel.LOAD_NETWORK_ERROR ? "CHECK WIFI" : "BAD PUZZLE DATA");
-        TftTouchShield.setCursor(54, 256);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.print("TAP FOR COVER");
+    private void drawError(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.RED, TftTouchShield.BLACK);
+        tft.setCursor(66, 84);
+        tft.print("OFFLINE");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(24, 140);
+        tft.print(model.loadError() == LichessModel.LOAD_NETWORK_ERROR ? "CHECK WIFI" : "BAD PUZZLE DATA");
+        tft.setCursor(54, 256);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.print("TAP FOR COVER");
     }
 }

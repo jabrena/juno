@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 import io.github.jabrena.juno.util.Random;
 
 /** The CPU pilot: lets flippers close in before engaging, like a person spotting them. */
@@ -21,7 +23,7 @@ final class AutopilotTempest {
      * Chases whichever visible flipper is closest to the rim, occasionally hesitating or misjudging
      * its lane, and zaps when swarmed.
      */
-    static void fly(int[] tube, int[] enemies, int[] shots) {
+    static void fly(TftTouchShield tft, int[] tube, int[] enemies, int[] shots) {
         if (cooldown > 0) {
             cooldown = cooldown - 1;
             return;
@@ -38,7 +40,7 @@ final class AutopilotTempest {
         if (Random.nextInt(100) < CPU_MISS_PERCENT) {
             target = Random.nextInt(2) == 0 ? (target + 1) % Tube.LANES : (target + Tube.LANES - 1) % Tube.LANES;
         }
-        Session.moveToward(tube, target);
+        Session.moveToward(tft, tube, target);
         Session.fire(shots);
     }
 

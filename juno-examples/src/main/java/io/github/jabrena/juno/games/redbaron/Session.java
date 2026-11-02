@@ -53,24 +53,24 @@ final class Session {
     }
 
     /** After a hit or crash, removes one plane and resets the immediate danger. */
-    static boolean loseAPlane(int[] ents) {
+    static boolean loseAPlane(TftTouchShield tft, int[] ents) {
         shotDown = false;
         planes = planes - 1;
-        TftTouchShield.fillRect(0, DisplayList.HEADER, DisplayList.WIDTH,
+        tft.fillRect(0, DisplayList.HEADER, DisplayList.WIDTH,
                 DisplayList.HEIGHT - DisplayList.HEADER, TftTouchShield.RED);
         Delay.millis(80);
-        DisplayList.clearView();
-        Hud.drawHeader();
+        DisplayList.clearView(tft);
+        Hud.drawHeader(tft);
         if (planes == 0) {
             dead = true;
             return false;
         }
-        Hud.showCentered("SHOT DOWN", 104, 2, TftTouchShield.RED);
-        Hud.showCentered("Planes left", 130, 1, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(158, 146);
-        TftTouchShield.print(planes);
+        Hud.showCentered(tft, "SHOT DOWN", 104, 2, TftTouchShield.RED);
+        Hud.showCentered(tft, "Planes left", 130, 1, TftTouchShield.WHITE);
+        tft.setCursor(158, 146);
+        tft.print(planes);
         Delay.millis(1300);
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
         for (int slot = 0; slot < ENTITIES; slot++) {
             int b = slot * E_STRIDE;
             int type = ents[b + E_TYPE];
@@ -85,12 +85,12 @@ final class Session {
         return true;
     }
 
-    static void addScore(int points) {
+    static void addScore(TftTouchShield tft, int points) {
         score = score + points;
         if (score >= nextExtraPlane) {
             planes = planes + 1;
             nextExtraPlane = nextExtraPlane + EXTRA_PLANE_SCORE;
         }
-        Hud.drawHeader();
+        Hud.drawHeader(tft);
     }
 }

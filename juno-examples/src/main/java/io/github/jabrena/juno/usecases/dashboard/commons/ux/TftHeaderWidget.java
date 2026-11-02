@@ -11,11 +11,11 @@ public final class TftHeaderWidget {
     }
 
     /** Draws the title bar; called after the screen was cleared to navy. */
-    public void draw() {
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(12, 12);
-        TftTouchShield.print(title);
-        TftTouchShield.drawHorizontalLine(12, 34, 296, TftTouchShield.CYAN);
+    public void draw(TftTouchShield tft) {
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setCursor(12, 12);
+        tft.print(title);
+        tft.drawHorizontalLine(12, 34, 296, TftTouchShield.CYAN);
     }
 }

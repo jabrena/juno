@@ -88,60 +88,61 @@ public final class Blackjack {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] deck = new byte[52];
         byte[] player = new byte[MAX_CARDS];
         byte[] dealer = new byte[MAX_CARDS];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover();
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.choosePlayer();
-            playSession(deck, player, dealer);
+            Controls.choosePlayer(tft);
+            playSession(tft, deck, player, dealer);
             Delay.millis(3000);
         }
     }
 
-    private static void playSession(byte[] deck, byte[] player, byte[] dealer) {
-        TftTouchShield.fillScreen(FELT);
+    private static void playSession(TftTouchShield tft, byte[] deck, byte[] player, byte[] dealer) {
+        tft.fillScreen(FELT);
         bank = START_BANK;
         bet = 10;
         deckPosition = 52;
         phase = BETTING;
         gameOver = false;
-        drawHeader();
-        showMessage("Place your bet", TftTouchShield.WHITE);
-        drawButtons(player);
+        drawHeader(tft);
+        showMessage(tft, "Place your bet", TftTouchShield.WHITE);
+        drawButtons(tft, player);
 
         while (!gameOver) {
-            int button = Controls.autopilot ? cpuButton(player) : waitForButton();
+            int button = Controls.autopilot ? cpuButton(player) : waitForButton(tft);
             if (button == 3) {
                 Controls.autopilot = !Controls.autopilot;
-                showMessage(Controls.autopilot ? "CPU player" : "Human player", TftTouchShield.CYAN);
+                showMessage(tft, Controls.autopilot ? "CPU player" : "Human player", TftTouchShield.CYAN);
                 continue;
             }
             if (phase == BETTING) {
                 if (button == 0) {
                     bet = Math.max(MIN_BET, bet - BET_STEP);
-                    drawHeader();
-                    drawButtons(player);
+                    drawHeader(tft);
+                    drawButtons(tft, player);
                 } else if (button == 1) {
                     bet = Math.min(Math.max(MIN_BET, bank), bet + BET_STEP);
-                    drawHeader();
-                    drawButtons(player);
+                    drawHeader(tft);
+                    drawButtons(tft, player);
                 } else {
-                    deal(deck, player, dealer);
+                    deal(tft, deck, player, dealer);
                 }
             } else if (button == 0) {
-                hit(deck, player, dealer);
+                hit(tft, deck, player, dealer);
             } else if (button == 1) {
-                dealerTurn(deck, player, dealer);
+                dealerTurn(tft, deck, player, dealer);
             } else if (canDouble()) {
-                doubleDown(deck, player, dealer);
+                doubleDown(tft, deck, player, dealer);
             }
         }
     }

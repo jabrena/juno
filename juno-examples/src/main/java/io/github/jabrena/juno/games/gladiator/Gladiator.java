@@ -62,47 +62,48 @@ public final class Gladiator {
     private boolean online;
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
-        new Gladiator().play();
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
+        new Gladiator().play(tft);
     }
 
     /** The title, then the game menu for ever. */
-    private void play() {
+    private void play(TftTouchShield tft) {
         // Seeded before the title too, so even its first quote is picked at random.
         Random.seed(CLOCK.micros());
-        Opening.play(list, wireframe);
+        Opening.play(tft, list, wireframe);
         Random.seed(CLOCK.micros());
         while (true) {
-            int mode = ModeMenu.choose(BOARD.isQ());
+            int mode = ModeMenu.choose(tft, BOARD.isQ());
             if (mode == ModeMenu.SOLO) {
-                SoloFlow.run(list, wireframe, FighterSetup.choose());
-                Opening.play(list, wireframe);
+                SoloFlow.run(tft, list, wireframe, FighterSetup.choose(tft));
+                Opening.play(tft, list, wireframe);
             } else {
-                multiplayer();
+                multiplayer(tft);
             }
         }
     }
 
 
-    private void multiplayer() {
+    private void multiplayer(TftTouchShield tft) {
         // One set of packet buffers shared by whichever network role is running.
         byte[] incoming = new byte[GladiatorProtocol.PACKET_SIZE];
         byte[] outgoing = new byte[GladiatorProtocol.PACKET_SIZE];
         int[] source = new int[Udp.ENDPOINT_SIZE];
-        if (!connect()) {
+        if (!connect(tft)) {
             return;
         }
         while (true) {
-            int role = chooseRole();
+            int role = chooseRole(tft);
             if (role == RoleMenu.RETURN) {
                 return;
             }
             if (role == ARENA) {
-                ArenaFlow.run(incoming, outgoing, source);
+                ArenaFlow.run(tft, incoming, outgoing, source);
             } else {
-                new FighterFlow(list, role).run(incoming, outgoing, source);
+                new FighterFlow(list, role).run(tft, incoming, outgoing, source);
             }
         }
     }
@@ -112,21 +113,21 @@ public final class Gladiator {
      * Linux side) and opens the UDP socket on {@link GladiatorProtocol#PORT}. Returns false after showing what is missing, when an UNO
      * R4 finds no network to join, once MENU is tapped.
      */
-    private boolean connect() {
+    private boolean connect(TftTouchShield tft) {
         if (online) {
             return true;
         }
-        WifiSettings settings = WifiSettings.load(TftTouchShield.getSdCard());
+        WifiSettings settings = WifiSettings.load(tft.getSdCard());
         if (settings == null) {
             if (!BOARD.isQ()) {
-                Hud.message("NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
-                waitForMenu();
+                Hud.message(tft, "NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
+                waitForMenu(tft);
                 return false;
             }
             settings = WifiSettings.NONE;
         }
-        TftTouchShield.fillScreen(ViewList.BACKGROUND);
-        Hud.centered("CONNECTING WIFI", 110, 2, TftTouchShield.CYAN, ViewList.BACKGROUND);
+        tft.fillScreen(ViewList.BACKGROUND);
+        Hud.centered(tft, "CONNECTING WIFI", 110, 2, TftTouchShield.CYAN, ViewList.BACKGROUND);
         Serial.println("Connecting Wi-Fi");
         WIFI.begin(settings.ssid(), settings.password());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
@@ -142,18 +143,18 @@ public final class Gladiator {
     }
 
     /** Waits for a tap on the MENU button under a full-screen message, and for the finger to lift. */
-    private static void waitForMenu() {
-        while (!TftTouchShield.readTouch() || TftTouchShield.touchY() < ViewList.VIEW_BOTTOM) {
+    private static void waitForMenu(TftTouchShield tft) {
+        while (!tft.readTouch() || tft.touchY() < ViewList.VIEW_BOTTOM) {
             Delay.millis(10);
         }
-        while (TftTouchShield.readTouch()) {
+        while (tft.readTouch()) {
             Delay.millis(10);
         }
     }
 
     /** The role menu: {@link #ARENA}, {@link Brain#AGGRESSIVE}, {@link Brain#AMBUSH} or {@link RoleMenu#RETURN}. */
-    public static int chooseRole() {
-        return RoleMenu.choose();
+    public static int chooseRole(TftTouchShield tft) {
+        return RoleMenu.choose(tft);
     }
 
     /** The role whose button is at ({@code x}, {@code y}), {@link RoleMenu#RETURN}, or -1. */

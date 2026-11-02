@@ -46,15 +46,16 @@ public final class PokemonBattle {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] incoming = new byte[PokemonProtocol.PACKET_SIZE];
         byte[] outgoing = new byte[PokemonProtocol.PACKET_SIZE];
         int[] source = new int[Udp.ENDPOINT_SIZE];
         int[] peer = new int[Udp.ENDPOINT_SIZE];
         int[] opponent = new int[2];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
-        connectWifi();
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        connectWifi(tft);
         int nodeId = CLOCK.micros();
         if (nodeId == 0) {
             nodeId = 1;
@@ -62,50 +63,50 @@ public final class PokemonBattle {
 
         int port = PortSelector.FIRST_PORT;
         while (true) {
-            port = PortSelector.choose(port);
+            port = PortSelector.choose(tft, port);
             boolean connected = true;
             while (connected) {
-                int selected = choosePokemon();
-                if (!discover(port, selected, nodeId, peer, opponent, incoming, source, outgoing)) {
+                int selected = choosePokemon(tft);
+                if (!discover(tft, port, selected, nodeId, peer, opponent, incoming, source, outgoing)) {
                     connected = false;
                     Udp.stop();
                 } else {
-                    battle(selected, opponent[0], nodeId, opponent[1], peer, incoming, source, outgoing);
+                    battle(tft, selected, opponent[0], nodeId, opponent[1], peer, incoming, source, outgoing);
                     Delay.millis(3500);
                 }
             }
         }
     }
 
-    private static void connectWifi() {
-        showMessage("CONNECTING WIFI", TftTouchShield.CYAN);
+    private static void connectWifi(TftTouchShield tft) {
+        showMessage(tft, "CONNECTING WIFI", TftTouchShield.CYAN);
         WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
-        showMessage("WIFI CONNECTED", TftTouchShield.GREEN);
+        showMessage(tft, "WIFI CONNECTED", TftTouchShield.GREEN);
         Delay.millis(800);
     }
 
-    private static int choosePokemon() {
+    private static int choosePokemon(TftTouchShield tft) {
         int selected = PokemonProtocol.PIKACHU;
-        drawSelection(selected);
+        drawSelection(tft, selected);
         while (true) {
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int y = TftTouchShield.touchY();
-            waitForRelease();
+            int y = tft.touchY();
+            waitForRelease(tft);
             if (y >= 65 && y < 105) {
                 selected = PokemonProtocol.PIKACHU;
-                drawSelection(selected);
+                drawSelection(tft, selected);
             } else if (y >= 115 && y < 155) {
                 selected = PokemonProtocol.CHARMANDER;
-                drawSelection(selected);
+                drawSelection(tft, selected);
             } else if (y >= 165 && y < 205) {
                 selected = PokemonProtocol.SQUIRTLE;
-                drawSelection(selected);
+                drawSelection(tft, selected);
             } else if (y >= 235 && y < 290) {
                 return selected;
             }
@@ -113,9 +114,9 @@ public final class PokemonBattle {
     }
 
     /** Returns true once a peer is found, false if the player taps BACK to choose another port. */
-    private static boolean discover(int port, int selected, int nodeId, int[] peer, int[] opponent,
+    private static boolean discover(TftTouchShield tft, int port, int selected, int nodeId, int[] peer, int[] opponent,
                                     byte[] incoming, int[] source, byte[] outgoing) {
-        drawWaiting(selected, port);
+        drawWaiting(tft, selected, port);
         int lastBroadcast = CLOCK.millis() - DISCOVERY_INTERVAL_MILLIS;
         while (true) {
             int now = CLOCK.millis();
@@ -124,8 +125,8 @@ public final class PokemonBattle {
                 Udp.broadcast(port, outgoing, PokemonProtocol.PACKET_SIZE);
                 lastBroadcast = now;
             }
-            if (TftTouchShield.readTouch() && TftTouchShield.touchY() >= 235) {
-                waitForRelease();
+            if (tft.readTouch() && tft.touchY() >= 235) {
+                waitForRelease(tft);
                 return false;
             }
 
@@ -161,7 +162,7 @@ public final class PokemonBattle {
         }
     }
 
-    private static void battle(int selected, int opponent, int nodeId, int opponentNodeId,
+    private static void battle(TftTouchShield tft, int selected, int opponent, int nodeId, int opponentNodeId,
                                int[] peer, byte[] incoming, int[] source, byte[] outgoing) {
         int hitPoints = PokemonProtocol.hitPoints(selected);
         int opponentHitPoints = PokemonProtocol.hitPoints(opponent);
@@ -169,7 +170,7 @@ public final class PokemonBattle {
         int sequence = 1;
         boolean haveReply = false;
         int lastSent = 0;
-        drawBattle(selected, opponent, hitPoints, opponentHitPoints);
+        drawBattle(tft, selected, opponent, hitPoints, opponentHitPoints);
 
         if (nodeId < opponentNodeId) {
             PokemonProtocol.write(outgoing, PokemonProtocol.ATTACK, selected, sequence,
@@ -179,9 +180,9 @@ public final class PokemonBattle {
             haveReply = true;
             opponentHitPoints = opponentHitPoints - PokemonProtocol.damage(
                     PokemonProtocol.attack(selected), PokemonProtocol.defense(opponent));
-            drawHealth(hitPoints, opponentHitPoints, "YOU ATTACK");
+            drawHealth(tft, hitPoints, opponentHitPoints, "YOU ATTACK");
         } else {
-            drawHealth(hitPoints, opponentHitPoints, "THEY ATTACK");
+            drawHealth(tft, hitPoints, opponentHitPoints, "THEY ATTACK");
         }
 
         while (true) {
@@ -191,7 +192,7 @@ public final class PokemonBattle {
                 int type = PokemonProtocol.unsigned(incoming[PokemonProtocol.TYPE]);
                 int remoteSequence = PokemonProtocol.unsigned(incoming[PokemonProtocol.SEQUENCE]);
                 if (type == PokemonProtocol.FAINTED) {
-                    drawHealth(hitPoints, 0, "YOU WIN!");
+                    drawHealth(tft, hitPoints, 0, "YOU WIN!");
                     return;
                 }
                 if (type == PokemonProtocol.ATTACK) {
@@ -203,7 +204,7 @@ public final class PokemonBattle {
                             PokemonProtocol.write(outgoing, PokemonProtocol.FAINTED, selected,
                                     remoteSequence, 0, nodeId);
                             sendRepeated(peer, outgoing);
-                            drawHealth(0, opponentHitPoints, "YOU FAINTED");
+                            drawHealth(tft, 0, opponentHitPoints, "YOU FAINTED");
                             return;
                         }
                         sequence = (remoteSequence + 1) & 0xff;
@@ -214,7 +215,7 @@ public final class PokemonBattle {
                         if (opponentHitPoints < 0) {
                             opponentHitPoints = 0;
                         }
-                        drawHealth(hitPoints, opponentHitPoints, "COUNTER ATTACK");
+                        drawHealth(tft, hitPoints, opponentHitPoints, "COUNTER ATTACK");
                         haveReply = true;
                     }
                     if (haveReply) {
@@ -233,94 +234,94 @@ public final class PokemonBattle {
         }
     }
 
-    private static void drawSelection(int selected) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        title("CHOOSE POKEMON");
-        choice(65, PokemonProtocol.PIKACHU, selected);
-        choice(115, PokemonProtocol.CHARMANDER, selected);
-        choice(165, PokemonProtocol.SQUIRTLE, selected);
-        TftTouchShield.fillRect(BUTTON_X, 235, BUTTON_WIDTH, 55, TftTouchShield.CYAN);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, TftTouchShield.CYAN);
-        TftTouchShield.setCursor(62, 254);
-        TftTouchShield.print("DISCOVER");
+    private static void drawSelection(TftTouchShield tft, int selected) {
+        tft.fillScreen(BACKGROUND);
+        title(tft, "CHOOSE POKEMON");
+        choice(tft, 65, PokemonProtocol.PIKACHU, selected);
+        choice(tft, 115, PokemonProtocol.CHARMANDER, selected);
+        choice(tft, 165, PokemonProtocol.SQUIRTLE, selected);
+        tft.fillRect(BUTTON_X, 235, BUTTON_WIDTH, 55, TftTouchShield.CYAN);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.BLACK, TftTouchShield.CYAN);
+        tft.setCursor(62, 254);
+        tft.print("DISCOVER");
     }
 
-    private static void choice(int y, int pokemon, int selected) {
+    private static void choice(TftTouchShield tft, int y, int pokemon, int selected) {
         int color = pokemon == selected ? SELECTED : PANEL;
-        TftTouchShield.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, color);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(42, y + 11);
-        TftTouchShield.print(PokemonProtocol.name(pokemon));
+        tft.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, color);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(42, y + 11);
+        tft.print(PokemonProtocol.name(pokemon));
     }
 
-    private static void drawWaiting(int selected, int port) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        title("DISCOVERING...");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, BACKGROUND);
-        TftTouchShield.setCursor(42, 130);
-        TftTouchShield.print(PokemonProtocol.name(selected));
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BACKGROUND);
-        TftTouchShield.setCursor(35, 180);
-        TftTouchShield.print("Waiting for another board");
-        TftTouchShield.setCursor(35, 195);
-        TftTouchShield.print("on UDP port ");
-        TftTouchShield.print(port);
-        TftTouchShield.fillRect(BUTTON_X, 235, BUTTON_WIDTH, 55, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(86, 254);
-        TftTouchShield.print("BACK");
+    private static void drawWaiting(TftTouchShield tft, int selected, int port) {
+        tft.fillScreen(BACKGROUND);
+        title(tft, "DISCOVERING...");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.YELLOW, BACKGROUND);
+        tft.setCursor(42, 130);
+        tft.print(PokemonProtocol.name(selected));
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, BACKGROUND);
+        tft.setCursor(35, 180);
+        tft.print("Waiting for another board");
+        tft.setCursor(35, 195);
+        tft.print("on UDP port ");
+        tft.print(port);
+        tft.fillRect(BUTTON_X, 235, BUTTON_WIDTH, 55, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(86, 254);
+        tft.print("BACK");
     }
 
-    private static void drawBattle(int selected, int opponent, int hitPoints, int opponentHitPoints) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        title("BATTLE!");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, BACKGROUND);
-        TftTouchShield.setCursor(16, 74);
-        TftTouchShield.print(PokemonProtocol.name(selected));
-        TftTouchShield.setTextColor(TftTouchShield.ORANGE, BACKGROUND);
-        TftTouchShield.setCursor(16, 170);
-        TftTouchShield.print(PokemonProtocol.name(opponent));
-        drawHealth(hitPoints, opponentHitPoints, "READY");
+    private static void drawBattle(TftTouchShield tft, int selected, int opponent, int hitPoints, int opponentHitPoints) {
+        tft.fillScreen(BACKGROUND);
+        title(tft, "BATTLE!");
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.CYAN, BACKGROUND);
+        tft.setCursor(16, 74);
+        tft.print(PokemonProtocol.name(selected));
+        tft.setTextColor(TftTouchShield.ORANGE, BACKGROUND);
+        tft.setCursor(16, 170);
+        tft.print(PokemonProtocol.name(opponent));
+        drawHealth(tft, hitPoints, opponentHitPoints, "READY");
     }
 
-    private static void drawHealth(int hitPoints, int opponentHitPoints, String status) {
-        TftTouchShield.fillRect(16, 101, 208, 36, PANEL);
-        TftTouchShield.fillRect(16, 197, 208, 36, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(25, 111);
-        TftTouchShield.print("HP ");
-        TftTouchShield.print(hitPoints);
-        TftTouchShield.setCursor(25, 207);
-        TftTouchShield.print("HP ");
-        TftTouchShield.print(opponentHitPoints);
-        TftTouchShield.fillRect(0, 260, 240, 35, BACKGROUND);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.YELLOW, BACKGROUND);
-        TftTouchShield.setCursor(18, 270);
-        TftTouchShield.print(status);
+    private static void drawHealth(TftTouchShield tft, int hitPoints, int opponentHitPoints, String status) {
+        tft.fillRect(16, 101, 208, 36, PANEL);
+        tft.fillRect(16, 197, 208, 36, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(25, 111);
+        tft.print("HP ");
+        tft.print(hitPoints);
+        tft.setCursor(25, 207);
+        tft.print("HP ");
+        tft.print(opponentHitPoints);
+        tft.fillRect(0, 260, 240, 35, BACKGROUND);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.YELLOW, BACKGROUND);
+        tft.setCursor(18, 270);
+        tft.print(status);
     }
 
-    static void showMessage(String message, int color) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, BACKGROUND);
-        TftTouchShield.setCursor(22, 145);
-        TftTouchShield.print(message);
+    static void showMessage(TftTouchShield tft, String message, int color) {
+        tft.fillScreen(BACKGROUND);
+        tft.setTextSize(2);
+        tft.setTextColor(color, BACKGROUND);
+        tft.setCursor(22, 145);
+        tft.print(message);
     }
 
-    static void title(String text) {
-        TftTouchShield.fillRect(0, 0, 240, 44, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(28, 15);
-        TftTouchShield.print(text);
+    static void title(TftTouchShield tft, String text) {
+        tft.fillRect(0, 0, 240, 44, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(28, 15);
+        tft.print(text);
     }
 
     private static void sendRepeated(int[] peer, byte[] packet) {
@@ -341,10 +342,10 @@ public final class PokemonBattle {
         }
     }
 
-    static void waitForRelease() {
+    static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

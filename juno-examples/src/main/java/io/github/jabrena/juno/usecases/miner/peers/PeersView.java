@@ -19,6 +19,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * only when what it shows changes; a peer moves from alive to suspect on its own, as heartbeats stop arriving.
  */
 public final class PeersView implements View {
+
+    private final TftTouchShield tft;
     private static final Clock CLOCK = ArduinoUno.getClock();
     /** The status row of the first peer slot; the slots take the rows below it. */
     static final int FIRST_PEER_ROW = 2;
@@ -30,7 +32,8 @@ public final class PeersView implements View {
     private final int[] shownRows = new int[PeerTable.CAPACITY];
     private boolean shownNone;
 
-    public PeersView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+    public PeersView(TftTouchShield tft, Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.header = header;
@@ -39,13 +42,13 @@ public final class PeersView implements View {
 
     @Override
     public void enter() {
-        header.enter();
-        TabBar.draw(Miner2Views.PEERS);
-        GameScreen.row(0, 1, TftTouchShield.WHITE);
-        TftTouchShield.print("This node ");
-        TftTouchShield.print(NodeIo.hexWord(model.uuidBytes(), 0));
-        GameScreen.row(1, 1, TftTouchShield.GRAY);
-        TftTouchShield.print("Heard by heartbeat:");
+        header.enter(tft);
+        TabBar.draw(tft, Miner2Views.PEERS);
+        GameScreen.row(tft, 0, 1, TftTouchShield.WHITE);
+        tft.print("This node ");
+        tft.print(NodeIo.hexWord(model.uuidBytes(), 0));
+        GameScreen.row(tft, 1, 1, TftTouchShield.GRAY);
+        tft.print("Heard by heartbeat:");
         for (int slot = 0; slot < PeerTable.CAPACITY; slot++) {
             shownRows[slot] = -1;
         }
@@ -54,7 +57,7 @@ public final class PeersView implements View {
 
     @Override
     public void render() {
-        header.render();
+        header.render(tft);
         PeerTable peers = model.peers();
         int now = CLOCK.millis();
         boolean none = true;
@@ -64,13 +67,13 @@ public final class PeersView implements View {
                     slot * NodeId.SIZE));
             if (key != shownRows[slot]) {
                 shownRows[slot] = key;
-                showPeer(peers, slot, state);
+                showPeer(tft, peers, slot, state);
             }
             none = none && state == PeerTable.EMPTY;
         }
         if (none && !shownNone) {
-            GameScreen.row(FIRST_PEER_ROW, 1, TftTouchShield.GRAY);
-            TftTouchShield.print("No peers heard yet");
+            GameScreen.row(tft, FIRST_PEER_ROW, 1, TftTouchShield.GRAY);
+            tft.print("No peers heard yet");
         }
         shownNone = none;
     }
@@ -103,16 +106,16 @@ public final class PeersView implements View {
         return state == PeerTable.SUSPECT ? "suspect" : "lost";
     }
 
-    private static void showPeer(PeerTable peers, int slot, int state) {
-        GameScreen.row(FIRST_PEER_ROW + slot, 1, color(state));
+    private static void showPeer(TftTouchShield tft, PeerTable peers, int slot, int state) {
+        GameScreen.row(tft, FIRST_PEER_ROW + slot, 1, color(state));
         if (state == PeerTable.EMPTY) {
             return;
         }
-        TftTouchShield.print(NodeIo.hexWord(peers.uuids(), slot * NodeId.SIZE));
-        TftTouchShield.print("  h " + peers.height(slot));
-        TftTouchShield.print("  " + stateLabel(state));
+        tft.print(NodeIo.hexWord(peers.uuids(), slot * NodeId.SIZE));
+        tft.print("  h " + peers.height(slot));
+        tft.print("  " + stateLabel(state));
         if (state != PeerTable.DEAD && peers.isMining(slot)) {
-            TftTouchShield.print("  mining");
+            tft.print("  mining");
         }
     }
 

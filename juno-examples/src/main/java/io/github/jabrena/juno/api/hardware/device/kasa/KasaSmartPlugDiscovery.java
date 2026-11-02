@@ -36,12 +36,13 @@ public final class KasaSmartPlugDiscovery {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
         Serial.println("Kasa discovery");
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE_FLIPPED);
-        new Controller().run();
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE_FLIPPED);
+        new Controller().run(tft);
     }
 
     /** Fixed startup allocations and an allocation-free state machine, following Miner2's board-side service model. */
@@ -62,29 +63,29 @@ public final class KasaSmartPlugDiscovery {
         private int nextPoll;
         private int nextDiscovery;
 
-        void run() {
-            startWifi(CLOCK.millis());
+        void run(TftTouchShield tft) {
+            startWifi(tft, CLOCK.millis());
             while (true) {
                 int now = CLOCK.millis();
-                stepLink(now);
+                stepLink(tft, now);
                 if (state == READY) {
-                    discover(now);
-                    handleTouch();
+                    discover(tft, now);
+                    handleTouch(tft);
                 }
                 Delay.millis(10);
             }
         }
 
-        private void startWifi(int now) {
+        private void startWifi(TftTouchShield tft, int now) {
             Udp.stop();
-            showStatus("Connecting WiFi...");
+            showStatus(tft, "Connecting WiFi...");
             Serial.println("Kasa: connecting WiFi");
             WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
             state = JOINING;
             nextPoll = now;
         }
 
-        private void stepLink(int now) {
+        private void stepLink(TftTouchShield tft, int now) {
             if (now - nextPoll < 0) {
                 return;
             }
@@ -93,7 +94,7 @@ public final class KasaSmartPlugDiscovery {
                 if (WIFI.status() == Wifi.STATUS_CONNECTED) {
                     state = LISTENING;
                     nextPoll = now;
-                    showStatus("Opening discovery...");
+                    showStatus(tft, "Opening discovery...");
                     Serial.println("Kasa: WiFi connected");
                 }
                 return;
@@ -102,20 +103,20 @@ public final class KasaSmartPlugDiscovery {
                 if (KasaSmartPlug.openDiscovery()) {
                     state = READY;
                     nextDiscovery = now;
-                    renderPlugs();
+                    renderPlugs(tft);
                     Serial.println("Kasa discovery ready");
                 } else {
                     nextPoll = now + LISTEN_RETRY_MILLIS;
-                    showStatus("Retrying discovery...");
+                    showStatus(tft, "Retrying discovery...");
                 }
                 return;
             }
             if (WIFI.status() != Wifi.STATUS_CONNECTED) {
-                startWifi(now);
+                startWifi(tft, now);
             }
         }
 
-        private void discover(int now) {
+        private void discover(TftTouchShield tft, int now) {
             if (now - nextDiscovery >= 0) {
                 KasaSmartPlug.broadcastDiscovery(request, request.length);
                 nextDiscovery = now + DISCOVERY_INTERVAL_MILLIS;
@@ -135,25 +136,25 @@ public final class KasaSmartPlugDiscovery {
                 models[plugCount] = model;
                 relayStates[plugCount] = relayState;
                 plugCount++;
-                renderPlugs();
+                renderPlugs(tft);
             } else if (slot >= 0 && relayState != relayStates[slot]) {
                 relayStates[slot] = relayState;
-                drawButton(slot);
+                drawButton(tft, slot);
             }
         }
 
-        private void handleTouch() {
-            if (!TftTouchShield.readTouch()) {
+        private void handleTouch(TftTouchShield tft) {
+            if (!tft.readTouch()) {
                 return;
             }
-            int slot = buttonAt(TftTouchShield.touchX(), TftTouchShield.touchY());
+            int slot = buttonAt(tft, tft.touchX(), tft.touchY());
             if (slot >= 0) {
-                drawButtonBusy(slot);
+                drawButtonBusy(tft, slot);
                 copyAddress(plugEndpoints, slot, selectedEndpoint);
                 toggle(selectedEndpoint, slot);
-                drawButton(slot);
+                drawButton(tft, slot);
             }
-            while (TftTouchShield.readTouch()) {
+            while (tft.readTouch()) {
                 Delay.millis(25);
             }
         }
@@ -169,49 +170,49 @@ public final class KasaSmartPlugDiscovery {
             return -1;
         }
 
-        private void renderPlugs() {
-            showStatus("Scanning local network");
+        private void renderPlugs(TftTouchShield tft) {
+            showStatus(tft, "Scanning local network");
             for (int slot = 0; slot < plugCount; slot++) {
-                drawButton(slot);
+                drawButton(tft, slot);
             }
         }
 
-        private void drawButton(int slot) {
+        private void drawButton(TftTouchShield tft, int slot) {
             int y = FIRST_BUTTON_Y + slot * (BUTTON_HEIGHT + BUTTON_MARGIN);
             int relayState = relayStates[slot];
             int color = relayState == KasaSmartPlug.RELAY_ON ? TftTouchShield.GREEN
                     : relayState == KasaSmartPlug.RELAY_OFF ? TftTouchShield.RED : TftTouchShield.GRAY;
-            TftTouchShield.fillRect(BUTTON_MARGIN, y, TftTouchShield.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT, color);
-            TftTouchShield.drawRect(BUTTON_MARGIN, y, TftTouchShield.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
+            tft.fillRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT, color);
+            tft.drawRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
                     TftTouchShield.WHITE);
-            TftTouchShield.setTextColor(TftTouchShield.BLACK, color);
-            TftTouchShield.setTextSize(2);
-            TftTouchShield.setCursor(18, y + 8);
-            TftTouchShield.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
-            printAddress(slot);
-            TftTouchShield.setCursor(18, y + 32);
-            TftTouchShield.print(relayState == KasaSmartPlug.RELAY_ON ? "ON - TAP TO TURN OFF"
+            tft.setTextColor(TftTouchShield.BLACK, color);
+            tft.setTextSize(2);
+            tft.setCursor(18, y + 8);
+            tft.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
+            printAddress(tft, slot);
+            tft.setCursor(18, y + 32);
+            tft.print(relayState == KasaSmartPlug.RELAY_ON ? "ON - TAP TO TURN OFF"
                     : relayState == KasaSmartPlug.RELAY_OFF ? "OFF - TAP TO TURN ON" : "TAP TO TOGGLE");
         }
 
         /** Shown while a tapped button's TCP exchange is in flight, so a slow or failed request never looks stuck. */
-        private void drawButtonBusy(int slot) {
+        private void drawButtonBusy(TftTouchShield tft, int slot) {
             int y = FIRST_BUTTON_Y + slot * (BUTTON_HEIGHT + BUTTON_MARGIN);
-            TftTouchShield.fillRect(BUTTON_MARGIN, y, TftTouchShield.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
+            tft.fillRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
                     TftTouchShield.GRAY);
-            TftTouchShield.drawRect(BUTTON_MARGIN, y, TftTouchShield.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
+            tft.drawRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
                     TftTouchShield.WHITE);
-            TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-            TftTouchShield.setTextSize(2);
-            TftTouchShield.setCursor(18, y + 8);
-            TftTouchShield.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
-            printAddress(slot);
-            TftTouchShield.setCursor(18, y + 32);
-            TftTouchShield.print("Working...");
+            tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+            tft.setTextSize(2);
+            tft.setCursor(18, y + 8);
+            tft.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
+            printAddress(tft, slot);
+            tft.setCursor(18, y + 32);
+            tft.print("Working...");
         }
 
-        private int buttonAt(int x, int y) {
-            if (x < BUTTON_MARGIN || x >= TftTouchShield.width() - BUTTON_MARGIN) {
+        private int buttonAt(TftTouchShield tft, int x, int y) {
+            if (x < BUTTON_MARGIN || x >= tft.width() - BUTTON_MARGIN) {
                 return -1;
             }
             for (int slot = 0; slot < plugCount; slot++) {
@@ -233,15 +234,15 @@ public final class KasaSmartPlugDiscovery {
             }
         }
 
-        private void printAddress(int slot) {
+        private void printAddress(TftTouchShield tft, int slot) {
             int offset = slot * Udp.ENDPOINT_SIZE;
-            TftTouchShield.print(plugEndpoints[offset]);
-            TftTouchShield.print(".");
-            TftTouchShield.print(plugEndpoints[offset + 1]);
-            TftTouchShield.print(".");
-            TftTouchShield.print(plugEndpoints[offset + 2]);
-            TftTouchShield.print(".");
-            TftTouchShield.print(plugEndpoints[offset + 3]);
+            tft.print(plugEndpoints[offset]);
+            tft.print(".");
+            tft.print(plugEndpoints[offset + 1]);
+            tft.print(".");
+            tft.print(plugEndpoints[offset + 2]);
+            tft.print(".");
+            tft.print(plugEndpoints[offset + 3]);
         }
     }
 
@@ -261,14 +262,14 @@ public final class KasaSmartPlugDiscovery {
         target[3] = source[offset + 3];
     }
 
-    private static void showStatus(String status) {
-        TftTouchShield.fillScreen(TftTouchShield.NAVY);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(12, 12);
-        TftTouchShield.print("KASA HS100 / HS110");
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setCursor(12, 48);
-        TftTouchShield.print(status);
+    private static void showStatus(TftTouchShield tft, String status) {
+        tft.fillScreen(TftTouchShield.NAVY);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.NAVY);
+        tft.setTextSize(2);
+        tft.setCursor(12, 12);
+        tft.print("KASA HS100 / HS110");
+        tft.setTextSize(1);
+        tft.setCursor(12, 48);
+        tft.print(status);
     }
 }

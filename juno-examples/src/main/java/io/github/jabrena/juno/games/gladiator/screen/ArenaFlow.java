@@ -41,20 +41,20 @@ public final class ArenaFlow {
     }
 
     /** Keeps the arena until MENU is tapped. */
-    public static void run(byte[] incoming, byte[] outgoing, int[] source) {
+    public static void run(TftTouchShield tft, byte[] incoming, byte[] outgoing, int[] source) {
         Serial.println("Role: arena");
         Coliseum coliseum = new Coliseum();
         coliseum.build();
         Match match = new Match(coliseum);
         ArenaView view = new ArenaView(coliseum);
-        view.drawAll();
+        view.drawAll(tft);
         int lastWorld = 0;
         int landed = 0;
         int phase = Match.WAITING;
         boolean touching = true;
         while (true) {
-            if (TftTouchShield.readTouch()) {
-                if (!touching && ArenaView.menuTapped(TftTouchShield.touchX(), TftTouchShield.touchY())) {
+            if (tft.readTouch()) {
+                if (!touching && ArenaView.menuTapped(tft.touchX(), tft.touchY())) {
                     return;
                 }
                 touching = true;
@@ -89,7 +89,7 @@ public final class ArenaFlow {
                         Udp.send(endpoint, endpoint[Udp.PORT], outgoing, GladiatorProtocol.PACKET_SIZE);
                     }
                 }
-                view.update(match, now);
+                view.update(tft, match, now);
             }
             Delay.millis(2);
         }

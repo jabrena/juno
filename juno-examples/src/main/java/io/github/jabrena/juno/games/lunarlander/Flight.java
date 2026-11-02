@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.games.lunarlander;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
-
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.util.Random;
@@ -40,20 +40,20 @@ final class Flight {
     }
 
     /** Flies one descent and returns its landing-pad multiplier, or zero after a crash. */
-    static int fly(short[] ground, byte[] pads) {
+    static int fly(TftTouchShield tft, short[] ground, byte[] pads) {
         Terrain.generate(ground, pads);
-        LanderRenderer.startDescent(ground, pads);
+        LanderRenderer.startDescent(tft, ground, pads);
         resetPosition();
         Controls.startDescent(ground, pads);
-        Hud.drawButtons();
-        Hud.drawHeader();
+        Hud.drawButtons(tft);
+        Hud.drawHeader(tft);
         int rotateWait = 0;
         int next = CLOCK.millis();
         while (true) {
             next = awaitFrame(next);
             frame = frame + 1;
-            int pressed = Controls.read(pads);
-            Hud.updateButtons(pressed);
+            int pressed = Controls.read(tft, pads);
+            Hud.updateButtons(tft, pressed);
             rotateWait = rotate(pressed, rotateWait);
             accelerate(pressed);
             move();
@@ -61,13 +61,13 @@ final class Flight {
             if (touching) {
                 burning = false;
             }
-            LanderRenderer.draw(ground, pads);
+            LanderRenderer.draw(tft, ground, pads);
             if (touching) {
-                Hud.drawHeader();
+                Hud.drawHeader(tft);
                 return landingMultiplier(ground, pads);
             }
             if (frame % 5 == 0) {
-                Hud.drawHeader();
+                Hud.drawHeader(tft);
             }
         }
     }

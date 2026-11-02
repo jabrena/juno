@@ -28,33 +28,33 @@ public final class TftTextWidget {
     }
 
     /** Draws {@code text} unconditionally, for a label that never changes. */
-    public void draw(String text, int color) {
-        begin(color);
-        TftTouchShield.print(text);
+    public void draw(TftTouchShield tft, String text, int color) {
+        begin(tft, color);
+        tft.print(text);
     }
 
     /** Shows {@code text} in {@code color}, redrawing only if it differs from what is already shown. */
-    public void set(String text, int color) {
+    public void set(TftTouchShield tft, String text, int color) {
         if (text.equals(shownText) && shownNumber == NOTHING_SHOWN && color == shownColor) {
             return;
         }
         shownText = text;
         shownNumber = NOTHING_SHOWN;
         shownColor = color;
-        draw(text, color);
+        draw(tft, text, color);
     }
 
     /** Shows {@code number} followed by {@code suffix}, redrawing only if it differs from what is already shown. */
-    public void set(int number, String suffix, int color) {
+    public void set(TftTouchShield tft, int number, String suffix, int color) {
         if (number == shownNumber && suffix.equals(shownText) && color == shownColor) {
             return;
         }
         shownText = suffix;
         shownNumber = number;
         shownColor = color;
-        begin(color);
-        TftTouchShield.print(number);
-        TftTouchShield.print(suffix);
+        begin(tft, color);
+        tft.print(number);
+        tft.print(suffix);
     }
 
     /** Forgets what was drawn, so the next {@code set} redraws; called after the screen was cleared. */
@@ -65,10 +65,10 @@ public final class TftTextWidget {
     }
 
     /** Blanks the line's area, which a shorter text would otherwise leave part of the old one in, and sets up the text. */
-    private void begin(int color) {
-        TftTouchShield.fillRect(x, y, RIGHT_EDGE - x, TftTouchShield.CHAR_HEIGHT * size, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, TftTouchShield.NAVY);
-        TftTouchShield.setCursor(x, y);
+    private void begin(TftTouchShield tft, int color) {
+        tft.fillRect(x, y, RIGHT_EDGE - x, TftTouchShield.CHAR_HEIGHT * size, TftTouchShield.NAVY);
+        tft.setTextSize(size);
+        tft.setTextColor(color, TftTouchShield.NAVY);
+        tft.setCursor(x, y);
     }
 }

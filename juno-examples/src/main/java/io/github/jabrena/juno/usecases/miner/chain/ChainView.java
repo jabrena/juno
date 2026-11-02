@@ -21,6 +21,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * the tip moves, and the nodes row only when its counts change.
  */
 public final class ChainView implements View {
+
+    private final TftTouchShield tft;
     private static final Clock CLOCK = ArduinoUno.getClock();
     private final Navigator navigator;
     private final Miner2State model;
@@ -29,7 +31,8 @@ public final class ChainView implements View {
     private int shownTip;
     private int shownNodes;
 
-    public ChainView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+    public ChainView(TftTouchShield tft, Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.header = header;
@@ -38,25 +41,25 @@ public final class ChainView implements View {
 
     @Override
     public void enter() {
-        header.enter();
-        TabBar.draw(Miner2Views.CHAIN);
+        header.enter(tft);
+        TabBar.draw(tft, Miner2Views.CHAIN);
         shownTip = model.pool().tipChanges() - 1;
         shownNodes = -1;
     }
 
     @Override
     public void render() {
-        header.render();
+        header.render(tft);
         BlockPool pool = model.pool();
         if (pool.tipChanges() != shownTip) {
             shownTip = pool.tipChanges();
-            showTip(pool);
+            showTip(tft, pool);
         }
         int now = CLOCK.millis();
         int nodes = nodesKey(model.peers(), model.syncing(), now);
         if (nodes != shownNodes) {
             shownNodes = nodes;
-            showNodes(model.peers(), model.syncing(), now);
+            showNodes(tft, model.peers(), model.syncing(), now);
         }
     }
 
@@ -75,51 +78,51 @@ public final class ChainView implements View {
     }
 
     /** Row 2: how many nodes this node knows of (itself included), how many mine, and whether it is catching up. */
-    private static void showNodes(PeerTable peers, boolean waiting, int now) {
+    private static void showNodes(TftTouchShield tft, PeerTable peers, boolean waiting, int now) {
         int suspect = peers.suspect(now);
         int miners = peers.mining(now) + (waiting ? 0 : 1);
-        GameScreen.row(2, 1, waiting ? TftTouchShield.YELLOW : TftTouchShield.GREEN);
-        TftTouchShield.print("Nodes " + (peers.alive(now) + 1));
-        TftTouchShield.print("  mining " + miners);
+        GameScreen.row(tft, 2, 1, waiting ? TftTouchShield.YELLOW : TftTouchShield.GREEN);
+        tft.print("Nodes " + (peers.alive(now) + 1));
+        tft.print("  mining " + miners);
         if (suspect > 0) {
-            TftTouchShield.print("  lost? " + suspect);
+            tft.print("  lost? " + suspect);
         }
         if (waiting) {
-            TftTouchShield.print("  SYNC");
+            tft.print("  SYNC");
         }
     }
 
-    private void showTip(BlockPool pool) {
+    private void showTip(TftTouchShield tft, BlockPool pool) {
         int tip = pool.tip();
         byte[] blocks = pool.blocks();
         int base = tip * BlockFormat.MAX_SIZE;
-        GameScreen.row(0, 2, TftTouchShield.WHITE);
-        TftTouchShield.print("Height " + pool.height(tip));
-        GameScreen.row(1, 2, TftTouchShield.WHITE);
-        TftTouchShield.print("Bits " + pool.bits(tip) + "  Mined " + model.mined());
+        GameScreen.row(tft, 0, 2, TftTouchShield.WHITE);
+        tft.print("Height " + pool.height(tip));
+        GameScreen.row(tft, 1, 2, TftTouchShield.WHITE);
+        tft.print("Bits " + pool.bits(tip) + "  Mined " + model.mined());
         if (pool.height(tip) == 0) {
-            GameScreen.row(3, 1, TftTouchShield.GRAY);
-            TftTouchShield.print("Genesis: mining the first block");
+            GameScreen.row(tft, 3, 1, TftTouchShield.GRAY);
+            tft.print("Genesis: mining the first block");
             return;
         }
         int blockMiner = Bytes.readInt(blocks, base + BlockFormat.MINER);
         boolean minedHere = blockMiner == model.nodeId();
-        GameScreen.row(3, 1, minedHere ? TftTouchShield.GREEN : TftTouchShield.CYAN);
-        TftTouchShield.print(minedHere ? "Tip mined here" : "Tip mined by " + blockMiner);
-        GameScreen.row(4, 1, TftTouchShield.WHITE);
-        TftTouchShield.print("n = " + Bytes.readLong(blocks, base + BlockFormat.NUMBER));
-        GameScreen.row(5, 1, TftTouchShield.WHITE);
-        TftTouchShield.print("= ");
+        GameScreen.row(tft, 3, 1, minedHere ? TftTouchShield.GREEN : TftTouchShield.CYAN);
+        tft.print(minedHere ? "Tip mined here" : "Tip mined by " + blockMiner);
+        GameScreen.row(tft, 4, 1, TftTouchShield.WHITE);
+        tft.print("n = " + Bytes.readLong(blocks, base + BlockFormat.NUMBER));
+        GameScreen.row(tft, 5, 1, TftTouchShield.WHITE);
+        tft.print("= ");
         int count = Bytes.unsigned(blocks[base + BlockFormat.COUNT]);
         for (int i = 0; i < count; i++) {
-            GameScreen.factor(Bytes.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
+            GameScreen.factor(tft, Bytes.readLong(blocks, base + BlockFormat.FACTORS + i * 9),
                     Bytes.unsigned(blocks[base + BlockFormat.FACTORS + i * 9 + 8]), i == 0);
         }
-        GameScreen.row(6, 1, TftTouchShield.YELLOW);
-        TftTouchShield.print("hash ");
-        GameScreen.hashPrefix(pool.hashes(), tip * Sha256.DIGEST_SIZE);
-        GameScreen.row(7, 1, TftTouchShield.GRAY);
-        TftTouchShield.print("Work ");
-        TftTouchShield.print("" + pool.work(tip));
+        GameScreen.row(tft, 6, 1, TftTouchShield.YELLOW);
+        tft.print("hash ");
+        GameScreen.hashPrefix(tft, pool.hashes(), tip * Sha256.DIGEST_SIZE);
+        GameScreen.row(tft, 7, 1, TftTouchShield.GRAY);
+        tft.print("Work ");
+        tft.print("" + pool.work(tip));
     }
 }

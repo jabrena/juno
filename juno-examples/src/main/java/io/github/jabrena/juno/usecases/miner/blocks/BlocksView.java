@@ -21,6 +21,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * redrawn.
  */
 public final class BlocksView implements View {
+
+    private final TftTouchShield tft;
     private static final Clock CLOCK = ArduinoUno.getClock();
     static final int COLUMNS = 8;
     static final int ROWS = (BitBoard.SIZE + COLUMNS - 1) / COLUMNS;
@@ -52,7 +54,8 @@ public final class BlocksView implements View {
     private final byte[] shown = new byte[BitBoard.SIZE];
     private int shownStatus;
 
-    public BlocksView(Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+    public BlocksView(TftTouchShield tft, Navigator navigator, Miner2State model, Miner2Header header, NodeService node) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.header = header;
@@ -61,8 +64,8 @@ public final class BlocksView implements View {
 
     @Override
     public void enter() {
-        header.enter();
-        TabBar.draw(Miner2Views.BLOCKS);
+        header.enter(tft);
+        TabBar.draw(tft, Miner2Views.BLOCKS);
         for (int i = 0; i < BitBoard.SIZE; i++) {
             shown[i] = -1;
         }
@@ -71,19 +74,19 @@ public final class BlocksView implements View {
 
     @Override
     public void render() {
-        header.render();
+        header.render(tft);
         BitBoard board = model.board();
         int status = statusKey(board.round(), board.count(), board.ownBit(), board.asking());
         if (status != shownStatus) {
             shownStatus = status;
-            showStatus(board);
+            showStatus(tft, board);
         }
         int now = CLOCK.millis();
         for (int bit = BitBoard.FIRST; bit <= BitBoard.LAST; bit++) {
             int key = cellKey(board, bit, now);
             if (key != shown[bit - BitBoard.FIRST]) {
                 shown[bit - BitBoard.FIRST] = (byte) key;
-                drawCell(bit, key / 16, COLORS[key % 16]);
+                drawCell(tft, bit, key / 16, COLORS[key % 16]);
             }
         }
     }
@@ -134,22 +137,22 @@ public final class BlocksView implements View {
         return GRID_Y + (ROWS - 1 - (bit - BitBoard.FIRST) / COLUMNS) * PITCH_Y;
     }
 
-    private void showStatus(BitBoard board) {
+    private void showStatus(TftTouchShield tft, BitBoard board) {
         int own = board.ownBit();
-        GameScreen.row(0, 2, own == 0 ? TftTouchShield.GRAY : board.asking() ? TftTouchShield.YELLOW
+        GameScreen.row(tft, 0, 2, own == 0 ? TftTouchShield.GRAY : board.asking() ? TftTouchShield.YELLOW
                 : TftTouchShield.GREEN);
-        TftTouchShield.print("R" + board.round());
-        TftTouchShield.print(" " + board.count() + "/" + BitBoard.SIZE);
+        tft.print("R" + board.round());
+        tft.print(" " + board.count() + "/" + BitBoard.SIZE);
         if (own == 0) {
-            TftTouchShield.print(" wait");
+            tft.print(" wait");
         } else {
-            TftTouchShield.print(board.asking() ? " ask " : " bit ");
-            TftTouchShield.print(own);
+            tft.print(board.asking() ? " ask " : " bit ");
+            tft.print(own);
         }
-        TftTouchShield.fillRect(240 - SWATCH - 4, 58, SWATCH, SWATCH, color(model.board().ownColor()));
+        tft.fillRect(240 - SWATCH - 4, 58, SWATCH, SWATCH, color(model.board().ownColor()));
     }
 
-    private static void drawCell(int bit, int state, int color) {
+    private static void drawCell(TftTouchShield tft, int bit, int state, int color) {
         int x = cellX(bit) + 1;
         int y = cellY(bit) + 1;
         int width = PITCH_X - 2;
@@ -157,30 +160,30 @@ public final class BlocksView implements View {
         int text;
         int background;
         if (state == MINED) {
-            TftTouchShield.fillRect(x, y, width, height, color);
+            tft.fillRect(x, y, width, height, color);
             // Tetris bevel: lit from the top left.
-            TftTouchShield.drawHorizontalLine(x, y, width, TftTouchShield.WHITE);
-            TftTouchShield.drawVerticalLine(x, y, height, TftTouchShield.WHITE);
-            TftTouchShield.drawHorizontalLine(x, y + height - 1, width, TftTouchShield.BLACK);
-            TftTouchShield.drawVerticalLine(x + width - 1, y, height, TftTouchShield.BLACK);
+            tft.drawHorizontalLine(x, y, width, TftTouchShield.WHITE);
+            tft.drawVerticalLine(x, y, height, TftTouchShield.WHITE);
+            tft.drawHorizontalLine(x, y + height - 1, width, TftTouchShield.BLACK);
+            tft.drawVerticalLine(x + width - 1, y, height, TftTouchShield.BLACK);
             text = TftTouchShield.BLACK;
             background = color;
         } else if (state == CLAIMED) {
-            TftTouchShield.fillRect(x, y, width, height, GameScreen.BACKGROUND);
-            TftTouchShield.drawRect(x, y, width, height, color);
-            TftTouchShield.drawRect(x + 1, y + 1, width - 2, height - 2, color);
+            tft.fillRect(x, y, width, height, GameScreen.BACKGROUND);
+            tft.drawRect(x, y, width, height, color);
+            tft.drawRect(x + 1, y + 1, width - 2, height - 2, color);
             text = color;
             background = GameScreen.BACKGROUND;
         } else {
-            TftTouchShield.fillRect(x, y, width, height, GameScreen.PANEL);
+            tft.fillRect(x, y, width, height, GameScreen.PANEL);
             text = TftTouchShield.GRAY;
             background = GameScreen.PANEL;
         }
         int digits = bit < 10 ? 1 : 2;
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(text, background);
-        TftTouchShield.setCursor(x + (width - digits * TftTouchShield.CHAR_WIDTH + 1) / 2,
+        tft.setTextSize(1);
+        tft.setTextColor(text, background);
+        tft.setCursor(x + (width - digits * TftTouchShield.CHAR_WIDTH + 1) / 2,
                 y + (height - TftTouchShield.CHAR_HEIGHT + 1) / 2);
-        TftTouchShield.print(bit);
+        tft.print(bit);
     }
 }

@@ -23,28 +23,28 @@ public final class Screen {
     }
 
     /** Prints {@code text} centered at row {@code y}, over the black background. */
-    public static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, BACKGROUND);
-        TftTouchShield.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    public static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, BACKGROUND);
+        tft.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 
     /** A dark plaque with a double red edge, as DOOM frames its titles and prompts. */
-    public static void plaque(int x, int y, int width, int height) {
-        TftTouchShield.fillRect(x, y, width, height, BACKGROUND);
-        TftTouchShield.drawRect(x, y, width, height, EDGE);
-        TftTouchShield.drawRect(x + 2, y + 2, width - 4, height - 4, EDGE_DARK);
+    public static void plaque(TftTouchShield tft, int x, int y, int width, int height) {
+        tft.fillRect(x, y, width, height, BACKGROUND);
+        tft.drawRect(x, y, width, height, EDGE);
+        tft.drawRect(x + 2, y + 2, width - 4, height - 4, EDGE_DARK);
     }
 
     /** The BACK button at the bottom left. */
-    public static void drawBack() {
-        TftTouchShield.fillRect(BACK_X, BACK_Y, BACK_WIDTH, BACK_HEIGHT, BUTTON);
-        TftTouchShield.drawRect(BACK_X, BACK_Y, BACK_WIDTH, BACK_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, BUTTON);
-        TftTouchShield.setCursor(BACK_X + 8, BACK_Y + 7);
-        TftTouchShield.print("BACK");
+    public static void drawBack(TftTouchShield tft) {
+        tft.fillRect(BACK_X, BACK_Y, BACK_WIDTH, BACK_HEIGHT, BUTTON);
+        tft.drawRect(BACK_X, BACK_Y, BACK_WIDTH, BACK_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, BUTTON);
+        tft.setCursor(BACK_X + 8, BACK_Y + 7);
+        tft.print("BACK");
     }
 
     /** Whether ({@code x}, {@code y}) is on the BACK button. */

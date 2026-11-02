@@ -9,6 +9,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** Read-only board monitor for the current game on Lichess TV. */
 final class LichessTvView implements View {
+
+    private final TftTouchShield tft;
     private static final int BOARD_X = 8;
     private static final int BOARD_Y = 44;
     private static final int CELL = 28;
@@ -32,7 +34,8 @@ final class LichessTvView implements View {
     private int drawnVersion = -1;
     private int lastPoll;
 
-    LichessTvView(Navigator navigator, LichessApi api, TvModel model) {
+    LichessTvView(TftTouchShield tft, Navigator navigator, LichessApi api, TvModel model) {
+        this.tft = tft;
         this.navigator = navigator;
         this.api = api;
         this.model = model;
@@ -52,7 +55,7 @@ final class LichessTvView implements View {
             api.loadTv(model);
         }
         if (drawnVersion != model.version()) {
-            draw();
+            draw(tft);
             drawnVersion = model.version();
         }
     }
@@ -64,62 +67,62 @@ final class LichessTvView implements View {
         }
     }
 
-    private void draw() {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        drawHeader();
+    private void draw(TftTouchShield tft) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        drawHeader(tft);
         for (int square = 0; square < 64; square++) {
             int piece = model.board().pieceAt(square);
             boolean lastMove = square == model.lastFrom() || square == model.lastTo();
-            drawSquare(square, piece, lastMove);
+            drawSquare(tft, square, piece, lastMove);
         }
-        drawFooter();
+        drawFooter(tft);
     }
 
-    private void drawHeader() {
-        TftTouchShield.fillRect(0, 0, 240, 36, HEADER_BACKGROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(8, 2);
-        TftTouchShield.print("LICHESS");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(8, 17);
-        TftTouchShield.print("LICHESS TV");
-        drawMenuButton();
+    private void drawHeader(TftTouchShield tft) {
+        tft.fillRect(0, 0, 240, 36, HEADER_BACKGROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.setCursor(8, 2);
+        tft.print("LICHESS");
+        tft.setTextSize(2);
+        tft.setCursor(8, 17);
+        tft.print("LICHESS TV");
+        drawMenuButton(tft);
     }
 
-    private void drawFooter() {
-        TftTouchShield.fillRect(0, FOOTER_Y, 240, 320 - FOOTER_Y, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(8, FOOTER_Y + 1);
-        printClock("WHITE ", model.whiteSeconds());
-        TftTouchShield.setCursor(88, FOOTER_Y + 1);
-        printClock("BLACK ", model.blackSeconds());
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(8, FOOTER_Y + 17);
-        TftTouchShield.print("UPDATES EVERY FEW SECONDS");
+    private void drawFooter(TftTouchShield tft) {
+        tft.fillRect(0, FOOTER_Y, 240, 320 - FOOTER_Y, TftTouchShield.BLACK);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(8, FOOTER_Y + 1);
+        printClock(tft, "WHITE ", model.whiteSeconds());
+        tft.setCursor(88, FOOTER_Y + 1);
+        printClock(tft, "BLACK ", model.blackSeconds());
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(8, FOOTER_Y + 17);
+        tft.print("UPDATES EVERY FEW SECONDS");
     }
 
-    private void drawMenuButton() {
-        TftTouchShield.fillRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.drawRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(MENU_X + (MENU_WIDTH - 4 * TftTouchShield.CHAR_WIDTH) / 2, MENU_Y + 11);
-        TftTouchShield.print("MENU");
+    private void drawMenuButton(TftTouchShield tft) {
+        tft.fillRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.GRAY);
+        tft.drawRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+        tft.setCursor(MENU_X + (MENU_WIDTH - 4 * TftTouchShield.CHAR_WIDTH) / 2, MENU_Y + 11);
+        tft.print("MENU");
     }
 
-    private void printClock(String label, int seconds) {
-        TftTouchShield.print(label);
-        TftTouchShield.print(seconds / 60);
-        TftTouchShield.print(":");
+    private void printClock(TftTouchShield tft, String label, int seconds) {
+        tft.print(label);
+        tft.print(seconds / 60);
+        tft.print(":");
         if (seconds % 60 < 10) {
-            TftTouchShield.print("0");
+            tft.print("0");
         }
-        TftTouchShield.print(seconds % 60);
+        tft.print(seconds % 60);
     }
 
-    private void drawSquare(int square, int piece, boolean lastMove) {
+    private void drawSquare(TftTouchShield tft, int square, int piece, boolean lastMove) {
         int row = square >> 3;
         int column = square & 7;
         boolean light = ((row + column) & 1) == 0;
@@ -131,13 +134,13 @@ final class LichessTvView implements View {
         int displayColumn = model.orientation() > 0 ? column : 7 - column;
         int x = BOARD_X + displayColumn * CELL;
         int y = BOARD_Y + displayRow * CELL;
-        TftTouchShield.fillRect(x, y, CELL, CELL, color);
+        tft.fillRect(x, y, CELL, CELL, color);
         if (piece != PuzzleBoard.EMPTY) {
-            ChessPieceRenderer.draw(x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
+            ChessPieceRenderer.draw(tft, x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
                     y + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2, piece, color);
         }
         if (square == 0) {
-            TftTouchShield.drawRect(BOARD_X - 2, BOARD_Y - 2, BOARD_SIZE + 4, BOARD_SIZE + 4,
+            tft.drawRect(BOARD_X - 2, BOARD_Y - 2, BOARD_SIZE + 4, BOARD_SIZE + 4,
                     TftTouchShield.ORANGE);
         }
     }

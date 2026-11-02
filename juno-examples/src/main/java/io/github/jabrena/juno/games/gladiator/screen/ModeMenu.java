@@ -20,15 +20,15 @@ public final class ModeMenu {
     private ModeMenu() {
     }
 
-    public static int choose(boolean soloAvailable) {
-        draw(soloAvailable);
+    public static int choose(TftTouchShield tft, boolean soloAvailable) {
+        draw(tft, soloAvailable);
         while (true) {
-            if (!TftTouchShield.readTouch()) {
+            if (!tft.readTouch()) {
                 Delay.millis(10);
                 continue;
             }
-            int mode = modeAt(TftTouchShield.touchX(), TftTouchShield.touchY(), soloAvailable);
-            waitForRelease();
+            int mode = modeAt(tft.touchX(), tft.touchY(), soloAvailable);
+            waitForRelease(tft);
             if (mode >= 0) {
                 return mode;
             }
@@ -46,32 +46,32 @@ public final class ModeMenu {
         return y >= multiplayerY && y < multiplayerY + BUTTON_HEIGHT ? MULTIPLAYER : -1;
     }
 
-    private static void draw(boolean soloAvailable) {
-        TftTouchShield.fillScreen(ViewList.BACKGROUND);
-        Hud.centered("CHOOSE GAME", 16, 3, View.WALL, ViewList.BACKGROUND);
-        button(FIRST_BUTTON_Y, "SOLO", soloAvailable ? "ONE BOARD - YOU VS CPU" : "UNO Q ONLY",
+    private static void draw(TftTouchShield tft, boolean soloAvailable) {
+        tft.fillScreen(ViewList.BACKGROUND);
+        Hud.centered(tft, "CHOOSE GAME", 16, 3, View.WALL, ViewList.BACKGROUND);
+        button(tft, FIRST_BUTTON_Y, "SOLO", soloAvailable ? "ONE BOARD - YOU VS CPU" : "UNO Q ONLY",
                 soloAvailable ? TftTouchShield.YELLOW : TftTouchShield.GRAY);
-        button(FIRST_BUTTON_Y + BUTTON_HEIGHT + BUTTON_GAP, "MULTIPLAYER", "ARENA + TWO GLADIATOR BOARDS",
+        button(tft, FIRST_BUTTON_Y + BUTTON_HEIGHT + BUTTON_GAP, "MULTIPLAYER", "ARENA + TWO GLADIATOR BOARDS",
                 TftTouchShield.CYAN);
     }
 
-    private static void button(int y, String label, String detail, int color) {
-        TftTouchShield.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, Hud.PANEL);
-        TftTouchShield.fillRect(BUTTON_X, y, 6, BUTTON_HEIGHT, color);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, Hud.PANEL);
-        TftTouchShield.setCursor(BUTTON_X + 16, y + 10);
-        TftTouchShield.print(label);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
-        TftTouchShield.setCursor(BUTTON_X + 16, y + 36);
-        TftTouchShield.print(detail);
+    private static void button(TftTouchShield tft, int y, String label, String detail, int color) {
+        tft.fillRect(BUTTON_X, y, BUTTON_WIDTH, BUTTON_HEIGHT, Hud.PANEL);
+        tft.fillRect(BUTTON_X, y, 6, BUTTON_HEIGHT, color);
+        tft.setTextSize(2);
+        tft.setTextColor(color, Hud.PANEL);
+        tft.setCursor(BUTTON_X + 16, y + 10);
+        tft.print(label);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, Hud.PANEL);
+        tft.setCursor(BUTTON_X + 16, y + 36);
+        tft.print(detail);
     }
 
-    private static void waitForRelease() {
+    private static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

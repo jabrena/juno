@@ -36,18 +36,18 @@ public final class ChoiceList {
     }
 
     /** Draws {@code row}: greyed out when not {@code enabled}, highlighted when {@code chosen}. */
-    public void draw(int row, String title, String detail, boolean enabled, boolean chosen) {
+    public void draw(TftTouchShield tft, int row, String title, String detail, boolean enabled, boolean chosen) {
         int y = top + row * (rowHeight + ROW_GAP);
         int color = !enabled ? DISABLED : chosen ? CHOICE_CHOSEN : Screen.BUTTON;
-        TftTouchShield.fillRect(LEFT, y, ROW_WIDTH, rowHeight, color);
-        TftTouchShield.drawRect(LEFT, y, ROW_WIDTH, rowHeight, chosen ? TftTouchShield.WHITE : WALL_FAR);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(enabled ? TftTouchShield.WHITE : WALL_FAR, color);
-        TftTouchShield.setCursor(LEFT + (ROW_WIDTH - title.length() * 12) / 2, y + 2);
-        TftTouchShield.print(title);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(enabled ? TftTouchShield.YELLOW : WALL_FAR, color);
-        TftTouchShield.setCursor(LEFT + (ROW_WIDTH - detail.length() * 6) / 2, y + rowHeight - 11);
-        TftTouchShield.print(detail);
+        tft.fillRect(LEFT, y, ROW_WIDTH, rowHeight, color);
+        tft.drawRect(LEFT, y, ROW_WIDTH, rowHeight, chosen ? TftTouchShield.WHITE : WALL_FAR);
+        tft.setTextSize(2);
+        tft.setTextColor(enabled ? TftTouchShield.WHITE : WALL_FAR, color);
+        tft.setCursor(LEFT + (ROW_WIDTH - title.length() * 12) / 2, y + 2);
+        tft.print(title);
+        tft.setTextSize(1);
+        tft.setTextColor(enabled ? TftTouchShield.YELLOW : WALL_FAR, color);
+        tft.setCursor(LEFT + (ROW_WIDTH - detail.length() * 6) / 2, y + rowHeight - 11);
+        tft.print(detail);
     }
 }

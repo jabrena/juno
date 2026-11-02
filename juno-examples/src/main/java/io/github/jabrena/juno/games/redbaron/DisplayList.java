@@ -39,15 +39,15 @@ final class DisplayList {
         saveState();
     }
 
-    static void present(short[] lines) {
+    static void present(TftTouchShield tft, short[] lines) {
         loadState();
-        LINES.present(lines);
+        LINES.present(tft, lines);
         saveState();
     }
 
-    static void clearView() {
+    static void clearView(TftTouchShield tft) {
         loadState();
-        LINES.clearView();
+        LINES.clearView(tft);
         saveState();
     }
 

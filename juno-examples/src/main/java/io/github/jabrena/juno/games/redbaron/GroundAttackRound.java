@@ -35,9 +35,9 @@ final class GroundAttackRound {
         targetsHit = 0;
     }
 
-    static void announce() {
-        Hud.showCentered("GROUND ATTACK", 100, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("Fly low and strafe the targets", 134, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "GROUND ATTACK", 100, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Fly low and strafe the targets", 134, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {
@@ -49,15 +49,15 @@ final class GroundAttackRound {
         return targetsToSpawn;
     }
 
-    static void awardAllTargetsBonus() {
+    static void awardAllTargetsBonus(TftTouchShield tft) {
         if (targetsHit != targetsTotal) {
             return;
         }
         Session.score = Session.score + Session.ALL_TARGETS_BONUS;
-        Hud.drawHeader();
-        DisplayList.clearView();
-        Hud.showCentered("ALL TARGETS DESTROYED", 104, 1, SceneRenderer.TARGET);
-        Hud.showCentered("BONUS 5000", 122, 1, TftTouchShield.WHITE);
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
+        Hud.showCentered(tft, "ALL TARGETS DESTROYED", 104, 1, SceneRenderer.TARGET);
+        Hud.showCentered(tft, "BONUS 5000", 122, 1, TftTouchShield.WHITE);
         Delay.millis(1500);
     }
 

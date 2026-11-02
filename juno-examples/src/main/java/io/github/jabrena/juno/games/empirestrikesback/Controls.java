@@ -27,13 +27,13 @@ final class Controls {
     private Controls() {
     }
 
-    static void handleTouch(int[] ents) {
-        boolean down = TftTouchShield.readTouch();
-        if (down && TftTouchShield.touchY() < DisplayList.HEADER) {
+    static void handleTouch(TftTouchShield tft, int[] ents) {
+        boolean down = tft.readTouch();
+        if (down && tft.touchY() < DisplayList.HEADER) {
             if (!headerPressed) {
                 autopilot = !autopilot;
                 touching = false;
-                Hud.drawHeader();
+                Hud.drawHeader(tft);
             }
             headerPressed = true;
             return;
@@ -43,8 +43,8 @@ final class Controls {
             return;
         }
         if (down) {
-            int x = Math.max(8, Math.min(TftTouchShield.touchX(), DisplayList.WIDTH - 9));
-            int y = Math.max(DisplayList.HEADER + 8, Math.min(TftTouchShield.touchY(), DisplayList.HEIGHT - 9));
+            int x = Math.max(8, Math.min(tft.touchX(), DisplayList.WIDTH - 9));
+            int y = Math.max(DisplayList.HEADER + 8, Math.min(tft.touchY(), DisplayList.HEIGHT - 9));
             crossX = x;
             crossY = y;
             if (!touching) {
@@ -73,19 +73,19 @@ final class Controls {
     }
 
     /** The pilot screen: waits for a tap on HUMAN or CPU. */
-    static void choosePilot() {
-        TftTouchShield.fillScreen(DisplayList.SPACE);
-        Hud.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.YELLOW);
-        Hud.showCentered("Who flies for the Rebellion?", 74, 1, TftTouchShield.WHITE);
-        drawChoice(0, "HUMAN", "You steer and fire", false);
-        drawChoice(1, "CPU", "Autopilot plays", false);
-        Hud.showCentered("Tap the header in game to switch", 206, 1, SceneRenderer.STAR);
-        int choice = PilotMenu.waitForChoice();
+    static void choosePilot(TftTouchShield tft) {
+        tft.fillScreen(DisplayList.SPACE);
+        Hud.showCentered(tft, "CHOOSE PILOT", 36, 3, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Who flies for the Rebellion?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(tft, 0, "HUMAN", "You steer and fire", false);
+        drawChoice(tft, 1, "CPU", "Autopilot plays", false);
+        Hud.showCentered(tft, "Tap the header in game to switch", 206, 1, SceneRenderer.STAR);
+        int choice = PilotMenu.waitForChoice(tft);
         autopilot = choice == 1;
         touching = false;
-        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You steer and fire" : "Autopilot plays",
+        drawChoice(tft, choice, choice == 0 ? "HUMAN" : "CPU", choice == 0 ? "You steer and fire" : "Autopilot plays",
                 true);
-        PilotMenu.waitForRelease();
+        PilotMenu.waitForRelease(tft);
     }
 
     /** The pilot button at (x, y): 0 for HUMAN, 1 for CPU, or -1. */
@@ -93,13 +93,13 @@ final class Controls {
         return PilotMenu.choiceAt(x, y);
     }
 
-    private static void drawChoice(int index, String label, String hint, boolean chosen) {
-        PilotMenu.drawChoice(index, label, hint, chosen, SceneRenderer.HUD, 0x2124,
+    private static void drawChoice(TftTouchShield tft, int index, String label, String hint, boolean chosen) {
+        PilotMenu.drawChoice(tft, index, label, hint, chosen, SceneRenderer.HUD, 0x2124,
                 TftTouchShield.WHITE, SceneRenderer.SNOW, TftTouchShield.YELLOW, TftTouchShield.WHITE);
     }
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
-    static boolean waitForTap(int timeoutMillis) {
-        return PilotMenu.waitForTap(timeoutMillis);
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
+        return PilotMenu.waitForTap(tft, timeoutMillis);
     }
 }

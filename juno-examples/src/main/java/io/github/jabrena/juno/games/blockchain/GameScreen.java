@@ -18,81 +18,81 @@ public final class GameScreen {
     private GameScreen() {
     }
 
-    public static void message(String text, int color) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, BACKGROUND);
-        TftTouchShield.setCursor(22, 145);
-        TftTouchShield.print(text);
+    public static void message(TftTouchShield tft, String text, int color) {
+        tft.fillScreen(BACKGROUND);
+        tft.setTextSize(2);
+        tft.setTextColor(color, BACKGROUND);
+        tft.setCursor(22, 145);
+        tft.print(text);
     }
 
     /** Clears the screen and draws {@code text} in the title bar. */
-    public static void header(String text, int color) {
-        TftTouchShield.fillScreen(BACKGROUND);
-        title(text, color);
+    public static void header(TftTouchShield tft, String text, int color) {
+        tft.fillScreen(BACKGROUND);
+        title(tft, text, color);
     }
 
     /** Like {@link #header}, plus the MENU button at the bottom that {@link #menuTapped} watches. */
-    public static void role(String text, int color) {
-        header(text, color);
-        TftTouchShield.fillRect(20, MENU_Y, 200, 34, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, PANEL);
-        TftTouchShield.setCursor(96, MENU_Y + 10);
-        TftTouchShield.print("MENU");
+    public static void role(TftTouchShield tft, String text, int color) {
+        header(tft, text, color);
+        tft.fillRect(20, MENU_Y, 200, 34, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, PANEL);
+        tft.setCursor(96, MENU_Y + 10);
+        tft.print("MENU");
     }
 
-    public static void title(String text, int color) {
-        TftTouchShield.fillRect(0, 0, 240, 44, PANEL);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(color, PANEL);
-        TftTouchShield.setCursor(16, 15);
-        TftTouchShield.print(text);
+    public static void title(TftTouchShield tft, String text, int color) {
+        tft.fillRect(0, 0, 240, 44, PANEL);
+        tft.setTextSize(2);
+        tft.setTextColor(color, PANEL);
+        tft.setCursor(16, 15);
+        tft.print(text);
     }
 
     /**
      * Clears status row {@code index} (0 to 9) and leaves the cursor at its start, with text of
      * {@code size} (1 or 2) in {@code color}.
      */
-    public static void row(int index, int size, int color) {
+    public static void row(TftTouchShield tft, int index, int size, int color) {
         int y = FIRST_ROW_Y + index * ROW_HEIGHT;
-        TftTouchShield.fillRect(0, y, 240, ROW_HEIGHT, BACKGROUND);
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, BACKGROUND);
-        TftTouchShield.setCursor(12, size == 2 ? y + 3 : y + 7);
+        tft.fillRect(0, y, 240, ROW_HEIGHT, BACKGROUND);
+        tft.setTextSize(size);
+        tft.setTextColor(color, BACKGROUND);
+        tft.setCursor(12, size == 2 ? y + 3 : y + 7);
     }
 
     /** Prints {@code p}, or {@code p^e} when {@code e > 1}, preceded by {@code " x "} unless it is the first factor. */
-    public static void factor(long prime, int exponent, boolean first) {
+    public static void factor(TftTouchShield tft, long prime, int exponent, boolean first) {
         if (!first) {
-            TftTouchShield.print(" x ");
+            tft.print(" x ");
         }
-        TftTouchShield.print("" + prime);
+        tft.print("" + prime);
         if (exponent > 1) {
-            TftTouchShield.print("^" + exponent);
+            tft.print("^" + exponent);
         }
     }
 
     /** Prints the first eight bytes of the hash at {@code hash[offset..)} in hex, followed by "...". */
-    public static void hashPrefix(byte[] hash, int offset) {
-        TftTouchShield.print(NodeIo.hexWord(hash, offset));
-        TftTouchShield.print(NodeIo.hexWord(hash, offset + 4));
-        TftTouchShield.print("...");
+    public static void hashPrefix(TftTouchShield tft, byte[] hash, int offset) {
+        tft.print(NodeIo.hexWord(hash, offset));
+        tft.print(NodeIo.hexWord(hash, offset + 4));
+        tft.print("...");
     }
 
     /** Whether the MENU button was tapped; never waits when the screen is not being touched. */
-    public static boolean menuTapped() {
-        if (!TftTouchShield.readTouch() || TftTouchShield.touchY() < MENU_Y) {
+    public static boolean menuTapped(TftTouchShield tft) {
+        if (!tft.readTouch() || tft.touchY() < MENU_Y) {
             return false;
         }
-        waitForRelease();
+        waitForRelease(tft);
         return true;
     }
 
-    public static void waitForRelease() {
+    public static void waitForRelease(TftTouchShield tft) {
         int misses = 0;
         while (misses < 3) {
-            if (TftTouchShield.readTouch()) {
+            if (tft.readTouch()) {
                 misses = 0;
             } else {
                 misses = misses + 1;

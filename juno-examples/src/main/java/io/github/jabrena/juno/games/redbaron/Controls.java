@@ -32,13 +32,13 @@ final class Controls {
         touching = false;
     }
 
-    static void handleTouch(int[] ents) {
-        boolean down = TftTouchShield.readTouch();
-        if (down && TftTouchShield.touchY() < DisplayList.HEADER) {
+    static void handleTouch(TftTouchShield tft, int[] ents) {
+        boolean down = tft.readTouch();
+        if (down && tft.touchY() < DisplayList.HEADER) {
             if (!headerPressed) {
                 autopilot = !autopilot;
                 center();
-                Hud.drawHeader();
+                Hud.drawHeader(tft);
             }
             headerPressed = true;
             return;
@@ -48,8 +48,8 @@ final class Controls {
             return;
         }
         if (down) {
-            int x = TftTouchShield.touchX();
-            int y = TftTouchShield.touchY();
+            int x = tft.touchX();
+            int y = tft.touchY();
             if (!touching) {
                 touching = true;
                 dragged = false;
@@ -78,32 +78,32 @@ final class Controls {
         }
     }
 
-    static void choosePilot() {
-        TftTouchShield.fillScreen(DisplayList.SKY);
-        Hud.showCentered("CHOOSE PILOT", 36, 3, TftTouchShield.RED);
-        Hud.showCentered("Who flies the biplane?", 74, 1, TftTouchShield.WHITE);
-        drawChoice(0, "HUMAN", "You fly and fire", false);
-        drawChoice(1, "CPU", "Autopilot plays", false);
-        Hud.showCentered("Tap the header in game to switch", 206, 1, SceneRenderer.HORIZON);
-        int choice = PilotMenu.waitForChoice();
+    static void choosePilot(TftTouchShield tft) {
+        tft.fillScreen(DisplayList.SKY);
+        Hud.showCentered(tft, "CHOOSE PILOT", 36, 3, TftTouchShield.RED);
+        Hud.showCentered(tft, "Who flies the biplane?", 74, 1, TftTouchShield.WHITE);
+        drawChoice(tft, 0, "HUMAN", "You fly and fire", false);
+        drawChoice(tft, 1, "CPU", "Autopilot plays", false);
+        Hud.showCentered(tft, "Tap the header in game to switch", 206, 1, SceneRenderer.HORIZON);
+        int choice = PilotMenu.waitForChoice(tft);
         autopilot = choice == 1;
         touching = false;
-        drawChoice(choice, choice == 0 ? "HUMAN" : "CPU",
+        drawChoice(tft, choice, choice == 0 ? "HUMAN" : "CPU",
                 choice == 0 ? "You fly and fire" : "Autopilot plays", true);
-        PilotMenu.waitForRelease();
+        PilotMenu.waitForRelease(tft);
     }
 
     static int choiceAt(int x, int y) {
         return PilotMenu.choiceAt(x, y);
     }
 
-    private static void drawChoice(int index, String label, String hint, boolean chosen) {
-        PilotMenu.drawChoice(index, label, hint, chosen, CHOICE_CHOSEN, CHOICE,
+    private static void drawChoice(TftTouchShield tft, int index, String label, String hint, boolean chosen) {
+        PilotMenu.drawChoice(tft, index, label, hint, chosen, CHOICE_CHOSEN, CHOICE,
                 TftTouchShield.WHITE, SceneRenderer.HORIZON, TftTouchShield.WHITE, TftTouchShield.YELLOW);
     }
 
     /** Waits for a tap, giving up and returning {@code false} if none arrives within {@code timeoutMillis}. */
-    static boolean waitForTap(int timeoutMillis) {
-        return PilotMenu.waitForTap(timeoutMillis);
+    static boolean waitForTap(TftTouchShield tft, int timeoutMillis) {
+        return PilotMenu.waitForTap(tft, timeoutMillis);
     }
 }

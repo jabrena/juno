@@ -7,6 +7,8 @@ import io.github.jabrena.juno.util.mvc.View;
 
 /** The dashboard view: it observes the shared model and redraws only when its status or page changes. */
 public final class TemperatureHistogramView implements View {
+
+    private final TftTouchShield tft;
     private static final int UNSHOWN = -1;
     private static final int SERIAL_BAR_WIDTH = 50;
     private static final int TFT_PLOT_X = 34;
@@ -20,7 +22,8 @@ public final class TemperatureHistogramView implements View {
     private int shownStatus = UNSHOWN;
     private int shownPage = UNSHOWN;
 
-    public TemperatureHistogramView(TemperatureDashboardState model) {
+    public TemperatureHistogramView(TftTouchShield tft, TemperatureDashboardState model) {
+        this.tft = tft;
         this.model = model;
     }
 
@@ -41,15 +44,15 @@ public final class TemperatureHistogramView implements View {
         shownStatus = status;
         shownPage = page;
         if (status == TemperatureDashboardState.CONNECTING) {
-            showStatus("Connecting WiFi...");
+            showStatus(tft, "Connecting WiFi...");
         } else if (status == TemperatureDashboardState.READING) {
-            showReadingProgress();
+            showReadingProgress(tft);
         } else if (status == TemperatureDashboardState.WIFI_FAILED) {
-            showStatus("WiFi connection failed");
+            showStatus(tft, "WiFi connection failed");
         } else {
             boolean complete = status == TemperatureDashboardState.COMPLETE;
             printHistogram();
-            drawHistogram(complete);
+            drawHistogram(tft, complete);
             Serial.println("TFT histogram rendered");
             if (complete) {
                 Serial.println("All rows read");
@@ -64,25 +67,25 @@ public final class TemperatureHistogramView implements View {
     public void touch(int x, int y) {
     }
 
-    private void showReadingProgress() {
-        showStatus("Reading Supabase...");
+    private void showReadingProgress(TftTouchShield tft) {
+        showStatus(tft, "Reading Supabase...");
         if (model.page() > 0) {
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-            TftTouchShield.setCursor(12, 124);
-            TftTouchShield.print("page ");
-            TftTouchShield.print(model.page());
-            TftTouchShield.print("  rows ");
-            TftTouchShield.print(model.pageRows());
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+            tft.setCursor(12, 124);
+            tft.print("page ");
+            tft.print(model.page());
+            tft.print("  rows ");
+            tft.print(model.pageRows());
         }
     }
 
-    private static void showStatus(String message) {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(12, 92);
-        TftTouchShield.print(message);
+    private static void showStatus(TftTouchShield tft, String message) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
+        tft.setCursor(12, 92);
+        tft.print(message);
     }
 
     private void printHistogram() {
@@ -122,50 +125,50 @@ public final class TemperatureHistogramView implements View {
         }
     }
 
-    private void drawHistogram(boolean complete) {
-        TftTouchShield.fillScreen(TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(6, 6);
-        TftTouchShield.print("MEDIAN TEMPERATURE");
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(complete ? TftTouchShield.GREEN : TftTouchShield.YELLOW,
+    private void drawHistogram(TftTouchShield tft, boolean complete) {
+        tft.fillScreen(TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(6, 6);
+        tft.print("MEDIAN TEMPERATURE");
+        tft.setTextSize(1);
+        tft.setTextColor(complete ? TftTouchShield.GREEN : TftTouchShield.YELLOW,
                 TftTouchShield.BLACK);
-        TftTouchShield.setCursor(270, 10);
-        TftTouchShield.print(complete ? "ALL" : "PARTIAL");
-        drawSummary();
-        drawChart();
+        tft.setCursor(270, 10);
+        tft.print(complete ? "ALL" : "PARTIAL");
+        drawSummary(tft);
+        drawChart(tft);
     }
 
-    private void drawSummary() {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(6, 34);
-        TftTouchShield.print("rows ");
-        TftTouchShield.print(model.readings());
-        TftTouchShield.print("  missing ");
-        TftTouchShield.print(model.missing());
+    private void drawSummary(TftTouchShield tft) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.CYAN, TftTouchShield.BLACK);
+        tft.setCursor(6, 34);
+        tft.print("rows ");
+        tft.print(model.readings());
+        tft.print("  missing ");
+        tft.print(model.missing());
         if (model.readings() == 0) {
-            TftTouchShield.setCursor(6, 46);
-            TftTouchShield.print("No complete rows");
+            tft.setCursor(6, 46);
+            tft.print("No complete rows");
             return;
         }
-        TftTouchShield.setCursor(174, 34);
-        TftTouchShield.print("min ");
-        printTftTenths(model.minimumTenths());
-        TftTouchShield.setCursor(246, 34);
-        TftTouchShield.print("max ");
-        printTftTenths(model.maximumTenths());
+        tft.setCursor(174, 34);
+        tft.print("min ");
+        printTftTenths(tft, model.minimumTenths());
+        tft.setCursor(246, 34);
+        tft.print("max ");
+        printTftTenths(tft, model.maximumTenths());
     }
 
-    private void drawChart() {
+    private void drawChart(TftTouchShield tft) {
         int bins = model.binCount();
-        drawYAxis(bins);
-        TftTouchShield.drawHorizontalLine(TFT_PLOT_X, TFT_BASELINE, bins * TFT_BAR_STEP,
+        drawYAxis(tft, bins);
+        tft.drawHorizontalLine(TFT_PLOT_X, TFT_BASELINE, bins * TFT_BAR_STEP,
                 TftTouchShield.GRAY);
         int grid = 0;
         while (grid <= bins) {
-            TftTouchShield.drawVerticalLine(TFT_PLOT_X + grid * TFT_BAR_STEP, TFT_PLOT_TOP,
+            tft.drawVerticalLine(TFT_PLOT_X + grid * TFT_BAR_STEP, TFT_PLOT_TOP,
                     TFT_BASELINE - TFT_PLOT_TOP, TftTouchShield.NAVY);
             grid = grid + 10;
         }
@@ -181,53 +184,53 @@ public final class TemperatureHistogramView implements View {
                     }
                     if (height > 0) {
                         int x = TFT_PLOT_X + (bucket - 1) * TFT_BAR_STEP + 1;
-                        TftTouchShield.fillRect(x, TFT_BASELINE - height, TFT_BAR_WIDTH, height,
+                        tft.fillRect(x, TFT_BASELINE - height, TFT_BAR_WIDTH, height,
                                 TftTouchShield.CYAN);
                     }
                     bucket = bucket + 1;
                 }
             }
         }
-        drawAxisLabels();
-        TftTouchShield.setCursor(6, 228);
-        TftTouchShield.print("<10: ");
-        TftTouchShield.print(model.countAt(0));
-        TftTouchShield.setCursor(244, 228);
-        TftTouchShield.print(">=40: ");
-        TftTouchShield.print(model.countAt(model.bucketCount() - 1));
+        drawAxisLabels(tft);
+        tft.setCursor(6, 228);
+        tft.print("<10: ");
+        tft.print(model.countAt(0));
+        tft.setCursor(244, 228);
+        tft.print(">=40: ");
+        tft.print(model.countAt(model.bucketCount() - 1));
     }
 
     /** Draws the count legend and its horizontal guide lines before the bars. */
-    private void drawYAxis(int bins) {
+    private void drawYAxis(TftTouchShield tft, int bins) {
         int width = bins * TFT_BAR_STEP;
         int peak = model.peakCount();
         int midpoint = TFT_PLOT_TOP + TFT_BAR_HEIGHT / 2;
-        TftTouchShield.drawHorizontalLine(TFT_PLOT_X, TFT_PLOT_TOP, width, TftTouchShield.NAVY);
-        TftTouchShield.drawHorizontalLine(TFT_PLOT_X, midpoint, width, TftTouchShield.NAVY);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(2, 50);
-        TftTouchShield.print("count");
-        TftTouchShield.setCursor(4, TFT_PLOT_TOP - 4);
-        TftTouchShield.print(peak);
-        TftTouchShield.setCursor(4, midpoint - 4);
-        TftTouchShield.print(peak / 2);
-        TftTouchShield.setCursor(22, TFT_BASELINE - 4);
-        TftTouchShield.print("0");
+        tft.drawHorizontalLine(TFT_PLOT_X, TFT_PLOT_TOP, width, TftTouchShield.NAVY);
+        tft.drawHorizontalLine(TFT_PLOT_X, midpoint, width, TftTouchShield.NAVY);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(2, 50);
+        tft.print("count");
+        tft.setCursor(4, TFT_PLOT_TOP - 4);
+        tft.print(peak);
+        tft.setCursor(4, midpoint - 4);
+        tft.print(peak / 2);
+        tft.setCursor(22, TFT_BASELINE - 4);
+        tft.print("0");
     }
 
-    private void drawAxisLabels() {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(TFT_PLOT_X - 4, 206);
-        TftTouchShield.print(model.lowestDegrees());
-        TftTouchShield.setCursor(TFT_PLOT_X + 10 * TFT_BAR_STEP - 4, 206);
-        TftTouchShield.print(model.lowestDegrees() + 10);
-        TftTouchShield.setCursor(TFT_PLOT_X + 20 * TFT_BAR_STEP - 4, 206);
-        TftTouchShield.print(model.lowestDegrees() + 20);
-        TftTouchShield.setCursor(TFT_PLOT_X + 30 * TFT_BAR_STEP - 8, 206);
-        TftTouchShield.print(model.highestDegrees());
-        TftTouchShield.print(" C");
+    private void drawAxisLabels(TftTouchShield tft) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(TFT_PLOT_X - 4, 206);
+        tft.print(model.lowestDegrees());
+        tft.setCursor(TFT_PLOT_X + 10 * TFT_BAR_STEP - 4, 206);
+        tft.print(model.lowestDegrees() + 10);
+        tft.setCursor(TFT_PLOT_X + 20 * TFT_BAR_STEP - 4, 206);
+        tft.print(model.lowestDegrees() + 20);
+        tft.setCursor(TFT_PLOT_X + 30 * TFT_BAR_STEP - 8, 206);
+        tft.print(model.highestDegrees());
+        tft.print(" C");
     }
 
     private void printLabel(int bucket) {
@@ -259,14 +262,14 @@ public final class TemperatureHistogramView implements View {
         Serial.print(magnitude % 10);
     }
 
-    private static void printTftTenths(int tenths) {
+    private static void printTftTenths(TftTouchShield tft, int tenths) {
         int magnitude = tenths;
         if (tenths < 0) {
-            TftTouchShield.print("-");
+            tft.print("-");
             magnitude = -tenths;
         }
-        TftTouchShield.print(magnitude / 10);
-        TftTouchShield.print(".");
-        TftTouchShield.print(magnitude % 10);
+        tft.print(magnitude / 10);
+        tft.print(".");
+        tft.print(magnitude % 10);
     }
 }

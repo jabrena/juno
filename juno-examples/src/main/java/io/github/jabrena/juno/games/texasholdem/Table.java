@@ -71,7 +71,7 @@ final class Table {
         smallBlind = START_SMALL_BLIND;
     }
 
-    static void playHand(byte[] cards, int[] seats, int[] work) {
+    static void playHand(TftTouchShield tft, byte[] cards, int[] seats, int[] work) {
         handNumber = handNumber + 1;
         smallBlind = START_SMALL_BLIND << Math.min(6, (handNumber - 1) / HANDS_PER_LEVEL);
         for (int seat = 0; seat < SEATS; seat++) {
@@ -109,10 +109,10 @@ final class Table {
         currentBet = Math.max(seats[BET + small], seats[BET + big]);
         minRaise = smallBlind * 2;
         raises = 0;
-        drawTable(cards, seats, work, false);
-        showMessage("", TftTouchShield.WHITE);
+        drawTable(tft, cards, seats, work, false);
+        showMessage(tft, "", TftTouchShield.WHITE);
 
-        if (!bettingRound(cards, seats, work, nextSeat(seats, big, true))) {
+        if (!bettingRound(tft, cards, seats, work, nextSeat(seats, big, true))) {
             return;
         }
         for (int street = 0; street < 3; street++) {
@@ -135,20 +135,20 @@ final class Table {
                 deckPosition = deckPosition + 1;
                 boardCount = boardCount + 1;
             }
-            drawTable(cards, seats, work, false);
+            drawTable(tft, cards, seats, work, false);
             Delay.millis(500);
-            if (countState(seats, ACTIVE) >= 2 && !bettingRound(cards, seats, work, nextSeat(seats, dealer, true))) {
+            if (countState(seats, ACTIVE) >= 2 && !bettingRound(tft, cards, seats, work, nextSeat(seats, dealer, true))) {
                 return;
             }
         }
-        showdown(cards, seats, work);
+        showdown(tft, cards, seats, work);
     }
 
-    static boolean bettingRound(byte[] cards, int[] seats, int[] work, int first) {
+    static boolean bettingRound(TftTouchShield tft, byte[] cards, int[] seats, int[] work, int first) {
         int seat = first;
         while (true) {
             if (SEATS - countState(seats, FOLDED) - countState(seats, OUT) == 1) {
-                winByFold(cards, seats, work);
+                winByFold(tft, cards, seats, work);
                 return false;
             }
             if (roundComplete(seats)) {
@@ -157,15 +157,15 @@ final class Table {
             if (seats[STATE + seat] == ACTIVE
                     && (seats[ACTED + seat] == 0 || seats[BET + seat] < currentBet)) {
                 toAct = seat;
-                drawSeat(cards, seats, work, seat, false);
+                drawSeat(tft, cards, seats, work, seat, false);
                 if (seat == 0 && !Controls.autopilot) {
-                    humanTurn(cards, seats, work);
+                    humanTurn(tft, cards, seats, work);
                 } else {
                     computerTurn(cards, seats, work, seat);
                 }
                 toAct = -1;
-                drawSeat(cards, seats, work, seat, false);
-                drawPot(seats);
+                drawSeat(tft, cards, seats, work, seat, false);
+                drawPot(tft, seats);
             }
             seat = (seat + 1) % SEATS;
         }
@@ -227,7 +227,7 @@ final class Table {
         seats[ACTED + seat] = 1;
     }
 
-    static void winByFold(byte[] cards, int[] seats, int[] work) {
+    static void winByFold(TftTouchShield tft, byte[] cards, int[] seats, int[] work) {
         int winner = 0;
         int pot = 0;
         for (int seat = 0; seat < SEATS; seat++) {
@@ -240,11 +240,11 @@ final class Table {
         }
         seats[CHIPS + winner] = seats[CHIPS + winner] + pot;
         seats[ACTION + winner] = WINNER;
-        drawTable(cards, seats, work, false);
-        showWinner(winner, pot, -1);
+        drawTable(tft, cards, seats, work, false);
+        showWinner(tft, winner, pot, -1);
     }
 
-    static void showdown(byte[] cards, int[] seats, int[] work) {
+    static void showdown(TftTouchShield tft, byte[] cards, int[] seats, int[] work) {
         for (int seat = 0; seat < SEATS; seat++) {
             seats[BET + seat] = 0;
             work[CONTRIBUTED + seat] = seats[TOTAL + seat];
@@ -255,7 +255,7 @@ final class Table {
                 work[SCORES + seat] = -1;
             }
         }
-        drawTable(cards, seats, work, true);
+        drawTable(tft, cards, seats, work, true);
         int mainWinner = -1;
         int mainPot = 0;
         int mainScore = -1;
@@ -309,7 +309,7 @@ final class Table {
                 }
             }
         }
-        drawTable(cards, seats, work, true);
-        showWinner(mainWinner, mainPot, mainScore);
+        drawTable(tft, cards, seats, work, true);
+        showWinner(tft, mainWinner, mainPot, mainScore);
     }
 }

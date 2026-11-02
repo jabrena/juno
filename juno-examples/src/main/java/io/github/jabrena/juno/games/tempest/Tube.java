@@ -96,7 +96,7 @@ final class Tube {
     }
 
     /** Bresenham line; runs of pixels on the same row become one fill. */
-    static void drawLine(int x0, int y0, int x1, int y1, int color) {
+    static void drawLine(TftTouchShield tft, int x0, int y0, int x1, int y1, int color) {
         int dx = Math.abs(x1 - x0);
         int dy = -Math.abs(y1 - y0);
         int stepX = x0 > x1 ? -1 : 1;
@@ -118,18 +118,18 @@ final class Tube {
                 nextY = y + stepY;
             }
             if (nextY != y) {
-                fillRun(runStart, x, y, color);
+                fillRun(tft, runStart, x, y, color);
                 runStart = nextX;
             }
             x = nextX;
             y = nextY;
         }
-        fillRun(runStart, x, y, color);
+        fillRun(tft, runStart, x, y, color);
     }
 
-    private static void fillRun(int from, int to, int y, int color) {
+    private static void fillRun(TftTouchShield tft, int from, int to, int y, int color) {
         int left = Math.min(from, to);
         int right = Math.max(from, to);
-        TftTouchShield.fillRect(left, y, right - left + 1, 1, color);
+        tft.fillRect(left, y, right - left + 1, 1, color);
     }
 }

@@ -44,20 +44,21 @@ public final class DashboardTFT {
     }
 
     public static void main(String[] args) throws InterruptedException {
+        TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
 
         TftDashboardState model = new TftDashboardState();
         TftFpsWidget fps = new TftFpsWidget();
-        ViewRouter router = new ViewRouter(FRAME_PERIOD_MS);
-        router.register(TftDashboardViews.HOME, new TftDashboardHomeView(router, fps));
-        router.register(TftDashboardViews.STATUS, new TftDashboardStatusView(router, model, fps));
-        router.register(TftDashboardViews.STORAGE, new TftDashboardStorageView(router, model, fps));
+        ViewRouter router = new ViewRouter(tft, FRAME_PERIOD_MS);
+        router.register(TftDashboardViews.HOME, new TftDashboardHomeView(tft, router, fps));
+        router.register(TftDashboardViews.STATUS, new TftDashboardStatusView(tft, router, model, fps));
+        router.register(TftDashboardViews.STORAGE, new TftDashboardStorageView(tft, router, model, fps));
         // Draw before the SD start-up, so the screen is never blank while the card starts.
         router.start(TftDashboardViews.HOME);
 
-        SdCardService sdCard = new SdCardService(model, TftTouchShield.getSdCard());
+        SdCardService sdCard = new SdCardService(model, tft.getSdCard());
         sdCard.begin();
         sdCard.start();
         new WifiService(model).start();

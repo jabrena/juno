@@ -46,9 +46,9 @@ final class WalkersRound {
         atatsDown = 0;
     }
 
-    static void announce() {
-        Hud.showCentered("THE WALKERS", 104, 2, TftTouchShield.YELLOW);
-        Hud.showCentered("Hit the AT-AT heads", 136, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "THE WALKERS", 104, 2, TftTouchShield.YELLOW);
+        Hud.showCentered(tft, "Hit the AT-AT heads", 136, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {

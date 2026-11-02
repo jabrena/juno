@@ -22,43 +22,43 @@ final class Hud {
         shownAutopilot = !Controls.autopilot;
     }
 
-    static void drawHeader() {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(4, 4);
-        TftTouchShield.print("SCORE ");
-        printPadded(Flight.score, 5);
-        TftTouchShield.print("   FUEL ");
-        TftTouchShield.setTextColor(Flight.fuel < 300 ? TftTouchShield.RED : TftTouchShield.WHITE,
+    static void drawHeader(TftTouchShield tft) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.setCursor(4, 4);
+        tft.print("SCORE ");
+        printPadded(tft, Flight.score, 5);
+        tft.print("   FUEL ");
+        tft.setTextColor(Flight.fuel < 300 ? TftTouchShield.RED : TftTouchShield.WHITE,
                 HEADER_BACKGROUND);
-        printPadded(Flight.fuel, 4);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.print("  BEST ");
-        printPadded(Flight.best, 5);
-        drawSpeeds();
+        printPadded(tft, Flight.fuel, 4);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.print("  BEST ");
+        printPadded(tft, Flight.best, 5);
+        drawSpeeds(tft);
     }
 
-    private static void drawSpeeds() {
-        TftTouchShield.setCursor(4, 18);
-        TftTouchShield.print(Controls.autopilot ? "CPU H-SP " : "HUM H-SP ");
-        speedColor(Math.abs(Flight.vx) > Flight.SAFE_HORIZONTAL);
-        printPadded(Math.round(Flight.vx * 10), 3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.print(" V-SP ");
-        speedColor(Flight.vy > Flight.SAFE_VERTICAL);
-        printPadded(Math.round(Flight.vy * 10), 3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.print(" #");
-        TftTouchShield.print(Flight.descent);
-        TftTouchShield.print(" ");
+    private static void drawSpeeds(TftTouchShield tft) {
+        tft.setCursor(4, 18);
+        tft.print(Controls.autopilot ? "CPU H-SP " : "HUM H-SP ");
+        speedColor(tft, Math.abs(Flight.vx) > Flight.SAFE_HORIZONTAL);
+        printPadded(tft, Math.round(Flight.vx * 10), 3);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.print(" V-SP ");
+        speedColor(tft, Flight.vy > Flight.SAFE_VERTICAL);
+        printPadded(tft, Math.round(Flight.vy * 10), 3);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.print(" #");
+        tft.print(Flight.descent);
+        tft.print(" ");
         shownAutopilot = Controls.autopilot;
     }
 
-    private static void speedColor(boolean tooFast) {
-        TftTouchShield.setTextColor(tooFast ? TftTouchShield.RED : TftTouchShield.GREEN, HEADER_BACKGROUND);
+    private static void speedColor(TftTouchShield tft, boolean tooFast) {
+        tft.setTextColor(tooFast ? TftTouchShield.RED : TftTouchShield.GREEN, HEADER_BACKGROUND);
     }
 
-    private static void printPadded(int value, int width) {
+    private static void printPadded(TftTouchShield tft, int value, int width) {
         int digits = 1;
         int rest = Math.abs(value);
         while (rest >= 10) {
@@ -66,49 +66,49 @@ final class Hud {
             digits = digits + 1;
         }
         if (value < 0) digits = digits + 1;
-        for (int index = digits; index < width; index++) TftTouchShield.print(" ");
-        TftTouchShield.print(value);
+        for (int index = digits; index < width; index++) tft.print(" ");
+        tft.print(value);
     }
 
-    static void drawButtons() {
+    static void drawButtons(TftTouchShield tft) {
         shownPressed = -2;
-        updateButtons(Controls.NONE);
+        updateButtons(tft, Controls.NONE);
     }
 
-    static void updateButtons(int pressed) {
+    static void updateButtons(TftTouchShield tft, int pressed) {
         if (pressed == shownPressed && shownAutopilot == Controls.autopilot) return;
-        drawButton(Controls.LEFT, "<", pressed);
-        drawButton(Controls.BURN, "BURN", pressed);
-        drawButton(Controls.RIGHT, ">", pressed);
+        drawButton(tft, Controls.LEFT, "<", pressed);
+        drawButton(tft, Controls.BURN, "BURN", pressed);
+        drawButton(tft, Controls.RIGHT, ">", pressed);
         shownPressed = pressed;
         shownAutopilot = Controls.autopilot;
     }
 
-    private static void drawButton(int index, String label, int pressed) {
+    private static void drawButton(TftTouchShield tft, int index, String label, int pressed) {
         int x = 4 + index * 80;
         int color = index == pressed ? BUTTON_PRESSED : BUTTON;
-        TftTouchShield.fillRect(x, BUTTON_Y, 72, BUTTON_HEIGHT, color);
-        TftTouchShield.drawRect(x, BUTTON_Y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, color);
-        TftTouchShield.setCursor(x + (72 - label.length() * 12) / 2, BUTTON_Y + 15);
-        TftTouchShield.print(label);
+        tft.fillRect(x, BUTTON_Y, 72, BUTTON_HEIGHT, color);
+        tft.drawRect(x, BUTTON_Y, 72, BUTTON_HEIGHT, TftTouchShield.BLACK);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.BLACK, color);
+        tft.setCursor(x + (72 - label.length() * 12) / 2, BUTTON_Y + 15);
+        tft.print(label);
     }
 
-    static void drawChoice(int x, String label, boolean selected) {
+    static void drawChoice(TftTouchShield tft, int x, String label, boolean selected) {
         int color = selected ? CHOICE_CHOSEN : CHOICE;
-        TftTouchShield.fillRect(x, 104, 104, 72, color);
-        TftTouchShield.drawRect(x, 104, 104, 72, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, color);
-        TftTouchShield.setCursor(x + (104 - label.length() * 12) / 2, 132);
-        TftTouchShield.print(label);
+        tft.fillRect(x, 104, 104, 72, color);
+        tft.drawRect(x, 104, 104, 72, TftTouchShield.WHITE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setCursor(x + (104 - label.length() * 12) / 2, 132);
+        tft.print(label);
     }
 
-    static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, Terrain.SKY);
-        TftTouchShield.setCursor((Terrain.WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, Terrain.SKY);
+        tft.setCursor((Terrain.WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 }

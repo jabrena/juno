@@ -27,25 +27,25 @@ final class PoweredUpLed {
     private PoweredUpLed() {
     }
 
-    static void onTouch(PoweredUpState s, int x, int y) {
+    static void onTouch(TftTouchShield tft, PoweredUpState s, int x, int y) {
         for (int i = 0; i < LED_COLORS.length; i++) {
             if (PoweredUpUi.inBox(x, y, swatchX(i), swatchY(i), SWATCH_WIDTH, SWATCH_HEIGHT)) {
                 s.ledIndex = i;
                 HUB.setLedColor(LED_COLORS[i]);
-                draw(s);
+                draw(tft, s);
             }
         }
     }
 
     /** A 3x3 grid of swatches in roughly the colors the hub LED shows; the chosen one has a white frame. */
-    static void draw(PoweredUpState s) {
+    static void draw(TftTouchShield tft, PoweredUpState s) {
         for (int i = 0; i < LED_COLORS.length; i++) {
             int x = swatchX(i);
             int y = swatchY(i);
-            TftTouchShield.fillRect(x, y, SWATCH_WIDTH, SWATCH_HEIGHT, swatchColor(LED_COLORS[i]));
+            tft.fillRect(x, y, SWATCH_WIDTH, SWATCH_HEIGHT, swatchColor(LED_COLORS[i]));
             int frame = i == s.ledIndex ? TftTouchShield.WHITE : TftTouchShield.BLACK;
-            TftTouchShield.drawRect(x, y, SWATCH_WIDTH, SWATCH_HEIGHT, frame);
-            TftTouchShield.drawRect(x + 1, y + 1, SWATCH_WIDTH - 2, SWATCH_HEIGHT - 2, frame);
+            tft.drawRect(x, y, SWATCH_WIDTH, SWATCH_HEIGHT, frame);
+            tft.drawRect(x + 1, y + 1, SWATCH_WIDTH - 2, SWATCH_HEIGHT - 2, frame);
         }
     }
 

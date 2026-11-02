@@ -30,162 +30,162 @@ final class WeatherScreen {
     private WeatherScreen() {
     }
 
-    static void showStatus(String text) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(CONDITION_X, STATUS_Y);
-        TftTouchShield.print(text);
+    static void showStatus(TftTouchShield tft, String text) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(CONDITION_X, STATUS_Y);
+        tft.print(text);
     }
 
     // Small gray footer: the public IP ipinfo.io saw and the coordinates sent to Open-Meteo.
-    static void drawNetworkInfo(byte[] publicIp, byte[] location) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, FOOTER_Y);
-        TftTouchShield.print("IP ");
-        TftTouchShield.print(publicIp, AsciiText.length(publicIp));
-        TftTouchShield.print("  ");
-        TftTouchShield.print(location, AsciiText.length(location));
+    static void drawNetworkInfo(TftTouchShield tft, byte[] publicIp, byte[] location) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, FOOTER_Y);
+        tft.print("IP ");
+        tft.print(publicIp, AsciiText.length(publicIp));
+        tft.print("  ");
+        tft.print(location, AsciiText.length(location));
     }
 
-    static void drawCity(byte[] city, int length) {
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(CITY_GREEN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, CITY_Y);
-        TftTouchShield.print(city, Math.min(length, 20));
+    static void drawCity(TftTouchShield tft, byte[] city, int length) {
+        tft.setTextSize(2);
+        tft.setTextColor(CITY_GREEN, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, CITY_Y);
+        tft.print(city, Math.min(length, 20));
     }
 
-    static void drawWeather(int temperature, int humidity, int windSpeed, int condition, boolean isDay) {
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, WIND_Y);
-        TftTouchShield.print("Wind ");
-        TftTouchShield.print(windSpeed);
-        TftTouchShield.print(" km/h   ");
+    static void drawWeather(TftTouchShield tft, int temperature, int humidity, int windSpeed, int condition, boolean isDay) {
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, WIND_Y);
+        tft.print("Wind ");
+        tft.print(windSpeed);
+        tft.print(" km/h   ");
 
-        drawIcon(condition, isDay);
+        drawIcon(tft, condition, isDay);
 
-        TftTouchShield.fillRect(CONDITION_X, CONDITION_Y - 4, 108, 22, TftTouchShield.WHITE);
-        TftTouchShield.setTextColor(TftTouchShield.BLACK, TftTouchShield.WHITE);
-        TftTouchShield.setCursor(CONDITION_X + 6, CONDITION_Y);
-        TftTouchShield.print(WeatherConditions.label(condition));
+        tft.fillRect(CONDITION_X, CONDITION_Y - 4, 108, 22, TftTouchShield.WHITE);
+        tft.setTextColor(TftTouchShield.BLACK, TftTouchShield.WHITE);
+        tft.setCursor(CONDITION_X + 6, CONDITION_Y);
+        tft.print(WeatherConditions.label(condition));
 
-        TftTouchShield.setTextSize(5);
-        TftTouchShield.setTextColor(TEMPERATURE_BLUE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(CONDITION_X, TEMPERATURE_Y);
-        TftTouchShield.print(temperature);
-        TftTouchShield.print(" ");
-        int degreeX = TftTouchShield.width() - 20;
-        TftTouchShield.drawCircle(degreeX, TEMPERATURE_Y + 5, 4, TEMPERATURE_BLUE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(degreeX + 6, TEMPERATURE_Y);
-        TftTouchShield.print("C");
+        tft.setTextSize(5);
+        tft.setTextColor(TEMPERATURE_BLUE, TftTouchShield.BLACK);
+        tft.setCursor(CONDITION_X, TEMPERATURE_Y);
+        tft.print(temperature);
+        tft.print(" ");
+        int degreeX = tft.width() - 20;
+        tft.drawCircle(degreeX, TEMPERATURE_Y + 5, 4, TEMPERATURE_BLUE);
+        tft.setTextSize(2);
+        tft.setCursor(degreeX + 6, TEMPERATURE_Y);
+        tft.print("C");
 
-        drawThermometer(MARGIN + 8, TEMPERATURE_BAR_Y + 4);
-        drawBar(TEMPERATURE_BAR_Y, (temperature + 10) * BAR_WIDTH / 50, TftTouchShield.YELLOW);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(BAR_X + BAR_WIDTH + 10, TEMPERATURE_BAR_Y - 2);
-        TftTouchShield.print(temperature);
-        TftTouchShield.print("C  ");
+        drawThermometer(tft, MARGIN + 8, TEMPERATURE_BAR_Y + 4);
+        drawBar(tft, TEMPERATURE_BAR_Y, (temperature + 10) * BAR_WIDTH / 50, TftTouchShield.YELLOW);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(BAR_X + BAR_WIDTH + 10, TEMPERATURE_BAR_Y - 2);
+        tft.print(temperature);
+        tft.print("C  ");
 
-        drawDrop(MARGIN + 8, HUMIDITY_BAR_Y + 4);
-        drawBar(HUMIDITY_BAR_Y, humidity * BAR_WIDTH / 100, TftTouchShield.CYAN);
-        TftTouchShield.setCursor(BAR_X + BAR_WIDTH + 10, HUMIDITY_BAR_Y - 2);
-        TftTouchShield.print(humidity);
-        TftTouchShield.print("%  ");
+        drawDrop(tft, MARGIN + 8, HUMIDITY_BAR_Y + 4);
+        drawBar(tft, HUMIDITY_BAR_Y, humidity * BAR_WIDTH / 100, TftTouchShield.CYAN);
+        tft.setCursor(BAR_X + BAR_WIDTH + 10, HUMIDITY_BAR_Y - 2);
+        tft.print(humidity);
+        tft.print("%  ");
     }
 
-    private static void drawBar(int y, int filled, int color) {
+    private static void drawBar(TftTouchShield tft, int y, int filled, int color) {
         int width = Math.max(0, Math.min(filled, BAR_WIDTH));
-        TftTouchShield.fillRect(BAR_X, y, width, BAR_HEIGHT, color);
-        TftTouchShield.fillRect(BAR_X + width, y, BAR_WIDTH - width, BAR_HEIGHT, BAR_BACKGROUND);
+        tft.fillRect(BAR_X, y, width, BAR_HEIGHT, color);
+        tft.fillRect(BAR_X + width, y, BAR_WIDTH - width, BAR_HEIGHT, BAR_BACKGROUND);
     }
 
-    private static void drawThermometer(int x, int y) {
-        TftTouchShield.fillRect(x - 2, y - 12, 5, 12, TftTouchShield.RED);
-        TftTouchShield.fillCircle(x, y + 2, 5, TftTouchShield.RED);
+    private static void drawThermometer(TftTouchShield tft, int x, int y) {
+        tft.fillRect(x - 2, y - 12, 5, 12, TftTouchShield.RED);
+        tft.fillCircle(x, y + 2, 5, TftTouchShield.RED);
     }
 
-    private static void drawDrop(int x, int y) {
-        TftTouchShield.fillCircle(x, y + 2, 6, TftTouchShield.CYAN);
-        TftTouchShield.fillRect(x - 1, y - 10, 3, 6, TftTouchShield.CYAN);
-        TftTouchShield.fillRect(x - 3, y - 5, 7, 3, TftTouchShield.CYAN);
+    private static void drawDrop(TftTouchShield tft, int x, int y) {
+        tft.fillCircle(x, y + 2, 6, TftTouchShield.CYAN);
+        tft.fillRect(x - 1, y - 10, 3, 6, TftTouchShield.CYAN);
+        tft.fillRect(x - 3, y - 5, 7, 3, TftTouchShield.CYAN);
     }
 
-    private static void drawIcon(int condition, boolean isDay) {
-        TftTouchShield.fillRect(ICON_X - 32, ICON_Y - 30, 64, 60, TftTouchShield.BLACK);
+    private static void drawIcon(TftTouchShield tft, int condition, boolean isDay) {
+        tft.fillRect(ICON_X - 32, ICON_Y - 30, 64, 60, TftTouchShield.BLACK);
         if (condition == WeatherConditions.CLEAR) {
-            drawSunOrMoon(ICON_X, ICON_Y, 16, isDay);
+            drawSunOrMoon(tft, ICON_X, ICON_Y, 16, isDay);
             return;
         }
         if (condition == WeatherConditions.PARTLY_CLOUDY) {
-            drawSunOrMoon(ICON_X + 8, ICON_Y - 8, 12, isDay);
+            drawSunOrMoon(tft, ICON_X + 8, ICON_Y - 8, 12, isDay);
         }
         int cloudColor = CLOUD_GRAY;
         if (condition == WeatherConditions.STORM || condition == WeatherConditions.RAIN) {
             cloudColor = TftTouchShield.GRAY;
         }
-        drawCloud(ICON_X, ICON_Y + 2, cloudColor);
+        drawCloud(tft, ICON_X, ICON_Y + 2, cloudColor);
         if (condition == WeatherConditions.FOG) {
             for (int i = 0; i < 3; i++) {
-                TftTouchShield.fillRect(ICON_X - 24, ICON_Y + 16 + i * 5, 48, 2, CLOUD_GRAY);
+                tft.fillRect(ICON_X - 24, ICON_Y + 16 + i * 5, 48, 2, CLOUD_GRAY);
             }
         } else if (condition == WeatherConditions.DRIZZLE || condition == WeatherConditions.RAIN) {
             for (int i = 0; i < 4; i++) {
-                TftTouchShield.fillRect(ICON_X - 18 + i * 11, ICON_Y + 18, 3, 8, TEMPERATURE_BLUE);
+                tft.fillRect(ICON_X - 18 + i * 11, ICON_Y + 18, 3, 8, TEMPERATURE_BLUE);
             }
         } else if (condition == WeatherConditions.SNOW) {
             for (int i = 0; i < 4; i++) {
-                TftTouchShield.fillCircle(ICON_X - 18 + i * 12, ICON_Y + 22, 2, TftTouchShield.WHITE);
+                tft.fillCircle(ICON_X - 18 + i * 12, ICON_Y + 22, 2, TftTouchShield.WHITE);
             }
         } else if (condition == WeatherConditions.STORM) {
-            TftTouchShield.fillRect(ICON_X, ICON_Y + 14, 4, 7, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(ICON_X - 4, ICON_Y + 20, 8, 3, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(ICON_X - 4, ICON_Y + 22, 4, 7, TftTouchShield.YELLOW);
+            tft.fillRect(ICON_X, ICON_Y + 14, 4, 7, TftTouchShield.YELLOW);
+            tft.fillRect(ICON_X - 4, ICON_Y + 20, 8, 3, TftTouchShield.YELLOW);
+            tft.fillRect(ICON_X - 4, ICON_Y + 22, 4, 7, TftTouchShield.YELLOW);
         }
     }
 
-    private static void drawSunOrMoon(int x, int y, int r, boolean isDay) {
+    private static void drawSunOrMoon(TftTouchShield tft, int x, int y, int r, boolean isDay) {
         if (isDay) {
-            TftTouchShield.fillCircle(x, y, r, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(x - 1, y - r - 8, 3, 5, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(x - 1, y + r + 3, 3, 5, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(x - r - 8, y - 1, 5, 3, TftTouchShield.YELLOW);
-            TftTouchShield.fillRect(x + r + 3, y - 1, 5, 3, TftTouchShield.YELLOW);
+            tft.fillCircle(x, y, r, TftTouchShield.YELLOW);
+            tft.fillRect(x - 1, y - r - 8, 3, 5, TftTouchShield.YELLOW);
+            tft.fillRect(x - 1, y + r + 3, 3, 5, TftTouchShield.YELLOW);
+            tft.fillRect(x - r - 8, y - 1, 5, 3, TftTouchShield.YELLOW);
+            tft.fillRect(x + r + 3, y - 1, 5, 3, TftTouchShield.YELLOW);
             return;
         }
-        TftTouchShield.fillCircle(x, y, r, TftTouchShield.WHITE);
-        TftTouchShield.fillCircle(x + r / 2, y - r / 3, r - 2, TftTouchShield.BLACK);
-        drawStar(x + r, y + r / 2, TftTouchShield.WHITE);
-        drawStar(x + r / 2 + 8, y + r + 2, TftTouchShield.WHITE);
+        tft.fillCircle(x, y, r, TftTouchShield.WHITE);
+        tft.fillCircle(x + r / 2, y - r / 3, r - 2, TftTouchShield.BLACK);
+        drawStar(tft, x + r, y + r / 2, TftTouchShield.WHITE);
+        drawStar(tft, x + r / 2 + 8, y + r + 2, TftTouchShield.WHITE);
     }
 
-    private static void drawStar(int x, int y, int color) {
-        TftTouchShield.drawHorizontalLine(x - 3, y, 7, color);
-        TftTouchShield.drawVerticalLine(x, y - 3, 7, color);
+    private static void drawStar(TftTouchShield tft, int x, int y, int color) {
+        tft.drawHorizontalLine(x - 3, y, 7, color);
+        tft.drawVerticalLine(x, y - 3, 7, color);
     }
 
-    private static void drawCloud(int x, int y, int color) {
-        TftTouchShield.fillCircle(x - 12, y + 4, 9, color);
-        TftTouchShield.fillCircle(x + 2, y - 3, 12, color);
-        TftTouchShield.fillCircle(x + 15, y + 5, 8, color);
-        TftTouchShield.fillRect(x - 12, y + 5, 27, 9, color);
+    private static void drawCloud(TftTouchShield tft, int x, int y, int color) {
+        tft.fillCircle(x - 12, y + 4, 9, color);
+        tft.fillCircle(x + 2, y - 3, 12, color);
+        tft.fillCircle(x + 15, y + 5, 8, color);
+        tft.fillRect(x - 12, y + 5, 27, 9, color);
     }
 
-    static void drawDate(int days) {
+    static void drawDate(TftTouchShield tft, int days) {
         CivilCalendar.civilFromDays(days);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN, DATE_Y);
-        TftTouchShield.print(CivilCalendar.civilYear);
-        TftTouchShield.print("/");
-        TftTouchShield.print(CivilCalendar.civilMonth);
-        TftTouchShield.print("/");
-        TftTouchShield.print(CivilCalendar.civilDay);
-        TftTouchShield.print("  ");
-        TftTouchShield.setTextColor(CITY_GREEN, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(MARGIN + 144, DATE_Y);
-        TftTouchShield.print(CivilCalendar.weekdayName(CivilCalendar.floorMod(days + 4, 7)));
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN, DATE_Y);
+        tft.print(CivilCalendar.civilYear);
+        tft.print("/");
+        tft.print(CivilCalendar.civilMonth);
+        tft.print("/");
+        tft.print(CivilCalendar.civilDay);
+        tft.print("  ");
+        tft.setTextColor(CITY_GREEN, TftTouchShield.BLACK);
+        tft.setCursor(MARGIN + 144, DATE_Y);
+        tft.print(CivilCalendar.weekdayName(CivilCalendar.floorMod(days + 4, 7)));
     }
 }

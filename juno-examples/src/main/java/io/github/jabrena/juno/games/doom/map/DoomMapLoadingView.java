@@ -14,6 +14,8 @@ import io.github.jabrena.juno.util.mvc.View;
  * seconds left, and once the map is ready a tap starts it.
  */
 public final class DoomMapLoadingView implements View {
+
+    private final TftTouchShield tft;
     private static final int BAR_X = 40;
     private static final int BAR_Y = 134;
     private static final int BAR_WIDTH = 200;
@@ -29,8 +31,8 @@ public final class DoomMapLoadingView implements View {
     private boolean requested;
     private int frame;
 
-    public DoomMapLoadingView(
-            Navigator navigator, DoomState model, DoomMapLoader loader) {
+    public DoomMapLoadingView(TftTouchShield tft, Navigator navigator, DoomState model, DoomMapLoader loader) {
+        this.tft = tft;
         this.navigator = navigator;
         this.model = model;
         this.loader = loader;
@@ -38,25 +40,25 @@ public final class DoomMapLoadingView implements View {
 
     @Override
     public void enter() {
-        TftTouchShield.fillScreen(Screen.BACKGROUND);
-        Screen.showCentered("ENTERING", 24, 4, TftTouchShield.RED);
-        drawMapName();
-        Screen.drawBack();
+        tft.fillScreen(Screen.BACKGROUND);
+        Screen.showCentered(tft, "ENTERING", 24, 4, TftTouchShield.RED);
+        drawMapName(tft);
+        Screen.drawBack(tft);
         shownStatus = -1;
         requested = false;
         frame = 0;
         requestWhenCardIsFree();
-        refresh();
+        refresh(tft);
         Serial.println("Doom: map loading view active");
     }
 
     @Override
     public void render() {
         requestWhenCardIsFree();
-        refresh();
+        refresh(tft);
         loader.step();
-        refresh();
-        blinkPrompt();
+        refresh(tft);
+        blinkPrompt(tft);
     }
 
     @Override
@@ -71,13 +73,13 @@ public final class DoomMapLoadingView implements View {
         }
     }
 
-    private void blinkPrompt() {
+    private void blinkPrompt(TftTouchShield tft) {
         if (!requested || loader.status() != DoomMapLoader.READY) {
             return;
         }
         boolean on = frame % BLINK_FRAMES < VISIBLE_FRAMES;
         if (frame % BLINK_FRAMES == 0 || frame % BLINK_FRAMES == VISIBLE_FRAMES) {
-            Screen.showCentered(on ? "TAP TO PLAY" : "           ", PROMPT_Y, 2, TftTouchShield.WHITE);
+            Screen.showCentered(tft, on ? "TAP TO PLAY" : "           ", PROMPT_Y, 2, TftTouchShield.WHITE);
         }
         frame = frame + 1;
     }
@@ -90,31 +92,31 @@ public final class DoomMapLoadingView implements View {
         }
     }
 
-    private void refresh() {
+    private void refresh(TftTouchShield tft) {
         int status = requested ? loader.status() : WAITING;
         if (status != shownStatus) {
             shownStatus = status;
-            TftTouchShield.fillRect(0, 92, Screen.WIDTH, 22, Screen.BACKGROUND);
+            tft.fillRect(0, 92, Screen.WIDTH, 22, Screen.BACKGROUND);
             if (status == WAITING) {
-                Screen.showCentered("WAITING FOR SD CARD...", 96, 2, TftTouchShield.YELLOW);
+                Screen.showCentered(tft, "WAITING FOR SD CARD...", 96, 2, TftTouchShield.YELLOW);
             } else if (status == DoomMapLoader.LOADING) {
-                Screen.showCentered("LOADING MAP...", 96, 2, TftTouchShield.YELLOW);
+                Screen.showCentered(tft, "LOADING MAP...", 96, 2, TftTouchShield.YELLOW);
             } else if (status == DoomMapLoader.READY) {
-                Screen.showCentered("MAP READY", 96, 2, TftTouchShield.GREEN);
+                Screen.showCentered(tft, "MAP READY", 96, 2, TftTouchShield.GREEN);
             } else if (status == DoomMapLoader.FAILED) {
-                Screen.showCentered("MAP LOAD FAILED", 96, 2, TftTouchShield.RED);
+                Screen.showCentered(tft, "MAP LOAD FAILED", 96, 2, TftTouchShield.RED);
             }
         }
     }
 
-    private void drawMapName() {
-        TftTouchShield.setTextSize(3);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, Screen.BACKGROUND);
-        TftTouchShield.setCursor(124, 66);
-        TftTouchShield.print("E");
-        TftTouchShield.print(model.episode());
-        TftTouchShield.print("M");
-        TftTouchShield.print(model.map());
+    private void drawMapName(TftTouchShield tft) {
+        tft.setTextSize(3);
+        tft.setTextColor(TftTouchShield.WHITE, Screen.BACKGROUND);
+        tft.setCursor(124, 66);
+        tft.print("E");
+        tft.print(model.episode());
+        tft.print("M");
+        tft.print(model.map());
     }
 
 }

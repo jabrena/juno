@@ -33,12 +33,12 @@ final class ProbesRound {
         killTarget = Math.min(8 + 2 * Session.wave, 18);
     }
 
-    static void announce() {
-        Hud.showCentered("WAVE", 72, 3, TftTouchShield.YELLOW);
-        TftTouchShield.setCursor(Session.wave < 10 ? 151 : 142, 102);
-        TftTouchShield.print(Session.wave);
-        Hud.showCentered("HOTH", 138, 2, SceneRenderer.SNOW);
-        Hud.showCentered("Destroy the probe droids", 164, 1, TftTouchShield.WHITE);
+    static void announce(TftTouchShield tft) {
+        Hud.showCentered(tft, "WAVE", 72, 3, TftTouchShield.YELLOW);
+        tft.setCursor(Session.wave < 10 ? 151 : 142, 102);
+        tft.print(Session.wave);
+        Hud.showCentered(tft, "HOTH", 138, 2, SceneRenderer.SNOW);
+        Hud.showCentered(tft, "Destroy the probe droids", 164, 1, TftTouchShield.WHITE);
     }
 
     static boolean isOver(int[] ents) {

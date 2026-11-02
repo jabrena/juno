@@ -140,36 +140,37 @@ public final class TexasHoldem {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         byte[] cards = new byte[CARD_BYTES];
         int[] seats = new int[SEAT_INTS];
         int[] work = new int[WORK_INTS];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.cover();
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.cover(tft);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
-            Controls.choosePlayer();
-            playTournament(cards, seats, work);
+            Controls.choosePlayer(tft);
+            playTournament(tft, cards, seats, work);
             Delay.millis(3000);
         }
     }
 
-    private static void playTournament(byte[] cards, int[] seats, int[] work) {
+    private static void playTournament(TftTouchShield tft, byte[] cards, int[] seats, int[] work) {
         newGame(seats);
-        drawTable(cards, seats, work, false);
-        showMessage("Tap DEAL to start", TftTouchShield.WHITE);
-        drawDealButtons(true);
+        drawTable(tft, cards, seats, work, false);
+        showMessage(tft, "Tap DEAL to start", TftTouchShield.WHITE);
+        drawDealButtons(tft, true);
 
         while (seats[CHIPS] > 0 && alive(seats) > 1) {
             boolean newTable = false;
             if (Controls.autopilot) {
                 Delay.millis(650);
             } else {
-                newTable = waitForDeal();
+                newTable = waitForDeal(tft);
             }
             if (newTable) {
                 newGame(seats);
@@ -178,16 +179,16 @@ public final class TexasHoldem {
                 Random.seed(CLOCK.micros());
                 seeded = true;
             }
-            playHand(cards, seats, work);
+            playHand(tft, cards, seats, work);
             if (seats[CHIPS] == 0) {
-                showMessage("You're out!", TftTouchShield.RED);
-                drawDealButtons(false);
+                showMessage(tft, "You're out!", TftTouchShield.RED);
+                drawDealButtons(tft, false);
             } else if (alive(seats) == 1) {
-                showMessage("You won every chip!", TftTouchShield.YELLOW);
-                drawDealButtons(false);
+                showMessage(tft, "You won every chip!", TftTouchShield.YELLOW);
+                drawDealButtons(tft, false);
             }
             if (seats[CHIPS] > 0 && alive(seats) > 1) {
-                drawDealButtons(true);
+                drawDealButtons(tft, true);
             }
         }
     }

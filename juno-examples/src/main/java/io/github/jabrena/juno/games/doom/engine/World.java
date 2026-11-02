@@ -152,9 +152,9 @@ final class World {
      * the largest map, its route planning and the renderer, the WAD-sized tables are allocated and the maps are then
      * read one at a time by {@link #loadMap}; otherwise the built-in map is copied in and played.
      */
-    static void load() {
+    static void load(TftTouchShield tft) {
         fromWad = false;
-        boolean card = TftTouchShield.getSdCard().begin();
+        boolean card = tft.getSdCard().begin();
         boolean room = card && MEMORY.arenaCapacityBytes() - MEMORY.arenaUsedBytes()
                 >= WAD_ARENA_BYTES + PLAN_ARENA_BYTES + RENDER_ARENA_BYTES;
         episodesInWad = room ? WadLevel.episodes() : 0;
@@ -174,8 +174,8 @@ final class World {
      * or does not fit (the tables then hold nothing playable). Its route is planned by {@link #planRoute} each time
      * the map starts.
      */
-    static boolean loadMap() {
-        if (!WadLevel.load(episode, map)) {
+    static boolean loadMap(TftTouchShield tft) {
+        if (!WadLevel.load(tft, episode, map)) {
             Serial.print("DOOM: cannot load map ");
             printMapName();
             Serial.println("");
@@ -193,13 +193,13 @@ final class World {
      * re-planned mid-map before a death carries over. When no walk reaches the exit, the route leads as close to it
      * as the marine can walk; with no route at all it is just the start, where the CPU stands and fights. The built-in map keeps its own patrol.
      */
-    static void planRoute() {
+    static void planRoute(TftTouchShield tft) {
         if (!fromWad) {
             return;
         }
-        Loading.beginPlan();
-        boolean planned = RoutePlanner.plan();
-        Loading.endPlan();
+        Loading.beginPlan(tft);
+        boolean planned = RoutePlanner.plan(tft);
+        Loading.endPlan(tft);
         if (!planned && !RoutePlanner.shortOfExit) {
             routeX[0] = (short) startX;
             routeY[0] = (short) startY;

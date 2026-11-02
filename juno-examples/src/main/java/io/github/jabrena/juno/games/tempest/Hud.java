@@ -12,49 +12,49 @@ final class Hud {
     private Hud() {
     }
 
-    static void drawHeader() {
-        TftTouchShield.fillRect(0, 0, WIDTH, HEADER, SPACE);
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setTextColor(TftTouchShield.GREEN, SPACE);
-        TftTouchShield.setCursor(4, 3);
-        TftTouchShield.print(Session.score);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(SceneRenderer.CLAW, SPACE);
-        TftTouchShield.setCursor(110, 3);
-        TftTouchShield.print("HI ");
-        TftTouchShield.print(Session.best);
-        TftTouchShield.print(Controls.autopilot ? " CPU" : "");
-        TftTouchShield.setCursor(110, 12);
-        TftTouchShield.print("LEVEL ");
-        TftTouchShield.print(Session.level);
-        TftTouchShield.setTextColor(SceneRenderer.FLIPPER, SPACE);
-        TftTouchShield.setCursor(186, 3);
-        TftTouchShield.print("LIVES ");
-        TftTouchShield.print(Session.lives);
+    static void drawHeader(TftTouchShield tft) {
+        tft.fillRect(0, 0, WIDTH, HEADER, SPACE);
+        tft.setTextSize(2);
+        tft.setTextColor(TftTouchShield.GREEN, SPACE);
+        tft.setCursor(4, 3);
+        tft.print(Session.score);
+        tft.setTextSize(1);
+        tft.setTextColor(SceneRenderer.CLAW, SPACE);
+        tft.setCursor(110, 3);
+        tft.print("HI ");
+        tft.print(Session.best);
+        tft.print(Controls.autopilot ? " CPU" : "");
+        tft.setCursor(110, 12);
+        tft.print("LEVEL ");
+        tft.print(Session.level);
+        tft.setTextColor(SceneRenderer.FLIPPER, SPACE);
+        tft.setCursor(186, 3);
+        tft.print("LIVES ");
+        tft.print(Session.lives);
         if (Session.zapperReady) {
-            TftTouchShield.setTextColor(TftTouchShield.CYAN, SPACE);
-            TftTouchShield.setCursor(186, 12);
-            TftTouchShield.print("ZAP");
+            tft.setTextColor(TftTouchShield.CYAN, SPACE);
+            tft.setCursor(186, 12);
+            tft.print("ZAP");
         }
     }
 
-    static void showCentered(String text, int y, int size, int color) {
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, SPACE);
-        TftTouchShield.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
-        TftTouchShield.print(text);
+    static void showCentered(TftTouchShield tft, String text, int y, int size, int color) {
+        tft.setTextSize(size);
+        tft.setTextColor(color, SPACE);
+        tft.setCursor((WIDTH - text.length() * 6 * size) / 2, y);
+        tft.print(text);
     }
 
     /** {@code label} followed by {@code value}, centered as one line. */
-    static void showCenteredValue(String label, int value, int y, int size, int color) {
+    static void showCenteredValue(TftTouchShield tft, String label, int value, int y, int size, int color) {
         int digits = 1;
         for (int rest = value / 10; rest > 0; rest = rest / 10) {
             digits = digits + 1;
         }
-        TftTouchShield.setTextSize(size);
-        TftTouchShield.setTextColor(color, SPACE);
-        TftTouchShield.setCursor((WIDTH - (label.length() + digits) * 6 * size) / 2, y);
-        TftTouchShield.print(label);
-        TftTouchShield.print(value);
+        tft.setTextSize(size);
+        tft.setTextColor(color, SPACE);
+        tft.setCursor((WIDTH - (label.length() + digits) * 6 * size) / 2, y);
+        tft.print(label);
+        tft.print(value);
     }
 }

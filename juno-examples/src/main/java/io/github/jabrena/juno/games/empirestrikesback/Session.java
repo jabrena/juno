@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 /**
  * One game's progress: score, shields, the JEDI letters, the wave and round being flown, and the
  * round's clock (frames, distance travelled and the countdown to the next spawn).
@@ -54,14 +56,14 @@ final class Session {
     }
 
     /** One hit on your craft: a shield is lost, or the game when none is left. */
-    static void shieldHit() {
+    static void shieldHit(TftTouchShield tft) {
         hitThisRound = true;
         if (shields == 0) {
             dead = true;
             return;
         }
         shields = shields - 1;
-        Hud.flashHit();
+        Hud.flashHit(tft);
     }
 
     /** How far the world moves towards the camera each frame. */

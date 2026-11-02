@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+
 /**
  * One game's progress: score, shields, the wave and phase being flown, and the phase's clock (frames,
  * distance travelled and the countdown to the next spawn).
@@ -44,13 +46,13 @@ final class Session {
     }
 
     /** One hit on the X-wing: a shield is lost, or the game when none is left. */
-    static void shieldHit() {
+    static void shieldHit(TftTouchShield tft) {
         if (shields == 0) {
             dead = true;
             return;
         }
         shields = shields - 1;
-        Hud.flashHit();
+        Hud.flashHit(tft);
     }
 
     /** How far the world moves towards the camera each frame. */

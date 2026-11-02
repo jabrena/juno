@@ -59,73 +59,74 @@ public final class StarWars {
     }
 
     public static void main(String[] args) {
+        TftTouchShield tft = new TftTouchShield();
         short[] lines = new short[2 * DisplayList.LIST_SIZE];
         int[] ents = new int[Entities.ENTITIES * Entities.E_STRIDE];
         byte[] letter = new byte[1];
 
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
 
         while (true) {
             boolean tapped = false;
             while (!tapped) {
-                Interludes.opening(lines, letter);
-                Interludes.drawTitle(lines);
-                tapped = Controls.waitForTap(COVER_TIMEOUT_MILLIS);
+                Interludes.opening(tft, lines, letter);
+                Interludes.drawTitle(tft, lines);
+                tapped = Controls.waitForTap(tft, COVER_TIMEOUT_MILLIS);
             }
             Random.seed(CLOCK.micros());
-            Controls.choosePilot();
+            Controls.choosePilot(tft);
             Session.newGame();
             boolean alive = true;
             while (alive) {
-                alive = playWave(lines, ents);
+                alive = playWave(tft, lines, ents);
                 if (alive) {
                     Session.wave = Session.wave + 1;
                 }
             }
             Session.endGame();
-            Hud.drawHeader();
-            DisplayList.clearView();
-            Hud.showCentered("GAME OVER", 100, 3, TftTouchShield.RED);
+            Hud.drawHeader(tft);
+            DisplayList.clearView(tft);
+            Hud.showCentered(tft, "GAME OVER", 100, 3, TftTouchShield.RED);
             Delay.millis(3000);
         }
     }
 
     /** Plays the three phases of one wave; returns false when the last shield is lost. */
-    private static boolean playWave(short[] lines, int[] ents) {
-        if (!runPhase(Phase.SPACE, lines, ents)) {
+    private static boolean playWave(TftTouchShield tft, short[] lines, int[] ents) {
+        if (!runPhase(tft, Phase.SPACE, lines, ents)) {
             return false;
         }
-        Interludes.approachDeathStar();
-        if (!runPhase(Phase.SURFACE, lines, ents)) {
+        Interludes.approachDeathStar(tft);
+        if (!runPhase(tft, Phase.SURFACE, lines, ents)) {
             return false;
         }
-        SurfacePhase.awardAllTopsBonus();
+        SurfacePhase.awardAllTopsBonus(tft);
         while (true) {
-            if (!runPhase(Phase.TRENCH, lines, ents)) {
+            if (!runPhase(tft, Phase.TRENCH, lines, ents)) {
                 return false;
             }
             if (TrenchPhase.portDestroyed) {
                 break;
             }
-            TrenchPhase.announceMiss();
+            TrenchPhase.announceMiss(tft);
         }
-        Interludes.destroyDeathStar();
+        Interludes.destroyDeathStar(tft);
         return true;
     }
 
     /** Runs one phase frame by frame; returns false when the X-wing is destroyed. */
-    private static boolean runPhase(Phase which, short[] lines, int[] ents) {
+    private static boolean runPhase(TftTouchShield tft, Phase which, short[] lines, int[] ents) {
         startPhase(which, ents);
-        Hud.drawHeader();
-        DisplayList.clearView();
+        Hud.drawHeader(tft);
+        DisplayList.clearView(tft);
         switch (which) {
-            case SPACE -> SpacePhase.announce();
-            case SURFACE -> SurfacePhase.announce();
-            default -> TrenchPhase.announce();
+            case SPACE -> SpacePhase.announce(tft);
+            case SURFACE -> SurfacePhase.announce(tft);
+            default -> TrenchPhase.announce(tft);
         }
         Delay.millis(1400);
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
 
         int next = CLOCK.millis();
         while (true) {
@@ -138,13 +139,13 @@ public final class StarWars {
                 next = CLOCK.millis();
             }
             Session.frame = Session.frame + 1;
-            Controls.handleTouch(ents);
+            Controls.handleTouch(tft, ents);
             if (Controls.autopilot) {
                 AutopilotSW.fly(ents);
             }
-            step(ents);
-            Combat.resolveShots(ents);
-            SceneRenderer.render(lines, ents);
+            step(tft, ents);
+            Combat.resolveShots(tft, ents);
+            SceneRenderer.render(tft, lines, ents);
             if (Session.dead) {
                 return false;
             }
@@ -152,7 +153,7 @@ public final class StarWars {
                 return true;
             }
             if (Session.phase == Phase.TRENCH && (Session.frame & 7) == 0) {
-                Hud.drawStatus();
+                Hud.drawStatus(tft);
             }
         }
     }
@@ -180,7 +181,7 @@ public final class StarWars {
     }
 
     /** One frame of flight: the world moves nearer, the phase spawns what comes next, and all act. */
-    private static void step(int[] ents) {
+    private static void step(TftTouchShield tft, int[] ents) {
         int speed = Session.flightSpeed();
         Session.travel = Session.travel + speed;
         if (Session.phase == Phase.TRENCH) {
@@ -188,9 +189,9 @@ public final class StarWars {
         }
         switch (Session.phase) {
             case SPACE -> SpacePhase.spawn(ents);
-            case SURFACE -> SurfacePhase.spawn(ents);
+            case SURFACE -> SurfacePhase.spawn(tft, ents);
             default -> TrenchPhase.spawn(ents);
         }
-        Entities.move(ents, speed);
+        Entities.move(tft, ents, speed);
     }
 }

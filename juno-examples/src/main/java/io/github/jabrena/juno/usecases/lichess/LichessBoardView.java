@@ -45,22 +45,22 @@ final class LichessBoardView {
         initialized = false;
     }
 
-    void draw(int selected, int feedback) {
+    void draw(TftTouchShield tft, int selected, int feedback) {
         boolean fullRedraw = !initialized;
         if (!initialized) {
-            TftTouchShield.fillScreen(TftTouchShield.BLACK);
-            drawHeader();
+            tft.fillScreen(TftTouchShield.BLACK);
+            drawHeader(tft);
             initialized = true;
         }
         prepareDecorations(selected);
         for (int square = 0; square < 64; square++) {
             if (fullRedraw || model.board().pieceAt(square) != shownPiece[square] || deco[square] != shownDeco[square]) {
-                drawSquare(square, model.board().pieceAt(square), deco[square]);
+                drawSquare(tft, square, model.board().pieceAt(square), deco[square]);
                 shownPiece[square] = (byte) model.board().pieceAt(square);
                 shownDeco[square] = deco[square];
             }
         }
-        drawFooter(feedback);
+        drawFooter(tft, feedback);
     }
 
     int squareAt(int x, int y) {
@@ -98,106 +98,106 @@ final class LichessBoardView {
         }
     }
 
-    private void drawHeader() {
-        TftTouchShield.fillRect(0, 0, 240, 36, HEADER_BACKGROUND);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
-        TftTouchShield.setCursor(8, 2);
-        TftTouchShield.print("LICHESS");
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(8, 17);
-        TftTouchShield.print(model.source() == LichessModel.DAILY ? "DAILY PUZZLE" : "FRESH PUZZLE");
-        drawMenuButton();
+    private void drawHeader(TftTouchShield tft) {
+        tft.fillRect(0, 0, 240, 36, HEADER_BACKGROUND);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, HEADER_BACKGROUND);
+        tft.setCursor(8, 2);
+        tft.print("LICHESS");
+        tft.setTextSize(2);
+        tft.setCursor(8, 17);
+        tft.print(model.source() == LichessModel.DAILY ? "DAILY PUZZLE" : "FRESH PUZZLE");
+        drawMenuButton(tft);
     }
 
-    private void drawFooter(int feedback) {
-        TftTouchShield.fillRect(0, FOOTER_Y, 240, 320 - FOOTER_Y, TftTouchShield.BLACK);
+    private void drawFooter(TftTouchShield tft, int feedback) {
+        tft.fillRect(0, FOOTER_Y, 240, 320 - FOOTER_Y, TftTouchShield.BLACK);
         if (model.source() == LichessModel.FRESH) {
-            drawFreshFooter(feedback);
+            drawFreshFooter(tft, feedback);
             return;
         }
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(8, FOOTER_Y + 1);
-        TftTouchShield.print("LEFT: ");
-        TftTouchShield.print(model.remainingPlayerMoves());
-        TftTouchShield.setCursor(132, FOOTER_Y + 1);
-        TftTouchShield.print("RATING: ");
-        TftTouchShield.print(model.rating());
-        TftTouchShield.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(8, FOOTER_Y + 12);
-        TftTouchShield.print("THEME: ");
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(8, FOOTER_Y + 1);
+        tft.print("LEFT: ");
+        tft.print(model.remainingPlayerMoves());
+        tft.setCursor(132, FOOTER_Y + 1);
+        tft.print("RATING: ");
+        tft.print(model.rating());
+        tft.setTextColor(TftTouchShield.GRAY, TftTouchShield.BLACK);
+        tft.setCursor(8, FOOTER_Y + 12);
+        tft.print("THEME: ");
         if (model.themeLength() > 0) {
-            TftTouchShield.print(model.theme(), model.themeLength());
+            tft.print(model.theme(), model.themeLength());
         } else {
-            TftTouchShield.print("TACTICS");
+            tft.print("TACTICS");
         }
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(8, FOOTER_Y + 26);
-        TftTouchShield.setTextColor(feedback == LichessModel.MOVE_WRONG ? TftTouchShield.RED : TftTouchShield.GREEN,
+        tft.setTextSize(2);
+        tft.setCursor(8, FOOTER_Y + 26);
+        tft.setTextColor(feedback == LichessModel.MOVE_WRONG ? TftTouchShield.RED : TftTouchShield.GREEN,
                 TftTouchShield.BLACK);
         if (feedback == LichessModel.MOVE_SOLVED) {
-            TftTouchShield.print("SOLVED!");
+            tft.print("SOLVED!");
         } else if (feedback == LichessModel.MOVE_WRONG) {
-            TftTouchShield.print("TRY AGAIN");
+            tft.print("TRY AGAIN");
         } else {
-            TftTouchShield.print("YOUR MOVE");
+            tft.print("YOUR MOVE");
         }
         if (feedback == LichessModel.MOVE_WRONG && model.hintFrom() >= 0 && model.hintTo() >= 0) {
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-            TftTouchShield.setCursor(112, FOOTER_Y + 27);
-            TftTouchShield.print("HINT: ");
-            printSquare(model.hintFrom());
-            TftTouchShield.print("-");
-            printSquare(model.hintTo());
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+            tft.setCursor(112, FOOTER_Y + 27);
+            tft.print("HINT: ");
+            printSquare(tft, model.hintFrom());
+            tft.print("-");
+            printSquare(tft, model.hintTo());
         }
     }
 
-    private void drawFreshFooter(int feedback) {
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
-        TftTouchShield.setCursor(8, FOOTER_Y + 1);
-        TftTouchShield.print("RATING: ");
-        TftTouchShield.print(model.rating());
-        TftTouchShield.setCursor(8, FOOTER_Y + 12);
-        TftTouchShield.print("LEFT: ");
-        TftTouchShield.print(model.remainingPlayerMoves());
+    private void drawFreshFooter(TftTouchShield tft, int feedback) {
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);
+        tft.setCursor(8, FOOTER_Y + 1);
+        tft.print("RATING: ");
+        tft.print(model.rating());
+        tft.setCursor(8, FOOTER_Y + 12);
+        tft.print("LEFT: ");
+        tft.print(model.remainingPlayerMoves());
 
-        TftTouchShield.setTextSize(2);
-        TftTouchShield.setCursor(8, FOOTER_Y + 26);
-        TftTouchShield.setTextColor(feedback == LichessModel.MOVE_WRONG ? TftTouchShield.RED : TftTouchShield.GREEN,
+        tft.setTextSize(2);
+        tft.setCursor(8, FOOTER_Y + 26);
+        tft.setTextColor(feedback == LichessModel.MOVE_WRONG ? TftTouchShield.RED : TftTouchShield.GREEN,
                 TftTouchShield.BLACK);
         if (feedback == LichessModel.MOVE_SOLVED) {
-            TftTouchShield.print("SOLVED!");
+            tft.print("SOLVED!");
         } else if (feedback == LichessModel.MOVE_WRONG) {
-            TftTouchShield.print("TRY AGAIN");
+            tft.print("TRY AGAIN");
         } else {
-            TftTouchShield.print("YOUR MOVE");
+            tft.print("YOUR MOVE");
         }
         if (feedback == LichessModel.MOVE_WRONG && model.hintFrom() >= 0 && model.hintTo() >= 0) {
-            TftTouchShield.setTextSize(1);
-            TftTouchShield.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
-            TftTouchShield.setCursor(FRESH_HINT_X, FOOTER_Y + 27);
-            TftTouchShield.print("HINT: ");
-            printSquare(model.hintFrom());
-            TftTouchShield.print("-");
-            printSquare(model.hintTo());
+            tft.setTextSize(1);
+            tft.setTextColor(TftTouchShield.YELLOW, TftTouchShield.BLACK);
+            tft.setCursor(FRESH_HINT_X, FOOTER_Y + 27);
+            tft.print("HINT: ");
+            printSquare(tft, model.hintFrom());
+            tft.print("-");
+            printSquare(tft, model.hintTo());
         }
     }
 
-    private void drawMenuButton() {
-        TftTouchShield.fillRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.GRAY);
-        TftTouchShield.drawRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.WHITE);
-        TftTouchShield.setTextSize(1);
-        TftTouchShield.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
-        TftTouchShield.setCursor(MENU_X + (MENU_WIDTH - 4 * TftTouchShield.CHAR_WIDTH) / 2, MENU_Y + 11);
-        TftTouchShield.print("MENU");
+    private void drawMenuButton(TftTouchShield tft) {
+        tft.fillRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.GRAY);
+        tft.drawRect(MENU_X, MENU_Y, MENU_WIDTH, MENU_HEIGHT, TftTouchShield.WHITE);
+        tft.setTextSize(1);
+        tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
+        tft.setCursor(MENU_X + (MENU_WIDTH - 4 * TftTouchShield.CHAR_WIDTH) / 2, MENU_Y + 11);
+        tft.print("MENU");
     }
 
-    private void printSquare(int square) {
-        TftTouchShield.print(fileName(square & 7));
-        TftTouchShield.print(8 - (square >> 3));
+    private void printSquare(TftTouchShield tft, int square) {
+        tft.print(fileName(square & 7));
+        tft.print(8 - (square >> 3));
     }
 
     private static String fileName(int column) {
@@ -213,7 +213,7 @@ final class LichessBoardView {
         };
     }
 
-    private void drawSquare(int square, int piece, int decoration) {
+    private void drawSquare(TftTouchShield tft, int square, int piece, int decoration) {
         int row = square >> 3;
         int column = square & 7;
         boolean light = ((row + column) & 1) == 0;
@@ -227,25 +227,25 @@ final class LichessBoardView {
         int displayColumn = model.playerColor() > 0 ? column : 7 - column;
         int x = BOARD_X + displayColumn * CELL;
         int y = BOARD_Y + displayRow * CELL;
-        TftTouchShield.fillRect(x, y, CELL, CELL, color);
+        tft.fillRect(x, y, CELL, CELL, color);
         if ((decoration & DECO_SELECTED) != 0) {
-            TftTouchShield.drawRect(x, y, CELL, CELL, SELECTED);
-            TftTouchShield.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, SELECTED);
+            tft.drawRect(x, y, CELL, CELL, SELECTED);
+            tft.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, SELECTED);
         }
         if (piece != PuzzleBoard.EMPTY) {
-            ChessPieceRenderer.draw(x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
+            ChessPieceRenderer.draw(tft, x + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2,
                     y + (CELL - ChessPieceRenderer.PIECE_SIZE) / 2, piece, color);
         }
         if ((decoration & DECO_TARGET) != 0) {
             if (piece == PuzzleBoard.EMPTY) {
-                TftTouchShield.fillCircle(x + CELL / 2, y + CELL / 2, 4, TARGET);
+                tft.fillCircle(x + CELL / 2, y + CELL / 2, 4, TARGET);
             } else {
-                TftTouchShield.drawRect(x, y, CELL, CELL, CAPTURE_TARGET);
-                TftTouchShield.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, CAPTURE_TARGET);
+                tft.drawRect(x, y, CELL, CELL, CAPTURE_TARGET);
+                tft.drawRect(x + 1, y + 1, CELL - 2, CELL - 2, CAPTURE_TARGET);
             }
         }
         if (square == 0) {
-            TftTouchShield.drawRect(BOARD_X - 2, BOARD_Y - 2, BOARD_SIZE + 4, BOARD_SIZE + 4,
+            tft.drawRect(BOARD_X - 2, BOARD_Y - 2, BOARD_SIZE + 4, BOARD_SIZE + 4,
                     TftTouchShield.ORANGE);
         }
     }
