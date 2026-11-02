@@ -44,6 +44,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Limited by the 1 KB arena (3 KB at most, `-Djuno.Xmx=3k`). | |
 | `UUID.randomUUID()` | ✓ | The ATECC608A secure element's random-number generator. | |
 | `@Watchdog` | ✓ | ATmega4809 hardware watchdog, at most about 8.2 seconds. | |
+| Bluetooth LE (LEGO Powered Up) | – | Not possible on this board, and not an omission. The NINA-W102 has a radio, but ArduinoBLE alone takes about 46.6 KB of the 48 KB flash on the megaAVR core, so a program that uses BLE does not fit. | |
 | `Wifi`, `Udp`, SNTP | ✓ | Through `WiFiNINA`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
 | `HttpServer` (plain HTTP) | ✓ | A WiFiNINA server on the station address, one request at a time; no HTTPS. Build with `-Djuno.Xmx=3k`. | [`HttpServerStatusSDTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatusSDTFT.java) |
 | `HttpClient` (HTTP and HTTPS), `Json` | ✓ | TLS runs on the NINA-W102, which trusts the root certificates in its firmware. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
