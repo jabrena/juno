@@ -48,6 +48,7 @@ STM32U585's complete flash and SRAM.
 | `HttpClient` (HTTPS) | ✓ | TLS connections use `BridgeTCPClient` and the Linux system trust store. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
 | `HttpServer` (HTTP and HTTPS) | ✓ | The TLS session runs on the MCU; the Linux side is already on the network. | [`QHttpsServer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java) |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Email over implicit TLS. | [`EmailHelloWorldTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java) |
+| `Smtp.send` (STARTTLS) | – | Not supported yet. The Q's TLS client encrypts from the first byte and does not upgrade an open connection, so STARTTLS is not done. Planned: a TLS client on the MCU that upgrades the connection itself. Use `Smtp.sendTls` on port 465 until then. | |
 | Bluetooth LE (LEGO Powered Up) | ✓ | `ArduinoBLE` reaches the Linux side's Bluetooth adapter through the bridge; see [LEGO](../lego-ecosystem). | |
 | `SdCard` | ✓ | On a shield's microSD slot, such as the TFT Touch Shield's or the Data Logger Shield's. | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |
 | LCD Keypad and TFT Touch shields | ✓ | Built on GPIO, timing and analog input; see [Shields](#shields). | |
@@ -95,8 +96,8 @@ message forever.
 ### Serve HTTPS
 
 The Linux side is already on the network, so the program joins nothing: it starts a TLS listener on port 443 and
-answers requests. The certificate and key are PEM text, read at build time from the `JUNO_TLS_CERT` and
-`JUNO_TLS_KEY` environment variables so neither is committed:
+answers requests. The certificate and key are PEM text, read at startup from `server.crt` and `server.key` on the root
+of the Data Logger Shield's microSD card, so neither is built into the program:
 
 ```java
 HttpServer.beginTls(443, certificate, certificateLength, key, keyLength);
