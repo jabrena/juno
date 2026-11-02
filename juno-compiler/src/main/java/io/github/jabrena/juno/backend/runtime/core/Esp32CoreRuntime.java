@@ -33,6 +33,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
+    private final ArduinoCore core;
+
+    /** @param core the ESP32 core this runtime serves: {@link ArduinoCore#ESP32} or {@link ArduinoCore#M5STACK_ESP32} */
+    Esp32CoreRuntime(ArduinoCore core) {
+        this.core = core;
+    }
 
     @Override
     public String delayMillisFunction() {
@@ -180,9 +186,20 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
         int timeoutSeconds = Math.ceilDiv(timeoutMillis, 1000);
-        return new WatchdogRuntime("#include <esp_task_wdt.h>\n",
-                "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);",
+        return new WatchdogRuntime("#include <esp_task_wdt.h>\n", taskWatchdogSetup(timeoutSeconds),
                 "esp_task_wdt_reset();", Math.multiplyExact(timeoutSeconds, 1000));
+    }
+
+    /**
+     * Arduino-ESP32 2.x takes the timeout in seconds; the ESP-IDF 5 core behind the M5Stack takes a configuration
+     * structure ({@code timeout_ms}, {@code idle_core_mask}, {@code trigger_panic}) with the idle tasks unsubscribed.
+     */
+    private String taskWatchdogSetup(int timeoutSeconds) {
+        return switch (core) {
+            case M5STACK_ESP32 -> "esp_task_wdt_config_t config = {" + timeoutSeconds * 1000 + "u, 0u, true};\n"
+                    + "esp_task_wdt_init(&config);\nesp_task_wdt_add(nullptr);";
+            default -> "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);";
+        };
     }
 
     @Override
@@ -249,7 +266,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public String threadPort(RuntimeConfig config) {
         return threadRuntime.esp32Port(config.maxThreads(),
-                config.threadStackBytes(ArduinoCore.ESP32.defaultThreadStackBytes()));
+                config.threadStackBytes(core.defaultThreadStackBytes()));
     }
 
     @Override

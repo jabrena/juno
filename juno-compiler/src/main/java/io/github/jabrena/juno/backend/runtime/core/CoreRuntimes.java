@@ -12,7 +12,8 @@ public final class CoreRuntimes {
             case RENESAS_UNO -> new RenesasCoreRuntime();
             case ZEPHYR -> new ZephyrCoreRuntime();
             case MEGAAVR -> new MegaAvrCoreRuntime();
-            case ESP32 -> new Esp32CoreRuntime();
+            case ESP32 -> new Esp32CoreRuntime(ArduinoCore.ESP32);
+            case M5STACK_ESP32 -> new Esp32CoreRuntime(ArduinoCore.M5STACK_ESP32);
         };
     }
 }

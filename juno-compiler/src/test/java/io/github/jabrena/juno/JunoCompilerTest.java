@@ -820,6 +820,74 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("The M5Stack Cardputer's ESP-IDF 5 core starts the task watchdog from a configuration structure")
+        void shouldStartTheTaskWatchdogWithTheConfigurationStructureOnTheM5StackCardputer() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                    import io.github.jabrena.juno.annotations.Watchdog;
+                    import io.github.jabrena.juno.util.Delay;
+                    @Board(M5StackCardputerBoard.class)
+                    @Watchdog(timeoutMillis = 3000)
+                    public final class WatchdogCardputer {
+                        public static void main(String[] args) {
+                            Delay.millis(10);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogCardputer", source);
+            Path assembly = temporaryDirectory.resolve("WatchdogCardputer.S");
+            Path shim = temporaryDirectory.resolve("WatchdogCardputerShim.cpp");
+
+            // When
+            CompilationResult result = new JunoCompiler().compileTo(
+                    CompilerTestSupport.classpath(temporaryDirectory), "demo.WatchdogCardputer", assembly, shim);
+
+            // Then
+            assertThat(result.assembly()).contains("call8 juno_watchdog_begin");
+            assertThat(result.runtimeShim()).contains(
+                    "#include <esp_task_wdt.h>",
+                    "esp_task_wdt_config_t config = {3000u, 0u, true};",
+                    "esp_task_wdt_init(&config);",
+                    "esp_task_wdt_add(nullptr);",
+                    "esp_task_wdt_reset();")
+                    .doesNotContain("esp_task_wdt_init(3u, true);");
+        }
+
+        @Test
+        @DisplayName("The Nano ESP32's Arduino-ESP32 2.x core keeps the task watchdog timeout in seconds")
+        void shouldKeepTheSecondsTaskWatchdogOnTheNanoEsp32() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.Watchdog;
+                    import io.github.jabrena.juno.util.Delay;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    @Watchdog(timeoutMillis = 3000)
+                    public final class WatchdogNano {
+                        public static void main(String[] args) {
+                            Delay.millis(10);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogNano", source);
+            Path assembly = temporaryDirectory.resolve("WatchdogNano.S");
+            Path shim = temporaryDirectory.resolve("WatchdogNanoShim.cpp");
+
+            // When
+            CompilationResult result = new JunoCompiler().compileTo(
+                    CompilerTestSupport.classpath(temporaryDirectory), "demo.WatchdogNano", assembly, shim);
+
+            // Then
+            assertThat(result.runtimeShim()).contains("esp_task_wdt_init(3u, true);", "esp_task_wdt_add(nullptr);")
+                    .doesNotContain("esp_task_wdt_config_t");
+        }
+
+        @Test
         @DisplayName("A watchdog annotation without an explicit timeout uses its declared default")
         void shouldUseTheDeclaredDefaultWatchdogTimeoutWhenNoneIsGiven() throws Exception {
             // Given
