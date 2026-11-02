@@ -495,6 +495,12 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <td></td>
 </tr>
 <tr>
+<td><code>ArduinoUno.getImu()</code> (LSM6DS3TR, over <code>ArduinoUno.getSpi()</code>)</td>
+<td align="center">✓</td>
+<td>Yaw, roll and pitch from the onboard accelerometer and gyroscope; no magnetometer, so the heading is integrated gyro yaw and drifts.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
+</tr>
+<tr>
 <td><code>Servo</code>, <code>Infrared</code>, <code>RandomAccessFile</code></td>
 <td align="center">Untested</td>
 <td>Generated, but not yet run in the simulator or on hardware.</td>
@@ -517,6 +523,24 @@ while (true) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
 <code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
+<h3 id="read-the-onboard-imu">Read the onboard IMU</h3>
+<p>The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. <code>ArduinoUno.getImu()</code> returns a driver that is
+started once and then read into a caller-owned <code>ImuSample</code>:</p>
+<pre><code class="language-java">Imu imu = ArduinoUno.getImu();
+imu.begin();                      // keep the board still for about 2 s: it measures the gyroscope's bias
+ImuSample sample = new ImuSample();
+
+while (true) {
+    if (imu.read(sample)) {
+        Serial.print(sample.headingMillidegrees());
+    }
+    Delay.millis(200);
+}
+</code></pre>
+<p>The sensor has no magnetometer, so the heading is the gyroscope's yaw rate integrated from power-up, clockwise positive.
+It drifts a little with every minute of use. Roll and pitch come from gravity and are right only while the board is not
+accelerating. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a>
+prints all four values; build it with <code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
 <h2 id="shields">Shields</h2>
 <p>Seat each shield directly on the UNO WiFi Rev2. Check which pins a shield uses before stacking two: the LCD Keypad
 Shield's backlight and the Data Logger Shield's SD chip select are both D10. With 6 KB of RAM and 48 KB of flash, keep
