@@ -76,7 +76,7 @@ public enum Board {
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
-                    Capability.M5_BATTERY, Capability.WATCHDOG, Capability.USB_HID));
+                    Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.USB_HID));
 
     private final String apiClassName;
     private final String id;
