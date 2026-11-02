@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -295,7 +295,11 @@ over the encrypted connection. Port <code>587</code> is the usual submission por
 </tr>
 <tr>
 <td align="right"><code>-12</code></td>
-<td>TLS upgrade</td>
+<td>TLS upgrade, for example an untrusted certificate</td>
+</tr>
+<tr>
+<td align="right"><code>-13</code></td>
+<td>Clock not set: on the Nano ESP32 the certificate dates cannot be checked without it</td>
 </tr>
 </tbody>
 </table>
@@ -308,7 +312,7 @@ extra library:</p>
         username, username,
         &quot;Arduino alert&quot;, &quot;Alarm activated&quot;);
 </code></pre>
-<p>It returns the same codes as <code>send</code>, except <code>-11</code> and <code>-12</code>, which only apply to <code>STARTTLS</code>.</p>
+<p>It returns the same codes as <code>send</code>, except <code>-11</code>, <code>-12</code> and <code>-13</code>, which only apply to <code>STARTTLS</code>.</p>
 <h2 id="pop3">POP3</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Pop3Client.java"><code>Pop3Client</code></a>
 reads a mailbox over POP3S (implicit TLS, port <code>995</code>) and needs no extra library.</p>

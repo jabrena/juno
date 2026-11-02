@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -269,9 +269,8 @@ public certificate that clients trust.</p>
 <p>The program reads both files at startup into buffers it allocates once, then passes them to <code>beginTls</code>. The server parses
 them and keeps its own copy, so the program does not hold the key afterwards. Each buffer must hold its whole file, so
 keep the PEM text small: the examples use 2048-byte buffers.</p>
-<p>On the UNO Q there is no SD card in the example. <code>QHttpsServer</code> builds the certificate and key into the program: pass
-their PEM text as the <code>JUNO_TLS_CERT</code> and <code>JUNO_TLS_KEY</code> environment variables when you build it, so neither file is
-committed to the repository.</p>
+<p>On the UNO Q, <code>QHttpsServer</code> reads <code>server.crt</code> and <code>server.key</code> from the root of the Data Logger Shield's microSD card at
+startup, so neither file is built into the program or committed to the repository.</p>
 <h3 id="testing-the-server">Testing the server</h3>
 <p>Find the board's address on the serial monitor, then request the status route from a computer that trusts the
 certificate:</p>

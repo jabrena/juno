@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -238,7 +238,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Email STARTTLS</td>
@@ -256,7 +256,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">Not documented</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Bluetooth LE</td>
@@ -265,7 +265,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -301,7 +301,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">Weak</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Watchdog</td>
@@ -310,7 +310,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>SD card</td>
@@ -378,8 +378,8 @@ Wi-Fi, HTTP and the clock, and the Data Logger, TFT or LCD Keypad shields for st
 <li><strong>Weak</strong> means a non-cryptographic random source, suitable only for best-effort identities. See the
 <a href="../java-subset#data-types">Data types</a> section.</li>
 <li><strong>Email STARTTLS</strong> needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.</li>
-<li><strong>Bluetooth LE on the Nano ESP32</strong> reaches a Powered Up hub through the core's own BLE library; it is not yet confirmed
-on hardware.</li>
+<li><strong>Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer</strong> reaches a Powered Up hub through the core's own BLE library:
+Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.</li>
 <li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
 <a href="../lego-ecosystem">LEGO ecosystem</a> page.</li>
 </ul>

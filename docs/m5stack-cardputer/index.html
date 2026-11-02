@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -263,6 +263,12 @@ point for its peripherals.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java"><code>M5CardputerWifi</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java"><code>M5CardputerWifiStatusSD</code></a></td>
 </tr>
 <tr>
+<td>SNTP clock (<code>LocalDateTime.now()</code>)</td>
+<td align="center">✓</td>
+<td>UTC over SNTP, once Wi-Fi is up; the server can be set on the card with <code>sntp.host</code> and <code>sntp.port</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/M5CardputerSntpTime.java"><code>M5CardputerSntpTime</code></a></td>
+</tr>
+<tr>
 <td><code>HttpClient</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
 <td>HTTPS with a trusted certificate set by the program.</td>
@@ -291,6 +297,12 @@ point for its peripherals.</p>
 <td align="center">✓</td>
 <td><code>M5StackCardputer.getAudio()</code>: <code>tone</code>, <code>setVolume</code>, <code>stop</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a></td>
+</tr>
+<tr>
+<td><code>@Watchdog</code></td>
+<td align="center">✓</td>
+<td>ESP32-S3 task watchdog; the timeout is rounded up to whole seconds.</td>
+<td></td>
 </tr>
 <tr>
 <td>Battery</td>

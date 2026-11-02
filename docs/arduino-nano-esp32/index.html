@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -280,6 +280,12 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
 </tr>
 <tr>
+<td><code>@Watchdog</code></td>
+<td align="center">✓</td>
+<td>ESP32-S3 task watchdog; the timeout is rounded up to whole seconds.</td>
+<td></td>
+</tr>
+<tr>
 <td><code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
 <td>Hardware RNG through <code>esp_fill_random</code>; may be weaker before Wi-Fi or Bluetooth start.</td>
@@ -330,8 +336,8 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td><code>Smtp.send</code> (STARTTLS)</td>
 <td align="center">✓</td>
-<td>Needs <code>arduino-cli lib install ESP_SSLClient</code>; the server's certificate chain is not checked yet.</td>
-<td></td>
+<td>Needs <code>arduino-cli lib install ESP_SSLClient</code>. After the upgrade the server's chain, and its dates, are checked against the bundled Mozilla roots; the first send sets the board's clock over SNTP (<code>pool.ntp.org</code>).</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpStarttlsCredentialsSD.java"><code>NanoSmtpStarttlsCredentialsSD</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>

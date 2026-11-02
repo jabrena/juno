@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -263,6 +263,12 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
 </tr>
 <tr>
+<td><code>analogRead</code>, <code>analogWrite</code></td>
+<td align="center">✓</td>
+<td>Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9 and D10.</td>
+<td></td>
+</tr>
+<tr>
 <td><code>Serial</code></td>
 <td align="center">✓</td>
 <td></td>
@@ -299,10 +305,22 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <td></td>
 </tr>
 <tr>
+<td>Bluetooth LE (LEGO Powered Up)</td>
+<td align="center">–</td>
+<td>Not possible on this board, and not an omission. The NINA-W102 has a radio, but ArduinoBLE alone takes about 46.6 KB of the 48 KB flash on the megaAVR core, so a program that uses BLE does not fit.</td>
+<td></td>
+</tr>
+<tr>
 <td><code>Wifi</code>, <code>Udp</code>, SNTP</td>
 <td align="center">✓</td>
 <td>Through <code>WiFiNINA</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a></td>
+</tr>
+<tr>
+<td><code>HttpServer</code> (plain HTTP)</td>
+<td align="center">✓</td>
+<td>A WiFiNINA server on the station address, one request at a time; no HTTPS. Build with <code>-Djuno.Xmx=3k</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatusSDTFT.java"><code>HttpServerStatusSDTFT</code></a></td>
 </tr>
 <tr>
 <td><code>HttpClient</code> (HTTP and HTTPS), <code>Json</code></td>
