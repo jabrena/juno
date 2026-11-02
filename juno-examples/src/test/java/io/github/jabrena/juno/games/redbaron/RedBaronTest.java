@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.redbaron;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,12 +15,15 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.get;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of Red Baron: banking, turning, guns, enemy fire, crashes, the pilot screen, and the CPU
  * pilot that flies whole waves through the game's own simulation and rendering.
  */
 class RedBaronTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final Class<?> GAME = RedBaron.class;
     private static final int STRIDE = 12;
     private static final int TYPE = 0;
@@ -42,8 +46,8 @@ class RedBaronTest {
 
     @BeforeEach
     void newGame() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(42);
         lines = new short[2 * 180 * 5];
         ents = new int[26 * STRIDE];
@@ -112,7 +116,7 @@ class RedBaronTest {
             call(Entities.class, "move", (Object) ents);
             ents[plane * STRIDE + X] = 0;
             ents[plane * STRIDE + Y] = 300;
-            call(Combat.class, "resolveBullets", (Object) ents);
+            call(Combat.class, "resolveBullets", tft, (Object) ents);
         }
         assertThat(ents[plane * STRIDE + TYPE]).isEqualTo(FALLING);
         assertThat(getInt(DogfightRound.class, "kills")).isEqualTo(1);
@@ -124,7 +128,7 @@ class RedBaronTest {
         int plane = spawn(PLANE, 400, 300, 500);
         call(Combat.class, "fire", (Object) ents);
         for (int i = 0; i < 14; i++) {
-            call(Combat.class, "resolveBullets", (Object) ents);
+            call(Combat.class, "resolveBullets", tft, (Object) ents);
             call(Entities.class, "move", (Object) ents);
             ents[plane * STRIDE + X] = 400;
             ents[plane * STRIDE + Z] = 500;
@@ -138,7 +142,7 @@ class RedBaronTest {
         int blimp = spawn(BLIMP, 0, 300, 600);
         ents[blimp * STRIDE + 9] = 4;
         for (int shot = 1; shot <= 4; shot++) {
-            call(Combat.class, "hit", ents, blimp);
+            call(Combat.class, "hit", tft, ents, blimp);
             if (shot < 4) {
                 assertThat(ents[blimp * STRIDE + TYPE]).isEqualTo(BLIMP);
             }
@@ -215,19 +219,19 @@ class RedBaronTest {
     @Test
     void theLastPlaneLostEndsTheGame() {
         set(Session.class, "planes", 1);
-        assertThat(callBoolean(Session.class, "loseAPlane", (Object) ents)).isFalse();
+        assertThat(callBoolean(Session.class, "loseAPlane", tft, (Object) ents)).isFalse();
         assertThat((boolean) get(Session.class, "dead")).isTrue();
         set(Session.class, "planes", 3);
-        assertThat(callBoolean(Session.class, "loseAPlane", (Object) ents)).isTrue();
+        assertThat(callBoolean(Session.class, "loseAPlane", tft, (Object) ents)).isTrue();
         assertThat(getInt(Session.class, "planes")).isEqualTo(2);
     }
 
     @Test
     void anExtraPlaneEveryTwentyThousandPoints() {
         set(Session.class, "score", 19500);
-        call(Session.class, "addScore", 1000);
+        call(Session.class, "addScore", tft, 1000);
         assertThat(getInt(Session.class, "planes")).isEqualTo(4);
-        call(Session.class, "addScore", 1000);
+        call(Session.class, "addScore", tft, 1000);
         assertThat(getInt(Session.class, "planes")).isEqualTo(4);
     }
 
@@ -237,7 +241,7 @@ class RedBaronTest {
         call(Camera.class, "steer", (Object) ents);
         spawn(PLANE, -200, 250, 80);
         spawn(PYRAMID, 100, 0, 200);
-        call(SceneRenderer.class, "render", lines, ents);
+        call(SceneRenderer.class, "render", tft, lines, ents);
         int built = getInt(DisplayList.class, "shown");
         assertThat(built).isPositive();
         int base = getInt(DisplayList.class, "front") * 180 * 5;
@@ -271,11 +275,11 @@ class RedBaronTest {
             call(AutopilotRB.class, "fly", (Object) ents);
             call(Camera.class, "steer", (Object) ents);
             call(GAME, "step", (Object) ents);
-            call(Combat.class, "resolveBullets", (Object) ents);
-            call(SceneRenderer.class, "render", lines, ents);
+            call(Combat.class, "resolveBullets", tft, (Object) ents);
+            call(SceneRenderer.class, "render", tft, lines, ents);
             if ((boolean) get(Session.class, "shotDown")) {
                 set(Session.class, "planes", 3);
-                call(Session.class, "loseAPlane", (Object) ents);
+                call(Session.class, "loseAPlane", tft, (Object) ents);
             }
             if (callBoolean(GAME, "roundOver", (Object) ents)) {
                 return true;

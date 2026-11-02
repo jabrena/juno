@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.games.doom.engine;
 
+import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.mock;
 
 /**
  * Discovering the WAD's episodes at startup, then loading the selected maps with {@link RandomAccessFile}, the same
@@ -30,6 +33,8 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  * {@code -Djuno.doom.wad=/path/DOOM1.WAD}, or a local copy beside the game's sources.
  */
 class WadLevelTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final Path LOCAL_WAD = Path.of("src/main/java/io/github/jabrena/juno/games/doom/DOOM1.WAD");
 
     @TempDir
@@ -48,7 +53,7 @@ class WadLevelTest {
     @Test
     void withoutACardTheBuiltInMapIsPlayed() {
         // The emulated board's SD card is not inserted.
-        World.load();
+        World.load(tft);
 
         assertThat(World.fromWad).isFalse();
         assertThat(World.vertices).isEqualTo(Level.VERTICES).isEqualTo(LevelVertices.X.length);
@@ -64,7 +69,7 @@ class WadLevelTest {
     void aMissingWadIsNoMapRatherThanAnError() {
         assumeTrue(!Files.exists(Path.of("DOOM1.WAD")), "a DOOM1.WAD sits in the working directory");
 
-        assertThat(WadLevel.load(1, 1)).isFalse();
+        assertThat(WadLevel.load(tft, 1, 1)).isFalse();
     }
 
     @Test
@@ -74,7 +79,7 @@ class WadLevelTest {
         World.allocateForWad();
 
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
-            assertThatThrownBy(() -> WadLevel.read(file)).isInstanceOf(EOFException.class);
+            assertThatThrownBy(() -> WadLevel.read(tft, file)).isInstanceOf(EOFException.class);
         }
     }
 
@@ -85,7 +90,7 @@ class WadLevelTest {
         World.allocateForWad();
 
         try (RandomAccessFile file = new RandomAccessFile(notAWad.toFile(), "r")) {
-            assertThat(WadLevel.read(file)).isFalse();
+            assertThat(WadLevel.read(tft, file)).isFalse();
         }
     }
 
@@ -95,7 +100,7 @@ class WadLevelTest {
         World.allocateForWad();
 
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
-            assertThat(WadLevel.read(file)).isTrue();
+            assertThat(WadLevel.read(tft, file)).isTrue();
         }
 
         assertThat(World.vertices).isBetween(1, World.MAX_VERTICES);
@@ -124,7 +129,7 @@ class WadLevelTest {
             for (int episode = 1; episode <= 4; episode++) {
                 for (int map = 1; map <= World.LAST_MAP; map++) {
                     file.seek(0);
-                    assertThat(WadLevel.read(file, episode, map)).as("E%dM%d", episode, map).isTrue();
+                    assertThat(WadLevel.read(tft, file, episode, map)).as("E%dM%d", episode, map).isTrue();
                 }
             }
         }
@@ -138,11 +143,11 @@ class WadLevelTest {
         int easyMonsters;
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
             World.skill = 1;
-            assertThat(WadLevel.read(file, 1, 1)).isTrue();
+            assertThat(WadLevel.read(tft, file, 1, 1)).isTrue();
             easyMonsters = World.monsters;
             file.seek(0);
             World.skill = 4;
-            assertThat(WadLevel.read(file, 1, 1)).isTrue();
+            assertThat(WadLevel.read(tft, file, 1, 1)).isTrue();
         }
 
         assertThat(World.monsters).as("Ultra-Violence monsters").isGreaterThan(easyMonsters);
@@ -153,7 +158,7 @@ class WadLevelTest {
         Path wad = wad();
         World.allocateForWad();
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
-            assertThat(WadLevel.read(file)).isTrue();
+            assertThat(WadLevel.read(tft, file)).isTrue();
         }
 
         for (int subsector = 0; subsector < World.subsectors; subsector++) {
@@ -177,15 +182,15 @@ class WadLevelTest {
     void theBuiltInMapHasNoExitToPlanFor() {
         World.loadBuiltIn();
 
-        assertThat(RoutePlanner.plan()).isFalse();
+        assertThat(RoutePlanner.plan(tft)).isFalse();
         assertThat(World.routeLength).as("its own patrol route stays").isEqualTo(Level.ROUTE_POINTS);
     }
 
     @Test
     void plansAWalkFromTheStartToTheExitSwitchOfE1M1() throws IOException {
-        loadE1M1();
+        loadE1M1(tft);
 
-        assertThat(RoutePlanner.plan()).isTrue();
+        assertThat(RoutePlanner.plan(tft)).isTrue();
 
         int last = World.routeLength - 1;
         assertThat(World.routeX[0]).isEqualTo((short) World.startX);
@@ -202,9 +207,9 @@ class WadLevelTest {
 
     @Test
     void plansAWalkFromTheStartToTheExitSwitchOfE1M2() throws IOException {
-        loadMap(1, 2);
+        loadMap(tft, 1, 2);
 
-        assertThat(RoutePlanner.plan()).isTrue();
+        assertThat(RoutePlanner.plan(tft)).isTrue();
 
         int last = World.routeLength - 1;
         float dx = World.routeX[last] - World.exitX;
@@ -219,12 +224,12 @@ class WadLevelTest {
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3})
     void monstersNeverWalkThroughWalls(int seed) throws IOException {
-        loadMap(1, 2);
+        loadMap(tft, 1, 2);
         short[] monsters = World.monsterStates;
         short[] shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
         Random.seed(seed);
         Player.spawn(World.ceilings);
-        RoutePlanner.plan();
+        RoutePlanner.plan(tft);
         Monsters.reset(monsters, shots);
         Items.reset(World.taken);
         Weapon.reset();
@@ -233,7 +238,7 @@ class WadLevelTest {
         for (int frame = 0; frame < 1500 && Player.health > 0; frame++) {
             System.arraycopy(monsters, 0, before, 0, monsters.length);
             Weapon.tick();
-            Autopilot.step(World.ceilings, monsters, World.taken);
+            Autopilot.step(tft, World.ceilings, monsters, World.taken);
             Doors.operate(World.ceilings);
             Items.pickUp(World.taken);
             Monsters.think(monsters, shots, World.ceilings, frame);
@@ -253,9 +258,9 @@ class WadLevelTest {
     /** E1M3's exit lies past floors the engine does not move yet: the route still leads the CPU closer to it. */
     @Test
     void routesTowardAnExitNoWalkReaches() throws IOException {
-        loadMap(1, 3);
+        loadMap(tft, 1, 3);
 
-        assertThat(RoutePlanner.plan()).isFalse();
+        assertThat(RoutePlanner.plan(tft)).isFalse();
 
         assertThat(RoutePlanner.shortOfExit).isTrue();
         assertThat(World.routeLength).isGreaterThan(1);
@@ -279,14 +284,14 @@ class WadLevelTest {
     @CsvSource({"1,4", "1,11", "3,3", "3,4", "3,7"})
     void theCpuNeverStaysStuckFightingThroughE1M1(int skill, int seed) throws IOException {
         World.skill = skill;
-        loadE1M1();
+        loadE1M1(tft);
         World.fromWad = true;
         short[] monsters = World.monsterStates;
         short[] shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
         Random.seed(seed);
         Lifts.reset();
         Player.spawn(World.ceilings);
-        RoutePlanner.plan();
+        RoutePlanner.plan(tft);
         Monsters.reset(monsters, shots);
         Items.reset(World.taken);
         Weapon.reset();
@@ -296,7 +301,7 @@ class WadLevelTest {
         int still = 0;
         for (int frame = 0; frame < 8000 && Player.health > 0 && !Player.atExit(); frame++) {
             Weapon.tick();
-            Autopilot.step(World.ceilings, monsters, World.taken);
+            Autopilot.step(tft, World.ceilings, monsters, World.taken);
             Doors.operate(World.ceilings);
             Lifts.operate(Player.x, Player.y);
             Player.settle();
@@ -321,9 +326,9 @@ class WadLevelTest {
     @ParameterizedTest
     @CsvSource({"1,1", "1,42", "2,1", "2,7", "5,1", "6,1", "7,1", "7,3"})
     void theCpuWalksThePlannedRouteToTheExit(int map, int seed) throws IOException {
-        loadMap(1, map);
+        loadMap(tft, 1, map);
         World.fromWad = true;
-        assertThat(RoutePlanner.plan()).isTrue();
+        assertThat(RoutePlanner.plan(tft)).isTrue();
         short[] none = new short[World.MAX_MONSTERS * Monsters.STRIDE];
         for (int i = 0; i < World.MAX_MONSTERS; i++) {
             none[i * Monsters.STRIDE + Monsters.STATE] = Monsters.DEAD;
@@ -338,7 +343,7 @@ class WadLevelTest {
 
         int frame = 0;
         while (frame < 20000 && !Player.atExit()) {
-            Autopilot.step(World.ceilings, none, World.taken);
+            Autopilot.step(tft, World.ceilings, none, World.taken);
             Doors.operate(World.ceilings);
             Lifts.operate(Player.x, Player.y);
             Player.settle();
@@ -352,9 +357,9 @@ class WadLevelTest {
     @Test
     void theRecordedMediumCpuRunCommitsToTheE1M1ExitBeforeItDies() throws IOException {
         World.skill = 3;
-        loadE1M1();
+        loadE1M1(tft);
         World.fromWad = true;
-        assertThat(RoutePlanner.plan()).isTrue();
+        assertThat(RoutePlanner.plan(tft)).isTrue();
         short[] monsters = World.monsterStates;
         short[] shots = new short[Monsters.SHOTS * Monsters.SHOT_STRIDE];
         Random.seed(5_014_000);
@@ -371,7 +376,7 @@ class WadLevelTest {
             if (Player.hurt > 0) {
                 Player.hurt = Player.hurt - 1;
             }
-            Autopilot.step(World.ceilings, monsters, World.taken);
+            Autopilot.step(tft, World.ceilings, monsters, World.taken);
             Doors.operate(World.ceilings);
             Player.settle();
             Items.pickUp(World.taken);
@@ -392,7 +397,7 @@ class WadLevelTest {
      */
     @Test
     void theLinesE1M1MarksImpassableStopTheMarineAndTheMonsters() throws IOException {
-        loadE1M1();
+        loadE1M1(tft);
         short[] open = openCeilings();
         int impassable = 0;
         for (int line = 0; line < World.lines; line++) {
@@ -419,15 +424,15 @@ class WadLevelTest {
         assertThat(impassable).as("E1M1 has windows marked impassable").isPositive();
     }
 
-    private void loadE1M1() throws IOException {
-        loadMap(1, 1);
+    private void loadE1M1(TftTouchShield tft) throws IOException {
+        loadMap(tft, 1, 1);
     }
 
-    private void loadMap(int episode, int map) throws IOException {
+    private void loadMap(TftTouchShield tft, int episode, int map) throws IOException {
         Path wad = wad();
         World.allocateForWad();
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
-            assertThat(WadLevel.read(file, episode, map)).isTrue();
+            assertThat(WadLevel.read(tft, file, episode, map)).isTrue();
         }
     }
 
@@ -450,7 +455,7 @@ class WadLevelTest {
         LevelGenerator.generate(wad, "E1M1", generated);
         World.allocateForWad();
         try (RandomAccessFile file = new RandomAccessFile(wad.toFile(), "r")) {
-            assertThat(WadLevel.read(file)).isTrue();
+            assertThat(WadLevel.read(tft, file)).isTrue();
         }
         Map<String, int[]> tables = tables(Files.readString(generated));
 

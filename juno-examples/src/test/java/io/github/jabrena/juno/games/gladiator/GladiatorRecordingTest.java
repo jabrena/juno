@@ -13,6 +13,7 @@ import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -25,6 +26,7 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Writes the frames of a whole Gladiator match on demand, for documentation media: the arena's screen and both
@@ -35,6 +37,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>{@code ./mvnw -pl juno-examples test -Dtest=GladiatorRecordingTest -Djuno.recording.gladiator=true}
  */
 class GladiatorRecordingTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final int FRAME_MILLIS = 40;
     private static final int CAPTURE_MILLIS = 80;
     private static final int WORLD_MILLIS = 120;
@@ -62,8 +66,8 @@ class GladiatorRecordingTest {
         int duration = Integer.getInteger("juno.recording.duration", 60_000);
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", "gladiator");
         Files.createDirectories(output);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(7);
         coliseum.build();
         match.join(11, Brain.AGGRESSIVE, SOURCE, 0);
@@ -75,9 +79,9 @@ class GladiatorRecordingTest {
             if (now % CAPTURE_MILLIS == 0) {
                 BufferedImage image = new BufferedImage(3 * ViewList.WIDTH, ViewList.HEIGHT, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = image.createGraphics();
-                graphics.drawImage(arena(now), 0, 0, null);
-                graphics.drawImage(fighter(0), ViewList.WIDTH, 0, null);
-                graphics.drawImage(fighter(1), 2 * ViewList.WIDTH, 0, null);
+                graphics.drawImage(arena(tft, now), 0, 0, null);
+                graphics.drawImage(fighter(tft, 0), ViewList.WIDTH, 0, null);
+                graphics.drawImage(fighter(tft, 1), 2 * ViewList.WIDTH, 0, null);
                 graphics.setColor(Color.DARK_GRAY);
                 graphics.drawLine(ViewList.WIDTH, 0, ViewList.WIDTH, ViewList.HEIGHT);
                 graphics.drawLine(2 * ViewList.WIDTH, 0, 2 * ViewList.WIDTH, ViewList.HEIGHT);
@@ -150,35 +154,35 @@ class GladiatorRecordingTest {
         }
     }
 
-    private BufferedImage arena(int now) {
-        arenaView.drawAll();
-        arenaView.update(match, now);
-        return capture();
+    private BufferedImage arena(TftTouchShield tft, int now) {
+        arenaView.drawAll(tft);
+        arenaView.update(tft, match, now);
+        return capture(tft);
     }
 
-    private BufferedImage fighter(int slot) {
+    private BufferedImage fighter(TftTouchShield tft, int slot) {
         Report report = reports[slot];
         Side own = match.side(slot);
         Side other = match.side(1 - slot);
-        hud.bar();
+        hud.bar(tft);
         if (report.phase() == Match.WAITING) {
-            hud.status(0, "WAITING", TftTouchShield.GRAY);
+            hud.status(tft, 0, "WAITING", TftTouchShield.GRAY);
         } else {
-            list.clearView();
+            list.clearView(tft);
             views[slot].build(bodies[slot], report.visible(), report.opponentX(), report.opponentY(),
                     report.opponentAngle(), other.behaviour(), thrust[slot] > 0, swing[slot], hurt[slot]);
-            list.present();
-            hud.fighterStatus(report, slot, false, brains[slot].mode(), hurt[slot] > 0);
+            list.present(tft);
+            hud.fighterStatus(tft, report, slot, false, brains[slot].mode(), hurt[slot] > 0);
         }
-        hud.own(brains[slot].behaviour(), own.health(), own.wins());
-        hud.opponent(other.present(), other.behaviour(), other.health(), other.wins());
-        hud.pilot(false);
-        return capture();
+        hud.own(tft, brains[slot].behaviour(), own.health(), own.wins());
+        hud.opponent(tft, other.present(), other.behaviour(), other.health(), other.wins());
+        hud.pilot(tft, false);
+        return capture(tft);
     }
 
-    private static BufferedImage capture() {
-        int width = TftTouchShield.width();
-        int height = TftTouchShield.height();
+    private static BufferedImage capture(TftTouchShield tft) {
+        int width = tft.width();
+        int height = tft.height();
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

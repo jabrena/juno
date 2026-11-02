@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.lunarlander;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,13 +11,16 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.callBoolean;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /** Terrain, touchdown rules, pilot choice, and CPU landings. */
 class LunarLanderTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     @BeforeEach
     void portrait() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
     }
 
     @Test
@@ -86,7 +90,7 @@ class LunarLanderTest {
         for (int descent = 0; descent < 3; descent++) {
             Random.seed(40 + descent);
             set(Flight.class, "fuel", 3000);
-            int landed = callInt(Flight.class, "fly", ground, pads);
+            int landed = callInt(Flight.class, "fly", tft, ground, pads);
             int x = Math.round((float) io.github.jabrena.juno.hardware.device.tft.Internals.get(Flight.class, "x"));
             assertThat(landed)
                     .as("descent %d at x %.2f (pads %d/%d) with velocity %.2f, %.2f and tilt %d", descent,

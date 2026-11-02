@@ -13,6 +13,7 @@ import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
@@ -23,6 +24,7 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Writes the frames of a whole Solo bout on demand, for documentation media: the player's screen exactly as
@@ -33,6 +35,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * [-Djuno.recording.seed=7] [-Djuno.recording.kind=2]}, the kind being the player's {@link Opening} class.
  */
 class SoloRecordingTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final int FRAME_MILLIS = 40;
     private static final int SWING_FRAMES = 6;
     private static final int HURT_FRAMES = 4;
@@ -47,8 +51,8 @@ class SoloRecordingTest {
     void recordsASoloBout() throws Exception {
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", "solo");
         Files.createDirectories(output);
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(Integer.getInteger("juno.recording.seed", 7));
 
         int kind = Integer.getInteger("juno.recording.kind", GladiatorClass.MURMILLO);
@@ -62,17 +66,17 @@ class SoloRecordingTest {
         Hud hud = new Hud(list);
         byte[] world = new byte[GladiatorProtocol.PACKET_SIZE];
         int written = 0;
-        SoloPresentation.drawVersus(list, profile, opponent);
+        SoloPresentation.drawVersus(tft, list, profile, opponent);
         for (int frame = 0; frame < REVEAL_FRAMES; frame++) {
             wireframe.buildVersus(profile.kind(), opponent.kind(), frame * FRAME_MILLIS * 0.0025f);
-            list.present();
-            write(output, written++);
+            list.present(tft);
+            write(tft, output, written++);
         }
         int swing = 0;
         int hurt = 0;
         int thrust = 0;
         int resultFrames = 0;
-        hud.bar();
+        hud.bar(tft);
 
         for (int frame = 0; frame < MAX_FRAMES && resultFrames < RESULT_FRAMES; frame++) {
             int now = 1000 + frame * FRAME_MILLIS;
@@ -96,19 +100,19 @@ class SoloRecordingTest {
             thrust = Math.max(0, thrust - 1);
             view.build(duel.player(), report.visible(), report.opponentX(), report.opponentY(),
                     report.opponentAngle(), report.opponentKind(), thrust > 0, swing, hurt, profile.kind());
-            list.present();
-            hud.ownProfile(profile.name(), profile.displayName(), profile.color(), report.health(), report.wins());
-            hud.opponentProfile(opponent.name(), opponent.displayName(), opponent.color(), report.opponentHealth(),
+            list.present(tft);
+            hud.ownProfile(tft, profile.name(), profile.displayName(), profile.color(), report.health(), report.wins());
+            hud.opponentProfile(tft, opponent.name(), opponent.displayName(), opponent.color(), report.opponentHealth(),
                     report.opponentWins());
-            hud.fighterStatus(report, 0, false, duel.playerBrain().mode(), hurt > 0);
-            write(output, written++);
+            hud.fighterStatus(tft, report, 0, false, duel.playerBrain().mode(), hurt > 0);
+            write(tft, output, written++);
             if (duel.match().phase() == Match.OVER) {
                 resultFrames++;
             }
         }
-        SoloPresentation.drawResult(duel.match().winner() == 0, profile, opponent);
+        SoloPresentation.drawResult(tft, duel.match().winner() == 0, profile, opponent);
         for (int frame = 0; frame < TITLE_FRAMES; frame++) {
-            write(output, written++);
+            write(tft, output, written++);
         }
         assertThat(duel.match().phase()).as("solo bout should reach its result phase").isEqualTo(Match.OVER);
         assertThat(written).as("recording should contain at least one frame").isPositive();
@@ -116,13 +120,13 @@ class SoloRecordingTest {
                 + profile.displayName() + " vs " + opponent.displayName());
     }
 
-    private static void write(Path output, int frame) throws Exception {
-        ImageIO.write(capture(), "png", output.resolve("frame-%05d.png".formatted(frame)).toFile());
+    private static void write(TftTouchShield tft, Path output, int frame) throws Exception {
+        ImageIO.write(capture(tft), "png", output.resolve("frame-%05d.png".formatted(frame)).toFile());
     }
 
-    private static BufferedImage capture() {
-        int width = TftTouchShield.width();
-        int height = TftTouchShield.height();
+    private static BufferedImage capture(TftTouchShield tft) {
+        int width = tft.width();
+        int height = tft.height();
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.empirestrikesback;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.get;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of The Empire Strikes Back: lasers, AT-AT armor, asteroids, shields, the JEDI letters, the
@@ -21,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * rendering.
  */
 class EmpireStrikesBackTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final Class<?> GAME = EmpireStrikesBack.class;
     private static final int STRIDE = 14;
     private static final int TYPE = 0;
@@ -47,8 +51,8 @@ class EmpireStrikesBackTest {
 
     @BeforeEach
     void newGame() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(42);
         lines = new short[2 * 180 * 5];
         ents = new int[24 * STRIDE];
@@ -134,7 +138,7 @@ class EmpireStrikesBackTest {
         int beside = spawn(ASTEROID, 400, 0, 200);
         ents[beside * STRIDE + AUX] = 80;
         for (int i = 0; i < 10; i++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat(getInt(Session.class, "shields")).isEqualTo(5);
         assertThat((boolean) get(Session.class, "hitThisRound")).isTrue();
@@ -144,7 +148,7 @@ class EmpireStrikesBackTest {
     void fireballsAimedAtYouHitAndCanBeShotDown() {
         call(Entities.class, "fireball", ents, 0, 0, 600);
         for (int i = 0; i < 60 && getInt(Session.class, "shields") == 6; i++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat(getInt(Session.class, "shields")).isEqualTo(5);
 
@@ -160,7 +164,7 @@ class EmpireStrikesBackTest {
     @Test
     void aHitWithNoShieldsLeftEndsTheGame() {
         set(Session.class, "shields", 0);
-        call(Session.class, "shieldHit");
+        call(Session.class, "shieldHit", tft);
         assertThat((boolean) get(Session.class, "dead")).isTrue();
     }
 
@@ -168,14 +172,14 @@ class EmpireStrikesBackTest {
     void aFlawlessRoundEarnsAJediLetterAndAllFourPayTheBonus() {
         for (int round = 1; round <= 3; round++) {
             set(Session.class, "hitThisRound", false);
-            call(GAME, "finishRound");
+            call(GAME, "finishRound", tft);
             assertThat(getInt(Session.class, "jedi")).isEqualTo(round);
         }
         set(Session.class, "hitThisRound", true);
-        call(GAME, "finishRound");
+        call(GAME, "finishRound", tft);
         assertThat(getInt(Session.class, "jedi")).as("a round with a hit earns nothing").isEqualTo(3);
         set(Session.class, "hitThisRound", false);
-        call(GAME, "finishRound");
+        call(GAME, "finishRound", tft);
         assertThat(getInt(Session.class, "jedi")).as("JEDI spelled: the letters start again").isZero();
         assertThat(getInt(Session.class, "score")).isEqualTo(50000);
     }
@@ -217,9 +221,9 @@ class EmpireStrikesBackTest {
         for (int frame = 0; frame < 8000; frame++) {
             set(Session.class, "frame", frame);
             call(AutopilotESB.class, "fly", (Object) ents);
-            call(GAME, "step", (Object) ents);
-            call(Combat.class, "resolveShots", (Object) ents);
-            call(SceneRenderer.class, "render", lines, ents);
+            call(GAME, "step", tft, (Object) ents);
+            call(Combat.class, "resolveShots", tft, (Object) ents);
+            call(SceneRenderer.class, "render", tft, lines, ents);
             if ((boolean) get(Session.class, "dead")) {
                 set(Session.class, "dead", false);
             }
@@ -240,7 +244,7 @@ class EmpireStrikesBackTest {
     }
 
     private void render() {
-        call(SceneRenderer.class, "render", lines, ents);
+        call(SceneRenderer.class, "render", tft, lines, ents);
     }
 
     private void aimAt(int slot) {
@@ -250,7 +254,7 @@ class EmpireStrikesBackTest {
 
     private void converge() {
         for (int i = 0; i < 5; i++) {
-            call(Combat.class, "resolveShots", (Object) ents);
+            call(Combat.class, "resolveShots", tft, (Object) ents);
         }
         assertThat(callInt(Entities.class, "count", ents, SHOT)).isZero();
     }

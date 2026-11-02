@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.starwars;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +12,15 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.get;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of Star Wars: clipping, lasers, Vader, shields, catwalks, the pilot screen, and the CPU pilot
  * that flies whole waves through the game's own simulation and rendering.
  */
 class StarWarsTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private static final Class<?> GAME = StarWars.class;
     private static final int STRIDE = 13;
     private static final int TYPE = 0;
@@ -39,8 +43,8 @@ class StarWarsTest {
 
     @BeforeEach
     void newGame() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(42);
         lines = new short[2 * 180 * 5];
         ents = new int[24 * STRIDE];
@@ -110,12 +114,12 @@ class StarWarsTest {
     void fireballsCostAShieldAndTheLastHitEndsTheGame() {
         call(Entities.class, "fireball", ents, 300, 200, 900);
         for (int frame = 0; frame < 200 && getInt(Session.class, "shields") == 6; frame++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat(getInt(Session.class, "shields")).isEqualTo(5);
         assertThat(callBoolean(GAME, "phaseOver", (Object) ents)).isFalse();
         set(Session.class, "shields", 0);
-        call(Session.class, "shieldHit");
+        call(Session.class, "shieldHit", tft);
         assertThat((boolean) get(Session.class, "dead")).isTrue();
     }
 
@@ -139,7 +143,7 @@ class StarWarsTest {
         set(Session.class, "spawnCountdown", 1 << 29);
         int catwalk = spawn(CATWALK, 0, 0, 400);
         for (int frame = 0; frame < 40 && ents[catwalk * STRIDE + TYPE] == CATWALK; frame++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat(getInt(Session.class, "shields")).as("flying straight into it").isEqualTo(5);
 
@@ -150,7 +154,7 @@ class StarWarsTest {
         assertThat(getInt(Camera.class, "camY")).isEqualTo(110);
         catwalk = spawn(CATWALK, 0, 0, 400);
         for (int frame = 0; frame < 40 && ents[catwalk * STRIDE + TYPE] == CATWALK; frame++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat(getInt(Session.class, "shields")).as("passing above").isEqualTo(5);
     }
@@ -161,7 +165,7 @@ class StarWarsTest {
         spawn(PORT, 0, -150, 600);
         set(TrenchPhase.class, "portSpawned", true);
         for (int frame = 0; frame < 100 && !callBoolean(GAME, "phaseOver", (Object) ents); frame++) {
-            call(GAME, "step", (Object) ents);
+            call(GAME, "step", tft, (Object) ents);
         }
         assertThat((boolean) get(TrenchPhase.class, "portMissed")).isTrue();
         assertThat((boolean) get(TrenchPhase.class, "portDestroyed")).isFalse();
@@ -182,7 +186,7 @@ class StarWarsTest {
                 }
                 assertThat(done).as("wave %d: exhaust port destroyed", wave).isTrue();
             }
-            call(Interludes.class, "destroyDeathStar");
+            call(Interludes.class, "destroyDeathStar", tft);
         }
         assertThat(getInt(Session.class, "score")).isGreaterThan(100000);
         assertThat(getInt(Session.class, "shields")).isGreaterThan(0);
@@ -215,9 +219,9 @@ class StarWarsTest {
             set(Session.class, "frame", frame);
             call(AutopilotSW.class, "fly", (Object) ents);
             countNewShots();
-            call(GAME, "step", (Object) ents);
-            call(Combat.class, "resolveShots", (Object) ents);
-            call(SceneRenderer.class, "render", lines, ents);
+            call(GAME, "step", tft, (Object) ents);
+            call(Combat.class, "resolveShots", tft, (Object) ents);
+            call(SceneRenderer.class, "render", tft, lines, ents);
             assertThat((boolean) get(Session.class, "dead")).as("destroyed in phase %s", phase).isFalse();
             if (callBoolean(GAME, "phaseOver", (Object) ents)) {
                 return;
@@ -262,7 +266,7 @@ class StarWarsTest {
     }
 
     private void render() {
-        call(SceneRenderer.class, "render", lines, ents);
+        call(SceneRenderer.class, "render", tft, lines, ents);
     }
 
     private void aimAt(int slot) {
@@ -273,7 +277,7 @@ class StarWarsTest {
     /** Lets the lasers reach the crosshair, with nothing else moving. */
     private void converge() {
         for (int frame = 0; frame < 4; frame++) {
-            call(Combat.class, "resolveShots", (Object) ents);
+            call(Combat.class, "resolveShots", tft, (Object) ents);
         }
     }
 }

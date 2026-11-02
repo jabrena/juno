@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.tempest;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +15,7 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of Tempest: the tube's geometry, shots destroying flippers and bullets reaching the claw,
@@ -21,6 +23,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
  * simulation.
  */
 class TempestTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private int[] tube;
     private int[] enemies;
     private int[] shots;
@@ -28,8 +32,8 @@ class TempestTest {
 
     @BeforeEach
     void newLevel() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         Random.seed(7);
         tube = new int[Tube.SIZE];
         enemies = new int[Session.ENEMIES * Session.E_STRIDE];
@@ -64,7 +68,7 @@ class TempestTest {
         shots[Session.S_LANE] = 0;
         shots[Session.S_DEPTH] = 500 + Session.SHOT_SPEED;
         shots[Session.S_SHOWN_X] = -1;
-        call(Session.class, "moveShots", tube, shots, enemies, bullets);
+        call(Session.class, "moveShots", tft, tube, shots, enemies, bullets);
         assertThat(enemies[Session.E_ACTIVE]).isZero();
         assertThat(getInt(Session.class, "score")).isEqualTo(Session.FLIPPER_POINTS);
     }
@@ -76,19 +80,19 @@ class TempestTest {
         bullets[Session.S_LANE] = 0;
         bullets[Session.S_DEPTH] = Tube.DEPTH - 1;
         bullets[Session.S_SHOWN_X] = -1;
-        assertThat(callBoolean(Session.class, "moveBullets", tube, bullets)).isTrue();
+        assertThat(callBoolean(Session.class, "moveBullets", tft, tube, bullets)).isTrue();
     }
 
     @Test
     void everyPhaseTransitionRunsToCompletion() {
         assertThatCode(() -> {
-            call(Interludes.class, "cover", (Object) tube);
-            call(Interludes.class, "emergeFromTube", tube, 0);
-            call(Interludes.class, "levelCard", tube, 7, 0);
-            call(Interludes.class, "levelCleared", tube, 3, 700);
-            call(SceneRenderer.class, "zapFlash", (Object) tube);
-            call(Interludes.class, "clawLost", tube, 5, 2);
-            call(Interludes.class, "gameOver", (Object) tube);
+            call(Interludes.class, "cover", tft, (Object) tube);
+            call(Interludes.class, "emergeFromTube", tft, tube, 0);
+            call(Interludes.class, "levelCard", tft, tube, 7, 0);
+            call(Interludes.class, "levelCleared", tft, tube, 3, 700);
+            call(SceneRenderer.class, "zapFlash", tft, (Object) tube);
+            call(Interludes.class, "clawLost", tft, tube, 5, 2);
+            call(Interludes.class, "gameOver", tft, (Object) tube);
         }).doesNotThrowAnyException();
     }
 
@@ -110,14 +114,14 @@ class TempestTest {
         Tube.build(shape, tube);
         for (int frame = 1; frame <= 4000; frame++) {
             call(Session.class, "tickCooldowns");
-            call(AutopilotTempest.class, "fly", tube, enemies, shots);
+            call(AutopilotTempest.class, "fly", tft, tube, enemies, shots);
             if (callBoolean(Session.class, "consumeZapRequest")) {
-                call(Session.class, "zapAllEnemies", tube, enemies);
+                call(Session.class, "zapAllEnemies", tft, tube, enemies);
             }
-            call(Session.class, "moveShots", tube, shots, enemies, bullets);
+            call(Session.class, "moveShots", tft, tube, shots, enemies, bullets);
             call(Enemies.class, "spawnEnemies", enemies);
-            boolean caught = callBoolean(Enemies.class, "moveEnemies", tube, enemies, bullets, frame);
-            if (callBoolean(Session.class, "moveBullets", tube, bullets)) {
+            boolean caught = callBoolean(Enemies.class, "moveEnemies", tft, tube, enemies, bullets, frame);
+            if (callBoolean(Session.class, "moveBullets", tft, tube, bullets)) {
                 caught = true;
             }
             if (caught) {

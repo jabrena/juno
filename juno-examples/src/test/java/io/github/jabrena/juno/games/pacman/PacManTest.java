@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.games.pacman;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,19 +11,22 @@ import static io.github.jabrena.juno.hardware.device.tft.Internals.callInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static io.github.jabrena.juno.hardware.device.tft.Internals.set;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of Pac-Man: eating dots and energizers, ghost collisions, the pilot-choice screen, and an
  * autopilot that clears a whole maze through the game's own simulation.
  */
 class PacManTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private byte[] tiles;
     private int[] ghosts;
 
     @BeforeEach
     void newLife() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         Controls.autopilot = false;
         Random.seed(7);
         tiles = new byte[Maze.TILES];
@@ -37,7 +41,7 @@ class PacManTest {
     void eatingAnEnergizerFrightensGhostsAndScores() {
         ghosts[Session.G_STATE] = Session.ACTIVE;
         // Row 3, column 1 is the top-left energizer: "#o####.#####.##.#####.####o#".
-        call(Session.class, "eat", tiles, ghosts, 1, 3);
+        call(Session.class, "eat", tft, tiles, ghosts, 1, 3);
         assertThat(getInt(Session.class, "score")).isEqualTo(50);
         assertThat(ghosts[Session.G_FRIGHTENED]).isEqualTo(1);
         assertThat(getInt(Session.class, "frightTimer")).isPositive();
@@ -46,7 +50,7 @@ class PacManTest {
     @Test
     void eatingADotScoresTenAndCountsTowardsTheMaze() {
         // Row 5 is an open corridor of dots: "#..........................#".
-        call(Session.class, "eat", tiles, ghosts, 5, 5);
+        call(Session.class, "eat", tft, tiles, ghosts, 5, 5);
         assertThat(getInt(Session.class, "score")).isEqualTo(10);
         assertThat(getInt(Session.class, "dotsEaten")).isEqualTo(1);
     }
@@ -56,7 +60,7 @@ class PacManTest {
         ghosts[Session.G_STATE] = Session.ACTIVE;
         ghosts[Session.G_X] = Session.pacX;
         ghosts[Session.G_Y] = Session.pacY;
-        assertThat(callInt(Session.class, "checkCollisions", tiles, ghosts)).isEqualTo(-1);
+        assertThat(callInt(Session.class, "checkCollisions", tft, tiles, ghosts)).isEqualTo(-1);
     }
 
     @Test
@@ -66,7 +70,7 @@ class PacManTest {
         ghosts[Session.G_X] = Session.pacX;
         ghosts[Session.G_Y] = Session.pacY;
 
-        int eaten = callInt(Session.class, "checkCollisions", tiles, ghosts);
+        int eaten = callInt(Session.class, "checkCollisions", tft, tiles, ghosts);
 
         assertThat(eaten).isEqualTo(1);
         assertThat(ghosts[Session.G_STATE]).isEqualTo(Session.EYES);
@@ -99,12 +103,12 @@ class PacManTest {
             Session.sinceLastDot = Session.sinceLastDot + 1;
             call(Session.class, "updatePhase", (Object) ghosts);
             AutopilotPacMan.fly(tiles, ghosts);
-            call(Session.class, "movePac", tiles, ghosts);
+            call(Session.class, "movePac", tft, tiles, ghosts);
             call(Ghosts.class, "releaseGhosts", (Object) ghosts);
             for (int g = 0; g < Session.GHOSTS; g++) {
                 call(Ghosts.class, "moveGhost", tiles, ghosts, g);
             }
-            int collision = callInt(Session.class, "checkCollisions", tiles, ghosts);
+            int collision = callInt(Session.class, "checkCollisions", tft, tiles, ghosts);
             if (collision < 0) {
                 call(Session.class, "resetActors", (Object) ghosts);
             }

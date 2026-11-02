@@ -2,6 +2,7 @@ package io.github.jabrena.juno.games.doom.engine;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import java.util.Set;
 
 import static io.github.jabrena.juno.hardware.device.tft.Internals.getInt;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /**
  * Rules of the DOOM walk-through on the committed test map: two rooms joined by a doorway, the far
@@ -18,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * own code, the same code the UNO Q runs.
  */
 class DoomTest {
+
+    private final TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
     private short[] lines;
     private byte[] clips;
     private short[] stack;
@@ -30,8 +34,8 @@ class DoomTest {
 
     @BeforeEach
     void spawn() {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         lines = new short[2 * DisplayList.LIST_SIZE];
         clips = new byte[2 * DisplayList.WIDTH];
         changes = new byte[DisplayList.MAX_LINES];
@@ -227,7 +231,7 @@ class DoomTest {
         Player.x = 100;
         Player.y = 256;
         Player.angle = (float) Math.PI;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         for (int x = 0; x < DisplayList.WIDTH; x++) {
             assertThat((clips[x] & 0xFF) + 1).as("column %d closed", x)
                     .isGreaterThanOrEqualTo(clips[DisplayList.WIDTH + x] & 0xFF);
@@ -240,7 +244,7 @@ class DoomTest {
         Player.x = 300;
         Player.y = 256;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).contains(Renderer.STEP, Renderer.LINTEL);
         int middle = DisplayList.WIDTH / 2;
         assertThat((clips[middle] & 0xFF) + 1)
@@ -252,12 +256,12 @@ class DoomTest {
     void aVerticalLineIsOneFillAndASteepOneOnePerColumn() {
         DisplayList.windows = 0;
         DisplayList.pixels = 0;
-        DisplayList.drawLine(10, 10, 10, 100, Renderer.WALL);
+        DisplayList.drawLine(tft, 10, 10, 10, 100, Renderer.WALL);
         assertThat(DisplayList.windows).as("a vertical line is a single address window").isEqualTo(1);
         assertThat(DisplayList.pixels).isEqualTo(91);
         DisplayList.windows = 0;
         DisplayList.pixels = 0;
-        DisplayList.drawLine(20, 100, 30, 10, Renderer.WALL);
+        DisplayList.drawLine(tft, 20, 100, 30, 10, Renderer.WALL);
         assertThat(DisplayList.windows).as("one run per column it spans").isEqualTo(11);
         assertThat(DisplayList.pixels).as("one pixel per row").isEqualTo(91);
     }
@@ -267,11 +271,11 @@ class DoomTest {
         Player.x = 300;
         Player.y = 256;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         short[] gun = gunLines();
         int walls = getInt(DisplayList.class, "shown");
         Player.angle = (float) Math.PI;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(getInt(DisplayList.class, "shown")).as("the view changed").isNotEqualTo(walls);
         assertThat(gunLines()).isEqualTo(gun);
     }
@@ -281,26 +285,26 @@ class DoomTest {
         Player.x = 300;
         Player.y = 256;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         DisplayList.windows = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(DisplayList.windows).isZero();
     }
 
     @Test
     void afterAWalkTheScreenShowsExactlyWhatAFreshDrawOfTheLastFrameWould() {
-        DisplayList.clearView();
+        DisplayList.clearView(tft);
         for (int frame = 0; frame < 240; frame++) {
             Weapon.tick();
-            Autopilot.step(ceilings, monsters, taken);
+            Autopilot.step(tft, ceilings, monsters, taken);
             Doors.operate(ceilings);
             Player.settle();
             Monsters.think(monsters, shots, ceilings, frame);
-            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+            Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         }
         boolean[] walked = litView();
-        DisplayList.clearView();
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        DisplayList.clearView(tft);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         boolean[] fresh = litView();
         int wrong = 0;
         for (int i = 0; i < fresh.length; i++) {
@@ -315,11 +319,11 @@ class DoomTest {
         Player.hurt = 6;
         for (int frame = 0; frame < 240; frame++) {
             Weapon.tick();
-            Autopilot.step(ceilings, monsters, taken);
+            Autopilot.step(tft, ceilings, monsters, taken);
             Doors.operate(ceilings);
             Player.settle();
             Monsters.think(monsters, shots, ceilings, frame);
-            Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+            Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
             drawn.addAll(colors());
         }
         assertThat(drawn).contains(Renderer.WALL, Sprites.FLASH_COLOR);
@@ -365,7 +369,7 @@ class DoomTest {
             taken[i] = 1;
         }
         for (int frame = 0; frame < 3000 && visited < Level.ROUTE_X.length + 1; frame++) {
-            Autopilot.step(ceilings, none, taken);
+            Autopilot.step(tft, ceilings, none, taken);
             Player.settle();
             if (Autopilot.target != previous) {
                 visited = visited + 1;
@@ -421,13 +425,13 @@ class DoomTest {
         Player.x = 100;
         Player.y = 450;
         Player.angle = (float) Math.atan2(320 - 450, 860 - 100);
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).as("the wall at x=512 stands between them").doesNotContain(Sprites.ZOMBIEMAN_COLOR);
 
         Player.x = 600;
         Player.y = 320;
         Player.angle = 0;
-        Renderer.render(lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
+        Renderer.render(tft, lines, clips, depths, stack, ceilings, monsters, shots, taken, changes);
         assertThat(colors()).as("in the same room").contains(Sprites.ZOMBIEMAN_COLOR);
     }
 
@@ -435,7 +439,7 @@ class DoomTest {
     void theCpuClearsTheMapWhileWalkingItsRoute() {
         for (int frame = 0; frame < 4000 && Monsters.kills < Level.MONSTERS && Player.health > 0; frame++) {
             Weapon.tick();
-            Autopilot.step(ceilings, monsters, taken);
+            Autopilot.step(tft, ceilings, monsters, taken);
             Player.settle();
             Monsters.think(monsters, shots, ceilings, frame);
         }
@@ -474,7 +478,7 @@ class DoomTest {
             none[i * Monsters.STRIDE + Monsters.STATE] = Monsters.DEAD;
         }
         for (int frame = 0; frame < 200 && taken[0] == 0; frame++) {
-            Autopilot.step(ceilings, none, taken);
+            Autopilot.step(tft, ceilings, none, taken);
             Items.pickUp(taken);
         }
         assertThat(Player.health).isEqualTo(65);
@@ -503,7 +507,7 @@ class DoomTest {
             for (int frame = 0; frame < 600 && monsters[Monsters.STATE] != Monsters.DEAD; frame++) {
                 Weapon.tick();
                 int health = monsters[Monsters.HEALTH];
-                Autopilot.step(ceilings, monsters, taken);
+                Autopilot.step(tft, ceilings, monsters, taken);
                 if (Weapon.flash == 3) {
                     assertThat(frame).as("no shot before the marine has reacted").isGreaterThanOrEqualTo(5);
                     shots = shots + 1;

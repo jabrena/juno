@@ -12,12 +12,13 @@ public final class SoloResultScreenshot {
     }
 
     public static void main(String[] args) {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.LANDSCAPE);
+        TftTouchShield tft = new TftTouchShield();
+        tft.begin();
+        tft.setRotation(TftTouchShield.LANDSCAPE);
         FighterProfile player = new FighterProfile(FighterProfile.SPARTACUS, GladiatorClass.MURMILLO);
         FighterProfile opponent = new FighterProfile(FighterProfile.CRIXUS, GladiatorClass.THRAEX);
-        SoloPresentation.showResult(true, player, opponent);
-        SoloPresentation.showResult(false, player, opponent);
+        SoloPresentation.showResult(tft, true, player, opponent);
+        SoloPresentation.showResult(tft, false, player, opponent);
         while (true) {
             Delay.millis(1000);
         }

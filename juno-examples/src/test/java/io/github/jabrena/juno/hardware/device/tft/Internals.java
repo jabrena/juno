@@ -74,9 +74,9 @@ public final class Internals {
      * the panel at {@code taps.get()} on every {@code period}-th step of simulated time, releasing
      * it in between so each press registers as a separate tap. A null position skips that press.
      */
-    public static void tapEvery(int period, Supplier<int[]> taps) {
-        TftTouchShield.begin();
-        TftTouchShield.setRotation(TftTouchShield.PORTRAIT);
+    public static void tapEvery(TftTouchShield tft, int period, Supplier<int[]> taps) {
+        tft.begin();
+        tft.setRotation(TftTouchShield.PORTRAIT);
         int[] step = {0};
         Delay.afterAdvance = () -> {
             EmulatedShield.touch = step[0] % period == 0 ? taps.get() : null;
