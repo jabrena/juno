@@ -293,7 +293,8 @@ public final class RuntimeShim {
                     ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
-            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration()));
+            shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),
+                    core.smtpStarttlsTrust()));
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),

@@ -3183,6 +3183,39 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Checks the STARTTLS server's certificate chain and dates on the Nano ESP32")
+        void shouldVerifyTheStarttlsCertificateChainOnTheNanoEsp32() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.net.email.Smtp;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoStarttls {
+                        public static void main(String[] args) {
+                            int sent = Smtp.send("mail.example.com", 587, "alerts@example.com", "secret",
+                                    "alerts@example.com", "me@example.com", "Arduino alert", "Alarm activated");
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoStarttls", source);
+
+            // When
+            CompilationResult result = new JunoCompiler().compileTo(
+                    CompilerTestSupport.classpath(temporaryDirectory), "demo.NanoStarttls",
+                    temporaryDirectory.resolve("NanoStarttls.S"), temporaryDirectory.resolve("NanoStarttlsShim.cpp"));
+
+            // Then
+            assertThat(result.runtimeShim()).contains(
+                    "static const char juno_smtp_ca[]", "-----BEGIN CERTIFICATE-----",
+                    "configTime(0, 0, \"pool.ntp.org\", \"time.google.com\");",
+                    "if (time(nullptr) < 1700000000) return -13;",
+                    "client.setCACert(juno_smtp_ca);")
+                    .doesNotContain("client.setInsecure();");
+        }
+
+        @Test
         @DisplayName("Lowers implicit TLS email through the Router Bridge on the UNO Q")
         void shouldLowerImplicitTlsEmailThroughRouterBridgeOnUnoQ() throws Exception {
             // Given

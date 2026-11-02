@@ -138,7 +138,7 @@ final class NetworkShimLibraries {
      * {@link #httpHelpers(Set, String, String, boolean)}'s {@code juno_http_request}, reused here because there is no common
      * base class between the two client types worth naming.
      */
-    String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration) {
+    String emailHelpers(Set<ShimFeature> features, String tlsClientDeclaration, String starttlsTrust) {
         StringBuilder helpers = new StringBuilder();
         helpers.append(runtimeSource.load("common/email-read-line.cpp"));
         if (features.contains(ShimFeature.SMTP) || features.contains(ShimFeature.SMTP_TLS)) {
@@ -153,6 +153,7 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.POP3)) {
             helpers.append(runtimeSource.load("common/pop3.cpp"));
         }
-        return helpers.toString().replace("${JUNO_TLS_CLIENT_DECLARATION}", tlsClientDeclaration);
+        return helpers.toString().replace("${JUNO_TLS_CLIENT_DECLARATION}", tlsClientDeclaration)
+                .replace("${JUNO_SMTP_STARTTLS_TRUST}", starttlsTrust);
     }
 }

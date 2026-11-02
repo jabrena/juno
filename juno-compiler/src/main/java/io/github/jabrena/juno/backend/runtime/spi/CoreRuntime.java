@@ -103,6 +103,14 @@ public interface CoreRuntime {
         return httpsHelpers();
     }
 
+    /**
+     * The STARTTLS client's trust setup, placed before it connects. Cores that do not check the server's certificate
+     * chain yet keep {@code setInsecure()}; a core that checks it overrides this with its trust anchors.
+     */
+    default String smtpStarttlsTrust() {
+        return "client.setInsecure();";
+    }
+
     /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
     default String httpsTrustHelpers() {
         return """

@@ -173,6 +173,23 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return "JunoEspTlsClient client;";
     }
 
+    /**
+     * The STARTTLS client checks the server's chain against the same Mozilla roots as {@link #httpsHelpers}. They go in
+     * as one PEM string: {@code ESP_SSLClient}'s {@code setCACert} builds a trust anchor for every certificate in it.
+     * Unlike the core's TLS client, BearSSL also checks the certificate dates against {@code time()}, which the board
+     * leaves near 1970, so the system clock is set once over SNTP first. Without a clock it fails closed with {@code -13}.
+     */
+    @Override
+    public String smtpStarttlsTrust() {
+        return CertificateBundle.cPem("juno_smtp_ca", runtimeSource.load("esp32/ca-certificates.pem")) + """
+                  if (time(nullptr) < 1700000000) {
+                    configTime(0, 0, "pool.ntp.org", "time.google.com");
+                    for (int attempt = 0; attempt < 100 && time(nullptr) < 1700000000; attempt++) delay(100);
+                  }
+                  if (time(nullptr) < 1700000000) return -13;
+                  client.setCACert(juno_smtp_ca);""";
+    }
+
     @Override
     public String yieldFunction() {
         return runtimeSource.load("esp32/core-glue.cpp");

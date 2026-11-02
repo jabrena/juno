@@ -5,7 +5,7 @@ extern "C" int32_t juno_smtp_send(const char* host, int32_t port,
                                    const char* subject, const char* body) {
   WiFiClient plainClient;
   ESP_SSLClient client;
-  client.setInsecure();
+  ${JUNO_SMTP_STARTTLS_TRUST}
   client.setBufferSizes(2048, 512);
   client.setClient(&plainClient, false);
 
