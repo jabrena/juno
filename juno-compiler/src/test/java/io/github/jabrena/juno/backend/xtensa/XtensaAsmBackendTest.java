@@ -518,7 +518,8 @@ class XtensaAsmBackendTest {
         // Then
         assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",
                 "struct JunoEspTlsClient : WiFiClientSecure",
-                "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle))",
+                "setCACertBundle(juno_ca_bundle);",
+                "static const char* juno_runtime_trusted_ca = nullptr;",
                 "static const uint8_t juno_ca_bundle[] = {", "juno_https_");
         assertThat(result.runtimeShim()).doesNotContain("setInsecure()");
         assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");

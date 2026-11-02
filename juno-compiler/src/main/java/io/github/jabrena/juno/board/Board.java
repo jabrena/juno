@@ -77,7 +77,7 @@ public enum Board {
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
-                    Capability.USB_HID));
+                    Capability.TLS_EMAIL, Capability.USB_HID));
 
     private final String apiClassName;
     private final String id;

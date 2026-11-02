@@ -140,9 +140,15 @@ final class Esp32CoreRuntime implements CoreRuntime {
         } else {
             defaultTrust = CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem"))
                     .cArray("juno_ca_bundle");
-            defaultTrustConfiguration = "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));";
+            // The Arduino-ESP32 2.x core takes the bundle alone; the ESP-IDF 5 core behind the M5Stack adds its size.
+            defaultTrustConfiguration = this.core == ArduinoCore.M5STACK_ESP32
+                    ? "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));"
+                    : "setCACertBundle(juno_ca_bundle);";
         }
+        // The default client also checks this runtime anchor, which only programs using HttpClient.setTrustedCertificate
+        // define; without them it stays null and the bundle is used.
         return defaultTrust + """
+                static const char* juno_runtime_trusted_ca = nullptr;
                 struct JunoEspTlsClient : WiFiClientSecure {
                   JunoEspTlsClient() {
                     if (juno_runtime_trusted_ca != nullptr) {
