@@ -23,7 +23,7 @@ language itself, see the [Java subset](../java-subset) page.
 | Email over TLS | – | ✓ | ✓ | ✓ | ✓ | – |
 | Email STARTTLS | – | – | ✓ | – | ✓ | – |
 | SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Bluetooth LE | – | – | ✓ | ✓ | ✓ | – |
+| Bluetooth LE | – | – | ✓ | ✓ | ✓ | ✓ |
 | USB HID mouse | – | – | ✓ | – | ✓ | ✓ |
 | LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – |
 | Built-in display, keyboard, speaker, battery | – | – | – | – | – | ✓ |
@@ -46,7 +46,7 @@ Notes:
 - **Weak** means a non-cryptographic random source, suitable only for best-effort identities. See the
   [Data types](../java-subset#data-types) section.
 - **Email STARTTLS** needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.
-- **Bluetooth LE on the Nano ESP32** reaches a Powered Up hub through the core's own BLE library; it is not yet confirmed
-  on hardware.
+- **Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer** reaches a Powered Up hub through the core's own BLE library:
+  Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.
 - **Infrared** drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
   [LEGO ecosystem](../lego-ecosystem) page.

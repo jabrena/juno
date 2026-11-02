@@ -45,7 +45,7 @@ by memory.
 | HTTPS server | ✓ | ✓ | ✓ | — | — | — |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | — | ✓ | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | ✓ | — | ✓ | ✓ | — | — |
+| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | — | — |
 | USB HID mouse | ✓ | ✓ | — | ✓ | — | — |
 | Onboard LED matrix | — | — | ✓ | ✓ | — | — |
 | `@Watchdog` | ✓ | ✓ | — | ✓ | ✓ | ✓ |
