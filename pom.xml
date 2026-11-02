@@ -481,6 +481,11 @@
         -->
         <profile>
             <id>site</id>
+            <properties>
+                <!-- Same as the pitest profile: activating this profile turns off the activeByDefault jacoco
+                     profile, so surefire's @{argLine} would stay literal and the forked JVM cannot start. -->
+                <argLine></argLine>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
