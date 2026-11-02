@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-IAFQTD2B.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-S4SVB74M.css" />
 
 </head>
 <body>
@@ -275,6 +275,12 @@ STM32U585's complete flash and SRAM.</p>
 <td></td>
 </tr>
 <tr>
+<td><code>@Watchdog</code></td>
+<td align="center">–</td>
+<td>Not available: the Zephyr firmware does not enable its watchdog subsystem, so the compiler rejects <code>@Watchdog</code> for this board.</td>
+<td></td>
+</tr>
+<tr>
 <td><code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
 <td>Zephyr's cryptographic random service on the STM32U585's TRNG; no Linux, Wi-Fi or bridge involved.</td>
@@ -309,6 +315,12 @@ STM32U585's complete flash and SRAM.</p>
 <td align="center">✓</td>
 <td>Email over implicit TLS.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a></td>
+</tr>
+<tr>
+<td><code>Smtp.send</code> (STARTTLS)</td>
+<td align="center">–</td>
+<td>Not supported yet. The Q's TLS client encrypts from the first byte and does not upgrade an open connection, so STARTTLS is not done. Planned: a TLS client on the MCU that upgrades the connection itself. Use <code>Smtp.sendTls</code> on port 465 until then.</td>
+<td></td>
 </tr>
 <tr>
 <td>Bluetooth LE (LEGO Powered Up)</td>
@@ -361,8 +373,8 @@ for (int offset = 12; offset &gt;= -60; offset--) {
 message forever.</p>
 <h3 id="serve-https">Serve HTTPS</h3>
 <p>The Linux side is already on the network, so the program joins nothing: it starts a TLS listener on port 443 and
-answers requests. The certificate and key are PEM text, read at build time from the <code>JUNO_TLS_CERT</code> and
-<code>JUNO_TLS_KEY</code> environment variables so neither is committed:</p>
+answers requests. The certificate and key are PEM text, read at startup from <code>server.crt</code> and <code>server.key</code> on the root
+of the Data Logger Shield's microSD card, so neither is built into the program:</p>
 <pre><code class="language-java">HttpServer.beginTls(443, certificate, certificateLength, key, keyLength);
 
 byte[] body = new byte[64];
