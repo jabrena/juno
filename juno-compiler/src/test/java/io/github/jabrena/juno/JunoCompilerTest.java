@@ -816,7 +816,8 @@ class JunoCompilerTest {
                     "WDT.refresh();",
                     "WDT.begin(3000u);",
                     "extern \"C\" void juno_watchdog_begin()",
-                    "[juno-watchdog] panic: board will reset via watchdog in 3000ms");
+                    "[juno-watchdog] panic: board will reset via watchdog in 3000ms",
+                    "noInterrupts();\n  for (;;) {}");
         }
 
         @Test
@@ -850,7 +851,7 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains(
                     "#include <esp_task_wdt.h>",
                     "esp_task_wdt_config_t config = {3000u, 0u, true};",
-                    "esp_task_wdt_init(&config);",
+                    "if (esp_task_wdt_init(&config) == ESP_ERR_INVALID_STATE) esp_task_wdt_reconfigure(&config);",
                     "esp_task_wdt_add(nullptr);",
                     "esp_task_wdt_reset();")
                     .doesNotContain("esp_task_wdt_init(3u, true);");
@@ -885,6 +886,9 @@ class JunoCompilerTest {
             // Then
             assertThat(result.runtimeShim()).contains("esp_task_wdt_init(3u, true);", "esp_task_wdt_add(nullptr);")
                     .doesNotContain("esp_task_wdt_config_t");
+            // The task watchdog fires from an interrupt, so the ESP32 panic halt must leave interrupts on.
+            assertThat(result.runtimeShim()).contains("[[noreturn]] void juno_panic()", "for (;;) {}")
+                    .doesNotContain("noInterrupts();\n  for (;;) {}");
         }
 
         @Test

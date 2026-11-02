@@ -190,6 +190,15 @@ final class Esp32CoreRuntime implements CoreRuntime {
                   client.setCACert(juno_smtp_ca);""";
     }
 
+    /**
+     * The ESP32's task watchdog fires from an interrupt, so the halt keeps interrupts on: the main task stays subscribed
+     * and is never fed again, and the watchdog resets the board after its timeout instead of the board hanging.
+     */
+    @Override
+    public String panicHalt() {
+        return "for (;;) {}";
+    }
+
     @Override
     public String yieldFunction() {
         return runtimeSource.load("esp32/core-glue.cpp");
@@ -210,11 +219,14 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /**
      * Arduino-ESP32 2.x takes the timeout in seconds; the ESP-IDF 5 core behind the M5Stack takes a configuration
      * structure ({@code timeout_ms}, {@code idle_core_mask}, {@code trigger_panic}) with the idle tasks unsubscribed.
+     * That core starts the task watchdog itself at boot, so {@code esp_task_wdt_init} reports
+     * {@code ESP_ERR_INVALID_STATE} and leaves its own timeout in place; {@code esp_task_wdt_reconfigure} applies ours.
      */
     private String taskWatchdogSetup(int timeoutSeconds) {
         return switch (core) {
             case M5STACK_ESP32 -> "esp_task_wdt_config_t config = {" + timeoutSeconds * 1000 + "u, 0u, true};\n"
-                    + "esp_task_wdt_init(&config);\nesp_task_wdt_add(nullptr);";
+                    + "if (esp_task_wdt_init(&config) == ESP_ERR_INVALID_STATE) esp_task_wdt_reconfigure(&config);\n"
+                    + "esp_task_wdt_add(nullptr);";
             default -> "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);";
         };
     }

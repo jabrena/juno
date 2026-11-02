@@ -120,6 +120,14 @@ public interface CoreRuntime {
                 """;
     }
 
+    /**
+     * How {@code juno_panic} stops the program once its diagnostic is printed: with interrupts off, so nothing runs
+     * again and a hardware watchdog, if enabled, resets the board.
+     */
+    default String panicHalt() {
+        return "noInterrupts();\n  for (;;) {}";
+    }
+
     /** Safe number of simultaneous HTTP transport leases; excess callers wait cooperatively. */
     default int maxConcurrentHttpRequests() {
         return 2;
