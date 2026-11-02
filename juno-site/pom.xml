@@ -51,6 +51,10 @@
             <artifactId>quarkus-arc</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.quarkus.qute</groupId>
+            <artifactId>qute-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.quarkiverse.roq</groupId>
             <artifactId>quarkus-roq-testing</artifactId>
             <version>${roq.version}</version>
