@@ -92,6 +92,7 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.SECURE_ENTROPY, true),
                 arguments(Board.M5_CARDPUTER, Capability.STRUCTURED_CONCURRENCY, true),
                 arguments(Board.M5_CARDPUTER, Capability.DOUBLE_MATH, true),
+                arguments(Board.M5_CARDPUTER, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false),
                 arguments(Board.NANO_ESP32, Capability.M5_BATTERY, false));
     }
