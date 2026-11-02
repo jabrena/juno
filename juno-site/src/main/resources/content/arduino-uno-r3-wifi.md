@@ -38,6 +38,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
 | `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | ✓ | `getBuiltinLed()` is logical pin 25. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `analogRead`, `analogWrite` | ✓ | Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9 and D10. | |
 | `Serial` | ✓ | | |
 | Classes, interfaces, inheritance, exceptions | ✓ | | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Exceptions`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java) |
 | Threads, `synchronized`, `ReentrantLock`, atomics, `StructuredTaskScope`, `ScopedValue` | ✓ | At most four threads including `main`. | [`ThreadStartAndJoin`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java), [`Locks`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java) |
