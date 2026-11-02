@@ -117,10 +117,11 @@ public final class Peripherals {
         lcd.print("Juno on Rev2");
         Serial.println(lcd.readButton());
 
-        TftTouchShield.begin();
-        TftTouchShield.fillRect(0, 0, 8, 8, TftTouchShield.GREEN);
-        TftTouchShield.println("Rev2");
-        Serial.println(TftTouchShield.readTouch() ? "touched" : "untouched");
+        TftTouchShield tft = new TftTouchShield();
+        tft.begin();
+        tft.fillRect(0, 0, 8, 8, TftTouchShield.GREEN);
+        tft.println("Rev2");
+        Serial.println(tft.readTouch() ? "touched" : "untouched");
         Serial.println("done");
     }
 }
