@@ -20,7 +20,7 @@ language itself, see the [Java subset](../java-subset) page.
 | HTTPS client | – | ✓ | ✓ | ✓ | ✓ | ✓ |
 | HTTP server | – | – | ✓ | ✓ | ✓ | ✓ |
 | HTTPS server | – | – | – | ✓ | ✓ | ✓ |
-| Email over TLS | – | ✓ | ✓ | ✓ | ✓ | – |
+| Email over TLS | – | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Email STARTTLS | – | – | ✓ | – | ✓ | – |
 | SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Bluetooth LE | – | – | ✓ | ✓ | ✓ | ✓ |

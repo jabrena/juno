@@ -43,7 +43,7 @@ by memory.
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | — | ✓ | ✓ | ✓ | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | — | — | ✓ | — | — |
 | Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | — | — |
 | USB HID mouse | ✓ | ✓ | — | ✓ | — | — |
