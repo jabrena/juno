@@ -279,6 +279,11 @@ document.addEventListener('DOMContentLoaded', function () {
         input.focus();
       }
     });
+    // On touch screens a tap on a result moves focus off the input before the click lands, and the list would hide
+    // first. Keeping the press on the input stops that blur; the click still reaches the link.
+    form.querySelector('.juno-search-results').addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+    });
     form.addEventListener('focusout', function (event) {
       if (!form.contains(event.relatedTarget)) hide(form);
     });
@@ -499,6 +504,8 @@ blink.run();
 <h3 id="virtual-threads">Virtual threads</h3>
 <ul>
 <li><code>Thread.startVirtualThread(Runnable)</code>, <code>join()</code>, <code>isAlive()</code>, <code>Thread.sleep</code> and <code>Thread.yield()</code>.</li>
+<li><code>interrupt()</code> and <code>isInterrupted()</code> on a virtual thread. An interrupt ends a <code>sleep</code>, <code>wait</code>, <code>await</code> or <code>acquire</code> that
+the thread is blocked in with <code>InterruptedException</code>, as on the JDK.</li>
 <li>At most four threads run at once, including <code>main</code>.</li>
 </ul>
 <h3 id="structured-concurrency">Structured concurrency</h3>
@@ -507,8 +514,22 @@ blink.run();
 </ul>
 <h3 id="synchronisation">Synchronisation</h3>
 <ul>
-<li><code>synchronized</code> blocks, <code>volatile</code> fields, <code>ReentrantLock</code> (<code>lock</code>, <code>tryLock</code> and <code>unlock</code>), and the atomic classes
-<code>AtomicInteger</code>, <code>AtomicBoolean</code> and <code>AtomicLong</code>.</li>
+<li><code>synchronized</code> blocks, <code>volatile</code> fields, <code>ReentrantLock</code> (<code>lock</code>, <code>lockInterruptibly</code>, <code>tryLock</code>, <code>tryLock(long, TimeUnit)</code> and <code>unlock</code>), and the atomic classes <code>AtomicInteger</code>, <code>AtomicBoolean</code> and <code>AtomicLong</code>. <code>new ReentrantLock(true)</code> is a fair lock: <code>lock()</code> waiters are granted it in arrival order. The timed <code>tryLock</code> and the
+interruptible <code>lockInterruptibly</code> do not queue, so they can overtake waiting threads.</li>
+<li><code>Object.wait()</code>, <code>notify()</code> and <code>notifyAll()</code>, only while the monitor is held (inside <code>synchronized</code>). <code>wait(long)</code> is
+not supported.</li>
+<li><code>CountDownLatch(int)</code> with <code>countDown()</code>, <code>getCount()</code>, <code>await()</code> and <code>await(long, TimeUnit)</code>, and <code>Semaphore(int)</code> or
+<code>Semaphore(int, boolean)</code> with <code>acquire()</code>, <code>release()</code>, <code>tryAcquire()</code>, <code>tryAcquire(long, TimeUnit)</code> and
+<code>availablePermits()</code>. <code>new Semaphore(n, true)</code> queues its <code>acquire()</code> calls in arrival order; the timed <code>tryAcquire</code> does not queue. <code>acquire(int)</code> is not supported.</li>
+<li><code>CyclicBarrier(int)</code> and <code>CyclicBarrier(int, Runnable)</code> with <code>await()</code> and <code>getParties()</code>. The barrier action runs on
+the thread that arrives last, before the others are released. An interrupt breaks the barrier: the interrupted thread
+gets <code>InterruptedException</code>, and the other waiters and later callers get <code>BrokenBarrierException</code>.</li>
+<li><code>ReentrantLock.newCondition()</code>, with <code>await()</code>, <code>await(long, TimeUnit)</code>, <code>signal()</code> and <code>signalAll()</code> while the lock is
+held. The write lock of a <code>ReentrantReadWriteLock</code> has conditions too. Calling <code>newCondition()</code> on a read lock stops
+the program with a message, where the JDK throws <code>UnsupportedOperationException</code>.</li>
+<li><code>ReentrantReadWriteLock()</code> with <code>readLock()</code> and <code>writeLock()</code>, which return a <code>Lock</code>. The <code>Lock</code> (or the read or
+write lock) supports <code>lock()</code>, <code>lockInterruptibly()</code>, <code>tryLock()</code> and <code>unlock()</code>, and <code>Lock</code> values may hold a
+<code>ReentrantLock</code> too. A fair <code>ReentrantReadWriteLock(true)</code> is not supported.</li>
 </ul>
 <h2 id="concurrency-behaviour">Concurrency behaviour</h2>
 <p>Virtual threads, structured subtasks and <code>main</code> share one preemptive scheduler, and the runtime switches between them in
