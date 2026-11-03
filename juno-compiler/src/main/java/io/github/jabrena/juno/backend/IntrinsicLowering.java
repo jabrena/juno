@@ -479,6 +479,14 @@ public final class IntrinsicLowering {
         shim(Intrinsic.CONDITION_SIGNAL, "juno_condition_signal", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.CONDITION_SIGNAL_ALL, "juno_condition_signal_all", Result.NONE, List.of(RECEIVER),
                 ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_READ_WRITE_LOCK_NEW, "juno_rw_lock_new", Result.WORD, List.of(), ShimFeature.THREADS);
+        shim(Intrinsic.READ_WRITE_LOCK_READ_LOCK, "juno_rw_read_lock", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.READ_WRITE_LOCK_WRITE_LOCK, "juno_rw_write_lock", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.LOCK_LOCK, "juno_lock_lock", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.LOCK_TRY_LOCK, "juno_lock_try_lock", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.LOCK_UNLOCK, "juno_lock_unlock", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
     }
 
     /** Atomic cells: one shim call each; the scheduler never preempts runtime code, so no monitor is needed. */

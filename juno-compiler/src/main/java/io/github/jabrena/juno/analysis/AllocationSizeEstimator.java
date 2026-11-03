@@ -68,8 +68,13 @@ final class AllocationSizeEstimator {
         if (THREAD_LAUNCHES.contains(intrinsic)) {
             return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
         }
-        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW
-                || intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
+        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW) {
+            return allocationUpperBound(2 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.REENTRANT_READ_WRITE_LOCK_NEW) {
+            return allocationUpperBound(9 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
                 || intrinsic == Intrinsic.ATOMIC_INT_NEW || intrinsic == Intrinsic.LATCH_NEW
                 || intrinsic == Intrinsic.SEMAPHORE_NEW) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
