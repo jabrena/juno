@@ -207,8 +207,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         emitParameterSpill(output, frame, method, frameBytes);
         if (usesThreads && !isEntryPoint) {
             // A safepoint: every value is in its slot, so another thread may run here once this one's time slice is
-            // over. With the backedges this bounds how long a thread runs unpreempted, loop-free recursion included;
-            // the runtime ignores it for a cooperative structured subtask.
+            // over. With the backedges this bounds how long a thread runs unpreempted, loop-free recursion included.
             xtensa.call(output, "juno_thread_safepoint");
         }
         if (isEntryPoint) {

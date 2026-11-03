@@ -511,14 +511,13 @@ blink.run();
 <code>AtomicInteger</code>, <code>AtomicBoolean</code> and <code>AtomicLong</code>.</li>
 </ul>
 <h2 id="concurrency-behaviour">Concurrency behaviour</h2>
-<p>Virtual threads and structured subtasks share one processor, and the runtime switches between them in 1 ms time slices.
-Only one task runs at any moment.</p>
+<p>Virtual threads, structured subtasks and <code>main</code> share one preemptive scheduler, and the runtime switches between them in
+1 ms time slices. A subtask is scheduled exactly like a virtual thread; the structured scope only adds lifecycle
+management. Only one task runs at any moment.</p>
 <ul>
-<li><strong>Virtual threads and <code>main</code> are preemptive.</strong> When a slice is over, the scheduler takes the processor away from the
-task. On the UNO R4 WiFi and the UNO Q a periodic tick can switch a task between any two instructions. On the UNO WiFi
-Rev2 a task is switched at loop back-edges and method entries instead, so a loop with no calls is still switched.</li>
-<li><strong>Structured subtasks are cooperative.</strong> A subtask gives up the processor at its next loop back-edge once its slice is
-over. A subtask that runs a long stretch without a loop keeps the processor until it reaches one.</li>
+<li><strong>Every task is preemptive.</strong> When a slice is over, the scheduler takes the processor away from the task. On the UNO R4
+WiFi and the UNO Q a periodic tick can switch a task between any two instructions. On the UNO WiFi Rev2 a task is
+switched at loop back-edges and method entries instead, so a loop with no calls is still switched.</li>
 <li><strong>Tasks give up the processor when they block.</strong> That happens on <code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code>,
 <code>join</code>, entering a monitor that another task holds, and while a hardware call waits for its device: an HTTP or HTTPS
 request, <code>HttpServer.accept</code>, the retries of <code>SdCard.begin</code>, and a Powered Up scan or reply. Other tasks run during
@@ -566,6 +565,9 @@ program.</li>
     <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
   </div>
 </footer>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FPC5GLQPGY"></script>
+<script src="/juno/gtag.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {

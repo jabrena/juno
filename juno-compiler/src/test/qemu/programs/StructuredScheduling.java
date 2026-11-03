@@ -9,9 +9,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * How structured subtasks share the CPU: a subtask is cooperative (it gives the CPU up at its loop backedges once its
- * time slice is over, and at sleep, yield, join and contended monitors), while the owner, like any virtual thread,
- * is preemptive. So a spinning subtask still makes progress while the owner runs a loop-free recursion, two computing
+ * How structured subtasks share the CPU: a subtask is preemptive like the owner and any virtual thread, all on one
+ * scheduler. So a spinning subtask still makes progress while the owner runs a loop-free recursion, and while a
+ * sibling subtask runs one (a cooperative subtask would keep the CPU there and print "sibling starved"); two computing
  * subtasks interleave through their loops, and a fail-fast scope cancels a sibling that is spinning.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
@@ -59,6 +59,24 @@ public final class StructuredScheduling {
             Serial.println(search(24) == 1 ? "subtask progressed during owner recursion" : "subtask starved");
             stop = true;
             scope.join();
+        }
+
+        // A subtask recurses without a loop while its sibling spins: only preemption lets the sibling run.
+        stop = false;
+        progress = 0;
+        try (var scope = StructuredTaskScope.open()) {
+            scope.fork(StructuredScheduling::spin);
+            StructuredTaskScope.Subtask<String> searcher = scope.fork(() -> {
+                while (progress == 0) {
+                    // Wait until the sibling is demonstrably running.
+                }
+                snapshot = progress;
+                int found = search(24);
+                stop = true;
+                return found == 1 ? "sibling progressed during subtask recursion" : "sibling starved";
+            });
+            scope.join();
+            Serial.println(searcher.get());
         }
 
         // Two computing subtasks, each writing its own slot, taking turns at their loop backedges.

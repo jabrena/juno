@@ -73,7 +73,7 @@ public enum ShimFeature {
     THREAD_ENTRY,
     /** A reachable structured {@code Callable} entry point. */
     TASK_CALLABLE_ENTRY,
-    /** JDK 27 structured scopes layered on the thread runtime, as cooperative subtasks. */
+    /** JDK 27 structured scopes layered on the thread runtime; their subtasks are preemptive threads. */
     STRUCTURED_TASKS,
     /** {@code java.lang.ScopedValue} bindings: a per-thread binding stack, inherited by forked subtasks. */
     SCOPED_VALUES,

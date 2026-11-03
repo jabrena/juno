@@ -64,29 +64,63 @@ always wins for a given run.
 
 ## Typical workflow
 
-```bash
-# Once per machine: install supported cores and every optional library any example needs
-./mvnw -f juno-examples/pom.xml juno:install-deps
+Run these four commands in order. The examples use the `Blink` program and the UNO R4 WiFi; for another board, change
+`-Djuno.board` and `-Djuno.main`.
 
-# Compile and check with arduino-cli
+Before the first run, install the cores and libraries once per machine with `./mvnw -f juno-examples/pom.xml juno:install-deps`
+(it installs the supported Arduino cores, including M5Stack ESP32, and every optional library an example needs).
+
+### 1. List the boards
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:boards
+```
+
+Lists the connected boards and serial ports (address, protocol, board name, FQBN). It is read-only and changes nothing.
+Use it to confirm the board is detected and to find the `<PORT>` for `-Djuno.port`.
+
+The board ids you pass as `-Djuno.board` are:
+
+| Board | `-Djuno.board` |
+|---|---|
+| Arduino UNO R3 | `arduino-uno-r3` |
+| Arduino UNO R3 WiFi Rev2 | `arduino-uno-r3-wifi-rev2` |
+| Arduino UNO R4 WiFi | `arduino-uno-r4-wifi` |
+| Arduino UNO Q | `arduino-uno-q` |
+| Arduino Nano ESP32 | `arduino-nano-esp32` |
+| M5Stack Cardputer | `m5stack-cardputer` |
+
+### 2. Compile and check with arduino-cli (no board needed)
+
+```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-uno-r4-wifi
+```
 
-# Flash it to a connected board
+Generates the sketch and compiles it with `arduino-cli`. It does not touch hardware.
+
+### 3. Flash the board
+
+```bash
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
+  -Djuno.board=arduino-uno-r4-wifi
+```
 
-# Watch its Serial output
+Flashes the sketch. `upload` auto-detects the port when exactly one matching board is connected; otherwise pass
+`-Djuno.port=<PORT>` with the port from step 2.
+
+### 4. Watch the Serial output
+
+```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
-`upload` and `monitor` auto-detect the port when exactly one matching board is connected;
-otherwise pass `-Djuno.port=<PORT>` (find it with `arduino-cli board list`). Always use
-`juno:monitor` to watch board output rather than a raw `arduino-cli monitor` call — it resolves
-the same port logic as `upload` and defaults to the baud rate every `juno-examples` program uses.
+Opens the serial monitor at 115200 baud (`-Djuno.baudRate` to change it). Always use `juno:monitor` rather than a raw
+`arduino-cli monitor` call: it resolves the same port logic as `upload` and defaults to the baud rate every
+`juno-examples` program uses.
 
 ## Juno flags
 

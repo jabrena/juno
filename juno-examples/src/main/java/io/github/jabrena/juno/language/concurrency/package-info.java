@@ -13,6 +13,8 @@
  *       buffer.</li>
  *   <li>{@link io.github.jabrena.juno.language.concurrency.StructuredRace} — first-success and all-or-nothing joiners
  *       with cancellation.</li>
+ *   <li>{@link io.github.jabrena.juno.language.concurrency.StructuredPreemption} — subtasks preempted like virtual
+ *       threads, even inside a loop-free recursion.</li>
  *   <li>{@link io.github.jabrena.juno.language.concurrency.LazyInit} — double-checked locking with a volatile field.</li>
  *   <li>{@link io.github.jabrena.juno.language.concurrency.MonitorHappensBefore} — reentrant monitor ordering.</li>
  *   <li>{@link io.github.jabrena.juno.language.concurrency.VolatileHappensBefore} — volatile publication.</li>

@@ -6,9 +6,8 @@ static void juno_thread_slice_over() {
   juno_sched_block();
 }
 
-// Method entry: a safepoint for preemptive threads only.
+// Method entry: a safepoint.
 extern "C" void juno_thread_safepoint() {
-  if (juno_slot_cooperative(juno_current_slot)) return;
   juno_thread_slice_over();
 }
 
