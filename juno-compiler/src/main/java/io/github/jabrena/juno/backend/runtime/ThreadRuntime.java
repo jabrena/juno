@@ -199,7 +199,9 @@ public final class ThreadRuntime {
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
                 .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId))
                 .replace("${JUNO_RAISE_INTERRUPTED}", raiseInterrupted)
-                .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier);
+                .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
+                .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
+                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
     }
 
     /**
@@ -240,6 +242,16 @@ public final class ThreadRuntime {
                   juno_throw_raise(static_cast<int32_t>(reinterpret_cast<intptr_t>(exception)));"""
                 .replace("${JUNO_EXCEPTION_CLASS_ID}", Integer.toString(classId))
                 : "  juno_panic();";
+    }
+
+    /** The call that runs a CyclicBarrier's trip action; without the thread entry no barrier has one. */
+    private static String barrierAction(boolean threadEntry) {
+        return threadEntry ? "juno_thread_entry(barrier[4]);" : "";
+    }
+
+    /** Whether a call left an exception pending; without the exception runtime nothing can. */
+    private static String pendingException(boolean exceptions) {
+        return exceptions ? "juno_throw_pending() != 0" : "false";
     }
 
     /** Joiner-based scopes and subtask operations inserted only when the program reaches that API. */
