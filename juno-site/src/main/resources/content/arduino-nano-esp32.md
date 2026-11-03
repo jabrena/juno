@@ -234,7 +234,7 @@ RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, 
 rcx.begin();
 
 RcxMotor motor = rcx.getMotorA();
-motor.setPower(4);
+motor.setPower(57);
 motor.forward();
 ```
 

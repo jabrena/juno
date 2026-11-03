@@ -166,15 +166,15 @@ Either way, the examples below use the same `rcx`.
 ### Use the motors
 
 The brick has three motor outputs, `getMotorA()`, `getMotorB()` and `getMotorC()`; `and` combines two into one, as a
-vehicle's left and right wheels. `drive(speed)` runs them from `-RcxMotor.MAX_POWER` (full reverse) to `MAX_POWER`
+vehicle's left and right wheels. `drive(speed)` runs them from `-RcxMotor.MAX_LEVEL` (full reverse) to `MAX_LEVEL`
 (7, full forward). `stop()` brakes them and `flt()` lets them coast:
 
 ```java
 RcxMotor wheels = rcx.getMotorA().and(rcx.getMotorC());
 
-wheels.drive(RcxMotor.MAX_POWER);    // forward
+wheels.drive(RcxMotor.MAX_LEVEL);    // forward
 Delay.millis(2000);
-wheels.drive(-RcxMotor.MAX_POWER);   // backward
+wheels.drive(-RcxMotor.MAX_LEVEL);   // backward
 Delay.millis(2000);
 wheels.stop();
 ```
