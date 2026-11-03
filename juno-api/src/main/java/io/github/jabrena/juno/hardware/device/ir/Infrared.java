@@ -57,7 +57,7 @@ public final class Infrared {
     /**
      * Transmits a burst of the 38 kHz carrier for {@code micros} microseconds. With {@link #space}, it
      * builds protocols that encode bits in pulse lengths rather than as serial bytes, such as
-     * {@link io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote}; the transmit pin must be set by
+     * {@link io.github.jabrena.juno.remote.lego.pf.RemotePF}; the transmit pin must be set by
      * {@link #beginHX} or {@link #beginGrove} (the baud rate is ignored by these two calls).
      */
     public static native void mark(int micros);

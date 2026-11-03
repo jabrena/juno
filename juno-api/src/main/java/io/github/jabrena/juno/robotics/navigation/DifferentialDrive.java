@@ -1,10 +1,10 @@
 package io.github.jabrena.juno.robotics.navigation;
 
-import io.github.jabrena.juno.robotics.Motor;
+import io.github.jabrena.juno.robotics.DCMotor;
 
 /**
  * Coordinates two independently controlled motors as a differential drive. The drive only knows the
- * board-independent {@link Motor} contract, so a motor may be a PWM motor, a remote RCX motor, or a
+ * board-independent {@link DCMotor} contract, so a motor may be a Power Functions motor, a remote RCX motor, or a
  * regulated motor with native or external encoder feedback.
  *
  * <p>Create one instance during setup and reuse it in the control loop. Commands use signed power
@@ -18,11 +18,11 @@ public final class DifferentialDrive {
     /** The highest signed power accepted by drive commands. */
     public static final int MAX_POWER = 100;
 
-    private final Motor leftMotor;
-    private final Motor rightMotor;
+    private final DCMotor leftMotor;
+    private final DCMotor rightMotor;
 
     /** Creates a drive with the supplied left and right motors. */
-    public DifferentialDrive(Motor leftMotor, Motor rightMotor) {
+    public DifferentialDrive(DCMotor leftMotor, DCMotor rightMotor) {
         this.leftMotor = leftMotor;
         this.rightMotor = rightMotor;
     }
@@ -52,25 +52,19 @@ public final class DifferentialDrive {
         tank(-magnitude, -magnitude);
     }
 
-    /** Stops both motors using their normal stop behavior. */
+    /** Stops both motors with active braking, as {@link DCMotor#stop()} does. */
     public void stop() {
         leftMotor.stop();
         rightMotor.stop();
     }
 
-    /** Stops both motors and lets them coast. */
-    public void coast() {
-        leftMotor.coast();
-        rightMotor.coast();
+    /** Removes power from both motors so they coast, as {@link DCMotor#flt()} does. */
+    public void flt() {
+        leftMotor.flt();
+        rightMotor.flt();
     }
 
-    /** Stops both motors with active braking. */
-    public void brake() {
-        leftMotor.brake();
-        rightMotor.brake();
-    }
-
-    private static void command(Motor motor, int power) {
+    private static void command(DCMotor motor, int power) {
         if (power == 0) {
             motor.stop();
             return;
