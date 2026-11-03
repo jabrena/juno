@@ -1261,14 +1261,20 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.pf.PowerFunctionsRemote;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+                import io.github.jabrena.juno.remote.lego.pf.PFLink;
+                import io.github.jabrena.juno.remote.lego.pf.PFChannel;
+                import io.github.jabrena.juno.remote.lego.pf.PFPort;
+                import io.github.jabrena.juno.remote.lego.pf.RemotePF;
                 public final class AsmPowerFunctions {
                     public static void main(String[] args) {
-                        PowerFunctionsRemote.beginHX(3);
-                        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 5);
-                        PowerFunctionsRemote.setSpeeds(PowerFunctionsRemote.CHANNEL_2, -7, 7);
-                        PowerFunctionsRemote.brake(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_BLUE);
-                        PowerFunctionsRemote.stop(PowerFunctionsRemote.CHANNEL_2);
+                        PFLink link = new PFLink(new HX53InfraredEmitter(3));
+                        link.begin();
+                        RemotePF remote = new RemotePF(link);
+                        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 5);
+                        remote.setSpeeds(PFChannel.CHANNEL_2, -7, 7);
+                        remote.brake(PFChannel.CHANNEL_1, PFPort.BLUE);
+                        remote.stop(PFChannel.CHANNEL_2);
                     }
                 }
                 """;

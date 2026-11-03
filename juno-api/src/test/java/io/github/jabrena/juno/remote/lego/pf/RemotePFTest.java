@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.remote.lego.pf;
 
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +14,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("LEGO Power Functions remote")
-class PowerFunctionsRemoteTest {
+class RemotePFTest {
     private static final int MARK = 156;
     private static final int PAUSE_START_STOP = 1014;
     private static final int PAUSE_ONE = 546;
@@ -21,17 +23,22 @@ class PowerFunctionsRemoteTest {
     private static final int PAIRS_PER_REPEAT = 18;
     private static final int REPEATS = 6;
 
+    private RemotePF remote;
+
     @BeforeEach
     void startWithAnEmptyTransmitter() {
         Wire.resetBoard();
         Infrared.reset();
-        PowerFunctionsRemote.beginHX(3);
+        PFLink link = new PFLink(new HX53InfraredEmitter(3));
+        link.begin();
+        remote = new RemotePF(link);
     }
 
     @Test
-    @DisplayName("Grove setup selects the Grove hardware carrier")
+    @DisplayName("Grove emitter selects the Grove hardware carrier")
     void shouldSelectTheGroveHardwareCarrier() {
-        PowerFunctionsRemote.beginGrove(4);
+        PFLink link = new PFLink(new GroveInfraredEmitter(4));
+        link.begin();
 
         assertThat(Infrared.receivePin).isEqualTo(-1);
         assertThat(Infrared.transmitPin).isEqualTo(4);
@@ -42,10 +49,10 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Set speed sends six repeats of the same message")
     void shouldSendSixRepeatsOfTheSameMessage() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
 
         // When
-        List<Integer> repeats = IntStream.range(0, REPEATS).mapToObj(PowerFunctionsRemoteTest::decode).toList();
+        List<Integer> repeats = IntStream.range(0, REPEATS).mapToObj(RemotePFTest::decode).toList();
 
         // Then
         assertThat(Infrared.pulses).hasSize(REPEATS * PAIRS_PER_REPEAT * 2);
@@ -56,7 +63,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Each repeat starts with a start mark")
     void shouldStartEachMessageWithAStartMark() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
 
         // When & Then
         assertThat(Infrared.pulses.subList(0, 2)).containsExactly(MARK, -PAUSE_START_STOP);
@@ -66,7 +73,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Set speed encodes the channel, output and speed nibbles")
     void shouldEncodeTheChannelOutputAndSpeedNibbles() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
         int message = decode(0);
 
         // When & Then
@@ -76,10 +83,23 @@ class PowerFunctionsRemoteTest {
     }
 
     @Test
+    @DisplayName("Channel 4 is encoded as the channel nibble 3 in a single-output message")
+    void shouldEncodeChannel4AsNibbleThree() {
+        // Given
+        remote.setSpeed(PFChannel.CHANNEL_4, PFPort.BLUE, -3);
+        int message = decode(0);
+
+        // When & Then
+        assertThat(new int[] {(message >> 12) & 0x3, (message >> 8) & 0xF, (message >> 4) & 0xF})
+                .as("channel 4 (index 3), blue output, speed -3 is PWM nibble 16 - 3 = 13")
+                .containsExactly(0x3, 0x5, 0xD);
+    }
+
+    @Test
     @DisplayName("Set speed appends a checksum nibble")
     void shouldAppendAChecksumNibble() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
         int message = decode(0);
 
         // When
@@ -93,12 +113,12 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Toggle bit flips between successive single-output messages")
     void shouldFlipTheToggleBitBetweenSuccessiveSingleOutputMessages() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
         int first = decode(0) >> 12;
         Infrared.pulses.clear();
 
         // When
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_RED, 7);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 7);
         int second = decode(0) >> 12;
 
         // Then
@@ -109,7 +129,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("A negative speed is sent as the reverse PWM nibble")
     void shouldSendANegativeSpeedAsTheReversePwmNibble() {
         // Given
-        PowerFunctionsRemote.setSpeed(PowerFunctionsRemote.CHANNEL_1, PowerFunctionsRemote.OUTPUT_BLUE, -3);
+        remote.setSpeed(PFChannel.CHANNEL_1, PFPort.BLUE, -3);
 
         // When
         int nibble = (decode(0) >> 4) & 0xF;
@@ -122,7 +142,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Brake sends the brake nibble")
     void shouldSendTheBrakeNibble() {
         // Given
-        PowerFunctionsRemote.brake(PowerFunctionsRemote.CHANNEL_2, PowerFunctionsRemote.OUTPUT_RED);
+        remote.brake(PFChannel.CHANNEL_2, PFPort.RED);
 
         // When
         int nibble = (decode(0) >> 4) & 0xF;
@@ -135,7 +155,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Set speeds sends both outputs with the channel in the escape nibble")
     void shouldSendBothOutputsWithTheChannelInTheEscapeNibble() {
         // Given
-        PowerFunctionsRemote.setSpeeds(PowerFunctionsRemote.CHANNEL_2, 2, 3);
+        remote.setSpeeds(PFChannel.CHANNEL_2, 2, 3);
 
         // When
         int message = decode(0);
@@ -150,7 +170,7 @@ class PowerFunctionsRemoteTest {
     @DisplayName("Stop floats both outputs of the channel")
     void shouldFloatBothOutputsOfTheChannel() {
         // Given
-        PowerFunctionsRemote.stop(PowerFunctionsRemote.CHANNEL_3);
+        remote.stop(PFChannel.CHANNEL_3);
 
         // When
         int message = decode(0);
