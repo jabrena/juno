@@ -10,7 +10,7 @@ infrared tower, and the LEGO hardware does the rest.
 
 | System | Since | What it is | Protocol used | Board with support | Juno class |
 |---|---|---|---|---|---|
-| Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q | [`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java) |
+| Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
 | Mindstorms EV3 | 2013 | The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux | Bluetooth Classic (serial port profile), LEGO's EV3 direct commands | — | Pending |
 | Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | — | Pending |
 | Mindstorms NXT | 2006 | The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker | Bluetooth Classic (serial port profile), LEGO's NXT direct commands | — | Pending |
@@ -18,7 +18,7 @@ infrared tower, and the LEGO hardware does the rest.
 
 ## LEGO Powered Up
 
-[`PoweredUpHubRemote`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java)
+[`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java)
 (`io.github.jabrena.juno.remote.lego.poweredup`) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the
@@ -29,12 +29,12 @@ It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
 
 ### Connect to a hub
 
-Create one `PoweredUpHubRemote` at startup, press the hub's green button so it advertises, and call `connect`. It
+Create one `RemotePoweredUpHub` at startup, press the hub's green button so it advertises, and call `connect`. It
 scans for the first hub it finds, for up to the given milliseconds (`0` waits forever). The hub drops the link when it
 switches off or goes out of range, so check `isConnected()` in long-running loops and connect again:
 
 ```java
-PoweredUpHubRemote hub = new PoweredUpHubRemote();
+RemotePoweredUpHub hub = new RemotePoweredUpHub();
 
 while (true) {
     if (!hub.isConnected()) {
@@ -57,7 +57,7 @@ The hub's status LED takes a LEGO color index, from `COLOR_OFF` through `COLOR_P
 
 ```java
 int[] colors = {
-    PoweredUpHubRemote.COLOR_RED, PoweredUpHubRemote.COLOR_GREEN, PoweredUpHubRemote.COLOR_BLUE
+    HubColor.RED, HubColor.GREEN, HubColor.BLUE
 };
 
 while (hub.isConnected()) {
@@ -78,12 +78,12 @@ actively, and `holdMotor` holds a motor with a rotation sensor in place. `portDe
 detected on a port:
 
 ```java
-if (hub.portDevice(PoweredUpHubRemote.PORT_A) != PoweredUpHubRemote.DEVICE_NONE) {
-    hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);    // half speed forward
+if (hub.portDevice(HubPort.A) != RemotePoweredUpHub.DEVICE_NONE) {
+    hub.getMotor(HubPort.A).drive(50);    // half speed forward
     Delay.millis(2000);
-    hub.setMotorPower(PoweredUpHubRemote.PORT_A, -50);   // half speed backward
+    hub.getMotor(HubPort.A).drive(-50);   // half speed backward
     Delay.millis(2000);
-    hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+    hub.getMotor(HubPort.A).stop();
 }
 ```
 

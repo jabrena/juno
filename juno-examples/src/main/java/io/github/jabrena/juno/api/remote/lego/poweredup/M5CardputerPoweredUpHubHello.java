@@ -4,7 +4,8 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -17,18 +18,18 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board(M5StackCardputerBoard.class)
 public class M5CardputerPoweredUpHubHello {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final int COLOR_MILLIS = 600;
-    private static final int[] COLORS = {
-        PoweredUpHubRemote.COLOR_RED,
-        PoweredUpHubRemote.COLOR_ORANGE,
-        PoweredUpHubRemote.COLOR_YELLOW,
-        PoweredUpHubRemote.COLOR_GREEN,
-        PoweredUpHubRemote.COLOR_CYAN,
-        PoweredUpHubRemote.COLOR_BLUE,
-        PoweredUpHubRemote.COLOR_PURPLE,
-        PoweredUpHubRemote.COLOR_PINK,
-        PoweredUpHubRemote.COLOR_WHITE
+    private static final HubColor[] COLORS = {
+        HubColor.RED,
+        HubColor.ORANGE,
+        HubColor.YELLOW,
+        HubColor.GREEN,
+        HubColor.CYAN,
+        HubColor.BLUE,
+        HubColor.PURPLE,
+        HubColor.PINK,
+        HubColor.WHITE
     };
 
     public static void main(String[] args) {

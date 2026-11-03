@@ -4,7 +4,9 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -20,11 +22,11 @@ import io.github.jabrena.juno.util.Delay;
  * them on your hub. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHubWithImu {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final Clock CLOCK = ArduinoUno.getClock();
-    private static final int LEFT = PoweredUpHubRemote.PORT_A;
-    private static final int RIGHT = PoweredUpHubRemote.PORT_B;
-    private static final int TILT = PoweredUpHubRemote.PORT_TECHNIC_TILT;
+    private static final HubPort LEFT = HubPort.A;
+    private static final HubPort RIGHT = HubPort.B;
+    private static final HubPort TILT = HubPort.TECHNIC_TILT;
     private static final int POWER = 40;
     private static final int TURN_POWER = 30;
     private static final int STRAIGHT_MILLIS = 3000;
@@ -45,15 +47,15 @@ public class MagicSquarePoweredUpHubWithImu {
             if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
                 HUB.connect(0);
-                HUB.enableSensor(TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
+                HUB.enableSensor(TILT, RemotePoweredUpHub.MODE_IMU_VALUES);
                 app.waitForTilt();
             }
             Serial.println("Straight");
-            HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+            HUB.setLedColor(HubColor.GREEN);
             app.drive(POWER, POWER, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            HUB.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+            HUB.setLedColor(HubColor.BLUE);
             app.turnLeft();
             app.stop();
         }
@@ -81,8 +83,8 @@ public class MagicSquarePoweredUpHubWithImu {
     /** Spins on the spot until the yaw has moved TURN_DEGREES either way, or the safety timeout. */
     private void turnLeft() {
         int startYaw = yaw();
-        HUB.setMotorPower(LEFT, -TURN_POWER);
-        HUB.setMotorPower(RIGHT, TURN_POWER);
+        HUB.getMotor(LEFT).drive(-TURN_POWER);
+        HUB.getMotor(RIGHT).drive(TURN_POWER);
         int started = CLOCK.millis();
         while (HUB.isConnected() && Math.abs(turnedSince(startYaw)) < TURN_DEGREES
                 && CLOCK.millis() - started < TURN_TIMEOUT_MILLIS) {
@@ -90,14 +92,14 @@ public class MagicSquarePoweredUpHubWithImu {
     }
 
     private void drive(int left, int right, int millis) {
-        HUB.setMotorPower(LEFT, left);
-        HUB.setMotorPower(RIGHT, right);
+        HUB.getMotor(LEFT).drive(left);
+        HUB.getMotor(RIGHT).drive(right);
         Delay.millis(millis);
     }
 
     private void stop() {
-        HUB.brakeMotor(LEFT);
-        HUB.brakeMotor(RIGHT);
+        HUB.getMotor(LEFT).stop();
+        HUB.getMotor(RIGHT).stop();
         Delay.millis(STOP_MILLIS);
     }
 }

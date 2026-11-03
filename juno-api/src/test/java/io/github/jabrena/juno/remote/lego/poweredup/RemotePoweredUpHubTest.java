@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Powered Up hub version word")
-class PoweredUpHubRemoteTest {
-    private final PoweredUpHubRemote hub = new PoweredUpHubRemote();
+class RemotePoweredUpHubTest {
+    private final RemotePoweredUpHub hub = new RemotePoweredUpHub();
 
     @Test
     @DisplayName("Unpacks major, minor, BCD bug-fix and build from a version word")

@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.MARGIN;
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.SWATCH_GAP;
@@ -11,17 +12,17 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.SW
 
 /** The LED view of {@link PoweredUpHubTFT}: a 3x3 grid of color swatches. */
 final class PoweredUpLed {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    static final int[] LED_COLORS = {
-        PoweredUpHubRemote.COLOR_RED,
-        PoweredUpHubRemote.COLOR_ORANGE,
-        PoweredUpHubRemote.COLOR_YELLOW,
-        PoweredUpHubRemote.COLOR_GREEN,
-        PoweredUpHubRemote.COLOR_CYAN,
-        PoweredUpHubRemote.COLOR_BLUE,
-        PoweredUpHubRemote.COLOR_PURPLE,
-        PoweredUpHubRemote.COLOR_PINK,
-        PoweredUpHubRemote.COLOR_WHITE
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
+    static final HubColor[] LED_COLORS = {
+        HubColor.RED,
+        HubColor.ORANGE,
+        HubColor.YELLOW,
+        HubColor.GREEN,
+        HubColor.CYAN,
+        HubColor.BLUE,
+        HubColor.PURPLE,
+        HubColor.PINK,
+        HubColor.WHITE
     };
 
     private PoweredUpLed() {
@@ -57,29 +58,29 @@ final class PoweredUpLed {
         return SWATCH_TOP + (index / 3) * (SWATCH_HEIGHT + SWATCH_GAP);
     }
 
-    private static int swatchColor(int hubColor) {
-        if (hubColor == PoweredUpHubRemote.COLOR_RED) {
+    private static int swatchColor(HubColor hubColor) {
+        if (hubColor == HubColor.RED) {
             return TftTouchShield.RED;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_ORANGE) {
+        if (hubColor == HubColor.ORANGE) {
             return TftTouchShield.ORANGE;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_YELLOW) {
+        if (hubColor == HubColor.YELLOW) {
             return TftTouchShield.YELLOW;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_GREEN) {
+        if (hubColor == HubColor.GREEN) {
             return TftTouchShield.GREEN;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_CYAN) {
+        if (hubColor == HubColor.CYAN) {
             return TftTouchShield.CYAN;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_BLUE) {
+        if (hubColor == HubColor.BLUE) {
             return TftTouchShield.BLUE;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_PURPLE) {
+        if (hubColor == HubColor.PURPLE) {
             return TftTouchShield.MAGENTA;
         }
-        if (hubColor == PoweredUpHubRemote.COLOR_PINK) {
+        if (hubColor == HubColor.PINK) {
             return TftTouchShield.color(255, 128, 192);
         }
         return TftTouchShield.WHITE;

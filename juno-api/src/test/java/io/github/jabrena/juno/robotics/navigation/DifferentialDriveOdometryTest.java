@@ -77,12 +77,12 @@ class DifferentialDriveOdometryTest {
         private int positionDegrees;
 
         @Override
-        public int positionDegrees() {
+        public int getTachoCount() {
             return positionDegrees;
         }
 
         @Override
-        public void reset() {
+        public void resetTachoCount() {
             positionDegrees = 0;
         }
     }

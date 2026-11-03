@@ -20,7 +20,7 @@ public enum ShimFeature {
     M5_BATTERY,
     MOUSE,
     SERVO,
-    /** {@code PoweredUpHubRemote}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
+    /** {@code RemotePoweredUpHub}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
     LEGO_POWERED_UP,
     /** {@code ParallelBus}: eight data pins and a strobe, written through the core's GPIO port registers. */
     PARALLEL_BUS,

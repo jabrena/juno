@@ -113,8 +113,8 @@ class JunoCompilerTest {
                             public void waitComplete() { }
                         }
                         static final class TestEncoder implements Encoder {
-                            public int positionDegrees() { return 12; }
-                            public void reset() { }
+                            public int getTachoCount() { return 12; }
+                            public void resetTachoCount() { }
                         }
                         static final class TestImu implements Imu {
                             public boolean begin() { return true; }
@@ -128,7 +128,7 @@ class JunoCompilerTest {
                             Encoder encoder = new TestEncoder();
                             Imu imu = new TestImu();
                             DifferentialDrive drive = new DifferentialDrive(motor, motor);
-                            drive.drive(motor.tachoCount(), encoder.positionDegrees());
+                            drive.drive(motor.tachoCount(), encoder.getTachoCount());
                             Pose pose = new Pose();
                             DriveGeometry geometry = new DriveGeometry(56, 120, 360, 360);
                             DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
@@ -137,7 +137,7 @@ class JunoCompilerTest {
                             HeadingHoldController heading = new HeadingHoldController(drive, pose, 20, 30);
                             heading.captureCurrentHeading();
                             heading.holdHeading(20);
-                            Delay.millis(motor.tachoCount() + encoder.positionDegrees() + pose.headingMillidegrees());
+                            Delay.millis(motor.tachoCount() + encoder.getTachoCount() + pose.headingMillidegrees());
                         }
                     }
                     """;
@@ -3658,17 +3658,19 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                    import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
+                    import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+                    import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                     @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class Train {
                         public static void main(String[] args) {
-                            PoweredUpHubRemote hub = new PoweredUpHubRemote();
-                            if (hub.connect(10000) && hub.hubType() == PoweredUpHubRemote.TYPE_CITY_HUB) {
-                                hub.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
-                                hub.setMotorPower(PoweredUpHubRemote.PORT_A, -50);
-                                hub.brakeMotor(PoweredUpHubRemote.PORT_A);
-                                hub.enableSensor(PoweredUpHubRemote.PORT_B, PoweredUpHubRemote.MODE_MOTOR_POSITION);
-                                hub.setLedColor(hub.readSensor(PoweredUpHubRemote.PORT_B));
+                            RemotePoweredUpHub hub = new RemotePoweredUpHub();
+                            if (hub.connect(10000) && hub.hubType() == RemotePoweredUpHub.TYPE_CITY_HUB) {
+                                hub.setLedColor(HubColor.GREEN);
+                                hub.getMotor(HubPort.A).drive(-50);
+                                hub.getMotor(HubPort.A).stop();
+                                hub.enableSensor(HubPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                                hub.setLedRgb(hub.readSensor(HubPort.B), 0, 0);
                             }
                             if (hub.isConnected()) {
                                 hub.disconnect();

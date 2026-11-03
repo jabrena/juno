@@ -5,7 +5,9 @@ import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpMotor;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -18,11 +20,11 @@ import io.github.jabrena.juno.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubBumpAndGo {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final int LEFT_BUMPER_PIN = 4;
     private static final int RIGHT_BUMPER_PIN = 5;
-    private static final int LEFT = PoweredUpHubRemote.PORT_A;
-    private static final int RIGHT = PoweredUpHubRemote.PORT_B;
+    private static final PoweredUpMotor LEFT = HUB.getMotor(HubPort.A);
+    private static final PoweredUpMotor RIGHT = HUB.getMotor(HubPort.B);
     private static final int POWER = 40;
     private static final int POLL_MILLIS = 20;
     private static final int BACK_MILLIS = 1000;
@@ -91,11 +93,11 @@ public class PoweredUpHubBumpAndGo {
     /** Drives each side {@code -1} (backwards), {@code 0} (stopped) or {@code 1} (forwards) at the cruising power. */
     private void move(int left, int right) {
         if (left == 0 && right == 0) {
-            HUB.brakeMotor(LEFT);
-            HUB.brakeMotor(RIGHT);
+            LEFT.stop();
+            RIGHT.stop();
         } else {
-            HUB.setMotorPower(LEFT, left * POWER);
-            HUB.setMotorPower(RIGHT, right * POWER);
+            LEFT.drive(left * POWER);
+            RIGHT.drive(right * POWER);
         }
         Delay.millis(POLL_MILLIS);
     }

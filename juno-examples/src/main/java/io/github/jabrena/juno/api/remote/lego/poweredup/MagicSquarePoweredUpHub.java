@@ -2,7 +2,9 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -13,9 +15,9 @@ import io.github.jabrena.juno.util.Delay;
  * with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHub {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
-    private static final int LEFT = PoweredUpHubRemote.PORT_A;
-    private static final int RIGHT = PoweredUpHubRemote.PORT_B;
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
+    private static final HubPort LEFT = HubPort.A;
+    private static final HubPort RIGHT = HubPort.B;
     private static final int POWER = 40;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_MILLIS = 700;
@@ -31,25 +33,25 @@ public class MagicSquarePoweredUpHub {
                 HUB.connect(0);
             }
             Serial.println("Straight");
-            HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+            HUB.setLedColor(HubColor.GREEN);
             app.drive(POWER, POWER, STRAIGHT_MILLIS);
             app.stop();
             Serial.println("Turn left");
-            HUB.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
+            HUB.setLedColor(HubColor.BLUE);
             app.drive(-POWER, POWER, TURN_MILLIS);
             app.stop();
         }
     }
 
     private void drive(int left, int right, int millis) {
-        HUB.setMotorPower(LEFT, left);
-        HUB.setMotorPower(RIGHT, right);
+        HUB.getMotor(LEFT).drive(left);
+        HUB.getMotor(RIGHT).drive(right);
         Delay.millis(millis);
     }
 
     private void stop() {
-        HUB.brakeMotor(LEFT);
-        HUB.brakeMotor(RIGHT);
+        HUB.getMotor(LEFT).stop();
+        HUB.getMotor(RIGHT).stop();
         Delay.millis(STOP_MILLIS);
     }
 }

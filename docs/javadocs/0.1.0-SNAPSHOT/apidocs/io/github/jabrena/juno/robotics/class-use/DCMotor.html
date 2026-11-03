@@ -77,6 +77,15 @@ initTheme();
 <div class="col-last even-row-color">
 <div class="block">LEGO Power Functions infrared remote control.</div>
 </div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.remote.lego.poweredup">io.github.jabrena.juno.remote.lego.poweredup</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Remote control of LEGO Powered Up hubs over Bluetooth Low Energy, backed by the Arduino
+<code>ArduinoBLE</code> library.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.rcx">io.github.jabrena.juno.remote.lego.rcx</a></div>
+<div class="col-last even-row-color">
+<div class="block">LEGO Mindstorms RCX infrared remote control, brick commands, sensors, and firmware transfer.</div>
+</div>
 <div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics">io.github.jabrena.juno.robotics</a></div>
 <div class="col-last odd-row-color">
 <div class="block">Board-independent motor contracts.</div>
@@ -106,6 +115,40 @@ blue port of a receiver on a channel.</div>
 </section>
 </li>
 <li>
+<section class="detail" id="io.github.jabrena.juno.remote.lego.poweredup">
+<h2>Uses of <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a> in <a href="../../remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></h2>
+<div class="caption"><span>Classes in <a href="../../remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a> that implement <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../remote/lego/poweredup/PoweredUpMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The motor on one external port of a Powered Up hub, as an <a href="../EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.remote.lego.rcx">
+<h2>Uses of <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a> in <a href="../../remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></h2>
+<div class="caption"><span>Classes in <a href="../../remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a> that implement <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../remote/lego/rcx/RcxMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">One or more of an RCX brick's outputs, driven with direct commands over infrared: get them from
+<a href="../../remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="../../remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="../../remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
+<a href="../../remote/lego/rcx/RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="io.github.jabrena.juno.robotics">
 <h2>Uses of <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a> in <a href="../package-summary.html">io.github.jabrena.juno.robotics</a></h2>
 <div class="caption"><span>Subinterfaces of <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a> in <a href="../package-summary.html">io.github.jabrena.juno.robotics</a></span></div>
@@ -114,8 +157,14 @@ blue port of a receiver on a channel.</div>
 <div class="table-header col-second">Interface</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>interface&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../RegulatedMotor.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></code></div>
+<div class="col-second even-row-color"><code><a href="../EncoderMotor.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">A motor with basic position feedback: open-loop power control from <a href="../DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> and the position reported by
+<a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a>.</div>
+</div>
+<div class="col-first odd-row-color"><code>interface&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../RegulatedMotor.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">A motor with encoder feedback and closed-loop speed/position control.</div>
 </div>
 </div>

@@ -124,7 +124,7 @@ public enum Capability {
                     + "speaks TLS from the first byte); use Smtp.sendTls with implicit TLS, usually port 465";
         }
     },
-    BLUETOOTH_LE("PoweredUpHubRemote") {
+    BLUETOOTH_LE("RemotePoweredUpHub") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";

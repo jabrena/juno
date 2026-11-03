@@ -4,14 +4,14 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Two subtasks side by side: one scans for a Powered Up hub with {@code PoweredUpHubRemote.connect}, the other prints
+ * Two subtasks side by side: one scans for a Powered Up hub with {@code RemotePoweredUpHub.connect}, the other prints
  * "Scanning... N s" every half second, so the program shows signs of life while the Arduino looks for the hub. Switch
  * the hub on before the scan starts or during it.
  *
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * configuration analysis suggests. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubScanWhileBlinking {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int STARTUP_MILLIS = 5_000;
     private static final int SCAN_TIMEOUT_MILLIS = 30_000;

@@ -654,13 +654,13 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Runs PoweredUpHubRemote over the ESP32 BLE library through the juno_ble adapter")
+    @DisplayName("Runs RemotePoweredUpHub over the ESP32 BLE library through the juno_ble adapter")
     void shouldRunPoweredUpOverTheEsp32Ble() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHub", """
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         Serial.println(hub.connect(0) ? 1 : 0);
-                """, "import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;"
+                """, "import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;"
                 + " import io.github.jabrena.juno.hardware.serial.Serial;");
 
         // Then

@@ -5,7 +5,8 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.BOTTOM_HEIGHT;
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.BOTTOM_Y;
@@ -51,7 +52,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubTFT {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final Clock CLOCK = ArduinoUno.getClock();
 
     private final PoweredUpState s = new PoweredUpState();
@@ -124,8 +125,8 @@ public class PoweredUpHubTFT {
         Serial.println("Connected");
         s.hubType = HUB.hubType();
         resetPorts();
-        if (s.hubType == PoweredUpHubRemote.TYPE_TECHNIC_HUB) {
-            HUB.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_TILT, PoweredUpHubRemote.MODE_IMU_VALUES);
+        if (s.hubType == RemotePoweredUpHub.TYPE_TECHNIC_HUB) {
+            HUB.enableSensor(HubPort.TECHNIC_TILT, RemotePoweredUpHub.MODE_IMU_VALUES);
         }
         HUB.setLedColor(PoweredUpLed.LED_COLORS[s.ledIndex]);
         drawScreen(tft);
@@ -166,13 +167,13 @@ public class PoweredUpHubTFT {
     private boolean detectDevices() {
         boolean changed = false;
         for (int port = 0; port < PORTS; port++) {
-            int type = HUB.portDevice(port);
+            int type = HUB.portDevice(PoweredUpState.HUB_PORTS[port]);
             if (type != s.device[port]) {
                 s.device[port] = type;
                 s.power[port] = 0;
                 s.zero[port] = 0;
                 if (PoweredUpUi.isMotor(type)) {
-                    HUB.enableSensor(port, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                    HUB.enableSensor(PoweredUpState.HUB_PORTS[port], RemotePoweredUpHub.MODE_MOTOR_POSITION);
                 }
                 changed = true;
             }
