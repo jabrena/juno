@@ -6,10 +6,14 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.net.tcp.Tcp;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
 
 /** Joining a network, then a UDP exchange and a TCP exchange. */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
@@ -29,15 +33,22 @@ public final class WifiUdpApi {
             ArduinoUno.getWifi().macAddress(mac);
             Serial.println(mac[5]);
             byte[] payload = new byte[8];
-            Udp.listen(4210);
-            Udp.broadcast(4210, payload, 4);
-            Serial.println(Udp.receive(payload, 8, address));
-            Udp.stop();
-            int[] peer = {192, 168, 1, 10};
-            if (Tcp.open(peer, 7)) {
-                Serial.println(Tcp.write(payload, payload.length));
-                Serial.println(Tcp.read(payload, 0, payload.length, 1000));
-                Tcp.close();
+            try {
+                DatagramSocket socket = new DatagramSocket(4210);
+                InetAddress broadcast = InetAddress.getByAddress(new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+                socket.send(new DatagramPacket(payload, 4, broadcast, 4210));
+                socket.setSoTimeout(10);
+                socket.receive(new DatagramPacket(payload, 8));
+                Serial.println(payload.length);
+                socket.close();
+                InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
+                Socket stream = new Socket(peer, 7);
+                stream.setSoTimeout(1000);
+                stream.getOutputStream().write(payload, 0, payload.length);
+                Serial.println(stream.getInputStream().read(payload, 0, payload.length));
+                stream.close();
+            } catch (IOException e) {
+                Serial.println(0);
             }
         }
     }

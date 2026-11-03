@@ -849,17 +849,25 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.udp.Udp;
+                import java.io.IOException;
+                import java.net.DatagramPacket;
+                import java.net.DatagramSocket;
+                import java.net.InetAddress;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class AsmUdp {
                     public static void main(String[] args) {
                         byte[] payload = new byte[12];
-                        int[] source = new int[Udp.ENDPOINT_SIZE];
-                        Udp.listen(5000);
-                        Udp.broadcast(5000, payload, payload.length);
-                        Udp.send(source, 5000, payload, payload.length);
-                        Udp.receive(payload, payload.length, source);
-                        Udp.stop();
+                        try {
+                            DatagramSocket socket = new DatagramSocket(5000);
+                            InetAddress broadcast = InetAddress.getByAddress(
+                                    new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+                            socket.send(new DatagramPacket(payload, payload.length, broadcast, 5000));
+                            socket.setSoTimeout(10);
+                            socket.receive(new DatagramPacket(payload, payload.length));
+                            socket.close();
+                        } catch (IOException e) {
+                            payload[0] = 0;
+                        }
                     }
                 }
                 """;
@@ -894,22 +902,29 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
+                import java.io.IOException;
+                import java.net.DatagramPacket;
+                import java.net.DatagramSocket;
+                import java.net.InetAddress;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class AsmKasa {
                     public static void main(String[] args) {
-                        int[] endpoint = new int[5];
-                        endpoint[0] = 192;
-                        endpoint[1] = 168;
-                        endpoint[2] = 1;
-                        endpoint[3] = 20;
                         byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
                         byte[] response = new byte[KasaSmartPlug.DEFAULT_RESPONSE_BUFFER_SIZE];
-                        KasaSmartPlug.openDiscovery();
-                        KasaSmartPlug.broadcastDiscovery(request, request.length);
-                        KasaSmartPlug.receiveDiscovery(response, response.length, endpoint);
-                        KasaSmartPlug.getSystemInfo(endpoint, request, response, response.length);
-                        KasaSmartPlug.turnOn(endpoint, request, response, response.length);
-                        KasaSmartPlug.turnOff(endpoint, request, response, response.length);
+                        try {
+                            DatagramSocket socket = KasaSmartPlug.openDiscovery();
+                            DatagramPacket requestPacket = KasaSmartPlug.discoveryRequest(request);
+                            DatagramPacket replyPacket = new DatagramPacket(response, response.length);
+                            KasaSmartPlug.broadcastDiscovery(socket, requestPacket);
+                            KasaSmartPlug.receiveDiscovery(socket, replyPacket);
+                            InetAddress device = replyPacket.getAddress();
+                            KasaSmartPlug.getSystemInfo(device, request, response, response.length);
+                            KasaSmartPlug.turnOn(device, request, response, response.length);
+                            KasaSmartPlug.turnOff(device, request, response, response.length);
+                            socket.close();
+                        } catch (IOException e) {
+                            response[0] = 0;
+                        }
                     }
                 }
                 """;

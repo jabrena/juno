@@ -570,7 +570,8 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.udp.Udp;
+                import java.io.IOException;
+                import java.net.DatagramSocket;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
@@ -578,7 +579,11 @@ class BoardTest {
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
                         ArduinoUno.getWifi().status();
-                        Udp.listen(5000);
+                        try {
+                            new DatagramSocket(5000).close();
+                        } catch (IOException e) {
+                            return;
+                        }
                         byte[] body = new byte[8];
                         byte[] headers = new byte[8];
                         int[] result = new int[2];

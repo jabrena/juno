@@ -6,7 +6,10 @@ import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -70,24 +73,27 @@ public final class Peripherals {
         int subject = Pop3Client.readSubject("pop.example.com", 995, "rev2", "secret", 1, body, body.length);
         printBytes(body, subject);
         Serial.println("");
-        Serial.println(Udp.listen(4210) ? "listening" : "no socket");
         byte[] payload = new byte[4];
         payload[0] = 'p';
         payload[1] = 'i';
         payload[2] = 'n';
         payload[3] = 'g';
-        int[] peer = new int[Udp.ENDPOINT_SIZE];
-        peer[0] = 10;
-        peer[3] = 7;
-        peer[Udp.PORT] = 4210;
-        Serial.println(Udp.send(peer, peer[Udp.PORT], payload, payload.length));
         byte[] received = new byte[8];
-        int[] source = new int[Udp.ENDPOINT_SIZE];
-        int count = Udp.receive(received, received.length, source);
-        Serial.println(count);
-        Serial.println(source[0] + "." + source[3] + ":" + source[Udp.PORT]);
-        Serial.println((char) received[0] + "" + (char) received[3]);
-        Udp.stop();
+        try {
+            DatagramSocket socket = new DatagramSocket(4210);
+            Serial.println("listening");
+            InetAddress peer = InetAddress.getByAddress(new byte[] {10, 0, 0, 7});
+            socket.send(new DatagramPacket(payload, payload.length, peer, 4210));
+            DatagramPacket incoming = new DatagramPacket(received, received.length);
+            socket.setSoTimeout(10);
+            socket.receive(incoming);
+            Serial.println(incoming.getLength());
+            Serial.println(incoming.getAddress().toString() + ":" + incoming.getPort());
+            Serial.println((char) received[0] + "" + (char) received[3]);
+            socket.close();
+        } catch (IOException e) {
+            Serial.println("no socket");
+        }
 
         Serial.println(SD_CARD.begin() ? "sd ready" : "sd failed");
         Serial.println(SD_CARD.size("config.txt"));
