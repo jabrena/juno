@@ -21,7 +21,7 @@ import io.github.jabrena.juno.util.Delay;
 public class RcxDriveAC {
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
-    private static final int SPEED = RcxMotor.MAX_POWER;
+    private static final int SPEED = RcxMotor.MAX_LEVEL;
     private static final int MOVE_MILLIS = 1500;
     private static final int STOP_MILLIS = 700;
     private static final int PAUSE_SECONDS = 3;

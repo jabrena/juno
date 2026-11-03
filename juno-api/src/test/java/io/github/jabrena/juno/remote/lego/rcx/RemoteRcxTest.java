@@ -285,13 +285,40 @@ class RemoteRcxTest {
     }
 
     @Test
-    @DisplayName("Set power clamps the level on the motor's outputs")
+    @DisplayName("Set power clamps the power on the motor's outputs")
     void shouldClampThePowerOnTheMotorsOutputs() {
         // When
         remote.getMotorB().setPower(-2);
 
         // Then
         assertThat(Infrared.written).as("output B, constant source, power 0").containsSubsequence(0x02, 0xFD, 0x02, 0xFD, 0x00, 0xFF);
+    }
+
+    @Test
+    @DisplayName("Set power maps a percentage onto the brick's levels")
+    void shouldMapThePercentageOntoTheBrickLevels() {
+        // When
+        remote.getMotorB().setPower(50);
+
+        // Then
+        assertThat(remote.getMotorB().getPower()).isEqualTo(50);
+        assertThat(Infrared.written).as("output B, constant source, power 4").containsSubsequence(0x02, 0xFD, 0x04, 0xFB);
+    }
+
+    @Test
+    @DisplayName("Motion state follows the last command sent to the motor")
+    void shouldReportMotionFromTheLastCommand() {
+        // When
+        remote.getMotorB().forward();
+
+        // Then
+        assertThat(remote.getMotorB().isMoving()).isTrue();
+
+        // When
+        remote.getMotorB().stop();
+
+        // Then
+        assertThat(remote.getMotorB().isMoving()).isFalse();
     }
 
     @Test

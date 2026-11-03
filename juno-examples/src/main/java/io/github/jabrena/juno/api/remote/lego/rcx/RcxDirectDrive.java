@@ -51,10 +51,10 @@ public class RcxDirectDrive {
 
     /** Ramps the speed up to full in the given direction (1 forwards, -1 backwards), then back to a stop. */
     private void ramp(int direction) {
-        for (int level = 1; level <= RcxMotor.MAX_POWER; level++) {
+        for (int level = 1; level <= RcxMotor.MAX_LEVEL; level++) {
             step(direction * level);
         }
-        for (int level = RcxMotor.MAX_POWER - 1; level >= 1; level--) {
+        for (int level = RcxMotor.MAX_LEVEL - 1; level >= 1; level--) {
             step(direction * level);
         }
         motors.drive(0);

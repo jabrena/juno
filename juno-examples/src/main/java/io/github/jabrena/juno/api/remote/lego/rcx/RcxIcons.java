@@ -76,7 +76,7 @@ public class RcxIcons {
         lcd.showIcon(RcxLcd.ICON_ALL, false);
 
         Serial.println("Motor A forward: arrow and walking figure");
-        motorA.drive(RcxMotor.MAX_POWER);
+        motorA.drive(RcxMotor.MAX_LEVEL);
         Delay.seconds(MOTOR_SECONDS);
         motorA.drive(0);
         Serial.println("Done");

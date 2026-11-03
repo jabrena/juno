@@ -81,7 +81,7 @@ class RcxBrickTest {
 
         // Then
         assertThat(new int[] {argumentPair(0), argumentPair(1), argumentPair(2)})
-                .containsExactly(RcxBrick.OUTPUT_B, 2, RcxMotor.MAX_POWER);
+                .containsExactly(RcxBrick.OUTPUT_B, 2, RcxMotor.MAX_LEVEL);
     }
 
     @Test
