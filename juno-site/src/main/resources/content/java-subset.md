@@ -195,6 +195,8 @@ blink.run();
 ### Virtual threads
 
 - `Thread.startVirtualThread(Runnable)`, `join()`, `isAlive()`, `Thread.sleep` and `Thread.yield()`.
+- `interrupt()` and `isInterrupted()` on a virtual thread. An interrupt ends a `sleep`, `wait`, `await` or `acquire` that
+  the thread is blocked in with `InterruptedException`, as on the JDK.
 - At most four threads run at once, including `main`.
 
 ### Structured concurrency
@@ -205,6 +207,10 @@ blink.run();
 
 - `synchronized` blocks, `volatile` fields, `ReentrantLock` (`lock`, `tryLock` and `unlock`), and the atomic classes
   `AtomicInteger`, `AtomicBoolean` and `AtomicLong`.
+- `Object.wait()`, `notify()` and `notifyAll()`, only while the monitor is held (inside `synchronized`). `wait(long)` is
+  not supported.
+- `CountDownLatch(int)` with `countDown()`, `getCount()` and `await()`, and `Semaphore(int)` with `acquire()`,
+  `release()`, `tryAcquire()` and `availablePermits()`. Timed waits and fairness are not supported.
 
 ## Concurrency behaviour
 
