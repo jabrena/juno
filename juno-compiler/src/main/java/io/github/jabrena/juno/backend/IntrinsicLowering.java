@@ -449,6 +449,32 @@ public final class IntrinsicLowering {
     }
 
     /**
+     * {@code Phaser}: an arena cell of registered parties, unarrived parties and phase. Only the interruptible await can
+     * leave {@code InterruptedException} pending; the arrive-and-await calls wait without an interrupt check, as on the JDK.
+     */
+    private void registerPhaser() {
+        shim(Intrinsic.PHASER_NEW, "juno_phaser_new", Result.WORD, List.of(), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_NEW_PARTIES, "juno_phaser_new_parties", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_REGISTER, "juno_phaser_register", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_BULK_REGISTER, "juno_phaser_bulk_register", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_ARRIVE, "juno_phaser_arrive", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_ARRIVE_AND_DEREGISTER, "juno_phaser_arrive_and_deregister", Result.WORD,
+                List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_ARRIVE_AND_AWAIT_ADVANCE, "juno_phaser_arrive_and_await", Result.WORD,
+                List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_AWAIT_ADVANCE, "juno_phaser_await_advance", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_AWAIT_ADVANCE_INTERRUPTIBLY, "juno_phaser_await_advance_interruptibly", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.PHASER_GET_PHASE, "juno_phaser_get_phase", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_GET_REGISTERED_PARTIES, "juno_phaser_get_registered_parties", Result.WORD,
+                List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.PHASER_GET_UNARRIVED_PARTIES, "juno_phaser_get_unarrived_parties", Result.WORD,
+                List.of(RECEIVER), ShimFeature.THREADS);
+    }
+
+    /**
      * {@code CountDownLatch} and {@code Semaphore}: an arena counter each, waited on by polling with yield. Only the
      * blocking waits can leave {@code InterruptedException} pending.
      */
@@ -470,6 +496,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.BARRIER_NEW, "juno_barrier_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
         shim(Intrinsic.BARRIER_NEW_ACTION, "juno_barrier_new_action", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
+        registerPhaser();
         shim(Intrinsic.BARRIER_AWAIT, "juno_barrier_await", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS,
                 ShimFeature.EXCEPTIONS);
         shim(Intrinsic.BARRIER_GET_PARTIES, "juno_barrier_parties", Result.WORD, List.of(RECEIVER),
