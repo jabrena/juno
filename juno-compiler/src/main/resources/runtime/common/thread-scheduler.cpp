@@ -971,6 +971,119 @@ extern "C" int32_t juno_barrier_await(int32_t handle) {
   return index;
 }
 
+// Phaser: three arena words {registered parties, unarrived parties, phase}. A phase ends when every unarrived party has
+// arrived; the next phase then starts with every registered party unarrived. Termination and tiered phasers are not
+// supported, so the phase number only grows.
+static int32_t* juno_phaser_of(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+}
+
+extern "C" int32_t juno_phaser_new_parties(int32_t parties) {
+  if (parties < 0) {
+    Serial.println("[juno-phaser] IllegalArgumentException: parties < 0");
+    juno_panic();
+  }
+  auto* phaser = static_cast<int32_t*>(juno_alloc(3u * sizeof(int32_t), sizeof(int32_t)));
+  phaser[0] = parties;
+  phaser[1] = parties;
+  phaser[2] = 0;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(phaser));
+}
+
+extern "C" int32_t juno_phaser_new() {
+  return juno_phaser_new_parties(0);
+}
+
+extern "C" int32_t juno_phaser_register(int32_t handle) {
+  int32_t* phaser = juno_phaser_of(handle);
+  phaser[0]++;
+  phaser[1]++;
+  return phaser[2];
+}
+
+extern "C" int32_t juno_phaser_bulk_register(int32_t handle, int32_t parties) {
+  int32_t* phaser = juno_phaser_of(handle);
+  if (parties < 0) {
+    Serial.println("[juno-phaser] IllegalArgumentException: parties < 0");
+    juno_panic();
+  }
+  phaser[0] += parties;
+  phaser[1] += parties;
+  return phaser[2];
+}
+
+// One party arrives; the phase ends when it was the last unarrived party. Returns the phase it arrived in.
+static int32_t juno_phaser_arrive_one(int32_t* phaser, bool deregister) {
+  if (phaser[1] <= 0) {
+    Serial.println("[juno-phaser] arrival with no unarrived party (IllegalStateException)");
+    juno_panic();
+  }
+  int32_t arrivalPhase = phaser[2];
+  phaser[1]--;
+  if (deregister) phaser[0]--;
+  if (phaser[1] == 0) {
+    phaser[2]++;
+    phaser[1] = phaser[0];
+  }
+  return arrivalPhase;
+}
+
+extern "C" int32_t juno_phaser_arrive(int32_t handle) {
+  return juno_phaser_arrive_one(juno_phaser_of(handle), false);
+}
+
+extern "C" int32_t juno_phaser_arrive_and_deregister(int32_t handle) {
+  return juno_phaser_arrive_one(juno_phaser_of(handle), true);
+}
+
+// Waits until the phase moves past phase. The uninterruptible waits, as in the JDK, ignore interrupts.
+static void juno_phaser_wait_past(int32_t* phaser, int32_t phase, bool interruptible) {
+  if (interruptible && juno_interrupt_pending()) {
+    juno_raise_interrupted();
+    return;
+  }
+  while (phaser[2] == phase) {
+    juno_thread_yield();
+    if (interruptible && juno_interrupt_pending()) {
+      juno_raise_interrupted();
+      return;
+    }
+  }
+}
+
+// Returns the phase after the one this party arrived in, once that phase has ended.
+extern "C" int32_t juno_phaser_arrive_and_await(int32_t handle) {
+  int32_t* phaser = juno_phaser_of(handle);
+  int32_t arrivalPhase = juno_phaser_arrive_one(phaser, false);
+  juno_phaser_wait_past(phaser, arrivalPhase, false);
+  return arrivalPhase + 1;
+}
+
+extern "C" int32_t juno_phaser_await_advance(int32_t handle, int32_t phase) {
+  int32_t* phaser = juno_phaser_of(handle);
+  juno_phaser_wait_past(phaser, phase, false);
+  return phaser[2];
+}
+
+extern "C" int32_t juno_phaser_await_advance_interruptibly(int32_t handle, int32_t phase) {
+  int32_t* phaser = juno_phaser_of(handle);
+  juno_phaser_wait_past(phaser, phase, true);
+  return phaser[2];
+}
+
+extern "C" int32_t juno_phaser_get_phase(int32_t handle) {
+  return juno_phaser_of(handle)[2];
+}
+
+extern "C" int32_t juno_phaser_get_registered_parties(int32_t handle) {
+  return juno_phaser_of(handle)[0];
+}
+
+extern "C" int32_t juno_phaser_get_unarrived_parties(int32_t handle) {
+  return juno_phaser_of(handle)[1];
+}
+
 ${JUNO_PREEMPTION}
 
 // Where main() returns: like the JVM, wait for every other (non-daemon) thread to finish.
