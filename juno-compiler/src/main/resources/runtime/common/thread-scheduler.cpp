@@ -408,35 +408,44 @@ static JunoMonitor* juno_monitor_owned(uintptr_t key, const char* operation) {
   return monitor;
 }
 
-extern "C" void juno_monitor_wait(int32_t handle) {
-  uintptr_t key = juno_monitor_key(handle);
+// Waits on waitKey for a notify, releasing the lock held by lockHandle for the duration. Object.wait waits on the
+// object's own monitor key; a Condition waits on its own key while the lock it was made from is released.
+static void juno_wait_on(int32_t lockHandle, uintptr_t waitKey) {
+  uintptr_t key = juno_monitor_key(lockHandle);
   uint32_t index = juno_current_slot;
   JunoMonitor* monitor = juno_monitor_owned(key, "wait");
   uint32_t depth = monitor->depth;
   monitor->owner = 0u;
   monitor->depth = 0u;
   monitor->key = 0u;
-  juno_slots[index].waitKey = key;
+  juno_slots[index].waitKey = waitKey;
   juno_slots[index].notified = 0u;
   while (juno_slots[index].notified == 0u && !juno_interrupt_pending()) juno_thread_yield();
   bool interrupted = juno_slots[index].notified == 0u;
   juno_slots[index].waitKey = 0u;
   juno_slots[index].notified = 0u;
-  juno_monitor_enter(handle);
+  juno_monitor_enter(lockHandle);
   juno_monitor_find(key, false)->depth = depth;
   if (interrupted) juno_raise_interrupted();
 }
 
-static void juno_monitor_wake(int32_t handle, bool all) {
-  uintptr_t key = juno_monitor_key(handle);
-  juno_monitor_owned(key, "notify");
+extern "C" void juno_monitor_wait(int32_t handle) {
+  juno_wait_on(handle, juno_monitor_key(handle));
+}
+
+static void juno_wake_waiters(int32_t lockHandle, uintptr_t waitKey, bool all, const char* operation) {
+  juno_monitor_owned(juno_monitor_key(lockHandle), operation);
   for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
     JunoSlot& slot = juno_slots[index];
-    if (slot.waitKey == key && slot.notified == 0u) {
+    if (slot.waitKey == waitKey && slot.notified == 0u) {
       slot.notified = 1u;
       if (!all) return;
     }
   }
+}
+
+static void juno_monitor_wake(int32_t handle, bool all) {
+  juno_wake_waiters(handle, juno_monitor_key(handle), all, "notify");
 }
 
 extern "C" void juno_monitor_notify(int32_t handle) {
@@ -522,6 +531,81 @@ extern "C" void juno_semaphore_release(int32_t handle) {
 
 extern "C" int32_t juno_semaphore_available(int32_t handle) {
   return *juno_counter_cell(handle);
+}
+
+// ReentrantLock.newCondition(): one arena word holding the lock's handle. The condition itself is the waiting key.
+extern "C" int32_t juno_lock_new_condition(int32_t lockHandle) {
+  juno_monitor_key(lockHandle);
+  auto* condition = static_cast<int32_t*>(juno_alloc(sizeof(int32_t), sizeof(int32_t)));
+  *condition = lockHandle;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(condition));
+}
+
+extern "C" void juno_condition_await(int32_t handle) {
+  juno_wait_on(*juno_counter_cell(handle), juno_monitor_key(handle));
+}
+
+extern "C" void juno_condition_signal(int32_t handle) {
+  juno_wake_waiters(*juno_counter_cell(handle), juno_monitor_key(handle), false, "signal");
+}
+
+extern "C" void juno_condition_signal_all(int32_t handle) {
+  juno_wake_waiters(*juno_counter_cell(handle), juno_monitor_key(handle), true, "signalAll");
+}
+
+// CyclicBarrier: four arena words {parties, waiting, generation, broken}. The last thread to arrive trips the
+// barrier and returns index 0; the others wait for the generation to change. An interrupt breaks the barrier for
+// everyone, and a call on a broken barrier throws InterruptedException (the JDK throws BrokenBarrierException).
+static int32_t* juno_barrier_of(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+}
+
+extern "C" int32_t juno_barrier_new(int32_t parties) {
+  if (parties <= 0) {
+    Serial.println("[juno-barrier] IllegalArgumentException: parties must be positive");
+    juno_panic();
+  }
+  auto* barrier = static_cast<int32_t*>(juno_alloc(4u * sizeof(int32_t), sizeof(int32_t)));
+  barrier[0] = parties;
+  barrier[1] = 0;
+  barrier[2] = 0;
+  barrier[3] = 0;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(barrier));
+}
+
+extern "C" int32_t juno_barrier_parties(int32_t handle) {
+  return juno_barrier_of(handle)[0];
+}
+
+extern "C" int32_t juno_barrier_await(int32_t handle) {
+  int32_t* barrier = juno_barrier_of(handle);
+  if (barrier[3] != 0 || juno_interrupt_pending()) {
+    barrier[3] = 1;
+    juno_raise_interrupted();
+    return 0;
+  }
+  int32_t index = barrier[0] - 1 - barrier[1];
+  barrier[1]++;
+  if (barrier[1] == barrier[0]) {
+    barrier[1] = 0;
+    barrier[2]++;
+    return 0;
+  }
+  int32_t generation = barrier[2];
+  while (barrier[2] == generation) {
+    juno_thread_yield();
+    if (barrier[3] != 0) {
+      juno_raise_interrupted();
+      return 0;
+    }
+    if (juno_interrupt_pending()) {
+      barrier[3] = 1;
+      juno_raise_interrupted();
+      return 0;
+    }
+  }
+  return index;
 }
 
 ${JUNO_PREEMPTION}
