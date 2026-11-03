@@ -76,6 +76,24 @@ extern "C" int32_t juno_datagram_packet_new_receive(uint8_t* data, int32_t lengt
   return juno_datagram_packet_allocate(data, length, 0, 0);
 }
 
+// "/a.b.c.d", as the JDK's InetAddress.toString() writes an address with no host name.
+extern "C" int32_t juno_inet_address_to_string(int32_t handle) {
+  auto* address = juno_datagram_pointer<JunoInetAddress>(handle);
+  if (address == nullptr) return 0;
+  char* text = static_cast<char*>(juno_alloc(20u, 1u));
+  int32_t length = 0;
+  text[length++] = '/';
+  for (int32_t index = 0; index < 4; index++) {
+    int32_t octet = address->octets[index];
+    if (index > 0) text[length++] = '.';
+    if (octet >= 100) text[length++] = static_cast<char>('0' + octet / 100);
+    if (octet >= 10) text[length++] = static_cast<char>('0' + (octet / 10) % 10);
+    text[length++] = static_cast<char>('0' + octet % 10);
+  }
+  text[length] = '\0';
+  return juno_datagram_handle(text);
+}
+
 extern "C" int32_t juno_inet_address_equals(int32_t handle, int32_t otherHandle) {
   if (handle == 0 || otherHandle == 0) return 0;
   auto* left = juno_datagram_pointer<JunoInetAddress>(handle);

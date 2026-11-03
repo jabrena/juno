@@ -1,15 +1,21 @@
 package io.github.jabrena.juno.hardware.device.kasa;
 
-import io.github.jabrena.juno.hardware.net.tcp.Tcp;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
 
 /**
- * Allocation-free local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs.
+ * Local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs, over the JDK's own socket classes.
  *
- * <p>Call {@link #openDiscovery()} once after Wi-Fi connects, then {@link #broadcastDiscovery} and poll {@link
- * #receiveDiscovery} for device endpoints. Pass a discovered endpoint to {@link #turnOn} or {@link #turnOff}; it is
- * an {@link Udp#ENDPOINT_SIZE endpoint} whose first four entries are the plug's IPv4 address. All buffers belong to
- * the caller and can be allocated once before the program's main loop.
+ * <p>Open a {@link DatagramSocket} with {@link #openDiscovery()} once after Wi-Fi connects, and build a broadcast
+ * {@link DatagramPacket} with {@link #discoveryRequest(byte[])} once. Then {@link #broadcastDiscovery} and poll
+ * {@link #receiveDiscovery} for each device's reply: its sender is {@link DatagramPacket#getAddress()}, the device's
+ * address to pass to {@link #turnOn} or {@link #turnOff}. Every buffer belongs to the caller and can be allocated once
+ * before the program's main loop. A control command opens a {@link Socket} to the device for that one exchange.
  */
 public final class KasaSmartPlug {
     /** Legacy Kasa LAN TCP and UDP port. */
@@ -43,25 +49,48 @@ public final class KasaSmartPlug {
     private KasaSmartPlug() {
     }
 
-    /** Opens the single UDP socket Juno uses for Kasa device discovery. */
-    public static boolean openDiscovery() {
-        return Udp.listen(PORT);
-    }
-
-    /** Broadcasts a system-information query and returns the encrypted datagram length, or {@code -1} on failure. */
-    public static int broadcastDiscovery(byte[] requestBuffer, int requestBufferLength) {
-        int requestLength = KasaProtocol.encodeDatagram(SYSTEM_INFO, requestBuffer, requestBufferLength);
-        return requestLength < 0 ? -1 : Udp.broadcast(PORT, requestBuffer, requestLength);
+    /** Opens the UDP socket Kasa device discovery uses; throws when the port is already taken. */
+    public static DatagramSocket openDiscovery() throws IOException {
+        return new DatagramSocket(PORT);
     }
 
     /**
-     * Decrypts the next discovery reply into {@code responseBuffer} and writes its sender to {@code endpoint}.
-     * Returns the JSON payload length, {@code 0} while no reply waits, or {@code -1} for invalid input or a malformed
-     * reply.
+     * A packet addressed to the local network's broadcast address on {@link #PORT}, over {@code requestBuffer}: the
+     * system-information query {@link #broadcastDiscovery} sends with it. Make it once, not in the loop.
      */
-    public static int receiveDiscovery(byte[] responseBuffer, int responseBufferLength, int[] endpoint) {
-        int responseLength = Udp.receive(responseBuffer, responseBufferLength, endpoint);
-        return responseLength <= 0 ? responseLength : KasaProtocol.decodeDatagram(responseBuffer, responseLength);
+    public static DatagramPacket discoveryRequest(byte[] requestBuffer) throws IOException {
+        InetAddress broadcast = InetAddress.getByAddress(new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+        return new DatagramPacket(requestBuffer, requestBuffer.length, broadcast, PORT);
+    }
+
+    /** Encrypts the system-information query into {@code request} and broadcasts it, returning its length or {@code -1}. */
+    public static int broadcastDiscovery(DatagramSocket socket, DatagramPacket request) {
+        int requestLength = KasaProtocol.encodeDatagram(SYSTEM_INFO, request.getData(), request.getData().length);
+        if (requestLength < 0) {
+            return -1;
+        }
+        request.setLength(requestLength);
+        try {
+            socket.send(request);
+            return requestLength;
+        } catch (IOException e) {
+            return -1;
+        }
+    }
+
+    /**
+     * Receives the next discovery reply into {@code reply} and decrypts it in place. Returns the JSON payload length,
+     * {@code 0} while no reply waits, or {@code -1} for a failed receive or a malformed reply. The device that sent it
+     * is {@link DatagramPacket#getAddress()}.
+     */
+    public static int receiveDiscovery(DatagramSocket socket, DatagramPacket reply) {
+        try {
+            socket.receive(reply);
+        } catch (IOException e) {
+            return -1;
+        }
+        int replyLength = reply.getLength();
+        return replyLength <= 0 ? replyLength : KasaProtocol.decodeDatagram(reply.getData(), replyLength);
     }
 
     /**
@@ -92,47 +121,66 @@ public final class KasaSmartPlug {
     }
 
     /** Queries an HS100/HS110's current system information and returns its decrypted JSON response length. */
-    public static int getSystemInfo(int[] endpoint, byte[] requestBuffer,
+    public static int getSystemInfo(InetAddress device, byte[] requestBuffer,
             byte[] responseBuffer, int responseBufferLength) {
-        return exchange(endpoint, SYSTEM_INFO, requestBuffer, responseBuffer, responseBufferLength);
+        return exchange(device, SYSTEM_INFO, requestBuffer, responseBuffer, responseBufferLength);
     }
 
     /** Turns a discovered HS100/HS110 relay on and returns its decrypted JSON response length. */
-    public static int turnOn(int[] endpoint, byte[] requestBuffer,
+    public static int turnOn(InetAddress device, byte[] requestBuffer,
             byte[] responseBuffer, int responseBufferLength) {
-        return exchange(endpoint, TURN_ON, requestBuffer, responseBuffer, responseBufferLength);
+        return exchange(device, TURN_ON, requestBuffer, responseBuffer, responseBufferLength);
     }
 
     /** Turns a discovered HS100/HS110 relay off and returns its decrypted JSON response length. */
-    public static int turnOff(int[] endpoint, byte[] requestBuffer,
+    public static int turnOff(InetAddress device, byte[] requestBuffer,
             byte[] responseBuffer, int responseBufferLength) {
-        return exchange(endpoint, TURN_OFF, requestBuffer, responseBuffer, responseBufferLength);
+        return exchange(device, TURN_OFF, requestBuffer, responseBuffer, responseBufferLength);
     }
 
-    private static int exchange(int[] endpoint, String command, byte[] requestBuffer,
+    /** One command over a fresh TCP connection: opened, used and closed here, so the caller owns no socket. */
+    private static int exchange(InetAddress device, String command, byte[] requestBuffer,
             byte[] responseBuffer, int responseBufferLength) {
         int requestLength = KasaProtocol.encode(command, requestBuffer, requestBuffer.length);
         if (requestLength < 0) {
             return -1;
         }
-        if (!Tcp.open(endpoint, PORT)) {
+        Socket socket;
+        try {
+            socket = new Socket(device, PORT);
+        } catch (IOException e) {
             return -1;
         }
-        if (Tcp.write(requestBuffer, requestLength) != requestLength
-                || Tcp.read(responseBuffer, 0, KasaProtocol.FRAME_HEADER_SIZE, RESPONSE_TIMEOUT_MILLIS)
-                != KasaProtocol.FRAME_HEADER_SIZE) {
-            Tcp.close();
+        int responseLength = exchangeOn(socket, requestBuffer, requestLength, responseBuffer, responseBufferLength);
+        closeQuietly(socket);
+        return responseLength;
+    }
+
+    private static int exchangeOn(Socket socket, byte[] requestBuffer, int requestLength,
+            byte[] responseBuffer, int responseBufferLength) {
+        try {
+            socket.setSoTimeout(RESPONSE_TIMEOUT_MILLIS);
+            OutputStream output = socket.getOutputStream();
+            InputStream input = socket.getInputStream();
+            output.write(requestBuffer, 0, requestLength);
+            input.read(responseBuffer, 0, KasaProtocol.FRAME_HEADER_SIZE);
+            int payloadLength = KasaProtocol.payloadLength(responseBuffer);
+            if (payloadLength < 0 || payloadLength > responseBufferLength - KasaProtocol.FRAME_HEADER_SIZE) {
+                return -1;
+            }
+            input.read(responseBuffer, KasaProtocol.FRAME_HEADER_SIZE, payloadLength);
+            return KasaProtocol.decode(responseBuffer, payloadLength + KasaProtocol.FRAME_HEADER_SIZE);
+        } catch (IOException e) {
             return -1;
         }
-        int payloadLength = KasaProtocol.payloadLength(responseBuffer);
-        if (payloadLength < 0 || payloadLength > responseBufferLength - KasaProtocol.FRAME_HEADER_SIZE
-                || Tcp.read(responseBuffer, KasaProtocol.FRAME_HEADER_SIZE, payloadLength, RESPONSE_TIMEOUT_MILLIS)
-                != payloadLength) {
-            Tcp.close();
-            return -1;
+    }
+
+    private static void closeQuietly(Socket socket) {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            // The exchange is already over, and its result does not depend on the close.
         }
-        Tcp.close();
-        return KasaProtocol.decode(responseBuffer, payloadLength + KasaProtocol.FRAME_HEADER_SIZE);
     }
 
     private static boolean contains(byte[] value, int valueLength, String text) {

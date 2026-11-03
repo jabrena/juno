@@ -29,6 +29,8 @@ public final class DatagramMethods {
             Map.entry(new MethodRef(INET_ADDRESS, "getByAddress", "([B)Ljava/net/InetAddress;"),
                     Intrinsic.INET_ADDRESS_GET_BY_ADDRESS),
             Map.entry(new MethodRef(INET_ADDRESS, "equals", "(Ljava/lang/Object;)Z"), Intrinsic.INET_ADDRESS_EQUALS),
+            Map.entry(new MethodRef(INET_ADDRESS, "toString", "()Ljava/lang/String;"),
+                    Intrinsic.INET_ADDRESS_TO_STRING),
             Map.entry(new MethodRef(DATAGRAM_PACKET, "<init>", "([BI)V"), Intrinsic.DATAGRAM_PACKET_NEW_RECEIVE),
             Map.entry(new MethodRef(DATAGRAM_PACKET, "<init>", "([BILjava/net/InetAddress;I)V"),
                     Intrinsic.DATAGRAM_PACKET_NEW_SEND),

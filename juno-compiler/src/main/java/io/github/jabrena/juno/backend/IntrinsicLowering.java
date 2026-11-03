@@ -218,6 +218,8 @@ public final class IntrinsicLowering {
                 List.of(arg(0)), runtime);
         shim(Intrinsic.INET_ADDRESS_EQUALS, "juno_inet_address_equals", Result.WORD, List.of(RECEIVER, arg(0)),
                 runtime);
+        shim(Intrinsic.INET_ADDRESS_TO_STRING, "juno_inet_address_to_string", Result.WORD, List.of(RECEIVER),
+                runtime);
         shim(Intrinsic.DATAGRAM_PACKET_NEW_RECEIVE, "juno_datagram_packet_new_receive", Result.WORD,
                 List.of(arg(0), arg(1)), runtime);
         shim(Intrinsic.DATAGRAM_PACKET_NEW_SEND, "juno_datagram_packet_new_send", Result.WORD,
@@ -741,19 +743,6 @@ public final class IntrinsicLowering {
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_GATEWAY_IP, "juno_wifi_gateway_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_MAC_ADDRESS, "juno_wifi_mac_address", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
-        shim(Intrinsic.UDP_LISTEN, "juno_udp_listen", Result.WORD, List.of(arg(0)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_SEND, "juno_udp_send", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_BROADCAST, "juno_udp_broadcast", Result.WORD,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_RECEIVE, "juno_udp_receive", Result.WORD,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_STOP, "juno_udp_stop", Result.NONE, List.of(), ShimFeature.UDP);
-        shim(Intrinsic.TCP_OPEN, "juno_tcp_open", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_WRITE, "juno_tcp_write", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_READ, "juno_tcp_read", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_CLOSE, "juno_tcp_close", Result.NONE, List.of(), ShimFeature.TCP);
     }
 
     /**
