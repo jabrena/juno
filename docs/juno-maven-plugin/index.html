@@ -440,27 +440,70 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>uploa
 <p>Every property can be set in <code>&lt;configuration&gt;</code> or passed with <code>-D</code> on the command line; <code>-D</code>
 always wins for a given run.</p>
 <h2 id="typical-workflow">Typical workflow</h2>
-<pre><code class="language-bash"># Once per machine: install supported cores and every optional library any example needs
-./mvnw -f juno-examples/pom.xml juno:install-deps
-
-# Compile and check with arduino-cli
-./mvnw -f juno-examples/pom.xml compile juno:verify \
+<p>Run these four commands in order. The examples use the <code>Blink</code> program and the UNO R4 WiFi; for another board, change
+<code>-Djuno.board</code> and <code>-Djuno.main</code>.</p>
+<p>Before the first run, install the cores and libraries once per machine with <code>./mvnw -f juno-examples/pom.xml juno:install-deps</code>
+(it installs the supported Arduino cores, including M5Stack ESP32, and every optional library an example needs).</p>
+<h3 id="1-list-the-boards">1. List the boards</h3>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:boards
+</code></pre>
+<p>Lists the connected boards and serial ports (address, protocol, board name, FQBN). It is read-only and changes nothing.
+Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code> for <code>-Djuno.port</code>.</p>
+<p>The board ids you pass as <code>-Djuno.board</code> are:</p>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th><code>-Djuno.board</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arduino UNO R3</td>
+<td><code>arduino-uno-r3</code></td>
+</tr>
+<tr>
+<td>Arduino UNO R3 WiFi Rev2</td>
+<td><code>arduino-uno-r3-wifi-rev2</code></td>
+</tr>
+<tr>
+<td>Arduino UNO R4 WiFi</td>
+<td><code>arduino-uno-r4-wifi</code></td>
+</tr>
+<tr>
+<td>Arduino UNO Q</td>
+<td><code>arduino-uno-q</code></td>
+</tr>
+<tr>
+<td>Arduino Nano ESP32</td>
+<td><code>arduino-nano-esp32</code></td>
+</tr>
+<tr>
+<td>M5Stack Cardputer</td>
+<td><code>m5stack-cardputer</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="2-compile-and-check-with-arduino-cli-no-board-needed">2. Compile and check with arduino-cli (no board needed)</h3>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
-
-# Flash it to a connected board
-./mvnw -f juno-examples/pom.xml compile juno:upload \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi   # or arduino-uno-q
-
-# Watch its Serial output
-./mvnw -f juno-examples/pom.xml juno:monitor \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p><code>upload</code> and <code>monitor</code> auto-detect the port when exactly one matching board is connected;
-otherwise pass <code>-Djuno.port=&lt;PORT&gt;</code> (find it with <code>arduino-cli board list</code>). Always use
-<code>juno:monitor</code> to watch board output rather than a raw <code>arduino-cli monitor</code> call — it resolves
-the same port logic as <code>upload</code> and defaults to the baud rate every <code>juno-examples</code> program uses.</p>
+<p>Generates the sketch and compiles it with <code>arduino-cli</code>. It does not touch hardware.</p>
+<h3 id="3-flash-the-board">3. Flash the board</h3>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-uno-r4-wifi
+</code></pre>
+<p>Flashes the sketch. <code>upload</code> auto-detects the port when exactly one matching board is connected; otherwise pass
+<code>-Djuno.port=&lt;PORT&gt;</code> with the port from step 2.</p>
+<h3 id="4-watch-the-serial-output">4. Watch the Serial output</h3>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi
+</code></pre>
+<p>Opens the serial monitor at 115200 baud (<code>-Djuno.baudRate</code> to change it). Always use <code>juno:monitor</code> rather than a raw
+<code>arduino-cli monitor</code> call: it resolves the same port logic as <code>upload</code> and defaults to the baud rate every
+<code>juno-examples</code> program uses.</p>
 <h2 id="juno-flags">Juno flags</h2>
 <p>Four <code>juno.*</code> properties change the runtime that the program is built with. They work like the JVM's <code>-Xmx</code>, <code>-Xss</code>
 and thread options: they change what the program can hold, never what it means. Set them in <code>&lt;configuration&gt;</code> or pass
@@ -619,6 +662,9 @@ add <code>-Djuno.board=&lt;id&gt;</code> naming one of them, as printed in the e
     <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
   </div>
 </footer>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FPC5GLQPGY"></script>
+<script src="/juno/gtag.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {

@@ -260,112 +260,23 @@ without uploading it:
 
 ## Supported Java subset
 
-Juno is an ahead-of-time compiler, not a JVM, so it intentionally supports a focused, predictable
-subset of Java that can be translated into native code for resource-constrained Arduino boards.
-Programs are first compiled normally with `javac`; Juno then performs closed-world linking from
-`main`, follows every reachable method, and validates the bytecode before generating the sketch.
+Juno is an ahead-of-time compiler, not a JVM. It links a program closed-world from `main`, validates every reachable
+bytecode, and stops with a diagnostic (method, bytecode offset, unsupported operation) rather than emit code whose
+behavior it cannot guarantee. Valid Java is therefore not automatically valid Juno input.
 
-Valid Java is therefore not automatically valid Juno input. If reachable code needs an unsupported
-bytecode instruction, JDK feature, or `invokedynamic` bootstrap, compilation stops instead of
-emitting code with uncertain behavior. The diagnostic identifies the method, bytecode offset, and
-unsupported operation or bootstrap. The currently supported Java subset includes:
+| Area | Supported |
+|------|-----------|
+| Language core | `main()` / `main(String[])`, static and instance methods, all eight primitive types, control flow and `switch`, fixed-size (also multidimensional) arrays, constant lookup tables kept in flash |
+| Objects | classes, inheritance, interfaces, enums, records, lambdas and method references |
+| Exceptions | `throw`, `try`/`catch`/`finally`, multi-catch, propagation between methods, try-with-resources |
+| Library | `String` and `StringBuilder`, `Math`, `BigInteger`/`BigDecimal`, `LocalDateTime` (SNTP), `UUID`, random numbers |
+| Concurrency | virtual threads and the JDK 27 preview `StructuredTaskScope` on one preemptive scheduler (up to four threads including `main`), monitors, `ReentrantLock`, atomics, `ScopedValue` |
+| Board services | GPIO, serial, clocks, LED matrix, mouse, Wi-Fi, HTTP/HTTPS, UDP/TCP, SD card, and stacked shields (pin conflicts are rejected at compile time) |
 
-- **Entrypoints and methods:** `static void main(String[])`, the embedded-friendly
-  `static void main()`, static methods with primitive arguments and results, direct closed-world
-  calls, and removal of unreachable methods. See
-  [`HelloWorld`](juno-examples/src/main/java/io/github/jabrena/juno/language/HelloWorld.java) and
-  [`Methods`](juno-examples/src/main/java/io/github/jabrena/juno/language/Methods.java).
-- **Primitive types:** `boolean`, `byte`, `short`, `char`, `int`, `long`, `float`, and `double`.
-  The example prints each type's size and range using `javac`-folded `BYTES`, `MIN_VALUE`, and
-  `MAX_VALUE` constants. See
-  [`PrimitiveTypes`](juno-examples/src/main/java/io/github/jabrena/juno/language/PrimitiveTypes.java).
-- **Values and control flow:** constants, mutable static fields, local variables, arithmetic,
-  bitwise and shift operations, comparisons, conditionals, `switch`, and loops. See
-  [`Variables`](juno-examples/src/main/java/io/github/jabrena/juno/language/Variables.java),
-  [`Operators`](juno-examples/src/main/java/io/github/jabrena/juno/language/Operators.java), and
-  [`ControlFlow`](juno-examples/src/main/java/io/github/jabrena/juno/language/ControlFlow.java).
-- **Arrays:** fixed-size primitive arrays (`boolean` through `double`, including fixed-size
-  multidimensional arrays) allocated from the fixed 8 KiB arena, and `static final` read-only lookup
-  tables with an all-constant initializer, kept in flash instead of RAM. See
-  [`Arrays`](juno-examples/src/main/java/io/github/jabrena/juno/language/Arrays.java).
-- **Strings:** string literals, `String.valueOf(int)`, `length()`, and `charAt(int)` for runtime
-  string references, `equals`, plus `+` concatenation of strings and a `StringBuilder`. See
-  [`Strings`](juno-examples/src/main/java/io/github/jabrena/juno/language/Strings.java).
-- **BigInteger and BigDecimal:** arbitrary-precision `java.math.BigInteger` and `BigDecimal`, with
-  `MathContext` and the `RoundingMode` constants. Arithmetic, `pow`, `sqrt`, division by scale,
-  `RoundingMode` or `MathContext`, `setScale`, `round`, comparisons, conversions and `toString` /
-  `toPlainString` follow the JDK's results, scales and rounding. Values are immutable blocks in the
-  8 KiB arena and are garbage-collected, so precision is limited by memory, not by a fixed width. See
-  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java).
-- **LocalDateTime:** `now()`, `MIN`, the date and time getters, `equals` and ISO-8601 `toString`. `now()`
-  gets UTC from an SNTP server once Wi-Fi is up (`JUNO_SNTP_HOST`, default `pool.ntp.org`;
-  `JUNO_SNTP_PORT`, default `123`) and returns `LocalDateTime.MIN` while it is unavailable. Works on every
-  Wi-Fi board, including the UNO R3 with the Arduino WiFi Shield. See
-  [`SntpTime`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and
-  [`SntpTimeSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java)
-  (server read from the SD card).
-- **UUID:** `java.util.UUID` supports construction, parsing, formatting, comparison, 16-byte conversion through
-  `UuidCodec`, and `randomUUID()` on all boards. On the classic UNO R3, random UUIDs are weak and non-cryptographic;
-  use them only for node identities, as shown by [`WeakUuid`](juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java).
-- **Objects and interfaces:** enums, records, classes, constructors, instance fields, class inheritance, virtual
-  dispatch, and directly implemented interfaces with closed-world dispatch. Inheritance and inherited/default
-  implementations are available on every board, but the AVR boards have much less flash, SRAM and arena space, so
-  the Arduino build or runtime may fail for larger object graphs. See
-  [`Objects`](juno-examples/src/main/java/io/github/jabrena/juno/language/Objects.java) and
-  [`Interfaces`](juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java).
-- **Lambdas and method references:** non-capturing and capturing lambdas, plus static, bound,
-  unbound, and constructor references emitted through `LambdaMetafactory.metafactory`. See
-  [`Lambdas`](juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java).
-- **Math and random numbers:** the documented `java.lang.Math` subset and Arduino-backed bounded
-  pseudorandom numbers. See
-  [`MathFunctionsSinglePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsSinglePrecision.java),
-  [`MathFunctionsDoublePrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) and
-  [`RandomNumbers`](juno-examples/src/main/java/io/github/jabrena/juno/language/RandomNumbers.java).
-- **Exceptions:** `throw`, `try`/`catch` (including multi-catch and catching by a supertype),
-  `finally`, nested handlers, propagation between methods, custom final exception classes, and
-  try-with-resources. See
-  [`Exceptions`](juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java).
-- **Concurrency:** preemptive virtual threads (`Thread.startVirtualThread`, `join`, `isAlive`) and the
-  supported JDK 27 preview `StructuredTaskScope` subset with cooperative subtasks (up to four threads including `main`, with
-  `Thread.sleep` and `Thread.yield`), restricted monitors and `ReentrantLock`, and `ScopedValue` bindings
-  inherited by forked subtasks. Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are
-  rejected at compile time; `AtomicInteger`, `AtomicBoolean` and `AtomicLong` are available. See
-  [`Synchronization`](juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java),
-  [`VirtualThreads`](juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java),
-  [`StructuredConcurrency`](juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) (subtasks owned by a scope that is joined and closed before the owner reads their results), and
-  [`ScopedValuesPrecision`](juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java)
-  (a scoped `MathContext` shared by three parallel subtasks).
-- **Board services:** GPIO, clocks and delays, serial I/O, LED matrices, mouse input, Wi-Fi,
-  HTTP/HTTPS, bounded JSON inspection, and read-only SPI SD-card files through Juno's intrinsic APIs.
-  See [`Blink`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) (GPIO and delays),
-  [`SerialCounter`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java) (serial I/O),
-  [`HttpServerStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatus.java) (clocks),
-  [`LedMatrixHeart`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixHeart.java) (LED matrix),
-  [`WifiStatus`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatus.java) (Wi-Fi),
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java) (Wi-Fi credentials loaded from an SD card),
-  [`WifiStatusSDLcd`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDLcd.java) (the same, with an LCD Keypad Shield),
-  [`WifiProvisioning`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/WifiProvisioning.java) (access point and HTTP server to provide Wi-Fi credentials),
-  [`HttpsMethods`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java) (HTTP/HTTPS and JSON),
-  [`Miner2`](juno-examples/src/main/java/io/github/jabrena/juno/usecases/miner/Miner2.java) (UDP between boards:
-  factor numbers together and chain the verified answers as a leaderless, Bitcoin-style proof-of-work chain), and
-  [`SdFileOperations`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) (SD card).
-- **Shields:** stack a shield on the board as designed, with no rewiring, and use it through Juno's APIs;
-  a combination whose shields share pins, such as the LCD Keypad Shield on a UNO R3 with the Arduino WiFi
-  Shield, is rejected at compile time. The [Grove Base Shield](https://jabrena.github.io/juno/grove) brings
-  Grove connectors on the UNO pin map, as shown by
-  [`GroveDht22Monitor`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java).
-  The [LCD Keypad Shield](https://jabrena.github.io/juno/lcd-keypad-shield) (16x2 display, buttons,
-  backlight) is shown in
-  [`LcdKeypadDemo`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java).
-  The [ELEGOO 2.8" TFT touch shield](https://jabrena.github.io/juno/tft-touch-shield) (display, touch,
-  microSD) is shown in
-  [`TouchPaintTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) and
-  [`WifiStatusSDTFT`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSDTFT.java).
-  The [AZDelivery Data Logger Shield](https://jabrena.github.io/juno/storage) provides the SD card for
-  [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java).
-  The Arduino WiFi Shield brings Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock to the UNO R3, as shown by
-  [`SocketDatagramEcho`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java) and
-  [`PlainHttpWeather`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java).
+Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are rejected. Objects live in one fixed arena
+(8 KiB, 1 KiB on AVR), so the AVR boards fit smaller programs. The details are on the
+[Java subset](https://jabrena.github.io/juno/java-subset) page, and runnable examples of each feature are under
+[`juno-examples`](juno-examples/src/main/java/io/github/jabrena/juno/language).
 
 ## Maven modules
 
@@ -431,6 +342,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://docs.arduino.cc/hardware/uno-rev3/
 - https://docs.arduino.cc/hardware/nano-esp32/
+- https://docs.m5stack.com/en/core/Cardputer-Adv
 - https://lejos.sourceforge.io/
 - https://lejos.sourceforge.io/ev3/docs/index.html
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html

@@ -21,13 +21,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 /**
- * The thread runtime behind preemptive virtual threads and cooperative {@code StructuredTaskScope} subtasks: the closed-world
+ * The thread runtime behind preemptive virtual threads and {@code StructuredTaskScope} subtasks, which share one scheduler: the closed-world
  * {@code Runnable.run()} entry function, the runtime in the shim, each board's preemption tick, what a program
  * without subtasks does not pay for, and the rejection of {@code java.lang.Thread} itself. Behavior of the compiled
  * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
  * {@code PreemptionStress}); this checks the generated text.
  */
-@DisplayName("Thread runtime and cooperative subtasks")
+@DisplayName("Thread runtime and structured subtasks")
 class ThreadsTest {
     @TempDir
     Path temporaryDirectory;
@@ -69,10 +69,6 @@ class ThreadsTest {
 
     static Stream<String> boards() {
         return Stream.of("ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard");
-    }
-
-    static Stream<String> cooperativeBoards() {
-        return Stream.of("ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard", "ArduinoUnoR3WiFiRev2Board");
     }
 
     static Stream<String> userLevelThreadBodies() {
@@ -217,38 +213,67 @@ class ThreadsTest {
                         + "  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);");
     }
 
-    @ParameterizedTest(name = "structured subtasks are cooperative on {0}")
-    @MethodSource("cooperativeBoards")
-    @DisplayName("Structured subtasks are cooperative while virtual threads are preemptive")
-    void shouldKeepStructuredSubtasksCooperativeOnEveryBoard(String board) throws Exception {
+    static Stream<Arguments> preemptionSections() {
+        String tick = "extern \"C\" const uint8_t juno_java_code_start[];";
+        String safepoints = "static void juno_thread_slice_over() {";
+        return Stream.of(
+                arguments("ArduinoUnoR4WiFiBoard", tick),
+                arguments("ArduinoUnoQBoard", tick),
+                arguments("ArduinoUnoR3WiFiRev2Board", safepoints),
+                arguments("ArduinoNanoEsp32Board", safepoints));
+    }
+
+    /** The preemption code of a shim: from its first line up to where the scheduler's {@code main} exit begins. */
+    private static String preemptionSection(String shim, String start) {
+        int from = shim.indexOf(start);
+        assertThat(from).as("preemption section start").isNotNegative();
+        int to = shim.indexOf("// Where main() returns", from);
+        assertThat(to).as("preemption section end").isGreaterThan(from);
+        return shim.substring(from, to);
+    }
+
+    private static String function(String shim, String signature) {
+        String rest = shim.substring(shim.indexOf(signature));
+        return rest.substring(0, rest.indexOf("\n}\n") + 2);
+    }
+
+    @ParameterizedTest(name = "one preemption policy for every thread on {0}")
+    @MethodSource("preemptionSections")
+    @DisplayName("Preemption never asks what kind of thread runs, and is the same with or without subtasks")
+    void shouldPreemptSubtasksExactlyLikeVirtualThreads(String board, String start) throws Exception {
+        // Given
+        String withSubtasks = preemptionSection(compile(board, START_AND_JOIN).runtimeShim(), start);
+        String withVirtualThreads = preemptionSection(compile(board, VIRTUAL_THREAD).runtimeShim(), start);
+
+        // When & Then
+        assertThat(withSubtasks).as(board).doesNotContain("JUNO_THREAD_TASK", "->flags", "cooperative");
+        assertThat(withSubtasks).as(board).isEqualTo(withVirtualThreads);
+    }
+
+    @ParameterizedTest(name = "the tick redirects any thread caught in generated code on {0}")
+    @MethodSource("boards")
+    @DisplayName("The tick redirects a subtask in generated code, like any other thread")
+    void shouldRedirectAnyThreadInGeneratedCodeFromTheTick(String board) throws Exception {
         // Given
         String shim = compile(board, START_AND_JOIN).runtimeShim();
 
         // When & Then
-        assertThat(shim).as(board).contains("static bool juno_slot_cooperative(uint32_t slot) {",
-                "return thread != nullptr && (thread->flags & JUNO_THREAD_TASK) != 0u;");
+        assertThat(function(shim, "extern \"C\" void juno_preempt_tick(uint32_t* frame) {")).as(board)
+                .contains("if (inJava && resumable && juno_preempt_resume[slot] == 0u) {");
     }
 
-    @Test
-    @DisplayName("The tick never redirects a subtask; it switches at the subtask's next backedge")
-    void shouldNeverRedirectASubtaskFromTheTickOnTheUnoR4() throws Exception {
+    @ParameterizedTest(name = "every method entry is a safepoint on {0}")
+    @ValueSource(strings = {"ArduinoUnoR3WiFiRev2Board", "ArduinoNanoEsp32Board"})
+    @DisplayName("Every method entry is a safepoint, a subtask's included, on the safepoint-preempted boards")
+    void shouldTakeTheMethodEntrySafepointUnconditionally(String board) throws Exception {
         // Given
-        String arm = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
+        String shim = compile(board, START_AND_JOIN).runtimeShim();
 
         // When & Then
-        assertThat(arm).contains("if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {");
-    }
-
-    @Test
-    @DisplayName("A subtask skips the method-entry safepoint on AVR")
-    void shouldSkipTheMethodEntrySafepointForASubtaskOnAvr() throws Exception {
-        // Given
-        String avr = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
-        String safepoint = avr.substring(avr.indexOf("extern \"C\" void juno_thread_safepoint() {"));
-
-        // When & Then
-        assertThat(safepoint.substring(0, safepoint.indexOf("\n}\n")))
-                .contains("if (juno_slot_cooperative(juno_current_slot)) return;");
+        assertThat(function(shim, "extern \"C\" void juno_thread_safepoint() {")).as(board).isEqualTo("""
+                extern "C" void juno_thread_safepoint() {
+                  juno_thread_slice_over();
+                }""");
     }
 
     @Test
@@ -260,7 +285,7 @@ class ThreadsTest {
 
         // When & Then
         assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
-                .contains("juno_thread_slice_over();").doesNotContain("juno_slot_cooperative");
+                .contains("juno_thread_slice_over();");
     }
 
     @Test

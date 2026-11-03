@@ -10,6 +10,8 @@ import java.util.concurrent.StructuredTaskScope;
 
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public final class StructuredTasks {
+    static volatile boolean completedDone;
+
     private StructuredTasks() {
     }
 
@@ -17,8 +19,16 @@ public final class StructuredTasks {
         StructuredTaskScope.Subtask<String> completed = null;
         StructuredTaskScope.Subtask<String> failed = null;
         try (var scope = StructuredTaskScope.<String>open()) {
-            completed = scope.fork(() -> "completed");
+            completed = scope.fork(() -> {
+                completedDone = true;
+                return "completed";
+            });
+            // Subtasks are preemptive, as on the JVM: without this wait the failure could cancel "completed" before
+            // it returns, leaving it UNAVAILABLE.
             Callable<String> failing = () -> {
+                while (!completedDone) {
+                    // Wait until the sibling has finished.
+                }
                 throw new IllegalStateException("boom");
             };
             failed = scope.fork(failing);
@@ -40,8 +50,8 @@ public final class StructuredTasks {
             scope.fork(() -> "winner");
             scope.fork(() -> "possibly cancelled");
             Object winner = scope.join();
-            // Either fork may finish first on a real JVM (threads race); the compiled runtime always runs
-            // "winner" first, so only check that the result is one of the two valid answers.
+            // Either fork may finish first (subtasks race, on the JVM and on the board), so only check that the
+            // result is one of the two valid answers.
             Serial.println(winner == "winner" || winner == "possibly cancelled" ? 1 : 0);
             Serial.println(scope.isCancelled() ? 1 : 0);
         }

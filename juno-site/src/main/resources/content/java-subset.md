@@ -208,14 +208,13 @@ blink.run();
 
 ## Concurrency behaviour
 
-Virtual threads and structured subtasks share one processor, and the runtime switches between them in 1 ms time slices.
-Only one task runs at any moment.
+Virtual threads, structured subtasks and `main` share one preemptive scheduler, and the runtime switches between them in
+1 ms time slices. A subtask is scheduled exactly like a virtual thread; the structured scope only adds lifecycle
+management. Only one task runs at any moment.
 
-- **Virtual threads and `main` are preemptive.** When a slice is over, the scheduler takes the processor away from the
-  task. On the UNO R4 WiFi and the UNO Q a periodic tick can switch a task between any two instructions. On the UNO WiFi
-  Rev2 a task is switched at loop back-edges and method entries instead, so a loop with no calls is still switched.
-- **Structured subtasks are cooperative.** A subtask gives up the processor at its next loop back-edge once its slice is
-  over. A subtask that runs a long stretch without a loop keeps the processor until it reaches one.
+- **Every task is preemptive.** When a slice is over, the scheduler takes the processor away from the task. On the UNO R4
+  WiFi and the UNO Q a periodic tick can switch a task between any two instructions. On the UNO WiFi Rev2 a task is
+  switched at loop back-edges and method entries instead, so a loop with no calls is still switched.
 - **Tasks give up the processor when they block.** That happens on `Delay.millis`, `Thread.sleep`, `Thread.yield`,
   `join`, entering a monitor that another task holds, and while a hardware call waits for its device: an HTTP or HTTPS
   request, `HttpServer.accept`, the retries of `SdCard.begin`, and a Powered Up scan or reply. Other tasks run during

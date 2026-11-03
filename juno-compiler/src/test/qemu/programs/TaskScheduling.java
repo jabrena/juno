@@ -8,7 +8,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * Cooperative subtasks under StructuredTaskScope: classes and lambdas as Runnables, sleep, yield, stack-slot
+ * Preemptive subtasks under StructuredTaskScope: classes and lambdas as Runnables, sleep, yield, stack-slot
  * reuse, and garbage collection while other subtasks are parked with live references on their own stacks. Every
  * printed value is fixed by the joins, so the JVM and the board agree whatever the interleaving.
  */

@@ -5,11 +5,9 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 
 /**
  * The C++ source of the {@code java.lang.Thread} runtime in the generated shim: threads, each on a stack of its own,
- * time-sliced by the scheduler ({@link #scheduler}) every {@code JUNO_TIME_SLICE_MILLIS}. Virtual threads and
- * {@code main} are preemptive, as described below. {@code StructuredTaskScope} subtasks are cooperative: the tick never
- * interrupts one, it gives the CPU up only where the program already pauses (a loop backedge once its slice is over,
- * {@code sleep}/{@code yield}/{@code Delay}, {@code join}, a contended monitor), so a statement of a subtask is never
- * interrupted halfway.
+ * time-sliced by the scheduler ({@link #scheduler}) every {@code JUNO_TIME_SLICE_MILLIS}. Virtual threads,
+ * {@code StructuredTaskScope} subtasks and {@code main} share that one scheduler and are all preemptive, as described
+ * below: a subtask is an ordinary thread with a scope, not a second scheduling policy.
  *
  * <p>On the Thumb-2 boards preemption is asynchronous: a periodic tick ({@code SysTick} on the UNO R4, a Zephyr
  * {@code k_timer} on the UNO Q) interrupts whatever runs. When the interrupted instruction belongs to the generated
@@ -18,8 +16,7 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * {@code juno_preempt_trampoline}: it saves every register the interrupted code may be using (the caller-saved
  * core registers, the flags, {@code s0}-{@code s15} and {@code FPSCR}), switches to the next runnable thread like
  * {@code Thread.yield}, and later restores all of it and resumes exactly where the tick struck. A thread is
- * therefore preempted between any two instructions of generated code, inside a loop or not, unless it is a
- * cooperative subtask.
+ * therefore preempted between any two instructions of generated code, inside a loop or not.
  *
  * <p>The runtime itself (the arena, the collector, the pending-exception slot, monitors, atomics, the scheduler and
  * every core library the shim calls) is never preempted part-way: a tick that lands outside generated code only
@@ -31,8 +28,7 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * <p>The UNO WiFi Rev2 (AVR) cannot be interrupted at an arbitrary instruction: a reference or {@code int} is
  * loaded and stored a byte at a time, and generated calls pass arguments through one global area. Its threads are
  * preempted at safepoints instead: on every loop backedge and every method entry the running thread hands over the
- * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others. A
- * cooperative subtask skips the method-entry safepoints.
+ * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others.
  *
  * <p>Only how a stack is created, how control moves between two of them and where the tick comes from differ per
  * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #zephyrPort},
@@ -165,8 +161,7 @@ public final class ThreadRuntime {
                   }""".replace("${JUNO_STRUCTURED_BODY}", structuredBody) : """
                 ${JUNO_ORDINARY_BODY}""";
         String taskRuntime = structuredTasks ? taskRuntime() : "";
-        String preemption = COOPERATIVE_TASKS
-                + (asynchronousPreemption ? asynchronousPreemption() : safepointPreemption());
+        String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
         String startPreemption = asynchronousPreemption ? """
                   static bool juno_preempt_started = false;
                   if (!juno_preempt_started) {
@@ -201,20 +196,6 @@ public final class ThreadRuntime {
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
                 .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId));
     }
-
-    /**
-     * Which threads are cooperative: a {@code StructuredTaskScope} subtask gives the CPU up only where the program
-     * already pauses (a loop backedge once its time slice is over, {@code sleep}/{@code yield}/{@code Delay},
-     * {@code join}, a contended monitor), never part-way through a statement. Virtual threads and {@code main} are
-     * preemptive.
-     */
-    private static final String COOPERATIVE_TASKS = """
-            static bool juno_slot_cooperative(uint32_t slot) {
-              const JunoThreadObject* thread = juno_slots[slot].thread;
-              return thread != nullptr && (thread->flags & JUNO_THREAD_TASK) != 0u;
-            }
-
-            """;
 
     /**
      * Thumb-2's asynchronous preemption. The tick runs in handler mode with the interrupted thread's exception frame

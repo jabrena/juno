@@ -125,6 +125,11 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 # in one command (see README's Documentation site section)
 ./mvnw clean verify -Psite
 
+# Site-only change (juno-site content, templates, footer, CSS): regenerate docs/ without the unit suite, then run the
+# site's own tests. The -Psite build does not need ./mvnw test; -DskipTests skips it for every module.
+./mvnw clean verify -Psite -DskipTests
+./mvnw -pl juno-site test
+
 # Preview the site locally at the web root (docs/ itself has /juno baked in for GitHub Pages
 # and 404s served plain — this overrides the prefix back to / and generates into
 # juno-site/target/ instead, never docs/; see README's Previewing the site locally section)
@@ -159,13 +164,18 @@ See [Getting Started](https://jabrena.github.io/juno/getting-started) for the fu
 
 ## Boundaries
 
+- ✅ **Always do:** upload to every board over USB serial, never over the network: pass `-Djuno.port=<serial port>`
+  (the `/dev/cu.*` entry that `juno:boards` lists, such as the UNO Q's when it is plugged in). The network address that
+  `juno:boards` may also list needs interactive credentials that the Maven goal cannot provide.
 - ✅ **Always do:** whenever you deploy an example to a board to test a feature, always follow `juno:upload`
   with `juno:monitor` (never raw `arduino-cli`) and check the serial output against the expected result before
   calling the feature verified — an upload that succeeds proves nothing about behavior; the program must call
   `Serial.begin` and wait briefly before its first print, and the monitor needs a terminal (e.g.
   `sleep 12 | script -q log ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<id>`); run
   `./mvnw test` before proposing changes that touch Java sources or a `pom.xml`; for documentation, image, and
-  other non-Java/non-`pom.xml` changes, the full test suite is not required—run only the relevant validation;
+  other non-Java/non-`pom.xml` changes, the full test suite is not required—run only the relevant validation (for a
+  `juno-site` change that is `./mvnw clean verify -Psite -DskipTests` followed by `./mvnw -pl juno-site test`, and
+  never a full `./mvnw test` just to regenerate the site);
   when touching `api/`, `linker/`,
   or `backend/`, add/extend a `JunoCompilerTest`/`GeneratedAsmToolchainTest` case and validate the
   affected example compiles end-to-end with `juno:verify` (`javac` → Juno →

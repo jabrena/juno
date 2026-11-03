@@ -44,8 +44,7 @@ __asm__(
     "  pop {pc}\n"
     ".text\n");
 
-// Interrupt context: preempt the running thread now if it is in generated code, else soon; a
-// cooperative subtask is never redirected, it takes the due switch at its next backedge.
+// Interrupt context: preempt the running thread now if it is in generated code, else soon at its next backedge.
 extern "C" void juno_preempt_tick(uint32_t* frame) {
   if (juno_live_threads == 0u) return;
   uint32_t pc = frame[6];
@@ -53,7 +52,7 @@ extern "C" void juno_preempt_tick(uint32_t* frame) {
       && pc < static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_end));
   bool resumable = (frame[7] & 0x0600FC00u) == 0u;
   uint32_t slot = juno_current_slot;
-  if (inJava && resumable && !juno_slot_cooperative(slot) && juno_preempt_resume[slot] == 0u) {
+  if (inJava && resumable && juno_preempt_resume[slot] == 0u) {
     juno_preempt_resume[slot] = pc | 1u;
     frame[6] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&juno_preempt_trampoline)) & ~1u;
   } else {
