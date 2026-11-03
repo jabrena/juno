@@ -86,7 +86,8 @@ final class ObjectCreationLowering implements InstructionLowering {
         return bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
                 || called.equals(STRING_BUILDER)
-                || called.equals(LockSupport.CONSTRUCTOR) || atomicSupport.isConstruction(called)
+                || called.equals(LockSupport.CONSTRUCTOR) || called.equals(LockSupport.POLICY_CONSTRUCTOR)
+                || atomicSupport.isConstruction(called)
                 || concurrencySupport.isConstruction(called)
                 || called.equals(PROPERTIES) || called.equals(RandomAccessFileMethods.CONSTRUCTOR);
     }
@@ -95,7 +96,8 @@ final class ObjectCreationLowering implements InstructionLowering {
     void construct(Instruction instruction, MethodRef called) {
         if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
-                || atomicSupport.isConstruction(called) || concurrencySupport.isConstruction(called)) {
+                || atomicSupport.isConstruction(called) || concurrencySupport.isConstruction(called)
+                || called.equals(LockSupport.POLICY_CONSTRUCTOR)) {
             constructFromArguments(instruction, called);
         } else if (called.equals(STRING_BUILDER)) {
             Value capacity = stack.pop();

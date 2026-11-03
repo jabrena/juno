@@ -3,11 +3,13 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.DatagramMethods;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.intrinsic.SocketMethods;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +25,13 @@ final class ThrowingMethods {
     private final BigNumberMethods bigNumberMethods = new BigNumberMethods();
 
     private final RandomAccessFileMethods randomAccessFileMethods = new RandomAccessFileMethods();
+
+    /** The blocking calls that finish with InterruptedException pending when the thread was interrupted. */
+    private static final Set<Intrinsic> BLOCKING_WAITS = EnumSet.of(Intrinsic.THREAD_SLEEP, Intrinsic.MONITOR_WAIT,
+            Intrinsic.LATCH_AWAIT, Intrinsic.SEMAPHORE_ACQUIRE, Intrinsic.BARRIER_AWAIT, Intrinsic.CONDITION_AWAIT,
+            Intrinsic.LOCK_LOCK_INTERRUPTIBLY, Intrinsic.LOCK_TRY_LOCK_TIMED, Intrinsic.LATCH_AWAIT_TIMED,
+            Intrinsic.SEMAPHORE_TRY_ACQUIRE_TIMED, Intrinsic.CONDITION_AWAIT_TIMED,
+            Intrinsic.PHASER_AWAIT_ADVANCE_INTERRUPTIBLY);
 
     private final Set<MethodRef> methods;
 
@@ -72,20 +81,19 @@ final class ThrowingMethods {
 
     private boolean raises(IrInstruction instruction) {
         return instruction instanceof IrInstruction.IntrinsicCall call
-                && switch (call.intrinsic()) {
+                && (BLOCKING_WAITS.contains(call.intrinsic()) || switch (call.intrinsic()) {
                     case THROW_RAISE, THROW_DISPATCH, TASK_SCOPE_OPEN, TASK_SCOPE_OPEN_CONFIG,
                             TASK_SCOPE_OPEN_WITH_CONFIG, TASK_CONFIGURATION_WITH_TIMEOUT, DURATION_OF_MILLIS,
                             DURATION_OF_SECONDS, TASK_SCOPE_FORK_CALLABLE,
                             TASK_SCOPE_FORK_RUNNABLE, TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION,
-                            TASK_SCOPE_CLOSE, SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL,
-                            THREAD_SLEEP, MONITOR_WAIT, LATCH_AWAIT, SEMAPHORE_ACQUIRE -> true;
+                            TASK_SCOPE_CLOSE, SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL -> true;
                     default -> bigNumberMethods.mayThrow(call.intrinsic())
                             || call.intrinsic() == io.github.jabrena.juno.intrinsic.Intrinsic.UUID_FROM_STRING
                             || randomAccessFileMethods.mayThrow(call.intrinsic())
                             || DatagramMethods.mayThrow(call.intrinsic())
                             || SocketMethods.mayThrow(call.intrinsic())
                             || call.intrinsic() == io.github.jabrena.juno.intrinsic.Intrinsic.SD_FILE_READ_BYTES;
-                };
+                });
     }
 
     /** The program methods {@code instruction} may invoke; empty for anything that is not a call. */

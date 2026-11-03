@@ -37,7 +37,14 @@ class ConcurrencyPrimitivesTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.util.concurrent.CountDownLatch;
+                import java.util.concurrent.CyclicBarrier;
+                import java.util.concurrent.Phaser;
                 import java.util.concurrent.Semaphore;
+                import java.util.concurrent.locks.Condition;
+                import java.util.concurrent.locks.Lock;
+                import java.util.concurrent.locks.ReadWriteLock;
+                import java.util.concurrent.locks.ReentrantLock;
+                import java.util.concurrent.locks.ReentrantReadWriteLock;
                 @Board(%1$s.class)
                 public final class Gate {
                     static final class Job implements Runnable {
@@ -73,13 +80,46 @@ class ConcurrencyPrimitivesTest {
             Serial.println(worker.isInterrupted() ? 1 : 0);
             Thread.sleep(1);
             worker.join();
+            CyclicBarrier barrier = new CyclicBarrier(1);
+            barrier.await();
+            Serial.println(barrier.getParties());
+            ReentrantLock guard = new ReentrantLock();
+            Condition ready = guard.newCondition();
+            guard.lock();
+            try {
+                ready.signal();
+                ready.signalAll();
+                if (barrier.getParties() < 0) {
+                    ready.await();
+                }
+            } finally {
+                guard.unlock();
+            }
+            ReentrantReadWriteLock rw = new ReentrantReadWriteLock();
+            ReadWriteLock view = rw;
+            view.readLock().lock();
+            view.readLock().unlock();
+            Lock writer = rw.writeLock();
+            writer.lock();
+            writer.unlock();
+            Serial.println(rw.writeLock().tryLock() ? 1 : 0);
+            Phaser phaser = new Phaser(1);
+            phaser.register();
+            phaser.arrive();
+            phaser.arriveAndDeregister();
+            phaser.arriveAndAwaitAdvance();
+            phaser.awaitAdvance(0);
+            phaser.awaitAdvanceInterruptibly(phaser.getPhase());
+            Serial.println(phaser.bulkRegister(2) + phaser.getRegisteredParties() + phaser.getUnarrivedParties());
             """;
 
     static Stream<Arguments> unsupportedCalls() {
         return Stream.of(
-                arguments("Semaphore fairness", "Semaphore fair = new Semaphore(1, true);\n"),
-                arguments("CountDownLatch timed await", "new CountDownLatch(1).await(1, java.util.concurrent.TimeUnit.SECONDS);\n"),
-                arguments("Semaphore.acquire(int)", "new Semaphore(3).acquire(2);\n"));
+                arguments("Semaphore.acquire(int)", "new Semaphore(3).acquire(2);\n"),
+                arguments("Phaser timed awaitAdvanceInterruptibly",
+                        "new Phaser(1).awaitAdvanceInterruptibly(0, 1, java.util.concurrent.TimeUnit.SECONDS);\n"),
+                arguments("Phaser tiered constructor", "new Phaser(new Phaser(1));\n"),
+                arguments("ReentrantReadWriteLock fair", "new ReentrantReadWriteLock(true);\n"));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
@@ -98,7 +138,15 @@ class ConcurrencyPrimitivesTest {
                 "bl juno_latch_await", "bl juno_latch_get_count", "bl juno_semaphore_new",
                 "bl juno_semaphore_acquire", "bl juno_semaphore_try_acquire", "bl juno_semaphore_available",
                 "bl juno_monitor_notify_all", "bl juno_monitor_notify", "bl juno_monitor_wait",
-                "bl juno_thread_interrupt", "bl juno_thread_is_interrupted", "bl juno_thread_sleep_interruptible");
+                "bl juno_thread_interrupt", "bl juno_thread_is_interrupted", "bl juno_thread_sleep_interruptible",
+                "bl juno_barrier_new", "bl juno_barrier_await", "bl juno_barrier_parties",
+                "bl juno_lock_new_condition", "bl juno_condition_signal", "bl juno_condition_signal_all",
+                "bl juno_phaser_new", "bl juno_phaser_register", "bl juno_phaser_arrive", "bl juno_phaser_arrive_and_deregister",
+                "bl juno_phaser_arrive_and_await", "bl juno_phaser_await_advance", "bl juno_phaser_await_advance_interruptibly",
+                "bl juno_phaser_bulk_register", "bl juno_phaser_get_phase",
+                "bl juno_rw_lock_new", "bl juno_rw_read_lock", "bl juno_rw_write_lock", "bl juno_lock_lock",
+                "bl juno_lock_unlock", "bl juno_lock_try_lock",
+                "bl juno_condition_await");
     }
 
     @Test
@@ -111,7 +159,9 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.runtimeShim()).contains("extern \"C\" void juno_monitor_wait(int32_t handle) {",
                 "extern \"C\" void juno_semaphore_acquire(int32_t handle) {",
                 "extern \"C\" void juno_thread_interrupt(int32_t handle) {",
-                "extern \"C\" int64_t juno_latch_get_count(int32_t handle) {");
+                "extern \"C\" int64_t juno_latch_get_count(int32_t handle) {",
+                "extern \"C\" int32_t juno_barrier_await(int32_t handle) {",
+                "extern \"C\" void juno_condition_await(int32_t handle) {");
     }
 
     @Test

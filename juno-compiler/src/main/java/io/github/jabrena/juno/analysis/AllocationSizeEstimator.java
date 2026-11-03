@@ -68,10 +68,24 @@ final class AllocationSizeEstimator {
         if (THREAD_LAUNCHES.contains(intrinsic)) {
             return allocationUpperBound(RuntimeLimits.THREAD_OBJECT_BYTES, 4);
         }
-        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW
-                || intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
-                || intrinsic == Intrinsic.ATOMIC_INT_NEW || intrinsic == Intrinsic.LATCH_NEW
-                || intrinsic == Intrinsic.SEMAPHORE_NEW) {
+        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW || intrinsic == Intrinsic.REENTRANT_LOCK_NEW_POLICY
+                || intrinsic == Intrinsic.SEMAPHORE_NEW || intrinsic == Intrinsic.SEMAPHORE_NEW_POLICY) {
+            return allocationUpperBound(4 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.REENTRANT_READ_WRITE_LOCK_NEW) {
+            return allocationUpperBound(13 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
+                || intrinsic == Intrinsic.ATOMIC_INT_NEW || intrinsic == Intrinsic.LATCH_NEW) {
+            return allocationUpperBound(Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.BARRIER_NEW || intrinsic == Intrinsic.BARRIER_NEW_ACTION) {
+            return allocationUpperBound(5 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.PHASER_NEW || intrinsic == Intrinsic.PHASER_NEW_PARTIES) {
+            return allocationUpperBound(3 * Integer.BYTES, Integer.BYTES);
+        }
+        if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW_CONDITION) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
         if (intrinsic == Intrinsic.ATOMIC_LONG_NEW_DEFAULT || intrinsic == Intrinsic.ATOMIC_LONG_NEW) {

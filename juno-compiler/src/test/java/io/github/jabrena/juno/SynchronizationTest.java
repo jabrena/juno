@@ -194,7 +194,7 @@ class SynchronizationTest {
                 import java.util.concurrent.locks.ReentrantLock;
                 public final class UnsupportedLockApi {
                     public static void main() {
-                        new ReentrantLock(true).lock();
+                        new ReentrantLock().isLocked();
                     }
                 }
                 """;
@@ -204,7 +204,7 @@ class SynchronizationTest {
         assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnsupportedLockApi"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("restricted ReentrantLock subset")
-                .hasMessageContaining("new ReentrantLock(), lock(), tryLock(), and unlock()");
+                .hasMessageContaining("lockInterruptibly(), tryLock(), and unlock()");
     }
 
     @Test

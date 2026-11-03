@@ -33,6 +33,10 @@ import static io.github.jabrena.juno.bytecode.Opcodes.PUTSTATIC;
  */
 final class EnumResolver {
     private static final String SUBTASK_STATE = "java/util/concurrent/StructuredTaskScope$Subtask$State";
+    /** {@code TimeUnit} is not loaded as an enum class, so its constants resolve here, by their declaration order. */
+    private static final String TIME_UNIT = "java/util/concurrent/TimeUnit";
+    private static final List<String> TIME_UNIT_CONSTANTS = List.of("NANOSECONDS", "MICROSECONDS", "MILLISECONDS",
+            "SECONDS", "MINUTES", "HOURS", "DAYS");
 
     private final Map<String, JavaClass> classes;
     private final BytecodeDecoder decoder;
@@ -51,6 +55,10 @@ final class EnumResolver {
                 case "FAILED" -> 2;
                 default -> null;
             };
+        }
+        if (field.owner().equals(TIME_UNIT)) {
+            int unit = TIME_UNIT_CONSTANTS.indexOf(field.name());
+            return unit < 0 ? null : unit;
         }
         JavaClass owner = classes.get(field.owner());
         int ordinal = owner == null || !owner.isEnum() ? -1 : owner.enumConstantNames().indexOf(field.name());

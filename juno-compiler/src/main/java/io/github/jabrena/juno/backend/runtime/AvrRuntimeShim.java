@@ -255,7 +255,8 @@ public final class AvrRuntimeShim {
                     uses(ShimFeature.SCOPED_VALUES),
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException"),
-                    throwableClasses.indexOf("java/lang/InterruptedException")));
+                    throwableClasses.indexOf("java/lang/InterruptedException"),
+                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException")));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }
