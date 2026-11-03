@@ -5,7 +5,9 @@ import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -29,11 +31,11 @@ import io.github.jabrena.juno.util.Delay;
  * not verified on a particular chassis. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpGyroBoy {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final NineAxisMotionShield IMU = new NineAxisMotionShield();
     private static final Clock CLOCK = ArduinoUno.getClock();
-    private static final int LEFT = PoweredUpHubRemote.PORT_A;
-    private static final int RIGHT = PoweredUpHubRemote.PORT_B;
+    private static final HubPort LEFT = HubPort.A;
+    private static final HubPort RIGHT = HubPort.B;
 
     /** {@code 1} or {@code -1}: makes a positive angle mean the robot is leaning forwards. */
     private static final int ANGLE_SIGN = 1;
@@ -82,7 +84,7 @@ public class PoweredUpGyroBoy {
                     HUB.disconnect();
                     continue;
                 }
-                HUB.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
+                HUB.setLedColor(HubColor.GREEN);
             }
             app.waitForUpright();
             Serial.println("Balancing");

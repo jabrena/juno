@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoPoweredUpHubInfo {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final int REPORT_INTERVAL_MS = 2000;
 
     private NanoPoweredUpHubInfo() {

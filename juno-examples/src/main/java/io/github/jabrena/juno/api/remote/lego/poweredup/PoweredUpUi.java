@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.BOTTOM_HEIGHT;
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.BOTTOM_Y;
@@ -22,14 +23,14 @@ final class PoweredUpUi {
     }
 
     static boolean isMotor(int type) {
-        return type == PoweredUpHubRemote.DEVICE_MEDIUM_LINEAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_MEDIUM_ANGULAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_LARGE_ANGULAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_XL_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR;
+        return type == RemotePoweredUpHub.DEVICE_MEDIUM_LINEAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_MOVE_HUB_MEDIUM_LINEAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_MEDIUM_ANGULAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_LARGE_ANGULAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_XL_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR;
     }
 
     static int clamp(int power) {
@@ -91,14 +92,14 @@ final class PoweredUpUi {
         tft.print(label);
     }
 
-    static String portLetter(int port) {
-        if (port == PoweredUpHubRemote.PORT_A) {
+    static String portLetter(HubPort port) {
+        if (port == HubPort.A) {
             return "A";
         }
-        if (port == PoweredUpHubRemote.PORT_B) {
+        if (port == HubPort.B) {
             return "B";
         }
-        if (port == PoweredUpHubRemote.PORT_C) {
+        if (port == HubPort.C) {
             return "C";
         }
         return "D";
@@ -109,13 +110,13 @@ final class PoweredUpUi {
      * It is not padded: a changed device redraws the whole view first, so no older text is left behind.
      */
     static void printDevice(TftTouchShield tft, int type) {
-        if (type == PoweredUpHubRemote.DEVICE_NONE) {
+        if (type == RemotePoweredUpHub.DEVICE_NONE) {
             tft.print("-- empty --");
         } else if (isMotor(type)) {
             printMotorName(tft, type);
-        } else if (type == PoweredUpHubRemote.DEVICE_COLOR_DISTANCE_SENSOR) {
+        } else if (type == RemotePoweredUpHub.DEVICE_COLOR_DISTANCE_SENSOR) {
             tft.print("Color/dist. sensor");
-        } else if (type == PoweredUpHubRemote.DEVICE_MOTION_SENSOR) {
+        } else if (type == RemotePoweredUpHub.DEVICE_MOTION_SENSOR) {
             tft.print("Motion sensor");
         } else {
             tft.print("Device 0x");
@@ -124,14 +125,14 @@ final class PoweredUpUi {
     }
 
     private static void printMotorName(TftTouchShield tft, int type) {
-        if (type == PoweredUpHubRemote.DEVICE_TECHNIC_XL_MOTOR) {
+        if (type == RemotePoweredUpHub.DEVICE_TECHNIC_XL_MOTOR) {
             tft.print("Technic XL motor");
-        } else if (type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_LARGE_ANGULAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR) {
+        } else if (type == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_LARGE_ANGULAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_ANGULAR_MOTOR) {
             tft.print("Large motor");
-        } else if (type == PoweredUpHubRemote.DEVICE_MEDIUM_ANGULAR_MOTOR
-                || type == PoweredUpHubRemote.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR) {
+        } else if (type == RemotePoweredUpHub.DEVICE_MEDIUM_ANGULAR_MOTOR
+                || type == RemotePoweredUpHub.DEVICE_TECHNIC_MEDIUM_ANGULAR_MOTOR) {
             tft.print("Medium ang. motor");
         } else {
             tft.print("Medium motor");

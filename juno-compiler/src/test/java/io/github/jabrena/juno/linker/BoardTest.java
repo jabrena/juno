@@ -513,13 +513,14 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (hub.connect(1000)) {
-                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
+                            hub.getMotor(HubPort.A).drive(50);
                         }
                     }
                 }
@@ -539,16 +540,17 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (hub.connect(1000)) {
-                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);
+                            hub.getMotor(HubPort.A).drive(50);
                         }
                     }
                 }

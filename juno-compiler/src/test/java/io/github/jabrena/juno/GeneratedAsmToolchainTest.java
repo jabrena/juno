@@ -960,16 +960,18 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
-                        hub.setLedColor(PoweredUpHubRemote.COLOR_BLUE);
-                        hub.setMotorPower(PoweredUpHubRemote.PORT_A, 40);
+                        hub.setLedColor(HubColor.BLUE);
+                        hub.getMotor(HubPort.A).drive(40);
                         Delay.millis(1000);
-                        hub.brakeMotor(PoweredUpHubRemote.PORT_A);
-                        if (hub.hubType() != PoweredUpHubRemote.TYPE_UNKNOWN && hub.isConnected()) {
+                        hub.getMotor(HubPort.A).stop();
+                        if (hub.hubType() != RemotePoweredUpHub.TYPE_UNKNOWN && hub.isConnected()) {
                             hub.disconnect();
                         }
                         hub.switchOff();
@@ -1363,14 +1365,15 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
-                        hub.enableSensor(PoweredUpHubRemote.PORT_TECHNIC_GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
+                        hub.enableSensor(HubPort.TECHNIC_GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
                         hub.setLedRgb(255, 128, 0);
-                        int pair = hub.linkMotors(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.PORT_B);
+                        int pair = hub.linkMotors(HubPort.A, HubPort.B);
                         if (pair >= 0 && hub.batteryMillivolts() > 6000
                                 && hub.currentMilliamps() < 2000) {
                             hub.setLinkedMotorPower(pair, 40, 40);
@@ -1378,9 +1381,9 @@ class GeneratedAsmToolchainTest {
                             hub.unlinkMotors(pair);
                         }
                         while (hub.isConnected()) {
-                            if (hub.sensorReportSize(PoweredUpHubRemote.PORT_TECHNIC_GYRO) >= 6
-                                    && hub.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_GYRO, 2, 2) > 100) {
-                                hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            if (hub.sensorReportSize(HubPort.TECHNIC_GYRO) >= 6
+                                    && hub.readSensorValue(HubPort.TECHNIC_GYRO, 2, 2) > 100) {
+                                hub.getMotor(HubPort.A).stop();
                             }
                         }
                     }
@@ -1405,10 +1408,10 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         byte[] name = new byte[20];
                         int length = hub.hubName(name, name.length);
@@ -1441,15 +1444,16 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
-                        if (hub.portDevice(PoweredUpHubRemote.PORT_B)
-                                == PoweredUpHubRemote.DEVICE_TECHNIC_LARGE_MOTOR) {
-                            hub.setMotorPower(PoweredUpHubRemote.PORT_B, 30);
-                            hub.holdMotor(PoweredUpHubRemote.PORT_B);
+                        if (hub.portDevice(HubPort.B)
+                                == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR) {
+                            hub.getMotor(HubPort.B).drive(30);
+                            hub.getMotor(HubPort.B).hold();
                         }
                     }
                 }
@@ -1473,19 +1477,21 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
-                        hub.setLedColor(PoweredUpHubRemote.COLOR_GREEN);
-                        hub.setMotorPower(PoweredUpHubRemote.PORT_A, -40);
+                        hub.setLedColor(HubColor.GREEN);
+                        hub.getMotor(HubPort.A).drive(-40);
                         Delay.millis(1000);
-                        hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+                        hub.getMotor(HubPort.A).stop();
                     }
                 }
                 """;
@@ -2129,15 +2135,16 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class LegoRuntime {
                     public static void main(String[] args) {
-                        PoweredUpHubRemote hub = new PoweredUpHubRemote();
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (hub.connect(0) && hub.isConnected()) {
-                            hub.enableSensor(PoweredUpHubRemote.PORT_A, PoweredUpHubRemote.MODE_MOTOR_POSITION);
-                            hub.setMotorPower(PoweredUpHubRemote.PORT_A, hub.readSensor(PoweredUpHubRemote.PORT_A));
-                            hub.setLedColor(hub.hubType());
-                            hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+                            hub.enableSensor(HubPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                            hub.getMotor(HubPort.A).drive(hub.readSensor(HubPort.A));
+                            hub.setLedRgb(hub.hubType(), 0, 0);
+                            hub.getMotor(HubPort.A).stop();
                             hub.switchOff();
                             hub.disconnect();
                         }

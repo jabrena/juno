@@ -4,7 +4,8 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -21,11 +22,11 @@ import io.github.jabrena.juno.util.Delay;
  * under 50 ms. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubLatencyProbe {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final Clock CLOCK = ArduinoUno.getClock();
-    private static final int LEFT = PoweredUpHubRemote.PORT_A;
-    private static final int RIGHT = PoweredUpHubRemote.PORT_B;
-    private static final int GYRO = PoweredUpHubRemote.PORT_TECHNIC_GYRO;
+    private static final HubPort LEFT = HubPort.A;
+    private static final HubPort RIGHT = HubPort.B;
+    private static final HubPort GYRO = HubPort.TECHNIC_GYRO;
     private static final int SENSOR_SETTLE_MILLIS = 500;
     private static final int REPORT_WINDOW_MILLIS = 2000;
     private static final int COMMANDS = 100;
@@ -42,8 +43,8 @@ public class PoweredUpHubLatencyProbe {
             if (!HUB.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
                 HUB.connect(0);
-                HUB.enableSensor(GYRO, PoweredUpHubRemote.MODE_IMU_VALUES);
-                HUB.enableSensor(LEFT, PoweredUpHubRemote.MODE_MOTOR_POSITION);
+                HUB.enableSensor(GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
+                HUB.enableSensor(LEFT, RemotePoweredUpHub.MODE_MOTOR_POSITION);
                 Delay.millis(SENSOR_SETTLE_MILLIS);
             }
             app.measureReports();
@@ -81,14 +82,14 @@ public class PoweredUpHubLatencyProbe {
     private void measureMotion() {
         int rest = HUB.readSensor(LEFT);
         int started = CLOCK.millis();
-        HUB.setMotorPower(LEFT, MOTOR_POWER);
+        HUB.getMotor(LEFT).drive(MOTOR_POWER);
         int moved = -1;
         while (moved < 0 && CLOCK.millis() - started < MOTION_TIMEOUT_MILLIS) {
             if (Math.abs(HUB.readSensor(LEFT) - rest) >= MOTION_DEGREES) {
                 moved = CLOCK.millis() - started;
             }
         }
-        HUB.brakeMotor(LEFT);
+        HUB.getMotor(LEFT).stop();
         Serial.println(moved < 0 ? "Motor A did not move: is a tacho motor on port A?"
                 : "Motor A started moving after " + moved + " ms");
     }

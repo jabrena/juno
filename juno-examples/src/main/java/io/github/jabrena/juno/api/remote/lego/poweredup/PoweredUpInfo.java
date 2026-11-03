@@ -1,14 +1,15 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.CONTENT_Y;
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.MARGIN;
 
 /** The INFO view of {@link PoweredUpHubTFT}. */
 final class PoweredUpInfo {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private PoweredUpInfo() {
     }
 
@@ -49,11 +50,11 @@ final class PoweredUpInfo {
     }
 
     private static void printHubType(TftTouchShield tft, PoweredUpState s) {
-        if (s.hubType == PoweredUpHubRemote.TYPE_TECHNIC_HUB) {
+        if (s.hubType == RemotePoweredUpHub.TYPE_TECHNIC_HUB) {
             tft.print("Technic Hub      ");
-        } else if (s.hubType == PoweredUpHubRemote.TYPE_MOVE_HUB) {
+        } else if (s.hubType == RemotePoweredUpHub.TYPE_MOVE_HUB) {
             tft.print("Move Hub         ");
-        } else if (s.hubType == PoweredUpHubRemote.TYPE_CITY_HUB) {
+        } else if (s.hubType == RemotePoweredUpHub.TYPE_CITY_HUB) {
             tft.print("City Hub         ");
         } else {
             tft.print("Hub 0x");
@@ -65,14 +66,14 @@ final class PoweredUpInfo {
     /** Tilt angles (degrees) from the Technic Hub's built-in sensor; other hubs have none. */
     private static void drawTilt(TftTouchShield tft, PoweredUpState s) {
         tft.setCursor(MARGIN, infoLine(5));
-        if (s.hubType != PoweredUpHubRemote.TYPE_TECHNIC_HUB) {
+        if (s.hubType != RemotePoweredUpHub.TYPE_TECHNIC_HUB) {
             tft.print("Tilt n/a            ");
             return;
         }
         tft.print("Tilt ");
-        tft.print(HUB.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 0, 2));
+        tft.print(HUB.readSensorValue(HubPort.TECHNIC_TILT, 0, 2));
         tft.print(" ");
-        tft.print(HUB.readSensorValue(PoweredUpHubRemote.PORT_TECHNIC_TILT, 1, 2));
+        tft.print(HUB.readSensorValue(HubPort.TECHNIC_TILT, 1, 2));
         tft.print("    ");
     }
 }

@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
+import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
 /** The shared state and layout constants of {@link PoweredUpHubTFT} and its helper classes. */
 final class PoweredUpState {
     static final int PORTS = 4;
+    static final HubPort[] HUB_PORTS = {HubPort.A, HubPort.B, HubPort.C, HubPort.D};
     static final int POWER_STEP = 20;
     static final int CONNECT_MILLIS = 10000;
     static final int TOUCH_LOCKOUT_MILLIS = 250;

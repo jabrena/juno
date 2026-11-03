@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpHubRemote;
+import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.BUTTON_HEIGHT_MOTOR;
 import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.CONTENT_HEIGHT;
@@ -25,7 +25,7 @@ import static io.github.jabrena.juno.api.remote.lego.poweredup.PoweredUpState.WI
 
 /** The PAIR view of {@link PoweredUpHubTFT}: the first two motors driven together. */
 final class PoweredUpPair {
-    private static final PoweredUpHubRemote HUB = new PoweredUpHubRemote();
+    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private PoweredUpPair() {
     }
 
@@ -38,8 +38,8 @@ final class PoweredUpPair {
         } else if (PoweredUpUi.inBox(x, y, MARGIN, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
             stop(s);
         } else if (PoweredUpUi.inBox(x, y, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, ROW_STOP, WIDE_BUTTON_WIDTH, BUTTON_HEIGHT_MOTOR)) {
-            s.zero[s.pairA] = HUB.readSensor(s.pairA);
-            s.zero[s.pairB] = HUB.readSensor(s.pairB);
+            s.zero[s.pairA] = HUB.readSensor(PoweredUpState.HUB_PORTS[s.pairA]);
+            s.zero[s.pairB] = HUB.readSensor(PoweredUpState.HUB_PORTS[s.pairB]);
         } else if (y >= ROW_LEVELS && y < ROW_LEVELS + BUTTON_HEIGHT_MOTOR) {
             int level = (x - MARGIN) / (LEVEL_WIDTH + LEVEL_GAP);
             if (level >= STOP_COAST && level <= STOP_HOLD) {
@@ -62,11 +62,11 @@ final class PoweredUpPair {
         }
         if (deltaA != 0) {
             s.power[s.pairA] = PoweredUpUi.clamp(s.power[s.pairA] + deltaA);
-            HUB.setMotorPower(s.pairA, s.power[s.pairA]);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairA]).drive(s.power[s.pairA]);
         }
         if (deltaB != 0) {
             s.power[s.pairB] = PoweredUpUi.clamp(s.power[s.pairB] + deltaB);
-            HUB.setMotorPower(s.pairB, s.power[s.pairB]);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairB]).drive(s.power[s.pairB]);
         }
     }
 
@@ -75,7 +75,7 @@ final class PoweredUpPair {
             dropSync(s);
             return;
         }
-        s.link = HUB.linkMotors(s.pairA, s.pairB);
+        s.link = HUB.linkMotors(PoweredUpState.HUB_PORTS[s.pairA], PoweredUpState.HUB_PORTS[s.pairB]);
         s.pairSync = s.link >= 0;
         if (s.pairSync) {
             s.power[s.pairB] = s.power[s.pairA];
@@ -96,18 +96,18 @@ final class PoweredUpPair {
     /** Stops both motors of the pair with the chosen level. */
     private static void stop(PoweredUpState s) {
         if (s.stopLevel == STOP_HOLD) {
-            HUB.holdMotor(s.pairA);
-            HUB.holdMotor(s.pairB);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairA]).hold();
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairB]).hold();
         } else if (s.pairSync && s.stopLevel == STOP_BRAKE) {
             HUB.brakeLinkedMotors(s.link);
         } else if (s.stopLevel == STOP_BRAKE) {
-            HUB.brakeMotor(s.pairA);
-            HUB.brakeMotor(s.pairB);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairA]).stop();
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairB]).stop();
         } else if (s.pairSync) {
             HUB.setLinkedMotorPower(s.link, 0, 0);
         } else {
-            HUB.setMotorPower(s.pairA, 0);
-            HUB.setMotorPower(s.pairB, 0);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairA]).drive(0);
+            HUB.getMotor(PoweredUpState.HUB_PORTS[s.pairB]).drive(0);
         }
         s.power[s.pairA] = 0;
         s.power[s.pairB] = 0;
@@ -146,9 +146,9 @@ final class PoweredUpPair {
             return;
         }
         tft.setCursor(MARGIN, PAIR_ROW_SYNC + 10);
-        tft.print(PoweredUpUi.portLetter(s.pairA));
+        tft.print(PoweredUpUi.portLetter(PoweredUpState.HUB_PORTS[s.pairA]));
         tft.print(" + ");
-        tft.print(PoweredUpUi.portLetter(s.pairB));
+        tft.print(PoweredUpUi.portLetter(PoweredUpState.HUB_PORTS[s.pairB]));
         PoweredUpUi.drawButton(tft, WIDTH - MARGIN - WIDE_BUTTON_WIDTH, PAIR_ROW_SYNC, WIDE_BUTTON_WIDTH,
                 s.pairSync ? TftTouchShield.GREEN : TftTouchShield.GRAY, s.pairSync ? "SYNC ON" : "SYNC OFF",
                 WIDTH - MARGIN - WIDE_BUTTON_WIDTH + (s.pairSync ? 14 : 8));

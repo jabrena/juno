@@ -53,7 +53,7 @@ public enum Board {
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
      * access-point modes, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root
      * certificates), an HTTP and HTTPS server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and
-     * POP3), Bluetooth LE for {@code PoweredUpHubRemote}, the hardware random-number generator behind
+     * POP3), Bluetooth LE for {@code RemotePoweredUpHub}, the hardware random-number generator behind
      * {@code UUID.randomUUID()}, {@code java.math}, the double-precision libm its newlib toolchain ships,
      * structured concurrency over FreeRTOS tasks, and a USB HID mouse through the core's TinyUSB stack, sharing the
      * USB port with the serial console; the other optional capabilities are not wired to its core yet.
