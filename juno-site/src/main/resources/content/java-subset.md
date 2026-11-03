@@ -207,12 +207,13 @@ blink.run();
 
 - `synchronized` blocks, `volatile` fields, `ReentrantLock` (`lock`, `lockInterruptibly`, `tryLock`, `tryLock(long,
   TimeUnit)` and `unlock`), and the atomic classes `AtomicInteger`, `AtomicBoolean` and `AtomicLong`. `new
-  ReentrantLock(true)` is a fair lock: waiting threads are granted it in arrival order.
+  ReentrantLock(true)` is a fair lock: `lock()` waiters are granted it in arrival order. The timed `tryLock` and the
+  interruptible `lockInterruptibly` do not queue, so they can overtake waiting threads.
 - `Object.wait()`, `notify()` and `notifyAll()`, only while the monitor is held (inside `synchronized`). `wait(long)` is
   not supported.
 - `CountDownLatch(int)` with `countDown()`, `getCount()`, `await()` and `await(long, TimeUnit)`, and `Semaphore(int)` or
   `Semaphore(int, boolean)` with `acquire()`, `release()`, `tryAcquire()`, `tryAcquire(long, TimeUnit)` and
-  `availablePermits()`. `new Semaphore(n, true)` queues its acquires in arrival order. `acquire(int)` is not supported.
+  `availablePermits()`. `new Semaphore(n, true)` queues its `acquire()` calls in arrival order; the timed `tryAcquire` does not queue. `acquire(int)` is not supported.
 - `CyclicBarrier(int)` and `CyclicBarrier(int, Runnable)` with `await()` and `getParties()`. The barrier action runs on
   the thread that arrives last, before the others are released. An interrupt breaks the barrier: the interrupted thread
   gets `InterruptedException`, and the other waiters and later callers get `BrokenBarrierException`.
