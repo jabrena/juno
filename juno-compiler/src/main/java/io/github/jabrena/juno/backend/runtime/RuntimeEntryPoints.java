@@ -1,7 +1,10 @@
 package io.github.jabrena.juno.backend.runtime;
 
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
+import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
+import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
@@ -24,6 +27,29 @@ public final class RuntimeEntryPoints {
             StructuredTaskSupport.CONFIGURATION_ENTRY_METHOD, "juno_task_configuration_entry",
             ScopedValueSupport.ENTRY_METHOD, "juno_scoped_call_entry");
 
+
+    /**
+     * Whether the program reads a socket's input stream and opens no SD card file or stream, so its one shared
+     * {@code InputStream.read} can go straight to the socket and the SD runtime (and its RAM) can be left out.
+     */
+    public boolean socketStreamsOnly(IrProgram program) {
+        boolean readsSocket = false;
+        for (IrMethod method : program.methods()) {
+            for (IrBasicBlock block : method.blocks()) {
+                for (IrInstruction instruction : block.instructions()) {
+                    if (instruction instanceof IrInstruction.IntrinsicCall call) {
+                        if (call.intrinsic() == Intrinsic.SOCKET_GET_INPUT_STREAM) {
+                            readsSocket = true;
+                        } else if (call.intrinsic().name().startsWith("SD_")
+                                && call.intrinsic() != Intrinsic.SD_FILE_READ_BYTES) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return readsSocket;
+    }
 
     /**
      * Whether the program starts a thread, forks a task or takes a lock, so it needs the preemptive thread runtime.

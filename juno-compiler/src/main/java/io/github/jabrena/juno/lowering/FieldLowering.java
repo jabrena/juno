@@ -19,6 +19,7 @@ import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LocalDateTimeSupport;
 import io.github.jabrena.juno.linker.LockSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
+import io.github.jabrena.juno.linker.SocketSupport;
 import io.github.jabrena.juno.linker.ThreadSupport;
 import io.github.jabrena.juno.linker.UuidSupport;
 import org.jspecify.annotations.Nullable;
@@ -49,6 +50,7 @@ final class FieldLowering implements InstructionLowering {
 
     private final UuidSupport uuidSupport = new UuidSupport();
     private final DatagramSupport datagramSupport = new DatagramSupport();
+    private final SocketSupport socketSupport = new SocketSupport();
 
     private final LocalDateTimeSupport localDateTimeSupport = new LocalDateTimeSupport();
 
@@ -217,6 +219,7 @@ final class FieldLowering implements InstructionLowering {
                 || bigNumberSupport.isBigNumberType(descriptor)
                 || uuidSupport.isUuidType(descriptor)
                 || datagramSupport.isDatagramType(descriptor)
+                || socketSupport.isSocketType(descriptor)
                 || localDateTimeSupport.isLocalDateTimeType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)

@@ -36,6 +36,8 @@ public enum ShimFeature {
     TCP,
     /** {@code java.net} datagram handles ({@code InetAddress}, {@code DatagramPacket}, {@code DatagramSocket}) over UDP. */
     DATAGRAM,
+    /** {@code java.net.Socket} and its {@code OutputStream}/{@code InputStream} over one caller-owned TCP connection. */
+    SOCKET,
     SD,
     /** {@code java.io.RandomAccessFile} over the SD open-file table; raises JDK exceptions, so it needs {@link #EXCEPTIONS}. */
     RANDOM_ACCESS_FILE,

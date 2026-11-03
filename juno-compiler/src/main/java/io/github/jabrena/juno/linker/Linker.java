@@ -48,6 +48,7 @@ public final class Linker {
 
     private final UuidSupport uuidSupport = new UuidSupport();
     private final DatagramSupport datagramSupport = new DatagramSupport();
+    private final SocketSupport socketSupport = new SocketSupport();
 
     private final LocalDateTimeSupport localDateTimeSupport = new LocalDateTimeSupport();
 
@@ -277,6 +278,7 @@ public final class Linker {
         bigNumberSupport.validateCall(called);
         uuidSupport.validateCall(called);
         datagramSupport.validateCall(called);
+        socketSupport.validateCall(called);
         localDateTimeSupport.validateCall(called);
         ClojureSupport.validateCall(called);
         if (called.equals(DRAW_TEXT_METHOD)) {
@@ -337,7 +339,9 @@ public final class Linker {
                 Intrinsic.WIFI_GATEWAY_IP, Intrinsic.WIFI_MAC_ADDRESS, Intrinsic.UDP_LISTEN, Intrinsic.UDP_SEND, Intrinsic.UDP_BROADCAST, Intrinsic.UDP_RECEIVE,
                 Intrinsic.UDP_STOP, Intrinsic.TCP_OPEN, Intrinsic.TCP_WRITE, Intrinsic.TCP_READ, Intrinsic.TCP_CLOSE,
                 Intrinsic.DATAGRAM_SOCKET_NEW, Intrinsic.DATAGRAM_SOCKET_SEND, Intrinsic.DATAGRAM_SOCKET_RECEIVE,
-                Intrinsic.DATAGRAM_SOCKET_SET_SO_TIMEOUT, Intrinsic.DATAGRAM_SOCKET_CLOSE);
+                Intrinsic.DATAGRAM_SOCKET_SET_SO_TIMEOUT, Intrinsic.DATAGRAM_SOCKET_CLOSE,
+                Intrinsic.SOCKET_NEW, Intrinsic.SOCKET_GET_OUTPUT_STREAM, Intrinsic.SOCKET_GET_INPUT_STREAM,
+                Intrinsic.SOCKET_SET_SO_TIMEOUT, Intrinsic.SOCKET_CLOSE, Intrinsic.SOCKET_OUTPUT_STREAM_WRITE);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
                 Intrinsic.HTTPS_QUERY,

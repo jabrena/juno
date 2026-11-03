@@ -164,8 +164,16 @@ extern "C" int32_t juno_sd_file_read(int32_t handle) {
   return juno_sd_file(handle)->read();
 }
 
+// The socket's stream shares this read: when the socket runtime is linked and owns the handle, the read goes to it.
+extern "C" int32_t juno_socket_stream_owns(int32_t handle) __attribute__((weak));
+extern "C" int32_t juno_socket_stream_read(int32_t handle, uint8_t* payload, int32_t offset, int32_t length)
+    __attribute__((weak));
+
 extern "C" int32_t juno_sd_file_read_bytes(
     int32_t handle, uint8_t* buffer, int32_t offset, int32_t length) {
+  if (juno_socket_stream_owns != nullptr && juno_socket_stream_owns(handle)) {
+    return juno_socket_stream_read(handle, buffer, offset, length);
+  }
   if (buffer == nullptr || offset < 0 || length < 0) {
     juno_panic();
     return -1;

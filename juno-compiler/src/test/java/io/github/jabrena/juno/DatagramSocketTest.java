@@ -80,6 +80,30 @@ class DatagramSocketTest {
                 .hasMessageContaining("java.net datagram subset does not support");
     }
 
+    @Test
+    @DisplayName("Lowers a socket-only program's stream read straight to the socket, without the SD runtime")
+    void shouldLowerASocketOnlyStreamReadStraightToTheSocket() throws Exception {
+        // Given
+        CompilationResult result = compile("""
+                public static void main() throws java.io.IOException {
+                    java.net.InetAddress peer = java.net.InetAddress.getByAddress(new byte[] {10, 0, 0, 2});
+                    java.net.Socket socket = new java.net.Socket(peer, 7007);
+                    socket.setSoTimeout(1000);
+                    byte[] line = new byte[4];
+                    socket.getOutputStream().write(line, 0, line.length);
+                    int read = socket.getInputStream().read(line, 0, line.length);
+                    socket.close();
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).contains(
+                "bl juno_socket_new", "bl juno_socket_set_so_timeout", "bl juno_socket_output_stream_write",
+                "bl juno_socket_stream_read", "bl juno_socket_close");
+        assertThat(result.runtimeShim()).contains("juno_socket_stream_read", "juno_tcp_read", "juno_tcp_open")
+                .doesNotContain("juno_sd_files");
+    }
+
     private CompilationResult compile(String members) throws Exception {
         String source = """
                 package demo;

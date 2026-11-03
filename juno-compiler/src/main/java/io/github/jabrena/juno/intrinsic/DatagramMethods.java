@@ -10,9 +10,12 @@ import java.util.Map;
  * over a caller-owned buffer, and {@code DatagramSocket} on the program's single UDP socket. Programs use the JDK
  * classes unchanged; the compiler lowers them onto the same shims as the UDP transport, so a board runs the same code.
  *
- * <p>Deliberate differences from the JDK: the packet's capacity is the length its constructor is given, the address
- * object a receive fills is the packet's own, a second socket replaces the first, and failures raise
- * {@code IOException} (a timeout too) rather than the JDK's more specific subclasses.
+ * <p>Deliberate differences from the JDK: the packet's capacity is the length its constructor is given, a second
+ * socket replaces the first, and failures raise {@code IOException} rather than the JDK's more specific subclasses.
+ * A receive that gets a datagram allocates that sender's address object, as the JDK does. A receive waits at most the
+ * socket's timeout and then returns a packet of length 0 instead of throwing, so a poll that hears nothing allocates
+ * nothing; a timeout of 0 polls once, and the JDK's unlimited wait is not supported. {@code InetAddress.equals} compares
+ * the address octets with another {@code InetAddress} passed as its argument.
  */
 public final class DatagramMethods {
     public static final String INET_ADDRESS = "java/net/InetAddress";
@@ -25,6 +28,7 @@ public final class DatagramMethods {
     static final Map<MethodRef, Intrinsic> METHODS = Map.ofEntries(
             Map.entry(new MethodRef(INET_ADDRESS, "getByAddress", "([B)Ljava/net/InetAddress;"),
                     Intrinsic.INET_ADDRESS_GET_BY_ADDRESS),
+            Map.entry(new MethodRef(INET_ADDRESS, "equals", "(Ljava/lang/Object;)Z"), Intrinsic.INET_ADDRESS_EQUALS),
             Map.entry(new MethodRef(DATAGRAM_PACKET, "<init>", "([BI)V"), Intrinsic.DATAGRAM_PACKET_NEW_RECEIVE),
             Map.entry(new MethodRef(DATAGRAM_PACKET, "<init>", "([BILjava/net/InetAddress;I)V"),
                     Intrinsic.DATAGRAM_PACKET_NEW_SEND),

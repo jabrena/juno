@@ -6,8 +6,8 @@ struct JunoInetAddress {
   int32_t octets[4];
 };
 
-// A packet owns the address block a receive fills, so receiving never allocates; capacity is the length its
-// constructor was given, which the datagram can fill at most.
+// capacity is the length the packet's constructor was given, which a datagram can fill at most. A received datagram
+// gets a fresh address object, as on the JDK, so a program can keep the sender of one datagram while the next arrives.
 struct JunoDatagramPacket {
   uint8_t* data;
   int32_t capacity;
@@ -72,11 +72,19 @@ static int32_t juno_datagram_packet_allocate(uint8_t* data, int32_t length, int3
   return juno_datagram_handle(packet);
 }
 
-// A receive packet owns the address block the socket fills, so it is allocated once, here, not per datagram.
 extern "C" int32_t juno_datagram_packet_new_receive(uint8_t* data, int32_t length) {
-  auto* address = static_cast<JunoInetAddress*>(juno_alloc(sizeof(JunoInetAddress), 4u));
-  for (int32_t index = 0; index < 4; index++) address->octets[index] = 0;
-  return juno_datagram_packet_allocate(data, length, juno_datagram_handle(address), 0);
+  return juno_datagram_packet_allocate(data, length, 0, 0);
+}
+
+extern "C" int32_t juno_inet_address_equals(int32_t handle, int32_t otherHandle) {
+  if (handle == 0 || otherHandle == 0) return 0;
+  auto* left = juno_datagram_pointer<JunoInetAddress>(handle);
+  auto* right = juno_datagram_pointer<JunoInetAddress>(otherHandle);
+  if (left == nullptr || right == nullptr) return 0;
+  for (int32_t index = 0; index < 4; index++) {
+    if (left->octets[index] != right->octets[index]) return 0;
+  }
+  return 1;
 }
 
 extern "C" int32_t juno_datagram_packet_new_send(uint8_t* data, int32_t length, int32_t address, int32_t port) {
@@ -157,12 +165,6 @@ extern "C" void juno_datagram_socket_receive(int32_t socketHandle, int32_t packe
   if (socket == nullptr) return;
   auto* packet = juno_datagram_pointer<JunoDatagramPacket>(packetHandle);
   if (packet == nullptr) return;
-  if (packet->address == 0) {
-    juno_datagram_raise(JUNO_DATAGRAM_ILLEGAL_ARGUMENT, "Packet has no address to receive into");
-    return;
-  }
-  auto* address = juno_datagram_pointer<JunoInetAddress>(packet->address);
-  if (address == nullptr) return;
   int32_t source[5];
   unsigned long start = millis();
   for (;;) {
@@ -172,14 +174,16 @@ extern "C" void juno_datagram_socket_receive(int32_t socketHandle, int32_t packe
       return;
     }
     if (received > 0) {
-      packet->length = received;
-      for (int32_t index = 0; index < 4; index++) address->octets[index] = source[index];
+      auto* sender = static_cast<JunoInetAddress*>(juno_alloc(sizeof(JunoInetAddress), 4u));
+      for (int32_t index = 0; index < 4; index++) sender->octets[index] = source[index];
+      packet->address = juno_datagram_handle(sender);
       packet->port = source[4];
+      packet->length = received;
       return;
     }
-    // Zero means wait without a limit, as in the JDK; any other value bounds the wait.
-    if (socket->timeoutMillis > 0 && millis() - start >= static_cast<unsigned long>(socket->timeoutMillis)) {
-      juno_datagram_raise(JUNO_DATAGRAM_IO, "Receive timed out");
+    // A timeout returns an empty packet rather than raising, so a poll loop allocates nothing; zero polls once.
+    if (millis() - start >= static_cast<unsigned long>(socket->timeoutMillis)) {
+      packet->length = 0;
       return;
     }
     delay(1);

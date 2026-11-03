@@ -2,9 +2,11 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.intrinsic.DatagramMethods;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
+import io.github.jabrena.juno.intrinsic.SocketMethods;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
+import io.github.jabrena.juno.linker.SocketSupport;
 import io.github.jabrena.juno.linker.StructuredTaskSupport;
 import io.github.jabrena.juno.linker.UuidSupport;
 
@@ -23,6 +25,7 @@ final class RuntimeRaisedExceptions {
 
     private final UuidSupport uuidSupport = new UuidSupport();
     private final DatagramSupport datagramSupport = new DatagramSupport();
+    private final SocketSupport socketSupport = new SocketSupport();
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
 
@@ -37,6 +40,9 @@ final class RuntimeRaisedExceptions {
         if (bigNumberSupport.isBigNumberOwner(owner)) {
             return List.of(ExceptionRouting.ARITHMETIC_EXCEPTION, "java/lang/NumberFormatException",
                     "java/lang/IllegalArgumentException");
+        }
+        if (socketSupport.isSocketOwner(owner)) {
+            return SocketMethods.EXCEPTIONS;
         }
         if (datagramSupport.isDatagramOwner(owner)) {
             return DatagramMethods.EXCEPTIONS;
