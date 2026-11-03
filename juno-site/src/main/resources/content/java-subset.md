@@ -215,6 +215,9 @@ blink.run();
   barrier, and later calls on it throw `InterruptedException`, where the JDK throws `BrokenBarrierException`.
 - `ReentrantLock.newCondition()`, with `await()`, `signal()` and `signalAll()` while the lock is held. Timed waits are
   not supported.
+- `ReentrantReadWriteLock()` with `readLock()` and `writeLock()`, which return a `Lock`. The `Lock` (or the read or
+  write lock) supports `lock()`, `tryLock()` and `unlock()`, and `Lock` values may hold a `ReentrantLock` too. A fair
+  lock, `newCondition()` on a read or write lock and `lockInterruptibly()` are not supported.
 
 ## Concurrency behaviour
 

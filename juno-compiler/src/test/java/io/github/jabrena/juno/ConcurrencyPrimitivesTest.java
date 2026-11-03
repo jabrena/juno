@@ -40,7 +40,10 @@ class ConcurrencyPrimitivesTest {
                 import java.util.concurrent.CyclicBarrier;
                 import java.util.concurrent.Semaphore;
                 import java.util.concurrent.locks.Condition;
+                import java.util.concurrent.locks.Lock;
+                import java.util.concurrent.locks.ReadWriteLock;
                 import java.util.concurrent.locks.ReentrantLock;
+                import java.util.concurrent.locks.ReentrantReadWriteLock;
                 @Board(%1$s.class)
                 public final class Gate {
                     static final class Job implements Runnable {
@@ -91,6 +94,14 @@ class ConcurrencyPrimitivesTest {
             } finally {
                 guard.unlock();
             }
+            ReentrantReadWriteLock rw = new ReentrantReadWriteLock();
+            ReadWriteLock view = rw;
+            view.readLock().lock();
+            view.readLock().unlock();
+            Lock writer = rw.writeLock();
+            writer.lock();
+            writer.unlock();
+            Serial.println(rw.writeLock().tryLock() ? 1 : 0);
             """;
 
     static Stream<Arguments> unsupportedCalls() {
@@ -98,6 +109,7 @@ class ConcurrencyPrimitivesTest {
                 arguments("Semaphore fairness", "Semaphore fair = new Semaphore(1, true);\n"),
                 arguments("CountDownLatch timed await", "new CountDownLatch(1).await(1, java.util.concurrent.TimeUnit.SECONDS);\n"),
                 arguments("Semaphore.acquire(int)", "new Semaphore(3).acquire(2);\n"),
+                arguments("ReentrantReadWriteLock fair", "new ReentrantReadWriteLock(true);\n"),
                 arguments("CyclicBarrier with a barrier action",
                         "new CyclicBarrier(2, () -> Serial.println(1)).await();\n"));
     }
@@ -121,6 +133,8 @@ class ConcurrencyPrimitivesTest {
                 "bl juno_thread_interrupt", "bl juno_thread_is_interrupted", "bl juno_thread_sleep_interruptible",
                 "bl juno_barrier_new", "bl juno_barrier_await", "bl juno_barrier_parties",
                 "bl juno_lock_new_condition", "bl juno_condition_signal", "bl juno_condition_signal_all",
+                "bl juno_rw_lock_new", "bl juno_rw_read_lock", "bl juno_rw_write_lock", "bl juno_lock_lock",
+                "bl juno_lock_unlock", "bl juno_lock_try_lock",
                 "bl juno_condition_await");
     }
 
