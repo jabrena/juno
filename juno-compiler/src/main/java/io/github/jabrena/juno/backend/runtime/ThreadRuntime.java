@@ -118,7 +118,8 @@ public final class ThreadRuntime {
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
-                            int failedExceptionClassId, int illegalStateExceptionClassId) {
+                            int failedExceptionClassId, int illegalStateExceptionClassId,
+                            int interruptedExceptionClassId) {
         String pendingSave = exceptions ? """
                 juno_slots[from].pending = juno_pending_exception;
                   juno_pending_exception = juno_slots[to].pending;""" : "";
@@ -161,6 +162,7 @@ public final class ThreadRuntime {
                   }""".replace("${JUNO_STRUCTURED_BODY}", structuredBody) : """
                 ${JUNO_ORDINARY_BODY}""";
         String taskRuntime = structuredTasks ? taskRuntime() : "";
+        String raiseInterrupted = raiseInterrupted(exceptions, interruptedExceptionClassId);
         String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
         String startPreemption = asynchronousPreemption ? """
                   static bool juno_preempt_started = false;
@@ -194,7 +196,8 @@ public final class ThreadRuntime {
                 .replace("${JUNO_STACK_SCAN}", stackScanFunction)
                 .replace("${JUNO_MAX_MONITORS}", Integer.toString(RuntimeLimits.MAX_MONITORS))
                 .replace("${JUNO_FAILED_EXCEPTION_CLASS_ID}", Integer.toString(failedExceptionClassId))
-                .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId));
+                .replace("${JUNO_ILLEGAL_STATE_EXCEPTION_CLASS_ID}", Integer.toString(illegalStateExceptionClassId))
+                .replace("${JUNO_RAISE_INTERRUPTED}", raiseInterrupted);
     }
 
     /**
@@ -221,6 +224,20 @@ public final class ThreadRuntime {
      */
     private String safepointPreemption() {
         return runtimeSource.load("avr/preemption.cpp");
+    }
+
+    /**
+     * The body of {@code juno_raise_interrupted}. Without the exception runtime no thread can be interrupted, so this
+     * raise is never reached.
+     */
+    private static String raiseInterrupted(boolean exceptions, int interruptedExceptionClassId) {
+        return exceptions ? """
+                  auto* exception = static_cast<int32_t*>(juno_alloc(8u, 4u));
+                  exception[0] = ${JUNO_INTERRUPTED_EXCEPTION_CLASS_ID};
+                  exception[1] = 0;
+                  juno_throw_raise(static_cast<int32_t>(reinterpret_cast<intptr_t>(exception)));"""
+                .replace("${JUNO_INTERRUPTED_EXCEPTION_CLASS_ID}", Integer.toString(interruptedExceptionClassId))
+                : "  juno_panic();";
     }
 
     /** Joiner-based scopes and subtask operations inserted only when the program reaches that API. */

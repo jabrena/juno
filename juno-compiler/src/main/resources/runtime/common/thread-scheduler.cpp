@@ -24,6 +24,8 @@ static constexpr uint32_t JUNO_TASK_SUCCESS = 16u;
 static constexpr uint32_t JUNO_TASK_FAILED = 32u;
 static constexpr uint32_t JUNO_TASK_CANCELLED = 64u;
 static constexpr uint32_t JUNO_TASK_RUNNABLE = 128u;
+// Thread.interrupt() sets it; the next blocking call on that thread takes it and throws InterruptedException.
+static constexpr uint32_t JUNO_THREAD_INTERRUPTED = 256u;
 
 struct JunoTaskScope {
   uint32_t policy;
@@ -54,6 +56,9 @@ struct JunoSlot {
   JunoThreadObject* joining;
   JunoTaskScope* scope;
   int32_t pending;
+  // Object.wait: the monitor this thread waits on (0 when it is not waiting) and whether a notify reached it.
+  uintptr_t waitKey;
+  uint32_t notified;
   ${JUNO_SLOT_BINDINGS}
 };
 
@@ -251,6 +256,60 @@ extern "C" int32_t juno_thread_is_alive(int32_t handle) {
       && (thread->flags & JUNO_THREAD_FINISHED) == 0u ? 1 : 0;
 }
 
+// The interrupt flag of the calling thread, cleared when taken. The main thread has no handle, so it is never interrupted.
+static bool juno_interrupt_pending() {
+  JunoThreadObject* self = juno_slots[juno_current_slot].thread;
+  if (self == nullptr || (self->flags & JUNO_THREAD_INTERRUPTED) == 0u) return false;
+  self->flags &= ~JUNO_THREAD_INTERRUPTED;
+  return true;
+}
+
+// Raises InterruptedException for the calling thread. Without the exception runtime an interrupt cannot be
+// requested, so the panic is only a guard.
+static void juno_raise_interrupted() {
+${JUNO_RAISE_INTERRUPTED}
+}
+
+extern "C" void juno_thread_interrupt(int32_t handle) {
+  JunoThreadObject* thread = juno_thread_of(handle);
+  thread->flags |= JUNO_THREAD_INTERRUPTED;
+  // A sleeping thread wakes at once; it sees the flag when its sleep returns.
+  for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
+    if (juno_slots[index].thread == thread && juno_slots[index].state == JUNO_SLOT_SLEEPING) {
+      juno_slots[index].wake = static_cast<uint32_t>(millis());
+    }
+  }
+}
+
+extern "C" int32_t juno_thread_is_interrupted(int32_t handle) {
+  return (juno_thread_of(handle)->flags & JUNO_THREAD_INTERRUPTED) != 0u ? 1 : 0;
+}
+
+extern "C" void juno_thread_sleep(int64_t millisToSleep);
+
+// Thread.sleep in a program with threads: it ends early, throwing InterruptedException, when interrupted.
+extern "C" void juno_thread_sleep_interruptible(int64_t millisToSleep) {
+  if (juno_interrupt_pending()) {
+    juno_raise_interrupted();
+    return;
+  }
+  if (juno_live_threads == 0u) {
+    juno_thread_sleep(millisToSleep);
+    return;
+  }
+  while (millisToSleep > 0) {
+    uint32_t chunk = millisToSleep > 0x3FFFFFFF ? 0x3FFFFFFFu : static_cast<uint32_t>(millisToSleep);
+    millisToSleep -= chunk;
+    juno_slots[juno_current_slot].state = JUNO_SLOT_SLEEPING;
+    juno_slots[juno_current_slot].wake = static_cast<uint32_t>(millis()) + chunk;
+    juno_sched_block();
+    if (juno_interrupt_pending()) {
+      juno_raise_interrupted();
+      return;
+    }
+  }
+}
+
 extern "C" void juno_thread_sleep(int64_t millisToSleep) {
   while (millisToSleep > 0) {
     uint32_t chunk = millisToSleep > 0x3FFFFFFF ? 0x3FFFFFFFu : static_cast<uint32_t>(millisToSleep);
@@ -328,6 +387,141 @@ extern "C" void juno_monitor_exit(int32_t handle) {
     monitor->owner = 0u;
     monitor->key = 0u;
   }
+}
+
+// Object.wait/notify/notifyAll. The monitor must be held (synchronized), as in the JDK; otherwise the program stops
+// with a message, like an unlock by a non-owner. A waiter releases the monitor completely, waits until a notify
+// (or an interrupt) reaches it, then takes the monitor back at the depth it had.
+static uintptr_t juno_monitor_key(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return static_cast<uintptr_t>(static_cast<uint32_t>(handle));
+}
+
+static JunoMonitor* juno_monitor_owned(uintptr_t key, const char* operation) {
+  JunoMonitor* monitor = juno_monitor_find(key, false);
+  if (monitor == nullptr || monitor->owner != juno_current_slot + 1u) {
+    Serial.print("[juno-monitor] ");
+    Serial.print(operation);
+    Serial.println(" without holding the monitor (IllegalMonitorStateException)");
+    juno_panic();
+  }
+  return monitor;
+}
+
+extern "C" void juno_monitor_wait(int32_t handle) {
+  uintptr_t key = juno_monitor_key(handle);
+  uint32_t index = juno_current_slot;
+  JunoMonitor* monitor = juno_monitor_owned(key, "wait");
+  uint32_t depth = monitor->depth;
+  monitor->owner = 0u;
+  monitor->depth = 0u;
+  monitor->key = 0u;
+  juno_slots[index].waitKey = key;
+  juno_slots[index].notified = 0u;
+  while (juno_slots[index].notified == 0u && !juno_interrupt_pending()) juno_thread_yield();
+  bool interrupted = juno_slots[index].notified == 0u;
+  juno_slots[index].waitKey = 0u;
+  juno_slots[index].notified = 0u;
+  juno_monitor_enter(handle);
+  juno_monitor_find(key, false)->depth = depth;
+  if (interrupted) juno_raise_interrupted();
+}
+
+static void juno_monitor_wake(int32_t handle, bool all) {
+  uintptr_t key = juno_monitor_key(handle);
+  juno_monitor_owned(key, "notify");
+  for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
+    JunoSlot& slot = juno_slots[index];
+    if (slot.waitKey == key && slot.notified == 0u) {
+      slot.notified = 1u;
+      if (!all) return;
+    }
+  }
+}
+
+extern "C" void juno_monitor_notify(int32_t handle) {
+  juno_monitor_wake(handle, false);
+}
+
+extern "C" void juno_monitor_notify_all(int32_t handle) {
+  juno_monitor_wake(handle, true);
+}
+
+// CountDownLatch and Semaphore: an arena cell each. The waits poll with yield, like monitor entry does.
+static int32_t* juno_counter_cell(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+}
+
+extern "C" int32_t juno_latch_new(int32_t count) {
+  if (count < 0) {
+    Serial.println("[juno-latch] IllegalArgumentException: count < 0");
+    juno_panic();
+  }
+  auto* cell = static_cast<int32_t*>(juno_alloc(sizeof(int32_t), sizeof(int32_t)));
+  *cell = count;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(cell));
+}
+
+extern "C" void juno_latch_count_down(int32_t handle) {
+  int32_t* count = juno_counter_cell(handle);
+  if (*count > 0) (*count)--;
+}
+
+extern "C" int64_t juno_latch_get_count(int32_t handle) {
+  return static_cast<int64_t>(*juno_counter_cell(handle));
+}
+
+extern "C" void juno_latch_await(int32_t handle) {
+  int32_t* count = juno_counter_cell(handle);
+  if (juno_interrupt_pending()) {
+    juno_raise_interrupted();
+    return;
+  }
+  while (*count > 0) {
+    juno_thread_yield();
+    if (juno_interrupt_pending()) {
+      juno_raise_interrupted();
+      return;
+    }
+  }
+}
+
+extern "C" int32_t juno_semaphore_new(int32_t permits) {
+  auto* cell = static_cast<int32_t*>(juno_alloc(sizeof(int32_t), sizeof(int32_t)));
+  *cell = permits;
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(cell));
+}
+
+extern "C" void juno_semaphore_acquire(int32_t handle) {
+  int32_t* permits = juno_counter_cell(handle);
+  if (juno_interrupt_pending()) {
+    juno_raise_interrupted();
+    return;
+  }
+  while (*permits <= 0) {
+    juno_thread_yield();
+    if (juno_interrupt_pending()) {
+      juno_raise_interrupted();
+      return;
+    }
+  }
+  (*permits)--;
+}
+
+extern "C" int32_t juno_semaphore_try_acquire(int32_t handle) {
+  int32_t* permits = juno_counter_cell(handle);
+  if (*permits <= 0) return 0;
+  (*permits)--;
+  return 1;
+}
+
+extern "C" void juno_semaphore_release(int32_t handle) {
+  (*juno_counter_cell(handle))++;
+}
+
+extern "C" int32_t juno_semaphore_available(int32_t handle) {
+  return *juno_counter_cell(handle);
 }
 
 ${JUNO_PREEMPTION}
