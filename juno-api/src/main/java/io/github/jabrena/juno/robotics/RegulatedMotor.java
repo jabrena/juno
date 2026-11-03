@@ -8,7 +8,7 @@ package io.github.jabrena.juno.robotics;
  * with {@code immediateReturn == false} waits until the requested motion completes; a rotation
  * with {@code immediateReturn == true} starts the motion and returns immediately.
  */
-public interface RegulatedMotor extends Motor {
+public interface RegulatedMotor extends DCMotor {
 
     /** Sets the target speed used by subsequent regulated movements. */
     void setSpeed(int degreesPerSecond);

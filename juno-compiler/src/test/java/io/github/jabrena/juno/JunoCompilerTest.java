@@ -94,10 +94,10 @@ class JunoCompilerTest {
                     public final class MotorContracts {
                         static final class TestMotor implements RegulatedMotor {
                             public void setPower(int percent) { }
+                            public int getPower() { return 0; }
                             public void forward() { }
                             public void backward() { }
-                            public void coast() { }
-                            public void brake() { }
+                            public void flt() { }
                             public void stop() { }
                             public void setSpeed(int degreesPerSecond) { }
                             public void setAcceleration(int degreesPerSecondSquared) { }
