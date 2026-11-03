@@ -438,7 +438,7 @@ startup and stay small.</p>
 <td><code>Wifi</code>, <code>Udp</code>, <code>Tcp</code>, plain-HTTP <code>HttpClient</code></td>
 <td align="center">✓</td>
 <td>Through the Arduino WiFi Shield; no access point or HTTPS.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java"><code>UdpEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java"><code>SocketDatagramEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a></td>
 </tr>
 <tr>
 <td><code>SdCard</code></td>
@@ -497,7 +497,7 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 }
 </code></pre>
 <p>Only small network programs fit next to the library: build them with <code>-Djuno.Xmx=512</code>, as
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java"><code>UdpEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/tcp/TcpEcho.java"><code>TcpEcho</code></a>,
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java"><code>SocketDatagramEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketEcho.java"><code>SocketEcho</code></a>,
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java"><code>SntpTime</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a> do.</p>
 <h3 id="grove-base-shield">Grove Base Shield</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">

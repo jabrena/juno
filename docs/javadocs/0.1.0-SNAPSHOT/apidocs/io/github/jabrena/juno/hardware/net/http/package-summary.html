@@ -116,17 +116,10 @@ one recipient, and <a href="../email/Pop3Client.html" title="class in io.github.
 mailbox message count and read the newest message's <code>From</code>/<code>Subject</code> and a bounded
 plain-text body into caller-owned buffers.</div>
 </div>
-<div class="col-first even-row-color"><a href="../tcp/package-summary.html">io.github.jabrena.juno.hardware.net.tcp</a></div>
+<div class="col-first even-row-color"><a href="../udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a></div>
 <div class="col-last even-row-color">
-<div class="block">TCP over the board's Wi-Fi: <a href="../tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp"><code>Tcp</code></a> gives a program one allocation-free
-connection with exact-length reads, for application protocols layered on top of it.</div>
-</div>
-<div class="col-first odd-row-color"><a href="../udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a></div>
-<div class="col-last odd-row-color">
-<div class="block">UDP over the board's Wi-Fi: <a href="../udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>Udp</code></a> gives a program one allocation-free
-socket for discovery broadcasts, datagrams to known peers and non-blocking receives, and
-<a href="../udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>SntpClock</code></a> configures the SNTP server behind
-<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>, which synchronizes on a socket of its own.</div>
+<div class="block">The SNTP clock behind <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>: <a href="../udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>SntpClock</code></a>
+configures the server, and the exchange runs on a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link"><code>DatagramSocket</code></a> of its own.</div>
 </div>
 </div>
 </div>

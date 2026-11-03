@@ -537,14 +537,9 @@ certificate themselves (e.g.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#brakeMotor(int)" class="member-name-link">brakeMotor(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#broadcast(int,byte%5B%5D,int)" class="member-name-link">broadcast(int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">broadcastDiscovery(DatagramSocket, DatagramPacket)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
-<div class="block">Sends <code>length</code> bytes to the limited broadcast address <code>255.255.255.255</code> at <code>remotePort</code>, so
-every host on the local network that listens on that port receives it.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#broadcastDiscovery(byte%5B%5D,int)" class="member-name-link">broadcastDiscovery(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
-<dd>
-<div class="block">Broadcasts a system-information query and returns the encrypted datagram length, or <code>-1</code> on failure.</div>
+<div class="block">Encrypts the system-information query into <code>request</code> and broadcasts it, returning its length or <code>-1</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html#buttonPressed()" class="member-name-link">buttonPressed()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpHubRemote</a></dt>
 <dd>
@@ -672,10 +667,6 @@ reply.</div>
 <dt><a href="io/github/jabrena/juno/hardware/time/Clock.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.time">Clock</a> - Interface in <a href="io/github/jabrena/juno/hardware/time/package-summary.html">io.github.jabrena.juno.hardware.time</a></dt>
 <dd>
 <div class="block">The board's monotonic clock.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html#close()" class="member-name-link">close()</a> - Static method in class io.github.jabrena.juno.hardware.net.tcp.<a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a></dt>
-<dd>
-<div class="block">Closes the current TCP connection, if any.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Motor.html#coast()" class="member-name-link">coast()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Motor.html" title="interface in io.github.jabrena.juno.robotics">Motor</a></dt>
 <dd>
@@ -909,6 +900,11 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 <dd>
 <div class="block">Size needed for the encoded discovery request.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#discoveryRequest(byte%5B%5D)" class="member-name-link">discoveryRequest(byte[])</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
+<dd>
+<div class="block">A packet addressed to the local network's broadcast address on <a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#PORT"><code>KasaSmartPlug.PORT</code></a>, over <code>requestBuffer</code>: the
+system-information query <a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)"><code>KasaSmartPlug.broadcastDiscovery(DatagramSocket, DatagramPacket)</code></a> sends with it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#display()" class="member-name-link">display()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>
 <div class="block">The display the M5StackCardputer facade hands out.</div>
@@ -1065,10 +1061,6 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.htm
 <dt><a href="io/github/jabrena/juno/robotics/Encoder.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Encoder</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">Position feedback for a motor or wheel.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#ENDPOINT_SIZE" class="member-name-link">ENDPOINT_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
-<dd>
-<div class="block">Number of integer entries in an endpoint array.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/View.html#enter()" class="member-name-link">enter()</a> - Method in interface io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></dt>
 <dd>
@@ -1607,7 +1599,7 @@ missing, resolves to an object or array, or the raw text is too long for Juno's 
 <dd>
 <div class="block">Decodes a JSON string to UTF-8 and returns the number of bytes written.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#getSystemInfo(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">getSystemInfo(int[], byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#getSystemInfo(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">getSystemInfo(InetAddress, byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Queries an HS100/HS110's current system information and returns its decrypted JSON response length.</div>
 </dd>
@@ -2258,17 +2250,10 @@ requests into a caller-owned <code>byte[]</code> response buffer, <a href="io/gi
 values directly out of a response buffer without building a parsed document, and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
 <a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/package-summary.html">io.github.jabrena.juno.hardware.net.tcp</a> - package io.github.jabrena.juno.hardware.net.tcp</dt>
-<dd>
-<div class="block">TCP over the board's Wi-Fi: <a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp"><code>Tcp</code></a> gives a program one allocation-free
-connection with exact-length reads, for application protocols layered on top of it.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a> - package io.github.jabrena.juno.hardware.net.udp</dt>
 <dd>
-<div class="block">UDP over the board's Wi-Fi: <a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>Udp</code></a> gives a program one allocation-free
-socket for discovery broadcasts, datagrams to known peers and non-blocking receives, and
-<a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>SntpClock</code></a> configures the SNTP server behind
-<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>, which synchronizes on a socket of its own.</div>
+<div class="block">The SNTP clock behind <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>: <a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>SntpClock</code></a>
+configures the server, and the exchange runs on a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link"><code>DatagramSocket</code></a> of its own.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/power/package-summary.html">io.github.jabrena.juno.hardware.power</a> - package io.github.jabrena.juno.hardware.power</dt>
 <dd>
@@ -2424,7 +2409,7 @@ boards.</div>
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a> - Class in <a href="io/github/jabrena/juno/hardware/device/kasa/package-summary.html">io.github.jabrena.juno.hardware.device.kasa</a></dt>
 <dd>
-<div class="block">Allocation-free local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs.</div>
+<div class="block">Local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs, over the JDK's own socket classes.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/KeyboardView.html#key(int,boolean)" class="member-name-link">key(int, boolean)</a> - Method in interface io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/KeyboardView.html" title="interface in io.github.jabrena.juno.util.mvc">KeyboardView</a></dt>
 <dd>
@@ -2553,10 +2538,6 @@ command (<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemot
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#list(java.lang.String,int,byte%5B%5D,int)" class="member-name-link">list(String, int, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#listen(int)" class="member-name-link">listen(int)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
-<dd>
-<div class="block">Binds the program's UDP socket to <code>localPort</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html#loadFrame(int,int,int)" class="member-name-link">loadFrame(int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></dt>
 <dd>
 <div class="block">Declared here, not inherited, because Juno dispatches an interface call only to a method its class declares.</div>
@@ -2948,10 +2929,6 @@ in a unit test.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#OK" class="member-name-link">OK</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html#open(int%5B%5D,int)" class="member-name-link">open(int[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.tcp.<a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a></dt>
-<dd>
-<div class="block">Opens a TCP connection to the first four IPv4 octets in <code>endpoint</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#open(java.lang.String)" class="member-name-link">open(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
 <div class="block">Opens <code>path</code> for reading, or returns <code>null</code> when it cannot be opened.</div>
@@ -2966,7 +2943,7 @@ in a unit test.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#openDiscovery()" class="member-name-link">openDiscovery()</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
-<div class="block">Opens the single UDP socket Juno uses for Kasa device discovery.</div>
+<div class="block">Opens the UDP socket Kasa device discovery uses; throws when the port is already taken.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#OPTIONS" class="member-name-link">OPTIONS</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
@@ -3058,10 +3035,6 @@ board-specific implicit-TLS transport as
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#PORT" class="member-name-link">PORT</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Legacy Kasa LAN TCP and UDP port.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#PORT" class="member-name-link">PORT</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
-<dd>
-<div class="block">Index of the remote port in an endpoint array.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html#PORT_A" class="member-name-link">PORT_A</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpHubRemote</a></dt>
 <dd>&nbsp;</dd>
@@ -3464,11 +3437,6 @@ once, at startup.</div>
 <dd>
 <div class="block">A touch sensor on <code>port</code>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html#read(byte%5B%5D,int,int,int)" class="member-name-link">read(byte[], int, int, int)</a> - Static method in class io.github.jabrena.juno.hardware.net.tcp.<a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a></dt>
-<dd>
-<div class="block">Reads exactly <code>length</code> bytes into <code>payload</code> beginning at <code>offset</code> before
-<code>timeoutMillis</code> expires.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#read(int,int%5B%5D,int,int%5B%5D,int)" class="member-name-link">read(int, int[], int, int[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>
 <div class="block">Reads one checksum-valid DHT11 frame using caller-owned buffers.</div>
@@ -3561,13 +3529,9 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <div class="block">The input's raw value in the mode its sensor set, or <code>-1</code> if the brick did not answer.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#receive(byte%5B%5D,int,int%5B%5D)" class="member-name-link">receive(byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#receiveDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">receiveDiscovery(DatagramSocket, DatagramPacket)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
-<div class="block">Non-blockingly consumes the next datagram.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#receiveDiscovery(byte%5B%5D,int,int%5B%5D)" class="member-name-link">receiveDiscovery(byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
-<dd>
-<div class="block">Decrypts the next discovery reply into <code>responseBuffer</code> and writes its sender to <code>endpoint</code>.</div>
+<div class="block">Receives the next discovery reply into <code>reply</code> and decrypts it in place.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#receiving()" class="member-name-link">receiving()</a> - Static method in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
@@ -3801,10 +3765,6 @@ enabled.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#SELECT" class="member-name-link">SELECT</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#send(int%5B%5D,int,byte%5B%5D,int)" class="member-name-link">send(int[], int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
-<dd>
-<div class="block">Sends <code>length</code> bytes from <code>payload</code> to the IPv4 address and <code>remotePort</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#send(int,int,int,int)" class="member-name-link">send(int, int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
 <dd>
 <div class="block">Transmits <code>opcode</code> with <code>arguments</code> (0..2) arguments <code>first</code> and <code>second</code>.</div>
@@ -4142,7 +4102,7 @@ cannot draw show blank).</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a> - Class in <a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a></dt>
 <dd>
 <div class="block">The SNTP server behind the internet-backed <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a> intrinsic, which synchronizes UTC
-over one UDP exchange on its own socket (separate from <a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>Udp</code></a>'s) and then advances it with the board's
+over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
 millisecond counter.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#SOUND" class="member-name-link">SOUND</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
@@ -4221,10 +4181,6 @@ up to <code>checksum</code> (modulo 65536).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html#stop()" class="member-name-link">stop()</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></dt>
-<dd>
-<div class="block">Closes the socket.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>
 <div class="block">Switches the outputs off with the motors braking.</div>
@@ -4272,10 +4228,6 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Background work a <a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc"><code>ViewRouter</code></a> advances a little every frame, before the active view renders: the
 single-threaded alternative to a background thread, for a board whose RAM has no room for a thread stack.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a> - Class in <a href="io/github/jabrena/juno/hardware/net/tcp/package-summary.html">io.github.jabrena.juno.hardware.net.tcp</a></dt>
-<dd>
-<div class="block">Allocation-free TCP transport recognized as compiler intrinsics by Juno.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#TEMPERATURE_CELSIUS" class="member-name-link">TEMPERATURE_CELSIUS</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>&nbsp;</dd>
@@ -4380,11 +4332,11 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="block">How far the heading has moved since <code>startDegrees</code> (from <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#headingDegrees()"><code>NineAxisMotionShield.headingDegrees()</code></a>), as a
 signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise (a left turn).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#turnOff(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOff(int[], byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#turnOff(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOff(InetAddress, byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Turns a discovered HS100/HS110 relay off and returns its decrypted JSON response length.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#turnOn(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOn(int[], byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#turnOn(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOn(InetAddress, byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Turns a discovered HS100/HS110 relay on and returns its decrypted JSON response length.</div>
 </dd>
@@ -4427,10 +4379,6 @@ signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise 
 </dl>
 <h2 class="title" id="I:U">U</h2>
 <dl class="index">
-<dt><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a> - Class in <a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a></dt>
-<dd>
-<div class="block">Allocation-free UDP transport recognized as compiler intrinsics by Juno.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#UNAUTHORIZED" class="member-name-link">UNAUTHORIZED</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html#unlinkMotors(int)" class="member-name-link">unlinkMotors(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpHubRemote</a></dt>
@@ -4581,10 +4529,6 @@ when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
 <a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html#write(byte%5B%5D,int)" class="member-name-link">write(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.tcp.<a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a></dt>
-<dd>
-<div class="block">Writes <code>length</code> bytes and returns the number written, or <code>-1</code> on failure.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html#write(int)" class="member-name-link">write(int)</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></dt>
 <dd>

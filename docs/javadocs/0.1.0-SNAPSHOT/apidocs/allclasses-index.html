@@ -311,7 +311,7 @@ bit-banged on two plain pins, with no Arduino library.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Allocation-free local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs.</div>
+<div class="block">Local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs, over the JDK's own socket classes.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
@@ -612,7 +612,7 @@ backed by the Arduino <code>Servo</code> library.</div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The SNTP server behind the internet-backed <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a> intrinsic, which synchronizes UTC
-over one UDP exchange on its own socket (separate from <a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>Udp</code></a>'s) and then advances it with the board's
+over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
 millisecond counter.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></div>
@@ -624,20 +624,12 @@ millisecond counter.</div>
 <div class="block">Background work a <a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc"><code>ViewRouter</code></a> advances a little every frame, before the active view renders: the
 single-threaded alternative to a background thread, for a board whose RAM has no room for a thread stack.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/tcp/Tcp.html" title="class in io.github.jabrena.juno.hardware.net.tcp">Tcp</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Allocation-free TCP transport recognized as compiler intrinsics by Juno.</div>
-</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
 <code>TouchScreen</code> libraries.</div>
-</div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/Udp.html" title="class in io.github.jabrena.juno.hardware.net.udp">Udp</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Allocation-free UDP transport recognized as compiler intrinsics by Juno.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/UuidCodec.html" title="class in io.github.jabrena.juno.util">UuidCodec</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
