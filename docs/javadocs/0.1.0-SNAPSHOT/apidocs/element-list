@@ -24,7 +24,6 @@ io.github.jabrena.juno.hardware.led
 io.github.jabrena.juno.hardware.net
 io.github.jabrena.juno.hardware.net.email
 io.github.jabrena.juno.hardware.net.http
-io.github.jabrena.juno.hardware.net.tcp
 io.github.jabrena.juno.hardware.net.udp
 io.github.jabrena.juno.hardware.power
 io.github.jabrena.juno.hardware.serial

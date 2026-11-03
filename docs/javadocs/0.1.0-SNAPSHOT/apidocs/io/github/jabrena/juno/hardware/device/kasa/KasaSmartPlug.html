@@ -88,13 +88,14 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#openDiscovery()" tabindex="0">openDiscovery()</a></li>
-<li><a href="#broadcastDiscovery(byte%5B%5D,int)" tabindex="0">broadcastDiscovery(byte[], int)</a></li>
-<li><a href="#receiveDiscovery(byte%5B%5D,int,int%5B%5D)" tabindex="0">receiveDiscovery(byte[], int, int[])</a></li>
+<li><a href="#discoveryRequest(byte%5B%5D)" tabindex="0">discoveryRequest(byte[])</a></li>
+<li><a href="#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" tabindex="0">broadcastDiscovery(DatagramSocket, DatagramPacket)</a></li>
+<li><a href="#receiveDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" tabindex="0">receiveDiscovery(DatagramSocket, DatagramPacket)</a></li>
 <li><a href="#model(byte%5B%5D,int)" tabindex="0">model(byte[], int)</a></li>
 <li><a href="#relayState(byte%5B%5D,int)" tabindex="0">relayState(byte[], int)</a></li>
-<li><a href="#getSystemInfo(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" tabindex="0">getSystemInfo(int[], byte[], byte[], int)</a></li>
-<li><a href="#turnOn(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" tabindex="0">turnOn(int[], byte[], byte[], int)</a></li>
-<li><a href="#turnOff(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" tabindex="0">turnOff(int[], byte[], byte[], int)</a></li>
+<li><a href="#getSystemInfo(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" tabindex="0">getSystemInfo(InetAddress, byte[], byte[], int)</a></li>
+<li><a href="#turnOn(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" tabindex="0">turnOn(InetAddress, byte[], byte[], int)</a></li>
+<li><a href="#turnOff(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" tabindex="0">turnOff(InetAddress, byte[], byte[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -112,11 +113,13 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">KasaSmartPlug</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Allocation-free local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs.
+<div class="block">Local control and discovery for legacy TP-Link Kasa HS100 and HS110 plugs, over the JDK's own socket classes.
 
-<p>Call <a href="#openDiscovery()"><code>openDiscovery()</code></a> once after Wi-Fi connects, then <a href="#broadcastDiscovery(byte%5B%5D,int)"><code>broadcastDiscovery(byte[], int)</code></a> and poll <a href="#receiveDiscovery(byte%5B%5D,int,int%5B%5D)"><code>receiveDiscovery(byte[], int, int[])</code></a> for device endpoints. Pass a discovered endpoint to <a href="#turnOn(int%5B%5D,byte%5B%5D,byte%5B%5D,int)"><code>turnOn(int[], byte[], byte[], int)</code></a> or <a href="#turnOff(int%5B%5D,byte%5B%5D,byte%5B%5D,int)"><code>turnOff(int[], byte[], byte[], int)</code></a>; it is
-an <a href="../../net/udp/Udp.html#ENDPOINT_SIZE"><code>endpoint</code></a> whose first four entries are the plug's IPv4 address. All buffers belong to
-the caller and can be allocated once before the program's main loop.</div>
+<p>Open a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link"><code>DatagramSocket</code></a> with <a href="#openDiscovery()"><code>openDiscovery()</code></a> once after Wi-Fi connects, and build a broadcast
+<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link"><code>DatagramPacket</code></a> with <a href="#discoveryRequest(byte%5B%5D)"><code>discoveryRequest(byte[])</code></a> once. Then <a href="#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)"><code>broadcastDiscovery(DatagramSocket, DatagramPacket)</code></a> and poll
+<a href="#receiveDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)"><code>receiveDiscovery(DatagramSocket, DatagramPacket)</code></a> for each device's reply: its sender is <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html#getAddress()" class="external-link"><code>DatagramPacket.getAddress()</code></a>, the device's
+address to pass to <a href="#turnOn(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)"><code>turnOn(InetAddress, byte[], byte[], int)</code></a> or <a href="#turnOff(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)"><code>turnOff(InetAddress, byte[], byte[], int)</code></a>. Every buffer belongs to the caller and can be allocated once
+before the program's main loop. A control command opens a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/Socket.html" title="class in java.net" class="external-link"><code>Socket</code></a> to the device for that one exchange.</div>
 </div>
 </section>
 <section class="summary">
@@ -195,57 +198,62 @@ the caller and can be allocated once before the program's main loop.</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#broadcastDiscovery(byte%5B%5D,int)" class="member-name-link">broadcastDiscovery</a><wbr>(byte[]&nbsp;requestBuffer,
- int&nbsp;requestBufferLength)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">broadcastDiscovery</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a>&nbsp;socket,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a>&nbsp;request)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Broadcasts a system-information query and returns the encrypted datagram length, or <code>-1</code> on failure.</div>
+<div class="block">Encrypts the system-information query into <code>request</code> and broadcasts it, returning its length or <code>-1</code>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSystemInfo(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">getSystemInfo</a><wbr>(int[]&nbsp;endpoint,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#discoveryRequest(byte%5B%5D)" class="member-name-link">discoveryRequest</a><wbr>(byte[]&nbsp;requestBuffer)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">A packet addressed to the local network's broadcast address on <a href="#PORT"><code>PORT</code></a>, over <code>requestBuffer</code>: the
+system-information query <a href="#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)"><code>broadcastDiscovery(DatagramSocket, DatagramPacket)</code></a> sends with it.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSystemInfo(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">getSystemInfo</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
  byte[]&nbsp;requestBuffer,
  byte[]&nbsp;responseBuffer,
  int&nbsp;responseBufferLength)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Queries an HS100/HS110's current system information and returns its decrypted JSON response length.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#model(byte%5B%5D,int)" class="member-name-link">model</a><wbr>(byte[]&nbsp;responseBuffer,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#model(byte%5B%5D,int)" class="member-name-link">model</a><wbr>(byte[]&nbsp;responseBuffer,
  int&nbsp;responseLength)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Identifies an HS100 or HS110 from a decrypted discovery or system-information reply.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#openDiscovery()" class="member-name-link">openDiscovery</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Opens the single UDP socket Juno uses for Kasa device discovery.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#receiveDiscovery(byte%5B%5D,int,int%5B%5D)" class="member-name-link">receiveDiscovery</a><wbr>(byte[]&nbsp;responseBuffer,
- int&nbsp;responseBufferLength,
- int[]&nbsp;endpoint)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#openDiscovery()" class="member-name-link">openDiscovery</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Decrypts the next discovery reply into <code>responseBuffer</code> and writes its sender to <code>endpoint</code>.</div>
+<div class="block">Opens the UDP socket Kasa device discovery uses; throws when the port is already taken.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#relayState(byte%5B%5D,int)" class="member-name-link">relayState</a><wbr>(byte[]&nbsp;responseBuffer,
- int&nbsp;responseLength)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#receiveDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">receiveDiscovery</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a>&nbsp;socket,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a>&nbsp;reply)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Receives the next discovery reply into <code>reply</code> and decrypts it in place.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#relayState(byte%5B%5D,int)" class="member-name-link">relayState</a><wbr>(byte[]&nbsp;responseBuffer,
+ int&nbsp;responseLength)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Returns the relay state from a decrypted discovery or system-information reply.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#turnOff(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOff</a><wbr>(int[]&nbsp;endpoint,
- byte[]&nbsp;requestBuffer,
- byte[]&nbsp;responseBuffer,
- int&nbsp;responseBufferLength)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Turns a discovered HS100/HS110 relay off and returns its decrypted JSON response length.</div>
-</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#turnOn(int%5B%5D,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOn</a><wbr>(int[]&nbsp;endpoint,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#turnOff(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOff</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
  byte[]&nbsp;requestBuffer,
  byte[]&nbsp;responseBuffer,
  int&nbsp;responseBufferLength)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Turns a discovered HS100/HS110 relay off and returns its decrypted JSON response length.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#turnOn(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOn</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
+ byte[]&nbsp;requestBuffer,
+ byte[]&nbsp;responseBuffer,
+ int&nbsp;responseBufferLength)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Turns a discovered HS100/HS110 relay on and returns its decrypted JSON response length.</div>
 </div>
 </div>
@@ -447,31 +455,50 @@ the caller and can be allocated once before the program's main loop.</div>
 <section class="detail" id="openDiscovery()">
 <h3>openDiscovery</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">openDiscovery</span>()</div>
-<div class="block">Opens the single UDP socket Juno uses for Kasa device discovery.</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a></span>&nbsp;<span class="element-name">openDiscovery</span>()
+                                    throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/IOException.html" title="class in java.io" class="external-link">IOException</a></span></div>
+<div class="block">Opens the UDP socket Kasa device discovery uses; throws when the port is already taken.</div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/IOException.html" title="class in java.io" class="external-link">IOException</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="broadcastDiscovery(byte[],int)">
+<section class="detail" id="discoveryRequest(byte[])">
+<h3>discoveryRequest</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a></span>&nbsp;<span class="element-name">discoveryRequest</span><wbr><span class="parameters">(byte[]&nbsp;requestBuffer)</span>
+                                       throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/IOException.html" title="class in java.io" class="external-link">IOException</a></span></div>
+<div class="block">A packet addressed to the local network's broadcast address on <a href="#PORT"><code>PORT</code></a>, over <code>requestBuffer</code>: the
+system-information query <a href="#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)"><code>broadcastDiscovery(DatagramSocket, DatagramPacket)</code></a> sends with it. Make it once, not in the loop.</div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/IOException.html" title="class in java.io" class="external-link">IOException</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)">
 <h3>broadcastDiscovery</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">broadcastDiscovery</span><wbr><span class="parameters">(byte[]&nbsp;requestBuffer,
- int&nbsp;requestBufferLength)</span></div>
-<div class="block">Broadcasts a system-information query and returns the encrypted datagram length, or <code>-1</code> on failure.</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">broadcastDiscovery</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a>&nbsp;socket,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a>&nbsp;request)</span></div>
+<div class="block">Encrypts the system-information query into <code>request</code> and broadcasts it, returning its length or <code>-1</code>.</div>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="receiveDiscovery(byte[],int,int[])">
+<section class="detail" id="receiveDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)">
 <h3>receiveDiscovery</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">receiveDiscovery</span><wbr><span class="parameters">(byte[]&nbsp;responseBuffer,
- int&nbsp;responseBufferLength,
- int[]&nbsp;endpoint)</span></div>
-<div class="block">Decrypts the next discovery reply into <code>responseBuffer</code> and writes its sender to <code>endpoint</code>.
-Returns the JSON payload length, <code>0</code> while no reply waits, or <code>-1</code> for invalid input or a malformed
-reply.</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">receiveDiscovery</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link">DatagramSocket</a>&nbsp;socket,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html" title="class in java.net" class="external-link">DatagramPacket</a>&nbsp;reply)</span></div>
+<div class="block">Receives the next discovery reply into <code>reply</code> and decrypts it in place. Returns the JSON payload length,
+<code>0</code> while no reply waits, or <code>-1</code> for a failed receive or a malformed reply. The device that sent it
+is <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramPacket.html#getAddress()" class="external-link"><code>DatagramPacket.getAddress()</code></a>.</div>
 </div>
 </section>
 </li>
@@ -497,10 +524,10 @@ reply.</div>
 </section>
 </li>
 <li>
-<section class="detail" id="getSystemInfo(int[],byte[],byte[],int)">
+<section class="detail" id="getSystemInfo(java.net.InetAddress,byte[],byte[],int)">
 <h3>getSystemInfo</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getSystemInfo</span><wbr><span class="parameters">(int[]&nbsp;endpoint,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getSystemInfo</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
  byte[]&nbsp;requestBuffer,
  byte[]&nbsp;responseBuffer,
  int&nbsp;responseBufferLength)</span></div>
@@ -509,10 +536,10 @@ reply.</div>
 </section>
 </li>
 <li>
-<section class="detail" id="turnOn(int[],byte[],byte[],int)">
+<section class="detail" id="turnOn(java.net.InetAddress,byte[],byte[],int)">
 <h3>turnOn</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">turnOn</span><wbr><span class="parameters">(int[]&nbsp;endpoint,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">turnOn</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
  byte[]&nbsp;requestBuffer,
  byte[]&nbsp;responseBuffer,
  int&nbsp;responseBufferLength)</span></div>
@@ -521,10 +548,10 @@ reply.</div>
 </section>
 </li>
 <li>
-<section class="detail" id="turnOff(int[],byte[],byte[],int)">
+<section class="detail" id="turnOff(java.net.InetAddress,byte[],byte[],int)">
 <h3>turnOff</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">turnOff</span><wbr><span class="parameters">(int[]&nbsp;endpoint,
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">turnOff</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/InetAddress.html" title="class in java.net" class="external-link">InetAddress</a>&nbsp;device,
  byte[]&nbsp;requestBuffer,
  byte[]&nbsp;responseBuffer,
  int&nbsp;responseBufferLength)</span></div>
