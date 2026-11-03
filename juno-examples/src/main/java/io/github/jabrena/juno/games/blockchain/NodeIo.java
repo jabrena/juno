@@ -2,9 +2,7 @@ package io.github.jabrena.juno.games.blockchain;
 
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.util.Delay;
 
 /** Wi-Fi/UDP start-up and serial formatting shared by the blockchain games. */
 public final class NodeIo {
@@ -16,23 +14,6 @@ public final class NodeIo {
     private static final String HEX = "0123456789abcdef";
 
     private NodeIo() {
-    }
-
-    /**
-     * Joins Wi-Fi with build-time {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (UNO Q uses the
-     * connection configured on its Linux side) and opens the UDP socket on {@link #PORT}.
-     */
-    public static void connect() {
-        Serial.println("Connecting Wi-Fi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
-        while (WIFI.status() != Wifi.STATUS_CONNECTED) {
-            Delay.millis(500);
-        }
-        while (!Udp.listen(PORT)) {
-            Serial.println("UDP port busy, retrying");
-            Delay.millis(1000);
-        }
-        Serial.println("Listening on UDP port " + PORT);
     }
 
     /** Prints {@code p}, or {@code p^e} when {@code e > 1}, preceded by {@code " x "} unless it is the first factor. */

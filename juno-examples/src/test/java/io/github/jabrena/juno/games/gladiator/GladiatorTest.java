@@ -31,6 +31,9 @@ import io.github.jabrena.juno.util.Random;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 
@@ -40,7 +43,7 @@ import static org.assertj.core.api.Assertions.within;
  * packets, without the network.
  */
 class GladiatorTest {
-    private static final int[] SOURCE = {192, 168, 1, 20, GladiatorProtocol.PORT};
+    private static final InetAddress SOURCE = sourceAddress();
     private static final int LEFT = 0;
     private static final int RIGHT = 1;
     /** The class the arena tests fight as: a THRAEX has no shield or helmet to change a blow from in front. */
@@ -156,12 +159,12 @@ class GladiatorTest {
     @Test
     void theBattleStartsWhenTheSecondGladiatorArrives() {
         Match match = new Match(coliseum);
-        assertThat(match.join(11, Brain.AGGRESSIVE, SOURCE, 900)).isEqualTo(LEFT);
+        assertThat(match.join(11, Brain.AGGRESSIVE, SOURCE, GladiatorProtocol.PORT, 900)).isEqualTo(LEFT);
         assertThat(match.phase()).isEqualTo(Match.WAITING);
-        assertThat(match.join(11, Brain.AGGRESSIVE, SOURCE, 1000)).as("a JOIN again keeps the slot").isEqualTo(LEFT);
-        assertThat(match.join(22, Brain.AMBUSH, SOURCE, 1000)).isEqualTo(RIGHT);
+        assertThat(match.join(11, Brain.AGGRESSIVE, SOURCE, GladiatorProtocol.PORT, 1000)).as("a JOIN again keeps the slot").isEqualTo(LEFT);
+        assertThat(match.join(22, Brain.AMBUSH, SOURCE, GladiatorProtocol.PORT, 1000)).isEqualTo(RIGHT);
         assertThat(match.phase()).isEqualTo(Match.COUNTDOWN);
-        assertThat(match.join(33, Brain.AMBUSH, SOURCE, 1000)).as("a third finds it full").isEqualTo(-1);
+        assertThat(match.join(33, Brain.AMBUSH, SOURCE, GladiatorProtocol.PORT, 1000)).as("a third finds it full").isEqualTo(-1);
 
         match.tick(1000 + Match.COUNTDOWN_MILLIS);
         assertThat(match.phase()).isEqualTo(Match.FIGHT);
@@ -938,8 +941,8 @@ class GladiatorTest {
     /** Two gladiators joined on the grid, the countdown over, and the javelins where the tests know them. */
     private Match fight() {
         Match match = new Match(coliseum);
-        match.join(11, Brain.AGGRESSIVE, SOURCE, 0);
-        match.join(22, Brain.AMBUSH, SOURCE, 0);
+        match.join(11, Brain.AGGRESSIVE, SOURCE, GladiatorProtocol.PORT, 0);
+        match.join(22, Brain.AMBUSH, SOURCE, GladiatorProtocol.PORT, 0);
         match.tick(Match.COUNTDOWN_MILLIS);
         assertThat(match.phase()).isEqualTo(Match.FIGHT);
         for (int j = 0; j < Javelins.COUNT; j++) {
@@ -1025,8 +1028,8 @@ class GladiatorTest {
         private final byte[] packet = new byte[GladiatorProtocol.PACKET_SIZE];
 
         int play(int millis) {
-            match.join(11, Brain.AGGRESSIVE, SOURCE, 0);
-            match.join(22, Brain.AMBUSH, SOURCE, 0);
+            match.join(11, Brain.AGGRESSIVE, SOURCE, GladiatorProtocol.PORT, 0);
+            match.join(22, Brain.AMBUSH, SOURCE, GladiatorProtocol.PORT, 0);
             for (int now = 0; now < millis; now += 40) {
                 match.tick(now);
                 if (match.phase() == Match.OVER) {
@@ -1073,6 +1076,14 @@ class GladiatorTest {
                 brains[slot].hurt(now);
             }
             hits[slot] = report.hits();
+        }
+    }
+
+    private static InetAddress sourceAddress() {
+        try {
+            return InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 20});
+        } catch (UnknownHostException e) {
+            throw new AssertionError(e);
         }
     }
 }

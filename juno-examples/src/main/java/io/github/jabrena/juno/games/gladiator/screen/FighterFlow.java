@@ -15,12 +15,14 @@ import io.github.jabrena.juno.games.gladiator.view.Figure;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.View;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
+
+import java.net.InetAddress;
 
 /**
  * A gladiator's board: it plays one gladiator and shows the battle through its eyes.
@@ -55,7 +57,8 @@ public final class FighterFlow {
     private final Body body = new Body(coliseum);
     private final View view;
     private final Hud hud;
-    private final int[] arena = new int[Udp.ENDPOINT_SIZE];
+    private InetAddress arenaAddress;
+    private int arenaPort;
     private final int behaviour;
     /** The class the network game gives each fighting style: a relentless SECUTOR, or a RETIARIUS with its net. */
     private final int kind;
@@ -86,7 +89,7 @@ public final class FighterFlow {
     }
 
     /** Fights until MENU is tapped. */
-    public void run(TftTouchShield tft, byte[] incoming, byte[] outgoing, int[] source) {
+    public void run(TftTouchShield tft, GameSocket link) {
         nodeId = CLOCK.micros();
         if (nodeId == 0) {
             nodeId = 1;
@@ -112,12 +115,13 @@ public final class FighterFlow {
                 next = CLOCK.millis();
             }
             int now = CLOCK.millis();
-            receive(tft, incoming, source, now);
+            receive(tft, link, now);
             if (screen != IN_ARENA) {
                 if (now - lastJoin >= JOIN_MILLIS) {
+                    byte[] outgoing = link.outgoing();
                     GladiatorProtocol.begin(outgoing, GladiatorProtocol.JOIN, 0, nodeId);
                     outgoing[GladiatorProtocol.BEHAVIOUR] = (byte) behaviour;
-                    Udp.broadcast(GladiatorProtocol.PORT, outgoing, GladiatorProtocol.PACKET_SIZE);
+                    link.broadcast(GladiatorProtocol.PORT, GladiatorProtocol.PACKET_SIZE);
                     lastJoin = now;
                 }
                 if (menuTapped(tft)) {
@@ -139,7 +143,7 @@ public final class FighterFlow {
             hurt = Math.max(0, hurt - 1);
             thrust = Math.max(0, thrust - 1);
             if (swung || now - lastState >= STATE_MILLIS) {
-                sendState(outgoing);
+                sendState(link);
                 lastState = now;
             }
             show(tft);
@@ -204,9 +208,10 @@ public final class FighterFlow {
         Hud.message(tft, "FINDING ARENA", "Waiting for a board in the ARENA role", TftTouchShield.YELLOW);
     }
 
-    private void receive(TftTouchShield tft, byte[] incoming, int[] source, int now) {
+    private void receive(TftTouchShield tft, GameSocket link, int now) {
+        byte[] incoming = link.incoming();
         for (int i = 0; i < PACKETS_PER_FRAME; i++) {
-            int length = Udp.receive(incoming, GladiatorProtocol.PACKET_SIZE, source);
+            int length = link.receive();
             if (length <= 0) {
                 return;
             }
@@ -215,9 +220,8 @@ public final class FighterFlow {
             }
             int type = GladiatorProtocol.type(incoming);
             if (type == GladiatorProtocol.MAP && screen != IN_ARENA && ColiseumMap.read(incoming, coliseum)) {
-                for (int k = 0; k < Udp.ENDPOINT_SIZE; k++) {
-                    arena[k] = source[k];
-                }
+                arenaAddress = link.sender();
+                arenaPort = link.senderPort();
                 slot = GladiatorProtocol.slot(incoming);
                 screen = IN_ARENA;
                 heardAt = now;
@@ -265,7 +269,8 @@ public final class FighterFlow {
         return true;
     }
 
-    private void sendState(byte[] packet) {
+    private void sendState(GameSocket link) {
+        byte[] packet = link.outgoing();
         GladiatorProtocol.begin(packet, GladiatorProtocol.STATE, slot, nodeId);
         packet[GladiatorProtocol.STATE_ROUND] = (byte) report.round();
         packet[GladiatorProtocol.STATE_BEHAVIOUR] = (byte) behaviour;
@@ -278,7 +283,7 @@ public final class FighterFlow {
         packet[GladiatorProtocol.THROWS] = (byte) throwsMade;
         packet[GladiatorProtocol.STATE_KIND] = (byte) kind;
         packet[GladiatorProtocol.NETS] = (byte) netsCast;
-        Udp.send(arena, arena[Udp.PORT], packet, GladiatorProtocol.PACKET_SIZE);
+        link.send(arenaAddress, arenaPort, GladiatorProtocol.PACKET_SIZE);
     }
 
     /**

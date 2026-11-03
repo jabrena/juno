@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.games.pokemon;
 
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.util.Delay;
+
+import java.io.IOException;
 
 /** The "CHOOSE PORT" screen of {@link PokemonBattle}: pick the UDP port both boards use, then listen on it. */
 final class PortSelector {
@@ -12,8 +14,8 @@ final class PortSelector {
     private PortSelector() {
     }
 
-    /** Lets the player pick the UDP port, then listens on it; a refused port returns to the selector. */
-    static int choose(TftTouchShield tft, int port) {
+    /** Lets the player pick the UDP port, then opens it; a refused port returns to the selector. */
+    static GameSocket choose(TftTouchShield tft, int port) {
         int offset = port - FIRST_PORT;
         drawPortSelection(tft, FIRST_PORT + offset);
         while (true) {
@@ -31,12 +33,13 @@ final class PortSelector {
                 offset = (offset + 1) % PORT_COUNT;
                 drawPortSelection(tft, FIRST_PORT + offset);
             } else if (y >= 235 && y < 290) {
-                if (Udp.listen(FIRST_PORT + offset)) {
-                    return FIRST_PORT + offset;
+                try {
+                    return GameSocket.open(FIRST_PORT + offset, PokemonProtocol.PACKET_SIZE);
+                } catch (IOException e) {
+                    PokemonBattle.showMessage(tft, "PORT IN USE", TftTouchShield.RED);
+                    Delay.millis(1500);
+                    drawPortSelection(tft, FIRST_PORT + offset);
                 }
-                PokemonBattle.showMessage(tft, "PORT IN USE", TftTouchShield.RED);
-                Delay.millis(1500);
-                drawPortSelection(tft, FIRST_PORT + offset);
             }
         }
     }

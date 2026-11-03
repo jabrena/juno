@@ -7,11 +7,15 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 /**
  * Finds legacy TP-Link Kasa HS100/HS110 plugs on the local network and controls them from an ELEGOO TFT shield.
@@ -45,6 +49,13 @@ public final class KasaSmartPlugDiscovery {
         new Controller().run(tft);
     }
 
+    /** A plug found on the network: where it is, its model, and its relay as its last reply said. */
+    private static final class Plug {
+        private InetAddress address;
+        private int model;
+        private int relayState;
+    }
+
     /** Fixed startup allocations and an allocation-free state machine, following Miner2's board-side service model. */
     private static final class Controller {
         private static final int JOINING = 0;
@@ -53,15 +64,20 @@ public final class KasaSmartPlugDiscovery {
 
         private final byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
         private final byte[] response = new byte[KasaSmartPlug.DEFAULT_RESPONSE_BUFFER_SIZE];
-        private final int[] endpoint = new int[Udp.ENDPOINT_SIZE];
-        private final int[] plugEndpoints = new int[MAX_PLUGS * Udp.ENDPOINT_SIZE];
-        private final int[] selectedEndpoint = new int[Udp.ENDPOINT_SIZE];
-        private final int[] models = new int[MAX_PLUGS];
-        private final int[] relayStates = new int[MAX_PLUGS];
+        private final Plug[] plugs = new Plug[MAX_PLUGS];
         private int plugCount;
         private int state;
         private int nextPoll;
         private int nextDiscovery;
+        private DatagramSocket socket;
+        private DatagramPacket requestPacket;
+        private DatagramPacket replyPacket;
+
+        Controller() {
+            for (int slot = 0; slot < MAX_PLUGS; slot++) {
+                plugs[slot] = new Plug();
+            }
+        }
 
         void run(TftTouchShield tft) {
             startWifi(tft, CLOCK.millis());
@@ -77,7 +93,7 @@ public final class KasaSmartPlugDiscovery {
         }
 
         private void startWifi(TftTouchShield tft, int now) {
-            Udp.stop();
+            closeDiscovery();
             showStatus(tft, "Connecting WiFi...");
             Serial.println("Kasa: connecting WiFi");
             WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
@@ -100,7 +116,7 @@ public final class KasaSmartPlugDiscovery {
                 return;
             }
             if (state == LISTENING) {
-                if (KasaSmartPlug.openDiscovery()) {
+                if (openDiscovery()) {
                     state = READY;
                     nextDiscovery = now;
                     renderPlugs(tft);
@@ -116,12 +132,31 @@ public final class KasaSmartPlugDiscovery {
             }
         }
 
+        /** Opens the discovery socket and its two packets, once; false while the port is still taken. */
+        private boolean openDiscovery() {
+            try {
+                socket = KasaSmartPlug.openDiscovery();
+                requestPacket = KasaSmartPlug.discoveryRequest(request);
+                replyPacket = new DatagramPacket(response, response.length);
+                return true;
+            } catch (IOException e) {
+                return false;
+            }
+        }
+
+        private void closeDiscovery() {
+            if (socket != null) {
+                socket.close();
+                socket = null;
+            }
+        }
+
         private void discover(TftTouchShield tft, int now) {
             if (now - nextDiscovery >= 0) {
-                KasaSmartPlug.broadcastDiscovery(request, request.length);
+                KasaSmartPlug.broadcastDiscovery(socket, requestPacket);
                 nextDiscovery = now + DISCOVERY_INTERVAL_MILLIS;
             }
-            int discoveryLength = KasaSmartPlug.receiveDiscovery(response, response.length, endpoint);
+            int discoveryLength = KasaSmartPlug.receiveDiscovery(socket, replyPacket);
             if (discoveryLength <= 0) {
                 return;
             }
@@ -129,16 +164,18 @@ public final class KasaSmartPlugDiscovery {
             if (model == KasaSmartPlug.MODEL_UNKNOWN) {
                 return;
             }
-            int slot = indexOf(endpoint);
+            InetAddress sender = replyPacket.getAddress();
+            int slot = indexOf(sender);
             int relayState = KasaSmartPlug.relayState(response, discoveryLength);
             if (slot < 0 && plugCount < MAX_PLUGS) {
-                copyAddress(endpoint, plugEndpoints, plugCount);
-                models[plugCount] = model;
-                relayStates[plugCount] = relayState;
+                Plug plug = plugs[plugCount];
+                plug.address = sender;
+                plug.model = model;
+                plug.relayState = relayState;
                 plugCount++;
                 renderPlugs(tft);
-            } else if (slot >= 0 && relayState != relayStates[slot]) {
-                relayStates[slot] = relayState;
+            } else if (slot >= 0 && relayState != plugs[slot].relayState) {
+                plugs[slot].relayState = relayState;
                 drawButton(tft, slot);
             }
         }
@@ -150,8 +187,7 @@ public final class KasaSmartPlugDiscovery {
             int slot = buttonAt(tft, tft.touchX(), tft.touchY());
             if (slot >= 0) {
                 drawButtonBusy(tft, slot);
-                copyAddress(plugEndpoints, slot, selectedEndpoint);
-                toggle(selectedEndpoint, slot);
+                toggle(plugs[slot]);
                 drawButton(tft, slot);
             }
             while (tft.readTouch()) {
@@ -159,11 +195,9 @@ public final class KasaSmartPlugDiscovery {
             }
         }
 
-        private int indexOf(int[] candidate) {
+        private int indexOf(InetAddress candidate) {
             for (int slot = 0; slot < plugCount; slot++) {
-                int offset = slot * Udp.ENDPOINT_SIZE;
-                if (plugEndpoints[offset] == candidate[0] && plugEndpoints[offset + 1] == candidate[1]
-                        && plugEndpoints[offset + 2] == candidate[2] && plugEndpoints[offset + 3] == candidate[3]) {
+                if (plugs[slot].address.equals(candidate)) {
                     return slot;
                 }
             }
@@ -179,7 +213,8 @@ public final class KasaSmartPlugDiscovery {
 
         private void drawButton(TftTouchShield tft, int slot) {
             int y = FIRST_BUTTON_Y + slot * (BUTTON_HEIGHT + BUTTON_MARGIN);
-            int relayState = relayStates[slot];
+            Plug plug = plugs[slot];
+            int relayState = plug.relayState;
             int color = relayState == KasaSmartPlug.RELAY_ON ? TftTouchShield.GREEN
                     : relayState == KasaSmartPlug.RELAY_OFF ? TftTouchShield.RED : TftTouchShield.GRAY;
             tft.fillRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT, color);
@@ -188,8 +223,8 @@ public final class KasaSmartPlugDiscovery {
             tft.setTextColor(TftTouchShield.BLACK, color);
             tft.setTextSize(2);
             tft.setCursor(18, y + 8);
-            tft.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
-            printAddress(tft, slot);
+            tft.print(plug.model == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
+            tft.print(plug.address.toString());
             tft.setCursor(18, y + 32);
             tft.print(relayState == KasaSmartPlug.RELAY_ON ? "ON - TAP TO TURN OFF"
                     : relayState == KasaSmartPlug.RELAY_OFF ? "OFF - TAP TO TURN ON" : "TAP TO TOGGLE");
@@ -198,6 +233,7 @@ public final class KasaSmartPlugDiscovery {
         /** Shown while a tapped button's TCP exchange is in flight, so a slow or failed request never looks stuck. */
         private void drawButtonBusy(TftTouchShield tft, int slot) {
             int y = FIRST_BUTTON_Y + slot * (BUTTON_HEIGHT + BUTTON_MARGIN);
+            Plug plug = plugs[slot];
             tft.fillRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
                     TftTouchShield.GRAY);
             tft.drawRect(BUTTON_MARGIN, y, tft.width() - BUTTON_MARGIN * 2, BUTTON_HEIGHT,
@@ -205,8 +241,8 @@ public final class KasaSmartPlugDiscovery {
             tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.GRAY);
             tft.setTextSize(2);
             tft.setCursor(18, y + 8);
-            tft.print(models[slot] == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
-            printAddress(tft, slot);
+            tft.print(plug.model == KasaSmartPlug.MODEL_HS100 ? "HS100 " : "HS110 ");
+            tft.print(plug.address.toString());
             tft.setCursor(18, y + 32);
             tft.print("Working...");
         }
@@ -224,42 +260,15 @@ public final class KasaSmartPlugDiscovery {
             return -1;
         }
 
-        private void toggle(int[] selected, int slot) {
-            int responseLength = relayStates[slot] == KasaSmartPlug.RELAY_ON
-                    ? KasaSmartPlug.turnOff(selected, request, response, response.length)
-                    : KasaSmartPlug.turnOn(selected, request, response, response.length);
+        private void toggle(Plug plug) {
+            int responseLength = plug.relayState == KasaSmartPlug.RELAY_ON
+                    ? KasaSmartPlug.turnOff(plug.address, request, response, response.length)
+                    : KasaSmartPlug.turnOn(plug.address, request, response, response.length);
             if (responseLength > 0) {
-                relayStates[slot] = relayStates[slot] == KasaSmartPlug.RELAY_ON
+                plug.relayState = plug.relayState == KasaSmartPlug.RELAY_ON
                         ? KasaSmartPlug.RELAY_OFF : KasaSmartPlug.RELAY_ON;
             }
         }
-
-        private void printAddress(TftTouchShield tft, int slot) {
-            int offset = slot * Udp.ENDPOINT_SIZE;
-            tft.print(plugEndpoints[offset]);
-            tft.print(".");
-            tft.print(plugEndpoints[offset + 1]);
-            tft.print(".");
-            tft.print(plugEndpoints[offset + 2]);
-            tft.print(".");
-            tft.print(plugEndpoints[offset + 3]);
-        }
-    }
-
-    private static void copyAddress(int[] source, int[] targets, int targetSlot) {
-        int offset = targetSlot * Udp.ENDPOINT_SIZE;
-        targets[offset] = source[0];
-        targets[offset + 1] = source[1];
-        targets[offset + 2] = source[2];
-        targets[offset + 3] = source[3];
-    }
-
-    private static void copyAddress(int[] source, int sourceSlot, int[] target) {
-        int offset = sourceSlot * Udp.ENDPOINT_SIZE;
-        target[0] = source[offset];
-        target[1] = source[offset + 1];
-        target[2] = source[offset + 2];
-        target[3] = source[offset + 3];
     }
 
     private static void showStatus(TftTouchShield tft, String status) {

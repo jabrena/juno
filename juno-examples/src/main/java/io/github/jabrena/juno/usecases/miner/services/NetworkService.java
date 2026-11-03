@@ -1,9 +1,9 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.miner.chain.BlockPool;
 import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
@@ -44,9 +44,6 @@ final class NetworkService {
     private final BlockPool pool;
     private final PeerTable peers;
     private final int helloEvery;
-    private final byte[] incoming = new byte[ChainProtocol.PACKET_SIZE];
-    private final byte[] reply = new byte[ChainProtocol.PACKET_SIZE];
-    private final int[] source = new int[Udp.ENDPOINT_SIZE];
     private int nextHello;
     private int nextAsk;
     private int nextStats;
@@ -79,13 +76,13 @@ final class NetworkService {
     void begin(int now) {
         lastHeard = now;
         WIFI.localIP(model.address());
-        ChainProtocol.writeRequest(reply, ChainProtocol.GET_TIP);
+        ChainProtocol.writeRequest(reply(), ChainProtocol.GET_TIP);
         broadcast();
     }
 
     void step(int now) {
         for (int i = 0; i < PACKETS_PER_STEP; i++) {
-            int length = Udp.receive(incoming, ChainProtocol.PACKET_SIZE, source);
+            int length = socket().receive();
             if (length <= 0) {
                 break;
             }
@@ -93,7 +90,7 @@ final class NetworkService {
             lastHeard = now;
             serve(length, now);
         }
-        if (claims.step(now, reply)) {
+        if (claims.step(now, reply())) {
             broadcast();
         }
         heartbeat(now);
@@ -108,26 +105,43 @@ final class NetworkService {
         if (now - nextHello >= 0) {
             nextHello = now + helloEvery;
             int tip = pool.tip();
-            ChainProtocol.writeHello(reply, model.uuidBytes(), pool.height(tip), pool.work(tip),
+            ChainProtocol.writeHello(reply(), model.uuidBytes(), pool.height(tip), pool.work(tip),
                     model.syncing() ? 0 : ChainProtocol.MINING);
-            claims.stampHello(reply);
+            claims.stampHello(reply());
             broadcast();
         }
         if (now - nextAsk >= 0) {
             nextAsk = now + ASK_TIP_MILLIS;
-            ChainProtocol.writeRequest(reply, ChainProtocol.GET_TIP);
+            ChainProtocol.writeRequest(reply(), ChainProtocol.GET_TIP);
             broadcast();
         }
     }
 
-    /** Sends {@code reply} to every node on the network. */
+    /** Sends the reply() buffer to every node on the network. */
     private void broadcast() {
-        model.countSend(Udp.broadcast(NodeIo.PORT, reply, ChainProtocol.PACKET_SIZE));
+        boolean sent = socket().broadcast(NodeIo.PORT, ChainProtocol.PACKET_SIZE);
+        model.countSend(sent ? ChainProtocol.PACKET_SIZE : -1);
     }
 
-    /** Sends {@code reply} to the node that sent the packet being served. */
+    /** Sends the reply() buffer to the node that sent the packet being served. */
     private void answer() {
-        model.countSend(Udp.send(source, source[Udp.PORT], reply, ChainProtocol.PACKET_SIZE));
+        boolean sent = socket().send(socket().sender(), socket().senderPort(), ChainProtocol.PACKET_SIZE);
+        model.countSend(sent ? ChainProtocol.PACKET_SIZE : -1);
+    }
+
+    /** The socket the link opened; only called once the link is ready, so it is never null here. */
+    private GameSocket socket() {
+        return link.socket();
+    }
+
+    /** The receive buffer of the open socket. */
+    private byte[] incoming() {
+        return socket().incoming();
+    }
+
+    /** The reply() buffer of the open socket. */
+    private byte[] reply() {
+        return socket().outgoing();
     }
 
     /**
@@ -151,8 +165,8 @@ final class NetworkService {
     /** Asks everyone again for a parent that is still missing: the request or its answer may have been lost. */
     private void retryFetch(int now) {
         if (pool.waitingForParent() && now - fetchRetryAt >= 0) {
-            ChainProtocol.writeRequest(reply, ChainProtocol.GET_BLOCK);
-            pool.missingParent(reply, ChainProtocol.BODY);
+            ChainProtocol.writeRequest(reply(), ChainProtocol.GET_BLOCK);
+            pool.missingParent(reply(), ChainProtocol.BODY);
             fetchRetryAt = now + FETCH_RETRY_MILLIS;
             broadcast();
         }
@@ -188,35 +202,35 @@ final class NetworkService {
     }
 
     private void serve(int length, int now) {
-        if (!ChainProtocol.valid(incoming, length)) {
+        if (!ChainProtocol.valid(incoming(), length)) {
             model.countIgnored();
             return;
         }
-        int type = ChainProtocol.type(incoming);
+        int type = ChainProtocol.type(incoming());
         if (type == ChainProtocol.BLOCK) {
             serveBlock(now);
         } else if (type == ChainProtocol.GET_BLOCK) {
-            int slot = pool.find(incoming, ChainProtocol.BODY);
+            int slot = pool.find(incoming(), ChainProtocol.BODY);
             if (slot >= 0 && pool.isValid(slot)) {
-                ChainProtocol.writeBlock(reply, pool, slot);
+                ChainProtocol.writeBlock(reply(), pool, slot);
                 answer();
             }
         } else if (type == ChainProtocol.GET_TIP && pool.height(pool.tip()) > 0) {
-            ChainProtocol.writeBlock(reply, pool, pool.tip());
+            ChainProtocol.writeBlock(reply(), pool, pool.tip());
             answer();
         } else if (type == ChainProtocol.HELLO) {
             serveHello(now);
-        } else if ((type == ChainProtocol.CLAIM || type == ChainProtocol.TAKEN) && claims.serve(incoming, reply, now)) {
+        } else if ((type == ChainProtocol.CLAIM || type == ChainProtocol.TAKEN) && claims.serve(incoming(), reply(), now)) {
             answer();
         }
     }
 
     private void serveBlock(int now) {
-        int result = pool.add(incoming, ChainProtocol.BODY, ChainProtocol.height(incoming),
-                ChainProtocol.work(incoming), ChainProtocol.periodStart(incoming));
+        int result = pool.add(incoming(), ChainProtocol.BODY, ChainProtocol.height(incoming()),
+                ChainProtocol.work(incoming()), ChainProtocol.periodStart(incoming()));
         if (result == BlockPool.NEED_PARENT) {
-            ChainProtocol.writeRequest(reply, ChainProtocol.GET_BLOCK);
-            pool.missingParent(reply, ChainProtocol.BODY);
+            ChainProtocol.writeRequest(reply(), ChainProtocol.GET_BLOCK);
+            pool.missingParent(reply(), ChainProtocol.BODY);
             answer();
             fetchRetryAt = now + FETCH_RETRY_MILLIS;
         } else if (result == BlockPool.INVALID) {
@@ -226,21 +240,21 @@ final class NetworkService {
 
     /** Notes the peer's heartbeat and, when it holds a heavier tip than ours, asks it for that tip. */
     private void serveHello(int now) {
-        if (NodeId.same(incoming, ChainProtocol.HELLO_UUID, model.uuidBytes(), 0)) {
+        if (NodeId.same(incoming(), ChainProtocol.HELLO_UUID, model.uuidBytes(), 0)) {
             // This node's own heartbeat, echoed back by the network.
             return;
         }
-        claims.serveHello(incoming, now);
-        long work = ChainProtocol.work(incoming);
-        if (peers.update(incoming, ChainProtocol.HELLO_UUID, ChainProtocol.height(incoming), work,
-                ChainProtocol.helloFlags(incoming), now)) {
+        claims.serveHello(incoming(), now);
+        long work = ChainProtocol.work(incoming());
+        if (peers.update(incoming(), ChainProtocol.HELLO_UUID, ChainProtocol.height(incoming()), work,
+                ChainProtocol.helloFlags(incoming()), now)) {
             Serial.print("Peer ");
-            Serial.print(NodeIo.hexWord(incoming, ChainProtocol.HELLO_UUID));
+            Serial.print(NodeIo.hexWord(incoming(), ChainProtocol.HELLO_UUID));
             Serial.println(" joined");
         }
         if (work > pool.work(pool.tip()) && now - tipRequestedAt >= TIP_REQUEST_MILLIS) {
             tipRequestedAt = now;
-            ChainProtocol.writeRequest(reply, ChainProtocol.GET_TIP);
+            ChainProtocol.writeRequest(reply(), ChainProtocol.GET_TIP);
             answer();
         }
     }

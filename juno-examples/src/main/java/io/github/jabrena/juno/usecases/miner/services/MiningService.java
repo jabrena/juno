@@ -3,8 +3,8 @@ package io.github.jabrena.juno.usecases.miner.services;
 import io.github.jabrena.juno.games.blockchain.Bytes;
 import io.github.jabrena.juno.games.blockchain.NodeIo;
 import io.github.jabrena.juno.games.blockchain.Sha256;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.miner.chain.BlockFormat;
@@ -32,14 +32,15 @@ final class MiningService {
     private final BlockPool pool;
     private final Miner miner = new Miner();
     private final SyncGate gate = new SyncGate();
-    private final byte[] outgoing = new byte[ChainProtocol.PACKET_SIZE];
+    private final WifiLink link;
     private int template = -1;
     private int templateBits;
     private int loggedTip;
     private int clockOffset;
 
-    MiningService(Miner2State model, Miner2Persistence persistence, ClaimService claims) {
+    MiningService(Miner2State model, Miner2Persistence persistence, ClaimService claims, WifiLink link) {
         this.model = model;
+        this.link = link;
         this.persistence = persistence;
         this.claims = claims;
         this.pool = model.pool();
@@ -85,8 +86,11 @@ final class MiningService {
     /** Adds the block just mined to the pool and, as it is the new tip, broadcasts it. */
     private void publish() {
         if (pool.add(miner.block(), 0, 0, 0L, 0) == BlockPool.NEW_TIP) {
-            ChainProtocol.writeBlock(outgoing, pool, pool.tip());
-            model.countSend(Udp.broadcast(NodeIo.PORT, outgoing, ChainProtocol.PACKET_SIZE));
+            GameSocket socket = link.socket();
+            if (socket != null) {
+                ChainProtocol.writeBlock(socket.outgoing(), pool, pool.tip());
+                model.countSend(socket.broadcast(NodeIo.PORT, ChainProtocol.PACKET_SIZE) ? ChainProtocol.PACKET_SIZE : -1);
+            }
             Serial.print("Mined bit ");
             Serial.print(templateBits);
             Serial.print(" after ");

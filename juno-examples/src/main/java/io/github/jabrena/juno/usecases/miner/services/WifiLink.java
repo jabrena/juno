@@ -1,10 +1,13 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
 import io.github.jabrena.juno.games.blockchain.NodeIo;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.usecases.miner.chain.ChainProtocol;
+
+import java.io.IOException;
 
 /**
  * {@link NodeIo#connect()} split into steps, so the frame loop keeps drawing while the node joins Wi-Fi: {@link #start}
@@ -28,6 +31,7 @@ final class WifiLink {
     private int state = IDLE;
     private boolean connected;
     private int nextPoll;
+    private GameSocket socket;
 
     /**
      * Asks the board to join Wi-Fi, or to join again when the link is up but stuck, closing the UDP socket first. On a
@@ -37,7 +41,7 @@ final class WifiLink {
     void start(int now) {
         Serial.println("Connecting Wi-Fi");
         // Close the old socket first: on the UNO Q its port stays held after a restart, so listening again fails.
-        Udp.stop();
+        closeSocket();
         connected = false;
         WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
         state = JOINING;
@@ -49,7 +53,7 @@ final class WifiLink {
      * The board's Wi-Fi API has no disconnect, so the modem stays associated.
      */
     void disconnect() {
-        Udp.stop();
+        closeSocket();
         state = IDLE;
         connected = false;
     }
@@ -83,13 +87,26 @@ final class WifiLink {
         return state;
     }
 
+    /** The open UDP socket, or null until the link is {@link #ready}. */
+    GameSocket socket() {
+        return socket;
+    }
+
     private void listen(int now) {
-        if (Udp.listen(NodeIo.PORT)) {
+        try {
+            socket = GameSocket.open(NodeIo.PORT, ChainProtocol.PACKET_SIZE);
             Serial.println("Listening on UDP port " + NodeIo.PORT);
             state = READY;
-        } else {
+        } catch (IOException e) {
             Serial.println("UDP port busy, retrying");
             nextPoll = now + LISTEN_RETRY_MILLIS;
+        }
+    }
+
+    private void closeSocket() {
+        if (socket != null) {
+            socket.close();
+            socket = null;
         }
     }
 }
