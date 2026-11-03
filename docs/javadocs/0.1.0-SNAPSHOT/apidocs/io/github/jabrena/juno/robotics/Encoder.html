@@ -72,8 +72,8 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#positionDegrees()" tabindex="0">positionDegrees()</a></li>
-<li><a href="#reset()" tabindex="0">reset()</a></li>
+<li><a href="#getTachoCount()" tabindex="0">getTachoCount()</a></li>
+<li><a href="#resetTachoCount()" tabindex="0">resetTachoCount()</a></li>
 </ol>
 </li>
 </ol>
@@ -84,12 +84,20 @@ initTheme();
 <h1 title="Interface Encoder" class="title">Interface Encoder</h1>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Known Subinterfaces:</dt>
+<dd><code><a href="EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></code></dd>
+</dl>
+<dl class="notes">
+<dt>All Known Implementing Classes:</dt>
+<dd><code><a href="../remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Encoder</span></div>
-<div class="block">Position feedback for a motor or wheel. Implementations may be integrated into a motor controller
-or provided by a separate sensor, such as an RCX rotation sensor. Positions are expressed in
-reference-shaft degrees and the contract uses only primitive operations so polling allocates nothing.</div>
+<div class="block">Tachometer feedback for a motor or wheel, after leJOS's <code>Encoder</code>. Implementations may be integrated into a
+motor controller or provided by a separate sensor, such as an RCX rotation sensor. The count is in reference-shaft
+degrees, and the contract uses only primitive operations so polling allocates nothing.</div>
 </div>
 </section>
 <section class="summary">
@@ -106,14 +114,14 @@ reference-shaft degrees and the contract uses only primitive operations so polli
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#positionDegrees()" class="member-name-link">positionDegrees</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getTachoCount()" class="member-name-link">getTachoCount</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Returns the current position in reference-shaft degrees.</div>
+<div class="block">Returns the tachometer count in reference-shaft degrees.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#resetTachoCount()" class="member-name-link">resetTachoCount</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Resets the current position to zero.</div>
+<div class="block">Resets the tachometer count to zero.</div>
 </div>
 </div>
 </div>
@@ -130,20 +138,20 @@ reference-shaft degrees and the contract uses only primitive operations so polli
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="positionDegrees()">
-<h3>positionDegrees</h3>
+<section class="detail" id="getTachoCount()">
+<h3>getTachoCount</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">positionDegrees</span>()</div>
-<div class="block">Returns the current position in reference-shaft degrees.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">getTachoCount</span>()</div>
+<div class="block">Returns the tachometer count in reference-shaft degrees.</div>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="reset()">
-<h3>reset</h3>
+<section class="detail" id="resetTachoCount()">
+<h3>resetTachoCount</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">reset</span>()</div>
-<div class="block">Resets the current position to zero.</div>
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">resetTachoCount</span>()</div>
+<div class="block">Resets the tachometer count to zero.</div>
 </div>
 </section>
 </li>

@@ -327,7 +327,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps</td>
 <td>Bluetooth LE</td>
 <td>UNO R4 WiFi, UNO Q</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java"><code>RemotePoweredUpHub</code></a></td>
 </tr>
 <tr>
 <td>Mindstorms EV3</td>
@@ -364,7 +364,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 </tbody>
 </table>
 <h2 id="lego-powered-up">LEGO Powered Up</h2>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/PoweredUpHubRemote.java"><code>PoweredUpHubRemote</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java"><code>RemotePoweredUpHub</code></a>
 (<code>io.github.jabrena.juno.remote.lego.poweredup</code>) lets a Juno program remote-control a LEGO Powered Up hub — run
 its motors and set its status LED — the same way the LEGO apps do. The board acts as a Bluetooth
 Low Energy central and speaks the
@@ -372,10 +372,10 @@ Low Energy central and speaks the
 It is a compiler intrinsic backed by the Arduino <code>ArduinoBLE</code> library.</p>
 <img src="../images/lego/lego-powered-up-hub.jpg" alt="LEGO Technic Hub 88012 (Powered Up)" width="280">
 <h3 id="connect-to-a-hub">Connect to a hub</h3>
-<p>Create one <code>PoweredUpHubRemote</code> at startup, press the hub's green button so it advertises, and call <code>connect</code>. It
+<p>Create one <code>RemotePoweredUpHub</code> at startup, press the hub's green button so it advertises, and call <code>connect</code>. It
 scans for the first hub it finds, for up to the given milliseconds (<code>0</code> waits forever). The hub drops the link when it
 switches off or goes out of range, so check <code>isConnected()</code> in long-running loops and connect again:</p>
-<pre><code class="language-java">PoweredUpHubRemote hub = new PoweredUpHubRemote();
+<pre><code class="language-java">RemotePoweredUpHub hub = new RemotePoweredUpHub();
 
 while (true) {
     if (!hub.isConnected()) {
@@ -393,7 +393,7 @@ connection at a time.</p>
 <p>The hub's status LED takes a LEGO color index, from <code>COLOR_OFF</code> through <code>COLOR_PINK</code>, <code>COLOR_BLUE</code>, <code>COLOR_GREEN</code>,
 <code>COLOR_YELLOW</code>, <code>COLOR_RED</code> to <code>COLOR_WHITE</code>:</p>
 <pre><code class="language-java">int[] colors = {
-    PoweredUpHubRemote.COLOR_RED, PoweredUpHubRemote.COLOR_GREEN, PoweredUpHubRemote.COLOR_BLUE
+    HubColor.RED, HubColor.GREEN, HubColor.BLUE
 };
 
 while (hub.isConnected()) {
@@ -409,12 +409,12 @@ while (hub.isConnected()) {
 (full forward). There are three ways to stop: <code>setMotorPower(port, 0)</code> lets the motor coast, <code>brakeMotor</code> stops it
 actively, and <code>holdMotor</code> holds a motor with a rotation sensor in place. <code>portDevice(port)</code> tells which motor the hub
 detected on a port:</p>
-<pre><code class="language-java">if (hub.portDevice(PoweredUpHubRemote.PORT_A) != PoweredUpHubRemote.DEVICE_NONE) {
-    hub.setMotorPower(PoweredUpHubRemote.PORT_A, 50);    // half speed forward
+<pre><code class="language-java">if (hub.portDevice(HubPort.A) != RemotePoweredUpHub.DEVICE_NONE) {
+    hub.getMotor(HubPort.A).drive(50);    // half speed forward
     Delay.millis(2000);
-    hub.setMotorPower(PoweredUpHubRemote.PORT_A, -50);   // half speed backward
+    hub.getMotor(HubPort.A).drive(-50);   // half speed backward
     Delay.millis(2000);
-    hub.brakeMotor(PoweredUpHubRemote.PORT_A);
+    hub.getMotor(HubPort.A).stop();
 }
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java"><code>MagicSquarePoweredUpHub</code></a> drives a two-motor vehicle (ports A and B) around a square. To drive two motors as one, as a vehicle's left and
@@ -470,13 +470,13 @@ rcx.begin();
 <p>Either way, the examples below use the same <code>rcx</code>.</p>
 <h3 id="use-the-motors">Use the motors</h3>
 <p>The brick has three motor outputs, <code>getMotorA()</code>, <code>getMotorB()</code> and <code>getMotorC()</code>; <code>and</code> combines two into one, as a
-vehicle's left and right wheels. <code>drive(speed)</code> runs them from <code>-RcxMotor.MAX_POWER</code> (full reverse) to <code>MAX_POWER</code>
+vehicle's left and right wheels. <code>drive(speed)</code> runs them from <code>-RcxMotor.MAX_LEVEL</code> (full reverse) to <code>MAX_LEVEL</code>
 (7, full forward). <code>stop()</code> brakes them and <code>flt()</code> lets them coast:</p>
 <pre><code class="language-java">RcxMotor wheels = rcx.getMotorA().and(rcx.getMotorC());
 
-wheels.drive(RcxMotor.MAX_POWER);    // forward
+wheels.drive(RcxMotor.MAX_LEVEL);    // forward
 Delay.millis(2000);
-wheels.drive(-RcxMotor.MAX_POWER);   // backward
+wheels.drive(-RcxMotor.MAX_LEVEL);   // backward
 Delay.millis(2000);
 wheels.stop();
 </code></pre>

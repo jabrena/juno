@@ -664,7 +664,7 @@ RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, 
 rcx.begin();
 
 RcxMotor motor = rcx.getMotorA();
-motor.setPower(4);
+motor.setPower(57);
 motor.forward();
 </code></pre>
 <p>One example per part of the brick: <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxMotorA.java"><code>NanoCarrierRcxMotorA</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxButtons.java"><code>NanoCarrierRcxButtons</code></a>,

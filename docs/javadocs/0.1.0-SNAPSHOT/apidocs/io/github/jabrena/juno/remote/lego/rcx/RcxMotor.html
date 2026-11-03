@@ -73,7 +73,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
-<li><a href="#MAX_POWER" tabindex="0">MAX_POWER</a></li>
+<li><a href="#MAX_LEVEL" tabindex="0">MAX_LEVEL</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -83,7 +83,9 @@ initTheme();
 <li><a href="#backward()" tabindex="0">backward()</a></li>
 <li><a href="#stop()" tabindex="0">stop()</a></li>
 <li><a href="#flt()" tabindex="0">flt()</a></li>
+<li><a href="#isMoving()" tabindex="0">isMoving()</a></li>
 <li><a href="#setPower(int)" tabindex="0">setPower(int)</a></li>
+<li><a href="#getPower()" tabindex="0">getPower()</a></li>
 <li><a href="#drive(int)" tabindex="0">drive(int)</a></li>
 </ol>
 </li>
@@ -98,13 +100,22 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.remote.lego.rcx.RcxMotor</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a>, <a href="../../../robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">RcxMotor</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
+implements <a href="../../../robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></span></div>
 <div class="block">One or more of an RCX brick's outputs, driven with direct commands over infrared: get them from
 <a href="RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.
+
+<p>As a <a href="../../../robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a>, <a href="#setPower(int)"><code>setPower(int)</code></a> takes a percentage and is mapped onto the brick's <a href="#MAX_LEVEL"><code>MAX_LEVEL</code></a> levels.
+Each handle keeps its own power and motion state, so a combined handle from <a href="#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>and(RcxMotor)</code></a> does not see changes made
+through the single-output handles.
 
 <p>Each call is one or more commands that wait for the brick's acknowledgement when the IR receiver is wired, so it
 takes 100 ms or more; set a speed once and not in a tight loop.</div>
@@ -122,9 +133,10 @@ takes 100 ms or more; set a speed once and not in a tight loop.</div>
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#MAX_POWER" class="member-name-link">MAX_POWER</a></code></div>
+<div class="col-second even-row-color"><code><a href="#MAX_LEVEL" class="member-name-link">MAX_LEVEL</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The highest power level of <a href="#setPower(int)"><code>setPower(int)</code></a> and <a href="#drive(int)"><code>drive(int)</code></a>.</div>
+<div class="block">The highest power level an RCX output accepts: the Output Power command takes a level from <code>0</code> (weakest) to
+<code>7</code> (full power), so the brick has eight levels, not a percentage.</div>
 </div>
 </div>
 </section>
@@ -153,7 +165,7 @@ takes 100 ms or more; set a speed once and not in a tight loop.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drive(int)" class="member-name-link">drive</a><wbr>(int&nbsp;speed)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Runs the outputs at <code>speed</code>, <code>-MAX_POWER..MAX_POWER</code>: the sign is the direction, the size the power
+<div class="block">Runs the outputs at <code>speed</code>, <code>-MAX_LEVEL..MAX_LEVEL</code>: the sign is the direction, the size the power
 level, and <code>0</code> brakes them.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
@@ -166,10 +178,22 @@ level, and <code>0</code> brakes them.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs the outputs forwards, at the power level last set.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPower(int)" class="member-name-link">setPower</a><wbr>(int&nbsp;level)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPower()" class="member-name-link">getPower</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Sets the power level, <code>0..MAX_POWER</code> (clamped); it takes effect while the outputs are on.</div>
+<div class="block">Returns the current power setting, <code>0..100</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns <code>true</code> while the outputs are commanded on, as the last <a href="#drive(int)"><code>drive(int)</code></a>, <a href="#forward()"><code>forward()</code></a> or
+<a href="#backward()"><code>backward()</code></a> left them.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPower(int)" class="member-name-link">setPower</a><wbr>(int&nbsp;percent)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the power, <code>0..100</code> (clamped), mapped onto the <code>0..</code><a href="#MAX_LEVEL"><code>MAX_LEVEL</code></a> levels; it takes effect
+while the outputs are on.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
@@ -194,16 +218,18 @@ level, and <code>0</code> brakes them.</div>
 <h2>Field Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="MAX_POWER">
-<h3>MAX_POWER</h3>
+<section class="detail" id="MAX_LEVEL">
+<h3>MAX_LEVEL</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">MAX_POWER</span></div>
-<div class="block">The highest power level of <a href="#setPower(int)"><code>setPower(int)</code></a> and <a href="#drive(int)"><code>drive(int)</code></a>.</div>
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">MAX_LEVEL</span></div>
+<div class="block">The highest power level an RCX output accepts: the Output Power command takes a level from <code>0</code> (weakest) to
+<code>7</code> (full power), so the brick has eight levels, not a percentage. <a href="#drive(int)"><code>drive(int)</code></a> and
+<a href="RcxBrick.html#setMotorPower(int,int)"><code>RcxBrick.setMotorPower(int, int)</code></a> use this scale, and <a href="#setPower(int)"><code>setPower(int)</code></a> maps its percentage onto it.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
 <ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.remote.lego.rcx.RcxMotor.MAX_POWER">Constant Field Values</a></li>
+<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.remote.lego.rcx.RcxMotor.MAX_LEVEL">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>
@@ -233,6 +259,10 @@ level, and <code>0</code> brakes them.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">forward</span>()</div>
 <div class="block">Runs the outputs forwards, at the power level last set.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html#forward()">forward</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -242,6 +272,10 @@ level, and <code>0</code> brakes them.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">backward</span>()</div>
 <div class="block">Runs the outputs backwards, at the power level last set.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html#backward()">backward</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -251,6 +285,10 @@ level, and <code>0</code> brakes them.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">stop</span>()</div>
 <div class="block">Switches the outputs off with the motors braking.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html#stop()">stop</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -260,6 +298,24 @@ level, and <code>0</code> brakes them.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">flt</span>()</div>
 <div class="block">Switches the outputs off with the motors free to coast.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html#flt()">flt</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isMoving()">
+<h3>isMoving</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isMoving</span>()</div>
+<div class="block">Returns <code>true</code> while the outputs are commanded on, as the last <a href="#drive(int)"><code>drive(int)</code></a>, <a href="#forward()"><code>forward()</code></a> or
+<a href="#backward()"><code>backward()</code></a> left them.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BaseMotor.html#isMoving()">isMoving</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -267,8 +323,27 @@ level, and <code>0</code> brakes them.</div>
 <section class="detail" id="setPower(int)">
 <h3>setPower</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPower</span><wbr><span class="parameters">(int&nbsp;level)</span></div>
-<div class="block">Sets the power level, <code>0..MAX_POWER</code> (clamped); it takes effect while the outputs are on.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPower</span><wbr><span class="parameters">(int&nbsp;percent)</span></div>
+<div class="block">Sets the power, <code>0..100</code> (clamped), mapped onto the <code>0..</code><a href="#MAX_LEVEL"><code>MAX_LEVEL</code></a> levels; it takes effect
+while the outputs are on.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/DCMotor.html#setPower(int)">setPower</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getPower()">
+<h3>getPower</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getPower</span>()</div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../../../robotics/DCMotor.html#getPower()">DCMotor</a></code></span></div>
+<div class="block">Returns the current power setting, <code>0..100</code>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/DCMotor.html#getPower()">getPower</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -277,7 +352,7 @@ level, and <code>0</code> brakes them.</div>
 <h3>drive</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drive</span><wbr><span class="parameters">(int&nbsp;speed)</span></div>
-<div class="block">Runs the outputs at <code>speed</code>, <code>-MAX_POWER..MAX_POWER</code>: the sign is the direction, the size the power
+<div class="block">Runs the outputs at <code>speed</code>, <code>-MAX_LEVEL..MAX_LEVEL</code>: the sign is the direction, the size the power
 level, and <code>0</code> brakes them. That is up to three commands.</div>
 </div>
 </section>
