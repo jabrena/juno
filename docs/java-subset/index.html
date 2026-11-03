@@ -530,6 +530,10 @@ the program with a message, where the JDK throws <code>UnsupportedOperationExcep
 <li><code>ReentrantReadWriteLock()</code> with <code>readLock()</code> and <code>writeLock()</code>, which return a <code>Lock</code>. The <code>Lock</code> (or the read or
 write lock) supports <code>lock()</code>, <code>lockInterruptibly()</code>, <code>tryLock()</code> and <code>unlock()</code>, and <code>Lock</code> values may hold a
 <code>ReentrantLock</code> too. A fair <code>ReentrantReadWriteLock(true)</code> is not supported.</li>
+<li><code>Phaser()</code> and <code>Phaser(int)</code> with <code>register()</code>, <code>bulkRegister(int)</code>, <code>arrive()</code>, <code>arriveAndDeregister()</code>,
+<code>arriveAndAwaitAdvance()</code>, <code>awaitAdvance(int)</code>, <code>awaitAdvanceInterruptibly(int)</code>, <code>getPhase()</code>,
+<code>getRegisteredParties()</code> and <code>getUnarrivedParties()</code>. The uninterruptible waits ignore interrupts, as on the JDK. A
+subclass with <code>onAdvance</code>, the timed <code>awaitAdvanceInterruptibly</code>, tiered phasers and termination are not supported.</li>
 </ul>
 <h2 id="concurrency-behaviour">Concurrency behaviour</h2>
 <p>Virtual threads, structured subtasks and <code>main</code> share one preemptive scheduler, and the runtime switches between them in
