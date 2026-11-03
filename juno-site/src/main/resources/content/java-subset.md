@@ -223,6 +223,10 @@ blink.run();
 - `ReentrantReadWriteLock()` with `readLock()` and `writeLock()`, which return a `Lock`. The `Lock` (or the read or
   write lock) supports `lock()`, `lockInterruptibly()`, `tryLock()` and `unlock()`, and `Lock` values may hold a
   `ReentrantLock` too. A fair `ReentrantReadWriteLock(true)` is not supported.
+- `Phaser()` and `Phaser(int)` with `register()`, `bulkRegister(int)`, `arrive()`, `arriveAndDeregister()`,
+  `arriveAndAwaitAdvance()`, `awaitAdvance(int)`, `awaitAdvanceInterruptibly(int)`, `getPhase()`,
+  `getRegisteredParties()` and `getUnarrivedParties()`. The uninterruptible waits ignore interrupts, as on the JDK. A
+  subclass with `onAdvance`, the timed `awaitAdvanceInterruptibly`, tiered phasers and termination are not supported.
 
 ## Concurrency behaviour
 

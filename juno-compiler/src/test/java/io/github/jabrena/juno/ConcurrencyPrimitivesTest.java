@@ -38,6 +38,7 @@ class ConcurrencyPrimitivesTest {
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.util.concurrent.CountDownLatch;
                 import java.util.concurrent.CyclicBarrier;
+                import java.util.concurrent.Phaser;
                 import java.util.concurrent.Semaphore;
                 import java.util.concurrent.locks.Condition;
                 import java.util.concurrent.locks.Lock;
@@ -102,11 +103,22 @@ class ConcurrencyPrimitivesTest {
             writer.lock();
             writer.unlock();
             Serial.println(rw.writeLock().tryLock() ? 1 : 0);
+            Phaser phaser = new Phaser(1);
+            phaser.register();
+            phaser.arrive();
+            phaser.arriveAndDeregister();
+            phaser.arriveAndAwaitAdvance();
+            phaser.awaitAdvance(0);
+            phaser.awaitAdvanceInterruptibly(phaser.getPhase());
+            Serial.println(phaser.bulkRegister(2) + phaser.getRegisteredParties() + phaser.getUnarrivedParties());
             """;
 
     static Stream<Arguments> unsupportedCalls() {
         return Stream.of(
                 arguments("Semaphore.acquire(int)", "new Semaphore(3).acquire(2);\n"),
+                arguments("Phaser timed awaitAdvanceInterruptibly",
+                        "new Phaser(1).awaitAdvanceInterruptibly(0, 1, java.util.concurrent.TimeUnit.SECONDS);\n"),
+                arguments("Phaser tiered constructor", "new Phaser(new Phaser(1));\n"),
                 arguments("ReentrantReadWriteLock fair", "new ReentrantReadWriteLock(true);\n"));
     }
 
@@ -129,6 +141,9 @@ class ConcurrencyPrimitivesTest {
                 "bl juno_thread_interrupt", "bl juno_thread_is_interrupted", "bl juno_thread_sleep_interruptible",
                 "bl juno_barrier_new", "bl juno_barrier_await", "bl juno_barrier_parties",
                 "bl juno_lock_new_condition", "bl juno_condition_signal", "bl juno_condition_signal_all",
+                "bl juno_phaser_new", "bl juno_phaser_register", "bl juno_phaser_arrive", "bl juno_phaser_arrive_and_deregister",
+                "bl juno_phaser_arrive_and_await", "bl juno_phaser_await_advance", "bl juno_phaser_await_advance_interruptibly",
+                "bl juno_phaser_bulk_register", "bl juno_phaser_get_phase",
                 "bl juno_rw_lock_new", "bl juno_rw_read_lock", "bl juno_rw_write_lock", "bl juno_lock_lock",
                 "bl juno_lock_unlock", "bl juno_lock_try_lock",
                 "bl juno_condition_await");
