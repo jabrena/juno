@@ -163,6 +163,7 @@ public final class IntrinsicLowering {
         registerStructuredTasks();
         registerScopedValues();
         registerUuid();
+        registerDatagram();
         registerLocalDateTime();
         registerMonitors();
         registerSerial();
@@ -201,6 +202,42 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+    }
+
+    /**
+     * {@code java.net} datagrams over the program's single UDP socket. Every socket call can fail, and a receive can
+     * time out, so each one raises a JDK exception; the packet and address handles live in arena blocks.
+     */
+    private void registerDatagram() {
+        ShimFeature[] runtime = {ShimFeature.UDP, ShimFeature.EXCEPTIONS, ShimFeature.DATAGRAM};
+        shim(Intrinsic.INET_ADDRESS_GET_BY_ADDRESS, "juno_inet_address_get_by_address", Result.WORD,
+                List.of(arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_NEW_RECEIVE, "juno_datagram_packet_new_receive", Result.WORD,
+                List.of(arg(0), arg(1)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_NEW_SEND, "juno_datagram_packet_new_send", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_DATA, "juno_datagram_packet_get_data", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_LENGTH, "juno_datagram_packet_get_length", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_LENGTH, "juno_datagram_packet_set_length", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_ADDRESS, "juno_datagram_packet_get_address", Result.WORD,
+                List.of(RECEIVER), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_ADDRESS, "juno_datagram_packet_set_address", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_PORT, "juno_datagram_packet_get_port", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_PORT, "juno_datagram_packet_set_port", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_NEW, "juno_datagram_socket_new", Result.WORD, List.of(arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_SEND, "juno_datagram_socket_send", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_RECEIVE, "juno_datagram_socket_receive", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_SET_SO_TIMEOUT, "juno_datagram_socket_set_so_timeout", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_CLOSE, "juno_datagram_socket_close", Result.NONE, List.of(RECEIVER), runtime);
     }
 
     private void registerUuid() {

@@ -33,6 +33,7 @@ public final class AvrRuntimeShim {
     private final MathRuntime mathRuntime = new MathRuntime();
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
     private final UuidRuntime uuidRuntime = new UuidRuntime();
+    private final DatagramRuntime datagramRuntime = new DatagramRuntime();
     private final LocalDateTimeRuntime localDateTimeRuntime = new LocalDateTimeRuntime();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
     private final IoRuntime ioRuntime = new IoRuntime();
@@ -213,6 +214,9 @@ public final class AvrRuntimeShim {
                         throwableClasses.indexOf("java/lang/IndexOutOfBoundsException")))));
         appendNetworkHelpers(shim);
         ShimFeatureBlock.appendUsed(shim, features, List.of(
+                new ShimFeatureBlock(ShimFeature.DATAGRAM, () -> datagramRuntime.helpers(
+                        throwableClasses.indexOf("java/io/IOException"),
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),
                 new ShimFeatureBlock(ShimFeature.UUID_RANDOM, core::uuidRandomHelpers),
                 new ShimFeatureBlock(ShimFeature.UUID, () -> uuidRuntime.helpers(
