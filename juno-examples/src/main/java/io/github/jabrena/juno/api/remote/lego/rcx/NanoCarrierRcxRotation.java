@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class NanoCarrierRcxRotation {
     private static final int CHANNEL = 1;
     private static final int START_MILLIS = 10000;
-    private static final int MOTOR_POWER = 3;
+    private static final int MOTOR_POWER = 43;
     private static final int MOTOR_RUN_MILLIS = 4000;
     private static final int POLL_MILLIS = 250;
     private static final int RETRY_MILLIS = 1000;
@@ -74,7 +74,7 @@ public final class NanoCarrierRcxRotation {
     private static void runMotor(String direction, RcxMotor motor, RcxRotationSensor rotation, boolean forward) {
         Serial.print("Motor ");
         Serial.print(direction);
-        Serial.println(" at power 3");
+        Serial.println(" at power 43");
         motor.setPower(MOTOR_POWER);
         if (forward) {
             motor.forward();

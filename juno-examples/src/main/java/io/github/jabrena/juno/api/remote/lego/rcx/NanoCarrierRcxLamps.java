@@ -47,7 +47,7 @@ public final class NanoCarrierRcxLamps {
         testLamp("C", lampC);
 
         Serial.println("A+B+C on");
-        allLamps.setPower(RcxMotor.MAX_POWER);
+        allLamps.setPower(100);
         allLamps.forward();
         Delay.millis(LAMP_MILLIS);
         allLamps.stop();
@@ -71,7 +71,7 @@ public final class NanoCarrierRcxLamps {
         Serial.print("Lamp ");
         Serial.print(name);
         Serial.println(" on");
-        lamp.setPower(RcxMotor.MAX_POWER);
+        lamp.setPower(100);
         lamp.forward();
         Delay.millis(LAMP_MILLIS);
         lamp.stop();

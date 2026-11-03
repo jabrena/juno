@@ -37,7 +37,7 @@ public class RcxDriveABC {
         printBattery(battery);
 
         Serial.println("A+B+C forward for 5 seconds");
-        all.drive(RcxMotor.MAX_POWER);
+        all.drive(RcxMotor.MAX_LEVEL);
         Delay.seconds(RUN_SECONDS);
         all.drive(0);
         Serial.println("Stopped");

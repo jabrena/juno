@@ -41,9 +41,9 @@ public final class NanoCarrierRcxMotorA {
         waitForBrick(remote);
 
         Serial.println("RCX motor A test: channel 1");
-        testPower(motor, 2);
-        testPower(motor, 4);
-        testPower(motor, RcxMotor.MAX_POWER);
+        testPower(motor, 29);
+        testPower(motor, 57);
+        testPower(motor, 100);
         testDirection(motor, true);
         testDirection(motor, false);
         testStop(motor);
@@ -76,7 +76,7 @@ public final class NanoCarrierRcxMotorA {
 
     private static void testDirection(RcxMotor motor, boolean forward) {
         Serial.println(forward ? "Forward direction" : "Backward direction");
-        motor.setPower(4);
+        motor.setPower(57);
         if (forward) {
             motor.forward();
         } else {
@@ -89,7 +89,7 @@ public final class NanoCarrierRcxMotorA {
 
     private static void testStop(RcxMotor motor) {
         Serial.println("Brake with stop");
-        motor.setPower(4);
+        motor.setPower(57);
         motor.forward();
         Delay.millis(STOPPING_MILLIS);
         motor.stop();
@@ -98,7 +98,7 @@ public final class NanoCarrierRcxMotorA {
 
     private static void testCoast(RcxMotor motor) {
         Serial.println("Coast with flt");
-        motor.setPower(4);
+        motor.setPower(57);
         motor.forward();
         Delay.millis(STOPPING_MILLIS);
         motor.flt();

@@ -161,9 +161,9 @@ public final class RcxBrick {
         command(OPCODE_OUTPUT_DIRECTION, (forward ? DIRECTION_FORWARD : DIRECTION_BACKWARD) | (outputs & 0x7), 0, 0, 1);
     }
 
-    /** Sets the power level of the outputs, {@code 0..}{@link RcxMotor#MAX_POWER} (clamped); it takes effect while they are on. */
+    /** Sets the power level of the outputs, {@code 0..}{@link RcxMotor#MAX_LEVEL} (clamped); it takes effect while they are on. */
     public void setMotorPower(int outputs, int level) {
-        int limited = level < 0 ? 0 : level > RcxMotor.MAX_POWER ? RcxMotor.MAX_POWER : level;
+        int limited = level < 0 ? 0 : level > RcxMotor.MAX_LEVEL ? RcxMotor.MAX_LEVEL : level;
         command(OPCODE_OUTPUT_POWER, outputs & 0x7, SOURCE_CONSTANT, limited, 3);
     }
 
