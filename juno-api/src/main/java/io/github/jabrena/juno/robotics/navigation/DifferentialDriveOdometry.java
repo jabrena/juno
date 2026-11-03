@@ -47,8 +47,8 @@ public final class DifferentialDriveOdometry {
 
     /** Resets both encoders and the pose; the next update establishes a new IMU reference heading. */
     public void reset() {
-        leftEncoder.reset();
-        rightEncoder.reset();
+        leftEncoder.resetTachoCount();
+        rightEncoder.resetTachoCount();
         pose.reset();
         initialized = false;
     }
@@ -58,8 +58,8 @@ public final class DifferentialDriveOdometry {
      * encoder-only odometry is still applied when it returns {@code false}.
      */
     public boolean update() {
-        int leftDegrees = leftEncoder.positionDegrees();
-        int rightDegrees = rightEncoder.positionDegrees();
+        int leftDegrees = leftEncoder.getTachoCount();
+        int rightDegrees = rightEncoder.getTachoCount();
         boolean imuValid = imu.read(sample);
 
         if (!initialized) {
