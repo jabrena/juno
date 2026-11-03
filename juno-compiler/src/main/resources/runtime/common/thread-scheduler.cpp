@@ -368,9 +368,121 @@ extern "C" int32_t juno_monitor_try_enter(int32_t handle) {
   return juno_monitor_try_enter_handle(handle);
 }
 
-extern "C" int32_t juno_reentrant_lock_new() {
-  void* lock = juno_alloc(sizeof(uint32_t), sizeof(uint32_t));
+// Every Lock handle is two words: the kind (a ReentrantLock is a monitor; a read or write lock is an end of a
+// ReentrantReadWriteLock) and, for a read or write lock, the handle of its read/write state. The monitor's key stays
+// the handle itself.
+extern "C" void juno_monitor_exit(int32_t handle);
+
+static constexpr int32_t JUNO_LOCK_MONITOR = 0;
+static constexpr int32_t JUNO_LOCK_READ = 1;
+static constexpr int32_t JUNO_LOCK_WRITE = 2;
+
+static int32_t* juno_lock_words(int32_t handle) {
+  if (handle == 0) juno_panic();
+  return reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
+}
+
+static int32_t juno_new_lock(int32_t kind, int32_t state) {
+  auto* lock = static_cast<int32_t*>(juno_alloc(2u * sizeof(int32_t), sizeof(int32_t)));
+  lock[0] = kind;
+  lock[1] = state;
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(lock));
+}
+
+extern "C" int32_t juno_reentrant_lock_new() {
+  return juno_new_lock(JUNO_LOCK_MONITOR, 0);
+}
+
+// ReentrantReadWriteLock state, five words: {writer (slot + 1, or 0), writer depth, readers, read lock, write lock}.
+// A writer may take the lock again; readers wait while a writer holds it, and a writer waits for the readers to leave.
+static constexpr uint32_t JUNO_RW_WRITER = 0u;
+static constexpr uint32_t JUNO_RW_DEPTH = 1u;
+static constexpr uint32_t JUNO_RW_READERS = 2u;
+
+static int32_t* juno_rw_state(int32_t lockHandle) {
+  int32_t* lock = juno_lock_words(lockHandle);
+  if (lock[0] == JUNO_LOCK_MONITOR) juno_panic();
+  return juno_lock_words(lock[1]);
+}
+
+extern "C" int32_t juno_rw_lock_new() {
+  auto* state = static_cast<int32_t*>(juno_alloc(5u * sizeof(int32_t), sizeof(int32_t)));
+  state[JUNO_RW_WRITER] = 0;
+  state[JUNO_RW_DEPTH] = 0;
+  state[JUNO_RW_READERS] = 0;
+  int32_t stateHandle = static_cast<int32_t>(reinterpret_cast<intptr_t>(state));
+  state[3] = juno_new_lock(JUNO_LOCK_READ, stateHandle);
+  state[4] = juno_new_lock(JUNO_LOCK_WRITE, stateHandle);
+  return stateHandle;
+}
+
+extern "C" int32_t juno_rw_read_lock(int32_t handle) {
+  return juno_lock_words(handle)[3];
+}
+
+extern "C" int32_t juno_rw_write_lock(int32_t handle) {
+  return juno_lock_words(handle)[4];
+}
+
+static bool juno_rw_try_write(int32_t* state, uint32_t self) {
+  if (state[JUNO_RW_WRITER] == static_cast<int32_t>(self)) {
+    state[JUNO_RW_DEPTH]++;
+    return true;
+  }
+  if (state[JUNO_RW_WRITER] == 0 && state[JUNO_RW_READERS] == 0) {
+    state[JUNO_RW_WRITER] = static_cast<int32_t>(self);
+    state[JUNO_RW_DEPTH] = 1;
+    return true;
+  }
+  return false;
+}
+
+static bool juno_rw_try_read(int32_t* state, uint32_t self) {
+  if (state[JUNO_RW_WRITER] != 0 && state[JUNO_RW_WRITER] != static_cast<int32_t>(self)) return false;
+  state[JUNO_RW_READERS]++;
+  return true;
+}
+
+// Lock.lock, Lock.tryLock and Lock.unlock on any kind of lock: a ReentrantLock is entered as a monitor.
+extern "C" void juno_lock_lock(int32_t handle) {
+  if (juno_lock_words(handle)[0] == JUNO_LOCK_MONITOR) {
+    juno_monitor_enter(handle);
+    return;
+  }
+  int32_t* state = juno_rw_state(handle);
+  uint32_t self = juno_current_slot + 1u;
+  bool isRead = juno_lock_words(handle)[0] == JUNO_LOCK_READ;
+  while (!(isRead ? juno_rw_try_read(state, self) : juno_rw_try_write(state, self))) juno_thread_yield();
+}
+
+extern "C" int32_t juno_lock_try_lock(int32_t handle) {
+  if (juno_lock_words(handle)[0] == JUNO_LOCK_MONITOR) return juno_monitor_try_enter(handle);
+  int32_t* state = juno_rw_state(handle);
+  uint32_t self = juno_current_slot + 1u;
+  bool isRead = juno_lock_words(handle)[0] == JUNO_LOCK_READ;
+  return (isRead ? juno_rw_try_read(state, self) : juno_rw_try_write(state, self)) ? 1 : 0;
+}
+
+extern "C" void juno_lock_unlock(int32_t handle) {
+  int32_t* lock = juno_lock_words(handle);
+  if (lock[0] == JUNO_LOCK_MONITOR) {
+    juno_monitor_exit(handle);
+    return;
+  }
+  int32_t* state = juno_rw_state(handle);
+  if (lock[0] == JUNO_LOCK_READ) {
+    if (state[JUNO_RW_READERS] <= 0) {
+      Serial.println("[juno-lock] unlock of a read lock that is not held");
+      juno_panic();
+    }
+    state[JUNO_RW_READERS]--;
+    return;
+  }
+  if (state[JUNO_RW_WRITER] != static_cast<int32_t>(juno_current_slot + 1u)) {
+    Serial.println("[juno-lock] unlock of a write lock by a non-owner");
+    juno_panic();
+  }
+  if (--state[JUNO_RW_DEPTH] == 0) state[JUNO_RW_WRITER] = 0;
 }
 
 extern "C" void juno_monitor_exit(int32_t handle) {
@@ -535,6 +647,10 @@ extern "C" int32_t juno_semaphore_available(int32_t handle) {
 
 // ReentrantLock.newCondition(): one arena word holding the lock's handle. The condition itself is the waiting key.
 extern "C" int32_t juno_lock_new_condition(int32_t lockHandle) {
+  if (juno_lock_words(lockHandle)[0] != JUNO_LOCK_MONITOR) {
+    Serial.println("[juno-lock] newCondition is supported on a ReentrantLock only");
+    juno_panic();
+  }
   juno_monitor_key(lockHandle);
   auto* condition = static_cast<int32_t*>(juno_alloc(sizeof(int32_t), sizeof(int32_t)));
   *condition = lockHandle;
