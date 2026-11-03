@@ -106,12 +106,8 @@ class ConcurrencyPrimitivesTest {
 
     static Stream<Arguments> unsupportedCalls() {
         return Stream.of(
-                arguments("Semaphore fairness", "Semaphore fair = new Semaphore(1, true);\n"),
-                arguments("CountDownLatch timed await", "new CountDownLatch(1).await(1, java.util.concurrent.TimeUnit.SECONDS);\n"),
                 arguments("Semaphore.acquire(int)", "new Semaphore(3).acquire(2);\n"),
-                arguments("ReentrantReadWriteLock fair", "new ReentrantReadWriteLock(true);\n"),
-                arguments("CyclicBarrier with a barrier action",
-                        "new CyclicBarrier(2, () -> Serial.println(1)).await();\n"));
+                arguments("ReentrantReadWriteLock fair", "new ReentrantReadWriteLock(true);\n"));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {

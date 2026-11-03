@@ -205,20 +205,23 @@ blink.run();
 
 ### Synchronisation
 
-- `synchronized` blocks, `volatile` fields, `ReentrantLock` (`lock`, `tryLock` and `unlock`), and the atomic classes
-  `AtomicInteger`, `AtomicBoolean` and `AtomicLong`.
+- `synchronized` blocks, `volatile` fields, `ReentrantLock` (`lock`, `lockInterruptibly`, `tryLock`, `tryLock(long,
+  TimeUnit)` and `unlock`), and the atomic classes `AtomicInteger`, `AtomicBoolean` and `AtomicLong`. `new
+  ReentrantLock(true)` is a fair lock: waiting threads are granted it in arrival order.
 - `Object.wait()`, `notify()` and `notifyAll()`, only while the monitor is held (inside `synchronized`). `wait(long)` is
   not supported.
-- `CountDownLatch(int)` with `countDown()`, `getCount()` and `await()`, and `Semaphore(int)` with `acquire()`,
-  `release()`, `tryAcquire()` and `availablePermits()`. Timed waits and fairness are not supported.
-- `CyclicBarrier(int)` with `await()` and `getParties()`. A barrier action is not supported. An interrupt breaks the
-  barrier: the interrupted thread gets `InterruptedException`, and the other waiters and later callers get
-  `BrokenBarrierException`.
-- `ReentrantLock.newCondition()`, with `await()`, `signal()` and `signalAll()` while the lock is held. Timed waits are
-  not supported.
+- `CountDownLatch(int)` with `countDown()`, `getCount()`, `await()` and `await(long, TimeUnit)`, and `Semaphore(int)` or
+  `Semaphore(int, boolean)` with `acquire()`, `release()`, `tryAcquire()`, `tryAcquire(long, TimeUnit)` and
+  `availablePermits()`. `new Semaphore(n, true)` queues its acquires in arrival order. `acquire(int)` is not supported.
+- `CyclicBarrier(int)` and `CyclicBarrier(int, Runnable)` with `await()` and `getParties()`. The barrier action runs on
+  the thread that arrives last, before the others are released. An interrupt breaks the barrier: the interrupted thread
+  gets `InterruptedException`, and the other waiters and later callers get `BrokenBarrierException`.
+- `ReentrantLock.newCondition()`, with `await()`, `await(long, TimeUnit)`, `signal()` and `signalAll()` while the lock is
+  held. The write lock of a `ReentrantReadWriteLock` has conditions too. Calling `newCondition()` on a read lock stops
+  the program with a message, where the JDK throws `UnsupportedOperationException`.
 - `ReentrantReadWriteLock()` with `readLock()` and `writeLock()`, which return a `Lock`. The `Lock` (or the read or
-  write lock) supports `lock()`, `tryLock()` and `unlock()`, and `Lock` values may hold a `ReentrantLock` too. A fair
-  lock, `newCondition()` on a read or write lock and `lockInterruptibly()` are not supported.
+  write lock) supports `lock()`, `lockInterruptibly()`, `tryLock()` and `unlock()`, and `Lock` values may hold a
+  `ReentrantLock` too. A fair `ReentrantReadWriteLock(true)` is not supported.
 
 ## Concurrency behaviour
 
