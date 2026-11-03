@@ -212,7 +212,8 @@ blink.run();
 - `CountDownLatch(int)` with `countDown()`, `getCount()` and `await()`, and `Semaphore(int)` with `acquire()`,
   `release()`, `tryAcquire()` and `availablePermits()`. Timed waits and fairness are not supported.
 - `CyclicBarrier(int)` with `await()` and `getParties()`. A barrier action is not supported. An interrupt breaks the
-  barrier, and later calls on it throw `InterruptedException`, where the JDK throws `BrokenBarrierException`.
+  barrier: the interrupted thread gets `InterruptedException`, and the other waiters and later callers get
+  `BrokenBarrierException`.
 - `ReentrantLock.newCondition()`, with `await()`, `signal()` and `signalAll()` while the lock is held. Timed waits are
   not supported.
 - `ReentrantReadWriteLock()` with `readLock()` and `writeLock()`, which return a `Lock`. The `Lock` (or the read or

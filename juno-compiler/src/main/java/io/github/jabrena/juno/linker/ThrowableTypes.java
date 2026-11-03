@@ -44,6 +44,7 @@ public final class ThrowableTypes {
             Map.entry("java/lang/ClassCastException", "java/lang/RuntimeException"),
             Map.entry("java/lang/NegativeArraySizeException", "java/lang/RuntimeException"),
             Map.entry("java/lang/InterruptedException", "java/lang/Exception"),
+            Map.entry("java/util/concurrent/BrokenBarrierException", "java/lang/Exception"),
             Map.entry("java/util/NoSuchElementException", "java/lang/RuntimeException"),
             Map.entry("java/util/concurrent/ExecutionException", "java/lang/Exception"),
             Map.entry("java/util/concurrent/TimeoutException", "java/lang/Exception"),

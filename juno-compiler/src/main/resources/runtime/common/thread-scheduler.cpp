@@ -270,6 +270,11 @@ static void juno_raise_interrupted() {
 ${JUNO_RAISE_INTERRUPTED}
 }
 
+// Raises BrokenBarrierException for a thread whose CyclicBarrier was broken by another thread's interrupt.
+static void juno_raise_broken_barrier() {
+${JUNO_RAISE_BROKEN_BARRIER}
+}
+
 extern "C" void juno_thread_interrupt(int32_t handle) {
   JunoThreadObject* thread = juno_thread_of(handle);
   thread->flags |= JUNO_THREAD_INTERRUPTED;
@@ -670,8 +675,9 @@ extern "C" void juno_condition_signal_all(int32_t handle) {
 }
 
 // CyclicBarrier: four arena words {parties, waiting, generation, broken}. The last thread to arrive trips the
-// barrier and returns index 0; the others wait for the generation to change. An interrupt breaks the barrier for
-// everyone, and a call on a broken barrier throws InterruptedException (the JDK throws BrokenBarrierException).
+// barrier and returns index 0; the others wait for the generation to change. A thread interrupted while it waits
+// breaks the barrier and throws InterruptedException; the other waiters and later callers throw
+// BrokenBarrierException, as on the JDK.
 static int32_t* juno_barrier_of(int32_t handle) {
   if (handle == 0) juno_panic();
   return reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
@@ -696,7 +702,11 @@ extern "C" int32_t juno_barrier_parties(int32_t handle) {
 
 extern "C" int32_t juno_barrier_await(int32_t handle) {
   int32_t* barrier = juno_barrier_of(handle);
-  if (barrier[3] != 0 || juno_interrupt_pending()) {
+  if (barrier[3] != 0) {
+    juno_raise_broken_barrier();
+    return 0;
+  }
+  if (juno_interrupt_pending()) {
     barrier[3] = 1;
     juno_raise_interrupted();
     return 0;
@@ -712,7 +722,7 @@ extern "C" int32_t juno_barrier_await(int32_t handle) {
   while (barrier[2] == generation) {
     juno_thread_yield();
     if (barrier[3] != 0) {
-      juno_raise_interrupted();
+      juno_raise_broken_barrier();
       return 0;
     }
     if (juno_interrupt_pending()) {
