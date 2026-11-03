@@ -17,6 +17,7 @@ public:
   int available() { return 0; }
   bool connected() { return false; }
   int read() { return -1; }
+  int read(uint8_t*, size_t) { return -1; }
   void stop() {}
   operator bool() const { return false; }
 };

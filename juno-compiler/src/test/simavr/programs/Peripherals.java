@@ -88,7 +88,9 @@ public final class Peripherals {
             socket.setSoTimeout(10);
             socket.receive(incoming);
             Serial.println(incoming.getLength());
-            Serial.println(incoming.getAddress().toString() + ":" + incoming.getPort());
+            Serial.print(incoming.getAddress().toString());
+            Serial.print(":");
+            Serial.println(incoming.getPort());
             Serial.println((char) received[0] + "" + (char) received[3]);
             socket.close();
         } catch (IOException e) {
