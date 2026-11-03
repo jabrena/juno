@@ -70,7 +70,8 @@ final class AllocationSizeEstimator {
         }
         if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW
                 || intrinsic == Intrinsic.ATOMIC_INT_NEW_DEFAULT
-                || intrinsic == Intrinsic.ATOMIC_INT_NEW) {
+                || intrinsic == Intrinsic.ATOMIC_INT_NEW || intrinsic == Intrinsic.LATCH_NEW
+                || intrinsic == Intrinsic.SEMAPHORE_NEW) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
         if (intrinsic == Intrinsic.ATOMIC_LONG_NEW_DEFAULT || intrinsic == Intrinsic.ATOMIC_LONG_NEW) {

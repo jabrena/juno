@@ -126,6 +126,7 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || new SocketSupport().isSocketType(type)
                 || new LocalDateTimeSupport().isLocalDateTimeType(type)
                 || new AtomicSupport().isAtomicType(type)
+                || new ConcurrencySupport().isConcurrencyType(type)
                 || isRandomAccessFile(type)
                 || isSupportedArrayType(type, referenceClassNames)
                 || isReferenceType(type, referenceClassNames);

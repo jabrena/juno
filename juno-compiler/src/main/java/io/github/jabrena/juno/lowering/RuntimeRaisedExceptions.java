@@ -4,6 +4,7 @@ import io.github.jabrena.juno.intrinsic.DatagramMethods;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.intrinsic.SocketMethods;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.ConcurrencySupport;
 import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.SocketSupport;
@@ -29,8 +30,14 @@ final class RuntimeRaisedExceptions {
 
     private final StructuredTaskSupport structuredTaskSupport = new StructuredTaskSupport();
 
+    private final ConcurrencySupport concurrencySupport = new ConcurrencySupport();
+
     /** The exceptions the runtime may raise while running a method of {@code owner}. */
     List<String> raisedBy(String owner) {
+        if (owner.equals("java/lang/Thread") || owner.equals("java/lang/Object")
+                || concurrencySupport.isConcurrencyClass(owner)) {
+            return List.of("java/lang/InterruptedException");
+        }
         if (structuredTaskSupport.isStructuredTaskOwner(owner)) {
             return List.of("java/lang/IllegalStateException", "java/util/concurrent/ExecutionException");
         }

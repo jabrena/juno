@@ -77,7 +77,8 @@ final class ThrowingMethods {
                             TASK_SCOPE_OPEN_WITH_CONFIG, TASK_CONFIGURATION_WITH_TIMEOUT, DURATION_OF_MILLIS,
                             DURATION_OF_SECONDS, TASK_SCOPE_FORK_CALLABLE,
                             TASK_SCOPE_FORK_RUNNABLE, TASK_SCOPE_JOIN, TASK_GET, TASK_STATE, TASK_EXCEPTION,
-                            TASK_SCOPE_CLOSE, SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL -> true;
+                            TASK_SCOPE_CLOSE, SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL,
+                            THREAD_SLEEP, MONITOR_WAIT, LATCH_AWAIT, SEMAPHORE_ACQUIRE -> true;
                     default -> bigNumberMethods.mayThrow(call.intrinsic())
                             || call.intrinsic() == io.github.jabrena.juno.intrinsic.Intrinsic.UUID_FROM_STRING
                             || randomAccessFileMethods.mayThrow(call.intrinsic())

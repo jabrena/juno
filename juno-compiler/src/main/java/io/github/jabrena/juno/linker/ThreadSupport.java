@@ -41,14 +41,15 @@ public final class ThreadSupport {
     /**
      * Rejects a program that uses {@code java.lang.Thread} beyond the supported subset. Virtual threads are the only
      * thread a program creates ({@code Thread.startVirtualThread(Runnable)}), with {@code join()} and
-     * {@code isAlive()} on the handle; platform threads, {@code Thread.ofVirtual()} builders and the other
-     * {@code Thread} members are rejected. {@code Thread.sleep} and {@code Thread.yield} remain available.
+     * {@code isAlive()} and {@code interrupt()}/{@code isInterrupted()} on the handle; platform threads,
+     * {@code Thread.ofVirtual()} builders and the other {@code Thread} members are rejected. {@code Thread.sleep}
+     * and {@code Thread.yield} remain available.
      */
     public void validateCall(MethodRef called) {
         if (called.owner().equals("java/lang/Thread") && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno does not support java.lang.Thread (" + called.displayName()
                     + "); create a virtual thread with Thread.startVirtualThread(Runnable) instead. Supported: "
-                    + "startVirtualThread, join, isAlive, Thread.sleep and Thread.yield");
+                    + "startVirtualThread, join, isAlive, interrupt, isInterrupted, Thread.sleep and Thread.yield");
         }
     }
 

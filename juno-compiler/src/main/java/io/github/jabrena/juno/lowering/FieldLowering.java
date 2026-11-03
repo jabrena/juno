@@ -13,6 +13,7 @@ import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ClojureSupport;
+import io.github.jabrena.juno.linker.ConcurrencySupport;
 import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.Descriptor;
@@ -41,6 +42,7 @@ final class FieldLowering implements InstructionLowering {
     private final ThreadSupport threadSupport = new ThreadSupport();
 
     private final AtomicSupport atomicSupport = new AtomicSupport();
+    private final ConcurrencySupport concurrencySupport = new ConcurrencySupport();
 
     private final LockSupport lockSupport = new LockSupport();
 
@@ -223,6 +225,7 @@ final class FieldLowering implements InstructionLowering {
                 || localDateTimeSupport.isLocalDateTimeType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)
+                || concurrencySupport.isConcurrencyType(descriptor)
                 || ClojureSupport.isHandleType(descriptor)
                 || Descriptor.isArrayType(descriptor)
                 || Descriptor.isReferenceType(descriptor, context.classes().keySet())) {

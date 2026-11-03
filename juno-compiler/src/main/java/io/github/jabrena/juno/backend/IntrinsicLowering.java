@@ -170,6 +170,7 @@ public final class IntrinsicLowering {
         registerSocket();
         registerLocalDateTime();
         registerMonitors();
+        registerConcurrency();
         registerSerial();
         registerStrings();
         registerStorage();
@@ -367,8 +368,18 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THREAD_JOIN, "juno_thread_join", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.THREAD_IS_ALIVE, "juno_thread_is_alive", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
         ShimFeature runtime = usesThreads ? ShimFeature.THREADS : ShimFeature.THREAD_BASICS;
-        shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
+        // A sleep in a program with threads can be interrupted, so it may leave InterruptedException pending.
+        if (usesThreads) {
+            shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep_interruptible", Result.NONE, wide(0),
+                    ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        } else {
+            shim(Intrinsic.THREAD_SLEEP, "juno_thread_sleep", Result.NONE, wide(0), runtime);
+        }
         shim(Intrinsic.THREAD_YIELD, "juno_thread_yield", Result.NONE, List.of(), runtime);
+        shim(Intrinsic.THREAD_INTERRUPT, "juno_thread_interrupt", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS,
+                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.THREAD_IS_INTERRUPTED, "juno_thread_is_interrupted", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
     }
 
     /** JDK 27 preview {@code StructuredTaskScope} operations; subtasks are preemptive, on the shared scheduler. */
@@ -429,6 +440,32 @@ public final class IntrinsicLowering {
         shim(Intrinsic.REENTRANT_LOCK_TRY_LOCK, "juno_monitor_try_enter", Result.WORD, List.of(RECEIVER),
                 ShimFeature.THREADS);
         shim(Intrinsic.REENTRANT_LOCK_UNLOCK, "juno_monitor_exit", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.MONITOR_WAIT, "juno_monitor_wait", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS,
+                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.MONITOR_NOTIFY, "juno_monitor_notify", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.MONITOR_NOTIFY_ALL, "juno_monitor_notify_all", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
+    }
+
+    /**
+     * {@code CountDownLatch} and {@code Semaphore}: an arena counter each, waited on by polling with yield. Only the
+     * blocking waits can leave {@code InterruptedException} pending.
+     */
+    private void registerConcurrency() {
+        shim(Intrinsic.LATCH_NEW, "juno_latch_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.LATCH_COUNT_DOWN, "juno_latch_count_down", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.LATCH_GET_COUNT, "juno_latch_get_count", Result.WIDE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.LATCH_AWAIT, "juno_latch_await", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS,
+                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.SEMAPHORE_NEW, "juno_semaphore_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.SEMAPHORE_ACQUIRE, "juno_semaphore_acquire", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.SEMAPHORE_RELEASE, "juno_semaphore_release", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.SEMAPHORE_TRY_ACQUIRE, "juno_semaphore_try_acquire", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.SEMAPHORE_AVAILABLE_PERMITS, "juno_semaphore_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.THREADS);
     }
 

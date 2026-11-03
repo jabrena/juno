@@ -11,6 +11,7 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.ConcurrencySupport;
 import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LockSupport;
@@ -35,6 +36,7 @@ final class ObjectCreationLowering implements InstructionLowering {
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
 
     private final AtomicSupport atomicSupport = new AtomicSupport();
+    private final ConcurrencySupport concurrencySupport = new ConcurrencySupport();
 
     private final LockSupport lockSupport = new LockSupport();
 
@@ -85,6 +87,7 @@ final class ObjectCreationLowering implements InstructionLowering {
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
                 || called.equals(STRING_BUILDER)
                 || called.equals(LockSupport.CONSTRUCTOR) || atomicSupport.isConstruction(called)
+                || concurrencySupport.isConstruction(called)
                 || called.equals(PROPERTIES) || called.equals(RandomAccessFileMethods.CONSTRUCTOR);
     }
 
@@ -92,7 +95,7 @@ final class ObjectCreationLowering implements InstructionLowering {
     void construct(Instruction instruction, MethodRef called) {
         if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
-                || atomicSupport.isConstruction(called)) {
+                || atomicSupport.isConstruction(called) || concurrencySupport.isConstruction(called)) {
             constructFromArguments(instruction, called);
         } else if (called.equals(STRING_BUILDER)) {
             Value capacity = stack.pop();
@@ -159,7 +162,8 @@ final class ObjectCreationLowering implements InstructionLowering {
         return className.startsWith("java/lang/") || className.equals("java/util/Properties")
                 || randomAccessFileMethods.isOwner(className)
                 || lockSupport.isReentrantLockClass(className)
-                || atomicSupport.isAtomicClass(className) || bigNumberSupport.isBigNumberOwner(className)
+                || atomicSupport.isAtomicClass(className) || concurrencySupport.isConcurrencyClass(className)
+                || bigNumberSupport.isBigNumberOwner(className)
                 || uuidSupport.isUuidOwner(className) || datagramSupport.isDatagramOwner(className)
                 || socketSupport.isSocketOwner(className);
     }
