@@ -27,13 +27,16 @@ public final class ThreadSupport {
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef RUNNABLE_RUN = new MethodRef("java/lang/Runnable", "run", "()V");
 
+    /** {@code new CyclicBarrier(parties, action)}: the trip action runs through the same entry as a thread. */
+    private static final MethodRef BARRIER_WITH_ACTION =
+            new MethodRef("java/util/concurrent/CyclicBarrier", "<init>", "(ILjava/lang/Runnable;)V");
     private static final MethodRef START_VIRTUAL_THREAD =
             new MethodRef("java/lang/Thread", "startVirtualThread", "(Ljava/lang/Runnable;)Ljava/lang/Thread;");
 
 
     /** Records the synthetic {@code Runnable.run()} site when {@code called} starts a virtual thread. */
     public void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
-        if (called.equals(START_VIRTUAL_THREAD)) {
+        if (called.equals(START_VIRTUAL_THREAD) || called.equals(BARRIER_WITH_ACTION)) {
             interfaceCalls.put(ENTRY_SITE, RUNNABLE_RUN);
         }
     }
@@ -41,14 +44,15 @@ public final class ThreadSupport {
     /**
      * Rejects a program that uses {@code java.lang.Thread} beyond the supported subset. Virtual threads are the only
      * thread a program creates ({@code Thread.startVirtualThread(Runnable)}), with {@code join()} and
-     * {@code isAlive()} on the handle; platform threads, {@code Thread.ofVirtual()} builders and the other
-     * {@code Thread} members are rejected. {@code Thread.sleep} and {@code Thread.yield} remain available.
+     * {@code isAlive()} and {@code interrupt()}/{@code isInterrupted()} on the handle; platform threads,
+     * {@code Thread.ofVirtual()} builders and the other {@code Thread} members are rejected. {@code Thread.sleep}
+     * and {@code Thread.yield} remain available.
      */
     public void validateCall(MethodRef called) {
         if (called.owner().equals("java/lang/Thread") && !intrinsicRegistry.isIntrinsic(called)) {
             throw new CompileException("Juno does not support java.lang.Thread (" + called.displayName()
                     + "); create a virtual thread with Thread.startVirtualThread(Runnable) instead. Supported: "
-                    + "startVirtualThread, join, isAlive, Thread.sleep and Thread.yield");
+                    + "startVirtualThread, join, isAlive, interrupt, isInterrupted, Thread.sleep and Thread.yield");
         }
     }
 

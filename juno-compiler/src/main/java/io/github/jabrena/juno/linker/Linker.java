@@ -39,6 +39,7 @@ public final class Linker {
     private final ThreadSupport threadSupport = new ThreadSupport();
 
     private final AtomicSupport atomicSupport = new AtomicSupport();
+    private final ConcurrencySupport concurrencySupport = new ConcurrencySupport();
 
     private final LockSupport lockSupport = new LockSupport();
 
@@ -273,6 +274,7 @@ public final class Linker {
         threadSupport.validateCall(called);
         lockSupport.validateCall(called);
         atomicSupport.validateCall(called);
+        concurrencySupport.validateCall(called);
         structuredTaskSupport.validateCall(called);
         scopedValueSupport.validateCall(called);
         bigNumberSupport.validateCall(called);
