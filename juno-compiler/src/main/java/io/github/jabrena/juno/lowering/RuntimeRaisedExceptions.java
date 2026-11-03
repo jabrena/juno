@@ -38,6 +38,7 @@ final class RuntimeRaisedExceptions {
             return List.of("java/lang/InterruptedException", "java/util/concurrent/BrokenBarrierException");
         }
         if (owner.equals("java/lang/Thread") || owner.equals("java/lang/Object")
+                || owner.equals("java/util/concurrent/locks/ReentrantLock")
                 || concurrencySupport.isConcurrencyClass(owner)) {
             return List.of("java/lang/InterruptedException");
         }

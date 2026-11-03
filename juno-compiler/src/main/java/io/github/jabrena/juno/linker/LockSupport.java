@@ -12,6 +12,8 @@ public final class LockSupport {
     public static final String REENTRANT_LOCK = "java/util/concurrent/locks/ReentrantLock";
     public static final String REENTRANT_LOCK_DESCRIPTOR = "L" + REENTRANT_LOCK + ";";
     public static final MethodRef CONSTRUCTOR = new MethodRef(REENTRANT_LOCK, "<init>", "()V");
+    /** {@code new ReentrantLock(boolean fair)}: the fairness is an argument of the handle's shim call. */
+    public static final MethodRef POLICY_CONSTRUCTOR = new MethodRef(REENTRANT_LOCK, "<init>", "(Z)V");
 
 
     public boolean isReentrantLockClass(String className) {
@@ -25,7 +27,7 @@ public final class LockSupport {
     public void validateCall(MethodRef method) {
         if (isReentrantLockClass(method.owner()) && !intrinsicRegistry.isIntrinsic(method)) {
             throw new CompileException("Juno's restricted ReentrantLock subset supports only new ReentrantLock(), "
-                    + "lock(), tryLock(), and unlock(): " + method.displayName());
+                    + "new ReentrantLock(boolean), newCondition(), lock(), lockInterruptibly(), tryLock(), and unlock(): " + method.displayName());
         }
     }
 

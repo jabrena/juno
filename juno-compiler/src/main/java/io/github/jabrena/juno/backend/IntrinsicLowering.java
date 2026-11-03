@@ -468,6 +468,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SEMAPHORE_AVAILABLE_PERMITS, "juno_semaphore_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.THREADS);
         shim(Intrinsic.BARRIER_NEW, "juno_barrier_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.BARRIER_NEW_ACTION, "juno_barrier_new_action", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.THREADS, ShimFeature.THREAD_ENTRY);
         shim(Intrinsic.BARRIER_AWAIT, "juno_barrier_await", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS,
                 ShimFeature.EXCEPTIONS);
         shim(Intrinsic.BARRIER_GET_PARTIES, "juno_barrier_parties", Result.WORD, List.of(RECEIVER),
@@ -487,6 +489,20 @@ public final class IntrinsicLowering {
         shim(Intrinsic.LOCK_LOCK, "juno_lock_lock", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.LOCK_TRY_LOCK, "juno_lock_try_lock", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS);
         shim(Intrinsic.LOCK_UNLOCK, "juno_lock_unlock", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_NEW_POLICY, "juno_reentrant_lock_new_policy", Result.WORD, List.of(arg(0)),
+                ShimFeature.THREADS);
+        shim(Intrinsic.SEMAPHORE_NEW_POLICY, "juno_semaphore_new_policy", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.THREADS);
+        shim(Intrinsic.LOCK_LOCK_INTERRUPTIBLY, "juno_lock_lock_interruptibly", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.LOCK_TRY_LOCK_TIMED, "juno_lock_try_lock_timed", Result.WORD,
+                withReceiver(wide(0), List.of(arg(1))), ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.LATCH_AWAIT_TIMED, "juno_latch_await_timed", Result.WORD,
+                withReceiver(wide(0), List.of(arg(1))), ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.SEMAPHORE_TRY_ACQUIRE_TIMED, "juno_semaphore_try_acquire_timed", Result.WORD,
+                withReceiver(wide(0), List.of(arg(1))), ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.CONDITION_AWAIT_TIMED, "juno_condition_await_timed", Result.WORD,
+                withReceiver(wide(0), List.of(arg(1))), ShimFeature.THREADS, ShimFeature.EXCEPTIONS);
     }
 
     /** Atomic cells: one shim call each; the scheduler never preempts runtime code, so no monitor is needed. */

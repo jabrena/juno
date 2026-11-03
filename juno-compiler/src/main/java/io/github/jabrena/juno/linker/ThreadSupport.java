@@ -27,13 +27,16 @@ public final class ThreadSupport {
     public static final InterfaceCallSite ENTRY_SITE = new InterfaceCallSite(ENTRY_METHOD, 0);
     public static final MethodRef RUNNABLE_RUN = new MethodRef("java/lang/Runnable", "run", "()V");
 
+    /** {@code new CyclicBarrier(parties, action)}: the trip action runs through the same entry as a thread. */
+    private static final MethodRef BARRIER_WITH_ACTION =
+            new MethodRef("java/util/concurrent/CyclicBarrier", "<init>", "(ILjava/lang/Runnable;)V");
     private static final MethodRef START_VIRTUAL_THREAD =
             new MethodRef("java/lang/Thread", "startVirtualThread", "(Ljava/lang/Runnable;)Ljava/lang/Thread;");
 
 
     /** Records the synthetic {@code Runnable.run()} site when {@code called} starts a virtual thread. */
     public void registerEntry(MethodRef called, Map<InterfaceCallSite, MethodRef> interfaceCalls) {
-        if (called.equals(START_VIRTUAL_THREAD)) {
+        if (called.equals(START_VIRTUAL_THREAD) || called.equals(BARRIER_WITH_ACTION)) {
             interfaceCalls.put(ENTRY_SITE, RUNNABLE_RUN);
         }
     }

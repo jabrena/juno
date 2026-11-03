@@ -28,7 +28,9 @@ final class ThrowingMethods {
 
     /** The blocking calls that finish with InterruptedException pending when the thread was interrupted. */
     private static final Set<Intrinsic> BLOCKING_WAITS = EnumSet.of(Intrinsic.THREAD_SLEEP, Intrinsic.MONITOR_WAIT,
-            Intrinsic.LATCH_AWAIT, Intrinsic.SEMAPHORE_ACQUIRE, Intrinsic.BARRIER_AWAIT, Intrinsic.CONDITION_AWAIT);
+            Intrinsic.LATCH_AWAIT, Intrinsic.SEMAPHORE_ACQUIRE, Intrinsic.BARRIER_AWAIT, Intrinsic.CONDITION_AWAIT,
+            Intrinsic.LOCK_LOCK_INTERRUPTIBLY, Intrinsic.LOCK_TRY_LOCK_TIMED, Intrinsic.LATCH_AWAIT_TIMED,
+            Intrinsic.SEMAPHORE_TRY_ACQUIRE_TIMED, Intrinsic.CONDITION_AWAIT_TIMED);
 
     private final Set<MethodRef> methods;
 
