@@ -74,6 +74,9 @@ final class AllocationSizeEstimator {
                 || intrinsic == Intrinsic.SEMAPHORE_NEW) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
+        if (intrinsic == Intrinsic.BARRIER_NEW || intrinsic == Intrinsic.REENTRANT_LOCK_NEW_CONDITION) {
+            return allocationUpperBound(4 * Integer.BYTES, Integer.BYTES);
+        }
         if (intrinsic == Intrinsic.ATOMIC_LONG_NEW_DEFAULT || intrinsic == Intrinsic.ATOMIC_LONG_NEW) {
             return allocationUpperBound(2 * Integer.BYTES, Integer.BYTES);
         }

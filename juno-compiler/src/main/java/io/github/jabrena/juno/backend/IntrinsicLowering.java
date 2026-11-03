@@ -467,6 +467,18 @@ public final class IntrinsicLowering {
                 ShimFeature.THREADS);
         shim(Intrinsic.SEMAPHORE_AVAILABLE_PERMITS, "juno_semaphore_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.THREADS);
+        shim(Intrinsic.BARRIER_NEW, "juno_barrier_new", Result.WORD, List.of(arg(0)), ShimFeature.THREADS);
+        shim(Intrinsic.BARRIER_AWAIT, "juno_barrier_await", Result.WORD, List.of(RECEIVER), ShimFeature.THREADS,
+                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.BARRIER_GET_PARTIES, "juno_barrier_parties", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.REENTRANT_LOCK_NEW_CONDITION, "juno_lock_new_condition", Result.WORD, List.of(RECEIVER),
+                ShimFeature.THREADS);
+        shim(Intrinsic.CONDITION_AWAIT, "juno_condition_await", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS,
+                ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.CONDITION_SIGNAL, "juno_condition_signal", Result.NONE, List.of(RECEIVER), ShimFeature.THREADS);
+        shim(Intrinsic.CONDITION_SIGNAL_ALL, "juno_condition_signal_all", Result.NONE, List.of(RECEIVER),
+                ShimFeature.THREADS);
     }
 
     /** Atomic cells: one shim call each; the scheduler never preempts runtime code, so no monitor is needed. */
