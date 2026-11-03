@@ -162,6 +162,11 @@ document.addEventListener('DOMContentLoaded', function () {
         input.focus();
       }
     });
+    // On touch screens a tap on a result moves focus off the input before the click lands, and the list would hide
+    // first. Keeping the press on the input stops that blur; the click still reaches the link.
+    form.querySelector('.juno-search-results').addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+    });
     form.addEventListener('focusout', function (event) {
       if (!form.contains(event.relatedTarget)) hide(form);
     });
