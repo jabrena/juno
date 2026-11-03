@@ -18,7 +18,7 @@ public final class ConcurrencySupport {
             PACKAGE + "CyclicBarrier", "java/util/concurrent/locks/Condition", "java/util/concurrent/locks/Lock",
             "java/util/concurrent/locks/ReadWriteLock", "java/util/concurrent/locks/ReentrantReadWriteLock",
             "java/util/concurrent/locks/ReentrantReadWriteLock$ReadLock",
-            "java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock");
+            "java/util/concurrent/locks/ReentrantReadWriteLock$WriteLock", "java/util/concurrent/Phaser");
 
 
     public boolean isConcurrencyClass(String className) {
@@ -40,7 +40,8 @@ public final class ConcurrencySupport {
                     + "countDown, getCount and await, and Semaphore(int) with acquire, release, tryAcquire and "
                     + "availablePermits, CyclicBarrier(int) with await and getParties, and Condition with await, "
                     + "signal and signalAll (from ReentrantLock.newCondition), and ReentrantReadWriteLock with "
-                    + "readLock and writeLock, whose Lock supports lock, tryLock and unlock: "
+                    + "readLock and writeLock, whose Lock supports lock, tryLock and unlock, and Phaser without "
+                    + "timed or tiered forms: "
                     + method.displayName());
         }
     }

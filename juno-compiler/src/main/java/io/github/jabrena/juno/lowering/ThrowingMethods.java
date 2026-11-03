@@ -30,7 +30,8 @@ final class ThrowingMethods {
     private static final Set<Intrinsic> BLOCKING_WAITS = EnumSet.of(Intrinsic.THREAD_SLEEP, Intrinsic.MONITOR_WAIT,
             Intrinsic.LATCH_AWAIT, Intrinsic.SEMAPHORE_ACQUIRE, Intrinsic.BARRIER_AWAIT, Intrinsic.CONDITION_AWAIT,
             Intrinsic.LOCK_LOCK_INTERRUPTIBLY, Intrinsic.LOCK_TRY_LOCK_TIMED, Intrinsic.LATCH_AWAIT_TIMED,
-            Intrinsic.SEMAPHORE_TRY_ACQUIRE_TIMED, Intrinsic.CONDITION_AWAIT_TIMED);
+            Intrinsic.SEMAPHORE_TRY_ACQUIRE_TIMED, Intrinsic.CONDITION_AWAIT_TIMED,
+            Intrinsic.PHASER_AWAIT_ADVANCE_INTERRUPTIBLY);
 
     private final Set<MethodRef> methods;
 

@@ -82,6 +82,9 @@ final class AllocationSizeEstimator {
         if (intrinsic == Intrinsic.BARRIER_NEW || intrinsic == Intrinsic.BARRIER_NEW_ACTION) {
             return allocationUpperBound(5 * Integer.BYTES, Integer.BYTES);
         }
+        if (intrinsic == Intrinsic.PHASER_NEW || intrinsic == Intrinsic.PHASER_NEW_PARTIES) {
+            return allocationUpperBound(3 * Integer.BYTES, Integer.BYTES);
+        }
         if (intrinsic == Intrinsic.REENTRANT_LOCK_NEW_CONDITION) {
             return allocationUpperBound(Integer.BYTES, Integer.BYTES);
         }
