@@ -28,9 +28,13 @@ extern "C" int32_t juno_tcp_read(uint8_t* payload, int32_t offset, int32_t lengt
       delay(1);
       continue;
     }
-    int value = juno_tcp_client.read();
-    if (value < 0) return -1;
-    payload[offset + received++] = static_cast<uint8_t>(value);
+    // One bulk read for everything waiting: on the UNO Q each single-byte read is a round trip over the Bridge.
+    int32_t wanted = length - received;
+    int32_t ready = juno_tcp_client.available();
+    int32_t chunk = ready < wanted ? ready : wanted;
+    int32_t count = static_cast<int32_t>(juno_tcp_client.read(payload + offset + received, static_cast<size_t>(chunk)));
+    if (count <= 0) return -1;
+    received += count;
   }
   return received == length ? received : -1;
 }
