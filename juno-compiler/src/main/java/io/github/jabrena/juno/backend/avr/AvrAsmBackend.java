@@ -87,6 +87,7 @@ public final class AvrAsmBackend implements AsmBackend {
     private final List<String> clinitLabels = new ArrayList<>();
     private MethodRef entryPoint;
     private boolean usesThreads;
+    private boolean socketStreamsOnly;
     private boolean usesWatchdog;
     private ProgramLayout layout;
     private AvrEmitter avr;
@@ -115,6 +116,7 @@ public final class AvrAsmBackend implements AsmBackend {
     public GeneratedCode generate(IrProgram program) {
         entryPoint = program.entryPoint();
         usesThreads = runtimeEntryPoints.usesThreads(program);
+        socketStreamsOnly = runtimeEntryPoints.socketStreamsOnly(program);
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
@@ -134,7 +136,7 @@ public final class AvrAsmBackend implements AsmBackend {
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.generation(), features,
-                usedMath, usesThreads);
+                usedMath, usesThreads, socketStreamsOnly);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {

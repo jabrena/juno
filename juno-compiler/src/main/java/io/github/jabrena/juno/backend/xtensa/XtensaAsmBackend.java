@@ -92,6 +92,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private final Board board;
     private final RuntimeConfig runtimeConfig;
     private boolean usesThreads;
+    private boolean socketStreamsOnly;
     private boolean usesWatchdog;
     private MethodRef entryPoint;
     private ProgramLayout layout;
@@ -120,6 +121,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     @Override
     public GeneratedCode generate(IrProgram program) {
         usesThreads = runtimeEntryPoints.usesThreads(program);
+        socketStreamsOnly = runtimeEntryPoints.socketStreamsOnly(program);
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         entryPoint = program.entryPoint();
         for (int index = 0; index < program.methods().size(); index++) {
@@ -139,7 +141,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa), coreRuntime, board.generation(),
-                features, usedMath, usesThreads);
+                features, usedMath, usesThreads, socketStreamsOnly);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {

@@ -417,13 +417,23 @@ class AvrAsmBackendTest {
         // Given
         CompilationResult result = compileR3("demo.R3ShieldUdp", """
                         byte[] payload = new byte[8];
-                        int[] source = new int[Udp.ENDPOINT_SIZE];
-                        Serial.println(Udp.listen(4210));
-                        Serial.println(Udp.broadcast(4210, payload, payload.length));
-                        Serial.println(Udp.receive(payload, payload.length, source));
+                        try {
+                            DatagramSocket socket = new DatagramSocket(4210);
+                            InetAddress broadcast = InetAddress.getByAddress(
+                                    new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+                            socket.send(new DatagramPacket(payload, payload.length, broadcast, 4210));
+                            socket.setSoTimeout(10);
+                            socket.receive(new DatagramPacket(payload, payload.length));
+                            Serial.println(payload.length);
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
-                import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.DatagramPacket;
+                import java.net.DatagramSocket;
+                import java.net.InetAddress;
                 """);
 
         // When & Then
@@ -440,15 +450,22 @@ class AvrAsmBackendTest {
     void shouldOpenTcpThroughTheWifiShieldsClient() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3ShieldTcp", """
-                        int[] endpoint = {192, 168, 1, 10};
                         byte[] payload = new byte[8];
-                        Serial.println(Tcp.open(endpoint, 80) ? 1 : 0);
-                        Serial.println(Tcp.write(payload, payload.length));
-                        Serial.println(Tcp.read(payload, 0, payload.length, 1000));
-                        Tcp.close();
+                        try {
+                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
+                            Socket socket = new Socket(peer, 80);
+                            socket.setSoTimeout(1000);
+                            socket.getOutputStream().write(payload, 0, payload.length);
+                            Serial.println(socket.getInputStream().read(payload, 0, payload.length));
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
-                import io.github.jabrena.juno.hardware.net.tcp.Tcp;
                 import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.InetAddress;
+                import java.net.Socket;
                 """);
 
         // When & Then
@@ -886,11 +903,16 @@ class AvrAsmBackendTest {
                         int[] status = new int[2];
                         ArduinoUno.getWifi().begin("ssid", "password");
                         Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
-                        Serial.println(Udp.listen(4210));
+                        try {
+                            new DatagramSocket(4210).close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.udp.Udp;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
+                import java.io.IOException;
+                import java.net.DatagramSocket;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 """);
@@ -908,15 +930,22 @@ class AvrAsmBackendTest {
     void shouldOpenTcpThroughWifiNinasClientOnTheUnoWifiRev2() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrTcp", """
-                        int[] endpoint = {192, 168, 1, 10};
                         byte[] payload = new byte[8];
-                        Serial.println(Tcp.open(endpoint, 80) ? 1 : 0);
-                        Serial.println(Tcp.write(payload, payload.length));
-                        Serial.println(Tcp.read(payload, 0, payload.length, 1000));
-                        Tcp.close();
+                        try {
+                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
+                            Socket socket = new Socket(peer, 80);
+                            socket.setSoTimeout(1000);
+                            socket.getOutputStream().write(payload, 0, payload.length);
+                            Serial.println(socket.getInputStream().read(payload, 0, payload.length));
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
-                import io.github.jabrena.juno.hardware.net.tcp.Tcp;
                 import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.InetAddress;
+                import java.net.Socket;
                 """);
 
         // When & Then

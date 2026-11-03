@@ -364,7 +364,7 @@ unsupported operation or bootstrap. The currently supported Java subset includes
   The [AZDelivery Data Logger Shield](https://jabrena.github.io/juno/storage) provides the SD card for
   [`WifiStatusSD`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java).
   The Arduino WiFi Shield brings Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock to the UNO R3, as shown by
-  [`UdpEcho`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java) and
+  [`SocketDatagramEcho`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java) and
   [`PlainHttpWeather`](juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java).
 
 ## Maven modules

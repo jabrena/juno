@@ -41,7 +41,7 @@ startup and stay small.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Bounded by the 1 KB arena and 2 KB of SRAM. | |
 | `@Watchdog` | ✓ | ATmega328P hardware watchdog, at most 8 seconds. | |
 | Non-cryptographic UUIDs (`PortNoise`) | ✓ | The R3 has no hardware entropy, so `UUID.randomUUID()` is rejected; `PortNoise` gives best-effort node identities, never secrets. | [`WeakUuid`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java) |
-| `Wifi`, `Udp`, `Tcp`, plain-HTTP `HttpClient` | ✓ | Through the Arduino WiFi Shield; no access point or HTTPS. | [`UdpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java), [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) |
+| `Wifi`, `Udp`, `Tcp`, plain-HTTP `HttpClient` | ✓ | Through the Arduino WiFi Shield; no access point or HTTPS. | [`SocketDatagramEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java), [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) |
 | `SdCard` | ✓ | On the Data Logger Shield's microSD slot. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | Grove Base Shield | ✓ | Passive: every socket is an UNO pin. | |
 | 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line D7 is also the WiFi Shield's handshake. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
@@ -91,7 +91,7 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 ```
 
 Only small network programs fit next to the library: build them with `-Djuno.Xmx=512`, as
-[`UdpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/UdpEcho.java), [`TcpEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/tcp/TcpEcho.java),
+[`SocketDatagramEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java), [`SocketEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketEcho.java),
 [`SntpTime`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) do.
 
 ### Grove Base Shield

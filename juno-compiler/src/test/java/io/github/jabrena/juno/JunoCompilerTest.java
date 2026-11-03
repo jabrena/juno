@@ -1916,17 +1916,24 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.udp.Udp;
+                    import java.io.IOException;
+                    import java.net.DatagramPacket;
+                    import java.net.DatagramSocket;
+                    import java.net.InetAddress;
                     @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                     public final class PortableUdp {
                         public static void main(String[] args) {
                             byte[] payload = new byte[16];
-                            int[] peer = new int[Udp.ENDPOINT_SIZE];
-                            if (Udp.listen(5000)) {
-                                Udp.broadcast(5000, payload, 4);
-                                Udp.send(peer, peer[Udp.PORT], payload, 4);
-                                Udp.receive(payload, payload.length, peer);
-                                Udp.stop();
+                            try {
+                                DatagramSocket socket = new DatagramSocket(5000);
+                                InetAddress broadcast = InetAddress.getByAddress(
+                                        new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+                                socket.send(new DatagramPacket(payload, 4, broadcast, 5000));
+                                socket.setSoTimeout(10);
+                                socket.receive(new DatagramPacket(payload, payload.length));
+                                socket.close();
+                            } catch (IOException e) {
+                                payload[0] = 0;
                             }
                         }
                     }
@@ -1942,12 +1949,16 @@ class JunoCompilerTest {
                     Optional.of(Board.UNO_Q.id()));
 
             // Then
-            assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
-                    "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
+            assertThat(r4.assembly()).contains("bl juno_datagram_socket_new", "bl juno_inet_address_get_by_address",
+                    "bl juno_datagram_packet_new_send", "bl juno_datagram_socket_send",
+                    "bl juno_datagram_socket_set_so_timeout", "bl juno_datagram_socket_receive",
+                    "bl juno_datagram_socket_close");
             assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "static WiFiUDP juno_udp;",
                     "IPAddress(255, 255, 255, 255)", "juno_udp.beginMulticast(");
-            assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast",
-                    "bl juno_udp_send", "bl juno_udp_receive", "bl juno_udp_stop");
+            assertThat(q.assembly()).contains("bl juno_datagram_socket_new", "bl juno_inet_address_get_by_address",
+                    "bl juno_datagram_packet_new_send", "bl juno_datagram_socket_send",
+                    "bl juno_datagram_socket_set_so_timeout", "bl juno_datagram_socket_receive",
+                    "bl juno_datagram_socket_close");
             assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
                     "static BridgeUDP<512> juno_udp(Bridge);", "IPAddress(255, 255, 255, 255)")
                     .doesNotContain("#include <WiFiS3.h>", "static WiFiUDP juno_udp;");
@@ -1963,27 +1974,33 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
+                    import java.io.IOException;
+                    import java.net.DatagramPacket;
+                    import java.net.DatagramSocket;
+                    import java.net.InetAddress;
                     @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                     public final class KasaPlug {
                         public static void main(String[] args) {
-                            int[] address = new int[4];
-                            address[0] = 192;
-                            address[1] = 168;
-                            address[2] = 1;
-                            address[3] = 20;
                             byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
                             byte[] response = new byte[KasaSmartPlug.DEFAULT_RESPONSE_BUFFER_SIZE];
-                            if (KasaSmartPlug.openDiscovery()) {
-                                KasaSmartPlug.broadcastDiscovery(request, request.length);
-                                KasaSmartPlug.receiveDiscovery(response, response.length, address);
+                            try {
+                                DatagramSocket socket = KasaSmartPlug.openDiscovery();
+                                DatagramPacket requestPacket = KasaSmartPlug.discoveryRequest(request);
+                                DatagramPacket replyPacket = new DatagramPacket(response, response.length);
+                                KasaSmartPlug.broadcastDiscovery(socket, requestPacket);
+                                KasaSmartPlug.receiveDiscovery(socket, replyPacket);
+                                InetAddress device = replyPacket.getAddress();
+                                KasaSmartPlug.getSystemInfo(device, request, response, response.length);
+                                KasaSmartPlug.turnOn(device, request, response, response.length);
+                                KasaSmartPlug.turnOff(device, request, response, response.length);
+                                socket.close();
+                            } catch (IOException e) {
+                                response[0] = 0;
                             }
-                            KasaSmartPlug.getSystemInfo(address, request, response, response.length);
-                            KasaSmartPlug.turnOn(address, request, response, response.length);
-                            KasaSmartPlug.turnOff(address, request, response, response.length);
                         }
                     }
                     """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.KasaPlug", source);
+                        CompilerTestSupport.compileJava(temporaryDirectory, "demo.KasaPlug", source);
             List<Path> classpath = CompilerTestSupport.classpath(temporaryDirectory);
             JunoCompiler compiler = new JunoCompiler();
 
@@ -1994,13 +2011,15 @@ class JunoCompilerTest {
                     Optional.of(Board.UNO_Q.id()));
 
             // Then
-            assertThat(r4.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast", "bl juno_udp_receive",
-                    "bl juno_tcp_open", "bl juno_tcp_write", "bl juno_tcp_read", "bl juno_tcp_close");
+            assertThat(r4.assembly()).contains("bl juno_datagram_socket_new", "bl juno_datagram_socket_send",
+                    "bl juno_datagram_socket_receive", "bl juno_socket_new", "bl juno_socket_output_stream_write",
+                    "bl juno_socket_stream_read", "bl juno_socket_close");
             assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "using JunoTcpClient = WiFiClient;",
                     "extern \"C\" int32_t juno_tcp_open(")
                     .doesNotContain("juno_kasa");
-            assertThat(q.assembly()).contains("bl juno_udp_listen", "bl juno_udp_broadcast", "bl juno_udp_receive",
-                    "bl juno_tcp_open", "bl juno_tcp_write", "bl juno_tcp_read", "bl juno_tcp_close");
+            assertThat(q.assembly()).contains("bl juno_datagram_socket_new", "bl juno_datagram_socket_send",
+                    "bl juno_datagram_socket_receive", "bl juno_socket_new", "bl juno_socket_output_stream_write",
+                    "bl juno_socket_stream_read", "bl juno_socket_close");
             assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
                     "class JunoBridgeTcpClient : public BridgeTCPClient<1024>",
                     "using JunoTcpClient = JunoBridgeTcpClient;")

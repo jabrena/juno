@@ -11,8 +11,10 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LockSupport;
+import io.github.jabrena.juno.linker.SocketSupport;
 import io.github.jabrena.juno.linker.ThrowableTypes;
 import io.github.jabrena.juno.linker.UuidSupport;
 
@@ -39,6 +41,8 @@ final class ObjectCreationLowering implements InstructionLowering {
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
     private final UuidSupport uuidSupport = new UuidSupport();
+    private final DatagramSupport datagramSupport = new DatagramSupport();
+    private final SocketSupport socketSupport = new SocketSupport();
 
     private final ThrowableTypes throwableTypes = new ThrowableTypes();
 
@@ -78,6 +82,7 @@ final class ObjectCreationLowering implements InstructionLowering {
     /** Whether {@code called} is a constructor this class lowers to a runtime handle. */
     boolean buildsHandle(MethodRef called) {
         return bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
+                || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
                 || called.equals(STRING_BUILDER)
                 || called.equals(LockSupport.CONSTRUCTOR) || atomicSupport.isConstruction(called)
                 || called.equals(PROPERTIES) || called.equals(RandomAccessFileMethods.CONSTRUCTOR);
@@ -86,6 +91,7 @@ final class ObjectCreationLowering implements InstructionLowering {
     /** Lowers a constructor {@link #buildsHandle} accepts. */
     void construct(Instruction instruction, MethodRef called) {
         if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
+                || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
                 || atomicSupport.isConstruction(called)) {
             constructFromArguments(instruction, called);
         } else if (called.equals(STRING_BUILDER)) {
@@ -154,6 +160,7 @@ final class ObjectCreationLowering implements InstructionLowering {
                 || randomAccessFileMethods.isOwner(className)
                 || lockSupport.isReentrantLockClass(className)
                 || atomicSupport.isAtomicClass(className) || bigNumberSupport.isBigNumberOwner(className)
-                || uuidSupport.isUuidOwner(className);
+                || uuidSupport.isUuidOwner(className) || datagramSupport.isDatagramOwner(className)
+                || socketSupport.isSocketOwner(className);
     }
 }

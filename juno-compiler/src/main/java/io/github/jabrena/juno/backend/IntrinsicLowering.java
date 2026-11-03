@@ -145,6 +145,7 @@ public final class IntrinsicLowering {
     private final IntrinsicTarget target;
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
+    private final boolean socketStreamsOnly;
 
     /**
      * @param generation the target board's {@link io.github.jabrena.juno.board.Board#generation() UNO generation}
@@ -152,10 +153,12 @@ public final class IntrinsicLowering {
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, UnoGeneration generation,
-                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads) {
+                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
+                      boolean socketStreamsOnly) {
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
+        this.socketStreamsOnly = socketStreamsOnly;
         registerExceptions();
         registerGpio(coreRuntime, generation, usesThreads);
         registerThreads(usesThreads);
@@ -163,6 +166,8 @@ public final class IntrinsicLowering {
         registerStructuredTasks();
         registerScopedValues();
         registerUuid();
+        registerDatagram();
+        registerSocket();
         registerLocalDateTime();
         registerMonitors();
         registerSerial();
@@ -201,6 +206,64 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+    }
+
+    /**
+     * {@code java.net} datagrams over the program's single UDP socket. Every socket call can fail, and a receive can
+     * time out, so each one raises a JDK exception; the packet and address handles live in arena blocks.
+     */
+    private void registerDatagram() {
+        ShimFeature[] runtime = {ShimFeature.UDP, ShimFeature.EXCEPTIONS, ShimFeature.DATAGRAM};
+        shim(Intrinsic.INET_ADDRESS_GET_BY_ADDRESS, "juno_inet_address_get_by_address", Result.WORD,
+                List.of(arg(0)), runtime);
+        shim(Intrinsic.INET_ADDRESS_EQUALS, "juno_inet_address_equals", Result.WORD, List.of(RECEIVER, arg(0)),
+                runtime);
+        shim(Intrinsic.INET_ADDRESS_TO_STRING, "juno_inet_address_to_string", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_NEW_RECEIVE, "juno_datagram_packet_new_receive", Result.WORD,
+                List.of(arg(0), arg(1)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_NEW_SEND, "juno_datagram_packet_new_send", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_DATA, "juno_datagram_packet_get_data", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_LENGTH, "juno_datagram_packet_get_length", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_LENGTH, "juno_datagram_packet_set_length", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_ADDRESS, "juno_datagram_packet_get_address", Result.WORD,
+                List.of(RECEIVER), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_ADDRESS, "juno_datagram_packet_set_address", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_GET_PORT, "juno_datagram_packet_get_port", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.DATAGRAM_PACKET_SET_PORT, "juno_datagram_packet_set_port", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_NEW, "juno_datagram_socket_new", Result.WORD, List.of(arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_SEND, "juno_datagram_socket_send", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_RECEIVE, "juno_datagram_socket_receive", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_SET_SO_TIMEOUT, "juno_datagram_socket_set_so_timeout", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.DATAGRAM_SOCKET_CLOSE, "juno_datagram_socket_close", Result.NONE, List.of(RECEIVER), runtime);
+    }
+
+    /**
+     * {@code java.net.Socket} over the single TCP connection. The streams are the socket itself: {@code getOutputStream}
+     * and {@code getInputStream} hand back its handle. A failed connect, write or read raises {@code IOException}.
+     */
+    private void registerSocket() {
+        ShimFeature[] runtime = {ShimFeature.TCP, ShimFeature.EXCEPTIONS, ShimFeature.SOCKET};
+        shim(Intrinsic.SOCKET_NEW, "juno_socket_new", Result.WORD, List.of(arg(0), arg(1)), runtime);
+        shim(Intrinsic.SOCKET_GET_OUTPUT_STREAM, "juno_socket_get_output_stream", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.SOCKET_GET_INPUT_STREAM, "juno_socket_get_input_stream", Result.WORD, List.of(RECEIVER),
+                runtime);
+        shim(Intrinsic.SOCKET_SET_SO_TIMEOUT, "juno_socket_set_so_timeout", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.SOCKET_CLOSE, "juno_socket_close", Result.NONE, List.of(RECEIVER), runtime);
+        shim(Intrinsic.SOCKET_OUTPUT_STREAM_WRITE, "juno_socket_output_stream_write", Result.NONE,
+                List.of(RECEIVER, arg(0), arg(1), arg(2)), runtime);
     }
 
     private void registerUuid() {
@@ -481,8 +544,15 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
                 ShimFeature.SD);
         shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
-        shim(Intrinsic.SD_FILE_READ_BYTES, "juno_sd_file_read_bytes", Result.WORD,
-                List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.SD);
+        if (socketStreamsOnly) {
+            // A socket program's shared InputStream.read goes straight to the socket; the SD runtime is left out.
+            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_socket_stream_read", Result.WORD,
+                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.TCP, ShimFeature.EXCEPTIONS,
+                    ShimFeature.SOCKET);
+        } else {
+            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_sd_file_read_bytes", Result.WORD,
+                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.SD);
+        }
         shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_LINE, "juno_sd_file_append_line", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
@@ -673,19 +743,6 @@ public final class IntrinsicLowering {
         shim(Intrinsic.WIFI_LOCAL_IP, "juno_wifi_local_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_GATEWAY_IP, "juno_wifi_gateway_ip", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_MAC_ADDRESS, "juno_wifi_mac_address", Result.NONE, List.of(arg(0)), ShimFeature.WIFI);
-        shim(Intrinsic.UDP_LISTEN, "juno_udp_listen", Result.WORD, List.of(arg(0)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_SEND, "juno_udp_send", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_BROADCAST, "juno_udp_broadcast", Result.WORD,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_RECEIVE, "juno_udp_receive", Result.WORD,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.UDP);
-        shim(Intrinsic.UDP_STOP, "juno_udp_stop", Result.NONE, List.of(), ShimFeature.UDP);
-        shim(Intrinsic.TCP_OPEN, "juno_tcp_open", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_WRITE, "juno_tcp_write", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_READ, "juno_tcp_read", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.TCP);
-        shim(Intrinsic.TCP_CLOSE, "juno_tcp_close", Result.NONE, List.of(), ShimFeature.TCP);
     }
 
     /**

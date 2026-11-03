@@ -1,13 +1,27 @@
 package io.github.jabrena.juno.usecases.miner.services;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WifiLinkTest {
+    private WifiLink link;
+
+    @BeforeEach
+    void newLink() {
+        link = new WifiLink();
+    }
+
+    /** Each link may hold the real UDP port, so release it before the next test binds it. */
+    @AfterEach
+    void releasePort() {
+        link.disconnect();
+    }
+
     @Test
     void doesNothingUntilStarted() {
-        WifiLink link = new WifiLink();
 
         link.step(10_000);
 
@@ -18,7 +32,6 @@ class WifiLinkTest {
 
     @Test
     void joinsThenListensOneStepAtATime() {
-        WifiLink link = new WifiLink();
 
         link.start(0);
         assertThat(link.state()).isEqualTo(WifiLink.JOINING);
@@ -35,7 +48,6 @@ class WifiLinkTest {
 
     @Test
     void restartingAReadyLinkJoinsAgain() {
-        WifiLink link = new WifiLink();
         link.start(0);
         link.step(0);
         link.step(0);
@@ -51,7 +63,6 @@ class WifiLinkTest {
 
     @Test
     void aReadyLinkIsPolledOnlyEveryPollPeriod() {
-        WifiLink link = new WifiLink();
         link.start(0);
         link.step(0);
         link.step(0);
@@ -64,7 +75,6 @@ class WifiLinkTest {
 
     @Test
     void disconnectReportsTheLinkDownUntilItJoinsAgain() {
-        WifiLink link = new WifiLink();
         link.start(0);
         link.step(0);
         link.step(0);

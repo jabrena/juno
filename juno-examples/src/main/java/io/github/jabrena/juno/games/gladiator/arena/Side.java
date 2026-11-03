@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.games.gladiator.arena;
 
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
+
+import java.net.InetAddress;
 
 /**
  * One gate's gladiator as the {@link Match} knows it: which board holds the slot, where it stands and faces, its
@@ -9,7 +10,8 @@ import io.github.jabrena.juno.hardware.net.udp.Udp;
  * never loses a strike, a throw or a net.
  */
 public final class Side {
-    private final int[] endpoint = new int[Udp.ENDPOINT_SIZE];
+    private InetAddress address;
+    private int port;
     private int node;
     private boolean present;
     private int behaviour;
@@ -98,9 +100,14 @@ public final class Side {
         return heard;
     }
 
-    /** Where this gladiator's packets come from, kept to answer it. */
-    public int[] endpoint() {
-        return endpoint;
+    /** Where this gladiator's packets come from, kept to answer it; null until it is heard from. */
+    public InetAddress address() {
+        return address;
+    }
+
+    /** The port this gladiator's packets come from. */
+    public int port() {
+        return port;
     }
 
     /** The board {@code nodeId} takes the slot, with its counters from zero. */
@@ -120,13 +127,12 @@ public final class Side {
         present = false;
     }
 
-    /** Heard from at {@code now}, from {@code source}, fighting in {@code style}. */
-    public void hear(int style, int[] source, int now) {
+    /** Heard from at {@code now}, from {@code from} port {@code fromPort}, fighting in {@code style}. */
+    public void hear(int style, InetAddress from, int fromPort, int now) {
         behaviour = style;
         heard = now;
-        for (int i = 0; i < Udp.ENDPOINT_SIZE; i++) {
-            endpoint[i] = source[i];
-        }
+        address = from;
+        port = fromPort;
     }
 
     /** What its latest {@code STATE} says it is: style, what it is doing, who drives it and its class. */

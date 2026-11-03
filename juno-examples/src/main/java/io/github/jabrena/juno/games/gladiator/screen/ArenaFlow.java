@@ -3,13 +3,14 @@ package io.github.jabrena.juno.games.gladiator.screen;
 import io.github.jabrena.juno.games.gladiator.arena.Coliseum;
 import io.github.jabrena.juno.games.gladiator.arena.ColiseumMap;
 import io.github.jabrena.juno.games.gladiator.arena.Match;
+import io.github.jabrena.juno.games.gladiator.arena.Side;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
 import io.github.jabrena.juno.games.gladiator.view.ArenaView;
 import io.github.jabrena.juno.games.gladiator.view.Figure;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -41,7 +42,7 @@ public final class ArenaFlow {
     }
 
     /** Keeps the arena until MENU is tapped. */
-    public static void run(TftTouchShield tft, byte[] incoming, byte[] outgoing, int[] source) {
+    public static void run(TftTouchShield tft, GameSocket link) {
         Serial.println("Role: arena");
         Coliseum coliseum = new Coliseum();
         coliseum.build();
@@ -63,12 +64,12 @@ public final class ArenaFlow {
             }
             int now = CLOCK.millis();
             for (int i = 0; i < PACKETS_PER_PASS; i++) {
-                int length = Udp.receive(incoming, GladiatorProtocol.PACKET_SIZE, source);
+                int length = link.receive();
                 if (length <= 0) {
                     break;
                 }
-                if (GladiatorProtocol.valid(incoming, length)) {
-                    serve(match, incoming, source, outgoing, now);
+                if (GladiatorProtocol.valid(link.incoming(), length)) {
+                    serve(match, link, now);
                 }
             }
             match.tick(now);
@@ -84,9 +85,9 @@ public final class ArenaFlow {
                 lastWorld = now;
                 for (int slot = 0; slot < 2; slot++) {
                     if (match.side(slot).present()) {
-                        match.writeWorld(outgoing, slot, now);
-                        int[] endpoint = match.side(slot).endpoint();
-                        Udp.send(endpoint, endpoint[Udp.PORT], outgoing, GladiatorProtocol.PACKET_SIZE);
+                        match.writeWorld(link.outgoing(), slot, now);
+                        Side side = match.side(slot);
+                        link.send(side.address(), side.port(), GladiatorProtocol.PACKET_SIZE);
                     }
                 }
                 view.update(tft, match, now);
@@ -95,13 +96,16 @@ public final class ArenaFlow {
         }
     }
 
-    private static void serve(Match match, byte[] packet, int[] source, byte[] reply, int now) {
+    private static void serve(Match match, GameSocket link, int now) {
+        byte[] packet = link.incoming();
+        byte[] reply = link.outgoing();
         int type = GladiatorProtocol.type(packet);
         int node = GladiatorProtocol.nodeId(packet);
         if (type == GladiatorProtocol.JOIN) {
             boolean known = match.slotOf(node) >= 0;
             int kind = GladiatorProtocol.unsigned(packet, GladiatorProtocol.BEHAVIOUR);
-            int slot = match.join(node, kind == Brain.AMBUSH ? Brain.AMBUSH : Brain.AGGRESSIVE, source, now);
+            int slot = match.join(node, kind == Brain.AMBUSH ? Brain.AMBUSH : Brain.AGGRESSIVE, link.sender(),
+                    link.senderPort(), now);
             if (slot < 0) {
                 GladiatorProtocol.begin(reply, GladiatorProtocol.FULL, 0, node);
             } else {
@@ -113,7 +117,7 @@ public final class ArenaFlow {
                 }
                 ColiseumMap.write(reply, slot, node, match.coliseum());
             }
-            Udp.send(source, source[Udp.PORT], reply, GladiatorProtocol.PACKET_SIZE);
+            link.send(link.sender(), link.senderPort(), GladiatorProtocol.PACKET_SIZE);
         } else if (type == GladiatorProtocol.STATE) {
             int slot = match.slotOf(node);
             if (slot >= 0) {

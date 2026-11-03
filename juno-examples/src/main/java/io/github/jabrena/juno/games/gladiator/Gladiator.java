@@ -15,16 +15,18 @@ import io.github.jabrena.juno.games.gladiator.screen.SoloFlow;
 import io.github.jabrena.juno.games.gladiator.view.ClassWireframe;
 import io.github.jabrena.juno.games.gladiator.view.Hud;
 import io.github.jabrena.juno.games.gladiator.view.ViewList;
+import io.github.jabrena.juno.games.net.GameSocket;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.util.Random;
+
+import java.io.IOException;
 
 /**
  * Gladiator, a network game for boards with the ELEGOO 2.8" TFT touch shield: two gladiators fight among the
@@ -60,6 +62,7 @@ public final class Gladiator {
     private final ClassWireframe wireframe = new ClassWireframe(list);
     /** Whether Wi-Fi and the UDP socket are up: they are started once, the first time MULTIPLAYER is chosen. */
     private boolean online;
+    private GameSocket link;
 
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
@@ -88,10 +91,6 @@ public final class Gladiator {
 
 
     private void multiplayer(TftTouchShield tft) {
-        // One set of packet buffers shared by whichever network role is running.
-        byte[] incoming = new byte[GladiatorProtocol.PACKET_SIZE];
-        byte[] outgoing = new byte[GladiatorProtocol.PACKET_SIZE];
-        int[] source = new int[Udp.ENDPOINT_SIZE];
         if (!connect(tft)) {
             return;
         }
@@ -101,9 +100,9 @@ public final class Gladiator {
                 return;
             }
             if (role == ARENA) {
-                ArenaFlow.run(tft, incoming, outgoing, source);
+                ArenaFlow.run(tft, link);
             } else {
-                new FighterFlow(list, role).run(tft, incoming, outgoing, source);
+                new FighterFlow(list, role).run(tft, link);
             }
         }
     }
@@ -133,13 +132,22 @@ public final class Gladiator {
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }
-        while (!Udp.listen(GladiatorProtocol.PORT)) {
-            Serial.println("UDP port busy, retrying");
-            Delay.millis(1000);
-        }
+        link = listen();
         Serial.println("Listening on UDP port " + GladiatorProtocol.PORT);
         online = true;
         return true;
+    }
+
+    /** Opens the game's socket, retrying while another one still holds the port. */
+    private static GameSocket listen() {
+        while (true) {
+            try {
+                return GameSocket.open(GladiatorProtocol.PORT, GladiatorProtocol.PACKET_SIZE);
+            } catch (IOException e) {
+                Serial.println("UDP port busy, retrying");
+                Delay.millis(1000);
+            }
+        }
     }
 
     /** Waits for a tap on the MENU button under a full-screen message, and for the finger to lift. */

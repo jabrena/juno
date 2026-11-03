@@ -4,7 +4,7 @@ import java.util.Properties;
 
 /**
  * The SNTP server behind the internet-backed {@link java.time.LocalDateTime#now()} intrinsic, which synchronizes UTC
- * over one UDP exchange on its own socket (separate from {@link Udp}'s) and then advances it with the board's
+ * over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
  * millisecond counter. The build-time {@code JUNO_SNTP_HOST} (default {@code pool.ntp.org}) and {@code JUNO_SNTP_PORT}
  * (default {@code 123}) pick the server; {@link #configure} can replace them at run time.
  */

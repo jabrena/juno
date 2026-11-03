@@ -28,7 +28,7 @@ public final class NodeService implements Task {
         this.persistence = persistence;
         this.claims = new ClaimService(model);
         this.network = new NetworkService(model, link, claims, CLOCK.millis());
-        this.mining = new MiningService(model, persistence, claims);
+        this.mining = new MiningService(model, persistence, claims, link);
     }
 
     /**

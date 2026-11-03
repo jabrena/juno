@@ -1,8 +1,7 @@
 /**
- * UDP over the board's Wi-Fi: {@link io.github.jabrena.juno.hardware.net.udp.Udp} gives a program one allocation-free
- * socket for discovery broadcasts, datagrams to known peers and non-blocking receives, and
- * {@link io.github.jabrena.juno.hardware.net.udp.SntpClock} configures the SNTP server behind
- * {@link java.time.LocalDateTime#now()}, which synchronizes on a socket of its own.
+ * The SNTP clock behind {@link java.time.LocalDateTime#now()}: {@link io.github.jabrena.juno.hardware.net.udp.SntpClock}
+ * configures the server, and the exchange runs on a {@link java.net.DatagramSocket} of its own. Programs use the JDK's
+ * socket classes directly; their subset is described in {@code io.github.jabrena.juno.intrinsic.DatagramMethods}.
  */
 @NullMarked
 package io.github.jabrena.juno.hardware.net.udp;

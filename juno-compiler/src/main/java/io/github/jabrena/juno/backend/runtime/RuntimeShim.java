@@ -28,6 +28,8 @@ public final class RuntimeShim {
     private final MathRuntime mathRuntime = new MathRuntime();
     private final BigNumberRuntime bigNumberRuntime = new BigNumberRuntime();
     private final UuidRuntime uuidRuntime = new UuidRuntime();
+    private final DatagramRuntime datagramRuntime = new DatagramRuntime();
+    private final SocketRuntime socketRuntime = new SocketRuntime();
     private final LocalDateTimeRuntime localDateTimeRuntime = new LocalDateTimeRuntime();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
     private final IoRuntime ioRuntime = new IoRuntime();
@@ -281,6 +283,12 @@ public final class RuntimeShim {
                         throwableClasses.indexOf("java/io/FileNotFoundException"),
                         throwableClasses.indexOf("java/io/EOFException"),
                         throwableClasses.indexOf("java/lang/IndexOutOfBoundsException"))),
+                new ShimFeatureBlock(ShimFeature.DATAGRAM, () -> datagramRuntime.helpers(
+                        throwableClasses.indexOf("java/io/IOException"),
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
+                new ShimFeatureBlock(ShimFeature.SOCKET, () -> socketRuntime.helpers(
+                        throwableClasses.indexOf("java/io/IOException"),
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.STRING_FROM_BYTES, shimLibraries::stringFromBytesHelpers)));
         if (usesAny(ShimFeature.HTTPS, ShimFeature.HTTPS_TRUSTED_CERTIFICATE, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             if (uses(ShimFeature.HTTPS_TRUSTED_CERTIFICATE)) {

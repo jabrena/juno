@@ -53,6 +53,8 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || isDurationType(returnType)
                         || new BigNumberSupport().isBigNumberType(returnType)
                         || new UuidSupport().isUuidType(returnType)
+                        || new DatagramSupport().isDatagramType(returnType)
+                        || new SocketSupport().isSocketType(returnType)
                         || new LocalDateTimeSupport().isLocalDateTimeType(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
                         || isReferenceType(returnType, referenceClassNames));
@@ -120,6 +122,8 @@ public record Descriptor(List<String> parameters, String returnType) {
                 || new ScopedValueSupport().isScopedValueType(type)
                 || new BigNumberSupport().isBigNumberType(type)
                 || new UuidSupport().isUuidType(type)
+                || new DatagramSupport().isDatagramType(type)
+                || new SocketSupport().isSocketType(type)
                 || new LocalDateTimeSupport().isLocalDateTimeType(type)
                 || new AtomicSupport().isAtomicType(type)
                 || isRandomAccessFile(type)

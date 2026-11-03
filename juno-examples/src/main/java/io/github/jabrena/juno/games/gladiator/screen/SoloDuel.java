@@ -11,7 +11,6 @@ import io.github.jabrena.juno.games.gladiator.arena.Side;
 import io.github.jabrena.juno.games.gladiator.gladiator.Brain;
 import io.github.jabrena.juno.games.gladiator.gladiator.Senses;
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
-import io.github.jabrena.juno.hardware.net.udp.Udp;
 
 /**
  * The local arena and CPU opponent used by UNO Q Solo mode, independent of display and touch input: a new
@@ -53,9 +52,8 @@ public final class SoloDuel {
         cpuBrain = new Brain(opponentBehaviour, opponentKind);
         playerSwungAt = now - Arms.swingMillis(playerKind);
         cpuSwungAt = now - Arms.swingMillis(opponentKind);
-        int[] local = new int[Udp.ENDPOINT_SIZE];
-        match.join(1, playerBehaviour, local, now);
-        match.join(2, opponentBehaviour, local, now);
+        match.join(1, playerBehaviour, null, 0, now);
+        match.join(2, opponentBehaviour, null, 0, now);
         round = match.round();
         reset(now);
     }

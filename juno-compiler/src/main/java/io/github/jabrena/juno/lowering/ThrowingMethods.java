@@ -2,7 +2,9 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.BigNumberMethods;
+import io.github.jabrena.juno.intrinsic.DatagramMethods;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
+import io.github.jabrena.juno.intrinsic.SocketMethods;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 
@@ -78,7 +80,10 @@ final class ThrowingMethods {
                             TASK_SCOPE_CLOSE, SCOPED_VALUE_GET, SCOPED_CARRIER_RUN, SCOPED_CARRIER_CALL -> true;
                     default -> bigNumberMethods.mayThrow(call.intrinsic())
                             || call.intrinsic() == io.github.jabrena.juno.intrinsic.Intrinsic.UUID_FROM_STRING
-                            || randomAccessFileMethods.mayThrow(call.intrinsic());
+                            || randomAccessFileMethods.mayThrow(call.intrinsic())
+                            || DatagramMethods.mayThrow(call.intrinsic())
+                            || SocketMethods.mayThrow(call.intrinsic())
+                            || call.intrinsic() == io.github.jabrena.juno.intrinsic.Intrinsic.SD_FILE_READ_BYTES;
                 };
     }
 

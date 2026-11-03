@@ -2,6 +2,8 @@ package io.github.jabrena.juno.games.gladiator.arena;
 
 import io.github.jabrena.juno.games.gladiator.net.GladiatorProtocol;
 
+import java.net.InetAddress;
+
 /**
  * The state the ARENA keeps: who holds the left and right slots ({@link Side}), where each gladiator stands, both
  * healths, the round and its phase. Gladiators report their own moves; the arena alone decides what a strike does, so
@@ -102,9 +104,9 @@ public final class Match {
 
     /**
      * Gives the gladiator {@code nodeId} a slot, or its own again when it was already in one, and returns it; -1 when
-     * the arena is full. {@code source} is where its packets come from, kept to answer it.
+     * the arena is full. {@code from} port {@code fromPort} is where its packets come from, kept to answer it.
      */
-    public int join(int nodeId, int style, int[] source, int now) {
+    public int join(int nodeId, int style, InetAddress from, int fromPort, int now) {
         int slot = slotOf(nodeId);
         if (slot < 0) {
             slot = !left.present() ? 0 : !right.present() ? 1 : -1;
@@ -117,7 +119,7 @@ public final class Match {
                 startRound(now);
             }
         }
-        side(slot).hear(style, source, now);
+        side(slot).hear(style, from, fromPort, now);
         return slot;
     }
 

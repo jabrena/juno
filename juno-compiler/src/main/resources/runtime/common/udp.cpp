@@ -51,11 +51,6 @@ extern "C" int32_t juno_udp_send(const int32_t* address, int32_t remotePort,
   return juno_udp_send_to(remote, remotePort, payload, length);
 }
 
-extern "C" int32_t juno_udp_broadcast(int32_t remotePort, const uint8_t* payload,
-                                       int32_t length) {
-  return juno_udp_send_to(juno_udp_discovery_group(), remotePort, payload, length);
-}
-
 extern "C" int32_t juno_udp_receive(uint8_t* payload, int32_t capacity, int32_t* source) {
   if (!juno_udp_listening || payload == nullptr || source == nullptr || capacity <= 0) return -1;
   int32_t packetLength = static_cast<int32_t>(juno_udp.parsePacket());

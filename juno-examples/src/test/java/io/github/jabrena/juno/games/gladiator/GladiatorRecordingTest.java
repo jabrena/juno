@@ -21,6 +21,8 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.imageio.ImageIO;
@@ -42,7 +44,7 @@ class GladiatorRecordingTest {
     private static final int FRAME_MILLIS = 40;
     private static final int CAPTURE_MILLIS = 80;
     private static final int WORLD_MILLIS = 120;
-    private static final int[] SOURCE = {192, 168, 1, 20, GladiatorProtocol.PORT};
+    private static final InetAddress SOURCE = sourceAddress();
 
     private final Coliseum coliseum = new Coliseum();
     private final Match match = new Match(coliseum);
@@ -70,8 +72,8 @@ class GladiatorRecordingTest {
         tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(7);
         coliseum.build();
-        match.join(11, Brain.AGGRESSIVE, SOURCE, 0);
-        match.join(22, Brain.AMBUSH, SOURCE, 0);
+        match.join(11, Brain.AGGRESSIVE, SOURCE, GladiatorProtocol.PORT, 0);
+        match.join(22, Brain.AMBUSH, SOURCE, GladiatorProtocol.PORT, 0);
 
         int frame = 0;
         for (int now = 0; now < duration; now += FRAME_MILLIS) {
@@ -194,5 +196,13 @@ class GladiatorRecordingTest {
             }
         }
         return image;
+    }
+
+    private static InetAddress sourceAddress() {
+        try {
+            return InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 20});
+        } catch (UnknownHostException e) {
+            throw new AssertionError(e);
+        }
     }
 }
