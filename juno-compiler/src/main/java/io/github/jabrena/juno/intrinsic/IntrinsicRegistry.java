@@ -656,6 +656,7 @@ public final class IntrinsicRegistry {
         methods.putAll(BigNumberMethods.METHODS);
         methods.putAll(UuidMethods.METHODS);
         methods.putAll(LocalDateTimeMethods.METHODS);
+        methods.putAll(DatagramMethods.METHODS);
         return Map.copyOf(methods);
     }
 

@@ -14,6 +14,7 @@ import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
 import io.github.jabrena.juno.linker.ClojureSupport;
 import io.github.jabrena.juno.linker.ConstantTables;
+import io.github.jabrena.juno.linker.DatagramSupport;
 import io.github.jabrena.juno.linker.Descriptor;
 import io.github.jabrena.juno.linker.LocalDateTimeSupport;
 import io.github.jabrena.juno.linker.LockSupport;
@@ -47,6 +48,7 @@ final class FieldLowering implements InstructionLowering {
     private final BigNumberSupport bigNumberSupport = new BigNumberSupport();
 
     private final UuidSupport uuidSupport = new UuidSupport();
+    private final DatagramSupport datagramSupport = new DatagramSupport();
 
     private final LocalDateTimeSupport localDateTimeSupport = new LocalDateTimeSupport();
 
@@ -214,6 +216,7 @@ final class FieldLowering implements InstructionLowering {
                 || scopedValueSupport.isScopedValueType(descriptor)
                 || bigNumberSupport.isBigNumberType(descriptor)
                 || uuidSupport.isUuidType(descriptor)
+                || datagramSupport.isDatagramType(descriptor)
                 || localDateTimeSupport.isLocalDateTimeType(descriptor)
                 || lockSupport.isReentrantLockType(descriptor)
                 || atomicSupport.isAtomicType(descriptor)
