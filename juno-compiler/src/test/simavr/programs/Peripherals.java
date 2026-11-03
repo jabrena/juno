@@ -79,23 +79,7 @@ public final class Peripherals {
         payload[2] = 'n';
         payload[3] = 'g';
         byte[] received = new byte[8];
-        try {
-            DatagramSocket socket = new DatagramSocket(4210);
-            Serial.println("listening");
-            InetAddress peer = InetAddress.getByAddress(new byte[] {10, 0, 0, 7});
-            socket.send(new DatagramPacket(payload, payload.length, peer, 4210));
-            DatagramPacket incoming = new DatagramPacket(received, received.length);
-            socket.setSoTimeout(10);
-            socket.receive(incoming);
-            Serial.println(incoming.getLength());
-            Serial.print(incoming.getAddress().toString());
-            Serial.print(":");
-            Serial.println(incoming.getPort());
-            Serial.println((char) received[0] + "" + (char) received[3]);
-            socket.close();
-        } catch (IOException e) {
-            Serial.println("no socket");
-        }
+        udpLoopback(payload, received);
 
         Serial.println(SD_CARD.begin() ? "sd ready" : "sd failed");
         Serial.println(SD_CARD.size("config.txt"));
@@ -131,5 +115,26 @@ public final class Peripherals {
         tft.println("Rev2");
         Serial.println(tft.readTouch() ? "touched" : "untouched");
         Serial.println("done");
+    }
+
+    /** A loopback datagram: its objects live only in this method, so they are not held by the caller's stack. */
+    private static void udpLoopback(byte[] payload, byte[] received) {
+        try {
+            DatagramSocket socket = new DatagramSocket(4210);
+            Serial.println("listening");
+            InetAddress peer = InetAddress.getByAddress(new byte[] {10, 0, 0, 7});
+            socket.send(new DatagramPacket(payload, payload.length, peer, 4210));
+            DatagramPacket incoming = new DatagramPacket(received, received.length);
+            socket.setSoTimeout(10);
+            socket.receive(incoming);
+            Serial.println(incoming.getLength());
+            Serial.print(incoming.getAddress().toString());
+            Serial.print(":");
+            Serial.println(incoming.getPort());
+            Serial.println((char) received[0] + "" + (char) received[3]);
+            socket.close();
+        } catch (IOException e) {
+            Serial.println("no socket");
+        }
     }
 }
