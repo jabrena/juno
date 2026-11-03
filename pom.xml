@@ -44,7 +44,7 @@
         <maven-plugin-jar.version>3.5.1</maven-plugin-jar.version>
         <maven-plugin-javadoc.version>3.12.0</maven-plugin-javadoc.version>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
-        <pmd.version>7.28.0</pmd.version>
+        <pmd.version>7.29.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
         <maven-plugin-spotless.version>3.10.4</maven-plugin-spotless.version>
         <maven-plugin-enforcer.version>3.7.0</maven-plugin-enforcer.version>
