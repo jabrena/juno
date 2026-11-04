@@ -37,7 +37,7 @@ import static org.assertj.core.api.Assertions.fail;
  * compiled by Juno for the Nano ESP32, built by the pinned {@code arduino:esp32} core into a bootable ESP32-S3 flash
  * image, booted under Espressif's QEMU, and its UART transcript compared with what the same source prints on OpenJDK.
  *
- * <p>The harness (Dockerfile, {@code run.sh}, {@code merge_flash.py} and the emulator {@code variant.cpp}) lives in
+ * <p>The harness (Dockerfile, {@code run.sh}, {@code merge_flash.sh} and the emulator {@code variant.cpp}) lives in
  * {@code src/test/xtensa}. Unlike the bare-metal Thumb-2 and AVR harnesses it runs the real core and its boot chain;
  * the emulator variant only drops the board's double-tap recovery, which drives an LED peripheral QEMU does not model.
  * The sketch wrapper brackets the program with {@code [juno-begin]} and {@code [juno-exit]}, so the boot log before

@@ -1,6 +1,6 @@
 # Runs Juno-generated Xtensa code (Nano ESP32, ESP32-S3) under Espressif's QEMU for XtensaRunIT
 # (./mvnw -pl juno-compiler -am -Pxtensa verify). The image carries the pinned arduino:esp32 core, which builds the
-# sketch, and the pinned Espressif QEMU build, which boots the merged flash image: see run.sh, merge_flash.py and
+# sketch, and the pinned Espressif QEMU build, which boots the merged flash image: see run.sh, merge_flash.sh and
 # variant.cpp.
 # XtensaRunIT retains the named image so Docker can reuse this toolchain layer across Maven JVMs.
 FROM debian:bookworm-slim
@@ -44,8 +44,8 @@ COPY variant.cpp /harness/
 RUN cp -r /root/.arduino15/packages/arduino/hardware/esp32/*/variants/arduino_nano_nora /harness/variant \
     && cp /harness/variant.cpp /harness/variant/variant.cpp
 
-COPY run.sh merge_flash.py /harness/
-RUN chmod +x /harness/run.sh
+COPY run.sh merge_flash.sh /harness/
+RUN chmod +x /harness/run.sh /harness/merge_flash.sh
 
 WORKDIR /work
 CMD ["sleep", "infinity"]

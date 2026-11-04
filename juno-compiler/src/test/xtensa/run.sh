@@ -10,7 +10,7 @@ name="$(basename "$sketch")"
 # build.variant.path swaps in the emulator variant (/harness/variant), which skips the board's double-tap recovery.
 arduino-cli compile --fqbn arduino:esp32:nano_nora --build-property build.cdc_on_boot=0 \
     --build-property build.variant.path=/harness/variant --build-path "$sketch-build" "$sketch" >&2
-python3 /harness/merge_flash.py "$sketch-build" "$name" "$sketch/flash.bin"
+/harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin"
 # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes, so QEMU emulates one (its
 # default PSRAM is quad SPI). The timer-group watchdog is disabled: the harness never feeds it.
 # The guest never powers off, so the awk filter ends the run at the completion marker and QEMU stops on SIGPIPE.

@@ -305,7 +305,7 @@ jobs:
           set -euo pipefail
           digest="$(git ls-files -z -- \
             juno-compiler/src/test/xtensa/Dockerfile \
-            juno-compiler/src/test/xtensa/merge_flash.py \
+            juno-compiler/src/test/xtensa/merge_flash.sh \
             juno-compiler/src/test/xtensa/run.sh \
             juno-compiler/src/test/xtensa/variant.cpp \
             | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"

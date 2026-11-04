@@ -92,7 +92,7 @@ API.
 
 The selected path is Espressif's QEMU (`esp-develop-9.2.2-20260417`, pinned by SHA-256) and the pinned
 `arduino:esp32@2.0.18-arduino.5` core in one Docker image (`src/test/xtensa`). The core builds the sketch for
-`arduino:esp32:nano_nora` with `build.cdc_on_boot=0`, so `Serial` is UART0, and `merge_flash.py` places bootloader,
+`arduino:esp32:nano_nora` with `build.cdc_on_boot=0`, so `Serial` is UART0, and `merge_flash.sh` places bootloader,
 partition table, and application in a 16 MiB image. QEMU emulates the board's 8 MiB octal PSRAM, which the core's
 boot code probes. The image replaces only the variant's `variant.cpp`: the board's double-tap recovery pulses the RGB
 LED through LEDC, which QEMU does not model. The harness sketch brackets the program with `[juno-begin]` and
