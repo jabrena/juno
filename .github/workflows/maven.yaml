@@ -352,6 +352,16 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
           -Djuno.qemuImage=${{ needs.qemu-image.outputs.ref }}
           -b turbo -T1C
+      - name: Publish QEMU conformance report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: qemu-conformance-junit
+          path: |
+            juno-compiler/target/failsafe-reports/**
+            juno-compiler/target/qemu/generated/**
+          if-no-files-found: warn
+          retention-days: 7
 
   simavr:
     name: Run programs under simavr
@@ -383,6 +393,16 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
           -Djuno.simavrImage=${{ needs.simavr-image.outputs.ref }}
           -b turbo -T1C
+      - name: Publish simavr conformance report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: simavr-conformance-junit
+          path: |
+            juno-compiler/target/failsafe-reports/**
+            juno-compiler/target/simavr/generated/**
+          if-no-files-found: warn
+          retention-days: 7
 
   integration-build:
     name: Prepare integration build outputs
