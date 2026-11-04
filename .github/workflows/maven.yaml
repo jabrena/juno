@@ -509,6 +509,9 @@ jobs:
       - name: Pull Xtensa image
         run: docker pull ${{ needs.xtensa-image.outputs.ref }}
       - name: Run Xtensa programs under QEMU (ESP32-S3)
+        # About 21 min for 17 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
+        # backstop, and as a step timeout (not a job timeout) it still lets the failure-evidence upload below run.
+        timeout-minutes: 45
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pxtensa
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT

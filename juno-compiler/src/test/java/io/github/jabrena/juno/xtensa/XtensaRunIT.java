@@ -58,6 +58,14 @@ class XtensaRunIT {
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
+    /**
+     * Bounds one build-and-run, so a stalled arduino-cli or QEMU fails its own program's test with the output so far,
+     * instead of silently holding the whole CI step. A CI run takes about 70 s per program.
+     */
+    private static final int RUN_TIMEOUT_SECONDS = Integer.getInteger("juno.xtensaRunTimeoutSeconds", 600);
+    /** {@code timeout}'s exit status when the limit expired, and when the command then needed SIGKILL. */
+    private static final int TIMED_OUT = 124;
+    private static final int KILLED = 137;
 
     @Container
     private static final GenericContainer<?> XTENSA_RUNNER = createRunner();
@@ -113,6 +121,8 @@ class XtensaRunIT {
         for (String file : List.of("program.S", "shim.cpp", simpleName + ".ino")) {
             XTENSA_RUNNER.copyFileToContainer(MountableFile.forHostPath(sketch.resolve(file)), work + "/" + file);
         }
+        LOG.info("[{} / {}] running run.sh (arduino-cli build + QEMU, limit {} s)", mainClass, board.id(),
+                RUN_TIMEOUT_SECONDS);
         start = System.nanoTime();
         ExecResult run = runOnce(work);
         // QEMU occasionally dies on the host before the guest prints anything (the timeout wrapper reports a core
@@ -123,13 +133,20 @@ class XtensaRunIT {
         }
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
+        if (run.getExitCode() == TIMED_OUT || run.getExitCode() == KILLED) {
+            fail("%s on %s: /harness/run.sh did not finish within %d s (raise -Djuno.xtensaRunTimeoutSeconds);"
+                    + " output so far:%n%s%s", mainClass, board.displayName(), RUN_TIMEOUT_SECONDS, run.getStdout(),
+                    run.getStderr());
+        }
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return transcript(run, "/harness/run.sh " + work);
     }
 
     private static ExecResult runOnce(String work) throws IOException, InterruptedException {
-        return XTENSA_RUNNER.execInContainer("/harness/run.sh", work);
+        // GNU timeout signals run.sh's whole process group, so a stalled arduino-cli or QEMU child stops too.
+        return XTENSA_RUNNER.execInContainer("timeout", "-k", "10", String.valueOf(RUN_TIMEOUT_SECONDS),
+                "/harness/run.sh", work);
     }
 
     /** The program's output between the markers, inclusive of the exit marker, with {@code \r\n} as {@code \n}. */
