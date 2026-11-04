@@ -90,6 +90,14 @@ The Xtensa runner builds a bootable ESP32-S3 flash image containing Juno-generat
 UART output, and terminates on the suite exit marker. It must not use a physical board, network service, or device
 API.
 
+The selected path is Espressif's QEMU (`esp-develop-9.2.2-20260417`, pinned by SHA-256) and the pinned
+`arduino:esp32@2.0.18-arduino.5` core in one Docker image (`src/test/xtensa`). The core builds the sketch for
+`arduino:esp32:nano_nora` with `build.cdc_on_boot=0`, so `Serial` is UART0, and `merge_flash.py` places bootloader,
+partition table, and application in a 16 MiB image. QEMU emulates the board's 8 MiB octal PSRAM, which the core's
+boot code probes. The image replaces only the variant's `variant.cpp`: the board's double-tap recovery pulses the RGB
+LED through LEDC, which QEMU does not model. The harness sketch brackets the program with `[juno-begin]` and
+`[juno-exit]`, and the runner compares the text between them with Arduino's `\r\n` line ends read as `\n`.
+
 **Alternative considered:** treating Arduino CLI compilation as Xtensa execution evidence. Rejected: compilation
 cannot expose calling-convention, runtime, or generated-code semantic regressions.
 
@@ -138,7 +146,5 @@ it useful.
 
 ## Open Questions
 
-- Which approved ESP32-S3 emulator distribution and image build path best fits the repository's pinned container
-  toolchain?
 - Is a versioned XSD needed after the primitives pilot, or are suite-level relationship checks sufficient for the
   initial XML catalog?
