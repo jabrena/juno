@@ -21,6 +21,9 @@
         <program id="switch-expression" source="programs/controlflow/SwitchExpression.java"/>
         <program id="record-classes" source="programs/records/RecordClasses.java"/>
         <program id="sealed-types" source="programs/sealed/SealedTypes.java"/>
+        <program id="inheritance-dispatch" source="programs/inheritance/InheritanceDispatch.java"/>
+        <program id="generic-types" source="programs/generics/GenericTypes.java"/>
+        <program id="array-semantics" source="programs/arrays/ArraySemantics.java"/>
     </programs>
     <!--
         backends: the emulator targets the suite runs on, defined once here. Every area refers to them by id with
@@ -144,6 +147,31 @@
             <jls section="8.1.6"/>
             <jls section="9.1.1.4"/>
             <jls section="9.1.4"/>
+        </scope>
+        <scope id="inheritance" title="Class inheritance and interface dispatch">
+            <jls section="8.1.4"/>
+            <jls section="8.1.5"/>
+            <jls section="8.4.8.1"/>
+            <jls section="15.12.4.4"/>
+        </scope>
+        <scope id="generics" title="Generics and erasure">
+            <jls section="4.4"/>
+            <jls section="4.5"/>
+            <jls section="4.6"/>
+            <jls section="8.1.2"/>
+            <jls section="8.4.4"/>
+        </scope>
+        <scope id="arrays" title="Arrays">
+            <jls section="10.1"/>
+            <jls section="10.2"/>
+            <jls section="10.3"/>
+            <jls section="10.4"/>
+            <jls section="10.5"/>
+            <jls section="10.6"/>
+            <jls section="10.7"/>
+            <jls section="15.10.1"/>
+            <jls section="15.10.2"/>
+            <jls section="15.10.3"/>
         </scope>
     </scopes>
     <!--
@@ -366,6 +394,43 @@
             <jls section="9.1.1.4"/>
             <jls section="9.1.4"/>
             <program ref="sealed-types"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="inheritance.class-and-interface-dispatch" title="Class inheritance, overriding, and interface dispatch">
+            <jls section="8.1.4"/>
+            <jls section="8.1.5"/>
+            <jls section="8.4.8.1"/>
+            <jls section="15.12.4.4"/>
+            <program ref="inheritance-dispatch"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="generics.classes-methods-and-erasure" title="Generic classes, methods, and erasure">
+            <jls section="4.4"/>
+            <jls section="4.5"/>
+            <jls section="4.6"/>
+            <jls section="8.1.2"/>
+            <jls section="8.4.4"/>
+            <program ref="generic-types"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="arrays.creation-access-and-length" title="Array creation, access, bounds, and length">
+            <jls section="10.1"/>
+            <jls section="10.2"/>
+            <jls section="10.3"/>
+            <jls section="10.4"/>
+            <jls section="10.5"/>
+            <jls section="10.6"/>
+            <jls section="10.7"/>
+            <jls section="15.10.1"/>
+            <jls section="15.10.2"/>
+            <jls section="15.10.3"/>
+            <program ref="array-semantics"/>
             <backend ref="thumb2" status="REQUIRED"/>
             <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>

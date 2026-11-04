@@ -43,7 +43,11 @@ public final class ConformanceCatalog {
             "primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24", "15.25"),
             "records.components-members-and-constructors", Set.of("8.10", "8.10.1", "8.10.2", "8.10.3", "8.10.4",
                     "8.10.4.1", "8.10.4.2"),
-            "sealed.classes-and-interfaces", Set.of("8.1.1.2", "8.1.6", "9.1.1.4", "9.1.4"));
+            "sealed.classes-and-interfaces", Set.of("8.1.1.2", "8.1.6", "9.1.1.4", "9.1.4"),
+            "inheritance.class-and-interface-dispatch", Set.of("8.1.4", "8.1.5", "8.4.8.1", "15.12.4.4"),
+            "generics.classes-methods-and-erasure", Set.of("4.4", "4.5", "4.6", "8.1.2", "8.4.4"),
+            "arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7",
+                    "15.10.1", "15.10.2", "15.10.3"));
 
     /** Classification value of a JLS section that some area covers with a program. */
     private static final String COVERED = "covered";
