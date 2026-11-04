@@ -24,6 +24,7 @@
         <program id="inheritance-dispatch" source="programs/inheritance/InheritanceDispatch.java"/>
         <program id="generic-types" source="programs/generics/GenericTypes.java"/>
         <program id="array-semantics" source="programs/arrays/ArraySemantics.java"/>
+        <program id="string-semantics" source="programs/strings/StringSemantics.java"/>
     </programs>
     <!--
         backends: the emulator targets the suite runs on, defined once here. Every area refers to them by id with
@@ -172,6 +173,13 @@
             <jls section="15.10.1"/>
             <jls section="15.10.2"/>
             <jls section="15.10.3"/>
+        </scope>
+        <scope id="strings" title="Strings and string conversion">
+            <jls section="3.10.5"/>
+            <jls section="3.10.6"/>
+            <jls section="5.1.11"/>
+            <jls section="5.4"/>
+            <jls section="15.18.1"/>
         </scope>
     </scopes>
     <!--
@@ -431,6 +439,17 @@
             <jls section="15.10.2"/>
             <jls section="15.10.3"/>
             <program ref="array-semantics"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="strings.concatenation-and-conversion" title="String literals, concatenation, and primitive conversion">
+            <jls section="3.10.5"/>
+            <jls section="3.10.6"/>
+            <jls section="5.1.11"/>
+            <jls section="5.4"/>
+            <jls section="15.18.1"/>
+            <program ref="string-semantics"/>
             <backend ref="thumb2" status="REQUIRED"/>
             <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>

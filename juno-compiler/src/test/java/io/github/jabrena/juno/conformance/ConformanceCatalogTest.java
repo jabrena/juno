@@ -23,7 +23,8 @@ class ConformanceCatalogTest {
     void reportsCoverageAgainstEveryJlsSectionInScope() {
         ConformanceCatalog catalog = ConformanceCatalog.load(CATALOG);
         assertThat(catalog.coverage()).extracting(ConformanceCatalog.Coverage::scopeId)
-                .containsExactly("arrays", "controlflow", "generics", "inheritance", "primitives", "records", "sealed");
+                .containsExactly("arrays", "controlflow", "generics", "inheritance", "primitives", "records", "sealed",
+                        "strings");
         for (ConformanceCatalog.Coverage coverage : catalog.coverage()) {
             System.out.println(coverage.summary());
             assertThat(coverage.covered() + coverage.gaps() + coverage.otherCategory() + coverage.outOfScope())

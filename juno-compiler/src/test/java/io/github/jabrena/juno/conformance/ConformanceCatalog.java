@@ -47,7 +47,8 @@ public final class ConformanceCatalog {
             "inheritance.class-and-interface-dispatch", Set.of("8.1.4", "8.1.5", "8.4.8.1", "15.12.4.4"),
             "generics.classes-methods-and-erasure", Set.of("4.4", "4.5", "4.6", "8.1.2", "8.4.4"),
             "arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7",
-                    "15.10.1", "15.10.2", "15.10.3"));
+                    "15.10.1", "15.10.2", "15.10.3"),
+            "strings.concatenation-and-conversion", Set.of("3.10.5", "3.10.6", "5.1.11", "5.4", "15.18.1"));
 
     /** Classification value of a JLS section that some area covers with a program. */
     private static final String COVERED = "covered";
