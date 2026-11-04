@@ -23,6 +23,7 @@
 
 - [ ] 4.1 Add an isolated Xtensa primitive CI job and retain the existing isolated Thumb-2 and AVR primitive execution paths.
 - [ ] 4.2 After each backend job executes its tests, upload its Failsafe XML with `if: always()` as `qemu-conformance-junit`, `simavr-conformance-junit`, or `xtensa-conformance-junit` (QEMU and simavr are wired; Xtensa remains pending).
+- [ ] 4.2a Verify that the QEMU and simavr jobs each produce at least one JUnit XML report and that the corresponding artifact is downloadable from the workflow run after both successful and failed executions.
 - [ ] 4.3 On backend failure, upload generated assembly, shim, expected/actual output, and emulator logs as a separate failure-only artifact (expected/actual and generated sources are wired for QEMU/simavr; separate log packaging remains pending).
 - [x] 4.4 Verify each JUnit report identifies its conformance program and target board.
 - [ ] 4.5 Run the affected Maven tests and all three primitive runners; confirm each required transcript equals its OpenJDK baseline.

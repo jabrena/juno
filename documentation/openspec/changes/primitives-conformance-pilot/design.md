@@ -99,7 +99,8 @@ The Thumb-2, AVR, and Xtensa runners execute in isolated CI jobs. After test exe
 Failsafe JUnit XML with `if: always()` so report evidence survives both success and failure. The workflow publishes
 three backend-specific report artifacts: `qemu-conformance-junit`, `simavr-conformance-junit`, and
 `xtensa-conformance-junit`. A report artifact can contain one or more Failsafe XML files, whose parameterized test
-cases identify the conformance program and board.
+cases identify the conformance program and board. CI verification must confirm that the QEMU and simavr jobs actually
+produce a JUnit XML file and that the named artifact remains downloadable from the completed workflow run.
 
 On failure, the affected job additionally uploads generated assembly, shim, emulator command/log, and OpenJDK
 expected/actual output. A consolidated cross-backend dashboard is deferred until multiple semantic categories make
