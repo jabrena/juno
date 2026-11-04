@@ -7,14 +7,29 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-/** Generic classes and methods after erasure, including the compiler-generated reference casts. */
+/**
+ * Generic classes and methods after erasure, including the compiler-generated reference casts. Type variables are
+ * bounded by a program class so their erasure stays inside the closed world of the program.
+ */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class,
         ArduinoNanoEsp32Board.class})
 public final class GenericTypes {
     private GenericTypes() {
     }
 
-    static final class Cell<T> {
+    static class Token {
+        private final int weight;
+
+        Token(int weight) {
+            this.weight = weight;
+        }
+
+        int weight() {
+            return weight;
+        }
+    }
+
+    static final class Cell<T extends Token> {
         private T value;
 
         Cell(T value) {
@@ -30,27 +45,26 @@ public final class GenericTypes {
         }
     }
 
-    static <T> T choose(boolean first, T left, T right) {
+    static <T extends Token> T choose(boolean first, T left, T right) {
         return first ? left : right;
     }
 
-    static <T> int sum(Cell<T> cell, int[] values) {
+    static <T extends Token> int sum(Cell<T> cell, int count) {
         int total = 0;
-        for (int i = 0; i < values.length; i++) {
-            total += values[i];
+        for (int i = 0; i < count; i++) {
+            total += cell.get().weight();
         }
-        return total + (cell.get() == null ? 0 : 100);
+        return total;
     }
 
     public static void main(String[] args) {
-        int[] first = {2, 3, 5};
-        int[] second = {7, 11};
-        int[] selected = choose(true, first, second);
-        Cell<int[]> cell = new Cell<>(selected);
+        Token light = new Token(2);
+        Token heavy = new Token(7);
+        Cell<Token> cell = new Cell<>(light);
 
-        Serial.println(sum(cell, cell.get()));
-        cell.set(choose(false, first, second));
-        Serial.println(sum(cell, cell.get()));
-        Serial.println(choose(true, 13, 17));
+        Serial.println(sum(cell, 3));
+        cell.set(choose(false, light, heavy));
+        Serial.println(sum(cell, 3));
+        Serial.println(choose(true, light, heavy).weight());
     }
 }
