@@ -174,6 +174,7 @@ class SimavrRunIT {
     @MethodSource("conformancePrograms")
     void primitiveConformanceMatchesTheJvmUnderSimavr(String simpleName, Board board, boolean peripheral,
             String programId) throws Exception {
+        LOG.info("[conformance {} / {} / {}] start", programId, simpleName, board.id());
         String expected = runOnJvm("demo." + simpleName) + EXIT_MARKER;
         String actual = runUnderSimavr("demo." + simpleName, simpleName, board);
         if (!actual.equals(expected)) {

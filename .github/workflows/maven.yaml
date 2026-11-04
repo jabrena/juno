@@ -2,6 +2,18 @@ name: CI Builds
 
 on:
   push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.png'
+      - '**/*.jpg'
+      - '**/*.jpeg'
+      - '**/*.gif'
+      - '**/*.svg'
+      - '**/*.webp'
+      - 'docs/**'
+  pull_request:
     paths-ignore:
       - '**/*.md'
       - '**/*.png'
@@ -323,7 +335,7 @@ jobs:
           fi
 
   qemu:
-    name: Run programs under QEMU
+    name: Run Thumb-2 programs under QEMU
     needs: [changes, qemu-image]
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
@@ -346,7 +358,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull QEMU image
         run: docker pull ${{ needs.qemu-image.outputs.ref }}
-      - name: Run programs under QEMU
+      - name: Run Thumb-2 programs under QEMU
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
@@ -356,7 +368,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: qemu-conformance-junit
+          name: thumb2-conformance-junit
           path: |
             juno-compiler/target/failsafe-reports/**
             juno-compiler/target/qemu/generated/**
@@ -364,7 +376,7 @@ jobs:
           retention-days: 7
 
   simavr:
-    name: Run programs under simavr
+    name: Run AVR programs under simavr
     needs: [changes, simavr-image]
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
@@ -387,7 +399,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull simavr image
         run: docker pull ${{ needs.simavr-image.outputs.ref }}
-      - name: Run programs under simavr
+      - name: Run AVR programs under simavr
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Psimavr
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
@@ -397,10 +409,72 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: simavr-conformance-junit
+          name: avr-conformance-junit
           path: |
             juno-compiler/target/failsafe-reports/**
             juno-compiler/target/simavr/generated/**
+          if-no-files-found: warn
+          retention-days: 7
+
+  conformance-reports:
+    name: Publish conformance reports
+    needs: [changes, qemu, simavr]
+    if: always() && needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - name: Download Thumb-2 conformance report
+        if: needs.qemu.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: thumb2-conformance-junit
+          path: reports/qemu
+      - name: Download AVR conformance report
+        if: needs.simavr.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: avr-conformance-junit
+          path: reports/simavr
+      - name: Summarize conformance reports
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p reports
+          report_count=0
+          {
+            echo "## Conformance reports"
+            echo
+            for backend in qemu simavr; do
+              files=(reports/$backend/failsafe-reports/TEST-*.xml)
+              if [[ -e "${files[0]}" ]]; then
+                for report in "${files[@]}"; do
+                  report_count=$((report_count + 1))
+                  suite=$(sed -n 's/.*<testsuite[^>]*name="\([^"]*\)".*/\1/p' "$report" | head -1)
+                  tests=$(sed -n 's/.*<testsuite[^>]*tests="\([0-9]*\)".*/\1/p' "$report" | head -1)
+                  failures=$(sed -n 's/.*<testsuite[^>]*failures="\([0-9]*\)".*/\1/p' "$report" | head -1)
+                  errors=$(sed -n 's/.*<testsuite[^>]*errors="\([0-9]*\)".*/\1/p' "$report" | head -1)
+                  echo "- **$backend**: $suite — tests=$tests, failures=$failures, errors=$errors"
+                done
+              else
+                echo "- **$backend**: no JUnit XML artifact was available"
+              fi
+            done
+            echo
+            echo "JUnit XML files collected: $report_count"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if (( report_count == 0 )); then
+            echo "::warning::No QEMU or simavr JUnit XML report was available"
+          fi
+      - name: Publish consolidated conformance reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: conformance-junit-reports
+          path: reports/**
           if-no-files-found: warn
           retention-days: 7
 
