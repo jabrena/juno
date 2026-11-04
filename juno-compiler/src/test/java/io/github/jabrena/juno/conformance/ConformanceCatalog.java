@@ -30,6 +30,7 @@ import javax.xml.validation.SchemaFactory;
 /** Parsed and validated semantic-conformance catalog used by the emulator integration tests. */
 public final class ConformanceCatalog {
     private static final Set<String> REQUIRED_BACKENDS = Set.of("thumb2", "avr", "xtensa");
+    // Map.of accepts at most 10 pairs; this catalog has more areas, so entries are built with Map.ofEntries.
     private static final Map<String, Set<String>> REQUIRED_AREAS = Map.ofEntries(
             Map.entry("primitives.literals", Set.of("3.10.1", "3.10.2", "3.10.3", "3.10.4")),
             Map.entry("primitives.integral-types", Set.of("4.2.1", "4.2.2")),
@@ -40,14 +41,15 @@ public final class ConformanceCatalog {
                     "15.17.2", "15.17.3", "15.18.2", "15.19", "15.20", "15.21", "15.22.1")),
             Map.entry("primitives.floating-point-expressions", Set.of("15.15.1", "15.15.2", "15.16", "15.17.1",
                     "15.17.2", "15.17.3", "15.18.2", "15.20", "15.21")),
-            Map.entry("primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24", "15.25")),
-            Map.entry("records.components-members-and-constructors", Set.of("8.10", "8.10.1", "8.10.2", "8.10.3", "8.10.4",
-                    "8.10.4.1", "8.10.4.2")),
+            Map.entry("primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24",
+                    "15.25")),
+            Map.entry("records.components-members-and-constructors", Set.of("8.10", "8.10.1", "8.10.2", "8.10.3",
+                    "8.10.4", "8.10.4.1", "8.10.4.2")),
             Map.entry("sealed.classes-and-interfaces", Set.of("8.1.1.2", "8.1.6", "9.1.1.4", "9.1.4")),
             Map.entry("inheritance.class-and-interface-dispatch", Set.of("8.1.4", "8.1.5", "8.4.8.1", "15.12.4.4")),
             Map.entry("generics.classes-methods-and-erasure", Set.of("4.4", "4.5", "4.6", "8.1.2", "8.4.4")),
-            Map.entry("arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7",
-                    "15.10.1", "15.10.2", "15.10.3")),
+            Map.entry("arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6",
+                    "10.7", "15.10.1", "15.10.2", "15.10.3")),
             Map.entry("strings.concatenation-and-conversion", Set.of("3.10.5", "3.10.6", "5.1.11", "5.4", "15.18.1")),
             Map.entry("exceptions.kinds-and-causes", Set.of("11.1.1", "11.1.2")),
             Map.entry("exceptions.throw-and-catch", Set.of("14.18", "14.20", "14.20.1")),
