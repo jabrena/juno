@@ -178,6 +178,9 @@ class SimavrRunIT {
                     result.entryPointSymbol()).redirectErrorStream(false).start();
             String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             String errors = new String(run.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            WORKSPACE.writeEmulatorLog(board, simpleName,
+                    "sh " + LOCAL_HARNESS.resolve("run.sh") + " " + directory + " " + result.entryPointSymbol(), output,
+                    errors);
             assertThat(run.waitFor(2, TimeUnit.MINUTES)).isTrue();
             assertThat(run.exitValue()).as("build and run %s:%n%s%s", simpleName, output, errors).isZero();
             return output;
@@ -187,6 +190,8 @@ class SimavrRunIT {
         container.copyFileToContainer(MountableFile.forHostPath(directory.resolve("program.S")), work + "/program.S");
         container.copyFileToContainer(MountableFile.forHostPath(directory.resolve("shim.cpp")), work + "/shim.cpp");
         var run = container.execInContainer("/harness/run.sh", work, result.entryPointSymbol());
+        WORKSPACE.writeEmulatorLog(board, simpleName, "/harness/run.sh " + work + " " + result.entryPointSymbol(),
+                run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s:%n%s%s", simpleName, run.getStdout(), run.getStderr())
                 .isZero();
         return run.getStdout();

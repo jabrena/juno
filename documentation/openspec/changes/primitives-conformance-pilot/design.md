@@ -115,12 +115,16 @@ Pull requests use the `pull_request` workflow trigger, while direct push validat
 each feature-branch revision to one CI execution instead of duplicating it through both triggers.
 
 A report artifact can contain one or more Failsafe XML files, whose standalone entries identify the conformance
-program and board. CI verification must confirm that the QEMU and simavr jobs produce JUnit XML, that the downstream
+program and board: the emulator profiles configure Failsafe to name each entry by its display name, and each backend
+job runs `.github/scripts/ConformanceReportCheck.java` (a JBang script, run with the job's JDK), which fails when an
+entry names neither. CI verification must confirm that the QEMU and simavr jobs produce JUnit XML, that the downstream
 report job collects both artifacts, and that the consolidated artifact remains downloadable after successful and
 failed executions.
 
 On failure, the affected job additionally uploads generated assembly, shim, emulator command/log, and OpenJDK
-expected/actual output. A consolidated cross-backend dashboard is deferred until multiple semantic categories make
+expected/actual output as a separate `thumb2-conformance-failure`, `avr-conformance-failure`, or
+`xtensa-conformance-failure` artifact; every run keeps its harness command and output in an `emulator.log` beside the
+generated sources, so the JUnit artifacts carry only reports. A consolidated cross-backend dashboard is deferred until multiple semantic categories make
 it useful.
 
 ## Risks / Trade-offs

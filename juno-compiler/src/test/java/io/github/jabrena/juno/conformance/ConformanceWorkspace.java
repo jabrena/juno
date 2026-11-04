@@ -94,6 +94,24 @@ public final class ConformanceWorkspace {
     }
 
     /**
+     * Keeps a harness run's command and output in {@code emulator.log} next to the program's generated sources, before the run is
+     * judged, so a build or emulator failure can be diagnosed from the failure artifact without the job log.
+     */
+    public void writeEmulatorLog(Board board, String program, String command, String stdout, String stderr)
+            throws IOException {
+        Path directory = generated(board, program);
+        Files.createDirectories(directory);
+        Files.writeString(directory.resolve("emulator.log"), """
+                --- command ---
+                %s
+                --- stdout ---
+                %s
+                --- stderr ---
+                %s
+                """.formatted(command, stdout, stderr));
+    }
+
+    /**
      * Asserts that a backend printed the expected transcript; when it did not, writes {@code expected.txt} and
      * {@code actual.txt} next to the program's generated sources first.
      */

@@ -184,6 +184,8 @@ class QemuRunIT {
         start = System.nanoTime();
         var run = QEMU_RUNNER.execInContainer("/harness/run.sh", work, result.entryPointSymbol());
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
+        WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work + " " + result.entryPointSymbol(),
+                run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return run.getStdout();

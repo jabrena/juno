@@ -177,6 +177,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>qemu</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
@@ -213,6 +218,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>simavr</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
@@ -249,6 +259,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>xtensa</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>

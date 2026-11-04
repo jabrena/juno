@@ -414,21 +414,25 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
           -Djuno.qemuImage=${{ needs.qemu-image.outputs.ref }}
           -b turbo -T1C
-      - name: Render QEMU conformance HTML report
-        if: always()
-        run: >-
-          python3 .github/scripts/conformance_report_html.py juno-compiler/target/failsafe-reports
-          "Thumb-2 / QEMU conformance" juno-compiler/target/failsafe-reports/thumb2-conformance.html
       - name: Publish QEMU conformance report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: thumb2-conformance-junit
-          path: |
-            juno-compiler/target/failsafe-reports/**
-            juno-compiler/target/qemu/generated/**
+          path: juno-compiler/target/failsafe-reports/**
           if-no-files-found: warn
           retention-days: 7
+      - name: Publish QEMU conformance failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: thumb2-conformance-failure
+          path: juno-compiler/target/qemu/generated/**
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Check QEMU conformance report entries
+        if: always()
+        run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
   simavr:
     name: Run AVR programs under simavr
@@ -460,21 +464,25 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
           -Djuno.simavrImage=${{ needs.simavr-image.outputs.ref }}
           -b turbo -T1C
-      - name: Render simavr conformance HTML report
-        if: always()
-        run: >-
-          python3 .github/scripts/conformance_report_html.py juno-compiler/target/failsafe-reports
-          "AVR / simavr conformance" juno-compiler/target/failsafe-reports/avr-conformance.html
       - name: Publish simavr conformance report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: avr-conformance-junit
-          path: |
-            juno-compiler/target/failsafe-reports/**
-            juno-compiler/target/simavr/generated/**
+          path: juno-compiler/target/failsafe-reports/**
           if-no-files-found: warn
           retention-days: 7
+      - name: Publish simavr conformance failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: avr-conformance-failure
+          path: juno-compiler/target/simavr/generated/**
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Check simavr conformance report entries
+        if: always()
+        run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
   xtensa:
     name: Run Xtensa programs under QEMU (ESP32-S3)
@@ -506,21 +514,25 @@ jobs:
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT
           -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }}
           -b turbo -T1C
-      - name: Render Xtensa conformance HTML report
-        if: always()
-        run: >-
-          python3 .github/scripts/conformance_report_html.py juno-compiler/target/failsafe-reports
-          "Xtensa / QEMU (ESP32-S3) conformance" juno-compiler/target/failsafe-reports/xtensa-conformance.html
       - name: Publish Xtensa conformance report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: xtensa-conformance-junit
-          path: |
-            juno-compiler/target/failsafe-reports/**
-            juno-compiler/target/xtensa/generated/**
+          path: juno-compiler/target/failsafe-reports/**
           if-no-files-found: warn
           retention-days: 7
+      - name: Publish Xtensa conformance failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xtensa-conformance-failure
+          path: juno-compiler/target/xtensa/generated/**
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Check Xtensa conformance report entries
+        if: always()
+        run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
   conformance-reports:
     name: Publish conformance reports
@@ -571,9 +583,6 @@ jobs:
                   failures=$(sed -n 's/.*<testsuite[^>]*failures="\([0-9]*\)".*/\1/p' "$report" | head -1)
                   errors=$(sed -n 's/.*<testsuite[^>]*errors="\([0-9]*\)".*/\1/p' "$report" | head -1)
                   echo "- **$backend**: $suite — tests=$tests, failures=$failures, errors=$errors"
-                done
-                for page in reports/$backend/failsafe-reports/*-conformance.html; do
-                  [[ -e "$page" ]] && echo "  - HTML: \`${page#reports/}\`"
                 done
               else
                 echo "- **$backend**: no JUnit XML artifact was available"

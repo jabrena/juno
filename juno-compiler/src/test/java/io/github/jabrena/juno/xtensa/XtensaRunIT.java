@@ -116,8 +116,7 @@ class XtensaRunIT {
         start = System.nanoTime();
         ExecResult run = XTENSA_RUNNER.execInContainer("/harness/run.sh", work);
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
-        Files.writeString(directory.resolve("uart.log"), run.getStdout());
-        Files.writeString(directory.resolve("build.log"), run.getStderr());
+        WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return transcript(run, "/harness/run.sh " + work);

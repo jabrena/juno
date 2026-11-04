@@ -88,6 +88,17 @@ class ConformanceWorkspaceTest {
         assertThat(mismatch.resolve("actual.txt")).hasContent("2");
     }
 
+    @Test
+    void keepsTheHarnessOutputNextToTheGeneratedSources() throws Exception {
+        ConformanceWorkspace workspace = new ConformanceWorkspace(temporary, "xtensa", API_CLASSES);
+
+        workspace.writeEmulatorLog(Board.NANO_ESP32, "demo.LongArithmetic", "/harness/run.sh /work",
+                "[juno-begin]\n", "Segmentation fault\n");
+
+        assertThat(workspace.generated(Board.NANO_ESP32, "demo.LongArithmetic").resolve("emulator.log"))
+                .content().contains("--- command ---", "/harness/run.sh /work", "--- stdout ---", "[juno-begin]", "--- stderr ---", "Segmentation fault");
+    }
+
     private ProgramSource write(String file, String content) throws Exception {
         Path path = temporary.resolve(file);
         Files.writeString(path, content);
