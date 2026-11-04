@@ -1,6 +1,6 @@
 # JUno: Java for Arduino
 
-JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java on Arduino boards & M5Stack Cardputer. It keeps `javac` as the Java frontend, performs
+JUno `/ˈxu.no/` is an ahead-of-time compiler for running a practical subset of Java for Microcontrollers. It keeps `javac` as the Java frontend, performs
 closed-world linking on the development machine, and emits Assembly.
 
 [![CI Builds](https://github.com/jabrena/juno/actions/workflows/maven.yaml/badge.svg)](https://github.com/jabrena/juno/actions/workflows/maven.yaml)
