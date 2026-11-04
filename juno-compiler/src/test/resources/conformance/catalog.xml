@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<catalog schemaVersion="1" javaRelease="27"
+         jlsBaseUrl="https://docs.oracle.com/javase/specs/jls/se27/html/">
+    <programs>
+        <program id="primitive-literals" source="programs/primitives/PrimitiveLiterals.java"/>
+        <program id="integral-arithmetic" source="programs/primitives/IntegralArithmetic.java"/>
+        <program id="integral-conversions" source="programs/primitives/IntegralConversions.java"/>
+        <program id="long-arithmetic" source="programs/primitives/LongArithmetic.java"/>
+        <program id="floating-point-arithmetic" source="programs/primitives/FloatingPointArithmetic.java"/>
+        <program id="floating-point-conversions" source="programs/primitives/FloatingPointConversions.java"/>
+        <program id="boolean-expressions" source="programs/primitives/BooleanExpressions.java"/>
+    </programs>
+    <areas>
+        <area id="primitives.literals" title="Primitive literals">
+            <jls section="3.10.1"/>
+            <jls section="3.10.2"/>
+            <jls section="3.10.3"/>
+            <jls section="3.10.4"/>
+            <program ref="primitive-literals"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.integral-types" title="Integral types and operations">
+            <jls section="4.2.1"/>
+            <jls section="4.2.2"/>
+            <program ref="integral-arithmetic"/>
+            <program ref="integral-conversions"/>
+            <program ref="long-arithmetic"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.floating-point-types" title="Floating-point types and operations">
+            <jls section="4.2.3"/>
+            <jls section="4.2.4"/>
+            <program ref="floating-point-arithmetic"/>
+            <program ref="floating-point-conversions"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.boolean" title="Boolean type and values">
+            <jls section="4.2.5"/>
+            <program ref="boolean-expressions"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.conversions" title="Primitive conversions and numeric promotion">
+            <jls section="5.1.2"/>
+            <jls section="5.1.3"/>
+            <jls section="5.1.4"/>
+            <jls section="5.2"/>
+            <jls section="5.5"/>
+            <jls section="5.6.1"/>
+            <jls section="5.6.2"/>
+            <program ref="integral-conversions"/>
+            <program ref="floating-point-conversions"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.integral-expressions" title="Integral expressions and operators">
+            <jls section="15.15.1"/>
+            <jls section="15.15.2"/>
+            <jls section="15.15.3"/>
+            <jls section="15.16"/>
+            <jls section="15.17.1"/>
+            <jls section="15.17.2"/>
+            <jls section="15.17.3"/>
+            <jls section="15.18.2"/>
+            <jls section="15.19"/>
+            <jls section="15.20"/>
+            <jls section="15.21"/>
+            <jls section="15.22.1"/>
+            <program ref="integral-arithmetic"/>
+            <program ref="long-arithmetic"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.floating-point-expressions" title="Floating-point expressions and operators">
+            <jls section="15.15.1"/>
+            <jls section="15.15.2"/>
+            <jls section="15.16"/>
+            <jls section="15.17.1"/>
+            <jls section="15.17.2"/>
+            <jls section="15.17.3"/>
+            <jls section="15.18.2"/>
+            <jls section="15.20"/>
+            <jls section="15.21"/>
+            <program ref="floating-point-arithmetic"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="primitives.boolean-and-conditional" title="Boolean and conditional expressions">
+            <jls section="15.7"/>
+            <jls section="15.21"/>
+            <jls section="15.22.2"/>
+            <jls section="15.23"/>
+            <jls section="15.24"/>
+            <jls section="15.25"/>
+            <program ref="boolean-expressions"/>
+            <backend name="thumb2" status="REQUIRED"/>
+            <backend name="avr" status="REQUIRED"/>
+            <backend name="xtensa" status="REQUIRED"/>
+        </area>
+    </areas>
+</catalog>
