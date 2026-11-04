@@ -16,6 +16,9 @@ public final class ArraySemantics {
 
     static int boundedRead(int[] values, int index) {
         try {
+            if (index < 0 || index >= values.length) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
             return values[index];
         } catch (ArrayIndexOutOfBoundsException exception) {
             return -100;
