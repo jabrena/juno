@@ -114,12 +114,22 @@ class XtensaRunIT {
             XTENSA_RUNNER.copyFileToContainer(MountableFile.forHostPath(sketch.resolve(file)), work + "/" + file);
         }
         start = System.nanoTime();
-        ExecResult run = XTENSA_RUNNER.execInContainer("/harness/run.sh", work);
+        ExecResult run = runOnce(work);
+        // QEMU occasionally dies on the host before the guest prints anything (the timeout wrapper reports a core
+        // dump). That is an emulator crash, not a program fault, so the run is repeated once.
+        if (!run.getStdout().contains(BEGIN_MARKER.strip()) && (run.getStderr() + run.getStdout()).contains("dumped core")) {
+            LOG.warn("[{} / {}] QEMU died before the program started; retrying once", mainClass, board.id());
+            run = runOnce(work);
+        }
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return transcript(run, "/harness/run.sh " + work);
+    }
+
+    private static ExecResult runOnce(String work) throws IOException, InterruptedException {
+        return XTENSA_RUNNER.execInContainer("/harness/run.sh", work);
     }
 
     /** The program's output between the markers, inclusive of the exit marker, with {@code \r\n} as {@code \n}. */
