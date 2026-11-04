@@ -1,0 +1,29 @@
+## 1. Catalog and corpus
+
+- [x] 1.1 Define `catalog.xml` and `catalog.xsd` under `juno-compiler/src/test/resources/conformance`, and implement secure JDK XML parsing plus XSD validation for primitive catalog entries with Java SE 27 JLS references.
+- [x] 1.2 Add catalog entries for literals; integral, floating-point, and boolean types; conversions and promotions; integral and floating-point operators; and boolean and conditional expressions, using the required Java SE 27 JLS references.
+- [x] 1.3 Implement catalog validation for missing mandatory semantic areas or JLS references; empty areas; source fixtures missing from the XML inventory; inventory items without fixtures; and inventory items without a semantic-area reference.
+- [x] 1.4 Add focused, device-independent source fixtures under `src/test/resources/conformance/programs/primitives`, derived from the primitive behavior in `PrimitiveTypes`, `IntMath`, `LongMath`, and `FloatMath`; retain the legacy programs for existing coverage until later categories migrate.
+- [x] 1.5 Add Nano ESP32 board selection to the focused primitive programs and retain compatible Thumb-2 and AVR selection.
+
+## 2. Shared conformance execution
+
+- [ ] 2.1 Extract shared OpenJDK-baseline, program-discovery, transcript-comparison, and diagnostic logic without changing the selected Thumb-2 or AVR behavior.
+- [x] 2.2 Adapt `QemuRunIT` to execute the catalogued primitive corpus under Thumb-2.
+- [x] 2.3 Adapt `SimavrRunIT` to execute the catalogued primitive corpus under AVR.
+- [x] 2.4 Add focused unit coverage for catalog validation and runner selection.
+
+## 3. Xtensa execution spike and runner
+
+- [ ] 3.1 Prove one focused Nano ESP32 primitive program can be compiled, packaged as an ESP32-S3 bootable image, executed under the selected emulator, and matched with OpenJDK.
+- [ ] 3.2 Add the pinned Xtensa emulator image, runner, timeout, UART capture, and completion-marker handling.
+- [ ] 3.3 Generalize the verified spike to every required primitive catalog entry and add failure diagnostics.
+
+## 4. CI evidence and verification
+
+- [ ] 4.1 Add an isolated Xtensa primitive CI job and retain the existing isolated Thumb-2 and AVR primitive execution paths.
+- [ ] 4.2 After each backend job executes its tests, upload its Failsafe XML with `if: always()` as `qemu-conformance-junit`, `simavr-conformance-junit`, or `xtensa-conformance-junit` (QEMU and simavr are wired; Xtensa remains pending).
+- [ ] 4.3 On backend failure, upload generated assembly, shim, expected/actual output, and emulator logs as a separate failure-only artifact (expected/actual and generated sources are wired for QEMU/simavr; separate log packaging remains pending).
+- [x] 4.4 Verify each JUnit report identifies its conformance program and target board.
+- [ ] 4.5 Run the affected Maven tests and all three primitive runners; confirm each required transcript equals its OpenJDK baseline.
+- [ ] 4.6 Link the primitive catalog from the site documentation and document its Java SE 27 scope.
