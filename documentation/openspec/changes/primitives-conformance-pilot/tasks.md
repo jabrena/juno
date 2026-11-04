@@ -17,15 +17,15 @@
 
 - [x] 3.1 Prove one focused Nano ESP32 primitive program can be compiled, packaged as an ESP32-S3 bootable image, executed under the selected emulator, and matched with OpenJDK (`IntegralArithmetic` under Espressif QEMU `esp-develop-9.2.2-20260417`).
 - [x] 3.2 Add the pinned Xtensa emulator image, runner, timeout, UART capture, and completion-marker handling.
-- [ ] 3.3 Generalize the verified spike to every required primitive catalog entry and add failure diagnostics (`XtensaRunIT` implemented; awaiting its first green CI run).
+- [x] 3.3 Generalize the verified spike to every required primitive catalog entry and add failure diagnostics (`XtensaRunIT`: 7/7 catalogued programs match OpenJDK in CI run 41823460085).
 
 ## 4. CI evidence and verification
 
-- [ ] 4.1 Add an isolated Xtensa primitive CI job and retain the existing isolated Thumb-2 and AVR primitive execution paths (`xtensa-image` and `xtensa` jobs added; awaiting CI verification).
+- [x] 4.1 Add an isolated Xtensa primitive CI job and retain the existing isolated Thumb-2 and AVR primitive execution paths (`xtensa-image` and `xtensa` jobs; verified in CI run 41823460085).
 - [x] 4.2 After each backend job executes its tests, upload its Failsafe XML with `if: always()` as `thumb2-conformance-junit`, `avr-conformance-junit`, or `xtensa-conformance-junit` (QEMU, simavr, and Xtensa are wired; each also carries a rendered `*-conformance.html`).
 - [x] 4.2a Add a downstream `Publish conformance reports` job that runs after the Thumb-2/QEMU and AVR/simavr jobs, downloads their backend artifacts, writes a GitHub step summary, and publishes a consolidated `conformance-junit-reports` artifact.
-- [ ] 4.2b Verify that the Thumb-2/QEMU and AVR/simavr jobs each produce at least one JUnit XML report and that the downstream report job collects both artifacts after successful and failed executions.
+- [ ] 4.2b Verify that the Thumb-2/QEMU and AVR/simavr jobs each produce at least one JUnit XML report and that the downstream report job collects both artifacts after successful and failed executions (successful path verified in CI run 41823460085 for all three backends, XML and HTML; a failed execution is not yet verified).
 - [ ] 4.3 On backend failure, upload generated assembly, shim, expected/actual output, and emulator logs as a separate failure-only artifact (expected/actual and generated sources are wired for QEMU/simavr; separate log packaging remains pending).
 - [ ] 4.4 Verify each JUnit report identifies its conformance program and target board in a standalone report entry (not only in a backend log stream).
-- [ ] 4.5 Run the affected Maven tests and all three primitive runners; confirm each required transcript equals its OpenJDK baseline.
+- [x] 4.5 Run the affected Maven tests and all three primitive runners; confirm each required transcript equals its OpenJDK baseline (CI run 41823460085: Build, QEMU 97/97, simavr 40/40, Xtensa 7/7).
 - [ ] 4.6 Link the primitive catalog from the site documentation and document its Java SE 27 scope.
