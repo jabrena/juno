@@ -124,8 +124,8 @@ failed executions.
 On failure, the affected job additionally uploads generated assembly, shim, emulator command/log, and OpenJDK
 expected/actual output as a separate `thumb2-conformance-failure`, `avr-conformance-failure`, or
 `xtensa-conformance-failure` artifact; every run keeps its harness command and output in an `emulator.log` beside the
-generated sources, so the JUnit artifacts carry only reports. A consolidated cross-backend dashboard is deferred until multiple semantic categories make
-it useful.
+generated sources, so the JUnit artifacts carry only reports. A consolidated cross-backend dashboard is deferred until
+multiple semantic categories make it useful.
 
 ## Risks / Trade-offs
 
@@ -150,5 +150,7 @@ it useful.
 
 ## Open Questions
 
-- Is a versioned XSD needed after the primitives pilot, or are suite-level relationship checks sufficient for the
-  initial XML catalog?
+- ~~Is a versioned XSD needed after the primitives pilot, or are suite-level relationship checks sufficient for the
+  initial XML catalog?~~ Resolved: both. `catalog.xml` declares `schemaVersion="1"` and is validated against
+  `catalog.xsd`, and `ConformanceCatalog` adds the relationship checks (areas without programs, programs in no area,
+  missing or unlisted fixtures) that a schema cannot express.
