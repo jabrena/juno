@@ -93,14 +93,23 @@ API.
 **Alternative considered:** treating Arduino CLI compilation as Xtensa execution evidence. Rejected: compilation
 cannot expose calling-convention, runtime, or generated-code semantic regressions.
 
-### 5. Publish three isolated backend report artifacts after execution
+### 5. Publish backend reports after execution
 
 The Thumb-2, AVR, and Xtensa runners execute in isolated CI jobs. After test execution, each job uploads its
 Failsafe JUnit XML with `if: always()` so report evidence survives both success and failure. The workflow publishes
-three backend-specific report artifacts: `qemu-conformance-junit`, `simavr-conformance-junit`, and
-`xtensa-conformance-junit`. A report artifact can contain one or more Failsafe XML files, whose parameterized test
-cases identify the conformance program and board. CI verification must confirm that the QEMU and simavr jobs actually
-produce a JUnit XML file and that the named artifact remains downloadable from the completed workflow run.
+backend-specific raw artifacts: `thumb2-conformance-junit`, `avr-conformance-junit`, and
+`xtensa-conformance-junit`. A downstream `Publish conformance reports` job runs after the QEMU and simavr jobs,
+downloads the available backend artifacts, writes a GitHub step summary with the discovered suites and counts, and
+publishes the consolidated `conformance-junit-reports` artifact. This makes report processing visible as a distinct
+pipeline task without rerunning either backend.
+
+Pull requests use the `pull_request` workflow trigger, while direct push validation is limited to `main`; this keeps
+each feature-branch revision to one CI execution instead of duplicating it through both triggers.
+
+A report artifact can contain one or more Failsafe XML files, whose standalone entries identify the conformance
+program and board. CI verification must confirm that the QEMU and simavr jobs produce JUnit XML, that the downstream
+report job collects both artifacts, and that the consolidated artifact remains downloadable after successful and
+failed executions.
 
 On failure, the affected job additionally uploads generated assembly, shim, emulator command/log, and OpenJDK
 expected/actual output. A consolidated cross-backend dashboard is deferred until multiple semantic categories make

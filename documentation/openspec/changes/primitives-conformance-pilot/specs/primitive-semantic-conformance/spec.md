@@ -119,8 +119,8 @@ OpenJDK and Juno and SHALL require its generated-code serial transcript to equal
 
 CI SHALL execute the primitive conformance slice in isolated Thumb-2, AVR, and Xtensa backend jobs. After test
 execution, each job SHALL upload its Failsafe JUnit XML with an unconditional artifact step so the report is retained
-after either success or failure. CI SHALL publish three distinct report artifacts named `qemu-conformance-junit`,
-`simavr-conformance-junit`, and `xtensa-conformance-junit`. Each artifact's parameterized test cases SHALL identify
+after either success or failure. CI SHALL publish three distinct report artifacts named `thumb2-conformance-junit`,
+`avr-conformance-junit`, and `xtensa-conformance-junit`. Each artifact's parameterized test cases SHALL identify
 the conformance program and target board.
 
 When a comparison fails, CI SHALL additionally retain the generated assembly, shim, expected output, actual output,
