@@ -40,7 +40,10 @@ public final class ConformanceCatalog {
                     "15.17.2", "15.17.3", "15.18.2", "15.19", "15.20", "15.21", "15.22.1"),
             "primitives.floating-point-expressions", Set.of("15.15.1", "15.15.2", "15.16", "15.17.1",
                     "15.17.2", "15.17.3", "15.18.2", "15.20", "15.21"),
-            "primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24", "15.25"));
+            "primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24", "15.25"),
+            "records.components-members-and-constructors", Set.of("8.10", "8.10.1", "8.10.2", "8.10.3", "8.10.4",
+                    "8.10.4.1", "8.10.4.2"),
+            "sealed.classes-and-interfaces", Set.of("8.1.1.2", "8.1.6", "9.1.1.4", "9.1.4"));
 
     /** Classification value of a JLS section that some area covers with a program. */
     private static final String COVERED = "covered";

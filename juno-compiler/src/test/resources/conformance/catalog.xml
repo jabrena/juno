@@ -19,6 +19,8 @@
         <program id="jumps-and-labels" source="programs/controlflow/JumpsAndLabels.java"/>
         <program id="switch-statement" source="programs/controlflow/SwitchStatement.java"/>
         <program id="switch-expression" source="programs/controlflow/SwitchExpression.java"/>
+        <program id="record-classes" source="programs/records/RecordClasses.java"/>
+        <program id="sealed-types" source="programs/sealed/SealedTypes.java"/>
     </programs>
     <!--
         backends: the emulator targets the suite runs on, defined once here. Every area refers to them by id with
@@ -127,6 +129,21 @@
             <jls section="14.30"/>
             <jls section="15.20.2"/>
             <jls section="15.28"/>
+        </scope>
+        <scope id="records" title="Record classes">
+            <jls section="8.10"/>
+            <jls section="8.10.1"/>
+            <jls section="8.10.2"/>
+            <jls section="8.10.3"/>
+            <jls section="8.10.4"/>
+            <jls section="8.10.4.1"/>
+            <jls section="8.10.4.2"/>
+        </scope>
+        <scope id="sealed" title="Sealed classes and interfaces">
+            <jls section="8.1.1.2"/>
+            <jls section="8.1.6"/>
+            <jls section="9.1.1.4"/>
+            <jls section="9.1.4"/>
         </scope>
     </scopes>
     <!--
@@ -326,6 +343,29 @@
             <jls section="14.30" skipped="true" reason="Gap: patterns need instanceof (opcode 0xC1), which BytecodeDecoder rejects"/>
             <jls section="15.20.2" skipped="true" reason="Gap: instanceof (opcode 0xC1) is rejected by BytecodeDecoder"/>
             <jls section="6.3.2" skipped="true" reason="Gap: pattern-variable flow scoping needs instanceof (opcode 0xC1)"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="records.components-members-and-constructors" title="Record components, members, and canonical constructors">
+            <jls section="8.10"/>
+            <jls section="8.10.1"/>
+            <jls section="8.10.2"/>
+            <jls section="8.10.3"/>
+            <jls section="8.10.4"/>
+            <jls section="8.10.4.1"/>
+            <jls section="8.10.4.2"/>
+            <program ref="record-classes"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="sealed.classes-and-interfaces" title="Sealed classes, interfaces, and permitted subclasses">
+            <jls section="8.1.1.2"/>
+            <jls section="8.1.6"/>
+            <jls section="9.1.1.4"/>
+            <jls section="9.1.4"/>
+            <program ref="sealed-types"/>
             <backend ref="thumb2" status="REQUIRED"/>
             <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
