@@ -5,6 +5,8 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.conformance.ConformanceCatalog;
+import io.github.jabrena.juno.conformance.ConformanceDigitalTwin;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -56,8 +58,11 @@ class SimavrRunIT {
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path SIMAVR = BASEDIR.resolve("src/test/simavr");
     private static final Path QEMU_PROGRAMS = BASEDIR.resolve("src/test/qemu/programs");
+    private static final Path CONFORMANCE = BASEDIR.resolve("src/test/resources/conformance");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/simavr/program-classes");
     private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/simavr/openjdk-classes");
+    private static final ConformanceDigitalTwin DIGITAL_TWIN = new ConformanceDigitalTwin(OPENJDK_CLASSES,
+            PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES);
     private static final Path LOCAL_HARNESS = BASEDIR.resolve("target/simavr/harness");
     private static final String EXIT_MARKER = "[juno-exit]\n";
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.simavrImage", "").trim();
@@ -81,6 +86,7 @@ class SimavrRunIT {
             container.start();
         }
         List<Path> sources = new ArrayList<>(javaFiles(QEMU_PROGRAMS));
+        sources.addAll(recursiveJavaFiles(CONFORMANCE.resolve("programs")));
         sources.addAll(javaFiles(SIMAVR.resolve("programs")));
         compile(sources, PROGRAM_CLASSES);
         List<Path> openJdkSources;
@@ -144,6 +150,16 @@ class SimavrRunIT {
         return programs.stream();
     }
 
+    /** Primitive semantic-conformance fixtures from the XML catalog, once per supported AVR board. */
+    static Stream<Arguments> conformancePrograms() {
+        ConformanceCatalog catalog = ConformanceCatalog.load(CONFORMANCE.resolve("catalog.xml"));
+        catalog.validate(CONFORMANCE);
+        return catalog.programs().stream().flatMap(program -> Stream.of(Board.values())
+                .filter(board -> board.core().architecture() == Architecture.AVR)
+                .filter(board -> targets(CONFORMANCE.resolve(program.source()), board))
+                .map(board -> Arguments.of(simpleName(program.source()), board, false, program.id())));
+    }
+
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("programs")
     void matchesTheJvmUnderSimavr(String simpleName, Board board, boolean peripheral) throws Exception {
@@ -152,6 +168,21 @@ class SimavrRunIT {
                 : runOnJvm("demo." + simpleName) + EXIT_MARKER;
         String actual = runUnderSimavr("demo." + simpleName, simpleName, board);
         assertThat(actual).as("%s on %s under simavr", simpleName, board.displayName()).isEqualTo(expected);
+    }
+
+    @ParameterizedTest(name = "conformance {0} ({1}) [{3}]")
+    @MethodSource("conformancePrograms")
+    void primitiveConformanceMatchesTheJvmUnderSimavr(String simpleName, Board board, boolean peripheral,
+            String programId) throws Exception {
+        String expected = runOnJvm("demo." + simpleName) + EXIT_MARKER;
+        String actual = runUnderSimavr("demo." + simpleName, simpleName, board);
+        if (!actual.equals(expected)) {
+            Path directory = BASEDIR.resolve("target/simavr/generated").resolve(board.id()).resolve(simpleName);
+            Files.writeString(directory.resolve("expected.txt"), expected);
+            Files.writeString(directory.resolve("actual.txt"), actual);
+        }
+        assertThat(actual).as("conformance %s (%s) on %s under simavr", programId, simpleName, board.displayName())
+                .isEqualTo(expected);
     }
 
     private static String runUnderSimavr(String mainClass, String simpleName, Board board) throws Exception {
@@ -184,14 +215,7 @@ class SimavrRunIT {
 
     /** The same program on OpenJDK, with {@code Serial} shadowed by a stdout-printing double. */
     private static String runOnJvm(String mainClass) throws Exception {
-        String classpath = String.join(File.pathSeparator, OPENJDK_CLASSES.toString(), PROGRAM_CLASSES.toString(),
-                CompilerTestSupport.JUNO_API_CLASSES.toString());
-        Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "--enable-preview", "-cp", classpath, mainClass).start();
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-        assertThat(process.exitValue()).as("OpenJDK run of %s:%n%s", mainClass, output).isZero();
-        return output;
+        return DIGITAL_TWIN.run(mainClass);
     }
 
     private static List<Path> javaFiles(Path directory) throws IOException {
@@ -203,6 +227,25 @@ class SimavrRunIT {
     private static String simpleName(Path source) {
         String name = source.getFileName().toString();
         return name.substring(0, name.length() - ".java".length());
+    }
+
+    private static String simpleName(String source) {
+        return simpleName(Path.of(source));
+    }
+
+    private static boolean targets(Path source, Board board) {
+        try {
+            String text = Files.readString(source);
+            return !text.contains("@Board(") || text.contains(board.annotationArgument());
+        } catch (IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+    }
+
+    private static List<Path> recursiveJavaFiles(Path directory) throws IOException {
+        try (Stream<Path> files = Files.walk(directory)) {
+            return files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
+        }
     }
 
     private static void compile(List<Path> sources, Path destination) throws IOException {

@@ -5,6 +5,8 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.conformance.ConformanceCatalog;
+import io.github.jabrena.juno.conformance.ConformanceDigitalTwin;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -22,7 +24,6 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -58,8 +59,11 @@ class QemuRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(QemuRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
+    private static final Path CONFORMANCE = BASEDIR.resolve("src/test/resources/conformance");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
     private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/qemu/openjdk-classes");
+    private static final ConformanceDigitalTwin DIGITAL_TWIN = new ConformanceDigitalTwin(OPENJDK_CLASSES,
+            PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES);
     /**
      * Programs whose device APIs no JVM can run (the UNO Q's bridge to Linux, against the harness's stand-in
      * {@code Arduino_RouterBridge.h}), each compared with the {@code .expected} file next to it.
@@ -91,7 +95,9 @@ class QemuRunIT {
         try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
             sources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
         }
-        compile(sources, PROGRAM_CLASSES, junoClasspath());
+        List<Path> allSources = new ArrayList<>(sources);
+        allSources.addAll(javaFiles(CONFORMANCE.resolve("programs")));
+        compile(allSources, PROGRAM_CLASSES, junoClasspath());
         List<Path> openJdkSources;
         try (Stream<Path> files = Files.walk(QEMU.resolve("openjdk"))) {
             openJdkSources = files.filter(path -> path.toString().endsWith(".java")).toList();
@@ -102,7 +108,7 @@ class QemuRunIT {
             deviceSources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
         }
         compile(deviceSources, DEVICE_CLASSES, junoClasspath());
-        LOG.info("javac: {} programs + {} OpenJDK-side sources in {} ms", sources.size(), openJdkSources.size(),
+        LOG.info("javac: {} programs + {} OpenJDK-side sources in {} ms", allSources.size(), openJdkSources.size(),
                 millisSince(start));
     }
 
@@ -119,6 +125,16 @@ class QemuRunIT {
                 .map(board -> Arguments.of(mainClass, board)));
     }
 
+    /** Primitive semantic-conformance fixtures from the XML catalog, once per supported Thumb-2 board. */
+    static Stream<Arguments> conformancePrograms() {
+        ConformanceCatalog catalog = ConformanceCatalog.load(CONFORMANCE.resolve("catalog.xml"));
+        catalog.validate(CONFORMANCE);
+        return catalog.programs().stream().flatMap(program -> Stream.of(Board.values())
+                .filter(board -> board.core().architecture() == Architecture.THUMB2)
+                .filter(board -> targets(CONFORMANCE.resolve(program.source()), board))
+                .map(board -> Arguments.of("demo." + simpleName(program.source()), board, program.id())));
+    }
+
     /**
      * Whether a program runs on {@code board}: every board unless it declares some in its {@code @Board}, so a
      * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which
@@ -128,6 +144,10 @@ class QemuRunIT {
      */
     private static boolean targets(String mainClass, Board board) {
         Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
+        return targets(source, board);
+    }
+
+    private static boolean targets(Path source, Board board) {
         try {
             String text = Files.readString(source);
             return !text.contains("@Board(") || text.contains(board.annotationArgument());
@@ -150,6 +170,18 @@ class QemuRunIT {
         LOG.info("[{} / {}] total {} ms", mainClass, board.id(), millisSince(start));
 
         assertThat(actual).as("%s on %s under QEMU", mainClass, board.displayName())
+                .isEqualTo(expected + EXIT_MARKER);
+    }
+
+    @ParameterizedTest(name = "conformance {0} ({1}) [{2}]")
+    @MethodSource("conformancePrograms")
+    void primitiveConformanceMatchesTheJvmUnderQemu(String mainClass, Board board, String programId) throws Exception {
+        String expected = runOnJvm(mainClass);
+        String actual = runUnderQemu(mainClass, board);
+        if (!actual.equals(expected + EXIT_MARKER)) {
+            writeConformanceMismatch(mainClass, board, expected + EXIT_MARKER, actual);
+        }
+        assertThat(actual).as("conformance %s (%s) on %s under QEMU", programId, mainClass, board.displayName())
                 .isEqualTo(expected + EXIT_MARKER);
     }
 
@@ -217,19 +249,7 @@ class QemuRunIT {
 
     /** The same program on OpenJDK, with {@code Serial} shadowed by a stdout-printing double. */
     private static String runOnJvm(String mainClass) throws Exception {
-        List<String> classpath = new ArrayList<>();
-        classpath.add(OPENJDK_CLASSES.toString());
-        classpath.add(PROGRAM_CLASSES.toString());
-        junoClasspathWith(PROGRAM_CLASSES).forEach(path -> classpath.add(path.toString()));
-        Process process = new ProcessBuilder(
-                Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "--enable-preview",
-                "-cp", String.join(File.pathSeparator, classpath), mainClass)
-                .redirectErrorStream(true).start();
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-        assertThat(process.exitValue()).as("OpenJDK run of %s:%n%s", mainClass, output).isZero();
-        return output;
+        return DIGITAL_TWIN.run(mainClass);
     }
 
     private static long millisSince(long startNanos) {
@@ -247,6 +267,25 @@ class QemuRunIT {
         sources.forEach(source -> arguments.add(source.toString()));
         assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new)))
                 .as("javac %s", sources).isZero();
+    }
+
+    private static List<Path> javaFiles(Path directory) throws IOException {
+        try (Stream<Path> files = Files.walk(directory)) {
+            return files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
+        }
+    }
+
+    private static String simpleName(String source) {
+        String file = source.substring(source.lastIndexOf('/') + 1);
+        return file.substring(0, file.length() - ".java".length());
+    }
+
+    private static void writeConformanceMismatch(String mainClass, Board board, String expected, String actual)
+            throws IOException {
+        Path directory = BASEDIR.resolve("target/qemu/generated").resolve(board.id())
+                .resolve(simpleName(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java"));
+        Files.writeString(directory.resolve("expected.txt"), expected);
+        Files.writeString(directory.resolve("actual.txt"), actual);
     }
 
     private static List<Path> junoClasspathWith(Path programClasses) {
