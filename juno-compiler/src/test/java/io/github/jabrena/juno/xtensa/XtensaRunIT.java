@@ -4,8 +4,8 @@ import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Board;
-import io.github.jabrena.juno.conformance.ConformanceCatalog;
-import io.github.jabrena.juno.conformance.ConformanceDigitalTwin;
+import io.github.jabrena.juno.conformance.ConformanceWorkspace;
+import io.github.jabrena.juno.conformance.ProgramSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,16 +22,12 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -55,16 +51,12 @@ class XtensaRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(XtensaRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path XTENSA = BASEDIR.resolve("src/test/xtensa");
-    private static final Path CONFORMANCE = BASEDIR.resolve("src/test/resources/conformance");
-    private static final Path GENERATED = BASEDIR.resolve("target/xtensa/generated");
-    private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/xtensa/program-classes");
-    private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/xtensa/openjdk-classes");
-    private static final ConformanceDigitalTwin DIGITAL_TWIN = new ConformanceDigitalTwin(OPENJDK_CLASSES,
-            PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES);
+    private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "xtensa",
+            CompilerTestSupport.JUNO_API_CLASSES);
     /** The one ESP32-S3 board/core path this pilot claims. */
     private static final Board BOARD = Board.NANO_ESP32;
     private static final String BEGIN_MARKER = "[juno-begin]\n";
-    private static final String EXIT_MARKER = "[juno-exit]\n";
+    private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
 
     @Container
@@ -82,42 +74,36 @@ class XtensaRunIT {
 
     @BeforeAll
     static void compilePrograms() throws IOException {
-        compile(javaFiles(CONFORMANCE.resolve("programs")), PROGRAM_CLASSES);
-        compile(javaFiles(BASEDIR.resolve("src/test/qemu/openjdk")), OPENJDK_CLASSES);
+        WORKSPACE.compilePrograms(WORKSPACE.conformancePrograms().allSources());
+        WORKSPACE.compileBaseline();
     }
 
     /** Primitive semantic-conformance fixtures from the XML catalog that declare the Nano ESP32. */
     static Stream<Arguments> conformancePrograms() {
-        ConformanceCatalog catalog = ConformanceCatalog.load(CONFORMANCE.resolve("catalog.xml"));
-        catalog.validate(CONFORMANCE);
-        return catalog.programs().stream()
-                .filter(program -> declares(CONFORMANCE.resolve(program.source()), BOARD))
-                .map(program -> Arguments.of("demo." + simpleName(program.source()), BOARD, program.id()));
+        return WORKSPACE.catalog().programs().stream().flatMap(program -> {
+            ProgramSource source = WORKSPACE.source(program);
+            return source.declares(BOARD) ? Stream.of(Arguments.of(source.mainClass(), BOARD, program.id()))
+                    : Stream.empty();
+        });
     }
 
     @ParameterizedTest(name = "conformance {0} ({1}) [{2}]")
     @MethodSource("conformancePrograms")
     void primitiveConformanceMatchesTheJvmUnderQemu(String mainClass, Board board, String programId) throws Exception {
-        String expected = DIGITAL_TWIN.run(mainClass) + EXIT_MARKER;
+        String expected = WORKSPACE.baseline(mainClass);
         String actual = runUnderQemu(mainClass, board);
-        if (!actual.equals(expected)) {
-            Path directory = GENERATED.resolve(board.id()).resolve(simpleOf(mainClass));
-            Files.writeString(directory.resolve("expected.txt"), expected);
-            Files.writeString(directory.resolve("actual.txt"), actual);
-        }
-        assertThat(actual).as("conformance %s (%s) on %s under QEMU (ESP32-S3)", programId, mainClass,
-                board.displayName()).isEqualTo(expected);
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual, "conformance %s (%s) on %s under QEMU (ESP32-S3)"
+                .formatted(programId, mainClass, board.displayName()));
     }
 
     private static String runUnderQemu(String mainClass, Board board) throws Exception {
-        String simpleName = simpleOf(mainClass);
-        Path directory = GENERATED.resolve(board.id()).resolve(simpleName);
+        String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
+        Path directory = WORKSPACE.generated(board, mainClass);
         // arduino-cli requires the sketch directory and its .ino to share the program's name.
         Path sketch = directory.resolve(simpleName);
         Files.createDirectories(sketch);
         long start = System.nanoTime();
-        CompilationResult result = new JunoCompiler().compileTo(
-                List.of(PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES), mainClass,
+        CompilationResult result = new JunoCompiler().compileTo(WORKSPACE.junoClasspath(), mainClass,
                 sketch.resolve("program.S"), sketch.resolve("shim.cpp"), false, Optional.of(board.id()));
         Files.writeString(sketch.resolve(simpleName + ".ino"), harnessSketch(result.entryPointSymbol()));
         LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
@@ -171,38 +157,6 @@ class XtensaRunIT {
                 void loop() {
                 }
                 """.formatted(entryPointSymbol);
-    }
-
-    private static boolean declares(Path source, Board board) {
-        try {
-            return Files.readString(source).contains(board.annotationArgument());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static void compile(List<Path> sources, Path destination) throws IOException {
-        Files.createDirectories(destination);
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        List<String> arguments = new ArrayList<>(List.of("--enable-preview", "--release", "27",
-                "-d", destination.toString(), "-cp", CompilerTestSupport.JUNO_API_CLASSES.toString()));
-        sources.forEach(source -> arguments.add(source.toString()));
-        assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new))).as("javac %s", sources).isZero();
-    }
-
-    private static List<Path> javaFiles(Path directory) throws IOException {
-        try (Stream<Path> files = Files.walk(directory)) {
-            return files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
-        }
-    }
-
-    private static String simpleName(String source) {
-        String file = source.substring(source.lastIndexOf('/') + 1);
-        return file.substring(0, file.length() - ".java".length());
-    }
-
-    private static String simpleOf(String mainClass) {
-        return mainClass.substring(mainClass.lastIndexOf('.') + 1);
     }
 
     private static long millisSince(long startNanos) {

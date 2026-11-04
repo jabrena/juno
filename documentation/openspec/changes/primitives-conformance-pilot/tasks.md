@@ -8,7 +8,7 @@
 
 ## 2. Shared conformance execution
 
-- [ ] 2.1 Extract shared OpenJDK-baseline, program-discovery, transcript-comparison, and diagnostic logic without changing the selected Thumb-2 or AVR behavior.
+- [x] 2.1 Extract shared OpenJDK-baseline, program-discovery, transcript-comparison, and diagnostic logic without changing the selected Thumb-2 or AVR behavior (`ConformanceWorkspace`, `ProgramDirectory`, `ProgramSource`; `QemuRunIT` 97/97, `SimavrRunIT` 40/40, and `XtensaRunIT` 7/7 produce the same JUnit entries and outcomes as CI run 41823460085).
 - [x] 2.2 Adapt `QemuRunIT` to execute the catalogued primitive corpus under Thumb-2.
 - [x] 2.3 Adapt `SimavrRunIT` to execute the catalogued primitive corpus under AVR.
 - [x] 2.4 Add focused unit coverage for catalog validation and runner selection.
