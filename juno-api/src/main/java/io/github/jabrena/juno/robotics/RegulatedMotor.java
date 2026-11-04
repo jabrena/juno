@@ -38,6 +38,7 @@ public interface RegulatedMotor extends DCMotor {
     void resetTachoCount();
 
     /** Returns whether the motor is currently executing a movement. */
+    @Override
     boolean isMoving();
 
     /** Returns whether the controller has detected that the motor cannot complete its movement. */

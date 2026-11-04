@@ -177,6 +177,11 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>qemu</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>
@@ -213,6 +218,52 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <configuration>
                             <groups>simavr</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+            Run the primitive conformance programs for the Nano ESP32 under Espressif's ESP32-S3 QEMU in Docker and
+            compare them with OpenJDK (src/test/xtensa).
+        -->
+        <profile>
+            <id>xtensa</id>
+            <properties>
+                <!-- Xtensa runs only XtensaRunIT (-Dtest=None), so its JaCoCo data is partial and the gate does not apply. -->
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>xtensa</groups>
+                            <!-- Name each JUnit XML entry by its display name (program and board), not its index. -->
+                            <statelessTestsetReporter
+                                    implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                                <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                            </statelessTestsetReporter>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>

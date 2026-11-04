@@ -5,6 +5,9 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.conformance.ConformanceWorkspace;
+import io.github.jabrena.juno.conformance.ProgramDirectory;
+import io.github.jabrena.juno.conformance.ProgramSource;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -20,9 +23,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -31,8 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -58,17 +57,17 @@ class QemuRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(QemuRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
-    private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/qemu/program-classes");
-    private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/qemu/openjdk-classes");
+    private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "qemu",
+            CompilerTestSupport.JUNO_API_CLASSES);
+    private static final ProgramDirectory PROGRAMS = new ProgramDirectory(QEMU.resolve("programs"));
     /**
      * Programs whose device APIs no JVM can run (the UNO Q's bridge to Linux, against the harness's stand-in
      * {@code Arduino_RouterBridge.h}), each compared with the {@code .expected} file next to it.
      */
-    private static final Path DEVICES = QEMU.resolve("devices");
+    private static final ProgramDirectory DEVICES = new ProgramDirectory(QEMU.resolve("devices"));
     private static final Path DEVICE_CLASSES = BASEDIR.resolve("target/qemu/device-classes");
     /** Programs whose output differs from OpenJDK because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
-    private static final String EXIT_MARKER = "[juno-exit]\n";
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.qemuImage", "").trim();
 
     @Container
@@ -87,53 +86,44 @@ class QemuRunIT {
     @BeforeAll
     static void compilePrograms() throws IOException {
         long start = System.nanoTime();
-        List<Path> sources;
-        try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
-            sources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
-        }
-        compile(sources, PROGRAM_CLASSES, junoClasspath());
-        List<Path> openJdkSources;
-        try (Stream<Path> files = Files.walk(QEMU.resolve("openjdk"))) {
-            openJdkSources = files.filter(path -> path.toString().endsWith(".java")).toList();
-        }
-        compile(openJdkSources, OPENJDK_CLASSES, junoClasspath());
-        List<Path> deviceSources;
-        try (Stream<Path> files = Files.list(DEVICES)) {
-            deviceSources = files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
-        }
-        compile(deviceSources, DEVICE_CLASSES, junoClasspath());
-        LOG.info("javac: {} programs + {} OpenJDK-side sources in {} ms", sources.size(), openJdkSources.size(),
-                millisSince(start));
-    }
-
-    /** Every program under src/test/qemu/programs, once per Thumb-2 board (SimavrRunIT runs the AVR ones). */
-    static Stream<Arguments> programs() throws IOException {
-        List<String> mainClasses = new ArrayList<>();
-        try (Stream<Path> files = Files.list(QEMU.resolve("programs"))) {
-            files.map(path -> path.getFileName().toString()).filter(name -> name.endsWith(".java")).sorted()
-                    .forEach(name -> mainClasses.add("demo." + name.substring(0, name.length() - ".java".length())));
-        }
-        return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
-                .filter(board -> board.core().architecture() == Architecture.THUMB2)
-                .filter(board -> targets(mainClass, board))
-                .map(board -> Arguments.of(mainClass, board)));
+        List<Path> sources = new ArrayList<>(PROGRAMS.sources());
+        sources.addAll(WORKSPACE.conformancePrograms().allSources());
+        WORKSPACE.compilePrograms(sources);
+        WORKSPACE.compileBaseline();
+        WORKSPACE.compile(DEVICES.sources(), DEVICE_CLASSES);
+        LOG.info("javac: {} programs and the OpenJDK-side sources in {} ms", sources.size(), millisSince(start));
     }
 
     /**
-     * Whether a program runs on {@code board}: every board unless it declares some in its {@code @Board}, so a
-     * program can opt out of a board the harness cannot model. The UNO Q thread port runs on Zephyr's kernel, which
-     * the harness replaces with a small stand-in ({@code src/test/qemu/zephyr/kernel.h}: baton semaphores, and a
-     * {@code k_timer} on SysTick for the preemption tick, with threads on the process stack), so it covers the
-     * port's logic but not Zephyr's real scheduler.
+     * Every program under src/test/qemu/programs, once per Thumb-2 board it targets (SimavrRunIT runs the AVR ones).
+     * The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small stand-in
+     * ({@code src/test/qemu/zephyr/kernel.h}: baton semaphores, and a {@code k_timer} on SysTick for the preemption
+     * tick, with threads on the process stack), so it covers the port's logic but not Zephyr's real scheduler.
      */
-    private static boolean targets(String mainClass, Board board) {
-        Path source = QEMU.resolve("programs").resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
-        try {
-            String text = Files.readString(source);
-            return !text.contains("@Board(") || text.contains(board.annotationArgument());
-        } catch (IOException e) {
-            throw new java.io.UncheckedIOException(e);
-        }
+    static Stream<Arguments> programs() {
+        return PROGRAMS.programs().stream().flatMap(program -> thumb2Boards()
+                .filter(program::targets)
+                .map(board -> Arguments.of(program.mainClass(), board)));
+    }
+
+    /** Primitive semantic-conformance fixtures from the XML catalog, once per supported Thumb-2 board. */
+    static Stream<Arguments> conformancePrograms() {
+        return WORKSPACE.catalog().programs().stream().flatMap(program -> {
+            ProgramSource source = WORKSPACE.source(program);
+            return thumb2Boards().filter(source::targets)
+                    .map(board -> Arguments.of(source.mainClass(), board, program.id()));
+        });
+    }
+
+    /** Every program under src/test/qemu/devices, once per Thumb-2 board its {@code @Board} names. */
+    static Stream<Arguments> devices() {
+        return DEVICES.programs().stream().flatMap(program -> thumb2Boards()
+                .filter(program::declares)
+                .map(board -> Arguments.of(program.mainClass(), board)));
+    }
+
+    private static Stream<Board> thumb2Boards() {
+        return Stream.of(Board.values()).filter(board -> board.core().architecture() == Architecture.THUMB2);
     }
 
     @ParameterizedTest(name = "{0} ({1})")
@@ -142,60 +132,44 @@ class QemuRunIT {
         Assumptions.assumeFalse(KNOWN_GAPS.containsKey(mainClass), () -> "known gap: " + KNOWN_GAPS.get(mainClass));
         LOG.info("[{} / {}] start", mainClass, board.id());
         long start = System.nanoTime();
-        String expected = runOnJvm(mainClass);
+        String expected = WORKSPACE.baseline(mainClass);
         LOG.info("[{} / {}] OpenJDK run done in {} ms ({} chars)", mainClass, board.id(), millisSince(start),
                 expected.length());
 
-        String actual = runUnderQemu(mainClass, board);
+        String actual = runUnderQemu(mainClass, board, WORKSPACE.junoClasspath());
         LOG.info("[{} / {}] total {} ms", mainClass, board.id(), millisSince(start));
 
-        assertThat(actual).as("%s on %s under QEMU", mainClass, board.displayName())
-                .isEqualTo(expected + EXIT_MARKER);
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
+                "%s on %s under QEMU".formatted(mainClass, board.displayName()));
     }
 
-    /** Every program under src/test/qemu/devices, once per Thumb-2 board its {@code @Board} names. */
-    static Stream<Arguments> devices() throws IOException {
-        List<String> mainClasses = new ArrayList<>();
-        try (Stream<Path> files = Files.list(DEVICES)) {
-            files.map(path -> path.getFileName().toString()).filter(name -> name.endsWith(".java")).sorted()
-                    .forEach(name -> mainClasses.add("demo." + name.substring(0, name.length() - ".java".length())));
-        }
-        return mainClasses.stream().flatMap(mainClass -> Stream.of(Board.values())
-                .filter(board -> board.core().architecture() == Architecture.THUMB2)
-                .filter(board -> declares(DEVICES, mainClass, board))
-                .map(board -> Arguments.of(mainClass, board)));
+    @ParameterizedTest(name = "conformance {0} ({1}) [{2}]")
+    @MethodSource("conformancePrograms")
+    void primitiveConformanceMatchesTheJvmUnderQemu(String mainClass, Board board, String programId) throws Exception {
+        String expected = WORKSPACE.baseline(mainClass);
+        String actual = runUnderQemu(mainClass, board, WORKSPACE.junoClasspath());
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
+                "conformance %s (%s) on %s under QEMU".formatted(programId, mainClass, board.displayName()));
     }
 
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("devices")
     void matchesItsExpectedOutputUnderQemu(String mainClass, Board board) throws Exception {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
-        String expected = Files.readString(DEVICES.resolve(simpleName + ".expected"));
+        String expected = Files.readString(DEVICES.directory().resolve(simpleName + ".expected"));
 
-        String actual = runUnderQemu(mainClass, board, DEVICE_CLASSES);
+        String actual = runUnderQemu(mainClass, board, WORKSPACE.junoClasspath(DEVICE_CLASSES));
 
-        assertThat(actual).as("%s on %s under QEMU", mainClass, board.displayName()).isEqualTo(expected);
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
+                "%s on %s under QEMU".formatted(mainClass, board.displayName()));
     }
 
-    private static boolean declares(Path directory, String mainClass, Board board) {
-        Path source = directory.resolve(mainClass.substring(mainClass.lastIndexOf('.') + 1) + ".java");
-        try {
-            return Files.readString(source).contains(board.annotationArgument());
-        } catch (IOException e) {
-            throw new java.io.UncheckedIOException(e);
-        }
-    }
-
-    private static String runUnderQemu(String mainClass, Board board) throws Exception {
-        return runUnderQemu(mainClass, board, PROGRAM_CLASSES);
-    }
-
-    private static String runUnderQemu(String mainClass, Board board, Path classes) throws Exception {
+    private static String runUnderQemu(String mainClass, Board board, List<Path> classpath) throws Exception {
         String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
-        Path directory = BASEDIR.resolve("target/qemu/generated").resolve(board.id()).resolve(simpleName);
+        Path directory = WORKSPACE.generated(board, mainClass);
         Files.createDirectories(directory);
         long start = System.nanoTime();
-        CompilationResult result = new JunoCompiler().compileTo(junoClasspathWith(classes), mainClass,
+        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass,
                 directory.resolve("program.S"), directory.resolve("shim.cpp"), false, Optional.of(board.id()));
         LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
         start = System.nanoTime();
@@ -210,53 +184,14 @@ class QemuRunIT {
         start = System.nanoTime();
         var run = QEMU_RUNNER.execInContainer("/harness/run.sh", work, result.entryPointSymbol());
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
+        WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work + " " + result.entryPointSymbol(),
+                run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s on %s:%n%s%s", mainClass, board.displayName(),
                 run.getStdout(), run.getStderr()).isZero();
         return run.getStdout();
     }
 
-    /** The same program on OpenJDK, with {@code Serial} shadowed by a stdout-printing double. */
-    private static String runOnJvm(String mainClass) throws Exception {
-        List<String> classpath = new ArrayList<>();
-        classpath.add(OPENJDK_CLASSES.toString());
-        classpath.add(PROGRAM_CLASSES.toString());
-        junoClasspathWith(PROGRAM_CLASSES).forEach(path -> classpath.add(path.toString()));
-        Process process = new ProcessBuilder(
-                Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "--enable-preview",
-                "-cp", String.join(File.pathSeparator, classpath), mainClass)
-                .redirectErrorStream(true).start();
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-        assertThat(process.exitValue()).as("OpenJDK run of %s:%n%s", mainClass, output).isZero();
-        return output;
-    }
-
     private static long millisSince(long startNanos) {
         return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-    }
-
-    private static void compile(List<Path> sources, Path destination, List<Path> classpath)
-            throws IOException {
-        Files.createDirectories(destination);
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        List<String> arguments = new ArrayList<>(List.of(
-                "--enable-preview", "--release", "27",
-                "-d", destination.toString(), "-cp",
-                String.join(File.pathSeparator, classpath.stream().map(Path::toString).toList())));
-        sources.forEach(source -> arguments.add(source.toString()));
-        assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new)))
-                .as("javac %s", sources).isZero();
-    }
-
-    private static List<Path> junoClasspathWith(Path programClasses) {
-        List<Path> entries = new ArrayList<>(List.of(programClasses));
-        entries.addAll(junoClasspath());
-        return entries;
-    }
-
-    /** Juno's closed world: the juno-api classes the programs call and nothing else from the test classpath. */
-    private static List<Path> junoClasspath() {
-        return List.of(CompilerTestSupport.JUNO_API_CLASSES);
     }
 }

@@ -5,6 +5,9 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.conformance.ConformanceWorkspace;
+import io.github.jabrena.juno.conformance.ProgramDirectory;
+import io.github.jabrena.juno.conformance.ProgramSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
@@ -21,7 +24,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,8 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,11 +55,12 @@ class SimavrRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(SimavrRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path SIMAVR = BASEDIR.resolve("src/test/simavr");
-    private static final Path QEMU_PROGRAMS = BASEDIR.resolve("src/test/qemu/programs");
-    private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/simavr/program-classes");
-    private static final Path OPENJDK_CLASSES = BASEDIR.resolve("target/simavr/openjdk-classes");
+    private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "simavr",
+            CompilerTestSupport.JUNO_API_CLASSES);
+    private static final ProgramDirectory QEMU_PROGRAMS =
+            new ProgramDirectory(BASEDIR.resolve("src/test/qemu/programs"));
+    private static final ProgramDirectory PERIPHERAL_PROGRAMS = new ProgramDirectory(SIMAVR.resolve("programs"));
     private static final Path LOCAL_HARNESS = BASEDIR.resolve("target/simavr/harness");
-    private static final String EXIT_MARKER = "[juno-exit]\n";
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.simavrImage", "").trim();
     private static final List<String> HARNESS_FILES = List.of("Arduino.h", "WiFiNINA.h", "WiFiUdp.h", "SPI.h",
             "SdFat.h", "startup.cpp", "run.sh");
@@ -80,14 +81,11 @@ class SimavrRunIT {
                     .withFileFromPath(".", SIMAVR));
             container.start();
         }
-        List<Path> sources = new ArrayList<>(javaFiles(QEMU_PROGRAMS));
-        sources.addAll(javaFiles(SIMAVR.resolve("programs")));
-        compile(sources, PROGRAM_CLASSES);
-        List<Path> openJdkSources;
-        try (Stream<Path> files = Files.walk(BASEDIR.resolve("src/test/qemu/openjdk"))) {
-            openJdkSources = files.filter(path -> path.toString().endsWith(".java")).toList();
-        }
-        compile(openJdkSources, OPENJDK_CLASSES);
+        List<Path> sources = new ArrayList<>(QEMU_PROGRAMS.sources());
+        sources.addAll(WORKSPACE.conformancePrograms().allSources());
+        sources.addAll(PERIPHERAL_PROGRAMS.sources());
+        WORKSPACE.compilePrograms(sources);
+        WORKSPACE.compileBaseline();
     }
 
     @AfterAll
@@ -124,42 +122,54 @@ class SimavrRunIT {
     }
 
     /** Every AVR-capable conformance program, and every AVR peripheral program, once per AVR board. */
-    static Stream<Arguments> programs() throws IOException {
-        List<Arguments> programs = new ArrayList<>();
-        for (Board board : Board.values()) {
-            if (board.core().architecture() != Architecture.AVR) {
-                continue;
-            }
-            for (Path source : javaFiles(QEMU_PROGRAMS)) {
-                if (Files.readString(source).contains(board.annotationArgument())) {
-                    programs.add(Arguments.of(simpleName(source), board, false));
-                }
-            }
-            for (Path source : javaFiles(SIMAVR.resolve("programs"))) {
-                if (Files.readString(source).contains(board.annotationArgument())) {
-                    programs.add(Arguments.of(simpleName(source), board, true));
-                }
-            }
-        }
-        return programs.stream();
+    static Stream<Arguments> programs() {
+        return avrBoards().flatMap(board -> Stream.concat(
+                QEMU_PROGRAMS.programs().stream().filter(program -> program.declares(board))
+                        .map(program -> Arguments.of(program.simpleName(), board, false)),
+                PERIPHERAL_PROGRAMS.programs().stream().filter(program -> program.declares(board))
+                        .map(program -> Arguments.of(program.simpleName(), board, true))));
+    }
+
+    /** Primitive semantic-conformance fixtures from the XML catalog, once per supported AVR board. */
+    static Stream<Arguments> conformancePrograms() {
+        return WORKSPACE.catalog().programs().stream().flatMap(program -> {
+            ProgramSource source = WORKSPACE.source(program);
+            return avrBoards().filter(source::targets)
+                    .map(board -> Arguments.of(source.simpleName(), board, false, program.id()));
+        });
+    }
+
+    private static Stream<Board> avrBoards() {
+        return Stream.of(Board.values()).filter(board -> board.core().architecture() == Architecture.AVR);
     }
 
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("programs")
     void matchesTheJvmUnderSimavr(String simpleName, Board board, boolean peripheral) throws Exception {
         String expected = peripheral
-                ? Files.readString(SIMAVR.resolve("programs").resolve(simpleName + ".expected"))
-                : runOnJvm("demo." + simpleName) + EXIT_MARKER;
+                ? Files.readString(PERIPHERAL_PROGRAMS.directory().resolve(simpleName + ".expected"))
+                : WORKSPACE.baseline("demo." + simpleName);
         String actual = runUnderSimavr("demo." + simpleName, simpleName, board);
-        assertThat(actual).as("%s on %s under simavr", simpleName, board.displayName()).isEqualTo(expected);
+        WORKSPACE.assertTranscript(board, simpleName, expected, actual,
+                "%s on %s under simavr".formatted(simpleName, board.displayName()));
+    }
+
+    @ParameterizedTest(name = "conformance {0} ({1}) [{3}]")
+    @MethodSource("conformancePrograms")
+    void primitiveConformanceMatchesTheJvmUnderSimavr(String simpleName, Board board, boolean peripheral,
+            String programId) throws Exception {
+        LOG.info("[conformance {} / {} / {}] start", programId, simpleName, board.id());
+        String expected = WORKSPACE.baseline("demo." + simpleName);
+        String actual = runUnderSimavr("demo." + simpleName, simpleName, board);
+        WORKSPACE.assertTranscript(board, simpleName, expected, actual,
+                "conformance %s (%s) on %s under simavr".formatted(programId, simpleName, board.displayName()));
     }
 
     private static String runUnderSimavr(String mainClass, String simpleName, Board board) throws Exception {
-        Path directory = BASEDIR.resolve("target/simavr/generated").resolve(board.id()).resolve(simpleName);
+        Path directory = WORKSPACE.generated(board, simpleName);
         Files.createDirectories(directory);
         long start = System.nanoTime();
-        List<Path> classpath = List.of(PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES);
-        CompilationResult result = new JunoCompiler().compileTo(classpath, mainClass, directory.resolve("program.S"),
+        CompilationResult result = new JunoCompiler().compileTo(WORKSPACE.junoClasspath(), mainClass, directory.resolve("program.S"),
                 directory.resolve("shim.cpp"), false, Optional.of(board.id()));
         LOG.info("[{} / {}] Juno compile done in {} ms", simpleName, board.id(),
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -168,6 +178,9 @@ class SimavrRunIT {
                     result.entryPointSymbol()).redirectErrorStream(false).start();
             String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
             String errors = new String(run.getErrorStream().readAllBytes(), StandardCharsets.UTF_8);
+            WORKSPACE.writeEmulatorLog(board, simpleName,
+                    "sh " + LOCAL_HARNESS.resolve("run.sh") + " " + directory + " " + result.entryPointSymbol(), output,
+                    errors);
             assertThat(run.waitFor(2, TimeUnit.MINUTES)).isTrue();
             assertThat(run.exitValue()).as("build and run %s:%n%s%s", simpleName, output, errors).isZero();
             return output;
@@ -177,40 +190,10 @@ class SimavrRunIT {
         container.copyFileToContainer(MountableFile.forHostPath(directory.resolve("program.S")), work + "/program.S");
         container.copyFileToContainer(MountableFile.forHostPath(directory.resolve("shim.cpp")), work + "/shim.cpp");
         var run = container.execInContainer("/harness/run.sh", work, result.entryPointSymbol());
+        WORKSPACE.writeEmulatorLog(board, simpleName, "/harness/run.sh " + work + " " + result.entryPointSymbol(),
+                run.getStdout(), run.getStderr());
         assertThat(run.getExitCode()).as("build and run %s:%n%s%s", simpleName, run.getStdout(), run.getStderr())
                 .isZero();
         return run.getStdout();
-    }
-
-    /** The same program on OpenJDK, with {@code Serial} shadowed by a stdout-printing double. */
-    private static String runOnJvm(String mainClass) throws Exception {
-        String classpath = String.join(File.pathSeparator, OPENJDK_CLASSES.toString(), PROGRAM_CLASSES.toString(),
-                CompilerTestSupport.JUNO_API_CLASSES.toString());
-        Process process = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "java").toString(),
-                "--enable-preview", "-cp", classpath, mainClass).start();
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-        assertThat(process.exitValue()).as("OpenJDK run of %s:%n%s", mainClass, output).isZero();
-        return output;
-    }
-
-    private static List<Path> javaFiles(Path directory) throws IOException {
-        try (Stream<Path> files = Files.list(directory)) {
-            return files.filter(path -> path.toString().endsWith(".java")).sorted().toList();
-        }
-    }
-
-    private static String simpleName(Path source) {
-        String name = source.getFileName().toString();
-        return name.substring(0, name.length() - ".java".length());
-    }
-
-    private static void compile(List<Path> sources, Path destination) throws IOException {
-        Files.createDirectories(destination);
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        List<String> arguments = new ArrayList<>(List.of("--enable-preview", "--release", "27",
-                "-d", destination.toString(), "-cp", CompilerTestSupport.JUNO_API_CLASSES.toString()));
-        sources.forEach(source -> arguments.add(source.toString()));
-        assertThat(compiler.run(null, null, null, arguments.toArray(String[]::new))).as("javac %s", sources).isZero();
     }
 }
