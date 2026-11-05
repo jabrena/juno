@@ -48,7 +48,7 @@ class BigNumberRuntimeTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         Files.writeString(directory.resolve("runtime.inc"), bigNumberRuntime.helpers(1, 2, 3, false),
                 StandardCharsets.UTF_8);
-        Files.copy(Path.of("src/test/resources/bignumber/driver.cpp"), directory.resolve("driver.cpp"));
+        Files.copy(Path.of("src/test/resources/harness/bignumber-harness.cpp"), directory.resolve("driver.cpp"));
         Process build = new ProcessBuilder(compiler, "-std=c++17", "-O1", "-w", "-o", "driver", "driver.cpp")
                 .directory(directory.toFile()).redirectErrorStream(true).start();
         String buildOutput = new String(build.getInputStream().readAllBytes(), StandardCharsets.UTF_8);

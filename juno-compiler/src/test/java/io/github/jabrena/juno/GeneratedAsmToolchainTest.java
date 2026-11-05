@@ -44,7 +44,7 @@ class GeneratedAsmToolchainTest {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/esp32/core-glue.cpp"));
-        String harness = Files.readString(Path.of("src/test/resources/esp32-gpio-harness.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/harness/esp32-gpio-harness.cpp"));
         String source = "#define BOARD_HAS_PIN_REMAP 1\n"
                 + "#define GPIO_NUMBERS " + (gpioNumbers ? 1 : 0) + "\n"
                 + harness.replace("// ESP32_CORE_GLUE", runtime);
@@ -62,7 +62,7 @@ class GeneratedAsmToolchainTest {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/esp32/ble.cpp"));
-        String harness = Files.readString(Path.of("src/test/resources/esp32-ble-harness.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/harness/esp32-ble-harness.cpp"));
 
         Process run = compileAndStart(compiler, harness.replace("// ESP32_BLE", runtime), "esp32-ble");
 
@@ -82,7 +82,7 @@ class GeneratedAsmToolchainTest {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/avr/thread-heap.cpp"));
-        String harness = Files.readString(Path.of("src/test/resources/avr-thread-heap-harness.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/harness/avr-thread-heap-harness.cpp"));
 
         // When
         Process run = compileAndStart(compiler, harness.replace("// AVR_THREAD_HEAP", runtime), "avr-thread-heap");
@@ -101,7 +101,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String runtime = Files.readString(Path.of("src/main/resources/runtime/common/http-client.cpp"));
         String codec = runtime.substring(0, runtime.indexOf("struct JunoHttpJob"));
-        String harness = Files.readString(Path.of("src/test/resources/http-batch-harness.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/harness/http-batch-harness.cpp"));
 
         // When
         Process run = compileAndStart(compiler, harness.replace("// HTTP_CODEC", codec), "http-batch-runtime");
@@ -123,7 +123,7 @@ class GeneratedAsmToolchainTest {
                 headers ? Files.readString(Path.of("src/main/resources/runtime/common/http-server-headers.cpp")) : "");
         String accept = runtime.substring(0, runtime.indexOf("struct JunoHttpServerRespondJob"));
         String harness = (headers ? "#define JUNO_TEST_HEADERS\n" : "")
-                + Files.readString(Path.of("src/test/resources/http-server-harness.cpp"));
+                + Files.readString(Path.of("src/test/resources/harness/http-server-harness.cpp"));
 
         // When
         Process run = compileAndStart(compiler, harness.replace("// HTTP_SERVER_ACCEPT", accept),
@@ -1144,10 +1144,10 @@ class GeneratedAsmToolchainTest {
     void shouldMapNanoInfraredPinsAndPreserveCarrierDuty(boolean gpioNumbers) throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String gpioHarness = Files.readString(Path.of("src/test/resources/esp32-gpio-harness.cpp"));
+        String gpioHarness = Files.readString(Path.of("src/test/resources/harness/esp32-gpio-harness.cpp"));
         String gpioRuntime = Files.readString(Path.of("src/main/resources/runtime/esp32/core-glue.cpp"));
         String infrared = Files.readString(Path.of("src/main/resources/runtime/common/infrared.cpp"));
-        String harness = Files.readString(Path.of("src/test/resources/esp32-infrared-harness.cpp"));
+        String harness = Files.readString(Path.of("src/test/resources/harness/esp32-infrared-harness.cpp"));
         String source = "#define BOARD_HAS_PIN_REMAP\n#define ARDUINO_ARCH_ESP32\n#define GPIO_NUMBERS "
                 + (gpioNumbers ? 1 : 0) + "\n"
                 + gpioHarness.substring(0, gpioHarness.indexOf("int main()"))
@@ -2105,7 +2105,7 @@ class GeneratedAsmToolchainTest {
 
         // When
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
-                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                "-Isrc/test/resources/include", sketch.toString(), "-o", executable.toString())
                 .redirectErrorStream(true)
                 .start();
         boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
@@ -2342,7 +2342,7 @@ class GeneratedAsmToolchainTest {
 
         // When
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
-                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                "-Isrc/test/resources/include", sketch.toString(), "-o", executable.toString())
                 .redirectErrorStream(true)
                 .start();
         boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
@@ -2640,7 +2640,7 @@ class GeneratedAsmToolchainTest {
         Path executable = temporaryDirectory.resolve(fileBaseName);
 
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
-                "-Isrc/test/resources", sketch.toString(), "-o", executable.toString())
+                "-Isrc/test/resources/include", sketch.toString(), "-o", executable.toString())
                 .redirectErrorStream(true)
                 .start();
         boolean compiled = compile.waitFor(20, TimeUnit.SECONDS);
@@ -2653,7 +2653,7 @@ class GeneratedAsmToolchainTest {
 
     private void syntaxCheckCpp(String compiler, Path shim) throws Exception {
         Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
-                "-Isrc/test/resources", shim.toString())
+                "-Isrc/test/resources/include", shim.toString())
                 .redirectErrorStream(true)
                 .start();
         boolean finished = process.waitFor(20, TimeUnit.SECONDS);

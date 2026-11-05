@@ -185,7 +185,7 @@ class AtomicsTest {
 
         // When
         Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
-                "-Isrc/test/resources", shim.toString()).redirectErrorStream(true).start();
+                "-Isrc/test/resources/include", shim.toString()).redirectErrorStream(true).start();
         assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
 
         // Then
