@@ -16,7 +16,8 @@ class ExampleLanguageTest {
         "java, JAVA",
         "KOTLIN, KOTLIN",
         "' scala ', SCALA",
-        "clojure, CLOJURE"
+        "clojure, CLOJURE",
+        "groovy, GROOVY"
     })
     void parsesSupportedValues(String configured, ExampleLanguage expected) {
         assertThat(ExampleLanguage.parse(configured)).isEqualTo(expected);
@@ -28,7 +29,8 @@ class ExampleLanguageTest {
         "io.github.jabrena.juno.language.concurrency.Mutexes, JAVA",
         "io.github.jabrena.juno.language.kotlin.HelloWorld, KOTLIN",
         "io.github.jabrena.juno.language.scala.HelloWorld, SCALA",
-        "io.github.jabrena.juno.language.clojure.HelloWorld, CLOJURE"
+        "io.github.jabrena.juno.language.clojure.HelloWorld, CLOJURE",
+        "io.github.jabrena.juno.language.groovy.HelloWorld, GROOVY"
     })
     void identifiesTheSourceLanguage(String mainClass, ExampleLanguage expected) {
         assertThat(ExampleLanguage.of(mainClass)).isEqualTo(expected);
@@ -39,7 +41,8 @@ class ExampleLanguageTest {
         "io.github.jabrena.juno.language.HelloWorld",
         "io.github.jabrena.juno.language.kotlin.HelloWorld",
         "io.github.jabrena.juno.language.scala.HelloWorld",
-        "io.github.jabrena.juno.language.clojure.HelloWorld"
+        "io.github.jabrena.juno.language.clojure.HelloWorld",
+        "io.github.jabrena.juno.language.groovy.HelloWorld"
     })
     void allIncludesEveryLanguage(String mainClass) {
         assertThat(ExampleLanguage.ALL.includes(mainClass)).isTrue();
@@ -51,7 +54,9 @@ class ExampleLanguageTest {
         "JAVA, io.github.jabrena.juno.language.kotlin.HelloWorld, false",
         "KOTLIN, io.github.jabrena.juno.language.kotlin.HelloWorld, true",
         "SCALA, io.github.jabrena.juno.language.scala.HelloWorld, true",
-        "CLOJURE, io.github.jabrena.juno.language.clojure.HelloWorld, true"
+        "CLOJURE, io.github.jabrena.juno.language.clojure.HelloWorld, true",
+        "GROOVY, io.github.jabrena.juno.language.groovy.HelloWorld, true",
+        "JAVA, io.github.jabrena.juno.language.groovy.HelloWorld, false"
     })
     void includesOnlyTheSelectedLanguage(ExampleLanguage language, String mainClass, boolean expected) {
         assertThat(language.includes(mainClass)).isEqualTo(expected);
@@ -59,9 +64,9 @@ class ExampleLanguageTest {
 
     @Test
     void rejectsAnUnsupportedValue() {
-        assertThatThrownBy(() -> ExampleLanguage.parse("groovy"))
+        assertThatThrownBy(() -> ExampleLanguage.parse("rust"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Unsupported juno.language 'groovy'; expected one of: all, java, kotlin, scala, clojure");
+                .hasMessage("Unsupported juno.language 'rust'; expected one of: all, java, kotlin, scala, clojure, groovy");
     }
 
     @Test

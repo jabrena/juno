@@ -25,6 +25,7 @@
         <scala.version>3.10.0</scala.version>
         <scala-maven-plugin.version>4.10.0</scala-maven-plugin.version>
         <clojure.version>1.12.6</clojure.version>
+        <groovy.version>6.0.0</groovy.version>
         <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
     </properties>
 
@@ -71,6 +72,14 @@
             <artifactId>clojure</artifactId>
             <version>${clojure.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Groovy is compiled by groovyc in the exec step below, on the test classpath only: its bundled ASM (class files
+             targeting Java 5) would break Juno's closed-world linker if it were on the compile classpath. -->
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy</artifactId>
+            <version>${groovy.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- Tests drive the compiler directly (JunoCompiler, CompilationRequest) on the example classes. -->
         <dependency>
@@ -265,6 +274,24 @@
                             <arguments>
                                 <argument>${project.basedir}/clojure-aot/compile-namespaces.clj</argument>
                                 <argument>${project.basedir}/src/main/clojure</argument>
+                                <argument>${project.build.outputDirectory}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-groovy</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Runs groovy-aot/compile-sources.groovy, which groovyc-compiles src/main/groovy into target/classes.
+                                 The Groovy runtime is test-scoped, see the Groovy dependency. -->
+                            <mainClass>groovy.ui.GroovyMain</mainClass>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>${project.basedir}/groovy-aot/compile-sources.groovy</argument>
+                                <argument>${project.basedir}/src/main/groovy</argument>
                                 <argument>${project.build.outputDirectory}</argument>
                             </arguments>
                         </configuration>
