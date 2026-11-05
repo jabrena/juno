@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.robotics;
 
 /**
- * Tachometer feedback for a motor or wheel, after leJOS's {@code Encoder}. Implementations may be integrated into a
+ * Tachometer feedback for a motor or wheel. Implementations may be integrated into a
  * motor controller or provided by a separate sensor, such as an RCX rotation sensor. The count is in reference-shaft
  * degrees, and the contract uses only primitive operations so polling allocates nothing.
  */

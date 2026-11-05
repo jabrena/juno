@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
 /**
- * One of an RCX brick's three sensor inputs, as LeJOS's {@code SensorPort}: get it from {@link RemoteRcx#getSensor1()},
+ * One of an RCX brick's three sensor inputs: get it from {@link RemoteRcx#getSensor1()},
  * {@link RemoteRcx#getSensor2()} or {@link RemoteRcx#getSensor3()} and hand it to the sensor plugged into it, an
  * {@link RcxTouchSensor}, {@link RcxLightSensor}, {@link RcxTemperatureSensor} or {@link RcxRotationSensor}, created
  * once, at startup. Every read is a request and a reply, about 100 ms, and needs the IR receiver module wired.

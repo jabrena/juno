@@ -13,7 +13,7 @@ final class RcxBrickButtons {
     /** Juno's own poll source for the clicked buttons; LEGO's firmware has no such source. */
     static final int SOURCE_CLICKED = 0x60;
 
-    /** {@code read_buttons} bits, as leJOS's {@code Button.readButtons} reports them. */
+    /** {@code read_buttons} bits. */
     static final int RUN = 0x01;
     static final int VIEW = 0x02;
     static final int PRGM = 0x04;

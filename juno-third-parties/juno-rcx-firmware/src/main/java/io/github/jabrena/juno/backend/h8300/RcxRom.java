@@ -50,8 +50,8 @@ public final class RcxRom {
     /** {@code void init_buttons(void)}: sets the Run, View and Prgm button pins to inputs. */
     public static final int INIT_BUTTONS = 0x1ABA;
     /**
-     * {@code void read_buttons(0x3000, short *buttons)}: the buttons held now, Run 0x01, View 0x02, Prgm 0x04 (as
-     * leJOS's {@code Button.readButtons} reports them); On-Off is read through {@link #GET_POWER_STATUS}.
+     * {@code void read_buttons(0x3000, short *buttons)}: the buttons held now, Run 0x01, View 0x02, Prgm 0x04;
+     * On-Off is read through {@link #GET_POWER_STATUS}.
      */
     public static final int READ_BUTTONS = 0x1FB6;
     /** {@link #READ_BUTTONS}'s opcode. */
