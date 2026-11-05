@@ -15,7 +15,7 @@ class ConformanceCatalogTest {
     private static final Path CATALOG = RESOURCES.resolve("catalog.xml");
 
     @Test
-    void loadsAndValidatesThePrimitiveCatalog() {
+    void loadsAndValidatesTheConformanceCatalog() {
         assertThatCode(() -> ConformanceCatalog.load(CATALOG).validate(RESOURCES)).doesNotThrowAnyException();
     }
 
@@ -23,7 +23,8 @@ class ConformanceCatalogTest {
     void reportsCoverageAgainstEveryJlsSectionInScope() {
         ConformanceCatalog catalog = ConformanceCatalog.load(CATALOG);
         assertThat(catalog.coverage()).extracting(ConformanceCatalog.Coverage::scopeId)
-                .containsExactly("controlflow", "primitives");
+                .containsExactly("arrays", "controlflow", "exceptions", "generics", "inheritance", "primitives",
+                        "records", "sealed", "strings");
         for (ConformanceCatalog.Coverage coverage : catalog.coverage()) {
             System.out.println(coverage.summary());
             assertThat(coverage.covered() + coverage.gaps() + coverage.otherCategory() + coverage.outOfScope())
@@ -113,7 +114,7 @@ class ConformanceCatalogTest {
     }
 
     @Test
-    void catalogContainsEveryPrimitiveFixture() throws Exception {
+    void catalogContainsEveryConformanceFixture() throws Exception {
         ConformanceCatalog catalog = ConformanceCatalog.load(CATALOG);
         try (Stream<Path> files = Files.walk(RESOURCES.resolve("programs"))) {
             long fixtureCount = files.filter(Files::isRegularFile)
