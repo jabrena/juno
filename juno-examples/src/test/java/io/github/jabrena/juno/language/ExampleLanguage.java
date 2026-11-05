@@ -8,10 +8,11 @@ enum ExampleLanguage {
     JAVA("io.github.jabrena.juno.language.", ""),
     KOTLIN("io.github.jabrena.juno.language.kotlin.", "Kotlin"),
     SCALA("io.github.jabrena.juno.language.scala.", "Scala"),
-    CLOJURE("io.github.jabrena.juno.language.clojure.", "Clojure");
+    CLOJURE("io.github.jabrena.juno.language.clojure.", "Clojure"),
+    GROOVY("io.github.jabrena.juno.language.groovy.", "Groovy");
 
     static final String PROPERTY = "juno.language";
-    private static final String VALUES = "all, java, kotlin, scala, clojure";
+    private static final String VALUES = "all, java, kotlin, scala, clojure, groovy";
 
     private final String packagePrefix;
     private final String sketchPrefix;
@@ -50,6 +51,9 @@ enum ExampleLanguage {
         }
         if (mainClass.startsWith(CLOJURE.packagePrefix)) {
             return CLOJURE;
+        }
+        if (mainClass.startsWith(GROOVY.packagePrefix)) {
+            return GROOVY;
         }
         if (mainClass.startsWith(JAVA.packagePrefix)) {
             return JAVA;

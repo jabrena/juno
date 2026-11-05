@@ -45,6 +45,7 @@ class ExamplesArchitectureTest {
             JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
                 || isKotlinAnnotation(type) || isScalaSerializationProxy(type) || isClojureRuntime(type)
+                || isGroovyRuntime(type)
                 || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
                 || examplesNames.contains(type.getName());
     }
@@ -77,6 +78,17 @@ class ExamplesArchitectureTest {
     private static boolean isClojureRuntime(JavaClass type) {
         String name = type.getName();
         return name.startsWith("clojure.lang.") || name.startsWith("clojure.core");
+    }
+
+    /**
+     * Groovy gives every class a {@code GroovyObject} implementation (metaclass field, {@code $getStaticMetaClass},
+     * {@code @Generated}/{@code @Internal} markers) that the board never runs: {@code main} does not reach it, so Juno
+     * never lowers it. A Groovy call that the board cannot run is still rejected at link time, which
+     * {@code LanguageExamplesCompilationTest} checks for each example.
+     */
+    private static boolean isGroovyRuntime(JavaClass type) {
+        String name = type.getName();
+        return name.startsWith("groovy.") || name.startsWith("org.codehaus.groovy.");
     }
 
     private static Set<String> names(JavaClasses classes) {
