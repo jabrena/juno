@@ -29,7 +29,7 @@ on:
   release:
     types: [published]
 
-# About 20 jobs start together and each fetches whatever the shared setup-java Maven cache lacks, so Maven Central can
+# About 20 jobs start together; on a cold or new per-job Maven cache they all fetch from Maven Central at once, which can
 # answer 429 Too Many Requests. Resolver retries 429/503 by default only 3 times, 5 s apart; wait it out longer.
 env:
   MAVEN_ARGS: >-
@@ -356,7 +356,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - name: Build
         run: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
 
@@ -407,7 +417,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -457,7 +477,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -507,7 +537,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -626,7 +666,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - name: Install reactor artifacts without integration tests
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -am install
@@ -669,7 +719,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ matrix.language }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-${{ matrix.language }}-
+            maven-${{ runner.os }}-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -740,7 +800,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 27
-          cache: maven
+      # One cache per job: a single shared key keeps only what the first job to finish downloaded, so the
+      # others fetch the rest from Maven Central at the same time and can get 429 Too Many Requests.
+      - uses: actions/cache@v6
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.m2/wrapper
+          key: maven-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            maven-${{ runner.os }}-${{ github.job }}-
+            maven-${{ runner.os }}-
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
