@@ -14,7 +14,7 @@ import java.util.concurrent.StructuredTaskScope;
 
 /**
  * On the UNO Q a network call waits inside Arduino_RouterBridge for Linux to answer; the call runs on the I/O worker
- * so the other threads keep going. The harness's stand-in bridge (src/test/qemu/Arduino_RouterBridge.h) takes 30 ms to
+ * so the other threads keep going. The harness's stand-in bridge (src/test/docker/qemu/Arduino_RouterBridge.h) takes 30 ms to
  * start and 40 ms to open a TLS connection, waiting by polling as the real library does. While the main thread is in
  * {@code Wifi.begin} and in {@code HttpClient.get}, a virtual thread watches the clock: it must see time pass, so it
  * ran. Then a subtask is cancelled while its request is on the worker, and the next request must still work.
