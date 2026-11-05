@@ -723,10 +723,6 @@ reply.</div>
 <div class="block">Applies optional <code>sntp.host</code> and <code>sntp.port</code> values loaded by the application, normally from
 <code>application.properties</code> on an SD card.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html#configureIndicator(int,io.github.jabrena.juno.remote.lego.rcx.RcxLight)" class="member-name-link">configureIndicator(int, RcxLight)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxChannelAudio</a></dt>
-<dd>
-<div class="block">Selects the motor output used as the tone indicator on the brick assigned to <code>channel</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CONFLICT" class="member-name-link">CONFLICT</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#connect(int)" class="member-name-link">connect(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
@@ -1339,6 +1335,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getButtons()" class="member-name-link">getButtons()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
 <div class="block">The brick's own View, Prgm and Run buttons; needs Juno's own RCX firmware.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#getChannelIndicatorOpcode()" class="member-name-link">getChannelIndicatorOpcode()</a> - Static method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
+<dd>
+<div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoNano.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoNano.html" title="class in io.github.jabrena.juno.hardware">ArduinoNano</a></dt>
 <dd>
@@ -3140,10 +3140,6 @@ second (<code>1..255</code>).</div>
 <div class="block">Plays a tone of <code>frequencyHz</code> (about 31 to 20000 Hz) for <code>durationCentiseconds</code> hundredths
 of a second (<code>1..255</code>, so up to 2.55 s), then returns without waiting for it to end.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html#playTone(int,int,int)" class="member-name-link">playTone(int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxChannelAudio</a></dt>
-<dd>
-<div class="block">Plays a tone only on the brick selected for <code>channel</code>, numbered <code>1..5</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html#pointPixel(int)" class="member-name-link">pointPixel(int)</a> - Static method in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html" title="class in io.github.jabrena.juno.hardware.led">LedMatrixFontSmall</a></dt>
 <dd>
 <div class="block">The decimal point: a single pixel, baseline-aligned with the last digit row.</div>
@@ -3153,6 +3149,10 @@ of a second (<code>1..255</code>, so up to 2.55 s), then returns without waiting
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
 board-specific implicit-TLS transport as
 <a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html#port()" class="member-name-link">port()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLight</a></dt>
+<dd>
+<div class="block">Returns the motor output (port) used as the tone indicator.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#PORT" class="member-name-link">PORT</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -3424,14 +3424,6 @@ and battery (as LeJOS builds <code>RemoteNXT</code> on <code>NXTCommand</code>);
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxButtons.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxButtons</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
 <div class="block">An RCX brick's own View, Prgm and Run buttons, from <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getButtons()"><code>RemoteRcx.getButtons()</code></a>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxChannelAudio</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
-<dd>
-<div class="block">A zero-allocation channel-aware speaker for Juno's channelized RCX firmware.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxChannelAudio(RcxLink)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannelAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxChannelAudio</a></dt>
-<dd>
-<div class="block">Creates channel audio sharing the supplied infrared link.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>

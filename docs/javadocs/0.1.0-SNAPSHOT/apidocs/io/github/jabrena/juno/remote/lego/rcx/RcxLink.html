@@ -79,6 +79,7 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#getChannelIndicatorOpcode()" tabindex="0">getChannelIndicatorOpcode()</a></li>
 <li><a href="#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" tabindex="0">begin(InfraredReceiver, InfraredEmitter)</a></li>
 <li><a href="#send(int,int,int,int)" tabindex="0">send(int, int, int, int)</a></li>
 <li><a href="#sendButtons(int)" tabindex="0">sendButtons(int)</a></li>
@@ -131,7 +132,7 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
@@ -143,29 +144,34 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Configures an RCX link with a typed receiver and emitter pair.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#send(int,int,int,int)" class="member-name-link">send</a><wbr>(int&nbsp;opcode,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getChannelIndicatorOpcode()" class="member-name-link">getChannelIndicatorOpcode</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#send(int,int,int,int)" class="member-name-link">send</a><wbr>(int&nbsp;opcode,
  int&nbsp;first,
  int&nbsp;second,
  int&nbsp;arguments)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits <code>opcode</code> with <code>arguments</code> (0..2) arguments <code>first</code> and <code>second</code>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits a remote-control command with <code>buttonMask</code>, <code>RemoteRcx</code>'s button bits, as the RCX Remote Control does.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChannelTone(int,int,int)" class="member-name-link">sendChannelTone</a><wbr>(int&nbsp;channel,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChannelTone(int,int,int)" class="member-name-link">sendChannelTone</a><wbr>(int&nbsp;channel,
  int&nbsp;frequencyHz,
  int&nbsp;durationCentiseconds)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits a tone to one channel of Juno's channelized RCX firmware.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
 </div>
 </div>
@@ -211,6 +217,15 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="getChannelIndicatorOpcode()">
+<h3>getChannelIndicatorOpcode</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getChannelIndicatorOpcode</span>()</div>
+<div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)">
 <h3>begin</h3>

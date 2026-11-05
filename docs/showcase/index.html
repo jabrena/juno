@@ -338,10 +338,10 @@ parts of the API together, and is the best place to see how a larger program is 
 </tbody>
 </table>
 <h2 id="gladiator">Gladiator</h2>
-<p><a href="../games#gladiator">Gladiator</a> is a game for the ELEGOO 2.8&quot; TFT touch shield. Two gladiators fight in a Roman arena,
+<p>Gladiator is a game for the ELEGOO 2.8&quot; TFT touch shield. Two gladiators fight in a Roman arena,
 each seen from its own board, while a third board keeps the arena. The solo mode runs a CPU-versus-CPU duel on a single
 board, with no network needed.</p>
-<img src="../images/games/gladiator-solo.gif" alt="Gladiator Solo: the title, class selection, the versus view, then a CPU-versus-CPU bout until the result" width="320">
+<img src="../images/showcase/gladiator-solo.gif" alt="Gladiator Solo: the title, class selection, the versus view, then a CPU-versus-CPU bout until the result" width="320">
 <table>
 <thead>
 <tr>
@@ -361,33 +361,6 @@ board, with no network needed.</p>
 <tr>
 <td>Features used</td>
 <td>Wi-Fi, UDP, SD card, TFT touch screen, rotating 3D wireframe view, CPU opponent AI, lion, javelins, smoke, stamina, random numbers, clock</td>
-</tr>
-</tbody>
-</table>
-<h2 id="doom">Doom</h2>
-<p><a href="../games#doom">DOOM</a> runs in landscape on the ELEGOO 2.8&quot; TFT touch shield, drawn as a wireframe with DOOM's own BSP
-renderer. Pick <strong>HUMAN</strong> (touch to turn, walk and fire) or <strong>CPU</strong> (an autopilot), then the episode and skill. The game
-reads your own <code>DOOM1.WAD</code> from the microSD card.</p>
-<img src="../images/games/doom-cpu.gif" alt="DOOM on the TFT shield in the emulator: the CPU on I'm Too Young to Die clears E1M1 and E1M2 with the pistol, then picks up the shotgun on E1M3 and fights there until it dies" width="320">
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Sources</td>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/doom"><code>games/doom</code></a></td>
-</tr>
-<tr>
-<td>Board supported</td>
-<td><a href="../arduino-uno-q"><code>Arduino Q</code></a></td>
-</tr>
-<tr>
-<td>Features used</td>
-<td>TFT touch screen, SD card with RandomAccessFile, MVC view router, BSP wireframe renderer, CPU autopilot, serial output, delays, clock</td>
 </tr>
 </tbody>
 </table>
@@ -448,36 +421,6 @@ buffers are allocated once at startup, so the frame loop allocates nothing.</p>
 <tr>
 <td>Features used</td>
 <td>Wi-Fi, HTTPS, JSON, SD card, TFT touch screen, MVC view router, chess piece rendering, clock, serial output, delays</td>
-</tr>
-</tbody>
-</table>
-<h2 id="polyphonic-rcx">Polyphonic RCX</h2>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx/ZeldaPolyphonicRcx.java"><code>ZeldaPolyphonicRcx</code></a>
-plays the opening of Ocarina of Time as three synchronized instruments, one on each of the LEGO RCX bricks' channels one,
-two and three. The three bricks sound together, so the melody and its harmony come from different bricks.</p>
-<p>The same program runs on an Arduino Nano ESP32 through the Nano Connector Carrier, in
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx/ZeldaPolyphonicRcxNano.java"><code>ZeldaPolyphonicRcxNano</code></a>.
-Its infrared transmitter is on a Grove socket and its receiver on the Grove I2C socket. See the
-<a href="../lego-ecosystem">LEGO</a> page for the RCX link. This version adds a bass instrument on a fourth brick, channel 4.</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Sources</td>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zeldapoliphonicrcx"><code>usecases/zeldapoliphonicrcx</code></a></td>
-</tr>
-<tr>
-<td>Board supported</td>
-<td><a href="../arduino-nano-esp32"><code>Arduino Nano ESP32</code></a></td>
-</tr>
-<tr>
-<td>Features used</td>
-<td>Infrared link, RCX channels, multi-brick playback, RCX indicator lights, Grove infrared emitter and receiver, Nano Connector Carrier, serial output, delays</td>
 </tr>
 </tbody>
 </table>
