@@ -5,6 +5,9 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.usecases.lichess.challenge.LichessModel;
+import io.github.jabrena.juno.usecases.lichess.controller.LichessController;
+import io.github.jabrena.juno.usecases.lichess.services.LichessApi;
 import io.github.jabrena.juno.util.Delay;
 
 /**

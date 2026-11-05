@@ -10,8 +10,22 @@ import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.usecases.zelda.common.ux.Footer;
-import io.github.jabrena.juno.usecases.zelda.common.ux.ScrollingText;
+import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxModel;
+import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxViews;
+import io.github.jabrena.juno.usecases.mailbox.client.compose.ComposeView;
+import io.github.jabrena.juno.usecases.mailbox.client.cover.CoverView;
+import io.github.jabrena.juno.usecases.mailbox.client.inbox.InboxView;
+import io.github.jabrena.juno.usecases.mailbox.client.inbox.NumberedList;
+import io.github.jabrena.juno.usecases.mailbox.client.message.MessageView;
+import io.github.jabrena.juno.usecases.mailbox.client.progress.ProgressView;
+import io.github.jabrena.juno.usecases.mailbox.client.services.MailboxClient;
+import io.github.jabrena.juno.usecases.mailbox.client.services.MailboxConnection;
+import io.github.jabrena.juno.usecases.mailbox.client.services.MailboxKey;
+import io.github.jabrena.juno.usecases.mailbox.client.services.MailboxPolling;
+import io.github.jabrena.juno.usecases.mailbox.client.services.MailboxTrustedCertificate;
+import io.github.jabrena.juno.usecases.mailbox.client.settings.SettingsView;
+import io.github.jabrena.juno.usecases.mailbox.client.ux.Footer;
+import io.github.jabrena.juno.usecases.mailbox.client.ux.ScrollingText;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.util.mvc.KeyboardViewRouter;
 
@@ -33,12 +47,6 @@ import java.util.Properties;
 @Board(M5StackCardputerBoard.class)
 public final class MailboxCardputer {
     private static final String APPLICATION_PROPERTIES = "application.properties";
-    private static final int SETTINGS_VIEW = 0;
-    private static final int INBOX_VIEW = 1;
-    private static final int DETAIL_VIEW = 2;
-    private static final int COMPOSE_VIEW = 3;
-    private static final int COVER_VIEW = 4;
-    private static final int PROGRESS_VIEW = 6;
     private static final int FRAME_MILLIS = 50;
     private static final int MESSAGE_BODY_TOP = 32;
     private static final int MESSAGE_BODY_HEIGHT = 74;
@@ -79,18 +87,18 @@ public final class MailboxCardputer {
         KeyboardViewRouter router = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
         Footer footer = new Footer(display);
         NumberedList messages = new NumberedList(display, model);
-        router.register(COVER_VIEW, new CoverView(router, display));
+        router.register(MailboxViews.COVER, new CoverView(router, display));
         ProgressView progress = new ProgressView(router, display, client, model, connection, footer);
         SettingsView settingsView = new SettingsView(
                 router, display, keyboard, client, connection, key, polling, progress, footer);
-        router.register(SETTINGS_VIEW, settingsView);
-        router.register(PROGRESS_VIEW, progress);
-        router.register(INBOX_VIEW, new InboxView(router, display, keyboard, model, progress, messages, footer));
+        router.register(MailboxViews.SETTINGS, settingsView);
+        router.register(MailboxViews.PROGRESS, progress);
+        router.register(MailboxViews.INBOX, new InboxView(router, display, keyboard, model, progress, messages, footer));
         ScrollingText body = new ScrollingText(display, MESSAGE_BODY_TOP, MESSAGE_BODY_HEIGHT);
-        router.register(DETAIL_VIEW, new MessageView(router, display, keyboard, model, progress, body, footer));
-        router.register(COMPOSE_VIEW, new ComposeView(router, display, keyboard, progress, footer));
+        router.register(MailboxViews.DETAIL, new MessageView(router, display, keyboard, model, progress, body, footer));
+        router.register(MailboxViews.COMPOSE, new ComposeView(router, display, keyboard, progress, footer));
         router.background(client);
-        router.start(COVER_VIEW);
+        router.start(MailboxViews.COVER);
         router.run();
     }
 
