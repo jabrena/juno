@@ -1306,9 +1306,8 @@ class GeneratedAsmToolchainTest {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
                         if (!imu.begin()) return;
-                        int start = imu.headingDegrees();
-                        while (imu.turnedSince(start) > -90) {
-                            if (imu.calibration() < 0) return;
+                        imu.reset();
+                        while (imu.getAngle() >= 0 && imu.getAngle() < 270) {
                         }
                     }
                 }
@@ -1326,10 +1325,10 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
-    /** Pitch and gyroscope rate are signed words read through the same library-free {@code I2c} shim. */
+    /** Acceleration and yaw rate are signed words read through the same library-free {@code I2c} shim. */
     @Test
-    @DisplayName("A pitch and gyroscope program's shim reads signed words and is valid C++")
-    void shouldCompileANineAxisMotionShieldPitchAndGyroProgramsShimWithACppCompiler() throws Exception {
+    @DisplayName("An accelerometer and gyroscope program's shim reads signed words and is valid C++")
+    void shouldCompileANineAxisMotionShieldAccelAndGyroProgramsShimWithACppCompiler() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
@@ -1340,7 +1339,7 @@ class GeneratedAsmToolchainTest {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
                         if (!imu.begin()) return;
-                        while (Math.abs(imu.pitchRaw()) < 480 && imu.gyroXRaw() > -16000) {
+                        while (Math.abs(imu.getXAccel()) < 5 && imu.getAngularVelocity() > -16f) {
                         }
                     }
                 }

@@ -73,8 +73,10 @@ public final class Linker {
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoNano", "getWifi",
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
-            new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getImu",
-                    "()Lio/github/jabrena/juno/hardware/imu/Imu;"), Capability.ONBOARD_IMU);
+            new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getAccelerometer",
+                    "()Lio/github/jabrena/juno/robotics/Accelerometer;"), Capability.ONBOARD_IMU,
+            new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getGyroscope",
+                    "()Lio/github/jabrena/juno/robotics/Gyroscope;"), Capability.ONBOARD_IMU);
     private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
             "drawText", "([[ZLjava/lang/String;II)V");
     private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",

@@ -80,17 +80,15 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#begin()" tabindex="0">begin()</a></li>
-<li><a href="#begin(int)" tabindex="0">begin(int)</a></li>
-<li><a href="#headingRaw()" tabindex="0">headingRaw()</a></li>
-<li><a href="#headingDegrees()" tabindex="0">headingDegrees()</a></li>
-<li><a href="#pitchRaw()" tabindex="0">pitchRaw()</a></li>
-<li><a href="#gyroXRaw()" tabindex="0">gyroXRaw()</a></li>
-<li><a href="#gyroZRaw()" tabindex="0">gyroZRaw()</a></li>
-<li><a href="#read(io.github.jabrena.juno.hardware.imu.ImuSample)" tabindex="0">read(ImuSample)</a></li>
-<li><a href="#turnedSince(int)" tabindex="0">turnedSince(int)</a></li>
-<li><a href="#calibration()" tabindex="0">calibration()</a></li>
-<li><a href="#getAddressDefault()" tabindex="0">getAddressDefault()</a></li>
-<li><a href="#getAddressAlternate()" tabindex="0">getAddressAlternate()</a></li>
+<li><a href="#getXAccel()" tabindex="0">getXAccel()</a></li>
+<li><a href="#getYAccel()" tabindex="0">getYAccel()</a></li>
+<li><a href="#getZAccel()" tabindex="0">getZAccel()</a></li>
+<li><a href="#getAngle()" tabindex="0">getAngle()</a></li>
+<li><a href="#getAngularVelocity()" tabindex="0">getAngularVelocity()</a></li>
+<li><a href="#recalibrateOffset()" tabindex="0">recalibrateOffset()</a></li>
+<li><a href="#reset()" tabindex="0">reset()</a></li>
+<li><a href="#sampleSize()" tabindex="0">sampleSize()</a></li>
+<li><a href="#fetchSample(float%5B%5D,int)" tabindex="0">fetchSample(float[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -106,31 +104,28 @@ initTheme();
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">NineAxisMotionShield</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
-implements <a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></span></div>
-<div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain
-Java on top of <a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library). The sensor fuses its accelerometer and
-gyroscope itself and reports the heading in degrees; this class runs it in the <code>IMU</code> fusion
-mode, where the heading is relative to the direction the sensor pointed at power-up or at
-<a href="#begin()"><code>begin()</code></a>, needs no compass calibration and is not disturbed by magnetic fields. That suits
-measuring how far a vehicle has turned:
+implements <a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
+<div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
+<a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library). The sensor fuses its accelerometer and gyroscope itself, in the
+<code>IMU</code> fusion mode: the heading is relative to the direction the sensor pointed at <a href="#begin()"><code>begin()</code></a>, needs no
+compass calibration and is not disturbed by magnetic fields.
 
 <pre><code>NineAxisMotionShield imu = new NineAxisMotionShield();   // once, at startup
 imu.begin();
-int start = imu.headingDegrees();
-// ... turn left until imu.turnedSince(start) &lt;= -90 (heading grows clockwise)
+imu.reset();                                             // count the turn from here
+// ... turn left until imu.getAngle() &gt;= 270 (heading grows clockwise)
 </code></pre>
 
-<p>The shield's BNO055 answers at address <code>0x28</code>; the <code>0x29</code> variant is selected with
-<a href="#begin(int)"><code>begin(int)</code></a>. Works on both boards, wherever <code>Wire</code> reaches the shield's SDA/SCL.
-<a href="#begin()"><code>begin()</code></a> drives D7, the shield's sensor reset line, so a program using the shield must not
-use D7 for anything else. <code>new NineAxisMotionShield(gpio, i2c)</code> drives that line and talks to the
-sensor through a given <a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a> and <a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> instead of the board's, which is how a unit test mocks them.</div>
+<p>The shield's BNO055 answers at address <code>0x28</code>. The board's reset line for the sensor is D7, so a program
+using the shield must not use D7 for anything else. <code>new NineAxisMotionShield(gpio, i2c)</code> drives that line and
+talks to the sensor through a given <a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a> and <a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> instead of the board's, which is how a unit test
+mocks them.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -178,68 +173,55 @@ in a unit test.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code>; see <a href="#begin(int)"><code>begin(int)</code></a>.</div>
+<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code> in IMU fusion mode, returning <code>false</code> if no BNO055 answered.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin(int)" class="member-name-link">begin</a><wbr>(int&nbsp;sensorAddress)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+ int&nbsp;offset)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts the I2C bus and the sensor at <code>sensorAddress</code> in IMU fusion mode, returning
-<code>false</code> if no BNO055 answered.</div>
+<div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; an axis whose read
+failed is written as 0.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#calibration()" class="member-name-link">calibration</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The calibration state, 2 bits each for the system (bits 6-7), gyroscope (4-5), accelerometer
-(2-3) and magnetometer (0-1), where 3 is fully calibrated; <code>-1</code> if the read failed.</div>
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<code>-1</code> if the read failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAddressAlternate()" class="member-name-link">getAddressAlternate</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The alternate I2C address, <code>0x29</code>, selected by the shield's address jumper.</div>
+<div class="block">The yaw rate in degrees per second, clockwise positive; <code>NaN</code> if the read failed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAddressDefault()" class="member-name-link">getAddressDefault</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The sensor's default I2C address, <code>0x28</code>: the shield's BNO055 as wired from the factory.</div>
+<div class="block">The acceleration along the sensor's X axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#gyroXRaw()" class="member-name-link">gyroXRaw</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The angular rate about the X axis in sixteenths of a degree per second, signed, taken from the
-gyroscope; the derivative of <a href="#pitchRaw()"><code>pitchRaw()</code></a> without the delay of differencing it.</div>
+<div class="block">The acceleration along the sensor's Y axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#gyroZRaw()" class="member-name-link">gyroZRaw</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The angular rate about the Z axis in sixteenths of a degree per second, signed.</div>
+<div class="block">The acceleration along the sensor's Z axis in whole metres per second squared; <code>0</code> if the read failed.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Makes the current heading the zero of <a href="#getAngle()"><code>getAngle()</code></a>; does nothing if the read failed.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headingDegrees()" class="member-name-link">headingDegrees</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise; <code>-1</code> if the read failed.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headingRaw()" class="member-name-link">headingRaw</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The heading in sixteenths of a degree, <code>0..5759</code>, growing clockwise; <code>-1</code> if the read failed.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pitchRaw()" class="member-name-link">pitchRaw</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The pitch in sixteenths of a degree, signed, <code>0</code> when the sensor's board is level; the
-sign follows the BNO055's own convention (see its datasheet) and flips with the board's
-mounting.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(io.github.jabrena.juno.hardware.imu.ImuSample)" class="member-name-link">read</a><wbr>(<a href="../../imu/ImuSample.html" title="class in io.github.jabrena.juno.hardware.imu">ImuSample</a>&nbsp;sample)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Reads the navigation fields into a caller-owned sample.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#turnedSince(int)" class="member-name-link">turnedSince</a><wbr>(int&nbsp;startDegrees)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">How far the heading has moved since <code>startDegrees</code> (from <a href="#headingDegrees()"><code>headingDegrees()</code></a>), as a
-signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise (a left turn).</div>
+<div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
 </div>
 </div>
 </div>
@@ -291,126 +273,131 @@ in a unit test.</div>
 <h3>begin</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code>; see <a href="#begin(int)"><code>begin(int)</code></a>.</div>
+<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code> in IMU fusion mode, returning <code>false</code> if no BNO055 answered.
+Waits for the sensor to boot, so call it once at startup; the heading counts from this moment.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getXAccel()">
+<h3>getXAccel</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getXAccel</span>()</div>
+<div class="block">The acceleration along the sensor's X axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../imu/Imu.html#begin()">begin</a></code>&nbsp;in interface&nbsp;<code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html#getXAccel()">getXAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
 </dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="begin(int)">
-<h3>begin</h3>
+<section class="detail" id="getYAccel()">
+<h3>getYAccel</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span><wbr><span class="parameters">(int&nbsp;sensorAddress)</span></div>
-<div class="block">Starts the I2C bus and the sensor at <code>sensorAddress</code> in IMU fusion mode, returning
-<code>false</code> if no BNO055 answered. Waits for the sensor to boot, so call it once at startup.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="headingRaw()">
-<h3>headingRaw</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">headingRaw</span>()</div>
-<div class="block">The heading in sixteenths of a degree, <code>0..5759</code>, growing clockwise; <code>-1</code> if the read failed.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="headingDegrees()">
-<h3>headingDegrees</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">headingDegrees</span>()</div>
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise; <code>-1</code> if the read failed.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="pitchRaw()">
-<h3>pitchRaw</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">pitchRaw</span>()</div>
-<div class="block">The pitch in sixteenths of a degree, signed, <code>0</code> when the sensor's board is level; the
-sign follows the BNO055's own convention (see its datasheet) and flips with the board's
-mounting. <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Short.html#MIN_VALUE" class="external-link"><code>Short.MIN_VALUE</code></a> if the read failed. This is the tilt a self-balancing robot
-rocks about when the shield is mounted with its X axis along the wheel axle.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="gyroXRaw()">
-<h3>gyroXRaw</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">gyroXRaw</span>()</div>
-<div class="block">The angular rate about the X axis in sixteenths of a degree per second, signed, taken from the
-gyroscope; the derivative of <a href="#pitchRaw()"><code>pitchRaw()</code></a> without the delay of differencing it.
-<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Short.html#MIN_VALUE" class="external-link"><code>Short.MIN_VALUE</code></a> if the read failed.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="gyroZRaw()">
-<h3>gyroZRaw</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">gyroZRaw</span>()</div>
-<div class="block">The angular rate about the Z axis in sixteenths of a degree per second, signed.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="read(io.github.jabrena.juno.hardware.imu.ImuSample)">
-<h3>read</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">read</span><wbr><span class="parameters">(<a href="../../imu/ImuSample.html" title="class in io.github.jabrena.juno.hardware.imu">ImuSample</a>&nbsp;sample)</span></div>
-<div class="block">Reads the navigation fields into a caller-owned sample. The BNO055's sixteen-units-per-degree
-values are converted to milli-degrees for the device-independent contract.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getYAccel</span>()</div>
+<div class="block">The acceleration along the sensor's Y axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../imu/Imu.html#read(io.github.jabrena.juno.hardware.imu.ImuSample)">read</a></code>&nbsp;in interface&nbsp;<code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html#getYAccel()">getYAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
 </dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="turnedSince(int)">
-<h3>turnedSince</h3>
+<section class="detail" id="getZAccel()">
+<h3>getZAccel</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">turnedSince</span><wbr><span class="parameters">(int&nbsp;startDegrees)</span></div>
-<div class="block">How far the heading has moved since <code>startDegrees</code> (from <a href="#headingDegrees()"><code>headingDegrees()</code></a>), as a
-signed angle <code>-180..180</code>: positive clockwise, negative anticlockwise (a left turn). Handles
-the wrap around 360. Returns <code>0</code> if the read failed.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getZAccel</span>()</div>
+<div class="block">The acceleration along the sensor's Z axis in whole metres per second squared; <code>0</code> if the read failed.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Accelerometer.html#getZAccel()">getZAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="calibration()">
-<h3>calibration</h3>
+<section class="detail" id="getAngle()">
+<h3>getAngle</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">calibration</span>()</div>
-<div class="block">The calibration state, 2 bits each for the system (bits 6-7), gyroscope (4-5), accelerometer
-(2-3) and magnetometer (0-1), where 3 is fully calibrated; <code>-1</code> if the read failed. In IMU
-mode only the gyroscope and accelerometer matter, and the gyroscope calibrates on its own while
-the sensor stands still for a moment.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getAngle</span>()</div>
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<code>-1</code> if the read failed.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#getAngle()">getAngle</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="getAddressDefault()">
-<h3>getAddressDefault</h3>
+<section class="detail" id="getAngularVelocity()">
+<h3>getAngularVelocity</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getAddressDefault</span>()</div>
-<div class="block">The sensor's default I2C address, <code>0x28</code>: the shield's BNO055 as wired from the factory.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getAngularVelocity</span>()</div>
+<div class="block">The yaw rate in degrees per second, clockwise positive; <code>NaN</code> if the read failed.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#getAngularVelocity()">getAngularVelocity</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="getAddressAlternate()">
-<h3>getAddressAlternate</h3>
+<section class="detail" id="recalibrateOffset()">
+<h3>recalibrateOffset</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getAddressAlternate</span>()</div>
-<div class="block">The alternate I2C address, <code>0x29</code>, selected by the shield's address jumper.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">recalibrateOffset</span>()</div>
+<div class="block">Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#recalibrateOffset()">recalibrateOffset</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="reset()">
+<h3>reset</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reset</span>()</div>
+<div class="block">Makes the current heading the zero of <a href="#getAngle()"><code>getAngle()</code></a>; does nothing if the read failed.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#reset()">reset</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sampleSize()">
+<h3>sampleSize</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">sampleSize</span>()</div>
+<div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/SampleProvider.html#sampleSize()">sampleSize</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fetchSample(float[],int)">
+<h3>fetchSample</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fetchSample</span><wbr><span class="parameters">(float[]&nbsp;sample,
+ int&nbsp;offset)</span></div>
+<div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; an axis whose read
+failed is written as 0.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/SampleProvider.html#fetchSample(float%5B%5D,int)">fetchSample</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>sample</code> - the caller-owned array that receives the sample</dd>
+<dd><code>offset</code> - the index of the first element to write</dd>
+</dl>
 </div>
 </section>
 </li>

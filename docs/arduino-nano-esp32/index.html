@@ -647,11 +647,12 @@ prints its status once a second.</p>
 <p>Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.</p>
 <pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GrovePirMotion pir = new GrovePirMotion();
-GroveLightSensorV12 light = new GroveLightSensorV12();
+LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
+    GroveLightV12.ADC_12_BIT);
 pir.begin(carrier.getGroveA2());
 
 boolean motion = pir.motionDetected(carrier.getGroveA2());
-int level = light.rawValue(carrier.getGroveA0());
+float percent = light.getLightValue();
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java"><code>NanoCarrierGroveSensors</code></a> prints a
 Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a second.</p>

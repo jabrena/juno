@@ -2,7 +2,6 @@ package io.github.jabrena.juno.hardware.device.imu;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.imu.ImuSample;
 import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -20,10 +20,16 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("BNO055 nine-axis motion shield")
 class NineAxisMotionShieldTest {
+    private static final int DEVICE = 0x28;
+    private static final int CHIP_ID = 0x00;
+    private static final int EULER_HEADING = 0x1A;
+    private static final int GYRO_Z = 0x18;
+    private static final int ACC_X = 0x08;
+    private static final int ACC_Y = 0x0A;
+
     private Gpio pins;
     private I2c bus;
     private NineAxisMotionShield imu;
-    private int device;
 
     @BeforeEach
     void startWithAnEmptyBus() {
@@ -34,14 +40,13 @@ class NineAxisMotionShieldTest {
         when(bus.readRegister(anyInt(), anyInt())).thenReturn(-1);
         when(bus.readRegister16(anyInt(), anyInt())).thenReturn(-1);
         imu = new NineAxisMotionShield(pins, bus);
-        device = imu.getAddressDefault();
     }
 
     @Test
     @DisplayName("Begin pulses D7 low then high to release the BNO055 from reset")
     void shouldPulseTheResetLineBeforeTalkingToTheSensor() {
         // Given
-        when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
 
         // When
         ImmediateDelay.run(imu::begin);
@@ -57,7 +62,7 @@ class NineAxisMotionShieldTest {
     @DisplayName("Begin reports success when the chip ID matches")
     void shouldReportSuccessWhenTheChipIdMatches() {
         // Given
-        when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
 
         // When
         boolean begun = ImmediateDelay.get(imu::begin);
@@ -70,24 +75,24 @@ class NineAxisMotionShieldTest {
     @DisplayName("Begin resets the sensor and switches it to Android IMU mode")
     void shouldResetTheSensorAndSwitchItToAndroidImuMode() {
         // Given
-        when(bus.readRegister(device, 0x00)).thenReturn(0xA0);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
 
         // When
         ImmediateDelay.run(imu::begin);
 
         // Then
         InOrder order = inOrder(bus);
-        order.verify(bus).writeRegister(device, 0x3D, 0x00);
-        order.verify(bus).writeRegister(device, 0x3B, 0x80);
-        order.verify(bus).writeRegister(device, 0x3E, 0x00);
-        order.verify(bus).writeRegister(device, 0x3D, 0x08);
+        order.verify(bus).writeRegister(DEVICE, 0x3D, 0x00);
+        order.verify(bus).writeRegister(DEVICE, 0x3B, 0x80);
+        order.verify(bus).writeRegister(DEVICE, 0x3E, 0x00);
+        order.verify(bus).writeRegister(DEVICE, 0x3D, 0x08);
     }
 
     @Test
     @DisplayName("Begin reports failure when the chip ID is wrong")
     void shouldReportFailureWhenTheChipIdIsWrong() {
         // Given
-        when(bus.readRegister(device, 0x00)).thenReturn(0x32);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0x32);
 
         // When
         boolean begun = ImmediateDelay.get(imu::begin);
@@ -100,7 +105,7 @@ class NineAxisMotionShieldTest {
     @DisplayName("No mode is written after a failed identity check")
     void shouldWriteNoModeAfterAFailedIdentityCheck() {
         // Given
-        when(bus.readRegister(device, 0x00)).thenReturn(0x32);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0x32);
 
         // When
         ImmediateDelay.run(imu::begin);
@@ -110,173 +115,115 @@ class NineAxisMotionShieldTest {
     }
 
     @Test
-    @DisplayName("A full turn of heading wraps to zero degrees")
+    @DisplayName("The heading wraps a full turn back to zero degrees")
     void shouldWrapAFullTurnOfHeadingToZeroDegrees() {
         // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(360 * 16 + 5);
+        when(bus.readRegister16(DEVICE, EULER_HEADING)).thenReturn(360 * 16 + 5);
 
-        // When
-        int[] heading = {imu.headingRaw(), imu.headingDegrees()};
-
-        // Then
-        assertThat(heading).containsExactly(5, 0);
+        // When & Then
+        assertThat(imu.getAngle()).isZero();
     }
 
     @Test
-    @DisplayName("Heading converts to degrees")
-    void shouldConvertHeadingToDegrees() {
+    @DisplayName("The heading counts whole degrees clockwise")
+    void shouldReportTheHeadingInWholeDegrees() {
         // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(90 * 16);
+        when(bus.readRegister16(DEVICE, EULER_HEADING)).thenReturn(90 * 16);
 
-        // When
-        int degrees = imu.headingDegrees();
-
-        // Then
-        assertThat(degrees).isEqualTo(90);
+        // When & Then
+        assertThat(imu.getAngle()).isEqualTo(90);
     }
 
     @Test
-    @DisplayName("A missing heading reads as minus one with no turn")
-    void shouldReadAMissingHeadingAsMinusOneWithNoTurn() {
-        // When
-        int[] values = {
-                imu.headingRaw(),
-                imu.headingDegrees(),
-                imu.turnedSince(90)};
-
-        // Then
-        assertThat(values).containsExactly(-1, -1, 0);
+    @DisplayName("The heading reads -1 when the sensor does not answer")
+    void shouldReadAMissingHeadingAsMinusOne() {
+        // Then: the default stub answers -1 for every register
+        assertThat(imu.getAngle()).isEqualTo(-1);
     }
 
     @Test
-    @DisplayName("Pitch is a signed sixteen-bit value")
-    void shouldReadPitchAsASignedSixteenBitValue() {
+    @DisplayName("The heading counts from the last reset")
+    void shouldCountTheHeadingFromTheLastReset() {
         // Given
-        when(bus.readRegister16(device, 0x1E)).thenReturn(0xFFFF);
+        when(bus.readRegister16(DEVICE, EULER_HEADING)).thenReturn(90 * 16);
+        imu.reset();
+        when(bus.readRegister16(DEVICE, EULER_HEADING)).thenReturn(100 * 16);
 
-        // When
-        int pitch = imu.pitchRaw();
-
-        // Then
-        assertThat(pitch).isEqualTo(-1);
+        // When & Then
+        assertThat(imu.getAngle()).isEqualTo(10);
     }
 
     @Test
-    @DisplayName("Gyro X reads a positive sixteen-bit value")
-    void shouldReadGyroXAsAPositiveSixteenBitValue() {
-        // Given
-        when(bus.readRegister16(device, 0x14)).thenReturn(0x0100);
+    @DisplayName("Reset keeps the previous offset when the heading read fails")
+    void shouldKeepTheOffsetWhenTheHeadingReadFails() {
+        // Given: the heading read fails, so reset does nothing
+        imu.reset();
+        assertThat(imu.getAngle()).isEqualTo(-1);
 
         // When
-        int gyro = imu.gyroXRaw();
+        when(bus.readRegister16(DEVICE, EULER_HEADING)).thenReturn(90 * 16);
 
         // Then
-        assertThat(gyro).isEqualTo(256);
+        assertThat(imu.getAngle()).isEqualTo(90);
     }
 
     @Test
-    @DisplayName("Gyro X reads a negative value from the sign bit")
-    void shouldReadGyroXAsANegativeValueFromTheSignBit() {
-        // Given
-        when(bus.readRegister16(device, 0x14)).thenReturn(0x8000);
+    @DisplayName("The accelerometer reports whole metres per second squared, signed")
+    void shouldReportAccelerationInWholeMetresPerSecondSquared() {
+        // Given: 100 LSB per m/s²; 250 is +2 and 0xFF38 (-200) is -2
+        when(bus.readRegister16(DEVICE, ACC_X)).thenReturn(250);
+        when(bus.readRegister16(DEVICE, ACC_Y)).thenReturn(0xFF38);
 
-        // When
-        int gyro = imu.gyroXRaw();
-
-        // Then
-        assertThat(gyro).isEqualTo(-32768);
+        // When & Then
+        assertThat(imu.getXAccel()).isEqualTo(2);
+        assertThat(imu.getYAccel()).isEqualTo(-2);
     }
 
     @Test
-    @DisplayName("A missing pitch reads as the minimum value")
-    void shouldReadAMissingPitchAsTheMinimumValue() {
-        // When
-        int pitch = imu.pitchRaw();
-
+    @DisplayName("The accelerometer reads zero when the sensor does not answer")
+    void shouldReadZeroAccelerationWhenTheReadFails() {
         // Then
-        assertThat(pitch).isEqualTo(Short.MIN_VALUE);
+        assertThat(imu.getZAccel()).isZero();
     }
 
     @Test
-    @DisplayName("Turn takes the shortest way around the compass")
-    void shouldTakeTheShortestWayAroundTheCompass() {
-        // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(10 * 16);
+    @DisplayName("The yaw rate in degrees per second is clockwise positive")
+    void shouldReportTheYawRateClockwisePositive() {
+        // Given: a raw +16 is one degree per second anticlockwise
+        when(bus.readRegister16(DEVICE, GYRO_Z)).thenReturn(16);
 
-        // When
-        int turned = imu.turnedSince(350);
-
-        // Then
-        assertThat(turned).isEqualTo(20);
+        // When & Then
+        assertThat(imu.getAngularVelocity()).isEqualTo(-1f);
     }
 
     @Test
-    @DisplayName("No turn is reported without a start heading")
-    void shouldReportNoTurnWithoutAStartHeading() {
-        // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(10 * 16);
-
-        // When
-        int turned = imu.turnedSince(-1);
-
+    @DisplayName("The yaw rate is NaN when the read fails")
+    void shouldReportNaNWhenTheYawRateReadFails() {
         // Then
-        assertThat(turned).as("no start heading").isZero();
+        assertThat(imu.getAngularVelocity()).isNaN();
     }
 
     @Test
-    @DisplayName("Calibration reads the status register")
-    void shouldReadTheCalibrationStatusRegister() {
-        // Given
-        when(bus.readRegister(device, 0x35)).thenReturn(0xFF);
-
-        // When
-        int calibration = imu.calibration();
-
-        // Then
-        assertThat(calibration).isEqualTo(255);
+    @DisplayName("Recalibrating the gyroscope needs no action on the BNO055")
+    void shouldLeaveTheGyroscopeBiasToTheSensor() {
+        // When & Then
+        assertThatCode(imu::recalibrateOffset).doesNotThrowAnyException();
     }
 
-    @Test
-    @DisplayName("Reads a device-independent navigation sample")
-    void shouldReadADeviceIndependentNavigationSample() {
-        // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(90 * 16);
-        when(bus.readRegister16(device, 0x18)).thenReturn(16);
-        when(bus.readRegister16(device, 0x1E)).thenReturn(-1);
-        when(bus.readRegister16(device, 0x1C)).thenReturn(8);
-        when(bus.readRegister(device, 0x35)).thenReturn(0xFF);
-        ImuSample sample = new ImuSample();
-
-        // When
-        boolean read = imu.read(sample);
-
-        // Then
-        assertThat(read).isFalse();
-        assertThat(sample.valid()).isFalse();
-    }
 
     @Test
-    @DisplayName("Converts a valid navigation sample to milli-degrees")
-    void shouldConvertAValidNavigationSampleToMillidegrees() {
-        // Given
-        when(bus.readRegister16(device, 0x1A)).thenReturn(90 * 16);
-        when(bus.readRegister16(device, 0x18)).thenReturn(16);
-        when(bus.readRegister16(device, 0x1E)).thenReturn(0xFFF0);
-        when(bus.readRegister16(device, 0x1C)).thenReturn(8);
-        when(bus.readRegister(device, 0x35)).thenReturn(0xFF);
-        ImuSample sample = new ImuSample();
+    @DisplayName("Fetches the acceleration of each axis in metres per second squared")
+    void shouldFetchTheAccelerationAsASample() {
+        // Given: 250 is +2.5 m/s² and 0xFF38 is -2 m/s²; the Z read fails and is written as 0
+        when(bus.readRegister16(DEVICE, ACC_X)).thenReturn(250);
+        when(bus.readRegister16(DEVICE, ACC_Y)).thenReturn(0xFF38);
+        float[] sample = new float[3];
 
         // When
-        boolean read = imu.read(sample);
+        imu.fetchSample(sample, 0);
 
         // Then
-        assertThat(read).isTrue();
-        assertThat(new int[] {
-                sample.headingMillidegrees(),
-                sample.yawRateMillidegreesPerSecond(),
-                sample.pitchMillidegrees(),
-                sample.rollMillidegrees(),
-                sample.calibration()})
-                .containsExactly(90_000, 1_000, -1_000, 500, 0xFF);
+        assertThat(imu.sampleSize()).isEqualTo(3);
+        assertThat(sample).containsExactly(2.5f, -2.0f, 0f);
     }
 }

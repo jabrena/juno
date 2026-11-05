@@ -7,7 +7,7 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
-import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureSensorV12;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureV12;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -53,7 +53,7 @@ public final class SupabaseGroveTemperatures {
 
     private final GroveDht22 dht22 = new GroveDht22();
     private final GroveDht11 dht11 = new GroveDht11();
-    private final GroveTemperatureSensorV12 thermistor = new GroveTemperatureSensorV12();
+    private final GroveTemperatureV12 thermistor = new GroveTemperatureV12();
     private final int[] dht22Reading = new int[GroveDht22.READING_LENGTH];
     private final int[] dht11Reading = new int[GroveDht11.READING_LENGTH];
     private final int[] frame = new int[GroveDht22.FRAME_LENGTH];

@@ -207,11 +207,12 @@ Plug a single-signal Grove module into an analog socket and pass the socket's ge
 ```java
 NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GrovePirMotion pir = new GrovePirMotion();
-GroveLightSensorV12 light = new GroveLightSensorV12();
+LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
+    GroveLightV12.ADC_12_BIT);
 pir.begin(carrier.getGroveA2());
 
 boolean motion = pir.motionDetected(carrier.getGroveA2());
-int level = light.rawValue(carrier.getGroveA0());
+float percent = light.getLightValue();
 ```
 
 [`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java) prints a

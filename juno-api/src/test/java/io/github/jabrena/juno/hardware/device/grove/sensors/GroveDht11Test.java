@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.mock;
 
 @DisplayName("Grove DHT11 temperature and humidity sensor")
@@ -122,5 +123,55 @@ class GroveDht11Test {
         // When & Then
         assertThatThrownBy(() -> dht11.read(Gpio.getD2(), reading, 2, new int[4], 4))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("Reads the temperature and humidity through its bound pin as a Thermometer and SampleProvider")
+    void shouldReadThroughItsBoundPin() {
+        // Given
+        Wire.dhtReply(55, 0, 24, 0, 79).install(pins);
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+        float[] sample = new float[3];
+
+        // When
+        bound.fetchSample(sample, 1);
+
+        // Then
+        assertThat(bound.sampleSize()).isEqualTo(2);
+        assertThat(sample[1]).isEqualTo(24f);
+        assertThat(sample[2]).isCloseTo(0.55f, within(0.001f));
+    }
+
+    @Test
+    @DisplayName("Reads the temperature in degrees Celsius through its bound pin")
+    void shouldReadTheTemperatureThroughItsBoundPin() {
+        // Given
+        Wire.dhtReply(55, 0, 24, 0, 79).install(pins);
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+
+        // When & Then
+        assertThat(bound.getTemperatureCelsius()).isEqualTo(24f);
+    }
+
+    @Test
+    @DisplayName("Reports NaN when the bound pin gives no valid frame")
+    void shouldReportNaNWhenTheBoundPinGivesNoValidFrame() {
+        // Given
+        Wire.dhtReply(55, 0, 24, 0, 80).install(pins);
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+        float[] sample = new float[2];
+
+        // When
+        bound.fetchSample(sample, 0);
+
+        // Then
+        assertThat(sample).containsOnly(Float.NaN);
+    }
+
+    @Test
+    @DisplayName("Refuses a Thermometer read when created without its signal pin")
+    void shouldRefuseAThermometerReadWithoutItsPin() {
+        // When & Then
+        assertThatThrownBy(() -> dht11.getTemperatureCelsius()).isInstanceOf(IllegalStateException.class);
     }
 }

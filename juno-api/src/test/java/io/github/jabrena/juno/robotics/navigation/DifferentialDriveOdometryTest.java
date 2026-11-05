@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.robotics.navigation;
 
-import io.github.jabrena.juno.hardware.imu.Imu;
-import io.github.jabrena.juno.hardware.imu.ImuSample;
 import io.github.jabrena.juno.robotics.Encoder;
+import io.github.jabrena.juno.robotics.Gyroscope;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,9 +12,9 @@ class DifferentialDriveOdometryTest {
     void usesEqualEncoderTravelToUpdateStraightLinePosition() {
         TestEncoder left = new TestEncoder();
         TestEncoder right = new TestEncoder();
-        TestImu imu = new TestImu();
+        TestGyroscope gyro = new TestGyroscope();
         Pose pose = new Pose();
-        DifferentialDriveOdometry odometry = odometry(left, right, imu, pose);
+        DifferentialDriveOdometry odometry = odometry(left, right, gyro, pose);
 
         assertThat(odometry.update()).isTrue();
         left.positionDegrees = 360;
@@ -31,12 +30,12 @@ class DifferentialDriveOdometryTest {
     void usesImuHeadingToCorrectWheelOdometry() {
         TestEncoder left = new TestEncoder();
         TestEncoder right = new TestEncoder();
-        TestImu imu = new TestImu();
+        TestGyroscope gyro = new TestGyroscope();
         Pose pose = new Pose();
-        DifferentialDriveOdometry odometry = odometry(left, right, imu, pose);
+        DifferentialDriveOdometry odometry = odometry(left, right, gyro, pose);
 
         odometry.update();
-        imu.headingMillidegrees = 90_000;
+        gyro.angleDegrees = 90;
         left.positionDegrees = 360;
         right.positionDegrees = 360;
 
@@ -50,12 +49,12 @@ class DifferentialDriveOdometryTest {
     void fallsBackToWheelHeadingWhenImuReadFails() {
         TestEncoder left = new TestEncoder();
         TestEncoder right = new TestEncoder();
-        TestImu imu = new TestImu();
+        TestGyroscope gyro = new TestGyroscope();
         Pose pose = new Pose();
-        DifferentialDriveOdometry odometry = odometry(left, right, imu, pose);
+        DifferentialDriveOdometry odometry = odometry(left, right, gyro, pose);
 
         odometry.update();
-        imu.valid = false;
+        gyro.valid = false;
         left.positionDegrees = 360;
         right.positionDegrees = 360;
 
@@ -67,10 +66,10 @@ class DifferentialDriveOdometryTest {
     private static DifferentialDriveOdometry odometry(
             TestEncoder left,
             TestEncoder right,
-            TestImu imu,
+            TestGyroscope gyro,
             Pose pose) {
         DriveGeometry geometry = new DriveGeometry(56, 120, 360, 360);
-        return new DifferentialDriveOdometry(left, right, imu, geometry, pose);
+        return new DifferentialDriveOdometry(left, right, gyro, geometry, pose);
     }
 
     private static final class TestEncoder implements Encoder {
@@ -87,23 +86,27 @@ class DifferentialDriveOdometryTest {
         }
     }
 
-    private static final class TestImu implements Imu {
+    private static final class TestGyroscope implements Gyroscope {
         private boolean valid = true;
-        private int headingMillidegrees;
+        private int angleDegrees;
 
         @Override
-        public boolean begin() {
-            return true;
+        public int getAngle() {
+            return valid ? angleDegrees : -1;
         }
 
         @Override
-        public boolean read(ImuSample sample) {
-            if (!valid) {
-                sample.invalidate();
-                return false;
-            }
-            sample.update(headingMillidegrees, 0, 0, 0, 3);
-            return true;
+        public float getAngularVelocity() {
+            return 0f;
+        }
+
+        @Override
+        public void recalibrateOffset() {
+        }
+
+        @Override
+        public void reset() {
+            angleDegrees = 0;
         }
     }
 }

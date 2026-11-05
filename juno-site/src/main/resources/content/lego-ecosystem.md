@@ -94,7 +94,7 @@ right wheels, pair them with `linkMotors(PORT_A, PORT_B)` and drive the pair wit
 
 [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) (`io.github.jabrena.juno.remote.lego.rcx`) lets a Juno program remote-control a LEGO
 Mindstorms RCX brick over infrared: run its motors, read its sensors and buttons, play sounds and read its batteries.
-It follows LeJOS's `RemoteNXT`: one object for the brick, whose getters hand out its parts, all allocated once when
+One object represents the brick, and its getters hand out its parts, all allocated once when
 the `RemoteRcx` is created. The board needs an IR receiver module and an IR LED, here on pins 2 and 3, pointed at the
 brick's infrared window. The motors, sensors, sounds and battery work with LEGO's own firmware; reading the
 buttons and writing text on the display need Juno's RCX firmware, downloaded to the brick once with

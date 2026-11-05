@@ -75,12 +75,16 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E()" tabindex="0">GrovePirMotion()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" tabindex="0">GrovePirMotion(Gpio)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" tabindex="0">GrovePirMotion(Gpio, int)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#begin(int)" tabindex="0">begin(int)</a></li>
 <li><a href="#motionDetected(int)" tabindex="0">motionDetected(int)</a></li>
+<li><a href="#isMotionDetected()" tabindex="0">isMotionDetected()</a></li>
+<li><a href="#sampleSize()" tabindex="0">sampleSize()</a></li>
+<li><a href="#fetchSample(float%5B%5D,int)" tabindex="0">fetchSample(float[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -94,10 +98,15 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../../../robotics/MotionDetector.html" title="interface in io.github.jabrena.juno.robotics">MotionDetector</a>, <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">GrovePirMotion</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
+implements <a href="../../../../robotics/MotionDetector.html" title="interface in io.github.jabrena.juno.robotics">MotionDetector</a>, <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
 <div class="block">A Grove PIR motion sensor with a digital <code>SIG</code> output. Configure its socket once at startup
 with <a href="#begin(int)"><code>begin(int)</code></a>, then poll <a href="#motionDetected(int)"><code>motionDetected(int)</code></a> without allocating.</div>
 </div>
@@ -120,6 +129,11 @@ with <a href="#begin(int)"><code>begin(int)</code></a>, then poll <a href="#moti
 <div class="col-last odd-row-color">
 <div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
 </div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GrovePirMotion</a><wbr>(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ int&nbsp;signalPin)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A sensor on <code>signalPin</code> read through <code>gpio</code>; the pin is configured as an input here.</div>
+</div>
 </div>
 </section>
 </li>
@@ -139,10 +153,26 @@ with <a href="#begin(int)"><code>begin(int)</code></a>, then poll <a href="#moti
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Configures the signal pin as a digital input.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+ int&nbsp;offset)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Writes 1 when motion is detected and 0 otherwise, at <code>offset</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMotionDetected()" class="member-name-link">isMotionDetected</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns whether the bound signal is high.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#motionDetected(int)" class="member-name-link">motionDetected</a><wbr>(int&nbsp;signalPin)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns <code>true</code> while the sensor's signal is high.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns 1: the sample is one motion flag.</div>
 </div>
 </div>
 </div>
@@ -179,6 +209,17 @@ with <a href="#begin(int)"><code>begin(int)</code></a>, then poll <a href="#moti
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio,int)">
+<h3>GrovePirMotion</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GrovePirMotion</span><wbr><span class="parameters">(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ int&nbsp;signalPin)</span></div>
+<div class="block">A sensor on <code>signalPin</code> read through <code>gpio</code>; the pin is configured as an input here. This is the form
+that works as a <a href="../../../../robotics/MotionDetector.html" title="interface in io.github.jabrena.juno.robotics"><code>MotionDetector</code></a> and a <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>. Create it once, at startup.</div>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -202,6 +243,51 @@ with <a href="#begin(int)"><code>begin(int)</code></a>, then poll <a href="#moti
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">motionDetected</span><wbr><span class="parameters">(int&nbsp;signalPin)</span></div>
 <div class="block">Returns <code>true</code> while the sensor's signal is high.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isMotionDetected()">
+<h3>isMotionDetected</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isMotionDetected</span>()</div>
+<div class="block">Returns whether the bound signal is high.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/MotionDetector.html#isMotionDetected()">isMotionDetected</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/MotionDetector.html" title="interface in io.github.jabrena.juno.robotics">MotionDetector</a></code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalStateException.html" title="class in java.lang" class="external-link">IllegalStateException</a></code> - if the sensor was created without its signal pin</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sampleSize()">
+<h3>sampleSize</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">sampleSize</span>()</div>
+<div class="block">Returns 1: the sample is one motion flag.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/SampleProvider.html#sampleSize()">sampleSize</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fetchSample(float[],int)">
+<h3>fetchSample</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fetchSample</span><wbr><span class="parameters">(float[]&nbsp;sample,
+ int&nbsp;offset)</span></div>
+<div class="block">Writes 1 when motion is detected and 0 otherwise, at <code>offset</code>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/SampleProvider.html#fetchSample(float%5B%5D,int)">fetchSample</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>sample</code> - the caller-owned array that receives the sample</dd>
+<dd><code>offset</code> - the index of the first element to write</dd>
+</dl>
 </div>
 </section>
 </li>

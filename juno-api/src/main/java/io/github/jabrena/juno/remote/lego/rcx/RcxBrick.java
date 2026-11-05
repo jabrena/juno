@@ -2,7 +2,7 @@ package io.github.jabrena.juno.remote.lego.rcx;
 
 /**
  * The RCX's direct commands that answer back, the protocol under {@link RemoteRcx}'s motors, sensors, display, sound
- * and battery (as LeJOS builds {@code RemoteNXT} on {@code NXTCommand}); use {@link RemoteRcx} in a program. Set up the
+ * and battery; use {@link RemoteRcx} in a program. Set up the
  * link with {@link RemoteRcx#begin} or {@link RcxLink#begin} first, with both the IR LED and the IR receiver module
  * wired. Plain Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
  *

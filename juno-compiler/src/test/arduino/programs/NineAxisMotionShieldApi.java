@@ -1,8 +1,8 @@
 package demo;
 
+import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 
 /** The BNO055 orientation sensor over I2C. */
 public final class NineAxisMotionShieldApi {
@@ -11,10 +11,10 @@ public final class NineAxisMotionShieldApi {
 
         NineAxisMotionShield imu = new NineAxisMotionShield();
         imu.begin();
+        imu.reset();
 
-        Serial.println(imu.headingDegrees());
-        Serial.println(imu.pitchRaw());
-        Serial.println(imu.gyroXRaw());
-        Serial.println(imu.calibration());
+        Serial.println(imu.getAngle());
+        Serial.println(imu.getXAccel());
+        Serial.println((int) imu.getAngularVelocity());
     }
 }

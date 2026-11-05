@@ -17,7 +17,6 @@ io.github.jabrena.juno.hardware.display
 io.github.jabrena.juno.hardware.gpio
 io.github.jabrena.juno.hardware.hid
 io.github.jabrena.juno.hardware.i2c
-io.github.jabrena.juno.hardware.imu
 io.github.jabrena.juno.hardware.internal
 io.github.jabrena.juno.hardware.keyboard
 io.github.jabrena.juno.hardware.led

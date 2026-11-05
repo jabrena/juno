@@ -500,9 +500,9 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <td></td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getImu()</code> (LSM6DS3TR, over <code>ArduinoUno.getSpi()</code>)</td>
+<td><code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code> (LSM6DS3TR, over <code>ArduinoUno.getSpi()</code>)</td>
 <td align="center">✓</td>
-<td>Yaw, roll and pitch from the onboard accelerometer and gyroscope; no magnetometer, so the heading is integrated gyro yaw and drifts.</td>
+<td>Heading and yaw rate from the gyroscope, acceleration on each axis from the accelerometer; no magnetometer, so the heading is integrated gyro yaw and drifts.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
 </tr>
 <tr>
@@ -529,22 +529,21 @@ while (true) {
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
 <code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
 <h3 id="read-the-onboard-imu">Read the onboard IMU</h3>
-<p>The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. <code>ArduinoUno.getImu()</code> returns a driver that is
-started once and then read into a caller-owned <code>ImuSample</code>:</p>
-<pre><code class="language-java">Imu imu = ArduinoUno.getImu();
-imu.begin();                      // keep the board still for about 2 s: it measures the gyroscope's bias
-ImuSample sample = new ImuSample();
+<p>The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. <code>ArduinoUno.getGyroscope()</code> and
+<code>ArduinoUno.getAccelerometer()</code> return the same sensor as two interfaces. The first call starts it, which measures the
+gyroscope's bias for about 2 s, so keep the board still then:</p>
+<pre><code class="language-java">Gyroscope gyroscope = ArduinoUno.getGyroscope();
+Accelerometer accelerometer = ArduinoUno.getAccelerometer();
 
 while (true) {
-    if (imu.read(sample)) {
-        Serial.print(sample.headingMillidegrees());
-    }
+    Serial.print(gyroscope.getAngle());               // heading in whole degrees, clockwise from startup
+    Serial.print(accelerometer.getXAccel());          // whole m/s² along the board's X axis
     Delay.millis(200);
 }
 </code></pre>
 <p>The sensor has no magnetometer, so the heading is the gyroscope's yaw rate integrated from power-up, clockwise positive.
-It drifts a little with every minute of use. Roll and pitch come from gravity and are right only while the board is not
-accelerating. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a>
+It drifts a little with every minute of use; <code>gyroscope.reset()</code> sets it back to zero. If the sensor does not answer, its
+readings stay 0. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a>
 prints all four values; build it with <code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
 <h2 id="shields">Shields</h2>
 <p>Seat each shield directly on the UNO WiFi Rev2. Check which pins a shield uses before stacking two: the LCD Keypad
@@ -598,14 +597,14 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 the sensor pointed at <code>begin()</code>. <code>begin()</code> drives D7, the sensor's reset line, so don't use D7 for anything else:</p>
 <pre><code class="language-java">NineAxisMotionShield imu = new NineAxisMotionShield();
 if (imu.begin()) {
-    int start = imu.headingDegrees();
+    imu.reset();                                  // count the turn from here
     while (true) {
-        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Serial.println(imu.getAngle());           // heading since the reset, whole degrees, clockwise
         Delay.millis(200);
     }
 }
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a> prints heading, pitch, gyro and calibration readings.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a> prints heading, yaw rate and acceleration readings.</p>
 <h3 id="lcd-keypad-shield">LCD Keypad Shield</h3>
 <img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
 <p>A 16 × 2 character LCD with five buttons read through one analog pin (A0). <code>LcdKeypadShield</code> needs no extra library:

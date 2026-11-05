@@ -4,8 +4,7 @@
  * the board's pins, I2C bus, USB mouse, LED matrix, clock, {@link io.github.jabrena.juno.hardware.BoardModel} (which
  * board the program was compiled for) and {@link io.github.jabrena.juno.hardware.BoardMemory} (Juno's arena and
  * the program's flash usage). Board I/O has one subpackage per interface: {@code gpio} holds the pin-level
- * digital/analog operations, {@code i2c} the I2C register access, {@code serial} Serial, {@code imu} the
- * device-independent inertial sensing contracts, and {@code net} the Wi-Fi
+ * digital/analog operations, {@code i2c} the I2C register access, {@code serial} Serial, and {@code net} the Wi-Fi
  * networking stack and {@code time} the {@link io.github.jabrena.juno.hardware.time.Clock} interface.
  *
  * The Java-facing hardware API that Juno's compiler recognizes as intrinsics.
@@ -24,7 +23,7 @@
  *       {@link io.github.jabrena.juno.hardware.ArduinoUno}: general-purpose I/O ({@code hardware.gpio},
  *       {@link io.github.jabrena.juno.hardware.gpio.Gpio}, {@link io.github.jabrena.juno.hardware.gpio.DigitalOutput}),
  *       I2C ({@code hardware.i2c}), serial port I/O ({@code hardware.serial}), USB HID mouse control
- *       ({@code hardware.hid}), device-independent inertial sensing ({@code hardware.imu}),
+ *       ({@code hardware.hid}),
  *       the UNO R4 WiFi's built-in LED matrix with its frame/canvas helpers and
  *       bitmap fonts ({@code hardware.led}), and program-wide introspection: arena and flash usage
  *       ({@link io.github.jabrena.juno.hardware.BoardMemory}) and the board the program was compiled for
@@ -35,7 +34,7 @@
  *       {@link io.github.jabrena.juno.hardware.time.Clock}), for measuring elapsed time without blocking,
  *       and attached shields, sensors and devices ({@code hardware.device}): {@code grove} (the passive
  *       Grove Base Shield pin map and allocation-free Grove sensor drivers), {@code lcd} (character LCD
- *       shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus), {@code imu},
+ *       shields), {@code tft} (the ELEGOO 2.8" TFT touch shield and its parallel bus),
  *       {@code servo}, {@code ir}, {@code sd} and {@code kasa}.</li>
  *   <li>{@code remote} — remotely controlled third-party ecosystems: {@code lego} (Powered Up, RCX and Power
  *       Functions).</li>

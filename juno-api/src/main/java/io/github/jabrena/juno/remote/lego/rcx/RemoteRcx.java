@@ -9,7 +9,7 @@ import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
- * A LEGO Mindstorms RCX brick reached over infrared, in the manner of LeJOS's {@code RemoteNXT}: create it once, at
+ * A LEGO Mindstorms RCX brick reached over infrared: create it once, at
  * startup, with the infrared {@link RcxLink} and the pins of the IR receiver module and the IR LED, call
  * {@link #begin}, and get the brick's parts from it — its motors ({@link #getMotorA()}, {@link #getMotorB()}, {@link #getMotorC()}), its sensor inputs
  * ({@link #getSensor1()}, {@link #getSensor2()}, {@link #getSensor3()}), its display ({@link #getLcd()}), its speaker

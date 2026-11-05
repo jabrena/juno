@@ -396,19 +396,19 @@ the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>,
 <tr>
 <td><a href="#temperature-sensor-v12">Temperature Sensor v1.2</a></td>
 <td>Analog</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureSensorV12.java"><code>GroveTemperatureSensorV12</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.java"><code>GroveTemperatureV12</code></a></td>
 <td>Degrees Celsius from a thermistor</td>
 </tr>
 <tr>
 <td><a href="#light-sensor-v12">Light Sensor v1.2</a></td>
 <td>Analog</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightSensorV12.java"><code>GroveLightSensorV12</code></a></td>
-<td>Raw light level</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.java"><code>GroveLightV12</code></a></td>
+<td>Light level as a percentage (<code>LightDetector</code>)</td>
 </tr>
 <tr>
 <td><a href="#sound-sensor-v16">Sound Sensor v1.6</a></td>
 <td>Analog</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundSensorV16.java"><code>GroveSoundSensorV16</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.java"><code>GroveSoundV16</code></a></td>
 <td>Raw microphone level</td>
 </tr>
 <tr>
@@ -422,12 +422,6 @@ the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>,
 <td>Digital</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.java"><code>GrovePirMotion</code></a></td>
 <td>Motion detected or not</td>
-</tr>
-<tr>
-<td><a href="#3-axis-digital-compass-v20">3-Axis Digital Compass V2.0</a></td>
-<td>I2C</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveCompassProbe.java"><code>GroveCompassProbe</code></a></td>
-<td>Raw magnetic field on X, Y and Z</td>
 </tr>
 <tr>
 <td><a href="#infrared-emitter-and-receiver">Infrared emitter and receiver</a></td>
@@ -462,19 +456,21 @@ if (dht.read(shield.getD3(), reading, reading.length, frame, frame.length)) {
 <h3 id="temperature-sensor-v12">Temperature Sensor v1.2</h3>
 <p>A 100-kilohm thermistor divider; the driver converts the ADC count to degrees Celsius with Seeed's B constant:</p>
 <img src="../images/grove/grove-temperature-v12.jpg" alt="Grove Temperature Sensor v1.2" width="240">
-<pre><code class="language-java">GroveTemperatureSensorV12 temperature = new GroveTemperatureSensorV12();
+<pre><code class="language-java">GroveTemperatureV12 temperature = new GroveTemperatureV12();
 float celsius = temperature.celsius(shield.getA0());
 </code></pre>
 <h3 id="light-sensor-v12">Light Sensor v1.2</h3>
-<p>A raw ADC sample; calibrate it for the installation if an illuminance value is needed:</p>
+<p>A <code>LightDetector</code> bound to its socket. The light value is the percentage of the ADC full scale: relative
+brightness, not illuminance. Pass <code>GroveLightV12.ADC_12_BIT</code> as a second argument on the Nano ESP32:</p>
 <img src="../images/grove/grove-light-v12.jpg" alt="Grove Light Sensor v1.2" width="240">
-<pre><code class="language-java">GroveLightSensorV12 light = new GroveLightSensorV12();
-int level = light.rawValue(shield.getA1());
+<pre><code class="language-java">LightDetector light = new GroveLightV12(ArduinoUno.getGpio(), shield.getA1(),
+    GroveLightV12.ADC_10_BIT);
+float percent = light.getLightValue();
 </code></pre>
 <h3 id="sound-sensor-v16">Sound Sensor v1.6</h3>
 <p>An ADC sample of the amplified microphone signal, not a decibel measurement:</p>
 <img src="../images/grove/grove-sound-v16.jpg" alt="Grove Sound Sensor v1.6" width="240">
-<pre><code class="language-java">GroveSoundSensorV16 sound = new GroveSoundSensorV16();
+<pre><code class="language-java">GroveSoundV16 sound = new GroveSoundV16();
 int level = sound.rawValue(shield.getA2());
 </code></pre>
 <h3 id="gas-sensor">Gas sensor</h3>
@@ -491,17 +487,6 @@ an analog socket rather than the I2C one:</p>
 <pre><code class="language-java">GrovePirMotion pir = new GrovePirMotion();
 pir.begin(shield.getD2());
 boolean motion = pir.motionDetected(shield.getD2());
-</code></pre>
-<h3 id="3-axis-digital-compass-v20">3-Axis Digital Compass V2.0</h3>
-<p>Seeed's BMM150 compass, on an I2C socket, never a digital one. <code>detect()</code> starts the bus and confirms the chip;
-<code>readRaw</code> fills uncalibrated X, Y and Z counts. On the Nano ESP32, pass the board's bus:
-<code>new GroveCompassProbe(ArduinoNano.getI2c())</code>.</p>
-<img src="../images/grove/grove-compass-v2.jpg" alt="Grove 3-Axis Digital Compass V2.0" width="240">
-<pre><code class="language-java">GroveCompassProbe compass = new GroveCompassProbe();
-int[] axes = new int[GroveCompassProbe.AXIS_LENGTH];
-if (compass.detect() == GroveCompassProbe.BMM150 &amp;&amp; compass.readRaw(axes, axes.length)) {
-    int x = axes[GroveCompassProbe.X_AXIS];
-}
 </code></pre>
 <h3 id="infrared-emitter-and-receiver">Infrared emitter and receiver</h3>
 <p>A Grove infrared emitter and receiver form the infrared link to a LEGO Mindstorms RCX brick. Wrap each socket's pin,

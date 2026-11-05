@@ -21,16 +21,15 @@ class GroveAnalogSensorsTest {
     }
 
     @Test
-    @DisplayName("Gas, sound and light sensors report their analog pin")
-    void shouldReportTheAnalogPinValueFromTheGasSoundAndLightSensors() {
+    @DisplayName("Gas and sound sensors report their analog pin")
+    void shouldReportTheAnalogPinValueFromTheGasAndSoundSensors() {
         // When
         int[] readings = {
                 new GroveAnalogGas(pins).rawValue(Gpio.getA0()),
-                new GroveSoundSensorV16(pins).rawValue(Gpio.getA0()),
-                new GroveLightSensorV12(pins).rawValue(Gpio.getA0())};
+                new GroveSoundV16(pins).rawValue(Gpio.getA0())};
 
         // Then
         assertThat(readings).containsOnly(321);
-        verify(pins, times(3)).analogRead(Gpio.getA0());
+        verify(pins, times(2)).analogRead(Gpio.getA0());
     }
 }

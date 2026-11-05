@@ -70,7 +70,7 @@ public enum Capability {
             return WIFI.unsupportedReason(board);
         }
     },
-    ONBOARD_IMU("ArduinoUno.getImu") {
+    ONBOARD_IMU("ArduinoUno.getAccelerometer") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no onboard inertial sensor; only the UNO WiFi Rev2 has one";

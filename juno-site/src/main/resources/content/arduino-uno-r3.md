@@ -130,16 +130,16 @@ else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:
 ```java
 NineAxisMotionShield imu = new NineAxisMotionShield();
 if (imu.begin()) {
-    int start = imu.headingDegrees();
+    imu.reset();                                  // count the turn from here
     while (true) {
-        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Serial.println(imu.getAngle());           // heading since the reset, whole degrees, clockwise
         Delay.millis(200);
     }
 }
 ```
 
-[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, pitch, gyro
-and calibration readings.
+[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, yaw rate,
+and acceleration readings.
 
 ### LCD Keypad Shield
 

@@ -14,6 +14,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.mock;
 
 @DisplayName("Grove DHT22 temperature and humidity sensor")
@@ -153,5 +154,40 @@ class GroveDht22Test {
         // Then
         assertThat(decoded).isTrue();
         assertThat(reading).containsExactly(-55, 450);
+    }
+
+    @Test
+    @DisplayName("Reads the temperature in degrees Celsius and the humidity from 0 to 1 through its bound pin")
+    void shouldReadThroughItsBoundPin() {
+        // Given: 242 tenths of a degree and 632 tenths of a percent
+        Wire.dhtReply(2, 120, 0, 242, 108).install(pins);
+        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), Gpio.getD2());
+        float[] sample = new float[2];
+
+        // When
+        bound.fetchSample(sample, 0);
+
+        // Then
+        assertThat(bound.sampleSize()).isEqualTo(2);
+        assertThat(sample[0]).isCloseTo(24.2f, within(0.001f));
+        assertThat(sample[1]).isCloseTo(0.632f, within(0.001f));
+    }
+
+    @Test
+    @DisplayName("Reports NaN when the bound pin gives no valid frame")
+    void shouldReportNaNWhenTheBoundPinGivesNoValidFrame() {
+        // Given
+        Wire.dhtReply(2, 120, 0, 242, 109).install(pins);
+        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), Gpio.getD2());
+
+        // When & Then
+        assertThat(bound.getTemperatureCelsius()).isNaN();
+    }
+
+    @Test
+    @DisplayName("Refuses a Thermometer read when created without its signal pin")
+    void shouldRefuseAThermometerReadWithoutItsPin() {
+        // When & Then
+        assertThatThrownBy(() -> dht22.getTemperatureCelsius()).isInstanceOf(IllegalStateException.class);
     }
 }

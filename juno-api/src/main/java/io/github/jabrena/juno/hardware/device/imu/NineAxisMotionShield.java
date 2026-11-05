@@ -3,44 +3,41 @@ package io.github.jabrena.juno.hardware.device.imu;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.imu.Imu;
-import io.github.jabrena.juno.hardware.imu.ImuSample;
+import io.github.jabrena.juno.robotics.Accelerometer;
+import io.github.jabrena.juno.robotics.Gyroscope;
+import io.github.jabrena.juno.robotics.SampleProvider;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain
- * Java on top of {@link I2c} (so it needs no Arduino library). The sensor fuses its accelerometer and
- * gyroscope itself and reports the heading in degrees; this class runs it in the {@code IMU} fusion
- * mode, where the heading is relative to the direction the sensor pointed at power-up or at
- * {@link #begin}, needs no compass calibration and is not disturbed by magnetic fields. That suits
- * measuring how far a vehicle has turned:
+ * The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
+ * {@link I2c} (so it needs no Arduino library). The sensor fuses its accelerometer and gyroscope itself, in the
+ * {@code IMU} fusion mode: the heading is relative to the direction the sensor pointed at {@link #begin}, needs no
+ * compass calibration and is not disturbed by magnetic fields.
  *
  * <pre>{@code
  * NineAxisMotionShield imu = new NineAxisMotionShield();   // once, at startup
  * imu.begin();
- * int start = imu.headingDegrees();
- * // ... turn left until imu.turnedSince(start) <= -90 (heading grows clockwise)
+ * imu.reset();                                             // count the turn from here
+ * // ... turn left until imu.getAngle() >= 270 (heading grows clockwise)
  * }</pre>
  *
- * <p>The shield's BNO055 answers at address {@code 0x28}; the {@code 0x29} variant is selected with
- * {@link #begin(int)}. Works on both boards, wherever {@code Wire} reaches the shield's SDA/SCL.
- * {@link #begin} drives D7, the shield's sensor reset line, so a program using the shield must not
- * use D7 for anything else. {@code new NineAxisMotionShield(gpio, i2c)} drives that line and talks to the
- * sensor through a given {@link Gpio} and {@link I2c} instead of the board's, which is how a unit test mocks them.
+ * <p>The shield's BNO055 answers at address {@code 0x28}. The board's reset line for the sensor is D7, so a program
+ * using the shield must not use D7 for anything else. {@code new NineAxisMotionShield(gpio, i2c)} drives that line and
+ * talks to the sensor through a given {@link Gpio} and {@link I2c} instead of the board's, which is how a unit test
+ * mocks them.
  *
  * @see <a href="https://docs.arduino.cc/hardware/9-axis-motion-shield/">Arduino 9 Axis Motion Shield</a>
  */
-public final class NineAxisMotionShield implements Imu {
+public final class NineAxisMotionShield implements Accelerometer, Gyroscope, SampleProvider {
     private static final int ADDRESS_DEFAULT = 0x28;
-    private static final int ADDRESS_ALTERNATE = 0x29;
 
     private static final int CHIP_ID = 0x00;
+    private static final int ACC_X = 0x08;
+    private static final int ACC_Y = 0x0A;
+    private static final int ACC_Z = 0x0C;
     private static final int GYRO_X = 0x14;
     private static final int GYRO_Z = 0x18;
     private static final int EULER_HEADING = 0x1A;
-    private static final int EULER_ROLL = 0x1C;
-    private static final int EULER_PITCH = 0x1E;
-    private static final int CALIBRATION_STATUS = 0x35;
     private static final int UNIT_SELECTION = 0x3B;
     private static final int OPERATION_MODE = 0x3D;
     private static final int POWER_MODE = 0x3E;
@@ -60,14 +57,18 @@ public final class NineAxisMotionShield implements Imu {
     private static final int RESET_PIN = Gpio.getD7();
     private static final int RESET_LOW_MILLIS = 300;
     private static final int RESET_HIGH_MILLIS = 600;
-    /** Heading is reported in sixteenths of a degree. */
+    /** The heading and the gyroscope are reported in sixteenths of a degree (per second for the rate). */
     private static final int UNITS_PER_DEGREE = 16;
+    /** Acceleration is reported in hundredths of a metre per second squared, since the units are m/s². */
+    private static final int UNITS_PER_METRE_PER_SECOND_SQUARED = 100;
     private static final int SIGN_BIT = 0x8000;
     private static final int WORD = 0x10000;
 
     private final Gpio gpio;
     private final I2c i2c;
     private int address = ADDRESS_DEFAULT;
+    /** The raw heading that {@link #getAngle()} counts from; set by {@link #reset()}. */
+    private int headingOffsetRaw;
 
     /** A shield on the board's own pins and I2C bus. Create it once, at startup. */
     public NineAxisMotionShield() {
@@ -83,18 +84,17 @@ public final class NineAxisMotionShield implements Imu {
         this.i2c = i2c;
     }
 
-    /** Starts the sensor at {@link #ADDRESS_DEFAULT}; see {@link #begin(int)}. */
-    @Override
+    /**
+     * Starts the sensor at {@link #ADDRESS_DEFAULT} in IMU fusion mode, returning {@code false} if no BNO055 answered.
+     * Waits for the sensor to boot, so call it once at startup; the heading counts from this moment.
+     */
     public boolean begin() {
-        return begin(ADDRESS_DEFAULT);
+        return startAt(ADDRESS_DEFAULT);
     }
 
-    /**
-     * Starts the I2C bus and the sensor at {@code sensorAddress} in IMU fusion mode, returning
-     * {@code false} if no BNO055 answered. Waits for the sensor to boot, so call it once at startup.
-     */
-    public boolean begin(int sensorAddress) {
+    private boolean startAt(int sensorAddress) {
         address = sensorAddress;
+        headingOffsetRaw = 0;
         gpio.pinMode(RESET_PIN, Gpio.getOutput());
         gpio.digitalWrite(RESET_PIN, false);
         Delay.millis(RESET_LOW_MILLIS);
@@ -116,67 +116,99 @@ public final class NineAxisMotionShield implements Imu {
     }
 
     /** The heading in sixteenths of a degree, {@code 0..5759}, growing clockwise; {@code -1} if the read failed. */
-    public int headingRaw() {
+    private int headingRaw() {
         int raw = i2c.readRegister16(address, EULER_HEADING);
         return raw < 0 ? -1 : raw % (360 * UNITS_PER_DEGREE);
     }
 
-    /** The heading in whole degrees, {@code 0..359}, growing clockwise; {@code -1} if the read failed. */
-    public int headingDegrees() {
-        int raw = headingRaw();
-        return raw < 0 ? -1 : raw / UNITS_PER_DEGREE;
-    }
-
     /**
-     * The pitch in sixteenths of a degree, signed, {@code 0} when the sensor's board is level; the
-     * sign follows the BNO055's own convention (see its datasheet) and flips with the board's
-     * mounting. {@link Short#MIN_VALUE} if the read failed. This is the tilt a self-balancing robot
-     * rocks about when the shield is mounted with its X axis along the wheel axle.
+     * The angular rate about the Z axis in sixteenths of a degree per second, signed, counter-clockwise positive: the
+     * BNO055's own convention with Z pointing up. {@link Short#MIN_VALUE} if the read failed.
      */
-    public int pitchRaw() {
-        return signed(i2c.readRegister16(address, EULER_PITCH));
-    }
-
-    /**
-     * The angular rate about the X axis in sixteenths of a degree per second, signed, taken from the
-     * gyroscope; the derivative of {@link #pitchRaw} without the delay of differencing it.
-     * {@link Short#MIN_VALUE} if the read failed.
-     */
-    public int gyroXRaw() {
-        return signed(i2c.readRegister16(address, GYRO_X));
-    }
-
-    /** The angular rate about the Z axis in sixteenths of a degree per second, signed. */
-    public int gyroZRaw() {
+    private int gyroZRaw() {
         return signed(i2c.readRegister16(address, GYRO_Z));
     }
 
-    /**
-     * Reads the navigation fields into a caller-owned sample. The BNO055's sixteen-units-per-degree
-     * values are converted to milli-degrees for the device-independent contract.
-     */
+    /** The acceleration along the sensor's X axis in whole metres per second squared; {@code 0} if the read failed. */
     @Override
-    public boolean read(ImuSample sample) {
-        int heading = headingRaw();
-        int roll = signed(i2c.readRegister16(address, EULER_ROLL));
-        int pitch = signed(i2c.readRegister16(address, EULER_PITCH));
-        int yawRate = gyroZRaw();
-        int calibration = calibration();
-        if (heading < 0 || roll == Short.MIN_VALUE || pitch == Short.MIN_VALUE || yawRate == Short.MIN_VALUE || calibration < 0) {
-            sample.invalidate();
-            return false;
-        }
-        sample.update(
-                toMillidegrees(heading),
-                toMillidegrees(yawRate),
-                toMillidegrees(pitch),
-                toMillidegrees(roll),
-                calibration);
-        return true;
+    public int getXAccel() {
+        return (int) accelerationAxis(ACC_X);
     }
 
-    private static int toMillidegrees(int sixteenthsOfADegree) {
-        return sixteenthsOfADegree * 1000 / UNITS_PER_DEGREE;
+    /** The acceleration along the sensor's Y axis in whole metres per second squared; {@code 0} if the read failed. */
+    @Override
+    public int getYAccel() {
+        return (int) accelerationAxis(ACC_Y);
+    }
+
+    /** The acceleration along the sensor's Z axis in whole metres per second squared; {@code 0} if the read failed. */
+    @Override
+    public int getZAccel() {
+        return (int) accelerationAxis(ACC_Z);
+    }
+
+    /**
+     * The heading in whole degrees, {@code 0..359}, growing clockwise since {@link #begin} or the last {@link #reset};
+     * {@code -1} if the read failed.
+     */
+    @Override
+    public int getAngle() {
+        int raw = headingRaw();
+        if (raw < 0) {
+            return -1;
+        }
+        int fullTurn = 360 * UNITS_PER_DEGREE;
+        return (raw - headingOffsetRaw + fullTurn) % fullTurn / UNITS_PER_DEGREE;
+    }
+
+    /** The yaw rate in degrees per second, clockwise positive; {@code NaN} if the read failed. */
+    @Override
+    public float getAngularVelocity() {
+        int raw = gyroZRaw();
+        if (raw == Short.MIN_VALUE) {
+            return Float.NaN;
+        }
+        return -raw / (float) UNITS_PER_DEGREE;
+    }
+
+    /**
+     * Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.
+     */
+    @Override
+    public void recalibrateOffset() {
+        // Intentionally empty: the sensor has no bias register to write.
+    }
+
+    /** Makes the current heading the zero of {@link #getAngle()}; does nothing if the read failed. */
+    @Override
+    public void reset() {
+        int raw = headingRaw();
+        if (raw >= 0) {
+            headingOffsetRaw = raw;
+        }
+    }
+
+    /** Returns one acceleration axis in metres per second squared, or 0 if its read failed. */
+    private float accelerationAxis(int register) {
+        int raw = signed(i2c.readRegister16(address, register));
+        return raw == Short.MIN_VALUE ? 0f : raw / (float) UNITS_PER_METRE_PER_SECOND_SQUARED;
+    }
+
+    /** Returns 3: the X, Y and Z acceleration in metres per second squared. */
+    @Override
+    public int sampleSize() {
+        return 3;
+    }
+
+    /**
+     * Writes the X, Y and Z acceleration in metres per second squared, starting at {@code offset}; an axis whose read
+     * failed is written as 0.
+     */
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+        sample[offset] = accelerationAxis(ACC_X);
+        sample[offset + 1] = accelerationAxis(ACC_Y);
+        sample[offset + 2] = accelerationAxis(ACC_Z);
     }
 
     /** Turns a register word {@code 0..65535} into a signed value, keeping the {@code -1} failure as {@link Short#MIN_VALUE}. */
@@ -187,37 +219,4 @@ public final class NineAxisMotionShield implements Imu {
         return word >= SIGN_BIT ? word - WORD : word;
     }
 
-    /**
-     * How far the heading has moved since {@code startDegrees} (from {@link #headingDegrees}), as a
-     * signed angle {@code -180..180}: positive clockwise, negative anticlockwise (a left turn). Handles
-     * the wrap around 360. Returns {@code 0} if the read failed.
-     */
-    public int turnedSince(int startDegrees) {
-        int now = headingDegrees();
-        if (now < 0 || startDegrees < 0) {
-            return 0;
-        }
-        int difference = (now - startDegrees + 540) % 360 - 180;
-        return difference;
-    }
-
-    /**
-     * The calibration state, 2 bits each for the system (bits 6-7), gyroscope (4-5), accelerometer
-     * (2-3) and magnetometer (0-1), where 3 is fully calibrated; {@code -1} if the read failed. In IMU
-     * mode only the gyroscope and accelerometer matter, and the gyroscope calibrates on its own while
-     * the sensor stands still for a moment.
-     */
-    public int calibration() {
-        return i2c.readRegister(address, CALIBRATION_STATUS);
-    }
-
-    /** The sensor's default I2C address, {@code 0x28}: the shield's BNO055 as wired from the factory. */
-    public int getAddressDefault() {
-        return ADDRESS_DEFAULT;
-    }
-
-    /** The alternate I2C address, {@code 0x29}, selected by the shield's address jumper. */
-    public int getAddressAlternate() {
-        return ADDRESS_ALTERNATE;
-    }
 }
