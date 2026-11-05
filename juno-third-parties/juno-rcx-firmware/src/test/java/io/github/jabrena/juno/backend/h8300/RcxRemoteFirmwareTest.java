@@ -730,7 +730,7 @@ class RcxRemoteFirmwareTest {
             // Then
             assertThat(rcx.calls()).contains("tone 440 10");
             assertThat(rcx.calls()).containsSubsequence("tone 440 10", "motor 2000 1 7");
-            assertThat(rcx.icons()).contains(RcxRom.LCD_ICONS + 0x18);
+            assertThat(rcx.icons()).as("no datalog spinner for a tone").doesNotContain(RcxRom.LCD_ICONS + 0x18);
         }
 
         @Test
