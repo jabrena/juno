@@ -52,7 +52,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
 | `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields | ✓ | See [Shields](#shields). | |
-| `ArduinoUno.getImu()` (LSM6DS3TR, over `ArduinoUno.getSpi()`) | ✓ | Yaw, roll and pitch from the onboard accelerometer and gyroscope; no magnetometer, so the heading is integrated gyro yaw and drifts. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
+| `ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()` (LSM6DS3TR, over `ArduinoUno.getSpi()`) | ✓ | Heading and yaw rate from the gyroscope, acceleration on each axis from the accelerometer; no magnetometer, so the heading is integrated gyro yaw and drifts. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
 | `Servo`, `Infrared`, `RandomAccessFile` | Untested | Generated, but not yet run in the simulator or on hardware. | |
 
 ## Features
@@ -79,25 +79,24 @@ while (true) {
 
 ### Read the onboard IMU
 
-The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. `ArduinoUno.getImu()` returns a driver that is
-started once and then read into a caller-owned `ImuSample`:
+The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. `ArduinoUno.getGyroscope()` and
+`ArduinoUno.getAccelerometer()` return the same sensor as two interfaces. The first call starts it, which measures the
+gyroscope's bias for about 2 s, so keep the board still then:
 
 ```java
-Imu imu = ArduinoUno.getImu();
-imu.begin();                      // keep the board still for about 2 s: it measures the gyroscope's bias
-ImuSample sample = new ImuSample();
+Gyroscope gyroscope = ArduinoUno.getGyroscope();
+Accelerometer accelerometer = ArduinoUno.getAccelerometer();
 
 while (true) {
-    if (imu.read(sample)) {
-        Serial.print(sample.headingMillidegrees());
-    }
+    Serial.print(gyroscope.getAngle());               // heading in whole degrees, clockwise from startup
+    Serial.print(accelerometer.getXAccel());          // whole m/s² along the board's X axis
     Delay.millis(200);
 }
 ```
 
 The sensor has no magnetometer, so the heading is the gyroscope's yaw rate integrated from power-up, clockwise positive.
-It drifts a little with every minute of use. Roll and pitch come from gravity and are right only while the board is not
-accelerating. [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java)
+It drifts a little with every minute of use; `gyroscope.reset()` sets it back to zero. If the sensor does not answer, its
+readings stay 0. [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java)
 prints all four values; build it with `-Djuno.board=arduino-uno-r3-wifi-rev2`.
 
 ## Shields
@@ -170,15 +169,15 @@ the sensor pointed at `begin()`. `begin()` drives D7, the sensor's reset line, s
 ```java
 NineAxisMotionShield imu = new NineAxisMotionShield();
 if (imu.begin()) {
-    int start = imu.headingDegrees();
+    imu.reset();                                  // count the turn from here
     while (true) {
-        Serial.println(imu.turnedSince(start));   // degrees turned, clockwise positive
+        Serial.println(imu.getAngle());           // heading since the reset, whole degrees, clockwise
         Delay.millis(200);
     }
 }
 ```
 
-[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, pitch, gyro and calibration readings.
+[`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) prints heading, yaw rate and acceleration readings.
 
 ### LCD Keypad Shield
 

@@ -3,29 +3,43 @@ package io.github.jabrena.juno.hardware.device.grove.sensors;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.robotics.SampleProvider;
+import io.github.jabrena.juno.robotics.Thermometer;
 
 /**
  * Reads Seeed's <a href="https://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/">Grove
  * Temperature Sensor v1.2</a>. The module is a 100-kilohm thermistor divider; this driver exposes
  * both the raw ADC count and Seeed's v1.2 B-constant conversion. It allocates nothing.
  */
-public final class GroveTemperatureSensorV12 {
+public final class GroveTemperatureV12 implements Thermometer, SampleProvider {
     private static final float ADC_MAXIMUM = 1023.0f;
     private static final float B_CONSTANT_KELVIN = 4275.0f;
     private static final float REFERENCE_TEMPERATURE_KELVIN = 298.15f;
     private static final float KELVIN_TO_CELSIUS = 273.15f;
     private static final float NATURAL_LOG_TWO = 0.6931472f;
 
+    private static final int NO_PIN = -1;
+
     private final Gpio gpio;
+    private final int analogPin;
 
     /** A sensor on the board's own pins. Create it once, at startup. */
-    public GroveTemperatureSensorV12() {
+    public GroveTemperatureV12() {
         this(ArduinoUno.getGpio());
     }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */
-    public GroveTemperatureSensorV12(Gpio gpio) {
+    public GroveTemperatureV12(Gpio gpio) {
+        this(gpio, NO_PIN);
+    }
+
+    /**
+     * A sensor plugged into {@code analogPin} (such as {@link GroveBaseShield#getA0()}) and read through {@code gpio}.
+     * Create it once, at startup; it is the form that works as a {@link Thermometer} and a {@link SampleProvider}.
+     */
+    public GroveTemperatureV12(Gpio gpio, int analogPin) {
         this.gpio = gpio;
+        this.analogPin = analogPin;
     }
 
     /** Reads the raw ADC value from an analog socket such as {@link GroveBaseShield#getA0()}. */
@@ -50,6 +64,32 @@ public final class GroveTemperatureSensorV12 {
         float resistanceRatio = ADC_MAXIMUM / adcValue - 1.0f;
         return 1.0f / (naturalLog(resistanceRatio) / B_CONSTANT_KELVIN
                 + 1.0f / REFERENCE_TEMPERATURE_KELVIN) - KELVIN_TO_CELSIUS;
+    }
+
+    /**
+     * Returns the temperature of the thermistor on the bound analog socket, in degrees Celsius; {@link Float#NaN} at
+     * either ADC rail.
+     *
+     * @throws IllegalStateException if the sensor was created without its analog socket
+     */
+    @Override
+    public float getTemperatureCelsius() {
+        if (analogPin == NO_PIN) {
+            throw new IllegalStateException("create GroveTemperatureV12 with its analog pin to read it as a Thermometer");
+        }
+        return celsiusFromRaw(gpio.analogRead(analogPin));
+    }
+
+    /** Returns 1: the sample is one temperature in degrees Celsius. */
+    @Override
+    public int sampleSize() {
+        return 1;
+    }
+
+    /** Writes the temperature in degrees Celsius at {@code offset}. */
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+        sample[offset] = getTemperatureCelsius();
     }
 
     /* Natural log after range reduction to [1, 2); the odd-power series converges quickly there. */

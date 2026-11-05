@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.robotics.navigation;
 
-import io.github.jabrena.juno.hardware.imu.Imu;
-import io.github.jabrena.juno.hardware.imu.ImuSample;
 import io.github.jabrena.juno.robotics.Encoder;
+import io.github.jabrena.juno.robotics.Gyroscope;
 
 /**
  * Updates a caller-owned pose from two wheel encoders and an IMU. The IMU supplies the preferred
@@ -10,16 +9,16 @@ import io.github.jabrena.juno.robotics.Encoder;
  * unavailable. All state is allocated when this object is constructed.
  */
 public final class DifferentialDriveOdometry {
+    private static final int MILLIDEGREES_PER_DEGREE = 1000;
     private static final int FULL_TURN_MILLIDEGREES = 360_000;
     private static final int HALF_TURN_MILLIDEGREES = 180_000;
     private static final long PI_MILLION = 3_141_593L;
 
     private final Encoder leftEncoder;
     private final Encoder rightEncoder;
-    private final Imu imu;
+    private final Gyroscope gyro;
     private final DriveGeometry geometry;
     private final Pose pose;
-    private final ImuSample sample = new ImuSample();
     private int previousLeftDegrees;
     private int previousRightDegrees;
     private int referenceHeadingMillidegrees;
@@ -30,12 +29,12 @@ public final class DifferentialDriveOdometry {
     public DifferentialDriveOdometry(
             Encoder leftEncoder,
             Encoder rightEncoder,
-            Imu imu,
+            Gyroscope gyro,
             DriveGeometry geometry,
             Pose pose) {
         this.leftEncoder = leftEncoder;
         this.rightEncoder = rightEncoder;
-        this.imu = imu;
+        this.gyro = gyro;
         this.geometry = geometry;
         this.pose = pose;
     }
@@ -60,7 +59,9 @@ public final class DifferentialDriveOdometry {
     public boolean update() {
         int leftDegrees = leftEncoder.getTachoCount();
         int rightDegrees = rightEncoder.getTachoCount();
-        boolean imuValid = imu.read(sample);
+        int gyroDegrees = gyro.getAngle();
+        boolean imuValid = gyroDegrees >= 0;
+        int gyroHeading = gyroDegrees * MILLIDEGREES_PER_DEGREE;
 
         if (!initialized) {
             previousLeftDegrees = leftDegrees;
@@ -68,7 +69,7 @@ public final class DifferentialDriveOdometry {
             if (!imuValid) {
                 return false;
             }
-            referenceHeadingMillidegrees = sample.headingMillidegrees();
+            referenceHeadingMillidegrees = gyroHeading;
             poseHeadingAtReference = pose.headingMillidegrees();
             initialized = true;
             return true;
@@ -82,7 +83,7 @@ public final class DifferentialDriveOdometry {
         int previousHeading = pose.headingMillidegrees();
         int wheelHeading = previousHeading + wheelHeadingDelta(leftDistance, rightDistance);
         int newHeading = imuValid
-                ? poseHeadingAtReference + shortestDifference(sample.headingMillidegrees(), referenceHeadingMillidegrees)
+                ? poseHeadingAtReference + shortestDifference(gyroHeading, referenceHeadingMillidegrees)
                 : wheelHeading;
         int midpointHeading = previousHeading + shortestDifference(newHeading, previousHeading) / 2;
         int distance = (int) (((long) leftDistance + rightDistance) / 2);

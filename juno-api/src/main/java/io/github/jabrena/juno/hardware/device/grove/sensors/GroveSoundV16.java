@@ -5,24 +5,24 @@ import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 /**
- * Reads Seeed's analog <a href="https://www.seeedstudio.com/Grove-Light-Sensor-p-746.html">Grove
- * Light Sensor v1.2</a>. The result is a raw ADC sample; convert it using the installation's
- * calibration if an illuminance value is required. This class allocates nothing.
+ * Reads Seeed's analog <a href="https://wiki.seeedstudio.com/Grove-Sound_Sensor/">Grove Sound
+ * Sensor</a> (v1.6). The value is an ADC sample of the amplified microphone signal, not a dB
+ * measurement. This class allocates nothing.
  */
-public final class GroveLightSensorV12 {
+public final class GroveSoundV16 {
     private final Gpio gpio;
 
     /** A sensor on the board's own pins. Create it once, at startup. */
-    public GroveLightSensorV12() {
+    public GroveSoundV16() {
         this(ArduinoUno.getGpio());
     }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */
-    public GroveLightSensorV12(Gpio gpio) {
+    public GroveSoundV16(Gpio gpio) {
         this.gpio = gpio;
     }
 
-    /** Reads the raw ADC value from an analog socket such as {@link GroveBaseShield#getA2()}. */
+    /** Reads the raw ADC value from an analog socket such as {@link GroveBaseShield#getA1()}. */
     public int rawValue(int analogPin) {
         return gpio.analogRead(analogPin);
     }

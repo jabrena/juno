@@ -86,9 +86,8 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.robotics.navigation.DriveGeometry;
                     import io.github.jabrena.juno.robotics.navigation.HeadingHoldController;
                     import io.github.jabrena.juno.robotics.navigation.Pose;
-                    import io.github.jabrena.juno.hardware.imu.Imu;
-                    import io.github.jabrena.juno.hardware.imu.ImuSample;
                     import io.github.jabrena.juno.robotics.Encoder;
+                    import io.github.jabrena.juno.robotics.Gyroscope;
                     import io.github.jabrena.juno.robotics.RegulatedMotor;
                     import io.github.jabrena.juno.util.Delay;
                     public final class MotorContracts {
@@ -116,23 +115,22 @@ class JunoCompilerTest {
                             public int getTachoCount() { return 12; }
                             public void resetTachoCount() { }
                         }
-                        static final class TestImu implements Imu {
-                            public boolean begin() { return true; }
-                            public boolean read(ImuSample sample) {
-                                sample.update(0, 0, 0, 0, 3);
-                                return true;
-                            }
+                        static final class TestGyroscope implements Gyroscope {
+                            public int getAngle() { return 90; }
+                            public float getAngularVelocity() { return 0f; }
+                            public void recalibrateOffset() { }
+                            public void reset() { }
                         }
                         public static void main(String[] args) {
                             RegulatedMotor motor = new TestMotor();
                             Encoder encoder = new TestEncoder();
-                            Imu imu = new TestImu();
+                            Gyroscope gyro = new TestGyroscope();
                             DifferentialDrive drive = new DifferentialDrive(motor, motor);
                             drive.drive(motor.tachoCount(), encoder.getTachoCount());
                             Pose pose = new Pose();
                             DriveGeometry geometry = new DriveGeometry(56, 120, 360, 360);
                             DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(
-                                    encoder, encoder, imu, geometry, pose);
+                                    encoder, encoder, gyro, geometry, pose);
                             odometry.update();
                             HeadingHoldController heading = new HeadingHoldController(drive, pose, 20, 30);
                             heading.captureCurrentHeading();
@@ -145,6 +143,74 @@ class JunoCompilerTest {
 
             // When
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MotorContracts");
+
+            // Then
+            assertThat(result.assembly()).contains("bl delay");
+        }
+
+        @Test
+        @DisplayName("Compiles programs against the board-independent sensor contracts")
+        void shouldCompileBoardIndependentSensorContracts() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.robotics.Accelerometer;
+                    import io.github.jabrena.juno.robotics.Gyroscope;
+                    import io.github.jabrena.juno.robotics.LightDetector;
+                    import io.github.jabrena.juno.robotics.SampleProvider;
+                    import io.github.jabrena.juno.robotics.SensorMode;
+                    import io.github.jabrena.juno.robotics.SensorModes;
+                    import io.github.jabrena.juno.util.Delay;
+                    public final class SensorContracts {
+                        static final class Level implements SensorMode {
+                            public String getName() { return "Level"; }
+                            public int sampleSize() { return 1; }
+                            public void fetchSample(float[] sample, int offset) { sample[offset] = 0.5f; }
+                        }
+                        static final class TestSensor
+                                implements SensorModes, LightDetector, Gyroscope, Accelerometer {
+                            private final SensorMode level = new Level();
+                            public String getName() { return level.getName(); }
+                            public int sampleSize() { return level.sampleSize(); }
+                            public void fetchSample(float[] sample, int offset) { level.fetchSample(sample, offset); }
+                            public int getModeCount() { return 1; }
+                            public SensorMode getMode(int mode) { return level; }
+                            public SensorMode getMode(String modeName) { return level; }
+                            public void setCurrentMode(int mode) { }
+                            public void setCurrentMode(String modeName) { }
+                            public int getCurrentMode() { return 0; }
+                            public float getLightValue() { return 40f; }
+                            public float getNormalizedLightValue() { return 0.4f; }
+                            public float getHigh() { return 1f; }
+                            public float getLow() { return 0f; }
+                            public int getAngle() { return 3; }
+                            public float getAngularVelocity() { return 1.5f; }
+                            public void recalibrateOffset() { }
+                            public void reset() { }
+                            public int getXAccel() { return 1; }
+                            public int getYAccel() { return 2; }
+                            public int getZAccel() { return 9; }
+                        }
+                        public static void main(String[] args) {
+                            float[] sample = new float[2];
+                            TestSensor sensor = new TestSensor();
+                            SensorModes modes = sensor;
+                            SampleProvider provider = modes.getMode(0);
+                            provider.fetchSample(sample, 1);
+                            LightDetector light = sensor;
+                            Gyroscope gyro = sensor;
+                            Accelerometer accelerometer = sensor;
+                            float total = sample[1] + light.getLightValue()
+                                    + gyro.getAngularVelocity();
+                            Delay.millis((int) total + gyro.getAngle() + accelerometer.getZAccel()
+                                    + modes.getModeCount());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.SensorContracts", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SensorContracts");
 
             // Then
             assertThat(result.assembly()).contains("bl delay");
@@ -1396,14 +1462,13 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("The Grove PIR, compass and analog gas drivers lower to GPIO, analog and I2C calls")
-        void shouldLowerTheGrovePirCompassAndAnalogGasDrivers() throws Exception {
+        @DisplayName("The Grove PIR and analog gas drivers lower to GPIO, analog and I2C calls")
+        void shouldLowerTheGrovePirAndAnalogGasDrivers() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
                     import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
-                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveCompassProbe;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
                     public final class GroveSensorsDemo {
                         public static void main(String[] args) {
@@ -1411,14 +1476,9 @@ class JunoCompilerTest {
                             GrovePirMotion pir = new GrovePirMotion();
                             GroveAnalogGas gasSensor = new GroveAnalogGas();
                             pir.begin(shield.getD3());
-                            GroveCompassProbe compassProbe = new GroveCompassProbe();
-                            int compass = compassProbe.detect();
-                            int[] axes = new int[3];
-                            boolean compassReading = compass == GroveCompassProbe.BMM150
-                                    && compassProbe.readRaw(axes, axes.length);
                             int gas = gasSensor.rawValue(shield.getA0());
                             boolean motion = pir.motionDetected(shield.getD3());
-                            if (motion && gas > 100 && compassReading) {
+                            if (motion && gas > 100) {
                                 io.github.jabrena.juno.hardware.serial.Serial.println(gas);
                             }
                         }
@@ -1430,9 +1490,8 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveSensorsDemo");
 
             // Then
-            assertThat(result.assembly()).contains("bl pinMode", "bl digitalRead", "bl analogRead",
-                    "bl juno_i2c_begin", "bl juno_i2c_read_register", "bl juno_i2c_write_register");
-            assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
+            assertThat(result.assembly()).contains("bl pinMode", "bl digitalRead", "bl analogRead");
+            assertThat(result.runtimeShim()).doesNotContain("#include <Wire.h>", "#include <DHT.h>");
         }
 
         @Test
@@ -1443,9 +1502,10 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
-                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightSensorV12;
-                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundSensorV16;
-                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureSensorV12;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundV16;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureV12;
                     public final class GroveSensorBatchDemo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
@@ -1453,11 +1513,11 @@ class JunoCompilerTest {
                             int[] frame = new int[GroveDht11.FRAME_LENGTH];
                             boolean valid = new GroveDht11().read(shield.getD4(), reading, reading.length,
                                     frame, frame.length);
-                            GroveTemperatureSensorV12 thermistor = new GroveTemperatureSensorV12();
+                            GroveTemperatureV12 thermistor = new GroveTemperatureV12();
                             int temperature = thermistor.rawValue(shield.getA0());
                             float celsius = thermistor.celsiusFromRaw(temperature);
-                            int sound = new GroveSoundSensorV16().rawValue(shield.getA1());
-                            int light = new GroveLightSensorV12().rawValue(shield.getA2());
+                            int sound = new GroveSoundV16().rawValue(shield.getA1());
+                            float light = new GroveLightV12(ArduinoUno.getGpio(), shield.getA2(), GroveLightV12.ADC_10_BIT).getLightValue();
                             if (valid && temperature + sound + light > 0) {
                                 io.github.jabrena.juno.hardware.serial.Serial.println(celsius);
                             }
@@ -1473,6 +1533,36 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead",
                     "bl analogRead", "bl micros", "bl delay", "bl delayMicroseconds");
             assertThat(result.runtimeShim()).doesNotContain("#include <DHT.h>", "#include <Wire.h>");
+        }
+
+        @Test
+        @DisplayName("The Grove light sensor reads as a LightDetector bound to its socket")
+        void shouldReadTheGroveLightSensorAsALightDetector() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import io.github.jabrena.juno.robotics.LightDetector;
+                    public final class GroveLightDetectorDemo {
+                        public static void main(String[] args) {
+                            LightDetector light = new GroveLightV12(ArduinoUno.getGpio(),
+                                    new GroveBaseShield().getA2(), GroveLightV12.ADC_10_BIT);
+                            Serial.println((int) light.getLightValue());
+                            Serial.println(light.getNormalizedLightValue() > light.getLow());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveLightDetectorDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory,
+                    "demo.GroveLightDetectorDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl analogRead");
         }
     }
 

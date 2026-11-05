@@ -6,20 +6,17 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Prints the orientation of the Arduino 9 Axis Motion Shield over USB serial, several times a second.
- * Each line carries the heading (degrees, clockwise from the power-up direction), the pitch (degrees,
- * {@code 0} when the shield lies flat), the gyroscope rate about X (sixteenths of a degree per second)
- * and the packed calibration byte (2 bits per sensor; {@code 255} means all fully calibrated), for
- * example:
+ * Prints the orientation of the Arduino 9 Axis Motion Shield over USB serial, several times a second. Each line carries
+ * the heading (whole degrees, clockwise from the power-up direction), the yaw rate (whole degrees per second,
+ * clockwise positive) and the acceleration along X, Y and Z (whole metres per second squared), for example:
  *
  * <pre>{@code
- * heading=87 pitch=-2 gyroX=0 cal=255
+ * heading=87 yaw=0 ax=0 ay=0 az=9
  * }</pre>
  *
  * <p>Wiring: stack the shield on the board so its SDA/SCL pins are the board's I2C pins. Nothing
- * else is needed; the BNO055 is read over I2C with no Arduino library. It tries address {@code 0x28}
- * and then {@code 0x29}, and prints which one answered. If neither answers, the program prints a
- * message and stops.
+ * else is needed; the BNO055 is read over I2C with no Arduino library. It answers at address {@code 0x28}.
+ * If it does not answer, the program prints a message and stops.
  *
  * <p>After uploading the sketch, open a serial monitor at the same baud rate:
  * <pre>{@code
@@ -29,9 +26,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>Pick the board with {@code -Djuno.board}.
  */
 public final class NineAxisMotionShieldSerial {
-    private final NineAxisMotionShield imu = new NineAxisMotionShield();
     private static final int PRINT_MILLIS = 200;
-    private static final int UNITS_PER_DEGREE = 16;
 
     private NineAxisMotionShieldSerial() {
     }
@@ -43,33 +38,30 @@ public final class NineAxisMotionShieldSerial {
      * @param args ignored; Juno programs do not receive command-line arguments
      */
     public static void main(String[] args) {
-        new NineAxisMotionShieldSerial().run();
-    }
-
-    private void run() {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
 
-        if (imu.begin()) {
-            Serial.println("BNO055 ready at 0x28");
-        } else if (imu.begin(imu.getAddressAlternate())) {
-            Serial.println("BNO055 ready at 0x29");
-        } else {
-            Serial.println("BNO055 not found at 0x28 or 0x29");
+        NineAxisMotionShield imu = new NineAxisMotionShield();
+        if (!imu.begin()) {
+            Serial.println("BNO055 not found at 0x28");
             while (true) {
                 Delay.millis(1000);
             }
         }
+        Serial.println("BNO055 ready at 0x28");
+        imu.reset();
 
         while (true) {
             Serial.print("heading=");
-            Serial.print(imu.headingDegrees());
-            Serial.print(" pitch=");
-            Serial.print(imu.pitchRaw() / UNITS_PER_DEGREE);
-            Serial.print(" gyroX=");
-            Serial.print(imu.gyroXRaw());
-            Serial.print(" cal=");
-            Serial.println(imu.calibration());
+            Serial.print(imu.getAngle());
+            Serial.print(" yaw=");
+            Serial.print((int) imu.getAngularVelocity());
+            Serial.print(" ax=");
+            Serial.print(imu.getXAccel());
+            Serial.print(" ay=");
+            Serial.print(imu.getYAccel());
+            Serial.print(" az=");
+            Serial.println(imu.getZAccel());
             Delay.millis(PRINT_MILLIS);
         }
     }

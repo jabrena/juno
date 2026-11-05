@@ -2,13 +2,15 @@ package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
-import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightSensorV12;
-import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundSensorV16;
-import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureSensorV12;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundV16;
+import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureV12;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.robotics.LightDetector;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -29,9 +31,10 @@ public final class GroveSensorBatchMonitor {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         GroveDht11 dht11 = new GroveDht11();
-        GroveLightSensorV12 light = new GroveLightSensorV12();
-        GroveSoundSensorV16 sound = new GroveSoundSensorV16();
-        GroveTemperatureSensorV12 thermistor = new GroveTemperatureSensorV12();
+        LightDetector light = new GroveLightV12(ArduinoUno.getGpio(), LIGHT_PIN,
+                GroveLightV12.ADC_10_BIT);
+        GroveSoundV16 sound = new GroveSoundV16();
+        GroveTemperatureV12 thermistor = new GroveTemperatureV12();
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
         Delay.millis(1000);
@@ -51,8 +54,8 @@ public final class GroveSensorBatchMonitor {
             Serial.println(temperatureAdc);
             Serial.print("Sound sensor ADC A1: ");
             Serial.println(sound.rawValue(SOUND_PIN));
-            Serial.print("Light sensor ADC A2: ");
-            Serial.println(light.rawValue(LIGHT_PIN));
+            Serial.print("Light sensor A2 %: ");
+            Serial.println((int) light.getLightValue());
             Delay.millis(2000);
         }
     }
