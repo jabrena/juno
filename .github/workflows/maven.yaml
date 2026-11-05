@@ -29,6 +29,13 @@ on:
   release:
     types: [published]
 
+# About 20 jobs start together and each fetches whatever the shared setup-java Maven cache lacks, so Maven Central can
+# answer 429 Too Many Requests. Resolver retries 429/503 by default only 3 times, 5 s apart; wait it out longer.
+env:
+  MAVEN_ARGS: >-
+    -Daether.transport.http.retryHandler.count=10
+    -Daether.transport.http.retryHandler.interval=10000
+
 jobs:
   changes:
     name: Select integration coverage
