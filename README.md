@@ -347,6 +347,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://lejos.sourceforge.io/ev3/docs/index.html
 - https://lejos.sourceforge.io/nxt/nxj/api/index.html
 - https://lejos.sourceforge.io/rcx/api/index.html
+- https://sourceforge.net/p/lejos/wiki/Sensor%20Framework/
 - https://pbrick.info/index.html-p=74.html
 - https://tinyvm.sourceforge.net/
 - https://sunspotdev.org/
