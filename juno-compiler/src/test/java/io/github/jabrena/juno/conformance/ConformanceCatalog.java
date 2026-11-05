@@ -30,25 +30,47 @@ import javax.xml.validation.SchemaFactory;
 /** Parsed and validated semantic-conformance catalog used by the emulator integration tests. */
 public final class ConformanceCatalog {
     private static final Set<String> REQUIRED_BACKENDS = Set.of("thumb2", "avr", "xtensa");
-    private static final Map<String, Set<String>> REQUIRED_AREAS = Map.of(
-            "primitives.literals", Set.of("3.10.1", "3.10.2", "3.10.3", "3.10.4"),
-            "primitives.integral-types", Set.of("4.2.1", "4.2.2"),
-            "primitives.floating-point-types", Set.of("4.2.3", "4.2.4"),
-            "primitives.boolean", Set.of("4.2.5"),
-            "primitives.conversions", Set.of("5.1.2", "5.1.3", "5.1.4", "5.2", "5.5", "5.6.1", "5.6.2"),
-            "primitives.integral-expressions", Set.of("15.15.1", "15.15.2", "15.15.3", "15.16", "15.17.1",
-                    "15.17.2", "15.17.3", "15.18.2", "15.19", "15.20", "15.21", "15.22.1"),
-            "primitives.floating-point-expressions", Set.of("15.15.1", "15.15.2", "15.16", "15.17.1",
-                    "15.17.2", "15.17.3", "15.18.2", "15.20", "15.21"),
-            "primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24", "15.25"));
+    // Map.of accepts at most 10 pairs; this catalog has more areas, so entries are built with Map.ofEntries.
+    private static final Map<String, Set<String>> REQUIRED_AREAS = Map.ofEntries(
+            Map.entry("primitives.literals", Set.of("3.10.1", "3.10.2", "3.10.3", "3.10.4")),
+            Map.entry("primitives.integral-types", Set.of("4.2.1", "4.2.2")),
+            Map.entry("primitives.floating-point-types", Set.of("4.2.3", "4.2.4")),
+            Map.entry("primitives.boolean", Set.of("4.2.5")),
+            Map.entry("primitives.conversions", Set.of("5.1.2", "5.1.3", "5.1.4", "5.2", "5.5", "5.6.1", "5.6.2")),
+            Map.entry("primitives.integral-expressions", Set.of("15.15.1", "15.15.2", "15.15.3", "15.16", "15.17.1",
+                    "15.17.2", "15.17.3", "15.18.2", "15.19", "15.20", "15.21", "15.22.1")),
+            Map.entry("primitives.floating-point-expressions", Set.of("15.15.1", "15.15.2", "15.16", "15.17.1",
+                    "15.17.2", "15.17.3", "15.18.2", "15.20", "15.21")),
+            Map.entry("primitives.boolean-and-conditional", Set.of("15.7", "15.21", "15.22.2", "15.23", "15.24",
+                    "15.25")),
+            Map.entry("records.components-members-and-constructors", Set.of("8.10", "8.10.1", "8.10.2", "8.10.3",
+                    "8.10.4", "8.10.4.1", "8.10.4.2")),
+            Map.entry("sealed.classes-and-interfaces", Set.of("8.1.1.2", "8.1.6", "9.1.1.4", "9.1.4")),
+            Map.entry("inheritance.class-and-interface-dispatch", Set.of("8.1.4", "8.1.5", "8.4.8.1", "15.12.4.4")),
+            Map.entry("generics.classes-methods-and-erasure", Set.of("4.4", "4.5", "4.6", "8.1.2", "8.4.4")),
+            Map.entry("arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6",
+                    "10.7", "15.10.1", "15.10.2", "15.10.3")),
+            Map.entry("strings.concatenation-and-conversion", Set.of("3.10.5", "3.10.6", "5.1.11", "5.4", "15.18.1")),
+            Map.entry("exceptions.kinds-and-causes", Set.of("11.1.1", "11.1.2")),
+            Map.entry("exceptions.throw-and-catch", Set.of("14.18", "14.20", "14.20.1")),
+            Map.entry("exceptions.finally-and-unwinding", Set.of("11.3", "14.20.2")),
+            Map.entry("exceptions.try-with-resources", Set.of("14.20.3", "14.20.3.1", "14.20.3.2")));
+
+    /** Classification value of a JLS section that some area covers with a program. */
+    private static final String COVERED = "covered";
 
     private final int javaRelease;
     private final Map<String, Program> programs;
+    private final Set<String> backends;
+    private final Map<String, Scope> scopes;
     private final Map<String, Area> areas;
 
-    private ConformanceCatalog(int javaRelease, Map<String, Program> programs, Map<String, Area> areas) {
+    private ConformanceCatalog(int javaRelease, Map<String, Program> programs, Set<String> backends,
+            Map<String, Scope> scopes, Map<String, Area> areas) {
         this.javaRelease = javaRelease;
         this.programs = Map.copyOf(programs);
+        this.backends = Set.copyOf(backends);
+        this.scopes = Map.copyOf(scopes);
         this.areas = Map.copyOf(areas);
     }
 
@@ -72,8 +94,10 @@ public final class ConformanceCatalog {
             requireTag(root, "catalog");
             int javaRelease = parseInt(root, "javaRelease");
             Map<String, Program> programs = parsePrograms(root);
+            Set<String> backends = parseBackends(root);
+            Map<String, Scope> scopes = parseScopes(root);
             Map<String, Area> areas = parseAreas(root);
-            return new ConformanceCatalog(javaRelease, programs, areas);
+            return new ConformanceCatalog(javaRelease, programs, backends, scopes, areas);
         } catch (IOException | ParserConfigurationException | SAXException e) {
             throw new IllegalArgumentException("Cannot load conformance catalog " + catalogPath, e);
         }
@@ -93,6 +117,8 @@ public final class ConformanceCatalog {
         validateRequiredAreas();
         validateProgramInventory(conformanceRoot.resolve("programs"));
         validateAreaReferences();
+        validateBackendDefinitions();
+        validateClassification();
     }
 
     public List<Program> programs() {
@@ -101,6 +127,15 @@ public final class ConformanceCatalog {
 
     public List<Area> areas() {
         return areas.values().stream().sorted().toList();
+    }
+
+    public List<Scope> scopes() {
+        return scopes.values().stream().sorted().toList();
+    }
+
+    /** Covered and skipped JLS sections per scope, so the share still missing is visible, not implied. */
+    public List<Coverage> coverage() {
+        return scopes.values().stream().sorted().map(scope -> coverageOf(scope, classify(scope))).toList();
     }
 
     private void validateRequiredAreas() {
@@ -189,25 +224,169 @@ public final class ConformanceCatalog {
         return programs;
     }
 
+    private static Set<String> parseBackends(Element root) {
+        Element backendsElement = child(root, "backends");
+        Map<String, String> definitions = new LinkedHashMap<>();
+        for (Element element : children(backendsElement, "backend")) {
+            putUnique(definitions, requiredAttribute(element, "id"), requiredAttribute(element, "title"));
+        }
+        return definitions.keySet();
+    }
+
+    private static Map<String, Scope> parseScopes(Element root) {
+        Element scopesElement = child(root, "scopes");
+        Map<String, Scope> scopes = new LinkedHashMap<>();
+        for (Element element : children(scopesElement, "scope")) {
+            String id = requiredAttribute(element, "id");
+            List<String> sections = children(element, "jls").stream()
+                    .map(section -> requiredAttribute(section, "section"))
+                    .toList();
+            if (new HashSet<>(sections).size() != sections.size()) {
+                throw new IllegalArgumentException("Scope " + id + " lists a JLS section twice");
+            }
+            putUnique(scopes, id, new Scope(id, requiredAttribute(element, "title"), sections));
+        }
+        return scopes;
+    }
+
     private static Map<String, Area> parseAreas(Element root) {
         Element areasElement = child(root, "areas");
         Map<String, Area> areas = new LinkedHashMap<>();
         for (Element element : children(areasElement, "area")) {
             String id = requiredAttribute(element, "id");
             String title = requiredAttribute(element, "title");
-            List<String> sections = children(element, "jls").stream()
-                    .map(section -> requiredAttribute(section, "section"))
-                    .distinct().toList();
+            List<String> covered = new ArrayList<>();
+            Map<String, String> skipped = new LinkedHashMap<>();
+            for (Element jls : children(element, "jls")) {
+                String section = requiredAttribute(jls, "section");
+                if (isSkipped(jls)) {
+                    putUnique(skipped, section, requiredAttribute(jls, "reason"));
+                } else {
+                    if (!jls.getAttribute("reason").isEmpty()) {
+                        throw new IllegalArgumentException(
+                                "JLS section " + section + " has a reason but is not skipped");
+                    }
+                    covered.add(section);
+                }
+            }
             List<String> programIds = children(element, "program").stream()
                     .map(program -> requiredAttribute(program, "ref"))
                     .distinct().toList();
-            Map<String, String> backends = new LinkedHashMap<>();
+            Map<String, String> backendStatuses = new LinkedHashMap<>();
             for (Element backend : children(element, "backend")) {
-                putUnique(backends, requiredAttribute(backend, "name"), requiredAttribute(backend, "status"));
+                putUnique(backendStatuses, requiredAttribute(backend, "ref"), requiredAttribute(backend, "status"));
             }
-            putUnique(areas, id, new Area(id, title, sections, programIds, backends));
+            putUnique(areas, id, new Area(id, title, covered.stream().distinct().toList(), skipped, programIds,
+                    backendStatuses));
         }
         return areas;
+    }
+
+    private static boolean isSkipped(Element jls) {
+        String skipped = jls.getAttribute("skipped");
+        return skipped.equals("true") || skipped.equals("1");
+    }
+
+    /** The category an area belongs to is the prefix of its id, such as {@code primitives} in {@code primitives.literals}. */
+    private static String categoryOf(Area area) {
+        int dot = area.id().indexOf('.');
+        if (dot < 0) {
+            throw new IllegalArgumentException("Area id must be <category>.<name>: " + area.id());
+        }
+        return area.id().substring(0, dot);
+    }
+
+    /** The catalog defines exactly the required backends, and every area refers only to defined ones. */
+    private void validateBackendDefinitions() {
+        if (!backends.equals(REQUIRED_BACKENDS)) {
+            throw new IllegalArgumentException(
+                    "Catalog must define backends " + REQUIRED_BACKENDS + " but defines " + backends);
+        }
+        for (Area area : areas.values()) {
+            for (String backend : area.backendStatuses().keySet()) {
+                if (!backends.contains(backend)) {
+                    throw new IllegalArgumentException(
+                            "Area " + area.id() + " refers to backend " + backend + " which is not defined in <backends>");
+                }
+            }
+        }
+    }
+
+    /** Every area section must belong to its category's scope, and every scope section must be classified once. */
+    private void validateClassification() {
+        for (Area area : areas.values()) {
+            Scope scope = scopes.get(categoryOf(area));
+            if (scope == null) {
+                throw new IllegalArgumentException("Area " + area.id() + " belongs to no scope");
+            }
+            Set<String> cited = new HashSet<>(area.jlsSections());
+            cited.addAll(area.skippedSections().keySet());
+            for (String section : cited) {
+                if (!scope.jlsSections().contains(section)) {
+                    throw new IllegalArgumentException(
+                            "Area " + area.id() + " cites JLS section " + section + " outside scope " + scope.id());
+                }
+            }
+            if (!area.backendStatuses().keySet().equals(REQUIRED_BACKENDS)) {
+                throw new IllegalArgumentException("Area " + area.id() + " must declare backends " + REQUIRED_BACKENDS
+                        + " but declares " + area.backendStatuses().keySet());
+            }
+            if (!area.jlsSections().isEmpty() && area.programIds().isEmpty()) {
+                throw new IllegalArgumentException("Area " + area.id() + " covers JLS sections without programs");
+            }
+        }
+        for (Scope scope : scopes.values()) {
+            Set<String> unclassified = new LinkedHashSet<>(scope.jlsSections());
+            unclassified.removeAll(classify(scope).keySet());
+            if (!unclassified.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Scope " + scope.id() + " has JLS sections neither covered nor skipped: " + unclassified);
+            }
+        }
+    }
+
+    /** Maps each section of a scope to {@link #COVERED} or to its skip reason. Conflicting claims are rejected. */
+    private Map<String, String> classify(Scope scope) {
+        Map<String, String> status = new LinkedHashMap<>();
+        for (Area area : areas.values()) {
+            if (!categoryOf(area).equals(scope.id())) {
+                continue;
+            }
+            for (String section : area.jlsSections()) {
+                recordClaim(status, section, COVERED);
+            }
+            for (Map.Entry<String, String> skipped : area.skippedSections().entrySet()) {
+                recordClaim(status, skipped.getKey(), skipped.getValue());
+            }
+        }
+        return status;
+    }
+
+    private static void recordClaim(Map<String, String> status, String section, String value) {
+        String previous = status.putIfAbsent(section, value);
+        if (previous != null && !previous.equals(value)) {
+            throw new IllegalArgumentException(
+                    "JLS section " + section + " is classified both as '" + previous + "' and '" + value + "'");
+        }
+    }
+
+    private static Coverage coverageOf(Scope scope, Map<String, String> status) {
+        int covered = 0;
+        int gaps = 0;
+        int otherCategory = 0;
+        int outOfScope = 0;
+        for (String value : status.values()) {
+            if (value.equals(COVERED)) {
+                covered++;
+            } else if (value.startsWith("Gap:")) {
+                gaps++;
+            } else if (value.startsWith("Other category:")) {
+                otherCategory++;
+            } else {
+                outOfScope++;
+            }
+        }
+        return new Coverage(scope.id(), scope.jlsSections().size(), covered, gaps, otherCategory, outOfScope);
     }
 
     private static DocumentBuilderFactory secureFactory(Path schemaPath)
@@ -293,10 +472,27 @@ public final class ConformanceCatalog {
         }
     }
 
-    public record Area(String id, String title, List<String> jlsSections, List<String> programIds,
-                       Map<String, String> backendStatuses) implements Comparable<Area> {
+    /** The complete JLS section list of one category; coverage is measured against it. */
+    public record Scope(String id, String title, List<String> jlsSections) implements Comparable<Scope> {
+        public Scope {
+            jlsSections = List.copyOf(jlsSections);
+        }
+
+        @Override
+        public int compareTo(Scope other) {
+            return id.compareTo(other.id);
+        }
+    }
+
+    /**
+     * An area's JLS sections: {@code jlsSections} are covered by its programs; {@code skippedSections} maps each
+     * skipped section to its reason.
+     */
+    public record Area(String id, String title, List<String> jlsSections, Map<String, String> skippedSections,
+                       List<String> programIds, Map<String, String> backendStatuses) implements Comparable<Area> {
         public Area {
             jlsSections = List.copyOf(jlsSections);
+            skippedSections = Map.copyOf(skippedSections);
             programIds = List.copyOf(programIds);
             backendStatuses = Map.copyOf(backendStatuses);
         }
@@ -304,6 +500,18 @@ public final class ConformanceCatalog {
         @Override
         public int compareTo(Area other) {
             return id.compareTo(other.id);
+        }
+    }
+
+    /** Counts of one scope's sections: covered, skipped as a gap, skipped for another category, or out of scope. */
+    public record Coverage(String scopeId, int total, int covered, int gaps, int otherCategory, int outOfScope) {
+        public double percentCovered() {
+            return total == 0 ? 0.0 : 100.0 * covered / total;
+        }
+
+        public String summary() {
+            return String.format("%s: %d/%d JLS sections covered (%.1f%%); skipped: %d gaps, %d other categories, "
+                    + "%d out of scope", scopeId, covered, total, percentCovered(), gaps, otherCategory, outOfScope);
         }
     }
 }
