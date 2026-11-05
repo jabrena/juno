@@ -8,8 +8,9 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
- * Exception kinds and the causes the target raises itself: integer division by zero and array index failures, caught
- * by their own class and by a superclass, plus unchecked and checked exceptions thrown by the program.
+ * Exception kinds and their causes: an integer division by zero the target raises itself, an array index failure
+ * caught by a superclass in the caller, plus unchecked and checked exceptions thrown by the program. Juno panics on
+ * an implicit bounds failure by design, so the index failure is thrown explicitly before the access.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class,
         ArduinoNanoEsp32Board.class})
@@ -34,6 +35,9 @@ public final class ExceptionCauses {
     }
 
     static int readAt(int[] values, int index) {
+        if (index < 0 || index >= values.length) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
         return values[index];
     }
 
