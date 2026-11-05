@@ -131,7 +131,7 @@ class RcxLinkTest {
     @DisplayName("Configures a channel's tone indicator motor output")
     void shouldConfigureAChannelToneIndicator() {
         // When
-        link.configureChannelIndicator(2, RcxLight.PORT_C);
+        link.send(RcxLink.getChannelIndicatorOpcode(), 2, RcxLight.PORT_C, 2);
 
         // Then
         assertThat(Infrared.written).containsSubsequence(

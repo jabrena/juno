@@ -25,7 +25,10 @@ class ZeldaPolyphonicRcxTest {
         assertThat(ZeldaPolyphonicRcx.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
         assertThat(ZeldaPolyphonicRcxNano.REFERENCE_FREQUENCY_HZ).isEqualTo(440);
         assertThat(ZeldaPolyphonicRcxNano.REFERENCE_DURATION_CENTISECONDS).isEqualTo(50);
-        assertThat(ZeldaPolyphonicRcxNano.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3);
+        assertThat(ZeldaPolyphonicRcxNano.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3, 4);
+        assertThat(ZeldaPolyphonicRcxR4.REFERENCE_FREQUENCY_HZ).isEqualTo(440);
+        assertThat(ZeldaPolyphonicRcxR4.REFERENCE_DURATION_CENTISECONDS).isEqualTo(50);
+        assertThat(ZeldaPolyphonicRcxR4.ORCHESTRA_CHANNELS).containsExactly(1, 2, 3, 4);
     }
 
     @Test
@@ -36,5 +39,8 @@ class ZeldaPolyphonicRcxTest {
         assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(0)).isEqualTo(1);
         assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(274)).isEqualTo(27);
         assertThat(ZeldaPolyphonicRcxNano.durationCentiseconds(3356)).isEqualTo(255);
+        assertThat(ZeldaPolyphonicRcxR4.durationCentiseconds(0)).isEqualTo(1);
+        assertThat(ZeldaPolyphonicRcxR4.durationCentiseconds(274)).isEqualTo(27);
+        assertThat(ZeldaPolyphonicRcxR4.durationCentiseconds(3356)).isEqualTo(255);
     }
 }

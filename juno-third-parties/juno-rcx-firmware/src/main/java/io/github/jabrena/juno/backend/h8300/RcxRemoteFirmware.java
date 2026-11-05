@@ -381,12 +381,13 @@ public final class RcxRemoteFirmware {
         code.replyWith(1);
     }
 
-    /** Queues a tone: the ROM takes the frequency in Hz and the duration as LEGO's command carries them. */
+    /**
+     * Queues a tone: the ROM takes the frequency in Hz and the duration as LEGO's command carries them. A tone lights
+     * no display icon: the datalog circle (0x18), once used as a tone marker, fills a quarter at every redraw and
+     * looked like a spinner. The configured output lamp is the tone indicator.
+     */
     private void playTone() {
         assembler.label("play_tone");
-        if (withIcons) {
-            icons.signalTone();
-        }
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R1L);
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R1H);
         assembler.loadByte(RcxCode.REQUEST + 3, H8ByteRegister.R2L);

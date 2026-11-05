@@ -38,6 +38,11 @@ public final class RcxLink {
     private static final int COMMAND_GAP_MILLIS = 60;
     private static final int CHANNEL_TONE_OPCODE = 0xA3;
     private static final int CHANNEL_INDICATOR_OPCODE = 0x92;
+
+    /** Returns the opcode used to configure a channel's tone indicator motor output. */
+    public static int getChannelIndicatorOpcode() {
+        return CHANNEL_INDICATOR_OPCODE;
+    }
     private static final int CHANNEL_SELECTOR_OPCODE = 0x91;
 
     /** The opcode (toggle bit cleared) and arguments of the last frame {@link #receive} accepted. */
@@ -155,17 +160,6 @@ public final class RcxLink {
         }
         int opcode = CHANNEL_TONE_OPCODE + ((channel - 1) << 4);
         send(opcode, frequencyHz & 0xFF, (frequencyHz >> 8) & 0xFF, durationCentiseconds & 0xFF, 3);
-    }
-
-    /** Configures the selected brick's tone indicator for channel {@code 1..5}: output A, B or C is {@code 0..2}. */
-    void configureChannelIndicator(int channel, int indicatorOutput) {
-        if (channel < 1 || channel > 5) {
-            throw new IllegalArgumentException("RCX channel must be between 1 and 5");
-        }
-        if (indicatorOutput < 0 || indicatorOutput > 2) {
-            throw new IllegalArgumentException("RCX indicator output must be A (0), B (1) or C (2)");
-        }
-        send(CHANNEL_INDICATOR_OPCODE, channel, indicatorOutput, 2);
     }
 
     /** Transmits {@code opcode} with {@code arguments} (0..3) arguments {@code first}, {@code second} and {@code third}. */

@@ -37,8 +37,6 @@ final class RcxDisplayIcons {
     private static final int RECEIVING_STEPS = 2;
     private static final int SHORT_RANGE = 0x1C;
     private static final int LONG_RANGE = 0x1D;
-    /** The standard datalog symbol is Juno's tone-activity marker; RCX has no speaker LCD segment. */
-    private static final int TONE_ACTIVITY = 0x18;
     private static final int FIRST_ICON = 0x06;
     private static final int ALL_SEGMENTS = 0x20;
     private static final int STANDING = 0x06;
@@ -69,12 +67,6 @@ final class RcxDisplayIcons {
     void signalReceived() {
         assembler.moveImmediate(RECEIVING_STEPS, H8Register.R6);
         assembler.store(H8Register.R6, RECEIVING);
-    }
-
-    /** Leaves the tone-activity symbol lit until the next display clear or explicit icon change. */
-    void signalTone() {
-        assembler.moveImmediate(1, H8ByteRegister.R6L);
-        assembler.storeByte(H8ByteRegister.R6L, MANUAL + TONE_ACTIVITY);
     }
 
     /** The word {@link RcxMotorCommands} sets while any output is on. */
