@@ -8,7 +8,6 @@ area to focused, deterministic programs whose serial output must equal the OpenJ
 catalog claims (Thumb-2 under QEMU, AVR under simavr, Xtensa under Espressif QEMU).
 
 ## Requirements
-
 ### Requirement: Control-flow areas in the conformance catalog
 
 `juno-compiler/src/test/resources/conformance/catalog.xml` SHALL define the control-flow semantic areas listed in
@@ -41,14 +40,14 @@ area, missing fixture, malformed or external-resource XML).
 
 ### Requirement: Control-flow areas not claimed by this suite
 
-Switch expressions and pattern matching are in this area: switch expressions (§§14.21, 15.28), `instanceof` type and
-record patterns (§15.20.2), pattern switch labels, guards, `case null`, and exhaustiveness over sealed types
-(§§14.11.1.1, 14.30), and pattern-variable flow scoping (§6.3.2). The control-flow catalog SHALL NOT claim coverage
-for the following, which belong to other categories or to the compiler's static checks: `throw`,
-`try`/`catch`/`finally`, and `try`-with-resources (JLS §§14.18, 14.20; `exceptions/`); `synchronized` (§14.19;
-`concurrency/`); `String` and `enum` selectors (§14.11; `strings/` and `collections/` or `inheritance/`); the
-`Iterable` form of the enhanced `for` (§14.14.2); local classes (§14.3); and unreachable-statement checks
-(§14.22), which javac enforces at compile time.
+The control-flow catalog SHALL NOT claim coverage for the following, which belong to other categories or to the
+compiler's static checks: `throw`, `try`/`catch`/`finally`, and `try`-with-resources (JLS §§14.18, 14.20;
+`exceptions/`); `synchronized` (§14.19; `concurrency/`); `String` and `enum` selectors (§14.11; `strings/` and
+`collections/` or `inheritance/`); the `Iterable` form of the enhanced `for` (§14.14.2); local classes (§14.3); and
+unreachable-statement checks (§14.22), which javac enforces at compile time. Switch expressions and pattern matching
+are in this area: switch expressions (§§14.21, 15.28), `instanceof` type and record patterns (§15.20.2), pattern
+switch labels, guards, `case null`, and exhaustiveness over sealed types (§§14.11.1.1, 14.30), and pattern-variable
+flow scoping (§6.3.2).
 
 #### Scenario: A pattern switch is catalogued
 
@@ -162,3 +161,4 @@ visible.
 
 - **WHEN** the catalog is validated
 - **THEN** each scope reports its covered count, its total, and its skipped counts split by reason label
+
