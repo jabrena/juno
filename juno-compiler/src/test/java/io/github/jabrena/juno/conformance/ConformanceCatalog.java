@@ -50,7 +50,11 @@ public final class ConformanceCatalog {
             Map.entry("generics.classes-methods-and-erasure", Set.of("4.4", "4.5", "4.6", "8.1.2", "8.4.4")),
             Map.entry("arrays.creation-access-and-length", Set.of("10.1", "10.2", "10.3", "10.4", "10.5", "10.6",
                     "10.7", "15.10.1", "15.10.2", "15.10.3")),
-            Map.entry("strings.concatenation-and-conversion", Set.of("3.10.5", "3.10.6", "5.1.11", "5.4", "15.18.1")));
+            Map.entry("strings.concatenation-and-conversion", Set.of("3.10.5", "3.10.6", "5.1.11", "5.4", "15.18.1")),
+            Map.entry("exceptions.kinds-and-causes", Set.of("11.1.1", "11.1.2")),
+            Map.entry("exceptions.throw-and-catch", Set.of("14.18", "14.20", "14.20.1")),
+            Map.entry("exceptions.finally-and-unwinding", Set.of("11.3", "14.20.2")),
+            Map.entry("exceptions.try-with-resources", Set.of("14.20.3", "14.20.3.1", "14.20.3.2")));
 
     /** Classification value of a JLS section that some area covers with a program. */
     private static final String COVERED = "covered";

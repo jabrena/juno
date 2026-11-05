@@ -25,6 +25,10 @@
         <program id="generic-types" source="programs/generics/GenericTypes.java"/>
         <program id="array-semantics" source="programs/arrays/ArraySemantics.java"/>
         <program id="string-semantics" source="programs/strings/StringSemantics.java"/>
+        <program id="exception-causes" source="programs/exceptions/ExceptionCauses.java"/>
+        <program id="throw-and-catch" source="programs/exceptions/ThrowAndCatch.java"/>
+        <program id="finally-and-unwinding" source="programs/exceptions/FinallyAndUnwinding.java"/>
+        <program id="try-with-resources" source="programs/exceptions/TryWithResources.java"/>
     </programs>
     <!--
         backends: the emulator targets the suite runs on, defined once here. Every area refers to them by id with
@@ -173,6 +177,23 @@
             <jls section="15.10.1"/>
             <jls section="15.10.2"/>
             <jls section="15.10.3"/>
+        </scope>
+        <scope id="exceptions" title="Exceptions, throw, catch, finally, and try-with-resources">
+            <jls section="11.1.1"/>
+            <jls section="11.1.2"/>
+            <jls section="11.1.3"/>
+            <jls section="11.2"/>
+            <jls section="11.2.1"/>
+            <jls section="11.2.2"/>
+            <jls section="11.2.3"/>
+            <jls section="11.3"/>
+            <jls section="14.18"/>
+            <jls section="14.20"/>
+            <jls section="14.20.1"/>
+            <jls section="14.20.2"/>
+            <jls section="14.20.3"/>
+            <jls section="14.20.3.1"/>
+            <jls section="14.20.3.2"/>
         </scope>
         <scope id="strings" title="Strings and string conversion">
             <jls section="3.10.5"/>
@@ -450,6 +471,50 @@
             <jls section="5.4"/>
             <jls section="15.18.1"/>
             <program ref="string-semantics"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="exceptions.kinds-and-causes" title="Exception kinds and the causes the target raises">
+            <jls section="11.1.1"/>
+            <jls section="11.1.2"/>
+            <program ref="exception-causes"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="exceptions.throw-and-catch" title="Throw statements and catch clause matching">
+            <jls section="14.18"/>
+            <jls section="14.20"/>
+            <jls section="14.20.1"/>
+            <program ref="throw-and-catch"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="exceptions.finally-and-unwinding" title="Finally blocks and unwinding across calls">
+            <jls section="11.3"/>
+            <jls section="14.20.2"/>
+            <program ref="finally-and-unwinding"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="exceptions.try-with-resources" title="Try-with-resources, basic and extended">
+            <jls section="14.20.3"/>
+            <jls section="14.20.3.1"/>
+            <jls section="14.20.3.2"/>
+            <program ref="try-with-resources"/>
+            <backend ref="thumb2" status="REQUIRED"/>
+            <backend ref="avr" status="REQUIRED"/>
+            <backend ref="xtensa" status="REQUIRED"/>
+        </area>
+        <area id="exceptions.compile-time-and-asynchronous" title="Compile-time exception checking and asynchronous exceptions">
+            <jls section="11.1.3" skipped="true" reason="Out of scope: asynchronous exceptions are not raised by the board runtime"/>
+            <jls section="11.2" skipped="true" reason="Out of scope: compile-time exception checking is performed by javac"/>
+            <jls section="11.2.1" skipped="true" reason="Out of scope: compile-time exception analysis is performed by javac"/>
+            <jls section="11.2.2" skipped="true" reason="Out of scope: compile-time exception analysis is performed by javac"/>
+            <jls section="11.2.3" skipped="true" reason="Out of scope: compile-time exception checking is performed by javac"/>
             <backend ref="thumb2" status="REQUIRED"/>
             <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
