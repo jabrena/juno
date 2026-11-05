@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.fail;
  * image, booted under Espressif's QEMU, and its UART transcript compared with what the same source prints on OpenJDK.
  *
  * <p>The harness (Dockerfile, {@code run.sh}, {@code merge_flash.sh} and the emulator {@code variant.cpp}) lives in
- * {@code src/test/xtensa}. Unlike the bare-metal Thumb-2 and AVR harnesses it runs the real core and its boot chain;
+ * {@code src/test/docker/xtensa}. Unlike the bare-metal Thumb-2 and AVR harnesses it runs the real core and its boot chain;
  * the emulator variant only drops the board's double-tap recovery, which drives an LED peripheral QEMU does not model.
  * The sketch wrapper brackets the program with {@code [juno-begin]} and {@code [juno-exit]}, so the boot log before
  * it is not part of the transcript, and the core's {@code \r\n} line ends are compared as {@code \n}. The pilot covers
@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.fail;
 class XtensaRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(XtensaRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
-    private static final Path XTENSA = BASEDIR.resolve("src/test/xtensa");
+    private static final Path XTENSA = BASEDIR.resolve("src/test/docker/xtensa");
     private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "xtensa",
             CompilerTestSupport.JUNO_API_CLASSES);
     /** The one ESP32-S3 board/core path this pilot claims. */

@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The AVR counterpart of {@code QemuRunIT}: runs Juno-generated AVR code for every AVR board instead of only
  * compiling it. Each program is compiled by Juno, built with avr-gcc against the bare-metal harness in
- * {@code src/test/simavr} (a stand-in megaavr core), executed under simavr (an ATmega2560: the ATmega4809's
+ * {@code src/test/docker/simavr} (a stand-in megaavr core), executed under simavr (an ATmega2560: the ATmega4809's
  * instruction set, more RAM), and its serial output compared with what the same source prints on OpenJDK. This is
  * what shows an 8-bit target keeps Java's semantics: a 32-bit {@code int} on 8-bit registers, the frame layout and
  * calling convention, the shim thunks, the software {@code double}, the collector scanning 16-bit references.
@@ -55,6 +55,7 @@ class SimavrRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(SimavrRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path SIMAVR = BASEDIR.resolve("src/test/simavr");
+    private static final Path HARNESS = BASEDIR.resolve("src/test/docker/simavr");
     private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "simavr",
             CompilerTestSupport.JUNO_API_CLASSES);
     private static final ProgramDirectory QEMU_PROGRAMS =
@@ -78,7 +79,7 @@ class SimavrRunIT {
             Assumptions.assumeTrue(DockerClientFactory.instance().isDockerAvailable(),
                     "Neither a local avr-gcc and libsimavr toolchain nor Docker is available");
             container = new GenericContainer<>(new ImageFromDockerfile("juno-simavr:bookworm-v1", false)
-                    .withFileFromPath(".", SIMAVR));
+                    .withFileFromPath(".", HARNESS));
             container.start();
         }
         List<Path> sources = new ArrayList<>(QEMU_PROGRAMS.sources());
@@ -103,9 +104,9 @@ class SimavrRunIT {
         }
         Files.createDirectories(LOCAL_HARNESS);
         for (String file : HARNESS_FILES) {
-            Files.copy(SIMAVR.resolve(file), LOCAL_HARNESS.resolve(file), StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(HARNESS.resolve(file), LOCAL_HARNESS.resolve(file), StandardCopyOption.REPLACE_EXISTING);
         }
-        Process build = new ProcessBuilder("gcc", "-O2", SIMAVR.resolve("runner.c").toString(), "-o",
+        Process build = new ProcessBuilder("gcc", "-O2", HARNESS.resolve("runner.c").toString(), "-o",
                 LOCAL_HARNESS.resolve("simavr-runner").toString(), "-I/usr/include/simavr", "-lsimavr")
                 .redirectErrorStream(true).start();
         String output = new String(build.getInputStream().readAllBytes(), StandardCharsets.UTF_8);

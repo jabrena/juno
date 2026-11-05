@@ -202,7 +202,7 @@
             </build>
         </profile>
         <!--
-            Run the AVR (UNO WiFi Rev2) programs under simavr and compare them with OpenJDK (src/test/simavr): on a
+            Run the AVR (UNO WiFi Rev2) programs under simavr and compare them with OpenJDK (harness in src/test/docker/simavr): on a
             local avr-gcc and libsimavr toolchain when one is installed, otherwise in Docker.
         -->
         <profile>
@@ -244,7 +244,7 @@
         </profile>
         <!--
             Run the primitive conformance programs for the Nano ESP32 under Espressif's ESP32-S3 QEMU in Docker and
-            compare them with OpenJDK (src/test/xtensa).
+            compare them with OpenJDK (harness in src/test/docker/xtensa).
         -->
         <profile>
             <id>xtensa</id>

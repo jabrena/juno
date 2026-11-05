@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Programs live in {@code src/test/qemu/programs}; the OpenJDK side shadows {@code Serial} with
  * {@code src/test/qemu/openjdk}. The harness (stub {@code Arduino.h}, startup code, {@code run.sh}) is baked into
- * the image built from {@code src/test/qemu/Dockerfile}. It models no hardware, so it covers language and
+ * the image built from {@code src/test/docker/qemu/Dockerfile}. It models no hardware, so it covers language and
  * runtime behavior only. Opt-in: {@code ./mvnw -pl juno-compiler -am -Pqemu verify}. Skipped when Docker is not available.
  */
 @Tag("qemu")
@@ -57,6 +57,7 @@ class QemuRunIT {
     private static final Logger LOG = LoggerFactory.getLogger(QemuRunIT.class);
     private static final Path BASEDIR = Path.of(System.getProperty("basedir", ".")).toAbsolutePath().normalize();
     private static final Path QEMU = BASEDIR.resolve("src/test/qemu");
+    private static final Path HARNESS = BASEDIR.resolve("src/test/docker/qemu");
     private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "qemu",
             CompilerTestSupport.JUNO_API_CLASSES);
     private static final ProgramDirectory PROGRAMS = new ProgramDirectory(QEMU.resolve("programs"));
@@ -80,7 +81,7 @@ class QemuRunIT {
         // Keep the named toolchain image across Maven JVMs. The heavyweight apt layer is stable and reusable;
         // a harness change only replaces the small COPY layer at the end of the Dockerfile.
         return new GenericContainer<>(new ImageFromDockerfile("juno-qemu:bookworm-v1", false)
-                .withFileFromPath(".", QEMU));
+                .withFileFromPath(".", HARNESS));
     }
 
     @BeforeAll
@@ -97,7 +98,7 @@ class QemuRunIT {
     /**
      * Every program under src/test/qemu/programs, once per Thumb-2 board it targets (SimavrRunIT runs the AVR ones).
      * The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small stand-in
-     * ({@code src/test/qemu/zephyr/kernel.h}: baton semaphores, and a {@code k_timer} on SysTick for the preemption
+     * ({@code src/test/docker/qemu/zephyr/kernel.h}: baton semaphores, and a {@code k_timer} on SysTick for the preemption
      * tick, with threads on the process stack), so it covers the port's logic but not Zephyr's real scheduler.
      */
     static Stream<Arguments> programs() {

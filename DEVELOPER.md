@@ -86,7 +86,7 @@ The Docker profiles run end-to-end tests with Testcontainers:
   `-Djuno.language=java`, `kotlin`, `scala` or `clojure` to compile only that language; omitting it compiles all four.
 - `qemu` runs the language fixtures in `juno-compiler/src/test/qemu/programs` on QEMU (Cortex-M4) and compares their serial
   output with a JVM run of the same source.
-- `simavr` runs the AVR-capable QEMU fixtures and the peripheral fixtures in `juno-compiler/src/test/simavr` on the
+- `simavr` runs the AVR-capable QEMU fixtures and the peripheral fixtures in `juno-compiler/src/test/simavr/programs` on the
   simavr ATmega2560 stand-in, then compares serial output with OpenJDK or the fixture's expected output. It uses a local
   `avr-gcc`/`libsimavr` toolchain when available and otherwise builds the Testcontainers Docker image.
 
