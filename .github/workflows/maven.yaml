@@ -202,14 +202,14 @@ jobs:
         run: |
           set -euo pipefail
           digest="$(git ls-files -z -- \
-            juno-compiler/src/test/qemu/Dockerfile \
-            juno-compiler/src/test/qemu/Arduino.h \
-            juno-compiler/src/test/qemu/Arduino_LED_Matrix.h \
-            juno-compiler/src/test/qemu/Arduino_RouterBridge.h \
-            juno-compiler/src/test/qemu/link.ld \
-            juno-compiler/src/test/qemu/run.sh \
-            juno-compiler/src/test/qemu/startup.cpp \
-            juno-compiler/src/test/qemu/zephyr/kernel.h \
+            juno-compiler/src/test/docker/qemu/Dockerfile \
+            juno-compiler/src/test/docker/qemu/Arduino.h \
+            juno-compiler/src/test/docker/qemu/Arduino_LED_Matrix.h \
+            juno-compiler/src/test/docker/qemu/Arduino_RouterBridge.h \
+            juno-compiler/src/test/docker/qemu/link.ld \
+            juno-compiler/src/test/docker/qemu/run.sh \
+            juno-compiler/src/test/docker/qemu/startup.cpp \
+            juno-compiler/src/test/docker/qemu/zephyr/kernel.h \
             | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
           echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-qemu:sha-$digest" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v4
@@ -232,7 +232,7 @@ jobs:
       - uses: docker/build-push-action@v7
         if: steps.image.outputs.exists != 'true'
         with:
-          context: juno-compiler/src/test/qemu
+          context: juno-compiler/src/test/docker/qemu
           push: true
           tags: ${{ steps.reference.outputs.ref }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -256,15 +256,15 @@ jobs:
         run: |
           set -euo pipefail
           digest="$(git ls-files -z -- \
-            juno-compiler/src/test/simavr/Dockerfile \
-            juno-compiler/src/test/simavr/Arduino.h \
-            juno-compiler/src/test/simavr/SPI.h \
-            juno-compiler/src/test/simavr/SdFat.h \
-            juno-compiler/src/test/simavr/WiFiNINA.h \
-            juno-compiler/src/test/simavr/WiFiUdp.h \
-            juno-compiler/src/test/simavr/run.sh \
-            juno-compiler/src/test/simavr/runner.c \
-            juno-compiler/src/test/simavr/startup.cpp \
+            juno-compiler/src/test/docker/simavr/Dockerfile \
+            juno-compiler/src/test/docker/simavr/Arduino.h \
+            juno-compiler/src/test/docker/simavr/SPI.h \
+            juno-compiler/src/test/docker/simavr/SdFat.h \
+            juno-compiler/src/test/docker/simavr/WiFiNINA.h \
+            juno-compiler/src/test/docker/simavr/WiFiUdp.h \
+            juno-compiler/src/test/docker/simavr/run.sh \
+            juno-compiler/src/test/docker/simavr/runner.c \
+            juno-compiler/src/test/docker/simavr/startup.cpp \
             | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
           echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-simavr:sha-$digest" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v4
@@ -287,7 +287,7 @@ jobs:
       - uses: docker/build-push-action@v7
         if: steps.image.outputs.exists != 'true'
         with:
-          context: juno-compiler/src/test/simavr
+          context: juno-compiler/src/test/docker/simavr
           push: true
           tags: ${{ steps.reference.outputs.ref }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
@@ -311,10 +311,10 @@ jobs:
         run: |
           set -euo pipefail
           digest="$(git ls-files -z -- \
-            juno-compiler/src/test/xtensa/Dockerfile \
-            juno-compiler/src/test/xtensa/merge_flash.sh \
-            juno-compiler/src/test/xtensa/run.sh \
-            juno-compiler/src/test/xtensa/variant.cpp \
+            juno-compiler/src/test/docker/xtensa/Dockerfile \
+            juno-compiler/src/test/docker/xtensa/merge_flash.sh \
+            juno-compiler/src/test/docker/xtensa/run.sh \
+            juno-compiler/src/test/docker/xtensa/variant.cpp \
             | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
           echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-xtensa:sha-$digest" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v4
@@ -337,7 +337,7 @@ jobs:
       - uses: docker/build-push-action@v7
         if: steps.image.outputs.exists != 'true'
         with:
-          context: juno-compiler/src/test/xtensa
+          context: juno-compiler/src/test/docker/xtensa
           push: true
           tags: ${{ steps.reference.outputs.ref }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
