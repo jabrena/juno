@@ -84,11 +84,15 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E()" tabindex="0">GroveDht11()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">GroveDht11(Gpio, Clock)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" tabindex="0">GroveDht11(Gpio, Clock, int)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#read(int,int%5B%5D,int,int%5B%5D,int)" tabindex="0">read(int, int[], int, int[], int)</a></li>
+<li><a href="#getTemperatureCelsius()" tabindex="0">getTemperatureCelsius()</a></li>
+<li><a href="#sampleSize()" tabindex="0">sampleSize()</a></li>
+<li><a href="#fetchSample(float%5B%5D,int)" tabindex="0">fetchSample(float[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -102,10 +106,15 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a>, <a href="../../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">GroveDht11</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
+implements <a href="../../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a>, <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
 <div class="block">Reads Seeed's <a href="https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html">
 Grove Temperature &amp; Humidity Sensor (DHT11)</a>. The DHT11 frame stores whole-number
 humidity and temperature values. The caller owns and reuses both buffers; this driver allocates
@@ -158,6 +167,13 @@ which also works for DHT22-format modules.</div>
 <div class="col-last odd-row-color">
 <div class="block">A sensor on <code>gpio</code> and <code>clock</code>: mocked or simulated ones in a unit test.</div>
 </div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveDht11</a><wbr>(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
+ int&nbsp;signalPin)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A sensor on <code>signalPin</code> of <code>gpio</code> and <code>clock</code>: the form that works as a
+<a href="../../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
+</div>
 </div>
 </section>
 </li>
@@ -172,6 +188,18 @@ which also works for DHT22-format modules.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+ int&nbsp;offset)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Writes the temperature in degrees Celsius and the relative humidity from 0 to 1, starting at <code>offset</code>;
+both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no valid frame was read.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTemperatureCelsius()" class="member-name-link">getTemperatureCelsius</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the temperature in degrees Celsius, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no valid frame was read.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(int,int%5B%5D,int,int%5B%5D,int)" class="member-name-link">read</a><wbr>(int&nbsp;signalPin,
  int[]&nbsp;reading,
@@ -180,6 +208,11 @@ which also works for DHT22-format modules.</div>
  int&nbsp;frameLength)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Reads one checksum-valid DHT11 frame using caller-owned buffers.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns 2: the temperature in degrees Celsius, then the relative humidity from 0 to 1.</div>
 </div>
 </div>
 </div>
@@ -289,6 +322,18 @@ which also works for DHT22-format modules.</div>
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)">
+<h3>GroveDht11</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GroveDht11</span><wbr><span class="parameters">(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
+ int&nbsp;signalPin)</span></div>
+<div class="block">A sensor on <code>signalPin</code> of <code>gpio</code> and <code>clock</code>: the form that works as a
+<a href="../../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>. Create it once, at startup.</div>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -316,6 +361,54 @@ which also works for DHT22-format modules.</div>
 <dd><code>frameLength</code> - writable frame slots, at least <a href="#FRAME_LENGTH"><code>FRAME_LENGTH</code></a></dd>
 <dt>Returns:</dt>
 <dd>whether a plausible DHT11 frame was read</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getTemperatureCelsius()">
+<h3>getTemperatureCelsius</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getTemperatureCelsius</span>()</div>
+<div class="block">Returns the temperature in degrees Celsius, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no valid frame was read.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/Thermometer.html#getTemperatureCelsius()">getTemperatureCelsius</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></code></dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalStateException.html" title="class in java.lang" class="external-link">IllegalStateException</a></code> - if the sensor was created without its signal pin</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sampleSize()">
+<h3>sampleSize</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">sampleSize</span>()</div>
+<div class="block">Returns 2: the temperature in degrees Celsius, then the relative humidity from 0 to 1.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/SampleProvider.html#sampleSize()">sampleSize</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fetchSample(float[],int)">
+<h3>fetchSample</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fetchSample</span><wbr><span class="parameters">(float[]&nbsp;sample,
+ int&nbsp;offset)</span></div>
+<div class="block">Writes the temperature in degrees Celsius and the relative humidity from 0 to 1, starting at <code>offset</code>;
+both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no valid frame was read.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../../robotics/SampleProvider.html#fetchSample(float%5B%5D,int)">fetchSample</a></code>&nbsp;in interface&nbsp;<code><a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>sample</code> - the caller-owned array that receives the sample</dd>
+<dd><code>offset</code> - the index of the first element to write</dd>
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalStateException.html" title="class in java.lang" class="external-link">IllegalStateException</a></code> - if the sensor was created without its signal pin</dd>
 </dl>
 </div>
 </section>

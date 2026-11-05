@@ -81,11 +81,18 @@ initTheme();
 <div class="package-signature"><span class="annotations">@NullMarked
 </span>package <span class="element-name">io.github.jabrena.juno.robotics</span></div>
 <section class="package-description" id="package-description">
-<div class="block">Board-independent motor contracts. <a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> provides
+<div class="block">Board-independent motor and sensor contracts. <a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> provides
 open-loop power control, <a href="Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a> provides position
 feedback, <a href="EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a> combines the two, and
 <a href="RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedMotor</code></a> adds encoder-backed
-speed and position control. Concrete adapters belong under the relevant board or device package
+speed and position control.
+
+<p>Sensor contracts: <a href="SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a> fetches samples
+into a caller-owned <code>float[]</code>, <a href="SensorMode.html" title="interface in io.github.jabrena.juno.robotics"><code>SensorMode</code></a> names one way of reading a
+sensor and <a href="SensorModes.html" title="interface in io.github.jabrena.juno.robotics"><code>SensorModes</code></a> switches between several. The single-purpose
+<a href="LightDetector.html" title="interface in io.github.jabrena.juno.robotics"><code>LightDetector</code></a>, <a href="Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a> and
+<a href="Accelerometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Accelerometer</code></a> cover common sensors.
+Concrete adapters belong under the relevant board or device package
 and must preserve these primitive, allocation-free contracts.</div>
 </section>
 </div>
@@ -110,26 +117,60 @@ and must preserve these primitive, allocation-free contracts.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">An acceleration sensor.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">A motor that runs forward or backward until it is stopped.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">A DC motor driven by a power level.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab1">
-<div class="block">Tachometer feedback for a motor or wheel, after leJOS's <code>Encoder</code>.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Tachometer feedback for a motor or wheel.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">A motor with basic position feedback: open-loop power control from <a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> and the position reported by
 <a href="Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a>.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">The minimal contract for a gyroscope.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="LightDetector.html" title="interface in io.github.jabrena.juno.robotics">LightDetector</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">A sensor that measures white-light level, independent of the device that
+provides it.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="MotionDetector.html" title="interface in io.github.jabrena.juno.robotics">MotionDetector</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">A device that reports whether it has detected motion within its field of view.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab1"><a href="RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">A motor with encoder feedback and closed-loop speed/position control.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Source of sensor samples.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">One way of reading a sensor: a <a href="SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a> with a name, such as a
+temperature or a humidity mode of the same device.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">A sensor with several modes.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">A device that measures temperature, in degrees Celsius.</div>
 </div>
 </div>
 </div>

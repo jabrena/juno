@@ -79,7 +79,15 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#begin()" tabindex="0">begin()</a></li>
-<li><a href="#read(io.github.jabrena.juno.hardware.imu.ImuSample)" tabindex="0">read(ImuSample)</a></li>
+<li><a href="#getXAccel()" tabindex="0">getXAccel()</a></li>
+<li><a href="#getYAccel()" tabindex="0">getYAccel()</a></li>
+<li><a href="#getZAccel()" tabindex="0">getZAccel()</a></li>
+<li><a href="#getAngle()" tabindex="0">getAngle()</a></li>
+<li><a href="#getAngularVelocity()" tabindex="0">getAngularVelocity()</a></li>
+<li><a href="#recalibrateOffset()" tabindex="0">recalibrateOffset()</a></li>
+<li><a href="#reset()" tabindex="0">reset()</a></li>
+<li><a href="#sampleSize()" tabindex="0">sampleSize()</a></li>
+<li><a href="#fetchSample(float%5B%5D,int)" tabindex="0">fetchSample(float[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -95,30 +103,26 @@ initTheme();
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Lsm6ds3</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
-implements <a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></span></div>
+implements <a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
 <div class="block">The STMicroelectronics LSM6DS3TR six-axis inertial sensor on the Arduino UNO WiFi Rev2, read over SPI as plain Java on
 top of <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi"><code>Spi</code></a> (so it needs no Arduino library). The sensor has an accelerometer and a gyroscope but no
 magnetometer, so it cannot find north: the heading is the gyroscope's yaw rate integrated over time from the
-moment <a href="#begin()"><code>begin()</code></a> ran, clockwise positive, and it drifts a little with every minute of use. Roll and pitch come
-from the accelerometer's gravity vector, so they are right only while the board is not accelerating.
+moment <a href="#begin()"><code>begin()</code></a> ran, clockwise positive, and it drifts a little with every minute of use.
 
-<pre><code>Imu imu = ArduinoUno.getImu();   // once, at startup
-imu.begin();                     // keep the board still for about 1.5 s: it measures the gyroscope's bias
-ImuSample sample = new ImuSample();
-if (imu.read(sample)) {
-    Serial.println(sample.headingMillidegrees());
-}
+<pre><code>Gyroscope gyroscope = ArduinoUno.getGyroscope();       // once, at startup: starts the sensor, keep the board still
+Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+Serial.println(gyroscope.getAngle());                  // heading in whole degrees, clockwise
+Serial.println(accelerometer.getXAccel());             // whole m/s^2 along the board's X axis
 </code></pre>
 
 <p>The IMU's chip select is the board's pin <code>CHIP_SELECT</code> (the megaavr core's <code>SPIIMU_SS</code>). The sensor is
-set to 104 Hz, <code>±2 g</code> and <code>±1000 degrees per second</code>. Yaw and roll/pitch are reported in
-milli-degrees (yaw rate in milli-degrees per second), the <a href="../../imu/ImuSample.html" title="class in io.github.jabrena.juno.hardware.imu"><code>ImuSample</code></a> units.</div>
+set to 104 Hz, <code>±2 g</code> and <code>±1000 degrees per second</code>.</div>
 </div>
 </section>
 <section class="summary">
@@ -156,11 +160,53 @@ milli-degrees (yaw rate in milli-degrees per second), the <a href="../../imu/Imu
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Starts the bus and the sensor, returning <code>false</code> if the sensor did not answer with its chip ID.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(io.github.jabrena.juno.hardware.imu.ImuSample)" class="member-name-link">read</a><wbr>(<a href="../../imu/ImuSample.html" title="class in io.github.jabrena.juno.hardware.imu">ImuSample</a>&nbsp;sample)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+ int&nbsp;offset)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Reads one burst of the gyroscope and accelerometer, integrates the yaw rate into the heading and derives roll and
-pitch from gravity.</div>
+<div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; all zero before
+<a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The yaw rate in degrees per second, clockwise positive; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The acceleration along the board's Z axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Measures the gyroscope's bias again; keep the board still for about 2 s.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the heading back to zero, so <a href="#getAngle()"><code>getAngle()</code></a> counts the turns made from now on.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
 </div>
 </div>
 </div>
@@ -205,23 +251,128 @@ pitch from gravity.</div>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
 <div class="block">Starts the bus and the sensor, returning <code>false</code> if the sensor did not answer with its chip ID. Then waits
 for the gyroscope to settle and measures its bias over about 2 s, so keep the board still while it runs.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getXAccel()">
+<h3>getXAccel</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getXAccel</span>()</div>
+<div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../imu/Imu.html#begin()">begin</a></code>&nbsp;in interface&nbsp;<code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html#getXAccel()">getXAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
 </dl>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="read(io.github.jabrena.juno.hardware.imu.ImuSample)">
-<h3>read</h3>
+<section class="detail" id="getYAccel()">
+<h3>getYAccel</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">read</span><wbr><span class="parameters">(<a href="../../imu/ImuSample.html" title="class in io.github.jabrena.juno.hardware.imu">ImuSample</a>&nbsp;sample)</span></div>
-<div class="block">Reads one burst of the gyroscope and accelerometer, integrates the yaw rate into the heading and derives roll and
-pitch from gravity. Returns <code>false</code> before <a href="#begin()"><code>begin()</code></a> has succeeded.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getYAccel</span>()</div>
+<div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
-<dd><code><a href="../../imu/Imu.html#read(io.github.jabrena.juno.hardware.imu.ImuSample)">read</a></code>&nbsp;in interface&nbsp;<code><a href="../../imu/Imu.html" title="interface in io.github.jabrena.juno.hardware.imu">Imu</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html#getYAccel()">getYAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getZAccel()">
+<h3>getZAccel</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getZAccel</span>()</div>
+<div class="block">The acceleration along the board's Z axis in whole metres per second squared; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Accelerometer.html#getZAccel()">getZAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getAngle()">
+<h3>getAngle</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getAngle</span>()</div>
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#getAngle()">getAngle</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getAngularVelocity()">
+<h3>getAngularVelocity</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getAngularVelocity</span>()</div>
+<div class="block">The yaw rate in degrees per second, clockwise positive; <code>0</code> before <a href="#begin()"><code>begin()</code></a>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#getAngularVelocity()">getAngularVelocity</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="recalibrateOffset()">
+<h3>recalibrateOffset</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">recalibrateOffset</span>()</div>
+<div class="block">Measures the gyroscope's bias again; keep the board still for about 2 s. Does nothing before <a href="#begin()"><code>begin()</code></a>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#recalibrateOffset()">recalibrateOffset</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="reset()">
+<h3>reset</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reset</span>()</div>
+<div class="block">Sets the heading back to zero, so <a href="#getAngle()"><code>getAngle()</code></a> counts the turns made from now on.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/Gyroscope.html#reset()">reset</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sampleSize()">
+<h3>sampleSize</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">sampleSize</span>()</div>
+<div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/SampleProvider.html#sampleSize()">sampleSize</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fetchSample(float[],int)">
+<h3>fetchSample</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fetchSample</span><wbr><span class="parameters">(float[]&nbsp;sample,
+ int&nbsp;offset)</span></div>
+<div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; all zero before
+<a href="#begin()"><code>begin()</code></a>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/SampleProvider.html#fetchSample(float%5B%5D,int)">fetchSample</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>sample</code> - the caller-owned array that receives the sample</dd>
+<dd><code>offset</code> - the index of the first element to write</dd>
 </dl>
 </div>
 </section>
