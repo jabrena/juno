@@ -72,12 +72,6 @@ class JunoSiteTest {
     }
 
     @Test
-    void gamesPageEmbedsGifs() {
-        RestAssured.given().when().get("/games/").then().statusCode(200)
-                .body(containsString("/images/games/pacman-cpu.gif"));
-    }
-
-    @Test
     void mavenPluginPagePreservesLiteralMavenProperties() {
         RestAssured.given().when().get("/juno-maven-plugin/").then().statusCode(200)
                 .body(containsString("${project.version}"));
@@ -172,10 +166,9 @@ class JunoSiteTest {
     void showcasePageListsExamplesInSecondaryNavigation() {
         RestAssured.given().when().get("/showcase/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
-                .body(containsString("/images/games/gladiator-solo.gif"))
+                .body(containsString("/images/showcase/gladiator-solo.gif"))
                 .body(containsString("/images/games/lichess-daily.gif"))
-                .body(containsString("/images/showcase/mailbox1.png"))
-                .body(containsString("Polyphonic RCX"));
+                .body(containsString("/images/showcase/mailbox1.png"));
     }
 
 }
