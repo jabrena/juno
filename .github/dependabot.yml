@@ -6,7 +6,10 @@ updates:
       interval: "daily"
       time: "05:00"
   - package-ecosystem: "github-actions"
-    directory: "/"
+    # "/" covers .github/workflows only; the local composite actions pin their own action versions.
+    directories:
+      - "/"
+      - "/.github/actions/*"
     schedule:
       interval: "daily"
       time: "05:00"
