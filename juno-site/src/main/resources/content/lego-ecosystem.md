@@ -10,11 +10,11 @@ infrared tower, and the LEGO hardware does the rest.
 
 | System | Since | What it is | Protocol used | Board with support | Juno class |
 |---|---|---|---|---|---|
-| Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
-| Mindstorms EV3 | 2013 | The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux | Bluetooth Classic (serial port profile), LEGO's EV3 direct commands | — | Pending |
-| Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java) |
-| Mindstorms NXT | 2006 | The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker | Bluetooth Classic (serial port profile), LEGO's NXT direct commands | — | Pending |
-| Mindstorms RCX | 1998 | The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker | Infrared, through an IR LED and receiver on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) |
+| LEGO Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
+| LEGO Mindstorms EV3 | 2013 | The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux | Bluetooth Classic (serial port profile), LEGO's EV3 direct commands | — | Pending |
+| LEGO Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java) |
+| LEGO Mindstorms NXT | 2006 | The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker | Bluetooth Classic (serial port profile), LEGO's NXT direct commands | — | Pending |
+| LEGO Mindstorms RCX | 1998 | The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker | Infrared, through an IR LED and receiver on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) |
 
 ## LEGO Powered Up
 
