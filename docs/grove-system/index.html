@@ -369,9 +369,10 @@ Qwiic connector; <code>NanoConnectorCarrier</code> names them. Set its input sel
 </code></pre>
 <p>Keep digital modules out of the carrier's I2C socket: its bus pull-ups hold a digital output between low and high.</p>
 <h2 id="grove-sensors">Grove Sensors</h2>
-<p>Every driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the same on
-the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>, ...) and on the Nano Connector Carrier
-(<code>carrier.getGroveA0()</code>, <code>carrier.getGroveA2()</code>). Create each driver once, at startup.</p>
+<p>Every pin-based driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the
+same on the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>, ...) and on the Nano Connector Carrier
+(<code>carrier.getGroveA0()</code>, <code>carrier.getGroveA2()</code>). The BMI088 uses the socket's I2C bus and the board's <code>Clock</code> instead.
+Create each driver once, at startup.</p>
 <p>The complete examples below use a Grove Base Shield on an UNO board. To use a Nano Connector Carrier, replace the
 shield socket getter with the corresponding carrier getter and use the Nano board's <code>Gpio</code> and <code>Clock</code> facades.</p>
 <table>
@@ -425,6 +426,12 @@ shield socket getter with the corresponding carrier getter and use the Nano boar
 <td>Digital</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.java"><code>GrovePirMotion</code></a></td>
 <td>Motion detected or not</td>
+</tr>
+<tr>
+<td><a href="#bmi088-accelerometer-and-gyroscope">BMI088 accelerometer and gyroscope</a></td>
+<td>I2C</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/imu/Bmi088.java"><code>Bmi088</code></a></td>
+<td>Acceleration, angular velocity and integrated heading</td>
 </tr>
 <tr>
 <td><a href="#ultrasonic-ranger">Ultrasonic Ranger</a></td>
@@ -628,6 +635,23 @@ public final class GrovePirExample {
             Delay.millis(100);
         }
     }
+}
+</code></pre>
+<h3 id="bmi088-accelerometer-and-gyroscope">BMI088 accelerometer and gyroscope</h3>
+<p>The Grove 6-Axis Accelerometer &amp; Gyroscope uses two I2C addresses on the same bus. <code>Bmi088</code> implements the
+<code>Accelerometer</code>, <code>Gyroscope</code> and <code>SampleProvider</code> contracts; it is configured for ±3 g and ±2000 degrees per second.
+Heading is integrated from the Z-axis gyro and drifts over time. Keep the module still while
+<code>recalibrateOffset()</code> runs.</p>
+<img src="../images/grove/grove-bmi088.jpg" alt="Grove 6-Axis Accelerometer and Gyroscope (BMI088)" width="240">
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.imu.Bmi088;
+
+Bmi088 imu = new Bmi088(ArduinoUno.getI2c(), ArduinoUno.getClock());
+float[] acceleration = new float[imu.sampleSize()];
+if (imu.begin()) {
+    imu.recalibrateOffset();
+    imu.fetchSample(acceleration, 0);
+    int heading = imu.getAngle();
 }
 </code></pre>
 <h3 id="ultrasonic-ranger">Ultrasonic Ranger</h3>
