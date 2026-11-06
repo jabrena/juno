@@ -15,7 +15,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
@@ -28,15 +27,7 @@ class PwmServoShieldTest {
     void startWithAnEmptyBus() {
         Wire.resetBoard();
         bus = mock(I2c.class);
-        shield = new PwmServoShield(bus);
-        shield.begin();
-    }
-
-    @Test
-    @DisplayName("Begin opens the I2C bus once")
-    void shouldOpenTheI2cBusOnce() {
-        // When & Then
-        verify(bus, times(1)).begin();
+        shield = new PwmServoShield(bus, PwmServoShield.ADDRESS_DEFAULT);
     }
 
     @Test
@@ -126,7 +117,7 @@ class PwmServoShieldTest {
         clearInvocations(bus);
 
         // When
-        shield.begin(0x41);
+        new PwmServoShield(bus, 0x41);
 
         // Then
         verify(bus).writeRegister(0x41, 0x00, 0x10);
@@ -141,7 +132,7 @@ class PwmServoShieldTest {
 
         // When
         try {
-            new PwmServoShield().begin();
+            new PwmServoShield(board, PwmServoShield.ADDRESS_DEFAULT);
         } finally {
             NativeI2c.setI2c(NativeI2c.INSTANCE);
         }

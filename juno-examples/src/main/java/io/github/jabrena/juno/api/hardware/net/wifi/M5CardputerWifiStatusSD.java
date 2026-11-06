@@ -35,7 +35,6 @@ public final class M5CardputerWifiStatusSD {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
 
-        DISPLAY.begin();
         showHeader();
 
         WifiCredentials credentials = loadCredentials();
@@ -107,10 +106,6 @@ public final class M5CardputerWifiStatusSD {
     }
 
     private static WifiCredentials loadCredentials() throws IOException {
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
 
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {

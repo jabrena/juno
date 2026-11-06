@@ -1,8 +1,12 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
@@ -27,7 +31,8 @@ public final class RcxFirmwareDownload {
     private static final int START_MILLIS = 5000;
 
     public static void main(String[] args) {
-        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         download(remote);
     }
 
@@ -36,7 +41,6 @@ public final class RcxFirmwareDownload {
         RcxFirmware firmware = remote.getFirmware();
         RcxAudio audio = remote.getAudio();
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         byte[] block = new byte[RcxFirmware.BLOCK_SIZE];
         RcxDownloadProgress progress = new RcxDownloadProgress(RcxFirmwareImage.LENGTH);

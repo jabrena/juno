@@ -51,7 +51,6 @@ class LichessRecordingTest {
     void recordsTheDailyPuzzle() throws Exception {
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", "lichess");
         Files.createDirectories(output);
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         byte[] response = DAILY_PUZZLE.getBytes();

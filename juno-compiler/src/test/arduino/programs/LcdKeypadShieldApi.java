@@ -6,7 +6,6 @@ import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 public final class LcdKeypadShieldApi {
     public static void main(String[] args) {
         LcdKeypadShield lcd = new LcdKeypadShield();
-        lcd.begin();
 
         lcd.backlight(true);
         lcd.clear();

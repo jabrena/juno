@@ -1,7 +1,11 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLcd;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
@@ -27,11 +31,11 @@ public class RcxDisplay {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
-        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxLcd lcd = remote.getLcd();
         RcxLightSensor light = new RcxLightSensor(remote.getSensor3());
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         while (!lcd.showNumber(COUNTDOWN_FROM)) {
             Serial.println("No answer: is Juno's firmware on the RCX, and is it on and in range?");
@@ -45,7 +49,6 @@ public class RcxDisplay {
             Delay.millis(COUNT_MILLIS);
         }
 
-        light.begin();
         Serial.println("Showing the light sensor on input 3");
         while (true) {
             int percent = light.lightPercent();

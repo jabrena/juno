@@ -290,7 +290,6 @@ class JunoCompilerTest {
                     public final class CardputerDisplay {
                         public static void main(String[] args) {
                             Display display = M5StackCardputer.getDisplay();
-                            display.begin();
                             display.fillScreen(Display.BLACK);
                             display.drawPixel(1, 2, Display.RED);
                             display.fillRect(3, 4, 5, 6, Display.BLUE);
@@ -312,7 +311,6 @@ class JunoCompilerTest {
             // Then
             assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
             assertThat(result.assembly()).contains(
-                    "call8 juno_m5_display_begin",
                     "call8 juno_m5_display_fill_screen",
                     "call8 juno_m5_display_draw_pixel",
                     "call8 juno_m5_display_fill_rect",
@@ -429,7 +427,7 @@ class JunoCompilerTest {
                     @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoDisplay {
                         public static void main(String[] args) {
-                            M5StackCardputer.getDisplay().begin();
+                            M5StackCardputer.getDisplay().fillScreen(0);
                         }
                     }
                     """;
@@ -453,7 +451,6 @@ class JunoCompilerTest {
                     @Board(io.github.jabrena.juno.annotations.M5StackCardputerBoard.class)
                     public final class CardputerKeyboard {
                         public static void main(String[] args) {
-                            M5StackCardputer.getDisplay().begin();
                             Keyboard keyboard = M5StackCardputer.getKeyboard();
                             keyboard.begin();
                             keyboard.update();
@@ -478,7 +475,6 @@ class JunoCompilerTest {
             // Then
             assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
             assertThat(result.assembly()).contains(
-                    "call8 juno_m5_display_begin",
                     "call8 juno_m5_keyboard_begin",
                     "call8 juno_m5_keyboard_update",
                     "call8 juno_m5_keyboard_is_changed",
@@ -1436,7 +1432,6 @@ class JunoCompilerTest {
                     public final class TftDemo {
                         public static void main(String[] args) {
                             TftTouchShield tft = new TftTouchShield();
-                            tft.begin();
                             tft.setRotation(TftTouchShield.LANDSCAPE);
                             tft.fillScreen(TftTouchShield.BLACK);
                             tft.setTextSize(2);
@@ -1622,13 +1617,12 @@ class JunoCompilerTest {
                             Clock clock = ArduinoUno.getClock();
                             I2c i2c = ArduinoUno.getI2c();
                             L298nMotor motor = new L298nMotor(gpio, 3, 4, 5);
-                            motor.begin();
                             motor.setPower(50);
                             motor.forward();
                             GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, shield.getD2());
                             float range = ranger.getRange();
                             Bmi088 imu = new Bmi088(i2c, clock);
-                            if (imu.begin() && range >= 0f) {
+                            if (range >= 0f) {
                                 imu.getAngularVelocity();
                             }
                             byte[] framebuffer = new byte[GroveOledSsd1315.FRAMEBUFFER_SIZE];

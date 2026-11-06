@@ -6,8 +6,7 @@ import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 public final class TftTouchShieldApi {
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
-        
+
         tft.setRotation(1);
         int red = TftTouchShield.color(255, 0, 0);
         tft.fillScreen(0);

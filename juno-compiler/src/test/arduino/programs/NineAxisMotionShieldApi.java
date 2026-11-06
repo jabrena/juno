@@ -15,7 +15,6 @@ public final class NineAxisMotionShieldApi {
         Gpio gpio = ArduinoUno.getGpio();
         I2c i2c = ArduinoUno.getI2c();
         NineAxisMotionShield imu = new NineAxisMotionShield(gpio, i2c);
-        imu.begin();
         imu.reset();
 
         Serial.println(imu.getAngle());

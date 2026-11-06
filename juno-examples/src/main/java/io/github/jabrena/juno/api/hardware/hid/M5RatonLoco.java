@@ -55,9 +55,7 @@ public final class M5RatonLoco {
         Mouse mouse = M5StackCardputer.getMouse();
         Display display = M5StackCardputer.getDisplay();
         Serial.println("M5 Cardputer booting");
-        display.begin();
         Serial.println("M5 display started");
-        mouse.begin();
         Serial.println("M5 HID mouse started");
         drawMouse(display, START_X, START_Y, 0);
         Serial.println("M5 animation started");

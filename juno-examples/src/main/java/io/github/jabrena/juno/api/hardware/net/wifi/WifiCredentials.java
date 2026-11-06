@@ -24,10 +24,6 @@ public record WifiCredentials(String ssid, String password) {
 
     /** Reads the network from {@code sdCard}; null, saying why over serial, when the card or either key is missing. */
     public static WifiCredentials load(SdCard sdCard) {
-        if (!sdCard.begin()) {
-            Serial.println("No SD card");
-            return null;
-        }
         try (InputStream file = sdCard.open(FILE)) {
             if (file == null) {
                 Serial.println("No application.properties");

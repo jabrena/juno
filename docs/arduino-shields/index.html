@@ -408,7 +408,6 @@ public final class TftTouchExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         tft.fillScreen(TftTouchShield.BLUE);
         tft.setCursor(20, 20);
         tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
@@ -466,7 +465,7 @@ formats the two values as degrees and percent.</p>
 <p>A Bosch BNO055 that fuses its accelerometer and gyroscope and reports the heading in degrees. <code>NineAxisMotionShield</code>
 reads it over I2C with no Arduino library, which suits measuring how far a vehicle has turned. It holds D7 as the
 sensor's reset line.</p>
-<p>This complete example initializes the shield and prints its heading, yaw rate and acceleration:</p>
+<p>Constructing the shield initializes it and prints its heading, yaw rate and acceleration:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -476,10 +475,6 @@ public final class NineAxisExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         NineAxisMotionShield imu = new NineAxisMotionShield();
-        if (!imu.begin()) {
-            Serial.println(&quot;BNO055 not found&quot;);
-            return;
-        }
         imu.reset();
 
         while (true) {
@@ -514,7 +509,6 @@ public final class LcdKeypadExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         LcdKeypadShield lcd = new LcdKeypadShield();
-        lcd.begin();
         lcd.print(&quot;Press a button&quot;);
         int lastButton = -1;
 

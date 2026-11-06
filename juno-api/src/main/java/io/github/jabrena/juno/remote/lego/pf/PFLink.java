@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.remote.lego.pf;
 
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.util.Delay;
 
 /**
  * The Power Functions infrared link: the message framing and the transmission of a Power Functions command over an
  * {@link InfraredEmitter}, as {@link io.github.jabrena.juno.remote.lego.rcx.RcxLink} is for the RCX. Create one at
- * startup with the emitter, call {@link #begin} once, and share it with every {@link RemotePF} that talks to the same
- * receivers, so they share one toggle bit.
+ * startup with the emitter and share it with every {@link RemotePF} that talks to the same receivers, so they share
+ * one toggle bit.
  *
  * <p>A message is 16 bits of four 4-bit fields (toggle, escape and channel; output and mode; data; checksum) sent as a
  * 38 kHz burst of 6 cycles per bit, followed by a pause of 10 cycles for a 0, 21 for a 1 and 39 for the start and stop
@@ -28,16 +28,13 @@ public final class PFLink {
     private static final int TOGGLE = 0x8;
 
     private final InfraredEmitter emitter;
+    private final InfraredDriver driver;
     private int toggleBit;
 
     /** A link that transmits through {@code emitter}, for example an {@code HX53InfraredEmitter} or a {@code GroveInfraredEmitter}. */
     public PFLink(InfraredEmitter emitter) {
         this.emitter = emitter;
-    }
-
-    /** Configures the emitter's transmit pin. There is no receiver, so the pulses are sent but never read back. */
-    public void begin() {
-        emitter.begin(new HXM121InfraredReceiver(-1), 0);
+        driver = new InfraredDriver(emitter.driver(), -1, emitter.signalPin(), 0);
     }
 
     /** Transmits one single-output message: {@code output} of the receiver on {@code channel} set to {@code pwm}. */

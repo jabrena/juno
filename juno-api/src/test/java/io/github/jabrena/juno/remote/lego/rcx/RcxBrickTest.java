@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +25,9 @@ class RcxBrickTest {
     void startWithAnEmptyLink() {
         Wire.resetBoard();
         Infrared.reset();
-        brick = new RcxBrick(new RcxLink(SimulatedTime.clock()));
+        brick = new RcxBrick(
+                new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock()),
+                RcxChannel.BROADCAST);
     }
 
     static Stream<Arguments> motorDirections() {

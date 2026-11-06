@@ -310,7 +310,6 @@ class GeneratedAsmToolchainTest {
                 public final class AsmTft {
                     public static void main(String[] args) {
                         TftTouchShield tft = new TftTouchShield();
-                        tft.begin();
                         tft.fillScreen(TftTouchShield.BLACK);
                         tft.drawRect(0, 0, 20, 20, TftTouchShield.GREEN);
                         tft.println("Juno");
@@ -1000,12 +999,16 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
+                        import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRemoteRcx {
                     public static void main(String[] args) {
-                        RemoteRcx remote = new RemoteRcx(new RcxLink(), 2, 3);
-                        remote.begin();
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
                         while (true) {
                             int buttons = remote.buttons();
                             if ((buttons & RemoteRcx.A_FORWARD) != 0) {
@@ -1176,13 +1179,17 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
+                        import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
-                        RemoteRcx rcx = new RemoteRcx(new RcxLink(), 2, 3);
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RemoteRcx rcx = new RemoteRcx(link, RcxChannel.BROADCAST);
                         RcxFirmware firmware = rcx.getFirmware();
-                        rcx.begin();
                         byte[] block = new byte[64];
                         if (firmware.installed() != 0) return;
                         if (!firmware.delete() || !firmware.start(0x8000, 0)) return;
@@ -1209,27 +1216,27 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.rcx.RcxRotationSensor;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxTemperatureSensor;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+                import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
+                        import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
-                        RemoteRcx rcx = new RemoteRcx(new RcxLink(), 2, 3);
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RemoteRcx rcx = new RemoteRcx(link, RcxChannel.BROADCAST);
                         RcxTouchSensor touch = new RcxTouchSensor(rcx.getSensor1());
                         RcxTemperatureSensor temperature = new RcxTemperatureSensor(rcx.getSensor1());
                         RcxLightSensor light = new RcxLightSensor(rcx.getSensor2());
                         RcxRotationSensor rotation = new RcxRotationSensor(rcx.getSensor3());
                         RcxMotor drive = rcx.getMotorA().and(rcx.getMotorB());
                         RcxMotor arm = rcx.getMotorC();
-                        rcx.begin();
-                        if (!touch.begin()) return;
                         if (rcx.getBattery().millivolts() < 6000) return;
                         rcx.getAudio().playSound(RcxAudio.SOUND_BEEP);
                         rcx.getAudio().playTone(440, 50);
                         rcx.getLcd().showNumber(light.lightPercent() + rcx.getSensor2().readValue());
                         rcx.getLcd().showIcon(RcxLcd.ICON_WALKING, true);
-                        light.begin();
-                        rotation.begin();
-                        temperature.begin();
                         if (rotation.degrees() > 90 || rotation.steps() < -4 || temperature.temperatureTenths() > 300) {
                             rotation.reset();
                         }
@@ -1273,7 +1280,6 @@ class GeneratedAsmToolchainTest {
                 public final class AsmPowerFunctions {
                     public static void main(String[] args) {
                         PFLink link = new PFLink(new HX53InfraredEmitter(3));
-                        link.begin();
                         RemotePF remote = new RemotePF(link);
                         remote.setSpeed(PFChannel.CHANNEL_1, PFPort.RED, 5);
                         remote.setSpeeds(PFChannel.CHANNEL_2, -7, 7);
@@ -1307,7 +1313,6 @@ class GeneratedAsmToolchainTest {
                 public final class AsmHeading {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
-                        if (!imu.begin()) return;
                         imu.reset();
                         while (imu.getAngle() >= 0 && imu.getAngle() < 270) {
                         }
@@ -1340,7 +1345,6 @@ class GeneratedAsmToolchainTest {
                 public final class AsmBalance {
                     public static void main(String[] args) {
                         NineAxisMotionShield imu = new NineAxisMotionShield();
-                        if (!imu.begin()) return;
                         while (Math.abs(imu.getXAccel()) < 5 && imu.getAngularVelocity() > -16f) {
                         }
                     }

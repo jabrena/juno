@@ -79,6 +79,7 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#signalPin()" tabindex="0">signalPin()</a></li>
+<li><a href="#driver()" tabindex="0">driver()</a></li>
 </ol>
 </li>
 </ol>
@@ -104,7 +105,7 @@ implements <a href="../../ir/InfraredReceiver.html" title="interface in io.githu
 <div class="block">A Grove infrared receiver module's signal connection.
 
 <p>The receiver is configured together with a <a href="GroveInfraredEmitter.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors"><code>GroveInfraredEmitter</code></a> by
-<a href="../../../../remote/lego/rcx/RcxLink.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)"><code>RcxLink.begin(InfraredReceiver, InfraredEmitter)</code></a>; it does not allocate or configure anything while a
+<a href="../../../../remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> constructs the link; it does not allocate or configure anything while a
 frame is being received.</div>
 </div>
 </section>
@@ -136,9 +137,14 @@ frame is being received.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signalPin()" class="member-name-link">signalPin</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#driver()" class="member-name-link">driver</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The carrier driver required by this receiver.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#signalPin()" class="member-name-link">signalPin</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The Nano or Arduino pin carrying the receiver's signal.</div>
 </div>
 </div>
@@ -184,6 +190,20 @@ frame is being received.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../ir/InfraredReceiver.html#signalPin()">signalPin</a></code>&nbsp;in interface&nbsp;<code><a href="../../ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="driver()">
+<h3>driver</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></span>&nbsp;<span class="element-name">driver</span>()</div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../../ir/InfraredReceiver.html#driver()">InfraredReceiver</a></code></span></div>
+<div class="block">The carrier driver required by this receiver.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../ir/InfraredReceiver.html#driver()">driver</a></code>&nbsp;in interface&nbsp;<code><a href="../../ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a></code></dd>
 </dl>
 </div>
 </section>

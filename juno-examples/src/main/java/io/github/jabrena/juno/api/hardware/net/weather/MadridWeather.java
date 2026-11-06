@@ -96,7 +96,6 @@ public final class MadridWeather {
         Delay.millis(2000);
 
         DisplayData display = new DisplayData();
-        display.begin();
         connectWifi(display);
 
         // Allocated once, outside the loop, and overwritten every iteration: Juno's arena never frees

@@ -35,7 +35,6 @@ public final class ArucoMarkersTFT {
      */
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT);
         tft.setTextSize(CAPTION_SIZE);
         tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLACK);

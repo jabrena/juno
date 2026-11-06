@@ -26,7 +26,6 @@ public final class M5CardputerKeyboard {
         int typedLength = 0;
 
         Display display = M5StackCardputer.getDisplay();
-        display.begin();
         display.fillScreen(Display.BLACK);
         display.setCursor(8, 24);
         display.setTextColor(Display.GREEN, Display.BLACK);
@@ -35,7 +34,6 @@ public final class M5CardputerKeyboard {
         display.print(' ');
 
         Keyboard keyboard = M5StackCardputer.getKeyboard();
-        keyboard.begin();
         while (true) {
             keyboard.update();
             if (keyboard.isChanged()) {

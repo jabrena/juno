@@ -9,6 +9,7 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceive
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.rcx.RcxButtons;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLcd;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
@@ -22,7 +23,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierRcxButtons {
-    private static final int CHANNEL = 1;
+    private static final RcxChannel CHANNEL = RcxChannel.CHANNEL_1;
     private static final int START_MILLIS = 10000;
     private static final int POLL_MILLIS = 250;
     private static final int RETRY_MILLIS = 1000;
@@ -34,13 +35,12 @@ public final class NanoCarrierRcxButtons {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, CHANNEL, receiver, emitter, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RemoteRcx remote = new RemoteRcx(link, CHANNEL);
         RcxButtons buttons = remote.getButtons();
         RcxLcd lcd = remote.getLcd();
 
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         waitForBrick(remote);
         lcd.clear();

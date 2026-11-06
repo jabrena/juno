@@ -13,7 +13,6 @@ public final class SoloResultScreenshot {
 
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         FighterProfile player = new FighterProfile(FighterProfile.SPARTACUS, GladiatorClass.MURMILLO);
         FighterProfile opponent = new FighterProfile(FighterProfile.CRIXUS, GladiatorClass.THRAEX);

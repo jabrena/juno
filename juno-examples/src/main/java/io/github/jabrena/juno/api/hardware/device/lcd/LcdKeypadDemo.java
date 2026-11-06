@@ -13,7 +13,6 @@ public final class LcdKeypadDemo {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         LcdKeypadShield lcd = new LcdKeypadShield();
-        lcd.begin();
         lcd.print("Press a button");
 
         int lastButton = -1;

@@ -44,7 +44,6 @@ public final class EmailHelloWorldTFT {
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         drawFrame(tft);
 

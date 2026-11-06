@@ -3,7 +3,6 @@ package io.github.jabrena.juno.util.image;
 import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
-import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +24,6 @@ class GeneratedImageTest {
     void initialiseTheDisplay() {
         Wire.resetBoard();
         ParallelBus.reset();
-        ImmediateDelay.run(TFT::begin);
         ParallelBus.bytes.clear();
         ParallelBus.runs.clear();
     }

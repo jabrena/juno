@@ -22,7 +22,6 @@ class PFMotorTest {
         Wire.resetBoard();
         Infrared.reset();
         PFLink link = new PFLink(new HX53InfraredEmitter(3));
-        link.begin();
         remote = new RemotePF(link);
     }
 

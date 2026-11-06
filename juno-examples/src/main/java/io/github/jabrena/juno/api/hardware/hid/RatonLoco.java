@@ -37,9 +37,7 @@ public final class RatonLoco {
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(LED);
         Mouse mouse = ArduinoUno.getMouse();
-        mouse.begin();
 
-        ArduinoUno.getLedMatrix().begin();
         MouseIcon.draw();
 
         while (true) {

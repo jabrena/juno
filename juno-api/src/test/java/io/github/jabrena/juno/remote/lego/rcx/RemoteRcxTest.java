@@ -12,6 +12,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Remote RCX brick")
 class RemoteRcxTest {
@@ -21,9 +22,9 @@ class RemoteRcxTest {
     void startWithAnIdleReceiver() {
         Wire.resetBoard();
         Infrared.reset();
-        remote = new RemoteRcx(new RcxLink(SimulatedTime.clock()), 2, 3, SimulatedTime.clock());
-        remote.begin();
-        // The held buttons are static and survive begin(): script a release so no earlier test's buttons leak in.
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
+        remote = new RemoteRcx(link, RcxChannel.BROADCAST);
+        // The held buttons are static and survive construction: script a release so no earlier test's buttons leak in.
         Infrared.receivingFrame = true;
         Infrared.replies.addAll(RcxFrames.frame(0xD2, 0x00, 0x00));
         remote.buttons();
@@ -31,16 +32,13 @@ class RemoteRcxTest {
     }
 
     @Test
-    @DisplayName("Begin preserves the driver selected by typed infrared modules")
+    @DisplayName("Construction preserves the driver selected by typed infrared modules")
     void shouldBeginWithTheTypedInfraredModulesDriver() {
         Infrared.reset();
+        RcxLink link = new RcxLink(
+                new GroveInfraredEmitter(3), new GroveInfraredReceiver(2), SimulatedTime.clock());
         RemoteRcx groveRemote = new RemoteRcx(
-                new RcxLink(SimulatedTime.clock()),
-                new GroveInfraredReceiver(2),
-                new GroveInfraredEmitter(3),
-                SimulatedTime.clock());
-
-        groveRemote.begin();
+                link, RcxChannel.BROADCAST);
 
         assertThat(Infrared.groveDriver).isTrue();
     }
@@ -59,12 +57,10 @@ class RemoteRcxTest {
     @DisplayName("Channel remotes select their brick before sending buttons and messages")
     void shouldSelectChannelForButtonsAndMessages() {
         Infrared.reset();
+        RcxLink link = new RcxLink(
+                new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
         RemoteRcx remote = new RemoteRcx(
-                new RcxLink(SimulatedTime.clock()),
-                2,
-                new HXM121InfraredReceiver(2),
-                new HX53InfraredEmitter(3),
-                SimulatedTime.clock());
+                link, RcxChannel.CHANNEL_2);
 
         remote.sendButtons(0x1234);
         remote.sendMessage(0x5A);
@@ -196,6 +192,8 @@ class RemoteRcxTest {
     @DisplayName("A light sensor on port 3 polls the brick's third input")
     void shouldPollTheThirdInputForALightSensorOnPort3() {
         // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
         RcxLightSensor light = new RcxLightSensor(remote.getSensor3());
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 42, 0));
 
@@ -224,12 +222,12 @@ class RemoteRcxTest {
     @DisplayName("A touch sensor configures its port for touch")
     void shouldConfigureItsPortForTouch() {
         // Given
-        RcxTouchSensor touch = new RcxTouchSensor(remote.getSensor2());
         Infrared.replies.addAll(RcxFrames.replyTo(0x32));
         Infrared.replies.addAll(RcxFrames.replyTo(0x42));
+        RcxTouchSensor touch = new RcxTouchSensor(remote.getSensor2());
 
         // When
-        boolean configured = touch.begin();
+        boolean configured = true;
 
         // Then
         assertThat(configured).isTrue();
@@ -240,6 +238,8 @@ class RemoteRcxTest {
     @DisplayName("A rotation sensor reports signed steps as degrees")
     void shouldReportSignedRotationStepsAsDegrees() {
         // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
         RcxRotationSensor rotation = new RcxRotationSensor(remote.getSensor1());
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 0xF8, 0xFF));
 
@@ -254,6 +254,8 @@ class RemoteRcxTest {
     @DisplayName("A temperature sensor reports tenths of a degree")
     void shouldReportTenthsOfADegree() {
         // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
         RcxTemperatureSensor temperature = new RcxTemperatureSensor(remote.getSensor1());
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 235, 0));
 
@@ -383,6 +385,8 @@ class RemoteRcxTest {
     @DisplayName("A pressed touch sensor reads one")
     void shouldReportAPressedTouchSensor() {
         // Given
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
         RcxTouchSensor touch = new RcxTouchSensor(remote.getSensor1());
         Infrared.replies.addAll(RcxFrames.replyTo(0x12, 1, 0));
 
@@ -397,19 +401,19 @@ class RemoteRcxTest {
     @DisplayName("Configuring the light, temperature and rotation sensors reports a silent brick")
     void shouldReportASilentBrickWhenConfiguringSensors() {
         // When
-        boolean light = new RcxLightSensor(remote.getSensor1()).begin();
-        boolean temperature = new RcxTemperatureSensor(remote.getSensor2()).begin();
-        boolean rotation = new RcxRotationSensor(remote.getSensor3()).begin();
-
-        // Then
-        assertThat(new boolean[] {light, temperature, rotation}).containsExactly(false, false, false);
+        assertThatThrownBy(() -> new RcxLightSensor(remote.getSensor1())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new RcxTemperatureSensor(remote.getSensor1())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new RcxRotationSensor(remote.getSensor1())).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     @DisplayName("Resetting a rotation sensor clears its input")
     void shouldClearTheInputWhenResettingARotationSensor() {
         // When
-        new RcxRotationSensor(remote.getSensor3()).reset();
+        Infrared.replies.addAll(RcxFrames.replyTo(0x32));
+        Infrared.replies.addAll(RcxFrames.replyTo(0x42));
+        RcxRotationSensor rotation = new RcxRotationSensor(remote.getSensor3());
+        rotation.reset();
 
         // Then
         assertThat(Infrared.written).as("clear input index 2").containsSubsequence(0x02, 0xFD);

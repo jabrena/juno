@@ -28,10 +28,6 @@ public final class LichessApi {
 
     /** Reads wifi.ssid and wifi.password from the TFT shield's application.properties and joins that network. */
     public boolean connect(SdCard sdCard) {
-        if (!sdCard.begin()) {
-            Serial.println("Lichess: SD card unavailable");
-            return false;
-        }
         try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("Lichess: application.properties not found");

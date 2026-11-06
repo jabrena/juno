@@ -35,10 +35,8 @@ class L298nMotorTest {
     }
 
     @Test
-    @DisplayName("Begin configures all pins and coasts")
+    @DisplayName("Construction configures all pins and coasts")
     void shouldConfigurePinsAndCoastWhenBegun() {
-        motor.begin();
-
         InOrder order = inOrder(gpio);
         order.verify(gpio).pinMode(enablePin, gpio.getOutput());
         order.verify(gpio).pinMode(in1Pin, gpio.getOutput());

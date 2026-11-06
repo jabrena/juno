@@ -44,7 +44,6 @@ public final class NanoRatonLoco {
 
         DigitalOutput led = DigitalOutput.of(LED);
         Mouse mouse = ArduinoNano.getMouse();
-        mouse.begin();
         Serial.println("USB mouse started");
 
         while (true) {

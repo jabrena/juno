@@ -60,10 +60,6 @@ public final class WifiStatusSD {
     }
 
     private static WifiCredentials loadCredentials() throws IOException {
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
 
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {

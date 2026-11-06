@@ -651,11 +651,9 @@ import io.github.jabrena.juno.hardware.device.imu.Bmi088;
 
 Bmi088 imu = new Bmi088(ArduinoUno.getI2c(), ArduinoUno.getClock());
 float[] acceleration = new float[imu.sampleSize()];
-if (imu.begin()) {
-    imu.recalibrateOffset();
-    imu.fetchSample(acceleration, 0);
-    int heading = imu.getAngle();
-}
+imu.recalibrateOffset();
+imu.fetchSample(acceleration, 0);
+int heading = imu.getAngle();
 </code></pre>
 <h3 id="ultrasonic-ranger">Ultrasonic Ranger</h3>
 <p>The Grove Ultrasonic Ranger measures the time for an echo and returns metres, or <code>Float.NaN</code> when no echo arrives:</p>
@@ -684,14 +682,16 @@ public final class GroveUltrasonicExample {
 </code></pre>
 <h3 id="infrared-emitter-and-receiver">Infrared emitter and receiver</h3>
 <p>A Grove infrared emitter and receiver form the infrared link to a LEGO Mindstorms RCX brick. Wrap each socket's pin,
-then hand both to <code>RemoteRcx</code>, which sets them up:</p>
+then construct an <code>RcxLink</code> from both modules and pass it to <code>RemoteRcx</code>:</p>
 <img src="../images/grove/grove-ir-emitter.jpg" alt="Grove Infrared Emitter" width="240">
 <img src="../images/grove/grove-ir-receiver.jpg" alt="Grove Infrared Receiver" width="240">
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.util.Delay;
@@ -701,9 +701,9 @@ public final class GroveRcxExample {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
-        RemoteRcx rcx = new RemoteRcx(new RcxLink(), receiver, emitter);
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
+        RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.begin(BaudRate.BAUD_115200);
-        rcx.begin();
 
         while (true) {
             int millivolts = rcx.getBattery().millivolts();

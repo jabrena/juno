@@ -41,7 +41,6 @@ public final class WifiStatusSDLcd {
     private void run() throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
 
-        lcd.begin();
         lcd.print("Wifi connection");
         showStatus("Connecting      ");
 
@@ -85,10 +84,6 @@ public final class WifiStatusSDLcd {
     }
 
     private WifiCredentials loadCredentials() throws IOException {
-        if (!sdCard.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
 
         try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {

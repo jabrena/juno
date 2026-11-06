@@ -135,7 +135,6 @@ API, wiring and touch calibration are on the [Arduino Shields](../arduino-shield
 
 ```java
 TftTouchShield tft = new TftTouchShield();
-tft.begin();
 tft.setRotation(TftTouchShield.LANDSCAPE);
 tft.fillScreen(TftTouchShield.BLACK);
 tft.setCursor(10, 10);

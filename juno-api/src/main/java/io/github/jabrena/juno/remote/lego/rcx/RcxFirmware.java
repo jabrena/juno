@@ -1,18 +1,17 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
  * Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM
  * answers these four commands even when it has no firmware, which is the state it is in after its batteries
- * were out (the display then shows program {@code 0}). Get it from {@link RemoteRcx#getFirmware()} and set up the link with {@link RemoteRcx#begin} first,
- * with both the IR LED and the IR receiver module wired, since every step waits for the brick's reply.
+ * were out (the display then shows program {@code 0}). Get it from {@link RemoteRcx#getFirmware()} after constructing the
+ * {@link RcxLink} with both the IR LED and the IR receiver module, since every step waits for the brick's reply.
  *
  * <p>The sequence is {@link #delete}, {@link #start} with the image's entry address and checksum, one
  * successful {@link #transfer} per block of up to {@value #BLOCK_SIZE} bytes numbered from 1, then {@link #unlock}; a
- * 16 KB image takes about three minutes at 2400 baud.
+ * 16 KB image takes about three minutes at 2400 baud. The {@link RcxLink} is configured before this loader is created.
  */
 public final class RcxFirmware {
     private final RcxLink link;
@@ -43,20 +42,10 @@ public final class RcxFirmware {
     private int lastTransferIndex = -1;
     private int transferCode;
 
-    /** A firmware loader on the board's own infrared link and timer. Create it once, at startup. */
-    public RcxFirmware() {
-        this(new RcxLink(), ArduinoUno.getClock());
-    }
-
     /** A firmware loader on a link shared with other RCX classes, so they share one toggle bit. */
     public RcxFirmware(RcxLink link) {
-        this(link, ArduinoUno.getClock());
-    }
-
-    /** A firmware loader on {@code link}, timing its waits on {@code clock}: a simulated clock in a unit test. */
-    public RcxFirmware(RcxLink link, Clock clock) {
         this.link = link;
-        this.clock = clock;
+        this.clock = link.clock();
     }
 
     /**

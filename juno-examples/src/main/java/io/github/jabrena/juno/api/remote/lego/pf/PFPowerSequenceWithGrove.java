@@ -46,7 +46,6 @@ public class PFPowerSequenceWithGrove {
         Delay.millis(START_MILLIS);
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
-        link.begin();
         RemotePF remote = new RemotePF(link);
         PFPowerSequenceWithGrove app = new PFPowerSequenceWithGrove(
                 new PFMotor(remote, CHANNEL, PFPort.RED),

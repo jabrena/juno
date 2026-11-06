@@ -73,7 +73,6 @@ public final class WeatherTFT {
 
     private void run(TftTouchShield tft) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         tft.fillScreen(TftTouchShield.BLACK);
 
@@ -163,10 +162,6 @@ public final class WeatherTFT {
     // ---- Network ----
 
     private boolean connectWifi(SdCard sdCard) throws IOException {
-        if (!sdCard.begin()) {
-            Serial.println("SD card initialization failed");
-            return false;
-        }
         try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");

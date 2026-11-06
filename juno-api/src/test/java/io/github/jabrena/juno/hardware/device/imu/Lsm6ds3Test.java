@@ -115,16 +115,21 @@ class Lsm6ds3Test {
     }
 
     @Test
-    @DisplayName("Begin fails when the chip does not answer with its ID")
+    @DisplayName("Construction fails when the chip does not answer with its ID")
     void shouldFailWhenTheIdIsWrong() {
         // Given
         registers[WHO_AM_I] = 0x00;
 
         // When
-        boolean started = ImmediateDelay.get(imu::begin);
+        boolean started = false;
+        try {
+            new Lsm6ds3(chipSelect, spi, clock);
+        } catch (IllegalStateException exception) {
+            started = true;
+        }
 
         // Then
-        assertThat(started).isFalse();
+        assertThat(started).isTrue();
         assertThat(imu.getAngle()).isZero();
     }
 
@@ -135,9 +140,10 @@ class Lsm6ds3Test {
         registers[OUTX_L_G + 4] = 0x40;
         registers[OUTX_L_G + 5] = 0x00;
         when(clock.millis()).thenReturn(0, 0);
+        imu = new Lsm6ds3(chipSelect, spi, clock);
 
         // When
-        boolean started = ImmediateDelay.get(imu::begin);
+        boolean started = true;
 
         // Then
         assertThat(started).isTrue();
@@ -149,7 +155,6 @@ class Lsm6ds3Test {
     @DisplayName("A yaw rate integrates into the heading, clockwise positive")
     void shouldIntegrateYawIntoHeading() {
         // Given: the gyroscope's Z axis points up, so a positive raw value is anticlockwise
-        ImmediateDelay.get(imu::begin);
         registers[OUTX_L_G + 4] = 100;
         registers[OUTX_L_G + 5] = 0;
         when(clock.millis()).thenReturn(1_000);
@@ -166,7 +171,6 @@ class Lsm6ds3Test {
     @DisplayName("The accelerometer reports whole metres per second squared on each axis")
     void shouldReportAccelerationInWholeMetresPerSecondSquared() {
         // Given: 16384 LSB on Z is about 1 g at +/-2 g
-        ImmediateDelay.run(imu::begin);
         registers[OUTX_L_G + 10] = 0x00;
         registers[OUTX_L_G + 11] = 0x40;
 
@@ -189,7 +193,6 @@ class Lsm6ds3Test {
     @DisplayName("The gyroscope heading integrates the yaw rate and resets to zero")
     void shouldIntegrateTheHeadingAndResetIt() {
         // Given: 100 LSB of 35 mdps clockwise-negative is -3500 mdps, held for 1 s
-        ImmediateDelay.run(imu::begin);
         registers[OUTX_L_G + 4] = 100;
         registers[OUTX_L_G + 5] = 0;
         when(clock.millis()).thenReturn(1_000);
@@ -208,7 +211,6 @@ class Lsm6ds3Test {
     @DisplayName("The gyroscope reports the yaw rate in degrees per second, clockwise positive")
     void shouldReportTheYawRateInDegreesPerSecond() {
         // Given
-        ImmediateDelay.run(imu::begin);
         registers[OUTX_L_G + 4] = 100;
         registers[OUTX_L_G + 5] = 0;
         when(clock.millis()).thenReturn(1_000);
@@ -221,7 +223,6 @@ class Lsm6ds3Test {
     @DisplayName("Recalibrating the gyroscope measures its bias again once begin has succeeded")
     void shouldMeasureTheBiasAgainAfterBegin() {
         // Given
-        ImmediateDelay.run(imu::begin);
 
         // When
         ImmediateDelay.run(imu::recalibrateOffset);
@@ -244,7 +245,6 @@ class Lsm6ds3Test {
     @DisplayName("Fetches the acceleration in metres per second squared as a three-element sample")
     void shouldFetchTheAccelerationAsASample() {
         // Given: 16384 LSB on Z is about 9.8 m/s² at +/-2 g
-        ImmediateDelay.run(imu::begin);
         registers[OUTX_L_G + 10] = 0x00;
         registers[OUTX_L_G + 11] = 0x40;
         float[] sample = new float[4];

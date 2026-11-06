@@ -8,6 +8,7 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxRotationSensor;
@@ -17,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
 /** Tests RCX rotation steps and degrees with a motor on output A and a rotation sensor on input 1. */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierRcxRotation {
-    private static final int CHANNEL = 1;
+    private static final RcxChannel CHANNEL = RcxChannel.CHANNEL_1;
     private static final int START_MILLIS = 10000;
     private static final int MOTOR_POWER = 43;
     private static final int MOTOR_RUN_MILLIS = 4000;
@@ -31,19 +32,14 @@ public final class NanoCarrierRcxRotation {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, CHANNEL, receiver, emitter, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RemoteRcx remote = new RemoteRcx(link, CHANNEL);
         RcxMotor motor = remote.getMotorA();
         RcxRotationSensor rotation = new RcxRotationSensor(remote.getSensor1());
 
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         waitForBrick(remote);
-        while (!rotation.begin()) {
-            Serial.println("Rotation sensor configuration failed; retrying");
-            Delay.millis(RETRY_MILLIS);
-        }
 
         Serial.println("RCX rotation test: motor A, sensor 1, channel 1");
         rotation.reset();

@@ -39,11 +39,7 @@ import java.io.InputStream;
  */
 public interface SdCard {
 
-    /**
-     * Initializes the card on the chip-select pin of the socket it came from (D10 on the data logger and TFT shields,
-     * D4 on the Arduino WiFi Shield and the Nano Connector Carrier, or GPIO12 on the Cardputer) and returns whether it
-     * was detected successfully.
-     */
+    /** Initializes the card on its socket's chip-select pin and returns whether it was detected successfully. */
     boolean begin();
 
     /** Initializes the card on {@code chipSelectPin} and returns whether it was detected successfully. */

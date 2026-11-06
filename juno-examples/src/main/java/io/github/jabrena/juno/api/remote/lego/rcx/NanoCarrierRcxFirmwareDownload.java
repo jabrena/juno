@@ -6,6 +6,7 @@ import io.github.jabrena.juno.hardware.ArduinoNano;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 
@@ -19,8 +20,8 @@ public final class NanoCarrierRcxFirmwareDownload {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, receiver, emitter, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxFirmwareDownload.download(remote);
     }
 }

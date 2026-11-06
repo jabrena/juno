@@ -47,10 +47,6 @@ public final class QHttpsServer {
         Delay.millis(2000);
         Clock clock = ArduinoUno.getClock();
 
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
         int certificateLength = loadCertificate();
         int keyLength = loadKey();
         if (certificateLength <= 0 || keyLength <= 0) {

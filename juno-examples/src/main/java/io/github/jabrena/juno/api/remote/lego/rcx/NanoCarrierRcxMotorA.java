@@ -8,6 +8,7 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
@@ -16,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
 /** Tests speed, direction, braking, and coasting for a motor connected to RCX output A. */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierRcxMotorA {
-    private static final int CHANNEL = 1;
+    private static final RcxChannel CHANNEL = RcxChannel.CHANNEL_1;
     private static final int START_MILLIS = 10000;
     private static final int POWER_STEP_MILLIS = 2000;
     private static final int DIRECTION_MILLIS = 3000;
@@ -31,12 +32,11 @@ public final class NanoCarrierRcxMotorA {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, CHANNEL, receiver, emitter, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RemoteRcx remote = new RemoteRcx(link, CHANNEL);
         RcxMotor motor = remote.getMotorA();
 
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         waitForBrick(remote);
 

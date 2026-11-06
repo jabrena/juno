@@ -21,7 +21,6 @@ public final class TouchPaintTFT {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
 
-        tft.begin();
         // Portrait with the palette on the edge opposite the shield's native row 0.
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         clearCanvas(tft);

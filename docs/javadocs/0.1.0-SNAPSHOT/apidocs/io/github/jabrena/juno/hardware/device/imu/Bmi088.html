@@ -78,7 +78,6 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#getXAccel()" tabindex="0">getXAccel()</a></li>
 <li><a href="#getYAccel()" tabindex="0">getYAccel()</a></li>
 <li><a href="#getZAccel()" tabindex="0">getZAccel()</a></li>
@@ -114,7 +113,7 @@ implements <a href="../../../robotics/Accelerometer.html" title="interface in io
 
 <p>The module contains independent accelerometer and gyroscope I2C devices. It is configured for ±3 g and ±2000
 degrees per second at 100 Hz. As the BMI088 has no magnetometer, heading is the gyro's Z rate integrated from
-<a href="#begin()"><code>begin()</code></a> or <a href="#reset()"><code>reset()</code></a> and therefore drifts over time. Create it once at startup and keep it still
+construction or <a href="#reset()"><code>reset()</code></a> and therefore drifts over time. Create it once at startup and keep it still
 while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.</div>
 </div>
 </section>
@@ -147,55 +146,50 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts both BMI088 devices and returns <code>false</code> if either chip ID cannot be read.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
  int&nbsp;offset)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Writes X, Y and Z acceleration in metres per second squared into the caller-owned buffer.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns heading in clockwise whole degrees, modulo 360.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns X acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns Y acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns X acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns Z acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns Y acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Measures the stationary Z-axis gyro bias over 64 samples.</div>
+<div class="block">Returns Z acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Measures the stationary Z-axis gyro bias over 64 samples.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Resets the integrated heading to zero.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns three acceleration components (X, Y, Z), in metres per second squared.</div>
 </div>
 </div>
@@ -234,20 +228,11 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Starts both BMI088 devices and returns <code>false</code> if either chip ID cannot be read.</div>
-</div>
-</section>
-</li>
-<li>
 <section class="detail" id="getXAccel()">
 <h3>getXAccel</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getXAccel</span>()</div>
-<div class="block">Returns X acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns X acceleration in whole metres per second squared, or zero if initialization failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../../robotics/Accelerometer.html#getXAccel()">getXAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
@@ -260,7 +245,7 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <h3>getYAccel</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getYAccel</span>()</div>
-<div class="block">Returns Y acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns Y acceleration in whole metres per second squared, or zero if initialization failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../../robotics/Accelerometer.html#getYAccel()">getYAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
@@ -273,7 +258,7 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <h3>getZAccel</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getZAccel</span>()</div>
-<div class="block">Returns Z acceleration in whole metres per second squared, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns Z acceleration in whole metres per second squared, or zero if initialization failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../../robotics/Accelerometer.html#getZAccel()">getZAccel</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></dd>
@@ -299,7 +284,7 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <h3>getAngularVelocity</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">float</span>&nbsp;<span class="element-name">getAngularVelocity</span>()</div>
-<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero before <a href="#begin()"><code>begin()</code></a>.</div>
+<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../../robotics/Gyroscope.html#getAngularVelocity()">getAngularVelocity</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></dd>

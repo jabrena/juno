@@ -24,7 +24,6 @@ public final class JavaLogoTFT {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
         tft.fillScreen(TftTouchShield.WHITE);
         Drawable logo = new JavaLogoImage(tft);

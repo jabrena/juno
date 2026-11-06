@@ -69,10 +69,6 @@ public final class NanoAccessPointSD {
     }
 
     private static AccessPoint loadAccessPoint() throws IOException {
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card unavailable; starting open JunoAP");
-            return DEFAULT_ACCESS_POINT;
-        }
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found; starting open JunoAP");

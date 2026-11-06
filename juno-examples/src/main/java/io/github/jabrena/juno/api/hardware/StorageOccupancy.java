@@ -39,12 +39,8 @@ public final class StorageOccupancy {
 
         int flashUsed = memory.flashUsedBytes();
         int flashCapacity = memory.flashCapacityBytes();
-        int sdTotalKiB = -1;
-        int sdUsedKiB = -1;
-        if (sdCard.begin()) {
-            sdTotalKiB = sdCard.totalKiB();
-            sdUsedKiB = sdTotalKiB - sdCard.freeKiB();
-        }
+        int sdTotalKiB = sdCard.totalKiB();
+        int sdUsedKiB = sdTotalKiB - sdCard.freeKiB();
 
         while (true) {
             report("flash B ", flashUsed, flashCapacity);

@@ -4,4 +4,7 @@ package io.github.jabrena.juno.hardware.device.ir;
 public interface InfraredReceiver {
     /** The Arduino pin carrying the receiver module's digital signal. */
     int signalPin();
+
+    /** The carrier driver required by this receiver. */
+    InfraredDriver.Type driver();
 }

@@ -38,7 +38,6 @@ public final class TftTouchExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         tft.fillScreen(TftTouchShield.BLUE);
         tft.setCursor(20, 20);
         tft.setTextColor(TftTouchShield.WHITE, TftTouchShield.BLUE);
@@ -108,7 +107,7 @@ A Bosch BNO055 that fuses its accelerometer and gyroscope and reports the headin
 reads it over I2C with no Arduino library, which suits measuring how far a vehicle has turned. It holds D7 as the
 sensor's reset line.
 
-This complete example initializes the shield and prints its heading, yaw rate and acceleration:
+Constructing the shield initializes it and prints its heading, yaw rate and acceleration:
 
 ```java
 import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
@@ -120,10 +119,6 @@ public final class NineAxisExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         NineAxisMotionShield imu = new NineAxisMotionShield();
-        if (!imu.begin()) {
-            Serial.println("BNO055 not found");
-            return;
-        }
         imu.reset();
 
         while (true) {
@@ -165,7 +160,6 @@ public final class LcdKeypadExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         LcdKeypadShield lcd = new LcdKeypadShield();
-        lcd.begin();
         lcd.print("Press a button");
         int lastButton = -1;
 

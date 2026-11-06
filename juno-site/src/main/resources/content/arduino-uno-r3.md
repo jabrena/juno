@@ -124,17 +124,15 @@ sensor drivers. The WiFi Shield also uses D4, so plug sensors into other sockets
 
 The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 `NineAxisMotionShield` reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
-direction the sensor pointed at `begin()`. `begin()` drives D7, the sensor's reset line, so don't use D7 for anything
-else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:
+direction the sensor pointed at construction. Construction drives D7, the sensor's reset line, so don't use D7 for
+anything else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:
 
 ```java
 NineAxisMotionShield imu = new NineAxisMotionShield();
-if (imu.begin()) {
-    imu.reset();                                  // count the turn from here
-    while (true) {
-        Serial.println(imu.getAngle());           // heading since the reset, whole degrees, clockwise
-        Delay.millis(200);
-    }
+imu.reset();                                      // count the turn from here
+while (true) {
+    Serial.println(imu.getAngle());               // heading since the reset, whole degrees, clockwise
+    Delay.millis(200);
 }
 ```
 
@@ -150,7 +148,6 @@ the LCD uses D4-D9 and its backlight D10.
 
 ```java
 LcdKeypadShield lcd = new LcdKeypadShield();
-lcd.begin();
 lcd.print("Hello, Juno");
 
 while (true) {

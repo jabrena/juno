@@ -56,9 +56,8 @@ public final class MailboxModel {
     }
 
     void beginStorage() {
-        boolean cardReady = sdCard.begin();
-        Serial.println(cardReady ? "SD begin ok" : "SD begin failed");
-        boolean directoryReady = cardReady && sdCard.createDirectory(SD_MAILBOX_DIRECTORY);
+        Serial.println("SD begin ok");
+        boolean directoryReady = sdCard.createDirectory(SD_MAILBOX_DIRECTORY);
         Serial.println(directoryReady ? "SD directory ok" : "SD directory failed");
         storageReady = directoryReady;
     }

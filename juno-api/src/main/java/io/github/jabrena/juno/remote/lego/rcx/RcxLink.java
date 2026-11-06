@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -13,15 +13,16 @@ import io.github.jabrena.juno.util.Delay;
  */
 public final class RcxLink {
     private final Clock clock;
+    private final InfraredDriver driver;
 
-    /** A link on the board's own timer. Create it once, at startup, and share it with every class that talks to the brick. */
-    public RcxLink() {
-        this(ArduinoUno.getClock());
-    }
-
-    /** A link that times its replies on {@code clock}: a simulated one in a unit test. */
-    public RcxLink(Clock clock) {
+    /** A link configured with its infrared modules and timer; construction completes the link setup. */
+    public RcxLink(InfraredEmitter emitter, InfraredReceiver receiver, Clock clock) {
         this.clock = clock;
+        if (emitter.driver() != receiver.driver()) {
+            throw new IllegalArgumentException("Infrared emitter and receiver must use the same driver");
+        }
+        receiveEnabled = receiver.signalPin() >= 0;
+        driver = new InfraredDriver(emitter.driver(), receiver.signalPin(), emitter.signalPin(), BAUD);
     }
 
     static final int BAUD = 2400;
@@ -61,10 +62,8 @@ public final class RcxLink {
     /** How long {@link #awaitReply} lets one wait for a start bit run before it checks its deadline again. */
     private static final int REPLY_POLL_MICROS = 20000;
 
-    /** Configures an RCX link with a typed receiver and emitter pair. */
-    public void begin(InfraredReceiver receiver, InfraredEmitter emitter) {
-        receiveEnabled = receiver.signalPin() >= 0;
-        emitter.begin(receiver, BAUD);
+    Clock clock() {
+        return clock;
     }
 
     /**

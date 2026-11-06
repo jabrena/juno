@@ -26,7 +26,6 @@ public final class NativeDisplay implements Display {
         display = replacement;
     }
 
-    @Override
     public native void begin();
 
     @Override

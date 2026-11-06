@@ -26,7 +26,7 @@ class RcxLinkTest {
     void startWithAnEmptyLink() {
         Wire.resetBoard();
         Infrared.reset();
-        link = new RcxLink(SimulatedTime.clock());
+        link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
     }
 
     @Test
@@ -40,12 +40,12 @@ class RcxLinkTest {
     }
 
     @Test
-    @DisplayName("Begin accepts Grove infrared modules and keeps their signal mapping")
+    @DisplayName("Construction accepts Grove infrared modules and keeps their signal mapping")
     void shouldBeginWithGroveInfraredModules() {
         InfraredReceiver receiver = new GroveInfraredReceiver(16);
         InfraredEmitter emitter = new GroveInfraredEmitter(14);
 
-        link.begin(receiver, emitter);
+        link = new RcxLink(emitter, receiver, SimulatedTime.clock());
 
         assertThat(Infrared.receivePin).isEqualTo(16);
         assertThat(Infrared.transmitPin).isEqualTo(14);
@@ -54,12 +54,12 @@ class RcxLinkTest {
     }
 
     @Test
-    @DisplayName("Begin keeps the HX-53 and HX-M121 pair on the legacy infrared driver")
+    @DisplayName("Construction keeps the HX-53 and HX-M121 pair on the legacy infrared driver")
     void shouldBeginWithHxInfraredModules() {
         HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(2);
         HX53InfraredEmitter emitter = new HX53InfraredEmitter(3);
 
-        link.begin(receiver, emitter);
+        link = new RcxLink(emitter, receiver, SimulatedTime.clock());
 
         assertThat(Infrared.receivePin).isEqualTo(2);
         assertThat(Infrared.transmitPin).isEqualTo(3);

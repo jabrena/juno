@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.hardware.device.ir.hx;
 
-import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 
 /** An HX-53 infrared emitter using Juno's original software-carrier driver. */
 public final class HX53InfraredEmitter implements InfraredEmitter {
+    private static final InfraredDriver.Type DRIVER = InfraredDriver.Type.HX;
     private final int signalPin;
 
     /** Creates an HX-53 emitter connected to {@code signalPin}. */
@@ -22,7 +22,7 @@ public final class HX53InfraredEmitter implements InfraredEmitter {
     }
 
     @Override
-    public void begin(InfraredReceiver receiver, int baud) {
-        Infrared.beginHX(receiver.signalPin(), signalPin, baud);
+    public InfraredDriver.Type driver() {
+        return DRIVER;
     }
 }

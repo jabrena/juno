@@ -20,7 +20,6 @@ public final class LedMatrixCircles {
 
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoUno.getLedMatrix();
-        matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {

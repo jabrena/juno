@@ -331,7 +331,6 @@ class AvrAsmBackendTest {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.begin();
                         new ArduinoWifiShield().getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -349,7 +348,6 @@ class AvrAsmBackendTest {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3LcdClock", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.begin();
                         lcd.print(java.time.LocalDateTime.now().getSecond(), 2);
                 """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;"))
                 .isInstanceOf(CompileException.class)
@@ -362,7 +360,6 @@ class AvrAsmBackendTest {
         // When
         CompilationResult result = compileR3("demo.R3Lcd", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.begin();
                         lcd.print(7, 2);
                 """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;");
 
@@ -376,7 +373,6 @@ class AvrAsmBackendTest {
         // When
         CompilationResult result = compile("demo.Rev2LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.begin();
                         ArduinoUno.getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;

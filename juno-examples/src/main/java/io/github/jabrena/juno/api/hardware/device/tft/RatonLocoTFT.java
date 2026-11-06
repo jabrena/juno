@@ -60,12 +60,9 @@ public final class RatonLocoTFT {
         TftTouchShield tft = new TftTouchShield();
         DigitalOutput led = DigitalOutput.of(LED);
         Mouse mouse = ArduinoUno.getMouse();
-        mouse.begin();
 
-        ArduinoUno.getLedMatrix().begin();
         MouseIcon.draw();
 
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         tft.fillScreen(TftTouchShield.BLACK);
         running = false;

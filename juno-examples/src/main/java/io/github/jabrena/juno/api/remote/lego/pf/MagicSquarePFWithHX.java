@@ -40,7 +40,6 @@ public class MagicSquarePFWithHX {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         PFLink link = new PFLink(new HX53InfraredEmitter(TRANSMIT_PIN));
-        link.begin();
         RemotePF remote = new RemotePF(link);
         MagicSquarePFWithHX app = new MagicSquarePFWithHX(
                 new PFMotor(remote, CHANNEL, PFPort.RED),

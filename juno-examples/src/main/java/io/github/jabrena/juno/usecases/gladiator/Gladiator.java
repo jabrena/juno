@@ -67,7 +67,6 @@ public final class Gladiator {
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         new Gladiator().play(tft);
     }

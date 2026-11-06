@@ -42,12 +42,6 @@ public final class NineAxisMotionShieldSerial {
         Delay.millis(1000);
 
         NineAxisMotionShield imu = new NineAxisMotionShield();
-        if (!imu.begin()) {
-            Serial.println("BNO055 not found at 0x28");
-            while (true) {
-                Delay.millis(1000);
-            }
-        }
         Serial.println("BNO055 ready at 0x28");
         imu.reset();
 

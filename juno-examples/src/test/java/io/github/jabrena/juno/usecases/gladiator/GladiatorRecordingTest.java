@@ -68,7 +68,6 @@ class GladiatorRecordingTest {
         int duration = Integer.getInteger("juno.recording.duration", 60_000);
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", "gladiator");
         Files.createDirectories(output);
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(7);
         coliseum.build();

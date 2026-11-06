@@ -2,7 +2,6 @@ package io.github.jabrena.juno.hardware.device.imu;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +10,7 @@ import org.mockito.InOrder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -42,18 +42,13 @@ class NineAxisMotionShieldTest {
         // A register a test does not set answers -1, like a device that does not acknowledge.
         when(bus.readRegister(anyInt(), anyInt())).thenReturn(-1);
         when(bus.readRegister16(anyInt(), anyInt())).thenReturn(-1);
+        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
         imu = new NineAxisMotionShield(pins, bus);
     }
 
     @Test
-    @DisplayName("Begin pulses D7 low then high to release the BNO055 from reset")
+    @DisplayName("Construction pulses D7 low then high to release the BNO055 from reset")
     void shouldPulseTheResetLineBeforeTalkingToTheSensor() {
-        // Given
-        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
-
-        // When
-        ImmediateDelay.run(imu::begin);
-
         // Then
         InOrder order = inOrder(pins);
         order.verify(pins).pinMode(resetPin, pins.getOutput());
@@ -62,27 +57,14 @@ class NineAxisMotionShieldTest {
     }
 
     @Test
-    @DisplayName("Begin reports success when the chip ID matches")
+    @DisplayName("Construction succeeds when the chip ID matches")
     void shouldReportSuccessWhenTheChipIdMatches() {
-        // Given
-        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
-
-        // When
-        boolean begun = ImmediateDelay.get(imu::begin);
-
-        // Then
-        assertThat(begun).isTrue();
+        assertThatCode(() -> new NineAxisMotionShield(pins, bus)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("Begin resets the sensor and switches it to Android IMU mode")
+    @DisplayName("Construction resets the sensor and switches it to Android IMU mode")
     void shouldResetTheSensorAndSwitchItToAndroidImuMode() {
-        // Given
-        when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0xA0);
-
-        // When
-        ImmediateDelay.run(imu::begin);
-
         // Then
         InOrder order = inOrder(bus);
         order.verify(bus).writeRegister(DEVICE, 0x3D, 0x00);
@@ -92,16 +74,11 @@ class NineAxisMotionShieldTest {
     }
 
     @Test
-    @DisplayName("Begin reports failure when the chip ID is wrong")
+    @DisplayName("Construction fails when the chip ID is wrong")
     void shouldReportFailureWhenTheChipIdIsWrong() {
         // Given
         when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0x32);
-
-        // When
-        boolean begun = ImmediateDelay.get(imu::begin);
-
-        // Then
-        assertThat(begun).isFalse();
+        assertThatThrownBy(() -> new NineAxisMotionShield(pins, bus)).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
@@ -109,11 +86,10 @@ class NineAxisMotionShieldTest {
     void shouldWriteNoModeAfterAFailedIdentityCheck() {
         // Given
         when(bus.readRegister(DEVICE, CHIP_ID)).thenReturn(0x32);
-
-        // When
-        ImmediateDelay.run(imu::begin);
+        org.mockito.Mockito.clearInvocations(bus, pins);
 
         // Then
+        assertThatThrownBy(() -> new NineAxisMotionShield(pins, bus)).isInstanceOf(IllegalStateException.class);
         verify(bus, never()).writeRegister(anyInt(), anyInt(), anyInt());
     }
 

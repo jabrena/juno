@@ -1,15 +1,17 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
+import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 
 /**
  * A Grove infrared receiver module's signal connection.
  *
  * <p>The receiver is configured together with a {@link GroveInfraredEmitter} by
- * {@link io.github.jabrena.juno.remote.lego.rcx.RcxLink#begin}; it does not allocate or configure anything while a
+ * {@link io.github.jabrena.juno.remote.lego.rcx.RcxLink} constructs the link; it does not allocate or configure anything while a
  * frame is being received.
  */
 public final class GroveInfraredReceiver implements InfraredReceiver {
+    private static final InfraredDriver.Type DRIVER = InfraredDriver.Type.GROVE;
     private final int signalPin;
 
     /** Creates a receiver connected to a Grove socket's signal pin. */
@@ -24,5 +26,10 @@ public final class GroveInfraredReceiver implements InfraredReceiver {
     @Override
     public int signalPin() {
         return signalPin;
+    }
+
+    @Override
+    public InfraredDriver.Type driver() {
+        return DRIVER;
     }
 }
