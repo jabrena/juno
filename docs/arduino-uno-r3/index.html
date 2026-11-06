@@ -402,7 +402,7 @@ startup and stay small.</p>
 <tr>
 <td><code>Gpio</code>, <code>DigitalOutput</code>, <code>Delay</code>, <code>Clock</code></td>
 <td align="center">✓</td>
-<td>Standard Arduino GPIO and timing calls.</td>
+<td>Resolve <code>D0</code>–<code>D13</code> with <code>digitalPin</code> and <code>A0</code>–<code>A5</code> with <code>analogPin</code>; modes come from the board's <code>Gpio</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
 </tr>
 <tr>
@@ -511,7 +511,7 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
 module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
-<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

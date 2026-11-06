@@ -5,24 +5,31 @@ layout: page
 ---
 
 [`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/Gpio.java)
-is the board's set of pins. Get it once with `ArduinoUno.getGpio()` or `ArduinoNano.getGpio()`, then set a pin as an
-output, write it high or low, or read an input. [`DigitalOutput`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java)
+is the selected board's pin resolver and GPIO port. Get it once from the board facade, such as
+`ArduinoUno.getGpio()`, `ArduinoNano.getGpio()`, `Esp32Cam.getGpio()` or `M5StackCardputer.getGpio()`, then resolve
+the names printed on the board and use the returned pin numbers with the GPIO operations. The resolver keeps the
+application independent of the MCU's physical GPIO numbering. [`DigitalOutput`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java)
 is a lighter handle for a pin you only switch on and off.
 
 | Method | Argument | Notes |
 |---|---|---|
-| `pinMode(pin, mode)` | a pin, and `Gpio.getInput()`, `getOutput()` or `getInputPullup()` | sets the direction of a pin |
+| `digitalPin(name)` | a name such as `"D2"` | resolves a board-specific digital pin |
+| `analogPin(name)` | a name such as `"A0"` | resolves a board-specific analog pin |
+| `pinMode(pin, mode)` | a pin, and `gpio.getInput()`, `getOutput()` or `getInputPullup()` | sets the direction of a pin |
 | `digitalWrite(pin, high)` | a pin and a `boolean` | drives the pin high (`true`) or low (`false`) |
 | `digitalRead(pin)` | a pin | returns `true` when the pin is high |
-| `analogRead(pin)` | an analog pin, such as `Gpio.getA0()` | returns the ADC reading |
+| `analogRead(pin)` | an analog pin, such as `gpio.analogPin("A0")` | returns the ADC reading |
 | `analogWrite(pin, value)` | a pin and a value | PWM output on a pin that supports it |
 | `getBuiltinLed()` | none | the pin of the board's onboard LED |
 
-Pins are portable numbers, not the chip's own GPIO numbers. `Gpio.getD0()` through `Gpio.getD13()` return `0` to `13`, and
-`Gpio.getA0()` through `Gpio.getA5()` return `14` to `19`. The compiler translates these numbers to the linked board's
-pins, so the same program runs on a UNO R4 WiFi or a Nano ESP32 without changes.
+Use the portable digital names `D0` through `D13` and analog names `A0` through `A5`. The selected board resolves each
+name to the logical pin value expected by its runtime; for example, Nano ESP32 `D13` is translated to ESP32-S3 GPIO48.
+M5Stack Cardputer also accepts its documented `G*` and `GPIO*` aliases. A malformed, unknown, unavailable or null name
+raises `IllegalArgumentException` in the generated program.
 
-`DigitalOutput.of(pin)` sets the pin as an output and returns a handle with `high()` and `low()`.
+`DigitalOutput.of(pin)` sets an already-resolved pin as an output. When starting from a board name, use
+`DigitalOutput.of(gpio, "D13")`; it resolves the name through the supplied board context and returns the same
+allocation-free handle with `high()` and `low()`.
 
 ## Blink
 
@@ -82,15 +89,16 @@ with the internal pull-up enabled, reads `false` while the button is pressed:
 
 ```java
 Gpio gpio = ArduinoUno.getGpio();
-gpio.pinMode(Gpio.getD2(), Gpio.getInputPullup());
+int buttonPin = gpio.digitalPin("D2");
+gpio.pinMode(buttonPin, gpio.getInputPullup());
 
-boolean pressed = !gpio.digitalRead(Gpio.getD2());
+boolean pressed = !gpio.digitalRead(buttonPin);
 ```
 
 `analogRead` on an analog pin returns the ADC value, which is a number from the converter rather than a voltage:
 
 ```java
-int light = gpio.analogRead(Gpio.getA0());
+int light = gpio.analogRead(gpio.analogPin("A0"));
 ```
 
 ## Troubleshooting

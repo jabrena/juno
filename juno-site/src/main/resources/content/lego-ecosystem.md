@@ -296,7 +296,7 @@ public final class PowerFunctionsExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        GroveBaseShield shield = new GroveBaseShield();
+        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
         link.begin();
         RemotePF remote = new RemotePF(link);
@@ -375,7 +375,8 @@ With an HX-M121 receiver and an HX-53 emitter, here on pins 2 and 3 of an UNO bo
 <img src="../images/ir/hx-m121-hx-53.png" alt="HX-53 infrared emitter and HX-M121 infrared receiver modules" width="280">
 
 ```java
-import io.github.jabrena.juno.hardware.Gpio;
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -386,8 +387,9 @@ import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 public final class RcxHxConnectExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(Gpio.getD2());   // DAT on D2
-        HX53InfraredEmitter emitter = new HX53InfraredEmitter(Gpio.getD3());         // DAT on D3
+        Gpio gpio = ArduinoUno.getGpio();
+        HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(gpio.digitalPin("D2")); // DAT on D2
+        HX53InfraredEmitter emitter = new HX53InfraredEmitter(gpio.digitalPin("D3"));       // DAT on D3
         RemoteRcx rcx = new RemoteRcx(new RcxLink(), receiver, emitter);
         rcx.begin();
         Serial.println("RCX infrared link ready");
@@ -416,7 +418,7 @@ import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 public final class RcxGroveConnectExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), receiver, emitter, ArduinoNano.getClock());

@@ -73,7 +73,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E()" tabindex="0">GroveBaseShield()</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" tabindex="0">GroveBaseShield(Gpio)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -111,10 +111,10 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">GroveBaseShield</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">Pin map for the passive Grove Base Shield for UNO. The shield does not add a protocol or a
-runtime object: every socket is an ordinary UNO pin, so these constants can be passed directly
+runtime object: every socket is an ordinary UNO pin, so these resolved pins can be passed directly
 to a Grove driver or to <a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a>.
 
-<p>Use <code>D4</code>, for example, for the <code>SIG</code> wire of a Grove DHT module plugged into
+<p>Use <a href="#getD4()"><code>getD4()</code></a>, for example, for the <code>SIG</code> wire of a Grove DHT module plugged into
 the shield's D4 socket. The module's <code>GND</code> and <code>VCC</code> wires are supplied by the
 socket; the driver only needs the signal pin.</div>
 </div>
@@ -129,9 +129,9 @@ socket; the driver only needs the signal pin.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">GroveBaseShield</a>()</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveBaseShield</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Creates the shield handle.</div>
+<div class="block">Creates the shield handle for a board GPIO context.</div>
 </div>
 </div>
 </section>
@@ -240,11 +240,11 @@ socket; the driver only needs the signal pin.</div>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio)">
 <h3>GroveBaseShield</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GroveBaseShield</span>()</div>
-<div class="block">Creates the shield handle. Create it once, at startup, and reuse it.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GroveBaseShield</span><wbr><span class="parameters">(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</span></div>
+<div class="block">Creates the shield handle for a board GPIO context. Create it once, at startup, and reuse it.</div>
 </div>
 </section>
 </li>

@@ -87,6 +87,11 @@ initTheme();
 <li><a href="#analogWrite(int,int)" tabindex="0">analogWrite(int, int)</a></li>
 <li><a href="#toggle(int)" tabindex="0">toggle(int)</a></li>
 <li><a href="#getBuiltinLed()" tabindex="0">getBuiltinLed()</a></li>
+<li><a href="#digitalPin(java.lang.String)" tabindex="0">digitalPin(String)</a></li>
+<li><a href="#analogPin(java.lang.String)" tabindex="0">analogPin(String)</a></li>
+<li><a href="#getInput()" tabindex="0">getInput()</a></li>
+<li><a href="#getOutput()" tabindex="0">getOutput()</a></li>
+<li><a href="#getInputPullup()" tabindex="0">getInputPullup()</a></li>
 </ol>
 </li>
 </ol>
@@ -144,12 +149,22 @@ Java body and cannot run, or be mocked, on a desktop JVM. Mock <a href="../gpio/
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analogRead(int)" class="member-name-link">analogRead</a><wbr>(int&nbsp;pin)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analogWrite(int,int)" class="member-name-link">analogWrite</a><wbr>(int&nbsp;pin,
- int&nbsp;value)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analogPin(java.lang.String)" class="member-name-link">analogPin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Resolves a logical analog pin name for this board.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analogRead(int)" class="member-name-link">analogRead</a><wbr>(int&nbsp;pin)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#analogWrite(int,int)" class="member-name-link">analogWrite</a><wbr>(int&nbsp;pin,
+ int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#digitalPin(java.lang.String)" class="member-name-link">digitalPin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Resolves a logical digital pin name for this board.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#digitalRead(int)" class="member-name-link">digitalRead</a><wbr>(int&nbsp;pin)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
@@ -162,24 +177,39 @@ Java body and cannot run, or be mocked, on a desktop JVM. Mock <a href="../gpio/
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#gpio()" class="member-name-link">gpio</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getInput()" class="member-name-link">getInput</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The pin mode INPUT, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getInputPullup()" class="member-name-link">getInputPullup</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The pin mode INPUT_PULLUP, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getOutput()" class="member-name-link">getOutput</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The pin mode OUTPUT, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#gpio()" class="member-name-link">gpio</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The pins <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> hands out.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pinMode(int,int)" class="member-name-link">pinMode</a><wbr>(int&nbsp;pin,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pinMode(int,int)" class="member-name-link">pinMode</a><wbr>(int&nbsp;pin,
  int&nbsp;mode)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setGpio(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">setGpio</a><wbr>(<a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;replacement)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setGpio(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">setGpio</a><wbr>(<a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;replacement)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Makes <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toggle(int)" class="member-name-link">toggle</a><wbr>(int&nbsp;pin)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#toggle(int)" class="member-name-link">toggle</a><wbr>(int&nbsp;pin)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -318,6 +348,80 @@ whole-program emulator in a test, never on the board.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../gpio/Gpio.html#getBuiltinLed()">getBuiltinLed</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="digitalPin(java.lang.String)">
+<h3>digitalPin</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">digitalPin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../gpio/Gpio.html#digitalPin(java.lang.String)">Gpio</a></code></span></div>
+<div class="block">Resolves a logical digital pin name for this board. The accepted portable names are <code>D0</code> through
+<code>D13</code>; a board may also expose board-specific names such as <code>GPIO42</code>. Invalid or unavailable names
+raise <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link"><code>IllegalArgumentException</code></a> on the board.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../gpio/Gpio.html#digitalPin(java.lang.String)">digitalPin</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="analogPin(java.lang.String)">
+<h3>analogPin</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">analogPin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../gpio/Gpio.html#analogPin(java.lang.String)">Gpio</a></code></span></div>
+<div class="block">Resolves a logical analog pin name for this board. The accepted portable names are <code>A0</code> through <code>A5</code>;
+a board may expose additional names. Invalid or unavailable names raise <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link"><code>IllegalArgumentException</code></a> on the
+board.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../gpio/Gpio.html#analogPin(java.lang.String)">analogPin</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getInput()">
+<h3>getInput</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInput</span>()</div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../gpio/Gpio.html#getInput()">Gpio</a></code></span></div>
+<div class="block">The pin mode INPUT, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../gpio/Gpio.html#getInput()">getInput</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getOutput()">
+<h3>getOutput</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getOutput</span>()</div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../gpio/Gpio.html#getOutput()">Gpio</a></code></span></div>
+<div class="block">The pin mode OUTPUT, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../gpio/Gpio.html#getOutput()">getOutput</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getInputPullup()">
+<h3>getInputPullup</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInputPullup</span>()</div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../gpio/Gpio.html#getInputPullup()">Gpio</a></code></span></div>
+<div class="block">The pin mode INPUT_PULLUP, for <a href="../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../gpio/Gpio.html#getInputPullup()">getInputPullup</a></code>&nbsp;in interface&nbsp;<code><a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></dd>
 </dl>
 </div>
 </section>

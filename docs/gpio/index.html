@@ -320,8 +320,10 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/Gpio.java"><code>Gpio</code></a>
-is the board's set of pins. Get it once with <code>ArduinoUno.getGpio()</code> or <code>ArduinoNano.getGpio()</code>, then set a pin as an
-output, write it high or low, or read an input. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java"><code>DigitalOutput</code></a>
+is the selected board's pin resolver and GPIO port. Get it once from the board facade, such as
+<code>ArduinoUno.getGpio()</code>, <code>ArduinoNano.getGpio()</code>, <code>Esp32Cam.getGpio()</code> or <code>M5StackCardputer.getGpio()</code>, then resolve
+the names printed on the board and use the returned pin numbers with the GPIO operations. The resolver keeps the
+application independent of the MCU's physical GPIO numbering. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java"><code>DigitalOutput</code></a>
 is a lighter handle for a pin you only switch on and off.</p>
 <table>
 <thead>
@@ -333,8 +335,18 @@ is a lighter handle for a pin you only switch on and off.</p>
 </thead>
 <tbody>
 <tr>
+<td><code>digitalPin(name)</code></td>
+<td>a name such as <code>&quot;D2&quot;</code></td>
+<td>resolves a board-specific digital pin</td>
+</tr>
+<tr>
+<td><code>analogPin(name)</code></td>
+<td>a name such as <code>&quot;A0&quot;</code></td>
+<td>resolves a board-specific analog pin</td>
+</tr>
+<tr>
 <td><code>pinMode(pin, mode)</code></td>
-<td>a pin, and <code>Gpio.getInput()</code>, <code>getOutput()</code> or <code>getInputPullup()</code></td>
+<td>a pin, and <code>gpio.getInput()</code>, <code>getOutput()</code> or <code>getInputPullup()</code></td>
 <td>sets the direction of a pin</td>
 </tr>
 <tr>
@@ -349,7 +361,7 @@ is a lighter handle for a pin you only switch on and off.</p>
 </tr>
 <tr>
 <td><code>analogRead(pin)</code></td>
-<td>an analog pin, such as <code>Gpio.getA0()</code></td>
+<td>an analog pin, such as <code>gpio.analogPin(&quot;A0&quot;)</code></td>
 <td>returns the ADC reading</td>
 </tr>
 <tr>
@@ -364,10 +376,13 @@ is a lighter handle for a pin you only switch on and off.</p>
 </tr>
 </tbody>
 </table>
-<p>Pins are portable numbers, not the chip's own GPIO numbers. <code>Gpio.getD0()</code> through <code>Gpio.getD13()</code> return <code>0</code> to <code>13</code>, and
-<code>Gpio.getA0()</code> through <code>Gpio.getA5()</code> return <code>14</code> to <code>19</code>. The compiler translates these numbers to the linked board's
-pins, so the same program runs on a UNO R4 WiFi or a Nano ESP32 without changes.</p>
-<p><code>DigitalOutput.of(pin)</code> sets the pin as an output and returns a handle with <code>high()</code> and <code>low()</code>.</p>
+<p>Use the portable digital names <code>D0</code> through <code>D13</code> and analog names <code>A0</code> through <code>A5</code>. The selected board resolves each
+name to the logical pin value expected by its runtime; for example, Nano ESP32 <code>D13</code> is translated to ESP32-S3 GPIO48.
+M5Stack Cardputer also accepts its documented <code>G*</code> and <code>GPIO*</code> aliases. A malformed, unknown, unavailable or null name
+raises <code>IllegalArgumentException</code> in the generated program.</p>
+<p><code>DigitalOutput.of(pin)</code> sets an already-resolved pin as an output. When starting from a board name, use
+<code>DigitalOutput.of(gpio, &quot;D13&quot;)</code>; it resolves the name through the supplied board context and returns the same
+allocation-free handle with <code>high()</code> and <code>low()</code>.</p>
 <h2 id="blink">Blink</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a>
 turns the board's onboard LED on and off forever: on for 500 milliseconds, off for 500 milliseconds, one full blink each
@@ -415,12 +430,13 @@ without touching the board:</p>
 <p><code>digitalRead</code> and <code>analogRead</code> need a pin that is configured as an input. A button between a digital pin and ground,
 with the internal pull-up enabled, reads <code>false</code> while the button is pressed:</p>
 <pre><code class="language-java">Gpio gpio = ArduinoUno.getGpio();
-gpio.pinMode(Gpio.getD2(), Gpio.getInputPullup());
+int buttonPin = gpio.digitalPin(&quot;D2&quot;);
+gpio.pinMode(buttonPin, gpio.getInputPullup());
 
-boolean pressed = !gpio.digitalRead(Gpio.getD2());
+boolean pressed = !gpio.digitalRead(buttonPin);
 </code></pre>
 <p><code>analogRead</code> on an analog pin returns the ADC value, which is a number from the converter rather than a voltage:</p>
-<pre><code class="language-java">int light = gpio.analogRead(Gpio.getA0());
+<pre><code class="language-java">int light = gpio.analogRead(gpio.analogPin(&quot;A0&quot;));
 </code></pre>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>

@@ -36,7 +36,7 @@ STM32U585's complete flash and SRAM.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput` | ✓ | The STM32's Arduino GPIO mapping. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Gpio`, `DigitalOutput` | ✓ | Resolve `D0`–`D13` and `A0`–`A5` through the STM32's board-context Arduino GPIO mapping. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `Delay`, `Clock`, `Serial` | ✓ | Arduino/Zephyr timing and the MCU sketch's serial path. | |
 | Double-precision `java.lang.Math` | ✓ | | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) |

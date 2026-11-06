@@ -30,7 +30,7 @@ own backend instead of the Thumb-2 or AVR one.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput` | ✓ | Pins keep the numbers printed on the board: `getBuiltinLed()` is `13` (GPIO48), and `getA0()`–`getA5()` are 14–19, so Grove drivers and pin maps work unchanged. Never pass raw ESP32 GPIO numbers; the onboard RGB LED is not reachable. | |
+| `Gpio`, `DigitalOutput` | ✓ | Resolve printed names such as `digitalPin("D13")` and `analogPin("A0")`; D13 is translated to ESP32-S3 GPIO48. Never pass raw ESP32 GPIO numbers; the onboard RGB LED is not reachable. | |
 | `Delay`, `Serial` | ✓ | `Serial` over the native USB port. | |
 | `int`, `long`, `float`, `double` | ✓ | Java semantics kept (a `long` division by zero stops the program, float-to-int casts saturate). `float` uses the S3's FPU; `double` is soft-float. | [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java), [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
 | Double-precision `java.lang.Math` | ✓ | Uses the toolchain's libm. | [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
@@ -156,7 +156,7 @@ slot (chip select D4, SPI D11–D13) through the same SdFat runtime as the UNO b
 that read settings from the card (the `…SD` programs above) therefore need the carrier too.
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
 SdCard sd = carrier.getSdCard();
 if (sd.begin() && sd.exists("application.properties")) {
     InputStream in = sd.open("application.properties");
@@ -180,7 +180,7 @@ wifi.password=your-password
 then read the file with `java.util.Properties` and join the network:
 
 ```java
-SdCard sd = new NanoConnectorCarrier().getSdCard();
+SdCard sd = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 Wifi wifi = ArduinoNano.getWifi();
 
 if (sd.begin()) {
@@ -205,7 +205,7 @@ prints its status once a second.
 Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
 GrovePirMotion pir = new GrovePirMotion();
 LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
     GroveLightV12.ADC_12_BIT);
@@ -227,7 +227,7 @@ SCL line, the Nano talks to a LEGO Mindstorms RCX brick through `RemoteRcx` (see
 minutes. The brick then answers on channel 1:
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
 GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
 GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
 RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, emitter,

@@ -81,6 +81,16 @@ the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardMod
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.carrier">io.github.jabrena.juno.hardware.device.carrier</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Pin maps for passive carrier boards a Nano plugs into, currently
+<a href="../../device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier"><code>NanoConnectorCarrier</code></a>: its microSD slot, Grove and Qwiic
+connectors are ordinary Nano header pins, so a carrier needs no compiler intrinsic of its own.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.grove">io.github.jabrena.juno.hardware.device.grove</a></div>
+<div class="col-last even-row-color">
+<div class="block">Zero-allocation drivers and pin names for peripherals connected through the Grove Base Shield.</div>
+</div>
 <div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.grove.sensors">io.github.jabrena.juno.hardware.device.grove.sensors</a></div>
 <div class="col-last odd-row-color">
 <div class="block">Allocation-free Grove sensor drivers for digital, analog, I2C and infrared modules connected through the
@@ -146,6 +156,43 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-second even-row-color"><span class="type-name-label">Esp32Cam.</span><code><a href="../../Esp32Cam.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
 <div class="col-last even-row-color">
 <div class="block">The AI Thinker ESP32-CAM's GPIO pins.</div>
+</div>
+<div class="col-first odd-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">The Cardputer's GPIO context.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.carrier">
+<h2>Uses of <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a> in <a href="../../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a></h2>
+<div class="caption"><span>Constructors in <a href="../../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/carrier/NanoConnectorCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">NanoConnectorCarrier</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the carrier handle for a board GPIO context.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.grove">
+<h2>Uses of <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a> in <a href="../../device/grove/package-summary.html">io.github.jabrena.juno.hardware.device.grove</a></h2>
+<div class="caption"><span>Constructors in <a href="../../device/grove/package-summary.html">io.github.jabrena.juno.hardware.device.grove</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/GroveBaseShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveBaseShield</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the shield handle for a board GPIO context.</div>
 </div>
 </div>
 </section>
@@ -315,6 +362,18 @@ in a unit test.</div>
 <li>
 <section class="detail" id="io.github.jabrena.juno.hardware.gpio">
 <h2>Uses of <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a> in <a href="../package-summary.html">io.github.jabrena.juno.hardware.gpio</a></h2>
+<div class="caption"><span>Methods in <a href="../package-summary.html">io.github.jabrena.juno.hardware.gpio</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static <a href="../DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">DigitalOutput.</span><code><a href="../DigitalOutput.html#of(io.github.jabrena.juno.hardware.gpio.Gpio,java.lang.String)" class="member-name-link">of</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;pinName)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Resolves a board-specific name through <code>gpio</code> before creating the zero-cost output handle.</div>
+</div>
+</div>
 <div class="caption"><span>Constructors in <a href="../package-summary.html">io.github.jabrena.juno.hardware.gpio</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier</div>

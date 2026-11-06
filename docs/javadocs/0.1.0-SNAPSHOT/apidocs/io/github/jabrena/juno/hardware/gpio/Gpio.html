@@ -79,26 +79,8 @@ initTheme();
 <li><a href="#analogWrite(int,int)" tabindex="0">analogWrite(int, int)</a></li>
 <li><a href="#toggle(int)" tabindex="0">toggle(int)</a></li>
 <li><a href="#getBuiltinLed()" tabindex="0">getBuiltinLed()</a></li>
-<li><a href="#getD0()" tabindex="0">getD0()</a></li>
-<li><a href="#getD1()" tabindex="0">getD1()</a></li>
-<li><a href="#getD2()" tabindex="0">getD2()</a></li>
-<li><a href="#getD3()" tabindex="0">getD3()</a></li>
-<li><a href="#getD4()" tabindex="0">getD4()</a></li>
-<li><a href="#getD5()" tabindex="0">getD5()</a></li>
-<li><a href="#getD6()" tabindex="0">getD6()</a></li>
-<li><a href="#getD7()" tabindex="0">getD7()</a></li>
-<li><a href="#getD8()" tabindex="0">getD8()</a></li>
-<li><a href="#getD9()" tabindex="0">getD9()</a></li>
-<li><a href="#getD10()" tabindex="0">getD10()</a></li>
-<li><a href="#getD11()" tabindex="0">getD11()</a></li>
-<li><a href="#getD12()" tabindex="0">getD12()</a></li>
-<li><a href="#getD13()" tabindex="0">getD13()</a></li>
-<li><a href="#getA0()" tabindex="0">getA0()</a></li>
-<li><a href="#getA1()" tabindex="0">getA1()</a></li>
-<li><a href="#getA2()" tabindex="0">getA2()</a></li>
-<li><a href="#getA3()" tabindex="0">getA3()</a></li>
-<li><a href="#getA4()" tabindex="0">getA4()</a></li>
-<li><a href="#getA5()" tabindex="0">getA5()</a></li>
+<li><a href="#digitalPin(java.lang.String)" tabindex="0">digitalPin(String)</a></li>
+<li><a href="#analogPin(java.lang.String)" tabindex="0">analogPin(String)</a></li>
 <li><a href="#getInput()" tabindex="0">getInput()</a></li>
 <li><a href="#getOutput()" tabindex="0">getOutput()</a></li>
 <li><a href="#getInputPullup()" tabindex="0">getInputPullup()</a></li>
@@ -121,10 +103,9 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Gpio</span></div>
 <div class="block">The board's GPIO pins. A board facade such as <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> or
 <a href="../Esp32Cam.html#getGpio()"><code>Esp32Cam.getGpio()</code></a> exposes the board's own pins, which the compiler lowers to the Arduino core
-calls; a unit test passes <code>mock(Gpio.class)</code> instead. Pin numbers and modes come from the static getters
-(<a href="#getD13()"><code>getD13()</code></a>, <a href="#getOutput()"><code>getOutput()</code></a>): portable pin identifiers, D0-D13 as 0-13 and A0-A5 as 14-19.
-The runtime translates these identifiers to the linked board's pins and modes; they are not raw MCU GPIO
-numbers. On the Nano ESP32, for example, D13 reaches GPIO48 and A4 reaches GPIO11.
+calls; a unit test passes <code>mock(Gpio.class)</code> instead. Pin names and modes are resolved by the linked board
+(<a href="#digitalPin(java.lang.String)"><code>digitalPin(String)</code></a>, <a href="#getOutput()"><code>getOutput()</code></a>) and are not raw MCU GPIO numbers. On the Nano ESP32, for
+example, D13 reaches GPIO48 and A4 reaches GPIO11.
 Get the board's pins once, at startup, and pass them to the classes that need them.</div>
 </div>
 </section>
@@ -135,19 +116,29 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#analogRead(int)" class="member-name-link">analogRead</a><wbr>(int&nbsp;pin)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#analogWrite(int,int)" class="member-name-link">analogWrite</a><wbr>(int&nbsp;pin,
- int&nbsp;value)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#analogPin(java.lang.String)" class="member-name-link">analogPin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Resolves a logical analog pin name for this board.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#analogRead(int)" class="member-name-link">analogRead</a><wbr>(int&nbsp;pin)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#analogWrite(int,int)" class="member-name-link">analogWrite</a><wbr>(int&nbsp;pin,
+ int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#digitalPin(java.lang.String)" class="member-name-link">digitalPin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Resolves a logical digital pin name for this board.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#digitalRead(int)" class="member-name-link">digitalRead</a><wbr>(int&nbsp;pin)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
@@ -155,125 +146,25 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#digitalWrite(int,boolean)" class="member-name-link">digitalWrite</a><wbr>(int&nbsp;pin,
  boolean&nbsp;high)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA0()" class="member-name-link">getA0</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A0, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA1()" class="member-name-link">getA1</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A1, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA2()" class="member-name-link">getA2</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A2, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA3()" class="member-name-link">getA3</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A3, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA4()" class="member-name-link">getA4</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A4, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getA5()" class="member-name-link">getA5</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of A5, usable wherever a pin is expected.</div>
-</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getBuiltinLed()" class="member-name-link">getBuiltinLed</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD0()" class="member-name-link">getD0</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D0, usable wherever a pin is expected.</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getInput()" class="member-name-link">getInput</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">The pin mode INPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD1()" class="member-name-link">getD1</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D1, usable wherever a pin is expected.</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getInputPullup()" class="member-name-link">getInputPullup</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">The pin mode INPUT_PULLUP, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD10()" class="member-name-link">getD10</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D10, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD11()" class="member-name-link">getD11</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D11, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD12()" class="member-name-link">getD12</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D12, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD13()" class="member-name-link">getD13</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D13, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD2()" class="member-name-link">getD2</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D2, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD3()" class="member-name-link">getD3</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D3, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD4()" class="member-name-link">getD4</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D4, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD5()" class="member-name-link">getD5</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D5, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD6()" class="member-name-link">getD6</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D6, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD7()" class="member-name-link">getD7</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D7, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD8()" class="member-name-link">getD8</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D8, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getD9()" class="member-name-link">getD9</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin number of D9, usable wherever a pin is expected.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getInput()" class="member-name-link">getInput</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin mode INPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#getInputPullup()" class="member-name-link">getInputPullup</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin mode INPUT_PULLUP, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#getOutput()" class="member-name-link">getOutput</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1">
-<div class="block">The pin mode OUTPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#getOutput()" class="member-name-link">getOutput</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">The pin mode OUTPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#pinMode(int,int)" class="member-name-link">pinMode</a><wbr>(int&nbsp;pin,
@@ -357,182 +248,24 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 </section>
 </li>
 <li>
-<section class="detail" id="getD0()">
-<h3>getD0</h3>
+<section class="detail" id="digitalPin(java.lang.String)">
+<h3>digitalPin</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD0</span>()</div>
-<div class="block">The pin number of D0, usable wherever a pin is expected.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">digitalPin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Resolves a logical digital pin name for this board. The accepted portable names are <code>D0</code> through
+<code>D13</code>; a board may also expose board-specific names such as <code>GPIO42</code>. Invalid or unavailable names
+raise <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link"><code>IllegalArgumentException</code></a> on the board.</div>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="getD1()">
-<h3>getD1</h3>
+<section class="detail" id="analogPin(java.lang.String)">
+<h3>analogPin</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD1</span>()</div>
-<div class="block">The pin number of D1, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD2()">
-<h3>getD2</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD2</span>()</div>
-<div class="block">The pin number of D2, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD3()">
-<h3>getD3</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD3</span>()</div>
-<div class="block">The pin number of D3, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD4()">
-<h3>getD4</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD4</span>()</div>
-<div class="block">The pin number of D4, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD5()">
-<h3>getD5</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD5</span>()</div>
-<div class="block">The pin number of D5, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD6()">
-<h3>getD6</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD6</span>()</div>
-<div class="block">The pin number of D6, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD7()">
-<h3>getD7</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD7</span>()</div>
-<div class="block">The pin number of D7, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD8()">
-<h3>getD8</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD8</span>()</div>
-<div class="block">The pin number of D8, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD9()">
-<h3>getD9</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD9</span>()</div>
-<div class="block">The pin number of D9, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD10()">
-<h3>getD10</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD10</span>()</div>
-<div class="block">The pin number of D10, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD11()">
-<h3>getD11</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD11</span>()</div>
-<div class="block">The pin number of D11, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD12()">
-<h3>getD12</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD12</span>()</div>
-<div class="block">The pin number of D12, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getD13()">
-<h3>getD13</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getD13</span>()</div>
-<div class="block">The pin number of D13, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA0()">
-<h3>getA0</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA0</span>()</div>
-<div class="block">The pin number of A0, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA1()">
-<h3>getA1</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA1</span>()</div>
-<div class="block">The pin number of A1, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA2()">
-<h3>getA2</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA2</span>()</div>
-<div class="block">The pin number of A2, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA3()">
-<h3>getA3</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA3</span>()</div>
-<div class="block">The pin number of A3, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA4()">
-<h3>getA4</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA4</span>()</div>
-<div class="block">The pin number of A4, usable wherever a pin is expected.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getA5()">
-<h3>getA5</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA5</span>()</div>
-<div class="block">The pin number of A5, usable wherever a pin is expected.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">analogPin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="block">Resolves a logical analog pin name for this board. The accepted portable names are <code>A0</code> through <code>A5</code>;
+a board may expose additional names. Invalid or unavailable names raise <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link"><code>IllegalArgumentException</code></a> on the
+board.</div>
 </div>
 </section>
 </li>
@@ -540,8 +273,8 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <section class="detail" id="getInput()">
 <h3>getInput</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInput</span>()</div>
-<div class="block">The pin mode INPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">getInput</span>()</div>
+<div class="block">The pin mode INPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
 </section>
 </li>
@@ -549,8 +282,8 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <section class="detail" id="getOutput()">
 <h3>getOutput</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getOutput</span>()</div>
-<div class="block">The pin mode OUTPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">getOutput</span>()</div>
+<div class="block">The pin mode OUTPUT, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
 </section>
 </li>
@@ -558,8 +291,8 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <section class="detail" id="getInputPullup()">
 <h3>getInputPullup</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInputPullup</span>()</div>
-<div class="block">The pin mode INPUT_PULLUP, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>.</div>
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">getInputPullup</span>()</div>
+<div class="block">The pin mode INPUT_PULLUP, for <a href="#pinMode(int,int)"><code>pinMode(int, int)</code></a>; the board supplies its value.</div>
 </div>
 </section>
 </li>

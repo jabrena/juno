@@ -34,7 +34,7 @@ startup and stay small.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput`, `Delay`, `Clock` | ✓ | Standard Arduino GPIO and timing calls. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock` | ✓ | Resolve `D0`–`D13` with `digitalPin` and `A0`–`A5` with `analogPin`; modes come from the board's `Gpio`. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `analogRead`, `analogWrite` | ✓ | Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9, D10 and D11. | |
 | `Serial` | ✓ | Through the ATmega16U2 USB-to-serial path. | |
 | Classes, interfaces and inheritance | ✓ | Larger object graphs may exceed the 1 KB arena or the flash. | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Interfaces`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java) |
@@ -103,7 +103,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield();
+GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

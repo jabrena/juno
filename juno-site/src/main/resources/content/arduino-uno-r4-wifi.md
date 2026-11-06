@@ -35,7 +35,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput`, `analogRead`, `analogWrite` | ✓ | Standard Arduino GPIO calls. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Gpio`, `DigitalOutput`, `analogRead`, `analogWrite` | ✓ | Resolve `D0`–`D13` and `A0`–`A5` through `ArduinoUno.getGpio()`; mode values are supplied by the same board context. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `Delay`, `Clock`, `Serial` | ✓ | `Serial` over the native USB port. | |
 | Double-precision `java.lang.Math` | ✓ | | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) |
@@ -160,7 +160,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield();
+GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

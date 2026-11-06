@@ -99,6 +99,12 @@ initTheme();
 <dd>
 <div class="block">Selects the AI Thinker ESP32-CAM as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#analogPin(java.lang.String)" class="member-name-link">analogPin(String)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dd>
+<div class="block">Resolves a logical analog pin name for this board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#analogPin(java.lang.String)" class="member-name-link">analogPin(String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#analogRead(int)" class="member-name-link">analogRead(int)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#analogRead(int)" class="member-name-link">analogRead(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
@@ -914,6 +920,12 @@ had none.</div>
 <dd>
 <div class="block">A zero-cost GPIO handle.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#digitalPin(java.lang.String)" class="member-name-link">digitalPin(String)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dd>
+<div class="block">Resolves a logical digital pin name for this board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#digitalPin(java.lang.String)" class="member-name-link">digitalPin(String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#digitalRead(int)" class="member-name-link">digitalRead(int)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#digitalRead(int)" class="member-name-link">digitalRead(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
@@ -1361,10 +1373,6 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The UNO pin behind the A0 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA0()" class="member-name-link">getA0()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A0, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getA1()" class="member-name-link">getA1()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The Grove A0/A1 socket's second (white) wire, A1.</div>
@@ -1372,10 +1380,6 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getA1()" class="member-name-link">getA1()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the A1 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA1()" class="member-name-link">getA1()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A1, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getA2()" class="member-name-link">getA2()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
@@ -1385,10 +1389,6 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The UNO pin behind the A2 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA2()" class="member-name-link">getA2()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A2, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getA3()" class="member-name-link">getA3()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The Grove A2/A3 socket's second (white) wire, A3.</div>
@@ -1396,18 +1396,6 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getA3()" class="member-name-link">getA3()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the A3 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA3()" class="member-name-link">getA3()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A3, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA4()" class="member-name-link">getA4()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A4, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getA5()" class="member-name-link">getA5()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of A5, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getAccelerometer()" class="member-name-link">getAccelerometer()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
 <dd>
@@ -1551,89 +1539,33 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">Returns the number of the current mode.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD0()" class="member-name-link">getD0()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D0, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD1()" class="member-name-link">getD1()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D1, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD10()" class="member-name-link">getD10()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D10, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD11()" class="member-name-link">getD11()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D11, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD12()" class="member-name-link">getD12()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D12, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD13()" class="member-name-link">getD13()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D13, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD2()" class="member-name-link">getD2()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D2 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD2()" class="member-name-link">getD2()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D2, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD3()" class="member-name-link">getD3()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D3 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD3()" class="member-name-link">getD3()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D3, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD4()" class="member-name-link">getD4()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D4 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD4()" class="member-name-link">getD4()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D4, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD5()" class="member-name-link">getD5()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D5 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD5()" class="member-name-link">getD5()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D5, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD6()" class="member-name-link">getD6()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D6 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD6()" class="member-name-link">getD6()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D6, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD7()" class="member-name-link">getD7()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D7 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD7()" class="member-name-link">getD7()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D7, usable wherever a pin is expected.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD8()" class="member-name-link">getD8()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D8 socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD8()" class="member-name-link">getD8()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D8, usable wherever a pin is expected.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getD9()" class="member-name-link">getD9()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
-<dd>
-<div class="block">The pin number of D9, usable wherever a pin is expected.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getDisplay()" class="member-name-link">getDisplay()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
 <dd>
@@ -1658,6 +1590,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getGpio()" class="member-name-link">getGpio()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
 <dd>
 <div class="block">The AI Thinker ESP32-CAM's GPIO pins.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getGpio()" class="member-name-link">getGpio()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
+<dd>
+<div class="block">The Cardputer's GPIO context.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getGroveA0()" class="member-name-link">getGroveA0()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
@@ -1723,14 +1659,18 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The UNO pin behind the I2C_SDA socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getInput()" class="member-name-link">getInput()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getInput()" class="member-name-link">getInput()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
-<div class="block">The pin mode INPUT, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>.</div>
+<div class="block">The pin mode INPUT, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getInputPullup()" class="member-name-link">getInputPullup()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getInput()" class="member-name-link">getInput()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getInputPullup()" class="member-name-link">getInputPullup()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
-<div class="block">The pin mode INPUT_PULLUP, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>.</div>
+<div class="block">The pin mode INPUT_PULLUP, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getInputPullup()" class="member-name-link">getInputPullup()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getInt(byte%5B%5D,int,java.lang.String)" class="member-name-link">getInt(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
 <dd>
 <div class="block">Returns a strictly integral 32-bit value, or <code>0</code> on failure or overflow.</div>
@@ -1822,10 +1762,12 @@ at saturation.</div>
 <div class="block">Returns the uncalibrated brightness, between <a href="io/github/jabrena/juno/robotics/LightDetector.html#getLow()"><code>LightDetector.getLow()</code></a> and <a href="io/github/jabrena/juno/robotics/LightDetector.html#getHigh()"><code>LightDetector.getHigh()</code></a>; low values are dark and
 high values are bright.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getOutput()" class="member-name-link">getOutput()</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getOutput()" class="member-name-link">getOutput()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
-<div class="block">The pin mode OUTPUT, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>.</div>
+<div class="block">The pin mode OUTPUT, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>; the board supplies its value.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getOutput()" class="member-name-link">getOutput()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
 <dd>
 <div class="block">Returns the configured PWM power percentage.</div>
@@ -2114,9 +2056,9 @@ either ADC rail.</div>
 <dd>
 <div class="block">Pin map for the passive Grove Base Shield for UNO.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#%3Cinit%3E()" class="member-name-link">GroveBaseShield()</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveBaseShield(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
-<div class="block">Creates the shield handle.</div>
+<div class="block">Creates the shield handle for a board GPIO context.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
 <dd>
@@ -3258,9 +3200,9 @@ the <code>REMOTE_*</code> values.</div>
 <div class="block">Pin map for the passive Arduino Nano Connector Carrier (ASX00061): a microSD card slot on SPI, four Grove
 sockets and one Qwiic connector, all wired to ordinary Nano header pins.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#%3Cinit%3E()" class="member-name-link">NanoConnectorCarrier()</a> - Constructor for class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">NanoConnectorCarrier(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
-<div class="block">Creates the carrier handle.</div>
+<div class="block">Creates the carrier handle for a board GPIO context.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#NATIVE_HEIGHT" class="member-name-link">NATIVE_HEIGHT</a> - Static variable in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
@@ -3405,6 +3347,10 @@ in a unit test.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDigitalOutput.html#of(int)" class="member-name-link">of(int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDigitalOutput.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDigitalOutput</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html#of(io.github.jabrena.juno.hardware.gpio.Gpio,java.lang.String)" class="member-name-link">of(Gpio, String)</a> - Static method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></dt>
+<dd>
+<div class="block">Resolves a board-specific name through <code>gpio</code> before creating the zero-cost output handle.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#OFF" class="member-name-link">OFF</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
 <div class="block">The LED is off.</div>

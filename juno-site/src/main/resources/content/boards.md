@@ -11,22 +11,22 @@ annotation or with `-Djuno.board=<id>`.
 
 ## Hardware at a glance
 
-Boards are ordered from the most capable to the smallest: the UNO Q's Linux-plus-MCU platform first, then
-the ESP32-S3 boards, the ESP32-CAM, and finally the UNO family. Within a class, CPU, memory and peripherals
+Boards are ordered from the most capable to the smallest: the ESP32-S3 boards first, then the ESP32-CAM, the
+UNO Q's Linux-plus-MCU platform, and finally the UNO family. Within a class, CPU, memory and peripherals
 break the tie.
 
-| | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
+| | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
 |---|---|---|---|---|---|---|---|
-| Microcontroller | STM32U585 | ESP32-S3 (NORA-W106) | ESP32-S3 | ESP32 Q | Renesas RA4M1 | ATmega4809 | ATmega328P |
-| CPU | 32-bit Cortex-M33F | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX6 | 32-bit Cortex-M4F | 8-bit megaAVR | 8-bit AVR |
-| Clock | 160 MHz | 240 MHz | 240 MHz | 240 MHz | 48 MHz | 16 MHz | 16 MHz |
-| Flash | 2 MB | 16 MB | 8 MB | 4 MB | 256 kB | 48 kB | 32 kB |
-| SRAM | 786 kB | 512 kB + 8 MB PSRAM | 512 kB | 520 kB + 4 MB PSRAM | 32 kB | 6 kB | 2 kB |
+| Microcontroller | ESP32-S3 (NORA-W106) | ESP32-S3 | ESP32 Q | STM32U585 | Renesas RA4M1 | ATmega4809 | ATmega328P |
+| CPU | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX6 | 32-bit Cortex-M33F | 32-bit Cortex-M4F | 8-bit megaAVR | 8-bit AVR |
+| Clock | 240 MHz | 240 MHz | 240 MHz | 160 MHz | 48 MHz | 16 MHz | 16 MHz |
+| Flash | 16 MB | 8 MB | 4 MB | 2 MB | 256 kB | 48 kB | 32 kB |
+| SRAM | 512 kB + 8 MB PSRAM | 512 kB | 520 kB + 4 MB PSRAM | 786 kB | 32 kB | 6 kB | 2 kB |
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V | 5 V |
-| Radio | Wi-Fi/BLE on the Linux side | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | ESP32-S3 Wi-Fi/BLE | NINA-W102 Wi-Fi/BLE | None (WiFi Shield) |
-| Extras | 13×8 LED matrix, Linux MPU | | Display, keyboard, speaker, battery | OV2640 camera, microSD socket | 12×8 LED matrix | Secure element, IMU | |
-| Arduino core | `arduino: zephyr` | `arduino: esp32` | `m5stack: esp32` | `esp32: esp32` | `arduino: renesas_uno` | `arduino: megaavr` | `arduino: avr` |
-| Juno board id | `arduino-uno-q` | `arduino-nano-esp32` | `m5stack-cardputer` | `ai-thinker-esp32-cam` | `arduino-uno-r4-wifi` | `arduino-uno-r3-wifi-rev2` | `arduino-uno-r3` |
+| Radio | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE on the Linux side | ESP32-S3 Wi-Fi/BLE | NINA-W102 Wi-Fi/BLE | None (WiFi Shield) |
+| Extras | | Display, keyboard, speaker, battery | OV2640 camera, microSD socket | 13×8 LED matrix, Linux MPU | 12×8 LED matrix | Secure element, IMU | |
+| Arduino core | `arduino: esp32` | `m5stack: esp32` | `esp32: esp32` | `arduino: zephyr` | `arduino: renesas_uno` | `arduino: megaavr` | `arduino: avr` |
+| Juno board id | `arduino-nano-esp32` | `m5stack-cardputer` | `ai-thinker-esp32-cam` | `arduino-uno-q` | `arduino-uno-r4-wifi` | `arduino-uno-r3-wifi-rev2` | `arduino-uno-r3` |
 
 The spaces after `:` in the Arduino core row are visual break points for this table; use the compact
 core identifier (for example, `arduino:zephyr`) in build commands.
@@ -35,31 +35,36 @@ core identifier (for example, `arduino:zephyr`) in build commands.
 
 ✓ supported · — not available on this board
 
-| Juno API or feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
+| Juno API or feature | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| GPIO, delays, clock, `Serial` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | — | — |
-| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
+| Double-precision `Math` functions | ✓ | ✓ | — | ✓ | ✓ | — | — |
+| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | WiFi Shield |
-| Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
-| HTTP client | — | ✓ | ✓ | — | ✓ | ✓ | WiFi Shield |
-| HTTPS client | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
-| HTTP server | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
-| HTTPS server | ✓ | ✓ | ✓ | — | — | — | — |
-| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
-| Email over STARTTLS (`Smtp.send`) | — | ✓ | — | — | ✓ | — | — |
+| Wi-Fi access point | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTP client | ✓ | ✓ | — | — | ✓ | ✓ | WiFi Shield |
+| HTTPS client | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTP server | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTPS server | ✓ | ✓ | — | ✓ | — | — | — |
+| HTTP response streaming (`HttpServer.beginStream`) | — | — | ✓ | — | — | — | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| Email over STARTTLS (`Smtp.send`) | ✓ | — | — | — | ✓ | — | — |
 | Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
-| USB HID mouse | — | ✓ | ✓ | — | ✓ | — | — |
-| Onboard LED matrix | ✓ | — | — | — | ✓ | — | — |
+| USB HID mouse | ✓ | ✓ | — | — | ✓ | — | — |
+| Onboard LED matrix | — | — | — | ✓ | ✓ | — | — |
 | Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | — | — | — | — | — | ✓ | — |
-| Camera (`Esp32Cam.getCamera()`) | — | — | — | ✓ | — | — | — |
-| `@Watchdog` | — | ✓ | ✓ | — | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
-| Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — |
+| Camera (`Esp32Cam.getCamera()`) | — | — | ✓ | — | — | — | — |
+| `@Watchdog` | ✓ | ✓ | — | — | ✓ | ✓ | ✓ |
+| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| Display, keyboard, speaker, battery | — | ✓ | — | — | — | — | — |
 
 The compiler checks this table for you: a program that uses an API its target board does not
 support fails with a `CompileException` naming the board and the missing capability. Some cells
 are compiled support that has not yet been run on every physical board; each board's page notes
 what is confirmed on hardware.
+
+Every board exposes `Gpio.digitalPin("D0".."D13")` and `Gpio.analogPin("A0".."A5")` through its board facade.
+The selected runtime translates those names to the board's pin mapping. `getInput()`, `getOutput()` and
+`getInputPullup()` are also board-context methods. Invalid names raise `IllegalArgumentException`; the M5Stack Cardputer
+additionally accepts its documented `G*` and `GPIO*` aliases. See [GPIO](../gpio) for examples.
