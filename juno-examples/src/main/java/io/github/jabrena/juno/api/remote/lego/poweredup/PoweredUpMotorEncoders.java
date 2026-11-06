@@ -26,7 +26,7 @@ public class PoweredUpMotorEncoders {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("PoweredUpMotorEncoders started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe(), ArduinoNano.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");

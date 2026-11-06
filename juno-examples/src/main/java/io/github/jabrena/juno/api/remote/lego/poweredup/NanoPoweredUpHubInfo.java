@@ -25,7 +25,7 @@ public final class NanoPoweredUpHubInfo {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("Waiting for a Powered Up hub...");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe(), ArduinoNano.getClock());
         if (!hub.connect(0)) {
             Serial.println("hub connection failed");
             return;

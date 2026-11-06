@@ -25,7 +25,7 @@ public class MagicSquarePoweredUpHub {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
         MagicSquarePoweredUpHub app = new MagicSquarePoweredUpHub();
 
         while (true) {

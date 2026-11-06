@@ -40,7 +40,7 @@ public class PoweredUpHubScanWhileBlinking {
         Serial.begin(BaudRate.BAUD_115200);
         // The USB serial drops what is printed before a monitor opens the port.
         Delay.millis(STARTUP_MILLIS);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
         Clock clock = ArduinoUno.getClock();
         // Shared between the two subtasks; atomic so the same source is also data-race free on the JVM.
         AtomicBoolean scanning = new AtomicBoolean(true);

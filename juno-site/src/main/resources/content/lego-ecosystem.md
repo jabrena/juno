@@ -37,7 +37,7 @@ on every connect. Only the boards with a BLE adapter (UNO R4 WiFi, UNO Q, Nano E
 M5Stack Cardputer) have `getBluetoothLe()`; on the UNO R3 or UNO WiFi Rev2 the compiler rejects the call:
 
 ```java
-RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
 
 while (true) {
     if (!hub.isConnected()) {

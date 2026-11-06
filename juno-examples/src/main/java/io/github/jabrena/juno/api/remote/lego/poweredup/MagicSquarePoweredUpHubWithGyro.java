@@ -36,8 +36,8 @@ public class MagicSquarePoweredUpHubWithGyro {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
         Clock clock = ArduinoUno.getClock();
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), clock);
         MagicSquarePoweredUpHubWithGyro app = new MagicSquarePoweredUpHubWithGyro();
 
         while (true) {

@@ -34,7 +34,7 @@ public class PoweredUpHubHello {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("PoweredUpHubHello started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");

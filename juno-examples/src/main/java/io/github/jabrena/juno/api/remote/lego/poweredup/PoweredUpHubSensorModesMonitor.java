@@ -22,7 +22,7 @@ public class PoweredUpHubSensorModesMonitor {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
         Accelerometer accelerometer = hub.getAccelerometer();
         Gyroscope gyroscope = hub.getGyroscope();
         SampleProvider tilt = hub.getTilt();

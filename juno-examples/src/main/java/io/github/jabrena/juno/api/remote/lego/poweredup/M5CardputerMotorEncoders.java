@@ -26,7 +26,7 @@ public class M5CardputerMotorEncoders {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("M5CardputerMotorEncoders started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(M5StackCardputer.getBluetoothLe());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(M5StackCardputer.getBluetoothLe(), M5StackCardputer.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
