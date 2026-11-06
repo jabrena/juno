@@ -887,11 +887,178 @@
     background: rgba(255, 255, 255, 0.18);
 }
 
-/* Supported boards grid */
+/* Supported boards: a grid on phones; on desktop, a looping carousel */
 .juno-boards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 1.25rem;
+}
+
+.juno-boards-track,
+.juno-boards-set {
+    display: contents;
+}
+
+.juno-boards-set[aria-hidden="true"] {
+    display: none;
+}
+
+.juno-boards-more {
+    margin: 2.5rem 0 0;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .juno-boards {
+        display: block;
+        overflow: hidden;
+    }
+
+    /* Two identical sets; moving by half the track loops seamlessly. Each set is 6 x 180px + gaps + trailing gap,
+       wider than the 1200px container, so the loop never shows an empty edge. */
+    .juno-boards-track {
+        display: flex;
+        width: max-content;
+        animation: juno-boards-scroll 30s linear infinite;
+    }
+
+    .juno-boards:hover .juno-boards-track {
+        animation-play-state: paused;
+    }
+
+    .juno-boards-set,
+    .juno-boards-set[aria-hidden="true"] {
+        display: flex;
+        gap: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .juno-board {
+        flex: 0 0 180px;
+    }
+}
+
+@keyframes juno-boards-scroll {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .juno-boards-track,
+    .juno-eco-track {
+        animation: none;
+    }
+}
+
+/* The carousel sections are for desktop: phones show the rest of the page without them */
+@media (max-width: 767px) {
+    .juno-band-carousel {
+        display: none;
+    }
+}
+
+/* Shields, sensors and LEGO: same loop as the boards, moving the opposite way */
+.juno-eco-track,
+.juno-eco-set {
+    display: contents;
+}
+
+.juno-eco-set[aria-hidden="true"] {
+    display: none;
+}
+
+.juno-eco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.25rem 1rem;
+    border: 1px solid var(--color-neutral-200);
+    border-radius: 0.75rem;
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.juno-eco:hover {
+    transform: translateY(-3px);
+    border-color: var(--color-pop-400);
+    box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.35);
+}
+
+.dark .juno-eco {
+    border-color: var(--color-neutral-700);
+}
+
+.juno-eco img {
+    height: 7rem;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
+}
+
+.juno-eco span {
+    font-weight: 600;
+    color: var(--color-neutral-800);
+}
+
+.dark .juno-eco span {
+    color: var(--color-neutral-100);
+}
+
+.juno-eco small {
+    color: var(--color-neutral-500);
+}
+
+.juno-eco-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .juno-eco-carousel {
+        display: block;
+        overflow: hidden;
+    }
+
+    /* Two identical sets; moving by half the track loops seamlessly. Each set is wider than the 1200px container. */
+    .juno-eco-track {
+        display: flex;
+        width: max-content;
+        animation: juno-eco-scroll-reverse 60s linear infinite;
+    }
+
+    .juno-eco-carousel:hover .juno-eco-track {
+        animation-play-state: paused;
+    }
+
+    .juno-eco-set,
+    .juno-eco-set[aria-hidden="true"] {
+        display: flex;
+        gap: 1.5rem;
+        padding-right: 1.5rem;
+    }
+
+    .juno-eco {
+        flex: 0 0 200px;
+    }
+}
+
+/* Opposite direction to .juno-boards-track: starts shifted and slides back to the origin */
+@keyframes juno-eco-scroll-reverse {
+    from {
+        transform: translateX(-50%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
 }
 
 .juno-board {

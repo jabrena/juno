@@ -97,22 +97,81 @@ public class Blink {
   </div>
 </section>
 
-<section class="juno-band">
+<section class="juno-band juno-band-carousel">
   <div class="juno-container">
     <h2 class="juno-section-title">Supported boards</h2>
     <p class="juno-section-lead">Three backends, one compiler: AVR, Cortex-M4 (Thumb-2) and Xtensa.</p>
     <div class="juno-boards">
-      <a class="juno-board" href="arduino-nano-esp32"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
-      <a class="juno-board" href="m5stack-cardputer"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
-      <a class="juno-board" href="arduino-uno-q"><img src="{site.image('boards/arduino-uno-q.png')}" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
-      <a class="juno-board" href="arduino-uno-r4-wifi"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="Arduino UNO R4 WiFi" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
-      <a class="juno-board" href="arduino-uno-r3-wifi"><img src="{site.image('boards/arduino-uno-r3-wifi-rev2.png')}" alt="Arduino UNO WiFi Rev2" loading="lazy"><span>UNO WiFi Rev2</span><small>ATmega4809 &middot; AVR</small></a>
-      <a class="juno-board" href="arduino-uno-r3"><img src="{site.image('boards/arduino-uno-r3.png')}" alt="Arduino UNO R3" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
+      <div class="juno-boards-track">
+        <div class="juno-boards-set">
+          <a class="juno-board" href="arduino-nano-esp32"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="m5stack-cardputer"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="arduino-uno-q"><img src="{site.image('boards/arduino-uno-q.png')}" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
+          <a class="juno-board" href="arduino-uno-r4-wifi"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="Arduino UNO R4 WiFi" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
+          <a class="juno-board" href="arduino-uno-r3-wifi"><img src="{site.image('boards/arduino-uno-r3-wifi-rev2.png')}" alt="Arduino UNO WiFi Rev2" loading="lazy"><span>UNO WiFi Rev2</span><small>ATmega4809 &middot; AVR</small></a>
+          <a class="juno-board" href="arduino-uno-r3"><img src="{site.image('boards/arduino-uno-r3.png')}" alt="Arduino UNO R3" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
+        </div>
+        <div class="juno-boards-set" aria-hidden="true">
+          <a class="juno-board" href="arduino-nano-esp32" tabindex="-1"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="m5stack-cardputer" tabindex="-1"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="arduino-uno-q" tabindex="-1"><img src="{site.image('boards/arduino-uno-q.png')}" alt="" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
+          <a class="juno-board" href="arduino-uno-r4-wifi" tabindex="-1"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
+          <a class="juno-board" href="arduino-uno-r3-wifi" tabindex="-1"><img src="{site.image('boards/arduino-uno-r3-wifi-rev2.png')}" alt="" loading="lazy"><span>UNO WiFi Rev2</span><small>ATmega4809 &middot; AVR</small></a>
+          <a class="juno-board" href="arduino-uno-r3" tabindex="-1"><img src="{site.image('boards/arduino-uno-r3.png')}" alt="" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
+        </div>
+      </div>
     </div>
   </div>
 </section>
 
-<section class="juno-band juno-band-alt">
+<section class="juno-band juno-band-alt juno-band-carousel">
+  <div class="juno-container">
+    <h2 class="juno-section-title">Shields, sensors and LEGO</h2>
+    <p class="juno-section-lead">Plug in what you need: Arduino shields, Grove sensors and LEGO bricks, all driven from Java.</p>
+    <div class="juno-eco-carousel">
+      <div class="juno-eco-track">
+        <div class="juno-eco-set">
+          <a class="juno-eco" href="arduino-shields#tft-touch-shield"><img src="{site.image('shields/shield-tft.png')}" alt="TFT Touch Shield" loading="lazy"><span>TFT Touch Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#lcd-keypad-shield"><img src="{site.image('shields/shield-lcd.png')}" alt="LCD Keypad Shield" loading="lazy"><span>LCD Keypad Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#arduino-9-axis-motion-shield"><img src="{site.image('shields/shield-nine-axis.png')}" alt="9 Axis Motion Shield" loading="lazy"><span>9 Axis Motion Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#azdelivery-data-logger-shield"><img src="{site.image('shields/shield-data-logger.png')}" alt="Data Logger Shield" loading="lazy"><span>Data Logger Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#arduino-wifi-shield"><img src="{site.image('shields/shield-wifi.png')}" alt="WiFi Shield" loading="lazy"><span>WiFi Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#grove-base-shield"><img src="{site.image('shields/shield-grove.png')}" alt="Grove Base Shield" loading="lazy"><span>Grove Base Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#nano-connector-carrier"><img src="{site.image('shields/shield-nano-connector-carrier.png')}" alt="Nano Connector Carrier" loading="lazy"><span>Nano Connector Carrier</span><small>Carrier</small></a>
+          <a class="juno-eco" href="grove-system#temperature-and-humidity-sensor-pro-dht22"><img src="{site.image('grove/grove-dht22.jpg')}" alt="DHT22 Sensor" loading="lazy"><span>DHT22 Sensor</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#temperature-sensor-v12"><img src="{site.image('grove/grove-temperature-v12.jpg')}" alt="Temperature v1.2" loading="lazy"><span>Temperature v1.2</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#light-sensor-v12"><img src="{site.image('grove/grove-light-v12.jpg')}" alt="Light v1.2" loading="lazy"><span>Light v1.2</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#sound-sensor-v16"><img src="{site.image('grove/grove-sound-v16.jpg')}" alt="Sound v1.6" loading="lazy"><span>Sound v1.6</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#gas-sensor"><img src="{site.image('grove/grove-gas-mq2.jpg')}" alt="Gas sensor" loading="lazy"><span>Gas sensor</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#pir-motion-sensor"><img src="{site.image('grove/grove-pir-motion.jpg')}" alt="PIR Motion" loading="lazy"><span>PIR Motion</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="lego-ecosystem#lego-mindstorms-rcx"><img src="{site.image('lego/lego-rcx.jpg')}" alt="Mindstorms RCX" loading="lazy"><span>Mindstorms RCX</span><small>LEGO</small></a>
+          <a class="juno-eco" href="lego-ecosystem#lego-powered-up"><img src="{site.image('lego/lego-powered-up-hub.jpg')}" alt="Powered Up hub" loading="lazy"><span>Powered Up hub</span><small>LEGO</small></a>
+          <a class="juno-eco" href="lego-ecosystem"><img src="{site.image('lego/lego-power-functions.jpg')}" alt="Power Functions" loading="lazy"><span>Power Functions</span><small>LEGO</small></a>
+        </div>
+        <div class="juno-eco-set" aria-hidden="true">
+          <a class="juno-eco" href="arduino-shields#tft-touch-shield" tabindex="-1"><img src="{site.image('shields/shield-tft.png')}" alt="" loading="lazy"><span>TFT Touch Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#lcd-keypad-shield" tabindex="-1"><img src="{site.image('shields/shield-lcd.png')}" alt="" loading="lazy"><span>LCD Keypad Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#arduino-9-axis-motion-shield" tabindex="-1"><img src="{site.image('shields/shield-nine-axis.png')}" alt="" loading="lazy"><span>9 Axis Motion Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#azdelivery-data-logger-shield" tabindex="-1"><img src="{site.image('shields/shield-data-logger.png')}" alt="" loading="lazy"><span>Data Logger Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#arduino-wifi-shield" tabindex="-1"><img src="{site.image('shields/shield-wifi.png')}" alt="" loading="lazy"><span>WiFi Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#grove-base-shield" tabindex="-1"><img src="{site.image('shields/shield-grove.png')}" alt="" loading="lazy"><span>Grove Base Shield</span><small>Shield</small></a>
+          <a class="juno-eco" href="arduino-shields#nano-connector-carrier" tabindex="-1"><img src="{site.image('shields/shield-nano-connector-carrier.png')}" alt="" loading="lazy"><span>Nano Connector Carrier</span><small>Carrier</small></a>
+          <a class="juno-eco" href="grove-system#temperature-and-humidity-sensor-pro-dht22" tabindex="-1"><img src="{site.image('grove/grove-dht22.jpg')}" alt="" loading="lazy"><span>DHT22 Sensor</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#temperature-sensor-v12" tabindex="-1"><img src="{site.image('grove/grove-temperature-v12.jpg')}" alt="" loading="lazy"><span>Temperature v1.2</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#light-sensor-v12" tabindex="-1"><img src="{site.image('grove/grove-light-v12.jpg')}" alt="" loading="lazy"><span>Light v1.2</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#sound-sensor-v16" tabindex="-1"><img src="{site.image('grove/grove-sound-v16.jpg')}" alt="" loading="lazy"><span>Sound v1.6</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#gas-sensor" tabindex="-1"><img src="{site.image('grove/grove-gas-mq2.jpg')}" alt="" loading="lazy"><span>Gas sensor</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="grove-system#pir-motion-sensor" tabindex="-1"><img src="{site.image('grove/grove-pir-motion.jpg')}" alt="" loading="lazy"><span>PIR Motion</span><small>Grove sensor</small></a>
+          <a class="juno-eco" href="lego-ecosystem#lego-mindstorms-rcx" tabindex="-1"><img src="{site.image('lego/lego-rcx.jpg')}" alt="" loading="lazy"><span>Mindstorms RCX</span><small>LEGO</small></a>
+          <a class="juno-eco" href="lego-ecosystem#lego-powered-up" tabindex="-1"><img src="{site.image('lego/lego-powered-up-hub.jpg')}" alt="" loading="lazy"><span>Powered Up hub</span><small>LEGO</small></a>
+          <a class="juno-eco" href="lego-ecosystem" tabindex="-1"><img src="{site.image('lego/lego-power-functions.jpg')}" alt="" loading="lazy"><span>Power Functions</span><small>LEGO</small></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="juno-band juno-band">
   <div class="juno-container">
     <div class="juno-cards">
       <a class="juno-card" href="memory-model">
@@ -133,6 +192,45 @@ public class Blink {
         <p>Browse the compiler, the examples and the Maven plugin, or open an issue.</p>
         <span>Open the repository <i class="fa-solid fa-arrow-right"></i></span>
       </a>
+      <a class="juno-card" href="memory-model#concurrency-by-board">
+        <i class="fa-solid fa-microchip"></i>
+        <h3>Concurrency</h3>
+        <p>How many threads each board runs and what concurrent tasks can share.</p>
+        <span>Read about concurrency <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="hardware-apis">
+        <i class="fa-solid fa-code"></i>
+        <h3>APIs</h3>
+        <p>The hardware and network APIs Juno programs can use: serial, SD card, Wi-Fi, time, HTTP and more.</p>
+        <span>Browse the APIs <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="third-parties">
+        <i class="fa-solid fa-puzzle-piece"></i>
+        <h3>Third-party hardware</h3>
+        <p>Arduino shields, Grove modules and LEGO bricks that Juno programs drive.</p>
+        <span>See the hardware <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
     </div>
   </div>
 </section>
+
+<script>{|
+// Shuffle each carousel once per page load. Both copies of the set get the same permutation,
+// so the seamless loop still lines up.
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-boards-track, .juno-eco-track').forEach(function (track) {
+    var sets = Array.prototype.slice.call(track.children);
+    var count = sets[0].children.length;
+    var order = [];
+    for (var i = 0; i < count; i++) { order.push(i); }
+    for (var j = count - 1; j > 0; j--) {
+      var k = Math.floor(Math.random() * (j + 1));
+      var tmp = order[j]; order[j] = order[k]; order[k] = tmp;
+    }
+    sets.forEach(function (set) {
+      var items = Array.prototype.slice.call(set.children);
+      order.forEach(function (index) { set.appendChild(items[index]); });
+    });
+  });
+});
+|}</script>
