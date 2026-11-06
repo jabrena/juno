@@ -92,9 +92,11 @@ public final class SdCardApi {
         if (!SD_CARD.exists(CSV_FILE)) {
             SD_CARD.appendLine(CSV_FILE, "sample,millis,raw,volts,armed");
         }
+        Gpio gpio = ArduinoUno.getGpio();
+        int analogInput = gpio.analogPin("A0");
         for (int sample = 0; sample < SAMPLES; sample++) {
             int millis = ArduinoUno.getClock().millis();
-            int raw = ArduinoUno.getGpio().analogRead(Gpio.getA0());
+            int raw = gpio.analogRead(analogInput);
             double volts = raw * 5.0 / 1023.0;
             boolean armed = raw > 512;
             SD_CARD.appendText(CSV_FILE, String.valueOf(sample) + ",");

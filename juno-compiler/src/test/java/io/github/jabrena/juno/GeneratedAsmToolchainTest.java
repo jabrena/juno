@@ -274,8 +274,8 @@ class GeneratedAsmToolchainTest {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
                         Gpio gpio = ArduinoUno.getGpio();
-                        gpio.pinMode(Gpio.getD13(), Gpio.getOutput());
-                        gpio.digitalWrite(Gpio.getD13(), mix(4) != 0);
+                        gpio.pinMode(13, ArduinoUno.getGpio().getOutput());
+                        gpio.digitalWrite(13, mix(4) != 0);
                         Delay.millis(10);
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
@@ -437,7 +437,8 @@ class GeneratedAsmToolchainTest {
                         return add ? new Add() : new Multiply();
                     }
                     public static void main(String[] args) {
-                        Operation operation = choose(ArduinoUno.getGpio().analogRead(0) > 0);
+                        Operation operation = choose(
+                                ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")) > 0);
                         Delay.millis(operation.apply(5));
                     }
                 }

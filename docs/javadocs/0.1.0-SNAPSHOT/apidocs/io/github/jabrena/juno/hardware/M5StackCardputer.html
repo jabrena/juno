@@ -72,6 +72,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#getGpio()" tabindex="0">getGpio()</a></li>
 <li><a href="#getSd()" tabindex="0">getSd()</a></li>
 <li><a href="#getWifi()" tabindex="0">getWifi()</a></li>
 <li><a href="#getDisplay()" tabindex="0">getDisplay()</a></li>
@@ -139,24 +140,29 @@ mock of the device interface instead.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Cardputer's 240 by 135 pixel color display.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getKeyboard()" class="member-name-link">getKeyboard</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The Cardputer's GPIO context.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getKeyboard()" class="member-name-link">getKeyboard</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Cardputer's built-in keyboard.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Cardputer's ESP32-S3 acting as a USB HID mouse through the core's TinyUSB stack.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSd()" class="member-name-link">getSd</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSd()" class="member-name-link">getSd</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The card in the Cardputer's microSD socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Cardputer's built-in ESP32-S3 Wi-Fi radio.</div>
 </div>
 </div>
@@ -176,6 +182,15 @@ mock of the device interface instead.</div>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="getGpio()">
+<h3>getGpio</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span>&nbsp;<span class="element-name">getGpio</span>()</div>
+<div class="block">The Cardputer's GPIO context. Use <code>D*</code> names for portable logical pins or <code>GPIO*</code> for its exposed pins.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="getSd()">
 <h3>getSd</h3>

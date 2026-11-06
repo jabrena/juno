@@ -16,16 +16,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Grove DHT22 temperature and humidity sensor")
 class GroveDht22Test {
     private Gpio pins;
     private GroveDht22 dht22;
+    private int digitalPin;
 
     @BeforeEach
     void startAtTimeZeroWithAMockedSensor() {
         Wire.resetBoard();
         pins = mock(Gpio.class);
+        when(pins.digitalPin("D2")).thenReturn(2);
+        digitalPin = pins.digitalPin("D2");
         dht22 = new GroveDht22(pins, SimulatedTime.clock());
     }
 
@@ -47,7 +51,7 @@ class GroveDht22Test {
         int[] frame = new int[5];
 
         // When
-        boolean read = dht22.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
+        boolean read = dht22.read(digitalPin, reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isTrue();
@@ -63,7 +67,7 @@ class GroveDht22Test {
         int[] frame = new int[5];
 
         // When
-        boolean read = dht22.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
+        boolean read = dht22.read(digitalPin, reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isFalse();
@@ -114,7 +118,7 @@ class GroveDht22Test {
     @DisplayName("Rejects a reading buffer that is too short")
     void shouldRejectAReadingBufferThatIsTooShort() {
         // When & Then
-        assertThatThrownBy(() -> dht22.read(2, new int[1], 1, new int[5], 5))
+        assertThatThrownBy(() -> dht22.read(digitalPin, new int[1], 1, new int[5], 5))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -122,7 +126,7 @@ class GroveDht22Test {
     @DisplayName("Rejects a frame buffer that is too short")
     void shouldRejectAFrameBufferThatIsTooShort() {
         // When & Then
-        assertThatThrownBy(() -> dht22.read(2, new int[2], 2, new int[4], 4))
+        assertThatThrownBy(() -> dht22.read(digitalPin, new int[2], 2, new int[4], 4))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -161,7 +165,7 @@ class GroveDht22Test {
     void shouldReadThroughItsBoundPin() {
         // Given: 242 tenths of a degree and 632 tenths of a percent
         Wire.dhtReply(2, 120, 0, 242, 108).install(pins);
-        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), Gpio.getD2());
+        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), digitalPin);
         float[] sample = new float[2];
 
         // When
@@ -178,7 +182,7 @@ class GroveDht22Test {
     void shouldReportNaNWhenTheBoundPinGivesNoValidFrame() {
         // Given
         Wire.dhtReply(2, 120, 0, 242, 109).install(pins);
-        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), Gpio.getD2());
+        GroveDht22 bound = new GroveDht22(pins, SimulatedTime.clock(), digitalPin);
 
         // When & Then
         assertThat(bound.getTemperatureCelsius()).isNaN();

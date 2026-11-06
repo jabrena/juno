@@ -32,7 +32,7 @@ import java.util.Properties;
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoAccessPointSD {
     private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 
     private static final AccessPoint DEFAULT_ACCESS_POINT = new AccessPoint(Wifi.DEFAULT_ACCESS_POINT_SSID,
             Wifi.DEFAULT_ACCESS_POINT_PASSWORD);

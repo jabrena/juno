@@ -42,7 +42,7 @@ public class MagicSquarePFWithGrove {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        GroveBaseShield shield = new GroveBaseShield();
+        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
         link.begin();
         RemotePF remote = new RemotePF(link);

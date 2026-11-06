@@ -47,7 +47,7 @@ public class PFPowerSequenceWithGroveAndNano {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
         link.begin();
         RemotePF remote = new RemotePF(link);

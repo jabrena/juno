@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.DatagramMethods;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
 import io.github.jabrena.juno.intrinsic.SocketMethods;
@@ -33,7 +34,12 @@ final class RuntimeRaisedExceptions {
     private final ConcurrencySupport concurrencySupport = new ConcurrencySupport();
 
     /** The exceptions the runtime may raise while running a method of {@code owner}. */
-    List<String> raisedBy(String owner) {
+    List<String> raisedBy(MethodRef called) {
+        String owner = called.owner();
+        if (owner.equals("io/github/jabrena/juno/hardware/internal/NativeGpio")
+                && (called.name().equals("digitalPin") || called.name().equals("analogPin"))) {
+            return List.of("java/lang/IllegalArgumentException");
+        }
         if (owner.equals("java/util/concurrent/CyclicBarrier")) {
             return List.of("java/lang/InterruptedException", "java/util/concurrent/BrokenBarrierException");
         }

@@ -73,6 +73,7 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#of(int)" tabindex="0">of(int)</a></li>
+<li><a href="#of(io.github.jabrena.juno.hardware.gpio.Gpio,java.lang.String)" tabindex="0">of(Gpio, String)</a></li>
 <li><a href="#high()" tabindex="0">high()</a></li>
 <li><a href="#low()" tabindex="0">low()</a></li>
 <li><a href="#toggle()" tabindex="0">toggle()</a></li>
@@ -127,9 +128,15 @@ board's <a href="../internal/NativeDigitalOutput.html" title="class in io.github
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1"><code>static <a href="DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1"><code><a href="#of(int)" class="member-name-link">of</a><wbr>(int&nbsp;pin)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#toggle()" class="member-name-link">toggle</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1"><code>static <a href="DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1"><code><a href="#of(io.github.jabrena.juno.hardware.gpio.Gpio,java.lang.String)" class="member-name-link">of</a><wbr>(<a href="Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;pinName)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1">
+<div class="block">Resolves a board-specific name through <code>gpio</code> before creating the zero-cost output handle.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#toggle()" class="member-name-link">toggle</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Inverts the level the pin is driven to.</div>
 </div>
 </div>
@@ -151,6 +158,16 @@ board's <a href="../internal/NativeDigitalOutput.html" title="class in io.github
 <h3>of</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type"><a href="DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></span>&nbsp;<span class="element-name">of</span><wbr><span class="parameters">(int&nbsp;pin)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="of(io.github.jabrena.juno.hardware.gpio.Gpio,java.lang.String)">
+<h3>of</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">static</span>&nbsp;<span class="return-type"><a href="DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></span>&nbsp;<span class="element-name">of</span><wbr><span class="parameters">(<a href="Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;pinName)</span></div>
+<div class="block">Resolves a board-specific name through <code>gpio</code> before creating the zero-cost output handle.</div>
 </div>
 </section>
 </li>

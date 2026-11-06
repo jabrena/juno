@@ -14,10 +14,13 @@ import static org.mockito.Mockito.when;
 @DisplayName("Grove analog sensors")
 class GroveAnalogSensorsTest {
     private final Gpio pins = mock(Gpio.class);
+    private int analogPin;
 
     @BeforeEach
     void wireTheSensorsToAMockedA0() {
-        when(pins.analogRead(Gpio.getA0())).thenReturn(321);
+        when(pins.analogPin("A0")).thenReturn(14);
+        analogPin = pins.analogPin("A0");
+        when(pins.analogRead(analogPin)).thenReturn(321);
     }
 
     @Test
@@ -25,11 +28,11 @@ class GroveAnalogSensorsTest {
     void shouldReportTheAnalogPinValueFromTheGasAndSoundSensors() {
         // When
         int[] readings = {
-                new GroveAnalogGas(pins).rawValue(Gpio.getA0()),
-                new GroveSoundV16(pins).rawValue(Gpio.getA0())};
+                new GroveAnalogGas(pins).rawValue(analogPin),
+                new GroveSoundV16(pins).rawValue(analogPin)};
 
         // Then
         assertThat(readings).containsOnly(321);
-        verify(pins, times(2)).analogRead(Gpio.getA0());
+        verify(pins, times(2)).analogRead(analogPin);
     }
 }

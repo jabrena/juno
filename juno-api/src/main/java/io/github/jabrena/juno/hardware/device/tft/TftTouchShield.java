@@ -166,11 +166,11 @@ public final class TftTouchShield {
      * calibration. The screen contents are undefined until the first {@link #fillScreen}.
      */
     public void begin() {
-        gpio.pinMode(PIN_RD, Gpio.getOutput());
-        gpio.pinMode(PIN_WR, Gpio.getOutput());
-        gpio.pinMode(PIN_RS, Gpio.getOutput());
-        gpio.pinMode(PIN_CS, Gpio.getOutput());
-        gpio.pinMode(PIN_RESET, Gpio.getOutput());
+        gpio.pinMode(PIN_RD, gpio.getOutput());
+        gpio.pinMode(PIN_WR, gpio.getOutput());
+        gpio.pinMode(PIN_RS, gpio.getOutput());
+        gpio.pinMode(PIN_CS, gpio.getOutput());
+        gpio.pinMode(PIN_RESET, gpio.getOutput());
         gpio.digitalWrite(PIN_RD, true);
         gpio.digitalWrite(PIN_WR, true);
         gpio.digitalWrite(PIN_RS, true);

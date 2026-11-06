@@ -31,6 +31,7 @@ point for its peripherals.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
+| `Gpio`, `DigitalOutput` | ✓ | `M5StackCardputer.getGpio()` resolves portable `D*`/`A*` names and documented `G*`/`GPIO*` aliases; invalid names raise `IllegalArgumentException`. | |
 | `Delay`, `Serial` | ✓ | `Serial` over the native USB port, at 115200 baud. | |
 | Classes, interfaces and inheritance | ✓ | | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Interfaces`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java) |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |

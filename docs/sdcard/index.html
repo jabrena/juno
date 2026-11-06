@@ -359,7 +359,7 @@ startup, and pass it to the classes that need it. A unit test passes <code>mock(
 </tr>
 <tr>
 <td>Nano Connector Carrier</td>
-<td><code>new NanoConnectorCarrier().getSdCard()</code></td>
+<td><code>new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard()</code></td>
 <td>D4</td>
 </tr>
 </tbody>

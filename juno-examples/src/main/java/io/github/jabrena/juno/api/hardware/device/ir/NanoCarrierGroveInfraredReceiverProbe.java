@@ -21,7 +21,7 @@ public final class NanoCarrierGroveInfraredReceiverProbe {
     }
 
     public static void main(String[] args) {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         Clock clock = ArduinoNano.getClock();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);

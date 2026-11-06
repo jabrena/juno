@@ -37,6 +37,7 @@ public final class RuntimeShim {
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+    private final GpioPinRuntime gpioPinRuntime = new GpioPinRuntime();
 
     private final CoreRuntime core;
     private final boolean gcLoggingEnabled;
@@ -284,6 +285,8 @@ public final class RuntimeShim {
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses)),
+                new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/io/FileNotFoundException"),

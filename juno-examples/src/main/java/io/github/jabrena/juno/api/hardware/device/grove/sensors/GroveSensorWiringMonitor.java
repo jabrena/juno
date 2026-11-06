@@ -20,7 +20,7 @@ public final class GroveSensorWiringMonitor {
     }
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield();
+        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         Serial.begin(BaudRate.BAUD_115200);
         GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
         GroveAnalogGas gas = new GroveAnalogGas(ArduinoUno.getGpio());

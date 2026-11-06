@@ -7,7 +7,6 @@ import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,13 +42,13 @@ class RcxLinkTest {
     @Test
     @DisplayName("Begin accepts Grove infrared modules and keeps their signal mapping")
     void shouldBeginWithGroveInfraredModules() {
-        InfraredReceiver receiver = new GroveInfraredReceiver(Gpio.getA2());
-        InfraredEmitter emitter = new GroveInfraredEmitter(Gpio.getA0());
+        InfraredReceiver receiver = new GroveInfraredReceiver(16);
+        InfraredEmitter emitter = new GroveInfraredEmitter(14);
 
         link.begin(receiver, emitter);
 
-        assertThat(Infrared.receivePin).isEqualTo(Gpio.getA2());
-        assertThat(Infrared.transmitPin).isEqualTo(Gpio.getA0());
+        assertThat(Infrared.receivePin).isEqualTo(16);
+        assertThat(Infrared.transmitPin).isEqualTo(14);
         assertThat(Infrared.baud).isEqualTo(2400);
         assertThat(Infrared.groveDriver).isTrue();
     }
@@ -57,13 +56,13 @@ class RcxLinkTest {
     @Test
     @DisplayName("Begin keeps the HX-53 and HX-M121 pair on the legacy infrared driver")
     void shouldBeginWithHxInfraredModules() {
-        HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(Gpio.getD2());
-        HX53InfraredEmitter emitter = new HX53InfraredEmitter(Gpio.getD3());
+        HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(2);
+        HX53InfraredEmitter emitter = new HX53InfraredEmitter(3);
 
         link.begin(receiver, emitter);
 
-        assertThat(Infrared.receivePin).isEqualTo(Gpio.getD2());
-        assertThat(Infrared.transmitPin).isEqualTo(Gpio.getD3());
+        assertThat(Infrared.receivePin).isEqualTo(2);
+        assertThat(Infrared.transmitPin).isEqualTo(3);
         assertThat(Infrared.baud).isEqualTo(2400);
         assertThat(Infrared.groveDriver).isFalse();
     }

@@ -10,11 +10,10 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Morse LED")
 class MorseLedTest {
-    private static final int PIN = Gpio.getD13();
-
     private final Gpio port = mock(Gpio.class);
     private final Gpio gpio = port;
 
@@ -22,12 +21,16 @@ class MorseLedTest {
     @DisplayName("Starts with the pin as an output and the LED off")
     void shouldSetThePinUpAndTurnTheLedOff() {
         // When
-        new MorseLed(gpio, PIN, new byte[] {1, 0});
+        int pin = digitalPin();
+        int output = gpio.getOutput();
+        clearInvocations(port);
+        new MorseLed(gpio, pin, new byte[] {1, 0});
 
         // Then
         InOrder order = inOrder(port);
-        order.verify(port).pinMode(PIN, Gpio.getOutput());
-        order.verify(port).digitalWrite(PIN, false);
+        order.verify(port).getOutput();
+        order.verify(port).pinMode(pin, output);
+        order.verify(port).digitalWrite(pin, false);
         verifyNoMoreInteractions(port);
     }
 
@@ -35,7 +38,8 @@ class MorseLedTest {
     @DisplayName("Writes the pin only when the LED changes")
     void shouldWriteThePinOnlyWhenTheLedChanges() {
         // Given
-        MorseLed led = new MorseLed(gpio, PIN, new byte[] {1, 1, 1, 0, 0, 1});
+        int pin = digitalPin();
+        MorseLed led = new MorseLed(gpio, pin, new byte[] {1, 1, 1, 0, 0, 1});
         clearInvocations(port);
 
         // When
@@ -45,9 +49,9 @@ class MorseLedTest {
 
         // Then
         InOrder order = inOrder(port);
-        order.verify(port).digitalWrite(PIN, true);
-        order.verify(port).digitalWrite(PIN, false);
-        order.verify(port).digitalWrite(PIN, true);
+        order.verify(port).digitalWrite(pin, true);
+        order.verify(port).digitalWrite(pin, false);
+        order.verify(port).digitalWrite(pin, true);
         verifyNoMoreInteractions(port);
     }
 
@@ -55,7 +59,8 @@ class MorseLedTest {
     @DisplayName("Starts the pattern again after its last unit")
     void shouldLoopThePattern() {
         // Given
-        MorseLed led = new MorseLed(gpio, PIN, new byte[] {1, 0});
+        int pin = digitalPin();
+        MorseLed led = new MorseLed(gpio, pin, new byte[] {1, 0});
         led.tick();
         led.tick();
         clearInvocations(port);
@@ -64,7 +69,12 @@ class MorseLedTest {
         led.tick();
 
         // Then
-        verify(port).digitalWrite(PIN, true);
+        verify(port).digitalWrite(pin, true);
         verifyNoMoreInteractions(port);
+    }
+
+    private int digitalPin() {
+        when(gpio.digitalPin("D13")).thenReturn(13);
+        return gpio.digitalPin("D13");
     }
 }

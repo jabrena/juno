@@ -12,7 +12,8 @@ backend as the Nano ESP32.
 
 Juno's support on this board:
 
-- **GPIO and serial** through `Esp32Cam.getGpio()`, including the red status LED on GPIO33.
+- **GPIO and serial** through `Esp32Cam.getGpio()`. Resolve portable `D0`–`D13` and `A0`–`A5` names through the board
+  context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.
 - **Wi-Fi** through `Esp32Cam.getWifi()`, station mode with plain HTTP.
 - **microSD** through `Esp32Cam.getSdCard()`, using the board's built-in socket on GPIO13.
 - **Bluetooth LE** for `RemotePoweredUpHub`, used to drive LEGO Powered Up hubs.

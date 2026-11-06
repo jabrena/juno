@@ -23,11 +23,17 @@ import static org.mockito.Mockito.when;
 class TftTouchShieldTest {
     private Gpio pins;
     private TftTouchShield tft;
+    private int touchXPin;
+    private int touchYPin;
 
     @BeforeEach
     void initialiseThePanelInPortrait() {
         Wire.resetBoard();
         pins = mock(Gpio.class);
+        when(pins.analogPin("A2")).thenReturn(16);
+        when(pins.analogPin("A3")).thenReturn(17);
+        touchXPin = pins.analogPin("A2");
+        touchYPin = pins.analogPin("A3");
         tft = new TftTouchShield(pins);
         ParallelBus.reset();
         ImmediateDelay.run(tft::begin);
@@ -352,8 +358,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch reports the raw coordinates and pressure")
     void shouldReportTheRawTouchCoordinatesAndPressure() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
+        when(pins.analogRead(touchXPin)).thenReturn(523);
+        when(pins.analogRead(touchYPin)).thenReturn(600);
 
         // When
         boolean touched = tft.readTouch();
@@ -368,8 +374,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch maps the touch to screen coordinates")
     void shouldMapTheTouchToScreenCoordinates() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
+        when(pins.analogRead(touchXPin)).thenReturn(523);
+        when(pins.analogRead(touchYPin)).thenReturn(600);
 
         // When
         boolean touched = tft.readTouch();
@@ -383,8 +389,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch reports no touch without pressure")
     void shouldReportNoTouchWithoutPressure() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(0);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(0);
+        when(pins.analogRead(touchXPin)).thenReturn(0);
+        when(pins.analogRead(touchYPin)).thenReturn(0);
 
         // When & Then
         assertThat(tft.readTouch()).isFalse();
@@ -395,8 +401,8 @@ class TftTouchShieldTest {
     @DisplayName("Read touch follows the rotation")
     void shouldFollowTheRotationWhenReadingATouch(int rotation, int x, int y) {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
+        when(pins.analogRead(touchXPin)).thenReturn(523);
+        when(pins.analogRead(touchYPin)).thenReturn(600);
         tft.setRotation(rotation);
 
         // When
@@ -411,8 +417,8 @@ class TftTouchShieldTest {
     @DisplayName("Calibration changes the raw-to-screen mapping")
     void shouldChangeTheRawToScreenMappingWhenCalibrated() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
+        when(pins.analogRead(touchXPin)).thenReturn(523);
+        when(pins.analogRead(touchYPin)).thenReturn(600);
         tft.calibrateTouch(0, 1000, 1000, 0);
 
         // When

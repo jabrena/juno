@@ -36,13 +36,13 @@ public final class GroveUltrasonicRanger implements RangeFinder, SampleProvider 
     /** Sends one trigger pulse and returns the measured range in metres, or {@link Float#NaN} after a timeout. */
     @Override
     public float getRange() {
-        gpio.pinMode(signalPin, Gpio.getOutput());
+        gpio.pinMode(signalPin, gpio.getOutput());
         gpio.digitalWrite(signalPin, false);
         Delay.micros(TRIGGER_SETTLE_MICROS);
         gpio.digitalWrite(signalPin, true);
         Delay.micros(TRIGGER_MICROS);
         gpio.digitalWrite(signalPin, false);
-        gpio.pinMode(signalPin, Gpio.getInput());
+        gpio.pinMode(signalPin, gpio.getInput());
         if (!waitForLevel(true)) {
             return Float.NaN;
         }

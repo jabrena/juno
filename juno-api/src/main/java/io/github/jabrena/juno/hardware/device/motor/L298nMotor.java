@@ -37,9 +37,9 @@ public final class L298nMotor implements DCMotor {
 
     /** Configures the three pins and leaves the motor coasting. Call once at startup. */
     public void begin() {
-        gpio.pinMode(enablePin, Gpio.getOutput());
-        gpio.pinMode(in1Pin, Gpio.getOutput());
-        gpio.pinMode(in2Pin, Gpio.getOutput());
+        gpio.pinMode(enablePin, gpio.getOutput());
+        gpio.pinMode(in1Pin, gpio.getOutput());
+        gpio.pinMode(in2Pin, gpio.getOutput());
         flt();
     }
 

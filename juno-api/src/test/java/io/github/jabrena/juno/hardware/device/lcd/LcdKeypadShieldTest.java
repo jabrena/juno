@@ -22,20 +22,27 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("LCD keypad shield")
 class LcdKeypadShieldTest {
-    private static final int PIN_RS = 8;
-    private static final int PIN_ENABLE = 9;
-    private static final int PIN_BACKLIGHT = 10;
-    private static final int PIN_BUTTONS = 14;
-
     private Gpio pins;
     private LcdKeypadShield lcd;
+    private int pinRs;
+    private int pinEnable;
+    private int pinBacklight;
+    private int pinButtons;
 
     @BeforeEach
     void startWithAnIdleShield() {
         Wire.resetBoard();
         pins = mock(Gpio.class);
+        when(pins.digitalPin("D8")).thenReturn(8);
+        when(pins.digitalPin("D9")).thenReturn(9);
+        when(pins.digitalPin("D10")).thenReturn(10);
+        when(pins.analogPin("A0")).thenReturn(14);
+        pinRs = pins.digitalPin("D8");
+        pinEnable = pins.digitalPin("D9");
+        pinBacklight = pins.digitalPin("D10");
+        pinButtons = pins.analogPin("A0");
         lcd = new LcdKeypadShield(pins);
-        when(pins.analogRead(PIN_BUTTONS)).thenReturn(1023);
+        when(pins.analogRead(pinButtons)).thenReturn(1023);
     }
 
     static Stream<Arguments> buttonLadder() {
@@ -126,7 +133,7 @@ class LcdKeypadShieldTest {
         lcd.backlight(true);
 
         // Then
-        verify(pins).pinMode(PIN_BACKLIGHT, Gpio.getInput());
+        verify(pins).pinMode(pinBacklight, pins.getInput());
     }
 
     @Test
@@ -136,7 +143,7 @@ class LcdKeypadShieldTest {
         lcd.backlight(false);
 
         // Then
-        verify(pins).pinMode(PIN_BACKLIGHT, Gpio.getOutput());
+        verify(pins).pinMode(pinBacklight, pins.getOutput());
     }
 
     @Test
@@ -164,7 +171,7 @@ class LcdKeypadShieldTest {
     @DisplayName("Read button maps the analog ladder to its key")
     void shouldMapTheAnalogLadderToItsKey(int reading, int key) {
         // Given
-        when(pins.analogRead(PIN_BUTTONS)).thenReturn(reading);
+        when(pins.analogRead(pinButtons)).thenReturn(reading);
 
         // When
         int button = lcd.readButton();
@@ -189,9 +196,9 @@ class LcdKeypadShieldTest {
             int value = levels.getAllValues().get(write) ? 1 : 0;
             if (pin >= 4 && pin <= 7) {
                 data[pin - 4] = value;
-            } else if (pin == PIN_RS) {
+            } else if (pin == pinRs) {
                 rs = value;
-            } else if (pin == PIN_ENABLE && value == 0) {
+            } else if (pin == pinEnable && value == 0) {
                 int nibble = data[0] | data[1] << 1 | data[2] << 2 | data[3] << 3;
                 latched.add(Integer.toHexString(nibble).toUpperCase() + "@" + rs);
             }

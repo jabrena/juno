@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.pf;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.ArduinoNano;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -38,7 +39,7 @@ public class PFStopWithGroveAndNano {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
         link.begin();
         RemotePF remote = new RemotePF(link);

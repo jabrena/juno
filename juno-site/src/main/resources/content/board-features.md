@@ -14,6 +14,7 @@ language itself, see the [Java subset](../java-subset) page.
 
 | Feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield |
 | Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – |
 | HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | Shield |

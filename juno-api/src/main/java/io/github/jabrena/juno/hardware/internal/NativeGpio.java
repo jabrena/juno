@@ -57,4 +57,19 @@ public final class NativeGpio implements Gpio {
 
     @Override
     public native int getBuiltinLed();
+
+    @Override
+    public native int digitalPin(String name);
+
+    @Override
+    public native int analogPin(String name);
+
+    @Override
+    public native int getInput();
+
+    @Override
+    public native int getOutput();
+
+    @Override
+    public native int getInputPullup();
 }

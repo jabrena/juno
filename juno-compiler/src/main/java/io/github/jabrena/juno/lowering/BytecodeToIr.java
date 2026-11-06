@@ -187,7 +187,7 @@ public final class BytecodeToIr {
                 }
                 if (opcode >= INVOKEVIRTUAL && opcode <= INVOKEINTERFACE) {
                     MethodRef called = linked.owner().constantPool().methodRef(instruction.operandA());
-                    names.addAll(runtimeRaised.raisedBy(called.owner()));
+                    names.addAll(runtimeRaised.raisedBy(called));
                 }
             }
         }

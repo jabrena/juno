@@ -25,7 +25,7 @@ import java.net.InetAddress;
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketDatagramEcho {
     private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 
     private static final int PORT = 4210;
     private static final int HELLO_INTERVAL_MILLIS = 5000;

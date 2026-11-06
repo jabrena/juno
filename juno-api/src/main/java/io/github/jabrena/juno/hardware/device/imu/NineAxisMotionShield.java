@@ -54,7 +54,6 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
      * The shield wires the BNO055's RESET line to D7 (fitted {@code R_RESET} on the V3 schematic, as
      * in Arduino's NineAxesMotion library); the chip only runs while it is high.
      */
-    private static final int RESET_PIN = Gpio.getD7();
     private static final int RESET_LOW_MILLIS = 300;
     private static final int RESET_HIGH_MILLIS = 600;
     /** The heading and the gyroscope are reported in sixteenths of a degree (per second for the rate). */
@@ -66,6 +65,7 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
 
     private final Gpio gpio;
     private final I2c i2c;
+    private final int resetPin;
     private int address = ADDRESS_DEFAULT;
     /** The raw heading that {@link #getAngle()} counts from; set by {@link #reset()}. */
     private int headingOffsetRaw;
@@ -82,6 +82,7 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
     public NineAxisMotionShield(Gpio gpio, I2c i2c) {
         this.gpio = gpio;
         this.i2c = i2c;
+        resetPin = gpio.digitalPin("D7");
     }
 
     /**
@@ -95,10 +96,10 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
     private boolean startAt(int sensorAddress) {
         address = sensorAddress;
         headingOffsetRaw = 0;
-        gpio.pinMode(RESET_PIN, Gpio.getOutput());
-        gpio.digitalWrite(RESET_PIN, false);
+        gpio.pinMode(resetPin, gpio.getOutput());
+        gpio.digitalWrite(resetPin, false);
         Delay.millis(RESET_LOW_MILLIS);
-        gpio.digitalWrite(RESET_PIN, true);
+        gpio.digitalWrite(resetPin, true);
         Delay.millis(RESET_HIGH_MILLIS);
         i2c.begin();
         Delay.millis(BOOT_MILLIS);

@@ -37,7 +37,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | ✓ | `getBuiltinLed()` is logical pin 25. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Gpio`, `DigitalOutput`, `Delay`, `Clock`, `Random` | ✓ | Resolve `D0`–`D13` and `A0`–`A5` through the board's `Gpio`; `getBuiltinLed()` is logical pin 25. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `analogRead`, `analogWrite` | ✓ | Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9 and D10. | |
 | `Serial` | ✓ | | |
 | Classes, interfaces, inheritance, exceptions | ✓ | | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Exceptions`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Exceptions.java) |
@@ -143,7 +143,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield();
+GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

@@ -30,6 +30,41 @@ public interface CoreRuntime {
         return arduinoFunction;
     }
 
+    /** Logical values returned by the portable {@code D0..D13} names. A core wrapper translates them when needed. */
+    default String gpioDigitalPins() {
+        return "0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13";
+    }
+
+    /** Logical values returned by the portable {@code A0..A5} names. A core wrapper translates them when needed. */
+    default String gpioAnalogPins() {
+        return "14, 15, 16, 17, 18, 19";
+    }
+
+    /** Juno's mode token for a board's INPUT constant. */
+    default int gpioInputMode() {
+        return 0;
+    }
+
+    /** Juno's mode token for a board's OUTPUT constant. */
+    default int gpioOutputMode() {
+        return 1;
+    }
+
+    /** Juno's mode token for a board's INPUT_PULLUP constant. */
+    default int gpioInputPullupMode() {
+        return 2;
+    }
+
+    /** Additional board-specific digital GPIO numbers accepted by the name resolver, or {@code -1} for none. */
+    default String gpioAdditionalDigitalPins() {
+        return "-1";
+    }
+
+    /** Additional board-specific analog GPIO numbers accepted by the name resolver, or {@code -1} for none. */
+    default String gpioAdditionalAnalogPins() {
+        return "-1";
+    }
+
     /** C++ type accepted by an AVR core's {@code pinMode}; classic AVR cores use byte constants. */
     default String avrPinModeType() {
         return "uint8_t";

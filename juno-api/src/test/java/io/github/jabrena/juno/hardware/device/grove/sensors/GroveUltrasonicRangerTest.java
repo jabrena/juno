@@ -20,18 +20,20 @@ class GroveUltrasonicRangerTest {
     void shouldTriggerAndMeasureTheSharedSignalPin() {
         Gpio gpio = mock(Gpio.class);
         Clock clock = new IncrementingClock(100);
-        when(gpio.digitalRead(2)).thenReturn(true, false);
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, 2);
+        when(gpio.digitalPin("D2")).thenReturn(2);
+        int digitalPin = gpio.digitalPin("D2");
+        when(gpio.digitalRead(digitalPin)).thenReturn(true, false);
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, digitalPin);
 
         float range = ranger.getRange();
 
         assertThat(range).isCloseTo(0.034f, within(0.000001f));
         var order = inOrder(gpio);
-        order.verify(gpio).pinMode(2, Gpio.getOutput());
-        order.verify(gpio).digitalWrite(2, false);
-        order.verify(gpio).digitalWrite(2, true);
-        order.verify(gpio).digitalWrite(2, false);
-        order.verify(gpio).pinMode(2, Gpio.getInput());
+        order.verify(gpio).pinMode(digitalPin, gpio.getOutput());
+        order.verify(gpio).digitalWrite(digitalPin, false);
+        order.verify(gpio).digitalWrite(digitalPin, true);
+        order.verify(gpio).digitalWrite(digitalPin, false);
+        order.verify(gpio).pinMode(digitalPin, gpio.getInput());
     }
 
     @Test
@@ -39,8 +41,10 @@ class GroveUltrasonicRangerTest {
     void shouldFetchOneRangeSample() {
         Gpio gpio = mock(Gpio.class);
         Clock clock = new IncrementingClock(10);
-        when(gpio.digitalRead(2)).thenReturn(true, false);
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, 2);
+        when(gpio.digitalPin("D2")).thenReturn(2);
+        int digitalPin = gpio.digitalPin("D2");
+        when(gpio.digitalRead(digitalPin)).thenReturn(true, false);
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, digitalPin);
         float[] sample = new float[1];
 
         ranger.fetchSample(sample, 0);
@@ -53,8 +57,10 @@ class GroveUltrasonicRangerTest {
     @DisplayName("Returns NaN if no echo starts before the timeout")
     void shouldReturnNanWhenNoEchoStarts() {
         Gpio gpio = mock(Gpio.class);
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, new IncrementingClock(30_000), 2);
-        when(gpio.digitalRead(2)).thenReturn(false);
+        when(gpio.digitalPin("D2")).thenReturn(2);
+        int digitalPin = gpio.digitalPin("D2");
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, new IncrementingClock(30_000), digitalPin);
+        when(gpio.digitalRead(digitalPin)).thenReturn(false);
 
         assertThat(ranger.getRange()).isNaN();
     }

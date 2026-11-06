@@ -3,10 +3,9 @@ package io.github.jabrena.juno.hardware.gpio;
 /**
  * The board's GPIO pins. A board facade such as {@link io.github.jabrena.juno.hardware.ArduinoUno#getGpio()} or
  * {@link io.github.jabrena.juno.hardware.Esp32Cam#getGpio()} exposes the board's own pins, which the compiler lowers to the Arduino core
- * calls; a unit test passes {@code mock(Gpio.class)} instead. Pin numbers and modes come from the static getters
- * ({@link #getD13()}, {@link #getOutput()}): portable pin identifiers, D0-D13 as 0-13 and A0-A5 as 14-19.
- * The runtime translates these identifiers to the linked board's pins and modes; they are not raw MCU GPIO
- * numbers. On the Nano ESP32, for example, D13 reaches GPIO48 and A4 reaches GPIO11.
+ * calls; a unit test passes {@code mock(Gpio.class)} instead. Pin names and modes are resolved by the linked board
+ * ({@link #digitalPin(String)}, {@link #getOutput()}) and are not raw MCU GPIO numbers. On the Nano ESP32, for
+ * example, D13 reaches GPIO48 and A4 reaches GPIO11.
  * Get the board's pins once, at startup, and pass them to the classes that need them.
  */
 public interface Gpio {
@@ -26,118 +25,26 @@ public interface Gpio {
     /** The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q. */
     int getBuiltinLed();
 
-    /** The pin number of D0, usable wherever a pin is expected. */
-    static int getD0() {
-        return 0;
-    }
+    /**
+     * Resolves a logical digital pin name for this board. The accepted portable names are {@code D0} through
+     * {@code D13}; a board may also expose board-specific names such as {@code GPIO42}. Invalid or unavailable names
+     * raise {@link IllegalArgumentException} on the board.
+     */
+    int digitalPin(String name);
 
-    /** The pin number of D1, usable wherever a pin is expected. */
-    static int getD1() {
-        return 1;
-    }
+    /**
+     * Resolves a logical analog pin name for this board. The accepted portable names are {@code A0} through {@code A5};
+     * a board may expose additional names. Invalid or unavailable names raise {@link IllegalArgumentException} on the
+     * board.
+     */
+    int analogPin(String name);
 
-    /** The pin number of D2, usable wherever a pin is expected. */
-    static int getD2() {
-        return 2;
-    }
+    /** The pin mode INPUT, for {@link #pinMode}; the board supplies its value. */
+    int getInput();
 
-    /** The pin number of D3, usable wherever a pin is expected. */
-    static int getD3() {
-        return 3;
-    }
+    /** The pin mode OUTPUT, for {@link #pinMode}; the board supplies its value. */
+    int getOutput();
 
-    /** The pin number of D4, usable wherever a pin is expected. */
-    static int getD4() {
-        return 4;
-    }
-
-    /** The pin number of D5, usable wherever a pin is expected. */
-    static int getD5() {
-        return 5;
-    }
-
-    /** The pin number of D6, usable wherever a pin is expected. */
-    static int getD6() {
-        return 6;
-    }
-
-    /** The pin number of D7, usable wherever a pin is expected. */
-    static int getD7() {
-        return 7;
-    }
-
-    /** The pin number of D8, usable wherever a pin is expected. */
-    static int getD8() {
-        return 8;
-    }
-
-    /** The pin number of D9, usable wherever a pin is expected. */
-    static int getD9() {
-        return 9;
-    }
-
-    /** The pin number of D10, usable wherever a pin is expected. */
-    static int getD10() {
-        return 10;
-    }
-
-    /** The pin number of D11, usable wherever a pin is expected. */
-    static int getD11() {
-        return 11;
-    }
-
-    /** The pin number of D12, usable wherever a pin is expected. */
-    static int getD12() {
-        return 12;
-    }
-
-    /** The pin number of D13, usable wherever a pin is expected. */
-    static int getD13() {
-        return 13;
-    }
-
-    /** The pin number of A0, usable wherever a pin is expected. */
-    static int getA0() {
-        return 14;
-    }
-
-    /** The pin number of A1, usable wherever a pin is expected. */
-    static int getA1() {
-        return 15;
-    }
-
-    /** The pin number of A2, usable wherever a pin is expected. */
-    static int getA2() {
-        return 16;
-    }
-
-    /** The pin number of A3, usable wherever a pin is expected. */
-    static int getA3() {
-        return 17;
-    }
-
-    /** The pin number of A4, usable wherever a pin is expected. */
-    static int getA4() {
-        return 18;
-    }
-
-    /** The pin number of A5, usable wherever a pin is expected. */
-    static int getA5() {
-        return 19;
-    }
-
-    /** The pin mode INPUT, for {@link #pinMode}. */
-    static int getInput() {
-        return 0;
-    }
-
-    /** The pin mode OUTPUT, for {@link #pinMode}. */
-    static int getOutput() {
-        return 1;
-    }
-
-    /** The pin mode INPUT_PULLUP, for {@link #pinMode}. */
-    static int getInputPullup() {
-        return 2;
-    }
+    /** The pin mode INPUT_PULLUP, for {@link #pinMode}; the board supplies its value. */
+    int getInputPullup();
 }

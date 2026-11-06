@@ -37,7 +37,7 @@ import java.time.LocalDateTime;
 public final class SupabaseGroveTemperatures {
     private static final Wifi WIFI = ArduinoUno.getWifi();
 
-    private static final GroveBaseShield SHIELD = new GroveBaseShield();
+    private static final GroveBaseShield SHIELD = new GroveBaseShield(ArduinoUno.getGpio());
     private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int DHT22_PIN = SHIELD.getD4();
     private static final int DHT11_PIN = SHIELD.getD2();

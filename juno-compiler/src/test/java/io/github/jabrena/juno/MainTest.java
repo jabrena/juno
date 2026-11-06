@@ -48,9 +48,9 @@ class MainTest {
                 "--board", Board.UNO_R4_WIFI.id()});
 
         // Then
-        // main, Gpio's two constructors and pinMode, and the Gpio and NativeGpio static initializers.
+        // main, the board Gpio instance and pinMode, and the NativeGpio static initializer.
         assertThat(captured.toString(StandardCharsets.UTF_8))
-                .contains("Entry point: demo.Fixture.main", "Reachable methods: 6", "Intrinsics used: [GPIO_PIN_MODE]")
+                .contains("Entry point: demo.Fixture.main", "Reachable methods: 5", "GPIO_PIN_MODE", "GPIO_OUTPUT_MODE")
                 .as("no --ir flag, so no IR dump")
                 .doesNotContain("Juno IR:");
     }
@@ -175,7 +175,7 @@ class MainTest {
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class Fixture {
                     public static void main(String[] args) {
-                        ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                     }
                 }
                 """;

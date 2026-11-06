@@ -322,7 +322,8 @@ backend as the Nano ESP32.</p>
 <img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
 <p>Juno's support on this board:</p>
 <ul>
-<li><strong>GPIO and serial</strong> through <code>Esp32Cam.getGpio()</code>, including the red status LED on GPIO33.</li>
+<li><strong>GPIO and serial</strong> through <code>Esp32Cam.getGpio()</code>. Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board
+context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.</li>
 <li><strong>Wi-Fi</strong> through <code>Esp32Cam.getWifi()</code>, station mode with plain HTTP.</li>
 <li><strong>microSD</strong> through <code>Esp32Cam.getSdCard()</code>, using the board's built-in socket on GPIO13.</li>
 <li><strong>Bluetooth LE</strong> for <code>RemotePoweredUpHub</code>, used to drive LEGO Powered Up hubs.</li>

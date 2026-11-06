@@ -36,10 +36,10 @@ final class GroveDhtProtocol {
             throw new IllegalArgumentException("frameLength must be at least 5 and fit frame");
         }
 
-        gpio.pinMode(signalPin, Gpio.getOutput());
+        gpio.pinMode(signalPin, gpio.getOutput());
         gpio.digitalWrite(signalPin, false);
         Delay.millis(START_LOW_MILLIS);
-        gpio.pinMode(signalPin, Gpio.getInputPullup());
+        gpio.pinMode(signalPin, gpio.getInputPullup());
         Delay.micros(START_RELEASE_MICROS);
 
         if (!waitForLevel(signalPin, false) || !waitForLevel(signalPin, true)

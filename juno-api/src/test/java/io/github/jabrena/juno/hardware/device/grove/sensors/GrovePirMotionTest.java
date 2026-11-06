@@ -15,10 +15,13 @@ import static org.mockito.Mockito.when;
 class GrovePirMotionTest {
     private Gpio pins;
     private GrovePirMotion pir;
+    private int digitalPin;
 
     @BeforeEach
     void wireTheSensorToAMockedPin() {
         pins = mock(Gpio.class);
+        when(pins.digitalPin("D2")).thenReturn(2);
+        digitalPin = pins.digitalPin("D2");
         pir = new GrovePirMotion(pins);
     }
 
@@ -26,20 +29,20 @@ class GrovePirMotionTest {
     @DisplayName("Begin configures the signal pin as an input")
     void shouldConfigureTheSignalPinAsAnInputWhenBegun() {
         // When
-        pir.begin(Gpio.getD2());
+        pir.begin(digitalPin);
 
         // Then
-        verify(pins).pinMode(Gpio.getD2(), Gpio.getInput());
+        verify(pins).pinMode(digitalPin, pins.getInput());
     }
 
     @Test
     @DisplayName("Reports motion when the signal is high")
     void shouldReportMotionWhenTheSignalIsHigh() {
         // Given
-        when(pins.digitalRead(Gpio.getD2())).thenReturn(true);
+        when(pins.digitalRead(digitalPin)).thenReturn(true);
 
         // When
-        boolean motion = pir.motionDetected(Gpio.getD2());
+        boolean motion = pir.motionDetected(digitalPin);
 
         // Then
         assertThat(motion).isTrue();
@@ -49,10 +52,10 @@ class GrovePirMotionTest {
     @DisplayName("Reports no motion when the signal is low")
     void shouldReportNoMotionWhenTheSignalIsLow() {
         // Given
-        when(pins.digitalRead(Gpio.getD2())).thenReturn(false);
+        when(pins.digitalRead(digitalPin)).thenReturn(false);
 
         // When
-        boolean motion = pir.motionDetected(Gpio.getD2());
+        boolean motion = pir.motionDetected(digitalPin);
 
         // Then
         assertThat(motion).isFalse();
@@ -62,18 +65,18 @@ class GrovePirMotionTest {
     @DisplayName("Configures its bound pin as an input when created")
     void shouldConfigureItsBoundPinAsAnInput() {
         // When
-        new GrovePirMotion(pins, Gpio.getD2());
+        new GrovePirMotion(pins, digitalPin);
 
         // Then
-        verify(pins).pinMode(Gpio.getD2(), Gpio.getInput());
+        verify(pins).pinMode(digitalPin, pins.getInput());
     }
 
     @Test
     @DisplayName("Reads motion from its bound pin as a MotionDetector and writes it as a sample")
     void shouldReadMotionFromItsBoundPin() {
         // Given
-        when(pins.digitalRead(Gpio.getD2())).thenReturn(true);
-        GrovePirMotion bound = new GrovePirMotion(pins, Gpio.getD2());
+        when(pins.digitalRead(digitalPin)).thenReturn(true);
+        GrovePirMotion bound = new GrovePirMotion(pins, digitalPin);
         float[] sample = new float[2];
 
         // When
@@ -89,8 +92,8 @@ class GrovePirMotionTest {
     @DisplayName("Writes zero to the sample when the bound pin is low")
     void shouldWriteZeroWhenTheBoundPinIsLow() {
         // Given
-        when(pins.digitalRead(Gpio.getD2())).thenReturn(false);
-        GrovePirMotion bound = new GrovePirMotion(pins, Gpio.getD2());
+        when(pins.digitalRead(digitalPin)).thenReturn(false);
+        GrovePirMotion bound = new GrovePirMotion(pins, digitalPin);
         float[] sample = new float[1];
 
         // When

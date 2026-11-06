@@ -22,7 +22,7 @@ public final class MorseLed {
         this.gpio = gpio;
         this.pin = pin;
         this.pattern = pattern;
-        gpio.pinMode(pin, Gpio.getOutput());
+        gpio.pinMode(pin, gpio.getOutput());
         gpio.digitalWrite(pin, false);
     }
 

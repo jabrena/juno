@@ -173,7 +173,7 @@ class AvrAsmBackendTest {
     void shouldCompileBasicGpioForTheClassicUnoR3() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                         ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
@@ -192,7 +192,7 @@ class AvrAsmBackendTest {
     void shouldOmitWifiSdSoftSpiAndContextSwitchFromTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                         ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
@@ -209,7 +209,7 @@ class AvrAsmBackendTest {
     void shouldWrapThePinAndDigitalWriteCallsInTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                         ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
@@ -1351,7 +1351,7 @@ class AvrAsmBackendTest {
     void shouldReachTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                         ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
@@ -1373,7 +1373,7 @@ class AvrAsmBackendTest {
     void shouldWrapThePinModeCallWithAPinModeCastInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                         ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """

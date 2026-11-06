@@ -87,7 +87,7 @@ final class TftBus {
 
     void restoreDataPins() {
         for (int i = 0; i < ParallelBus.WIDTH; i++) {
-            gpio.pinMode(DATA_PINS[i], Gpio.getOutput());
+            gpio.pinMode(DATA_PINS[i], gpio.getOutput());
         }
     }
 }

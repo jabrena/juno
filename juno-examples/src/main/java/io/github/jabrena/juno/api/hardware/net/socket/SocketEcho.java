@@ -27,7 +27,7 @@ import java.net.Socket;
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketEcho {
     private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 
     private static final int DISCOVERY_PORT = 4210;
     private static final int ECHO_PORT = 7007;

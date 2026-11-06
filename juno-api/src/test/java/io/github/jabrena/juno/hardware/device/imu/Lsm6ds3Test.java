@@ -58,6 +58,31 @@ class Lsm6ds3Test {
         public int getBuiltinLed() {
             return 0;
         }
+
+        @Override
+        public int digitalPin(String name) {
+            return Integer.parseInt(name.substring(1));
+        }
+
+        @Override
+        public int analogPin(String name) {
+            return 14 + Integer.parseInt(name.substring(1));
+        }
+
+        @Override
+        public int getInput() {
+            return 0;
+        }
+
+        @Override
+        public int getOutput() {
+            return 1;
+        }
+
+        @Override
+        public int getInputPullup() {
+            return 2;
+        }
     };
     private int address;
     private boolean reading;
