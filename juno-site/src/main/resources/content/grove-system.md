@@ -76,9 +76,10 @@ Keep digital modules out of the carrier's I2C socket: its bus pull-ups hold a di
 
 ## Grove Sensors
 
-Every driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the same on
-the Grove Base Shield (`shield.getD4()`, `shield.getA0()`, ...) and on the Nano Connector Carrier
-(`carrier.getGroveA0()`, `carrier.getGroveA2()`). Create each driver once, at startup.
+Every pin-based driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the
+same on the Grove Base Shield (`shield.getD4()`, `shield.getA0()`, ...) and on the Nano Connector Carrier
+(`carrier.getGroveA0()`, `carrier.getGroveA2()`). The BMI088 uses the socket's I2C bus and the board's `Clock` instead.
+Create each driver once, at startup.
 
 The complete examples below use a Grove Base Shield on an UNO board. To use a Nano Connector Carrier, replace the
 shield socket getter with the corresponding carrier getter and use the Nano board's `Gpio` and `Clock` facades.
@@ -92,6 +93,7 @@ shield socket getter with the corresponding carrier getter and use the Nano boar
 | [Sound Sensor v1.6](#sound-sensor-v16) | Analog | [`GroveSoundV16`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.java) | Raw microphone level |
 | [Gas sensor](#gas-sensor) | Analog | [`GroveAnalogGas`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.java) | Raw gas reading |
 | [PIR Motion Sensor](#pir-motion-sensor) | Digital | [`GrovePirMotion`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.java) | Motion detected or not |
+| [BMI088 accelerometer and gyroscope](#bmi088-accelerometer-and-gyroscope) | I2C | [`Bmi088`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/imu/Bmi088.java) | Acceleration, angular velocity and integrated heading |
 | [Ultrasonic Ranger](#ultrasonic-ranger) | Digital | [`GroveUltrasonicRanger`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.java) | Distance in metres |
 | [Infrared emitter and receiver](#infrared-emitter-and-receiver) | Digital | [`GroveInfraredEmitter`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.java), [`GroveInfraredReceiver`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredReceiver.java) | Infrared link to a LEGO RCX |
 
@@ -318,6 +320,28 @@ public final class GrovePirExample {
             Delay.millis(100);
         }
     }
+}
+```
+
+### BMI088 accelerometer and gyroscope
+
+The Grove 6-Axis Accelerometer & Gyroscope uses two I2C addresses on the same bus. `Bmi088` implements the
+`Accelerometer`, `Gyroscope` and `SampleProvider` contracts; it is configured for ±3 g and ±2000 degrees per second.
+Heading is integrated from the Z-axis gyro and drifts over time. Keep the module still while
+`recalibrateOffset()` runs.
+
+<img src="../images/grove/grove-bmi088.jpg" alt="Grove 6-Axis Accelerometer and Gyroscope (BMI088)" width="240">
+
+```java
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.imu.Bmi088;
+
+Bmi088 imu = new Bmi088(ArduinoUno.getI2c(), ArduinoUno.getClock());
+float[] acceleration = new float[imu.sampleSize()];
+if (imu.begin()) {
+    imu.recalibrateOffset();
+    imu.fetchSample(acceleration, 0);
+    int heading = imu.getAngle();
 }
 ```
 

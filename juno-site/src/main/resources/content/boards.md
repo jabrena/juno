@@ -17,7 +17,7 @@ break the tie.
 
 | | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
 |---|---|---|---|---|---|---|---|
-| Microcontroller | STM32U585 | ESP32-S3 (NORA-W106) | ESP32-S3 | ESP32 | Renesas RA4M1 | ATmega4809 | ATmega328P |
+| Microcontroller | STM32U585 | ESP32-S3 (NORA-W106) | ESP32-S3 | ESP32 Q | Renesas RA4M1 | ATmega4809 | ATmega328P |
 | CPU | 32-bit Cortex-M33F | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX6 | 32-bit Cortex-M4F | 8-bit megaAVR | 8-bit AVR |
 | Clock | 160 MHz | 240 MHz | 240 MHz | 240 MHz | 48 MHz | 16 MHz | 16 MHz |
 | Flash | 2 MB | 16 MB | 8 MB | 4 MB | 256 kB | 48 kB | 32 kB |
@@ -44,14 +44,17 @@ core identifier (for example, `arduino:zephyr`) in build commands.
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | WiFi Shield |
 | Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | HTTP client | — | ✓ | ✓ | — | ✓ | ✓ | WiFi Shield |
-| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTPS client | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | HTTP server | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | — | — | — |
+| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | — | ✓ | — | — | ✓ | — | — |
 | Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
 | USB HID mouse | — | ✓ | ✓ | — | ✓ | — | — |
 | Onboard LED matrix | ✓ | — | — | — | ✓ | — | — |
+| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | — | — | — | — | — | ✓ | — |
+| Camera (`Esp32Cam.getCamera()`) | — | — | — | ✓ | — | — | — |
 | `@Watchdog` | — | ✓ | ✓ | — | ✓ | ✓ | ✓ |
 | Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — |
