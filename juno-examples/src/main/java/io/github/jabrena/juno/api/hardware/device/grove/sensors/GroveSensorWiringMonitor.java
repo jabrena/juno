@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
@@ -21,8 +22,8 @@ public final class GroveSensorWiringMonitor {
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield();
         Serial.begin(BaudRate.BAUD_115200);
-        GrovePirMotion pir = new GrovePirMotion();
-        GroveAnalogGas gas = new GroveAnalogGas();
+        GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
+        GroveAnalogGas gas = new GroveAnalogGas(ArduinoUno.getGpio());
         pir.begin(shield.getD3());
         Delay.millis(1000);
         while (true) {

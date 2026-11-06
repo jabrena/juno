@@ -1467,14 +1467,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
                     import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
                     public final class GroveSensorsDemo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
-                            GrovePirMotion pir = new GrovePirMotion();
-                            GroveAnalogGas gasSensor = new GroveAnalogGas();
+                            GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
+                            GroveAnalogGas gasSensor = new GroveAnalogGas(ArduinoUno.getGpio());
                             pir.begin(shield.getD3());
                             int gas = gasSensor.rawValue(shield.getA0());
                             boolean motion = pir.motionDetected(shield.getD3());
@@ -1513,10 +1514,10 @@ class JunoCompilerTest {
                             int[] frame = new int[GroveDht11.FRAME_LENGTH];
                             boolean valid = new GroveDht11().read(shield.getD4(), reading, reading.length,
                                     frame, frame.length);
-                            GroveTemperatureV12 thermistor = new GroveTemperatureV12();
+                            GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
                             int temperature = thermistor.rawValue(shield.getA0());
                             float celsius = thermistor.celsiusFromRaw(temperature);
-                            int sound = new GroveSoundV16().rawValue(shield.getA1());
+                            int sound = new GroveSoundV16(ArduinoUno.getGpio()).rawValue(shield.getA1());
                             float light = new GroveLightV12(ArduinoUno.getGpio(), shield.getA2(), GroveLightV12.ADC_10_BIT).getLightValue();
                             if (valid && temperature + sound + light > 0) {
                                 io.github.jabrena.juno.hardware.serial.Serial.println(celsius);

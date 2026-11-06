@@ -33,8 +33,8 @@ public final class GroveSensorBatchMonitor {
         GroveDht11 dht11 = new GroveDht11();
         LightDetector light = new GroveLightV12(ArduinoUno.getGpio(), LIGHT_PIN,
                 GroveLightV12.ADC_10_BIT);
-        GroveSoundV16 sound = new GroveSoundV16();
-        GroveTemperatureV12 thermistor = new GroveTemperatureV12();
+        GroveSoundV16 sound = new GroveSoundV16(ArduinoUno.getGpio());
+        GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
         Delay.millis(1000);
