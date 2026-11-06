@@ -27,7 +27,7 @@ public final class NanoCarrierGroveSensors {
     }
 
     public static void main(String[] args) {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GrovePirMotion pir = new GrovePirMotion(ArduinoNano.getGpio());
         LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
                 GroveLightV12.ADC_12_BIT);

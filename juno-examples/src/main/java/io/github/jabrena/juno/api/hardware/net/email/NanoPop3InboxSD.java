@@ -32,7 +32,7 @@ import java.util.Properties;
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoPop3InboxSD {
     private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 
     private static final int IMPLICIT_TLS_POP3_PORT = 995;
     private static final int MAX_CONNECTION_ATTEMPTS = 30;

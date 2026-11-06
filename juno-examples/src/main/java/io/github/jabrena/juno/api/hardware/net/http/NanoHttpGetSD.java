@@ -32,7 +32,7 @@ import java.util.Properties;
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoHttpGetSD {
     private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier().getSdCard();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
 
     private static final String BASE_URL = "http://api.open-meteo.com";
     private static final int MAX_CONNECTION_ATTEMPTS = 30;

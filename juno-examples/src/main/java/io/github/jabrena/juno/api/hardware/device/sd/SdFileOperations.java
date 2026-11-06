@@ -67,7 +67,7 @@ public final class SdFileOperations {
     /** The Data Logger Shield's card on the UNO boards; of the boards above, only the Nano ESP32 is neither. */
     private static SdCard sdCard() {
         BoardModel model = ArduinoNano.getBoardModel();
-        return model.isR4() || model.isQ() ? new DataLoggerShield().getSdCard() : new NanoConnectorCarrier().getSdCard();
+        return model.isR4() || model.isQ() ? new DataLoggerShield().getSdCard() : new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
     }
 
     private static void report(String label, boolean value) {

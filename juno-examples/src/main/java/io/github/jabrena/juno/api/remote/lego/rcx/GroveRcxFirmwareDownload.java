@@ -20,7 +20,7 @@ public final class GroveRcxFirmwareDownload {
     }
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield();
+        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
         RcxLink link = new RcxLink(ArduinoUno.getClock());

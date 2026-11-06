@@ -27,7 +27,7 @@ public final class NanoCarrierRcxBattery {
         Delay.millis(START_MILLIS);
         Serial.println("RCX battery probe: TX A0, RX A5, channel 1");
 
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         RcxLink link = new RcxLink(ArduinoNano.getClock());

@@ -80,7 +80,32 @@ public final class EmulatedShield implements Gpio {
 
     @Override
     public int getBuiltinLed() {
-        return Gpio.getD13();
+        return 13;
+    }
+
+    @Override
+    public int digitalPin(String name) {
+        return Integer.parseInt(name.substring(1));
+    }
+
+    @Override
+    public int analogPin(String name) {
+        return 14 + Integer.parseInt(name.substring(1));
+    }
+
+    @Override
+    public int getInput() {
+        return 0;
+    }
+
+    @Override
+    public int getOutput() {
+        return 1;
+    }
+
+    @Override
+    public int getInputPullup() {
+        return 2;
     }
 
     @Override
@@ -194,14 +219,14 @@ public final class EmulatedShield implements Gpio {
     public int analogRead(int pin) {
         int[] finger = touch;
         if (pin == PIN_TOUCH_YP) {
-            if (LEVEL[PIN_TOUCH_XP] && MODE[PIN_TOUCH_XP] == Gpio.getOutput()) {
+            if (LEVEL[PIN_TOUCH_XP] && MODE[PIN_TOUCH_XP] == 1) {
                 return finger == null ? 512 : 1023 - (RAW_LEFT + finger[0] * (RAW_RIGHT - RAW_LEFT) / 240);
             }
             // Pressure is 1023 - (z2 - z1): 500 while touched, 0 (released) otherwise.
             return finger == null ? 1023 : 523;
         }
         if (pin == PIN_TOUCH_XM) {
-            if (LEVEL[PIN_TOUCH_YP] && MODE[PIN_TOUCH_YP] == Gpio.getOutput()) {
+            if (LEVEL[PIN_TOUCH_YP] && MODE[PIN_TOUCH_YP] == 1) {
                 return finger == null ? 512 : 1023 - (RAW_TOP + finger[1] * (RAW_BOTTOM - RAW_TOP) / 320);
             }
             return 0;

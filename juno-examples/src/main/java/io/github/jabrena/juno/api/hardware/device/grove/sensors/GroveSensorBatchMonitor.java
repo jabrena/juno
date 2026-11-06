@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR3WiFiRev2Board.class})
 public final class GroveSensorBatchMonitor {
-    private static final GroveBaseShield SHIELD = new GroveBaseShield();
+    private static final GroveBaseShield SHIELD = new GroveBaseShield(ArduinoUno.getGpio());
     private static final int DHT11_PIN = SHIELD.getD4();
     private static final int TEMPERATURE_PIN = SHIELD.getA0();
     private static final int SOUND_PIN = SHIELD.getA1();

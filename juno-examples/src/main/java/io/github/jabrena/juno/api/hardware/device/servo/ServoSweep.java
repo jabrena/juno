@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.servo;
 
 import io.github.jabrena.juno.hardware.device.servo.Servo;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -29,7 +28,7 @@ public final class ServoSweep {
 
     public static void main(String[] args) {
 
-        Servo servo = Servo.of(Gpio.getD10());
+        Servo servo = Servo.of(10);
 
         while (true) {
             for (int angle = MIN_ANGLE; angle <= MAX_ANGLE; angle += STEP_DEGREES) {
