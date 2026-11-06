@@ -44,7 +44,6 @@ public final class HttpServerBacklight {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        lcd.begin();
         lcd.backlight(false);
         lcd.print("POST to flash");
 

@@ -27,7 +27,6 @@ public final class LichessDailyChallenges {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
         Serial.println("Lichess daily challenges");
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         LichessModel model = new LichessModel();

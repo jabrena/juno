@@ -1,7 +1,11 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLcd;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RcxMotor;
@@ -33,12 +37,12 @@ public class RcxIcons {
     }
 
     public static void main(String[] args) {
-        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
         RcxLcd lcd = remote.getLcd();
         RcxMotor motorA = remote.getMotorA();
         RcxIcons app = new RcxIcons(lcd);
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
         while (!lcd.showIcon(RcxLcd.ICON_STANDING, false)) {
             Serial.println("No answer: is Juno's firmware on the RCX, and is it on and in range?");

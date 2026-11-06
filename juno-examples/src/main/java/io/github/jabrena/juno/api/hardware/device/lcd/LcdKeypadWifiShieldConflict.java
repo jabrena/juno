@@ -39,7 +39,6 @@ public final class LcdKeypadWifiShieldConflict {
     }
 
     private void run() {
-        lcd.begin();
         lcd.print("WiFi status");
         WIFI.begin("your-network", "your-password");
         while (true) {

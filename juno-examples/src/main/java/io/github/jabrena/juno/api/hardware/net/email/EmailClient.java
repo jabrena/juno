@@ -59,7 +59,6 @@ public final class EmailClient {
     private void run() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        lcd.begin();
         lcd.print("Connecting...");
 
         connectWifi();

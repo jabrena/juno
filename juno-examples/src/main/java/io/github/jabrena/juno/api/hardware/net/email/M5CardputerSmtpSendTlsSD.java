@@ -48,10 +48,6 @@ public final class M5CardputerSmtpSendTlsSD {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
         Account account = loadAccount();
         if (account == null) {
             return;

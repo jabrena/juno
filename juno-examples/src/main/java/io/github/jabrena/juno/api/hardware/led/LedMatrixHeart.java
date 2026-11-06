@@ -16,7 +16,6 @@ public final class LedMatrixHeart {
 
     public static void main(String[] args) {
         LedMatrix matrix = ArduinoUno.getLedMatrix();
-        matrix.begin();
         while (true) {
             matrix.loadFrame(HEART_WORD_0, HEART_WORD_1, HEART_WORD_2);
             Delay.millis(500);

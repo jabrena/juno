@@ -1,7 +1,11 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
+import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RcxSensor;
@@ -23,21 +27,16 @@ public class RcxSensors {
     private static final int TRANSMIT_PIN = 3;
     private static final int PERIOD_MILLIS = 500;
     private static final int START_MILLIS = 2000;
-    private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
-        RemoteRcx remote = new RemoteRcx(new RcxLink(), RECEIVE_PIN, TRANSMIT_PIN);
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
         RcxTemperatureSensor temperature = new RcxTemperatureSensor(remote.getSensor1());
         RcxSensor touch = remote.getSensor2();
         RcxTouchSensor touchSensor = new RcxTouchSensor(touch);
         RcxLightSensor light = new RcxLightSensor(remote.getSensor3());
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
-        while (!(temperature.begin() && touchSensor.begin() && light.begin())) {
-            Serial.println("The RCX did not answer: is it on and in range, with the IR receiver wired?");
-            Delay.millis(RETRY_MILLIS);
-        }
         Serial.println("Sensors set: temperature 1, touch 2, light 3");
 
         while (true) {

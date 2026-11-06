@@ -51,7 +51,6 @@ class SoloRecordingTest {
     void recordsASoloBout() throws Exception {
         Path output = Path.of(System.getProperty("basedir", "."), "target", "recordings", "solo");
         Files.createDirectories(output);
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         Random.seed(Integer.getInteger("juno.recording.seed", 7));
 

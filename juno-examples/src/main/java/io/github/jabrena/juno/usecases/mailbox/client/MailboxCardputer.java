@@ -61,9 +61,7 @@ public final class MailboxCardputer {
         Delay.millis(1000);
 
         Display display = M5StackCardputer.getDisplay();
-        display.begin();
         Keyboard keyboard = M5StackCardputer.getKeyboard();
-        keyboard.begin();
 
         // The join starts right away: the SSID and password are runtime Strings, which must not be kept for later.
         SdCard sd = M5StackCardputer.getSd();
@@ -104,10 +102,6 @@ public final class MailboxCardputer {
 
     /** Begins the SD card and reads Wi-Fi settings, the stored API key, and the polling interval from it. */
     private static MailboxSettings loadSettings(SdCard sd, MailboxKey key, MailboxPolling polling) {
-        if (!sd.begin()) {
-            Serial.println("Mailbox client: SD card unavailable");
-            return null;
-        }
         key.begin();
         polling.begin();
         try (InputStream file = sd.open(APPLICATION_PROPERTIES)) {

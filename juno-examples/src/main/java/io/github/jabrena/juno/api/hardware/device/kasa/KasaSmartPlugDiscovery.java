@@ -44,7 +44,6 @@ public final class KasaSmartPlugDiscovery {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(500);
         Serial.println("Kasa discovery");
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE_FLIPPED);
         new Controller().run(tft);
     }

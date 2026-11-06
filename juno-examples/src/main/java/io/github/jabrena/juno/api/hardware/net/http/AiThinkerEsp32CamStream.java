@@ -52,18 +52,10 @@ public final class AiThinkerEsp32CamStream {
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
         if (!connectWifi()) {
             return;
         }
         printLocalIp();
-        if (!CAMERA.begin()) {
-            Serial.println("Camera initialization failed");
-            return;
-        }
         SD_CARD.createDirectory("/frames");
 
         HttpServer.begin(HTTP_PORT);

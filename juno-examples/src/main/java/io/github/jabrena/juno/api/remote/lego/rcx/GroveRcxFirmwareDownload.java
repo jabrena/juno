@@ -6,6 +6,7 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 
@@ -23,8 +24,8 @@ public final class GroveRcxFirmwareDownload {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
-        RcxLink link = new RcxLink(ArduinoUno.getClock());
-        RemoteRcx remote = new RemoteRcx(link, receiver, emitter, ArduinoUno.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
         RcxFirmwareDownload.download(remote);
     }
 }

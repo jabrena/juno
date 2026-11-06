@@ -113,10 +113,6 @@ public final class NanoHttpsGetSD {
     }
 
     private static Settings loadSettings() throws IOException {
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");

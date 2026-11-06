@@ -61,7 +61,6 @@ public final class SupabaseGroveTemperaturesHistogram {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         byte[] path = new byte[PATH_CAPACITY];

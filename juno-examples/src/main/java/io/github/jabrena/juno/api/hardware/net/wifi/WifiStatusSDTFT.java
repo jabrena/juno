@@ -46,7 +46,6 @@ public final class WifiStatusSDTFT {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
 
-        tft.begin();
         tft.setRotation(TftTouchShield.LANDSCAPE);
         tft.fillScreen(TftTouchShield.BLACK);
         tft.fillRect(0, 0, tft.width(), 40, TftTouchShield.NAVY);
@@ -200,10 +199,6 @@ public final class WifiStatusSDTFT {
     }
 
     private static WifiCredentials loadCredentials(SdCard sdCard) throws IOException {
-        if (!sdCard.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
 
         try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {

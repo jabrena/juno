@@ -14,7 +14,6 @@ public final class M5CardputerDisplay {
     /** Initializes the display and draws a small status screen. */
     public static void main(String[] args) {
         Display display = M5StackCardputer.getDisplay();
-        display.begin();
         display.fillScreen(Display.BLACK);
         display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
         display.setCursor(12, 24);

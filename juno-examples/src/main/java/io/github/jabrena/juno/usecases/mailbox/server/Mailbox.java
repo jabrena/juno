@@ -54,7 +54,6 @@ public final class Mailbox {
         TftTouchShield tft = new TftTouchShield();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         SdCard sdCard = tft.getSdCard();

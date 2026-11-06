@@ -47,10 +47,6 @@ public final class NanoSntpTimeSD {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");

@@ -41,7 +41,6 @@ public class PFStopWithGroveAndNano {
         Delay.millis(START_MILLIS);
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
-        link.begin();
         RemotePF remote = new RemotePF(link);
         PFStopWithGroveAndNano app = new PFStopWithGroveAndNano(
                 new PFMotor(remote, CHANNEL, PFPort.RED),

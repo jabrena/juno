@@ -8,6 +8,7 @@ import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLightSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
@@ -16,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
 /** Reads and two-point calibrates an RCX light sensor on input 1 through the Nano Connector Carrier. */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierRcxLightSensor {
-    private static final int CHANNEL = 1;
+    private static final RcxChannel CHANNEL = RcxChannel.CHANNEL_1;
     private static final int START_MILLIS = 10000;
     private static final int CALIBRATION_WAIT_MILLIS = 3000;
     private static final int CALIBRATION_SAMPLES = 8;
@@ -32,17 +33,12 @@ public final class NanoCarrierRcxLightSensor {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, CHANNEL, receiver, emitter, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RemoteRcx remote = new RemoteRcx(link, CHANNEL);
         RcxLightSensor light = new RcxLightSensor(remote.getSensor1());
 
         Serial.begin(BaudRate.BAUD_115200);
-        remote.begin();
         Delay.millis(START_MILLIS);
-        while (!light.begin()) {
-            Serial.println("No RCX response; check channel 1 and IR alignment");
-            Delay.millis(RETRY_MILLIS);
-        }
         Serial.println("RCX light sensor: input 1, channel 1");
 
         Serial.println("Cover the sensor for calibration");

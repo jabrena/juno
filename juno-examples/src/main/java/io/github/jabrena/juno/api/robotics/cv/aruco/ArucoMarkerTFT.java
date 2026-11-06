@@ -31,7 +31,6 @@ public final class ArucoMarkerTFT {
      */
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         tft.setRotation(TftTouchShield.PORTRAIT);
         tft.fillScreen(TftTouchShield.BLACK);
         ArucoMarker.draw(tft, MARKER_ID, MARKER_X, MARKER_Y, CELL);

@@ -82,10 +82,6 @@ public final class M5CardputerPop3InboxSD {
     }
 
     private static Mailbox loadMailbox() throws IOException {
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
         try (InputStream file = SD_CARD.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");

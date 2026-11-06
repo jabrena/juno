@@ -30,10 +30,6 @@ public final class AiThinkerEsp32CamWifiFromSd {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
 
         String ssid;
         String password;

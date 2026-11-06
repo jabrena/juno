@@ -36,7 +36,6 @@ public class PFStopWithHX {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
         PFLink link = new PFLink(new HX53InfraredEmitter(TRANSMIT_PIN));
-        link.begin();
         RemotePF remote = new RemotePF(link);
         PFStopWithHX app = new PFStopWithHX(
                 new PFMotor(remote, CHANNEL, PFPort.RED),

@@ -46,7 +46,6 @@ public final class HttpServerStatusSDTFT {
         Delay.millis(2000);
 
         TftTouchShield tft = new TftTouchShield();
-        tft.begin();
         Credentials credentials = loadCredentials(tft.getSdCard());
         if (credentials == null) {
             return;
@@ -105,10 +104,6 @@ public final class HttpServerStatusSDTFT {
     }
 
     private static Credentials loadCredentials(SdCard sdCard) throws IOException {
-        if (!sdCard.begin()) {
-            Serial.println("SD card initialization failed");
-            return null;
-        }
         try (InputStream file = sdCard.open("application.properties")) {
             if (file == null) {
                 Serial.println("application.properties not found");

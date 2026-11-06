@@ -39,10 +39,6 @@ public final class SdFileOperations {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        if (!SD_CARD.begin()) {
-            Serial.println("SD card initialization failed");
-            return;
-        }
         Serial.println("SD card ready");
 
         SD_CARD.remove(PATH); // start from a clean slate on every run

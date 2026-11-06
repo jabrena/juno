@@ -46,7 +46,6 @@ public class MagicSquarePFWithGroveAndNano {
         Delay.millis(START_MILLIS);
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
-        link.begin();
         RemotePF remote = new RemotePF(link);
         MagicSquarePFWithGroveAndNano app = new MagicSquarePFWithGroveAndNano(
                 new PFMotor(remote, CHANNEL, PFPort.RED),

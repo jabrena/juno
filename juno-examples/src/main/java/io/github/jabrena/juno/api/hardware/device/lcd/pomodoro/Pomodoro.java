@@ -21,7 +21,6 @@ public final class Pomodoro {
     static final LcdKeypadShield LCD_SHIELD = new LcdKeypadShield();
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        LCD_SHIELD.begin();
 
         while (true) {
             int selectedMinutes = ConfigurePomodoroView.run();

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.servo;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.servo.PwmServoShield;
 import io.github.jabrena.juno.util.Delay;
 
@@ -29,8 +30,7 @@ public final class PwmServoShieldDemo {
     private static final int STEP_DELAY_MILLIS = 15;
 
     public static void main(String[] args) {
-        PwmServoShield shield = new PwmServoShield();
-        shield.begin();
+        PwmServoShield shield = new PwmServoShield(ArduinoUno.getI2c(), PwmServoShield.ADDRESS_DEFAULT);
 
         while (true) {
             for (int angle = PwmServoShield.MIN_ANGLE; angle <= PwmServoShield.MAX_ANGLE; angle += STEP_DEGREES) {

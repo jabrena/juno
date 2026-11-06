@@ -37,7 +37,6 @@ public final class I2cScanner {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
         I2c i2c = ArduinoUno.getI2c();
-        i2c.begin();
 
         while (true) {
             Serial.println("I2C scan");

@@ -21,11 +21,6 @@ public final class DisplayData {
         message = new int[MAX_MESSAGE_CHARS];
     }
 
-    /** Initializes the board's LED matrix. */
-    public void begin() {
-        matrix.begin();
-    }
-
     /** Displays {@code message} as a scrolling message, verbatim. */
     public void showMessage(String message) {
         scrollMessage(loadMessage(message));
