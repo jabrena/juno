@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
@@ -15,7 +16,6 @@ import io.github.jabrena.juno.util.Delay;
  * with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHub {
-    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final HubPort LEFT = HubPort.A;
     private static final HubPort RIGHT = HubPort.B;
     private static final int POWER = 40;
@@ -25,33 +25,34 @@ public class MagicSquarePoweredUpHub {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
         MagicSquarePoweredUpHub app = new MagicSquarePoweredUpHub();
 
         while (true) {
-            if (!HUB.isConnected()) {
+            if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                HUB.connect(0);
+                hub.connect(0);
             }
             Serial.println("Straight");
-            HUB.setLedColor(HubColor.GREEN);
-            app.drive(POWER, POWER, STRAIGHT_MILLIS);
-            app.stop();
+            hub.setLedColor(HubColor.GREEN);
+            app.drive(hub, POWER, POWER, STRAIGHT_MILLIS);
+            app.stop(hub);
             Serial.println("Turn left");
-            HUB.setLedColor(HubColor.BLUE);
-            app.drive(-POWER, POWER, TURN_MILLIS);
-            app.stop();
+            hub.setLedColor(HubColor.BLUE);
+            app.drive(hub, -POWER, POWER, TURN_MILLIS);
+            app.stop(hub);
         }
     }
 
-    private void drive(int left, int right, int millis) {
-        HUB.getMotor(LEFT).drive(left);
-        HUB.getMotor(RIGHT).drive(right);
+    private void drive(RemotePoweredUpHub hub, int left, int right, int millis) {
+        hub.getMotor(LEFT).drive(left);
+        hub.getMotor(RIGHT).drive(right);
         Delay.millis(millis);
     }
 
-    private void stop() {
-        HUB.getMotor(LEFT).stop();
-        HUB.getMotor(RIGHT).stop();
+    private void stop(RemotePoweredUpHub hub) {
+        hub.getMotor(LEFT).stop();
+        hub.getMotor(RIGHT).stop();
         Delay.millis(STOP_MILLIS);
     }
 }

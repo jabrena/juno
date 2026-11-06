@@ -32,52 +32,40 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * configuration analysis suggests. Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubScanWhileBlinking {
-    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
-    private static final Clock CLOCK = ArduinoUno.getClock();
     private static final int STARTUP_MILLIS = 5_000;
     private static final int SCAN_TIMEOUT_MILLIS = 30_000;
     private static final int PROGRESS_MILLIS = 500;
-
-    // Shared between the two subtasks; atomic so the same source is also data-race free on the JVM.
-    private final AtomicBoolean scanning = new AtomicBoolean(true);
-    private final AtomicBoolean found = new AtomicBoolean(false);
 
     public static void main(String[] args) throws Exception {
         Serial.begin(BaudRate.BAUD_115200);
         // The USB serial drops what is printed before a monitor opens the port.
         Delay.millis(STARTUP_MILLIS);
-        PoweredUpHubScanWhileBlinking example = new PoweredUpHubScanWhileBlinking();
-        example.scan();
-        example.report();
-    }
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+        Clock clock = ArduinoUno.getClock();
+        // Shared between the two subtasks; atomic so the same source is also data-race free on the JVM.
+        AtomicBoolean scanning = new AtomicBoolean(true);
+        AtomicBoolean found = new AtomicBoolean(false);
 
-    /** Forks the scan and the progress line; the scope closes when both have finished. */
-    private void scan() throws Exception {
+        // Forks the scan and the progress line; the scope closes when both have finished.
         try (var scope = StructuredTaskScope.open()) {
-            scope.fork(() -> connect());
-            scope.fork(() -> showProgress());
+            // The blocking call; the shim yields while it waits for a hub to advertise.
+            scope.fork(() -> {
+                found.set(hub.connect(SCAN_TIMEOUT_MILLIS));
+                scanning.set(false);
+            });
+            // Runs until the scan is over; {@code Delay.millis} is a switch point on both boards.
+            scope.fork(() -> {
+                int started = clock.millis();
+                while (scanning.get()) {
+                    Serial.println("Scanning... " + (clock.millis() - started) / 1000 + " s");
+                    Delay.millis(PROGRESS_MILLIS);
+                }
+            });
             scope.join();
         }
-    }
 
-    /** The blocking call; the shim yields while it waits for a hub to advertise. */
-    private void connect() {
-        found.set(HUB.connect(SCAN_TIMEOUT_MILLIS));
-        scanning.set(false);
-    }
-
-    /** Runs until the scan is over; {@code Delay.millis} is a switch point on both boards. */
-    private void showProgress() {
-        int started = CLOCK.millis();
-        while (scanning.get()) {
-            Serial.println("Scanning... " + (CLOCK.millis() - started) / 1000 + " s");
-            Delay.millis(PROGRESS_MILLIS);
-        }
-    }
-
-    private void report() {
         if (found.get()) {
-            Serial.println("Connected, battery " + HUB.batteryPercent() + " %");
+            Serial.println("Connected, battery " + hub.batteryPercent() + " %");
         } else {
             Serial.println("No hub found");
         }

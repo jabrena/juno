@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.hardware.ArduinoNano;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
@@ -18,27 +19,24 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoPoweredUpHubInfo {
-    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final int REPORT_INTERVAL_MS = 2000;
-
-    private NanoPoweredUpHubInfo() {
-    }
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("Waiting for a Powered Up hub...");
-        if (!HUB.connect(0)) {
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe());
+        if (!hub.connect(0)) {
             Serial.println("hub connection failed");
             return;
         }
         Serial.print("hub type=");
-        Serial.println(HUB.hubType());
+        Serial.println(hub.hubType());
         while (true) {
             Serial.print("battery=");
-            Serial.print(HUB.batteryPercent());
+            Serial.print(hub.batteryPercent());
             Serial.print(" rssi=");
-            Serial.println(HUB.rssi());
+            Serial.println(hub.rssi());
             Delay.millis(REPORT_INTERVAL_MS);
         }
     }
