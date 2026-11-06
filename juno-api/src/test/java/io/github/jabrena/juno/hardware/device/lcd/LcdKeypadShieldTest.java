@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,6 +44,7 @@ class LcdKeypadShieldTest {
         pinButtons = pins.analogPin("A0");
         lcd = new LcdKeypadShield(pins);
         when(pins.analogRead(pinButtons)).thenReturn(1023);
+        clearInvocations(pins);
     }
 
     static Stream<Arguments> buttonLadder() {
@@ -56,12 +58,9 @@ class LcdKeypadShieldTest {
     }
 
     @Test
-    @DisplayName("Begin runs the four-bit startup and then configures the display")
+    @DisplayName("Construction runs the four-bit startup and configures the display")
     void shouldRunTheFourBitStartupThenConfigureTheDisplay() {
-        // When
-        lcd.begin();
-
-        // Then
+        lcd = new LcdKeypadShield(pins);
         assertThat(emitted()).containsSubsequence("3@0", "3@0", "3@0", "2@0",
                 "2@0", "8@0", "0@0", "C@0", "0@0", "1@0", "0@0", "6@0");
     }

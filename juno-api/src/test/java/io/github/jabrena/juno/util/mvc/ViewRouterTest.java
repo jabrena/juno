@@ -4,7 +4,6 @@ import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.testing.FrameClock;
-import io.github.jabrena.juno.testing.ImmediateDelay;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +48,6 @@ class ViewRouterTest {
         touchXPin = pins.analogPin("A2");
         touchYPin = pins.analogPin("A3");
         tft = new TftTouchShield(pins);
-        ImmediateDelay.run(tft::begin);
         router = new ViewRouter(tft, 10, clock);
         for (int id = 0; id < 4; id++) {
             router.register(id, new Recorder(id));

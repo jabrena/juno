@@ -20,9 +20,6 @@ public interface Display {
         return ((red & 0xF8) << 8) | ((green & 0xFC) << 3) | ((blue & 0xFF) >> 3);
     }
 
-    /** Initializes the display hardware. */
-    void begin();
-
     /** Returns the display width in pixels for its current rotation. */
     int width();
 

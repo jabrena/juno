@@ -44,7 +44,6 @@ class GroveOledSsd1315Test {
         I2c i2c = mock(I2c.class);
         GroveOledSsd1315 display = new GroveOledSsd1315(i2c, new byte[GroveOledSsd1315.FRAMEBUFFER_SIZE]);
 
-        display.begin();
         display.fillScreen(Display.BLACK);
         display.setTextColor(Display.WHITE, Display.BLACK);
         display.setTextSize(0);

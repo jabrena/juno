@@ -74,7 +74,6 @@ public final class ArduinoUno {
         Lsm6ds3 sensor = imu;
         if (sensor == null) {
             sensor = new Lsm6ds3(getGpio(), getSpi(), getClock());
-            sensor.begin();
             imu = sensor;
         }
         return sensor;

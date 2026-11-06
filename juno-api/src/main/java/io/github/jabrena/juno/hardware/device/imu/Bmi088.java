@@ -11,7 +11,7 @@ import io.github.jabrena.juno.robotics.SampleProvider;
  *
  * <p>The module contains independent accelerometer and gyroscope I2C devices. It is configured for ±3 g and ±2000
  * degrees per second at 100 Hz. As the BMI088 has no magnetometer, heading is the gyro's Z rate integrated from
- * {@link #begin()} or {@link #reset()} and therefore drifts over time. Create it once at startup and keep it still
+ * construction or {@link #reset()} and therefore drifts over time. Create it once at startup and keep it still
  * while {@link #recalibrateOffset()} runs.
  */
 public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
@@ -55,10 +55,13 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
     public Bmi088(I2c i2c, Clock clock) {
         this.i2c = i2c;
         this.clock = clock;
+        if (!begin()) {
+            throw new IllegalStateException("BMI088 did not acknowledge initialization");
+        }
     }
 
     /** Starts both BMI088 devices and returns {@code false} if either chip ID cannot be read. */
-    public boolean begin() {
+    private boolean begin() {
         i2c.begin();
         if (i2c.readRegister(ACCEL_ADDRESS_DEFAULT, ACCEL_CHIP_ID) != ACCEL_CHIP_ID_VALUE
                 || i2c.readRegister(GYRO_ADDRESS_DEFAULT, GYRO_CHIP_ID) != GYRO_CHIP_ID_VALUE) {
@@ -78,19 +81,19 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
         return true;
     }
 
-    /** Returns X acceleration in whole metres per second squared, or zero before {@link #begin()}. */
+    /** Returns X acceleration in whole metres per second squared, or zero if initialization failed. */
     @Override
     public int getXAccel() {
         return (int) acceleration(ACCEL_X_LSB);
     }
 
-    /** Returns Y acceleration in whole metres per second squared, or zero before {@link #begin()}. */
+    /** Returns Y acceleration in whole metres per second squared, or zero if initialization failed. */
     @Override
     public int getYAccel() {
         return (int) acceleration(ACCEL_X_LSB + 2);
     }
 
-    /** Returns Z acceleration in whole metres per second squared, or zero before {@link #begin()}. */
+    /** Returns Z acceleration in whole metres per second squared, or zero if initialization failed. */
     @Override
     public int getZAccel() {
         return (int) acceleration(ACCEL_X_LSB + 4);
@@ -106,7 +109,7 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
         return headingMillidegrees / 1000;
     }
 
-    /** Returns the clockwise Z angular velocity in degrees per second, or zero before {@link #begin()}. */
+    /** Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed. */
     @Override
     public float getAngularVelocity() {
         if (!started) {

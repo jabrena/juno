@@ -96,6 +96,7 @@ public final class LcdKeypadShield {
     /** A shield driven through {@code gpio}: a mocked one in a unit test. */
     public LcdKeypadShield(Gpio gpio) {
         this.gpio = gpio;
+        begin();
     }
 
     /**
@@ -114,7 +115,7 @@ public final class LcdKeypadShield {
     }
 
     /** Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on. */
-    public void begin() {
+    private void begin() {
         gpio.pinMode(pinRs, gpio.getOutput());
         gpio.pinMode(pinEnable, gpio.getOutput());
         gpio.pinMode(pinD4, gpio.getOutput());

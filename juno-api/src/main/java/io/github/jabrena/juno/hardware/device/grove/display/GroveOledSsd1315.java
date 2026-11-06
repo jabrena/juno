@@ -38,11 +38,11 @@ public final class GroveOledSsd1315 implements Display {
         }
         this.i2c = i2c;
         this.framebuffer = framebuffer;
+        begin();
     }
 
     /** Initializes the SSD1315 and transfers the current framebuffer. */
-    @Override
-    public void begin() {
+    private void begin() {
         i2c.begin();
         command(0xAE); // display off
         command(0xA8);

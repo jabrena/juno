@@ -145,6 +145,7 @@ public final class TftTouchShield {
         this.bus = new TftBus(gpio);
         this.touch = new TftTouch(gpio, bus);
         this.graphics = new TftGraphics(this, bus);
+        begin();
     }
 
     /**
@@ -165,7 +166,7 @@ public final class TftTouchShield {
      * {@link #PORTRAIT} rotation, a size-1 white-on-black text style, and ELEGOO's default touch
      * calibration. The screen contents are undefined until the first {@link #fillScreen}.
      */
-    public void begin() {
+    private void begin() {
         gpio.pinMode(PIN_RD, gpio.getOutput());
         gpio.pinMode(PIN_WR, gpio.getOutput());
         gpio.pinMode(PIN_RS, gpio.getOutput());
@@ -176,7 +177,6 @@ public final class TftTouchShield {
         gpio.digitalWrite(PIN_RS, true);
         gpio.digitalWrite(PIN_CS, true);
         bus.restoreDataPins();
-        bus.begin();
 
         gpio.digitalWrite(PIN_RESET, true);
         Delay.millis(5);

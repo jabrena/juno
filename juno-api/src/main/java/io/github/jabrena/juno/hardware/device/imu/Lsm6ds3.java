@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * The STMicroelectronics LSM6DS3TR six-axis inertial sensor on the Arduino UNO WiFi Rev2, read over SPI as plain Java on
  * top of {@link Spi} (so it needs no Arduino library). The sensor has an accelerometer and a gyroscope but no
  * magnetometer, so it cannot find north: the heading is the gyroscope's yaw rate integrated over time from the
- * moment {@link #begin} ran, clockwise positive, and it drifts a little with every minute of use.
+ * construction, clockwise positive, and it drifts a little with every minute of use.
  *
  * <pre>{@code
  * Gyroscope gyroscope = ArduinoUno.getGyroscope();       // once, at startup: starts the sensor, keep the board still
@@ -75,16 +75,19 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
         this.gpio = gpio;
         this.spi = spi;
         this.clock = clock;
+        if (!begin()) {
+            throw new IllegalStateException("LSM6DS3 did not acknowledge initialization");
+        }
     }
 
     /**
      * Starts the bus and the sensor, returning {@code false} if the sensor did not answer with its chip ID. Then waits
      * for the gyroscope to settle and measures its bias over about 2 s, so keep the board still while it runs.
      */
-    public boolean begin() {
+    private boolean begin() {
+        spi.begin();
         gpio.pinMode(CHIP_SELECT, gpio.getOutput());
         gpio.digitalWrite(CHIP_SELECT, true);
-        spi.begin();
         writeRegister(CTRL3_C, CTRL3_C_SW_RESET);
         Delay.millis(RESET_MILLIS);
         int chipId = readRegister(WHO_AM_I);
@@ -135,27 +138,26 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
         heading = turned < 0 ? turned + FULL_TURN : turned;
     }
 
-    /** The acceleration along the board's X axis in whole metres per second squared; {@code 0} before {@link #begin}. */
+    /** The acceleration along the board's X axis in whole metres per second squared; {@code 0} if initialization failed. */
     @Override
     public int getXAccel() {
         return (int) accelerationAxis(6);
     }
 
-    /** The acceleration along the board's Y axis in whole metres per second squared; {@code 0} before {@link #begin}. */
+    /** The acceleration along the board's Y axis in whole metres per second squared; {@code 0} if initialization failed. */
     @Override
     public int getYAccel() {
         return (int) accelerationAxis(8);
     }
 
-    /** The acceleration along the board's Z axis in whole metres per second squared; {@code 0} before {@link #begin}. */
+    /** The acceleration along the board's Z axis in whole metres per second squared; {@code 0} if initialization failed. */
     @Override
     public int getZAccel() {
         return (int) accelerationAxis(10);
     }
 
     /**
-     * The heading in whole degrees, {@code 0..359}, growing clockwise since {@link #begin} or the last {@link #reset};
-     * {@code 0} before {@link #begin}.
+     * The heading in whole degrees, {@code 0..359}, growing clockwise since construction or the last {@link #reset}.
      */
     @Override
     public int getAngle() {
@@ -166,7 +168,7 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
         return heading / 1000;
     }
 
-    /** The yaw rate in degrees per second, clockwise positive; {@code 0} before {@link #begin}. */
+    /** The yaw rate in degrees per second, clockwise positive; {@code 0} if initialization failed. */
     @Override
     public float getAngularVelocity() {
         if (!started) {
@@ -176,7 +178,7 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
         return yawRate / 1000f;
     }
 
-    /** Measures the gyroscope's bias again; keep the board still for about 2 s. Does nothing before {@link #begin}. */
+    /** Measures the gyroscope's bias again; keep the board still for about 2 s. */
     @Override
     public void recalibrateOffset() {
         if (started) {
@@ -192,7 +194,7 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
         lastMillis = clock.millis();
     }
 
-    /** Returns the sample of the axis at {@code low}, in metres per second squared, or 0 before {@link #begin}. */
+    /** Returns the sample of the axis at {@code low}, in metres per second squared, or 0 if initialization failed. */
     private float accelerationAxis(int low) {
         if (!started) {
             return 0f;
@@ -209,7 +211,7 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
 
     /**
      * Writes the X, Y and Z acceleration in metres per second squared, starting at {@code offset}; all zero before
-     * {@link #begin}.
+     * construction.
      */
     @Override
     public void fetchSample(float[] sample, int offset) {

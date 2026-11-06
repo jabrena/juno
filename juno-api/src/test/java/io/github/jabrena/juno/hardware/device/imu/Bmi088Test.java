@@ -27,12 +27,10 @@ class Bmi088Test {
     }
 
     @Test
-    @DisplayName("Begin verifies both chips and configures their measurement ranges")
+    @DisplayName("Construction verifies both chips and configures their measurement ranges")
     void shouldConfigureBothChips() {
-        assertThat(imu.begin()).isTrue();
-
-        verify(i2c).begin();
         verify(i2c).writeRegister(0x19, 0x7D, 0x04);
+        verify(i2c).begin();
         verify(i2c).writeRegister(0x19, 0x40, 0xA8);
         verify(i2c).writeRegister(0x69, 0x0F, 0x00);
     }
@@ -43,7 +41,6 @@ class Bmi088Test {
         when(i2c.readRegister16(0x19, 0x12)).thenReturn(16_384);
         when(i2c.readRegister16(0x19, 0x14)).thenReturn(0);
         when(i2c.readRegister16(0x19, 0x16)).thenReturn(0xC000);
-        imu.begin();
         float[] sample = new float[3];
 
         imu.fetchSample(sample, 0);
@@ -58,18 +55,15 @@ class Bmi088Test {
     void shouldRejectAnUnidentifiedChip() {
         when(i2c.readRegister(0x69, 0)).thenReturn(-1);
 
-        assertThat(imu.begin()).isFalse();
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> new Bmi088(i2c, clock))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
-    @DisplayName("Reports zero motion before begin and integrates its clockwise gyro rate after begin")
+    @DisplayName("Integrates its clockwise gyro rate after construction")
     void shouldIntegrateTheGyroscopeAfterBegin() {
         when(clock.millis()).thenReturn(0, 100);
         when(i2c.readRegister16(0x69, 0x06)).thenReturn(256);
-
-        assertThat(imu.getAngle()).isZero();
-        assertThat(imu.getAngularVelocity()).isZero();
-        assertThat(imu.begin()).isTrue();
 
         assertThat(imu.getAngularVelocity()).isCloseTo(-15.625f, org.assertj.core.data.Offset.offset(0.001f));
     }
@@ -78,8 +72,6 @@ class Bmi088Test {
     @DisplayName("Can recalibrate and reset a started IMU")
     void shouldRecalibrateAndReset() {
         when(i2c.readRegister16(0x69, 0x06)).thenReturn(10);
-        imu.begin();
-
         imu.recalibrateOffset();
         imu.reset();
 

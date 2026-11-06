@@ -11,12 +11,11 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
  * {@link I2c} (so it needs no Arduino library). The sensor fuses its accelerometer and gyroscope itself, in the
- * {@code IMU} fusion mode: the heading is relative to the direction the sensor pointed at {@link #begin}, needs no
+ * {@code IMU} fusion mode: the heading is relative to the direction the sensor pointed at construction, needs no
  * compass calibration and is not disturbed by magnetic fields.
  *
  * <pre>{@code
  * NineAxisMotionShield imu = new NineAxisMotionShield();   // once, at startup
- * imu.begin();
  * imu.reset();                                             // count the turn from here
  * // ... turn left until imu.getAngle() >= 270 (heading grows clockwise)
  * }</pre>
@@ -83,17 +82,21 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
         this.gpio = gpio;
         this.i2c = i2c;
         resetPin = gpio.digitalPin("D7");
+        if (!begin()) {
+            throw new IllegalStateException("BNO055 did not acknowledge initialization");
+        }
     }
 
     /**
-     * Starts the sensor at {@link #ADDRESS_DEFAULT} in IMU fusion mode, returning {@code false} if no BNO055 answered.
-     * Waits for the sensor to boot, so call it once at startup; the heading counts from this moment.
+     * Starts the sensor at {@link #ADDRESS_DEFAULT} in IMU fusion mode. Waits for the sensor to boot, so construct it
+     * once at startup; the heading counts from this moment.
      */
-    public boolean begin() {
+    private boolean begin() {
         return startAt(ADDRESS_DEFAULT);
     }
 
     private boolean startAt(int sensorAddress) {
+        i2c.begin();
         address = sensorAddress;
         headingOffsetRaw = 0;
         gpio.pinMode(resetPin, gpio.getOutput());
@@ -101,7 +104,6 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
         Delay.millis(RESET_LOW_MILLIS);
         gpio.digitalWrite(resetPin, true);
         Delay.millis(RESET_HIGH_MILLIS);
-        i2c.begin();
         Delay.millis(BOOT_MILLIS);
         if (i2c.readRegister(address, CHIP_ID) != CHIP_ID_VALUE) {
             return false;

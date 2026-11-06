@@ -18,10 +18,15 @@ final class TftBus {
 
     TftBus(Gpio gpio) {
         this.gpio = gpio;
+        for (int pin : DATA_PINS) {
+            gpio.pinMode(pin, gpio.getOutput());
+        }
+        gpio.pinMode(TftTouchShield.PIN_WR, gpio.getOutput());
+        begin();
     }
 
     /** Hands the data lines and the write strobe to {@link ParallelBus}; they must already be outputs. */
-    void begin() {
+    private void begin() {
         ParallelBus.begin(DATA_PINS, TftTouchShield.PIN_WR);
         forgetWindow();
     }

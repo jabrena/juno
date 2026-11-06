@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.hardware.device.servo;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.util.Delay;
 
@@ -10,8 +9,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@code 0..15}, so nothing is allocated after the shield itself:
  *
  * <pre>{@code
- * PwmServoShield shield = new PwmServoShield();   // once, at startup
- * shield.begin();
+ * PwmServoShield shield = new PwmServoShield(ArduinoUno.getI2c(), PwmServoShield.ADDRESS_DEFAULT); // once, at startup
  * shield.write(0, 90);          // servo on channel 0 to its centre
  * shield.writeMicros(1, 1500);  // or a raw pulse width
  * shield.release(0);            // stop driving it; the servo no longer holds its position
@@ -24,9 +22,9 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The servos are powered from the shield's green terminal block (5-6V), never from the board: its {@code V+}
  * pins are fed only from there. Each channel is a column of three pins, {@code GND} nearest the board edge,
  * {@code V+} in the middle and {@code PWM} nearest the chip, matching a servo's brown, red and yellow wires. The
- * shield answers at address {@code 0x40}; bridging its address pads selects another, given to {@link #begin(int)}.
- * Works on every board, wherever {@code Wire} reaches the shield's SDA/SCL. {@code new PwmServoShield(i2c)} talks to
- * the shield through a given {@link I2c} instead of the board's, which is how a unit test mocks it.
+ * shield answers at address {@code 0x40}; bridging its address pads selects another, passed to the constructor.
+ * Works on every board, wherever {@code Wire} reaches the shield's SDA/SCL. The constructor accepts a given
+ * {@link I2c} so a unit test can mock the bus.
  *
  * @see <a href="https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf">PCA9685 data sheet</a>
  */
@@ -54,23 +52,13 @@ public final class PwmServoShield {
     private final I2c i2c;
     private int address = ADDRESS_DEFAULT;
 
-    /** A shield on the board's own I2C bus. Create it once, at startup. */
-    public PwmServoShield() {
-        this(ArduinoUno.getI2c());
-    }
-
-    /** A shield driven through {@code i2c}: a mocked one in a unit test. */
-    public PwmServoShield(I2c i2c) {
+    /** A shield at {@code shieldAddress} driven through {@code i2c}; collaborators may be mocks in a unit test. */
+    public PwmServoShield(I2c i2c, int shieldAddress) {
         this.i2c = i2c;
+        begin(shieldAddress);
     }
 
-    /** Starts I2C and sets the shield at {@code 0x40} to the 50 Hz servo frame. */
-    public void begin() {
-        begin(ADDRESS_DEFAULT);
-    }
-
-    /** Starts I2C and sets the shield at {@code shieldAddress} to the 50 Hz servo frame. */
-    public void begin(int shieldAddress) {
+    private void begin(int shieldAddress) {
         address = shieldAddress;
         i2c.begin();
         // The prescaler can only be written while the oscillator sleeps.
