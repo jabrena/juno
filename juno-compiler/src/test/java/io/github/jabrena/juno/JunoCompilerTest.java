@@ -1565,6 +1565,54 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl analogRead");
         }
+
+        @Test
+        @DisplayName("The Grove robotics and SSD1315 adapters lower through injected board transports")
+        void shouldLowerTheGroveRoboticsAndOledAdapters() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.display.GroveOledSsd1315;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
+                    import io.github.jabrena.juno.hardware.device.imu.Bmi088;
+                    import io.github.jabrena.juno.hardware.device.motor.L298nMotor;
+                    import io.github.jabrena.juno.hardware.gpio.Gpio;
+                    import io.github.jabrena.juno.hardware.i2c.I2c;
+                    import io.github.jabrena.juno.hardware.time.Clock;
+                    public final class GroveRoboticsDemo {
+                        public static void main(String[] args) {
+                            GroveBaseShield shield = new GroveBaseShield();
+                            Gpio gpio = ArduinoUno.getGpio();
+                            Clock clock = ArduinoUno.getClock();
+                            I2c i2c = ArduinoUno.getI2c();
+                            L298nMotor motor = new L298nMotor(gpio, Gpio.getD3(), Gpio.getD4(), Gpio.getD5());
+                            motor.begin();
+                            motor.setPower(50);
+                            motor.forward();
+                            GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, shield.getD2());
+                            float range = ranger.getRange();
+                            Bmi088 imu = new Bmi088(i2c, clock);
+                            if (imu.begin() && range >= 0f) {
+                                imu.getAngularVelocity();
+                            }
+                            byte[] framebuffer = new byte[GroveOledSsd1315.FRAMEBUFFER_SIZE];
+                            GroveOledSsd1315 oled = new GroveOledSsd1315(i2c, framebuffer);
+                            oled.drawPixel(0, 0, GroveOledSsd1315.WHITE);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveRoboticsDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveRoboticsDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead", "bl analogWrite",
+                    "bl micros", "bl juno_i2c_begin", "bl juno_i2c_write_register", "bl juno_i2c_read_register");
+            assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
+        }
     }
 
     @Nested
