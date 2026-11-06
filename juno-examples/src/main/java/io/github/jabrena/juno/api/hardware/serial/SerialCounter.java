@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -7,9 +8,9 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Demonstrates integer output over the Arduino UNO R4 WiFi's USB serial connection. The program
- * opens the connection at 115200 baud and prints the values {@code 0}, {@code 1}, {@code 2}, and so
- * on, placing each value on its own line and waiting one second between values.
+ * Demonstrates integer output over a board's USB serial connection. The program opens the connection
+ * at 115200 baud and prints the values {@code 0}, {@code 1}, {@code 2}, and so on, placing each value
+ * on its own line and waiting one second between values.
  *
  * <p>After uploading the sketch, find the board's port and open a serial monitor at the same baud
  * rate:
@@ -18,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * arduino-cli monitor -p <PORT> -c baudrate=115200
  * }</pre>
  */
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board({ArduinoUnoR4WiFiBoard.class, AiThinkerEsp32CamBoard.class})
 public final class SerialCounter {
     /**
      * Initializes USB serial output and prints an incrementing counter indefinitely.
