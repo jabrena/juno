@@ -7,7 +7,7 @@ import io.github.jabrena.juno.robotics.Gyroscope;
 import io.github.jabrena.juno.robotics.SampleProvider;
 
 /**
- * Grove 6-Axis Accelerometer & Gyroscope (BMI088), accessed through I2C.
+ * Grove 6-Axis Accelerometer &amp; Gyroscope (BMI088), accessed through I2C.
  *
  * <p>The module contains independent accelerometer and gyroscope I2C devices. It is configured for ±3 g and ±2000
  * degrees per second at 100 Hz. As the BMI088 has no magnetometer, heading is the gyro's Z rate integrated from
