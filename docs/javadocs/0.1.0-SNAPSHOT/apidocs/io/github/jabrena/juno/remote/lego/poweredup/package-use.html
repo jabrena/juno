@@ -95,14 +95,14 @@ initTheme();
 <div class="block">A port of a Powered Up hub: the external ports <a href="HubPort.html#A"><code>HubPort.A</code></a> to <a href="HubPort.html#D"><code>HubPort.D</code></a> (a City Hub has A and B), and the built-in
 sensors of the Technic Hub (88012), which report on their own port numbers once subscribed.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/PoweredUpMotor.html#io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></div>
+<div class="col-first even-row-color"><a href="class-use/PoweredUpBattery.html#io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></div>
 <div class="col-last even-row-color">
-<div class="block">The motor on one external port of a Powered Up hub, as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
+<div class="block">The Technic Hub's battery as the board's shared <a href="../../../hardware/power/Battery.html" title="interface in io.github.jabrena.juno.hardware.power"><code>Battery</code></a> interface: the hub's own charge percentage, and its
+supply voltage read from the hub's internal voltage sensor.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/PoweredUpPort.html#io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></div>
+<div class="col-first odd-row-color"><a href="class-use/PoweredUpMotor.html#io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></div>
 <div class="col-last odd-row-color">
-<div class="block">The Powered Up hub intrinsics as an interface: <code>NativePoweredUpPort</code> drives the real hub on the board, and a
-mock or fake takes its place in a unit test through <a href="RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)"><code>RemotePoweredUpHub(PoweredUpPort, io.github.jabrena.juno.hardware.time.Clock)</code></a>.</div>
+<div class="block">The motor on one external port of a Powered Up hub, as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
 </div>
 </div>
 </section>

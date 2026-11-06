@@ -35,6 +35,7 @@ io.github.jabrena.juno.remote.lego.pf
 io.github.jabrena.juno.remote.lego.poweredup
 io.github.jabrena.juno.remote.lego.rcx
 io.github.jabrena.juno.robotics
+io.github.jabrena.juno.robotics.cv.aruco
 io.github.jabrena.juno.robotics.navigation
 io.github.jabrena.juno.util
 io.github.jabrena.juno.util.image

@@ -79,6 +79,8 @@ initTheme();
 <li><a href="#getMouse()" tabindex="0">getMouse()</a></li>
 <li><a href="#getAudio()" tabindex="0">getAudio()</a></li>
 <li><a href="#getBattery()" tabindex="0">getBattery()</a></li>
+<li><a href="#getClock()" tabindex="0">getClock()</a></li>
+<li><a href="#getBluetoothLe()" tabindex="0">getBluetoothLe()</a></li>
 </ol>
 </li>
 </ol>
@@ -123,6 +125,14 @@ mock of the device interface instead.</div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBattery()" class="member-name-link">getBattery</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Cardputer's built-in battery.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBluetoothLe()" class="member-name-link">getBluetoothLe</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getDisplay()" class="member-name-link">getDisplay</a>()</code></div>
@@ -227,6 +237,23 @@ built-in SPI bus on GPIO14 (MOSI), GPIO39 (MISO), and GPIO40 (clock). The same i
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="power/Battery.html" title="interface in io.github.jabrena.juno.hardware.power">Battery</a></span>&nbsp;<span class="element-name">getBattery</span>()</div>
 <div class="block">The Cardputer's built-in battery. Its charge level is estimated; voltage is reported in millivolts.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getClock()">
+<h3>getClock</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></span>&nbsp;<span class="element-name">getClock</span>()</div>
+<div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getBluetoothLe()">
+<h3>getBluetoothLe</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></span>&nbsp;<span class="element-name">getBluetoothLe</span>()</div>
 </div>
 </section>
 </li>

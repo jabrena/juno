@@ -89,11 +89,12 @@
         <a class="" href="/juno/memory-model">Memory Model</a>
         <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
       </div>
-      <a class="" href="/juno/boards" >Boards</a>
+      <a class=" active" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/boards">Overview</a>
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="active" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
@@ -293,6 +294,18 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-search').forEach(attach);
 })();
 </script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="active" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
+    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
 <main class="juno-docs">
 

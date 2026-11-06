@@ -142,6 +142,11 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-last even-row-color">
 <div class="block">The AI Thinker ESP32-CAM's millisecond and microsecond clock, the same object on every call.</div>
 </div>
+<div class="col-first odd-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
+</div>
 </div>
 </section>
 </li>
@@ -281,10 +286,11 @@ whole-program emulator in a test, never on the board.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../../remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="../../../remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a>&nbsp;port,
+<div class="col-second even-row-color"><code><a href="../../../remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="../../net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
-<div class="block">A hub controller that drives <code>port</code> and times its waits on <code>clock</code>: fakes in a unit test.</div>
+<div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
+<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.</div>
 </div>
 </div>
 </section>

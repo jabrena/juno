@@ -106,12 +106,14 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E()" tabindex="0">RemotePoweredUpHub()</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemotePoweredUpHub(PoweredUpPort, Clock)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemotePoweredUpHub(BluetoothLe, Clock)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#getAccelerometer()" tabindex="0">getAccelerometer()</a></li>
+<li><a href="#getGyroscope()" tabindex="0">getGyroscope()</a></li>
+<li><a href="#getTilt()" tabindex="0">getTilt()</a></li>
 <li><a href="#getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" tabindex="0">getMotor(HubPort)</a></li>
 <li><a href="#connect(int)" tabindex="0">connect(int)</a></li>
 <li><a href="#isConnected()" tabindex="0">isConnected()</a></li>
@@ -138,8 +140,7 @@ initTheme();
 <li><a href="#unlinkMotors(int)" tabindex="0">unlinkMotors(int)</a></li>
 <li><a href="#setLinkedMotorPower(int,int,int)" tabindex="0">setLinkedMotorPower(int, int, int)</a></li>
 <li><a href="#brakeLinkedMotors(int)" tabindex="0">brakeLinkedMotors(int)</a></li>
-<li><a href="#batteryMillivolts()" tabindex="0">batteryMillivolts()</a></li>
-<li><a href="#currentMilliamps()" tabindex="0">currentMilliamps()</a></li>
+<li><a href="#getBattery()" tabindex="0">getBattery()</a></li>
 <li><a href="#disconnect()" tabindex="0">disconnect()</a></li>
 <li><a href="#switchOff()" tabindex="0">switchOff()</a></li>
 </ol>
@@ -234,7 +235,7 @@ or <code>-1</code> when it detects none.</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#MODE_IMU_VALUES" class="member-name-link">MODE_IMU_VALUES</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">Mode 0 of the three built-in sensors: gravity per axis, rotation rate per axis, and tilt angles in degrees.</div>
+<div class="block">Mode 0 of the Technic Hub's three motion-sensor ports, which report three values each: see <a href="PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpAccelerometer</code></a>, <a href="PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpGyroscope</code></a> and <a href="PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpTilt</code></a>.</div>
 </div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#MODE_MOTOR_POSITION" class="member-name-link">MODE_MOTOR_POSITION</a></code></div>
@@ -304,14 +305,11 @@ the <code>REMOTE_*</code> values.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RemotePoweredUpHub</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">A hub controller on the board's own Bluetooth stack and timer.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a>&nbsp;port,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="../../../hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
  <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">A hub controller that drives <code>port</code> and times its waits on <code>clock</code>: fakes in a unit test.</div>
+<div class="col-last even-row-color">
+<div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
+<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.</div>
 </div>
 </div>
 </section>
@@ -328,38 +326,26 @@ the <code>REMOTE_*</code> values.</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#batteryMillivolts()" class="member-name-link">batteryMillivolts</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#batteryPercent()" class="member-name-link">batteryPercent</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The Technic Hub's supply voltage in millivolts (about 9000 with fresh batteries), or <code>-1</code> if
-the hub has not answered.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#batteryPercent()" class="member-name-link">batteryPercent</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The hub's battery level as a percentage, <code>0..100</code>, or <code>-1</code> before the hub has
 reported it.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#brakeLinkedMotors(int)" class="member-name-link">brakeLinkedMotors</a><wbr>(int&nbsp;virtualPort)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#brakeLinkedMotors(int)" class="member-name-link">brakeLinkedMotors</a><wbr>(int&nbsp;virtualPort)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Actively brakes both motors of a virtual port.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buttonPressed()" class="member-name-link">buttonPressed</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buttonPressed()" class="member-name-link">buttonPressed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Whether the hub's green button is held down right now.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#connect(int)" class="member-name-link">connect</a><wbr>(int&nbsp;timeoutMillis)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#connect(int)" class="member-name-link">connect</a><wbr>(int&nbsp;timeoutMillis)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Scans for the first advertising Powered Up hub and connects to it, returning whether a hub is
 connected afterwards.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#currentMilliamps()" class="member-name-link">currentMilliamps</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The current the Technic Hub draws, in milliamps (all motors and the hub together), or <code>-1</code> if
-the hub has not answered; subscribed on the first call like <a href="#batteryMillivolts()"><code>batteryMillivolts()</code></a>.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#disconnect()" class="member-name-link">disconnect</a>()</code></div>
@@ -379,10 +365,30 @@ for <a href="#readSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)">
 <div class="block">The hub's firmware version as the protocol's packed number, or <code>-1</code> if unknown; take it apart
 with <a href="#versionMajor(int)"><code>versionMajor(int)</code></a>, <a href="#versionMinor(int)"><code>versionMinor(int)</code></a>, <a href="#versionBugfix(int)"><code>versionBugfix(int)</code></a> and <a href="#versionBuild(int)"><code>versionBuild(int)</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">getMotor</a><wbr>(<a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAccelerometer()" class="member-name-link">getAccelerometer</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The Technic Hub's accelerometer, which returns the same object on every call.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="PoweredUpBattery.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBattery()" class="member-name-link">getBattery</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The Technic Hub's battery: its charge level, supply voltage and supply current.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getGyroscope()" class="member-name-link">getGyroscope</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The Technic Hub's gyroscope, which returns the same object on every call.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">getMotor</a><wbr>(<a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The motor on the external port <code>port</code> (A to D), as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTilt()" class="member-name-link">getTilt</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The Technic Hub's tilt sensor, which returns the same object on every call.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hardwareVersion()" class="member-name-link">hardwareVersion</a>()</code></div>
@@ -968,7 +974,7 @@ the <code>REMOTE_*</code> values.</div>
 <h3>MODE_IMU_VALUES</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">MODE_IMU_VALUES</span></div>
-<div class="block">Mode 0 of the three built-in sensors: gravity per axis, rotation rate per axis, and tilt angles in degrees.</div>
+<div class="block">Mode 0 of the Technic Hub's three motion-sensor ports, which report three values each: see <a href="PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpAccelerometer</code></a>, <a href="PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpGyroscope</code></a> and <a href="PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpTilt</code></a>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -989,21 +995,14 @@ the <code>REMOTE_*</code> values.</div>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)">
 <h3>RemotePoweredUpHub</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemotePoweredUpHub</span>()</div>
-<div class="block">A hub controller on the board's own Bluetooth stack and timer. Create it once, at startup.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RemotePoweredUpHub</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemotePoweredUpHub</span><wbr><span class="parameters">(<a href="PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a>&nbsp;port,
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemotePoweredUpHub</span><wbr><span class="parameters">(<a href="../../../hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
  <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">A hub controller that drives <code>port</code> and times its waits on <code>clock</code>: fakes in a unit test.</div>
+<div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
+<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.
+Create it once, at startup. Only the boards with a BLE radio can be given one.</div>
 </div>
 </section>
 </li>
@@ -1016,12 +1015,39 @@ the <code>REMOTE_*</code> values.</div>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="getAccelerometer()">
+<h3>getAccelerometer</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></span>&nbsp;<span class="element-name">getAccelerometer</span>()</div>
+<div class="block">The Technic Hub's accelerometer, which returns the same object on every call. The hub subscribes it on connect.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getGyroscope()">
+<h3>getGyroscope</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></span>&nbsp;<span class="element-name">getGyroscope</span>()</div>
+<div class="block">The Technic Hub's gyroscope, which returns the same object on every call. The hub subscribes it on connect.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getTilt()">
+<h3>getTilt</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span>&nbsp;<span class="element-name">getTilt</span>()</div>
+<div class="block">The Technic Hub's tilt sensor, which returns the same object on every call. The hub subscribes it on connect.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)">
 <h3>getMotor</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></span>&nbsp;<span class="element-name">getMotor</span><wbr><span class="parameters">(<a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</span></div>
 <div class="block">The motor on the external port <code>port</code> (A to D), as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.
-The same object is returned on every call. Its position needs <a href="PoweredUpMotor.html#begin()"><code>PoweredUpMotor.begin()</code></a> after each connect.</div>
+The same object is returned on every call. Its position is subscribed on the first read after each connect.</div>
 <dl class="notes">
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link">IllegalArgumentException</a></code> - if <code>port</code> is one of the Technic Hub's built-in sensor ports</dd>
@@ -1296,26 +1322,12 @@ port given to <a href="#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.
 </section>
 </li>
 <li>
-<section class="detail" id="batteryMillivolts()">
-<h3>batteryMillivolts</h3>
+<section class="detail" id="getBattery()">
+<h3>getBattery</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">batteryMillivolts</span>()</div>
-<div class="block">The Technic Hub's supply voltage in millivolts (about 9000 with fresh batteries), or <code>-1</code> if
-the hub has not answered. The first call subscribes to the hub's voltage sensor and waits up to
-300 ms for its first report, so later calls return the latest value without blocking. The scale
-(a raw 0 to 4095 reading spanning 0 to 9.615 V) comes from the community protocol documentation
-and is not verified.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="currentMilliamps()">
-<h3>currentMilliamps</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">currentMilliamps</span>()</div>
-<div class="block">The current the Technic Hub draws, in milliamps (all motors and the hub together), or <code>-1</code> if
-the hub has not answered; subscribed on the first call like <a href="#batteryMillivolts()"><code>batteryMillivolts()</code></a>. Its scale (a
-raw 0 to 4095 reading spanning 0 to 4175 mA) is likewise unverified.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="PoweredUpBattery.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></span>&nbsp;<span class="element-name">getBattery</span>()</div>
+<div class="block">The Technic Hub's battery: its charge level, supply voltage and supply current. The same object is returned on
+every call.</div>
 </div>
 </section>
 </li>

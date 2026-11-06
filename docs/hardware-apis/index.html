@@ -94,6 +94,7 @@
         <a class="" href="/juno/boards">Overview</a>
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
@@ -318,19 +319,60 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Hardware APIs</h1>
 </header>
     <div class="content-prose">
-<ul>
-<li><strong><a href="../delay">Delay</a>:</strong> pausing a program for a fixed time with <code>Delay.millis</code>, <code>Delay.micros</code> and <code>Delay.seconds</code>.</li>
-<li><strong><a href="../serial">Serial</a>:</strong> printing and reading over USB serial, the main way to see what a program is doing on a board.</li>
-<li><strong><a href="../gpio">Gpio</a>:</strong> driving and reading the board's pins, with <code>DigitalOutput</code> and the Blink example.</li>
-<li><strong><a href="../arduino-uno-r3-wifi#read-the-onboard-imu">IMU</a>:</strong> reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with <code>ArduinoUno.getGyroscope()</code> and <code>ArduinoUno.getAccelerometer()</code>, over the <code>Spi</code> bus from <code>ArduinoUno.getSpi()</code>; see the UNO WiFi Rev2 page.</li>
-<li><strong><a href="../sdcard">SD Card</a>:</strong> loading configuration and credentials from a microSD card at boot, and reading and writing files.</li>
-<li><strong><a href="../wifi">Wifi</a>:</strong> joining a Wi-Fi network on the boards that have a radio, or on a UNO R3 with the Wi-Fi shield.</li>
-<li><strong><a href="../time">Time</a>:</strong> reading UTC with <code>LocalDateTime.now()</code> over SNTP, and measuring elapsed time with <code>Clock</code>.</li>
-<li><strong><a href="../httpclient">HTTP client</a>:</strong> HTTP and HTTPS requests (<code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> and <code>QUERY</code>) with caller-owned buffers, and reading JSON responses.</li>
-<li><strong><a href="../httpserver">HTTP server</a>:</strong> serving HTTP and HTTPS requests from a program, with routing by path and a certificate on the SD card.</li>
-<li><strong><a href="../email">Email</a>:</strong> sending mail over SMTP with <code>Smtp</code>, and reading a mailbox over POP3 with <code>Pop3Client</code>.</li>
-<li><strong><a href="../mvc">MVC</a>:</strong> organizing a multi-screen app with a model, views, a navigator and a router from <code>util.mvc</code>.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>What it provides</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../delay">Delay</a></td>
+<td>Pausing a program for a fixed time with <code>Delay.millis</code>, <code>Delay.micros</code> and <code>Delay.seconds</code>.</td>
+</tr>
+<tr>
+<td><a href="../serial">Serial</a></td>
+<td>Printing and reading over USB serial, the main way to see what a program is doing on a board.</td>
+</tr>
+<tr>
+<td><a href="../gpio">Gpio</a></td>
+<td>Driving and reading the board's pins, with <code>DigitalOutput</code> and the Blink example.</td>
+</tr>
+<tr>
+<td><a href="../arduino-uno-r3-wifi#read-the-onboard-imu">IMU</a></td>
+<td>Reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with <code>ArduinoUno.getGyroscope()</code> and <code>ArduinoUno.getAccelerometer()</code>, over the <code>Spi</code> bus from <code>ArduinoUno.getSpi()</code>; see the UNO WiFi Rev2 page.</td>
+</tr>
+<tr>
+<td><a href="../sdcard">SD Card</a></td>
+<td>Loading configuration and credentials from a microSD card at boot, and reading and writing files.</td>
+</tr>
+<tr>
+<td><a href="../wifi">Wifi</a></td>
+<td>Joining a Wi-Fi network on the boards that have a radio, or on a UNO R3 with the Wi-Fi shield.</td>
+</tr>
+<tr>
+<td><a href="../time">Time</a></td>
+<td>Reading UTC with <code>LocalDateTime.now()</code> over SNTP, and measuring elapsed time with <code>Clock</code>.</td>
+</tr>
+<tr>
+<td><a href="../httpclient">HTTP client</a></td>
+<td>HTTP and HTTPS requests (<code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>DELETE</code> and <code>QUERY</code>) with caller-owned buffers, and reading JSON responses.</td>
+</tr>
+<tr>
+<td><a href="../httpserver">HTTP server</a></td>
+<td>Serving HTTP and HTTPS requests from a program, with routing by path and a certificate on the SD card.</td>
+</tr>
+<tr>
+<td><a href="../email">Email</a></td>
+<td>Sending mail over SMTP with <code>Smtp</code>, and reading a mailbox over POP3 with <code>Pop3Client</code>.</td>
+</tr>
+<tr>
+<td><a href="../mvc">MVC</a></td>
+<td>Organizing a multi-screen app with a model, views, a navigator and a router from <code>util.mvc</code>.</td>
+</tr>
+</tbody>
+</table>
     </div>
   </section>
 </article>
