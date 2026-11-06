@@ -73,6 +73,9 @@ public final class NativeSdCard implements SdCard {
     public native int list(String directory, int index, byte[] name, int capacity);
 
     @Override
+    public native boolean writeBytes(String path, byte[] data, int length);
+
+    @Override
     public native boolean appendLine(String path, String line);
 
     @Override

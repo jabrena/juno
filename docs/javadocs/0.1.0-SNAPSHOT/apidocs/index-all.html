@@ -95,6 +95,10 @@ initTheme();
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#ADDRESS_DEFAULT" class="member-name-link">ADDRESS_DEFAULT</a> - Static variable in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">AiThinkerEsp32CamBoard</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
+<dd>
+<div class="block">Selects the AI Thinker ESP32-CAM as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#analogRead(int)" class="member-name-link">analogRead(int)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#analogRead(int)" class="member-name-link">analogRead(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
@@ -327,6 +331,10 @@ reported it.</div>
 <dd>
 <div class="block">Common baud rates exposed as named values by Juno's USB serial API.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
+<dd>
+<div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
 <div class="block">Initializes the SSD1315 and transfers the current framebuffer.</div>
@@ -379,6 +387,8 @@ calibration.</div>
 <dd>
 <div class="block">Starts the bus as a controller, at the default 100 kHz.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></dt>
@@ -502,6 +512,11 @@ directly (typically to serve a provisioning page through <a href="io/github/jabr
 streaming pixels with <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#pushPixel(int)"><code>TftTouchShield.pushPixel(int)</code></a>, row by row from the top-left — the fast way to draw
 a small custom bitmap.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#beginStream(int,java.lang.String)" class="member-name-link">beginStream(int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dd>
+<div class="block">Starts a response that has no fixed length and keeps the client connected until <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#endStream()"><code>HttpServer.endStream()</code></a>, for
+example <code>multipart/x-mixed-replace</code> video.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls(int, byte[], int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Starts listening for HTTPS on <code>port</code> (usually 443), presenting <code>certificate</code> and proving it with
@@ -611,6 +626,20 @@ none is held.</div>
 <div class="block">Replaces the touch calibration: the raw readings at portrait x = 0, x = 239, y = 0, and
 y = 319.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#camera()" class="member-name-link">camera()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></dt>
+<dd>
+<div class="block">The board's camera, the same object on every call.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a> - Interface in <a href="io/github/jabrena/juno/hardware/device/camera/package-summary.html">io.github.jabrena.juno.hardware.device.camera</a></dt>
+<dd>
+<div class="block">A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#capture(byte%5B%5D)" class="member-name-link">capture(byte[])</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
+<dd>
+<div class="block">Waits for the next frame and copies its JPEG bytes into <code>jpeg</code> from index 0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#capture(byte%5B%5D)" class="member-name-link">capture(byte[])</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html#captureCurrentHeading()" class="member-name-link">captureCurrentHeading()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></dt>
 <dd>
 <div class="block">Uses the current pose heading as the new target.</div>
@@ -1090,12 +1119,20 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 <div class="block">A motor with basic position feedback: open-loop power control from <a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> and the position reported by
 <a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#endStream()" class="member-name-link">endStream()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dd>
+<div class="block">Ends the open stream and closes the client connection.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/View.html#enter()" class="member-name-link">enter()</a> - Method in interface io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></dt>
 <dd>
 <div class="block">The display was cleared for this view: draw the parts that never change and forget what was drawn before.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#ENTER" class="member-name-link">ENTER</a> - Static variable in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a> - Class in <a href="io/github/jabrena/juno/hardware/package-summary.html">io.github.jabrena.juno.hardware</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's board features: GPIO, onboard Wi-Fi, its built-in microSD socket, and its OV2640 camera.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#exists(java.lang.String)" class="member-name-link">exists(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
 <div class="block">Returns whether <code>path</code> exists on the card.</div>
@@ -1448,6 +1485,10 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The brick's own View, Prgm and Run buttons; needs Juno's own RCX firmware.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getCamera()" class="member-name-link">getCamera()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's OV2640 camera, which delivers JPEG frames into a caller-owned buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#getChannelIndicatorOpcode()" class="member-name-link">getChannelIndicatorOpcode()</a> - Static method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
 <dd>
 <div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
@@ -1459,6 +1500,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
 <dd>
 <div class="block">The board's monotonic clock.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's millisecond and microsecond clock, the same object on every call.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/SensorModes.html#getCurrentMode()" class="member-name-link">getCurrentMode()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></dt>
 <dd>
@@ -1567,6 +1612,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getGpio()" class="member-name-link">getGpio()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
 <dd>
 <div class="block">The board's pins.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getGpio()" class="member-name-link">getGpio()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's GPIO pins.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getGroveA0()" class="member-name-link">getGroveA0()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
@@ -1778,6 +1827,10 @@ high values are bright.</div>
 <dd>
 <div class="block">The card in the shield's microSD socket; its <a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> selects it on D4.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getSdCard()" class="member-name-link">getSdCard()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The card in the AI Thinker ESP32-CAM's microSD socket.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getSdChipSelect()" class="member-name-link">getSdChipSelect()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The microSD slot's chip select, D4.</div>
@@ -1900,6 +1953,10 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html#getWifi()" class="member-name-link">getWifi()</a> - Method in class io.github.jabrena.juno.hardware.device.wifi.<a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" title="class in io.github.jabrena.juno.hardware.device.wifi">ArduinoWifiShield</a></dt>
 <dd>
 <div class="block">The shield's Wi-Fi radio.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getWifi()" class="member-name-link">getWifi()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's onboard Wi-Fi radio.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getWifi()" class="member-name-link">getWifi()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
 <dd>
@@ -2417,6 +2474,8 @@ the program's flash usage).</div>
 <dd>
 <div class="block">The board's audio output.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/package-summary.html">io.github.jabrena.juno.hardware.device.camera</a> - package io.github.jabrena.juno.hardware.device.camera</dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a> - package io.github.jabrena.juno.hardware.device.carrier</dt>
 <dd>
 <div class="block">Pin maps for passive carrier boards a Nano plugs into, currently
@@ -3160,6 +3219,11 @@ Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <dd>
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a>: each method is an intrinsic the compiler folds to a constant for the target board,
 so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's camera: <a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#begin()"><code>NativeCamera.begin()</code></a> and the native capture are intrinsics the compiler lowers to the
+core's <code>esp_camera</code> driver, so they have no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeClock.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeClock</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -4674,6 +4738,14 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">The stop button, and the sound button.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamBytes(byte%5B%5D,int)" class="member-name-link">streamBytes(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dd>
+<div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamText(java.lang.String)" class="member-name-link">streamText(String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dd>
+<div class="block">Writes <code>text</code> to the open stream.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#switchOff()" class="member-name-link">switchOff()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#switchOff()" class="member-name-link">switchOff()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
@@ -5078,6 +5150,13 @@ does not call it).</div>
 <dd>
 <div class="block">Transmits the low 8 bits of <code>value</code> as one framed byte.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#writeBytes(java.lang.String,byte%5B%5D,int)" class="member-name-link">writeBytes(String, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
+<dd>
+<div class="block">Creates or replaces <code>path</code> with the first <code>length</code> bytes of <code>data</code>, and returns whether the
+write succeeded.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#writeBytes(java.lang.String,byte%5B%5D,int)" class="member-name-link">writeBytes(String, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#writeMicros(int,int)" class="member-name-link">writeMicros(int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>
 <div class="block">Sends <code>channel</code> a pulse of <code>micros</code> microseconds every 20 ms, clamped to the frame.</div>

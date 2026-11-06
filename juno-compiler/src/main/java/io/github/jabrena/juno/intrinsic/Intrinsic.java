@@ -183,6 +183,13 @@ public enum Intrinsic {
     SD_REMOVE_FILE,
     SD_TOTAL_KIB,
     SD_FREE_KIB,
+    CAMERA_BEGIN,
+    CAMERA_CAPTURE,
+    HTTP_SERVER_BEGIN_STREAM,
+    HTTP_SERVER_STREAM_BYTES,
+    HTTP_SERVER_STREAM_TEXT,
+    HTTP_SERVER_END_STREAM,
+    SD_WRITE_BYTES,
     RAF_OPEN,
     RAF_READ,
     RAF_READ_BYTES,
@@ -540,11 +547,14 @@ public enum Intrinsic {
      */
     private static final Set<Intrinsic> SD_CARD_OPERATIONS = EnumSet.of(SD_BEGIN, SD_EXISTS, SD_CREATE_DIRECTORY, SD_SIZE,
             SD_OPEN, SD_OPEN_FILE, SD_LIST, SD_APPEND_LINE, SD_APPEND_TEXT, SD_APPEND_FILE_TEXT, SD_REMOVE,
-            SD_REMOVE_DIRECTORY, SD_REMOVE_FILE, SD_TOTAL_KIB, SD_FREE_KIB);
+            SD_REMOVE_DIRECTORY, SD_REMOVE_FILE, SD_TOTAL_KIB, SD_FREE_KIB, SD_WRITE_BYTES);
+
+    /** The camera calls behind {@code NativeCamera}: the one sensor is the only state, so they ignore their receiver. */
+    private static final Set<Intrinsic> CAMERA_OPERATIONS = EnumSet.of(CAMERA_BEGIN, CAMERA_CAPTURE);
 
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
-                || SD_CARD_OPERATIONS.contains(this);
+                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this);
     }
 }

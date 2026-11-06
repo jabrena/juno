@@ -100,17 +100,20 @@ final class ArduinoCli {
 
     /**
      * The port of the one connected board with {@code fqbn}, or {@code configuredPort} after checking such a board
-     * is really connected there. A board listed on several protocols, such as the Nano ESP32's DFU and serial ports,
-     * resolves to its only serial port: the monitor needs it, and the upload tool finds the board by itself.
+     * is really connected there. An explicitly selected serial port with no board identity is also accepted: boards
+     * such as the AI Thinker ESP32-CAM normally connect through a generic USB-UART adapter that Arduino CLI cannot
+     * identify by FQBN. A board listed on several protocols, such as the Nano ESP32's DFU and serial ports, resolves
+     * to its only serial port: the monitor needs it, and the upload tool finds the board by itself.
      */
     String resolvePort(String fqbn, Optional<String> configuredPort) {
         String requiredFqbn = requireText(fqbn, "FQBN");
-        List<DetectedPort> matchingPorts = boardList().stream()
+        List<DetectedPort> detectedPorts = boardList();
+        List<DetectedPort> matchingPorts = detectedPorts.stream()
                 .filter(port -> port.hosts(requiredFqbn))
                 .toList();
         List<String> matching = addresses(matchingPorts);
         return configuredPort.map(String::trim).filter(port -> !port.isBlank())
-                .map(requested -> requireConnected(requested, requiredFqbn, matching))
+                .map(requested -> requireConnected(requested, requiredFqbn, matching, detectedPorts))
                 .orElseGet(() -> onlyMatching(requiredFqbn, matching, serialAddresses(matchingPorts)));
     }
 
@@ -129,8 +132,17 @@ final class ArduinoCli {
         return boardListParser.parse(result.output());
     }
 
-    private String requireConnected(String requested, String fqbn, List<String> matching) {
-        if (!matching.contains(requested)) {
+    private String requireConnected(String requested, String fqbn, List<String> matching,
+                                   List<DetectedPort> detectedPorts) {
+        boolean knownMatchingBoard = detectedPorts.stream()
+                .anyMatch(port -> port.address().equals(requested) && port.hosts(fqbn));
+        boolean unknownSerialPort = detectedPorts.stream()
+                .anyMatch(port -> port.address().equals(requested) && port.protocol().equals("serial")
+                        && port.fqbns().isEmpty());
+        boolean knownDifferentBoard = detectedPorts.stream()
+                .anyMatch(port -> port.address().equals(requested) && !port.fqbns().isEmpty()
+                        && !port.hosts(fqbn));
+        if ((!knownMatchingBoard && !unknownSerialPort) || knownDifferentBoard) {
             throw new ArduinoCliException("Configured port '" + requested + "' is not a connected " + fqbn
                     + " board. Matching ports: " + (matching.isEmpty() ? "(none)" : String.join(", ", matching)));
         }

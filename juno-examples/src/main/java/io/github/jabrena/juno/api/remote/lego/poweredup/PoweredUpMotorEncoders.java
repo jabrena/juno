@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -13,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * both ports to {@link RemotePoweredUpHub#MODE_MOTOR_POSITION}, and prints the latest position in degrees and the
  * number of reports received for each port every half second. Turn the motors by hand to see the values change.
  */
-@Board({ArduinoNanoEsp32Board.class})
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class})
 public class PoweredUpMotorEncoders {
     private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
     private static final int PRINT_INTERVAL_MS = 500;

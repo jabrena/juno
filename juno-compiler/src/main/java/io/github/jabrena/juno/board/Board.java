@@ -66,6 +66,15 @@ public enum Board {
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
                     Capability.WATCHDOG, Capability.USB_HID)),
     /**
+     * AI Thinker ESP32-CAM: the original ESP32 with the OV2640 camera, GPIO33 status LED and GPIO4 flash LED. The
+     * Juno exposes its GPIO, serial, onboard Wi-Fi, Bluetooth LE for {@code RemotePoweredUpHub}, microSD socket and
+     * OV2640 camera as JPEG frames through {@code Esp32Cam.getCamera()}.
+     */
+    AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
+            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, UnoGeneration.NANO,
+            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+                    Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.HTTP_SERVER, Capability.HTTP_STREAM)),
+    /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial and HID, GPIO, SD storage, onboard Wi-Fi, plain HTTP and
      * HTTPS clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and
      * battery, and the ESP32 task watchdog behind {@code @Watchdog}.

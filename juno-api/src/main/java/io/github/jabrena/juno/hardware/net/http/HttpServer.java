@@ -85,6 +85,26 @@ public final class HttpServer {
     /** Replies with {@code body} (a literal or a runtime {@code String}), then closes the connection. */
     public static native void respond(int status, String contentType, String body);
 
+    /**
+     * Starts a response that has no fixed length and keeps the client connected until {@link #endStream()}, for
+     * example {@code multipart/x-mixed-replace} video. Send the headers with this call, then write parts with
+     * {@link #streamBytes(byte[], int)} and {@link #streamText(String)}. Served one client at a time, from the same
+     * {@link #accept} loop. ESP32 boards with the camera capability only (AI Thinker ESP32-CAM).
+     */
+    public static native void beginStream(int status, String contentType);
+
+    /**
+     * Writes the first {@code length} bytes of {@code data} to the open stream. Returns {@code false} once the client
+     * has disconnected, so the program can stop producing parts.
+     */
+    public static native boolean streamBytes(byte[] data, int length);
+
+    /** Writes {@code text} to the open stream. Returns {@code false} once the client has disconnected. */
+    public static native boolean streamText(String text);
+
+    /** Ends the open stream and closes the client connection. */
+    public static native void endStream();
+
     /** Replies with {@code body}'s current contents (built at runtime), then closes the connection. */
     public static native void respond(int status, String contentType, StringBuilder body);
 }

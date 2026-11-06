@@ -111,6 +111,15 @@ public final class EmulatedSdCard implements SdCard {
     }
 
     @Override
+    public boolean writeBytes(String path, byte[] data, int length) {
+        if (!present) {
+            return false;
+        }
+        files.put(path, new String(data, 0, length, StandardCharsets.ISO_8859_1));
+        return true;
+    }
+
+    @Override
     public boolean appendLine(String path, String line) {
         return appendText(path, line + "\n");
     }

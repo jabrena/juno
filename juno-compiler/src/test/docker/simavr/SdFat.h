@@ -66,6 +66,14 @@ public:
     return length;
   }
   size_t println(const char* text) { return print(text) + print("\n"); }
+  size_t write(const uint8_t* buffer, size_t count) {
+    if (file_ == nullptr || buffer == nullptr) return 0;
+    size_t room = sizeof(file_->data) - file_->size;
+    size_t copied = count < room ? count : room;
+    memcpy(file_->data + file_->size, buffer, copied);
+    file_->size += copied;
+    return copied;
+  }
   void close() { file_ = nullptr; }
   bool isDir() const { return false; }
   bool rmdir() { return false; }

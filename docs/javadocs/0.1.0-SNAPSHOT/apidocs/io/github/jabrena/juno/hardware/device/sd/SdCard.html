@@ -81,6 +81,7 @@ initTheme();
 <li><a href="#open(java.lang.String,java.lang.String)" tabindex="0">open(String, String)</a></li>
 <li><a href="#list(java.lang.String,int,byte%5B%5D,int)" tabindex="0">list(String, int, byte[], int)</a></li>
 <li><a href="#appendLine(java.lang.String,java.lang.String)" tabindex="0">appendLine(String, String)</a></li>
+<li><a href="#writeBytes(java.lang.String,byte%5B%5D,int)" tabindex="0">writeBytes(String, byte[], int)</a></li>
 <li><a href="#appendText(java.lang.String,java.lang.String)" tabindex="0">appendText(String, String)</a></li>
 <li><a href="#appendText(java.lang.String,java.lang.String,java.lang.String)" tabindex="0">appendText(String, String, String)</a></li>
 <li><a href="#remove(java.lang.String)" tabindex="0">remove(String)</a></li>
@@ -253,6 +254,14 @@ was detected successfully.</div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">The card volume's total capacity in KiB, or <code>-1</code> before a successful <a href="#begin()"><code>begin()</code></a>.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#writeBytes(java.lang.String,byte%5B%5D,int)" class="member-name-link">writeBytes</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
+ byte[]&nbsp;data,
+ int&nbsp;length)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Creates or replaces <code>path</code> with the first <code>length</code> bytes of <code>data</code>, and returns whether the
+write succeeded.</div>
+</div>
 </div>
 </div>
 </div>
@@ -359,6 +368,18 @@ the buffer is too small.</div>
 <div class="block">Appends <code>line</code> plus a newline to <code>path</code>, creating the file first if it does not
 exist yet. Unlike <code>open()</code>, <code>line</code> may be a runtime string. Returns whether the
 write succeeded.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="writeBytes(java.lang.String,byte[],int)">
+<h3>writeBytes</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">writeBytes</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
+ byte[]&nbsp;data,
+ int&nbsp;length)</span></div>
+<div class="block">Creates or replaces <code>path</code> with the first <code>length</code> bytes of <code>data</code>, and returns whether the
+write succeeded. Use it for binary files such as JPEG frames; <code>path</code> is a compile-time string literal.</div>
 </div>
 </section>
 </li>

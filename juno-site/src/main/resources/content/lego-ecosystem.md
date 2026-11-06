@@ -98,6 +98,8 @@ Power Functions protocol through an HX-53 emitter on a GPIO pin or a Grove infra
 have been tested with Power Functions motors; Juno also exposes the outputs as `PFMotor` instances implementing the
 board-independent `DCMotor` contract.
 
+<img src="../images/lego/lego-power-functions.jpg" alt="LEGO Power Functions IR Receiver 8884" width="280">
+
 With a Grove Base Shield, connect the clear Grove infrared emitter to D3 and point it at the receiver. Create the link
 once at startup, then bind motors to the receiver channel and output:
 

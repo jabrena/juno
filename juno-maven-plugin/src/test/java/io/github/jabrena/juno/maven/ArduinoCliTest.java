@@ -199,6 +199,21 @@ class ArduinoCliTest {
         }
 
         @Test
+        @DisplayName("Accepts an explicitly selected serial port whose board identity is unknown")
+        void shouldAcceptAConfiguredUnknownSerialPort() {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, boardList(
+                    detectedUnknownSerial("COM3"), detected("COM4", Board.UNO_R3.fqbn())));
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { });
+
+            // When
+            String port = cli.resolvePort(Board.AI_THINKER_ESP32_CAM.fqbn(), Optional.of("COM3"));
+
+            // Then
+            assertThat(port).isEqualTo("COM3");
+        }
+
+        @Test
         @DisplayName("Rejects a configured port that belongs to a different board")
         void shouldRejectAConfiguredPortForADifferentBoard() {
             // Given
@@ -319,6 +334,10 @@ class ArduinoCliTest {
     private static String detectedUsbSerial(String address, String vendorId) {
         return "{\"port\":{\"address\":\"" + address + "\",\"protocol\":\"serial\","
                 + "\"properties\":{\"vid\":\"" + vendorId + "\"}}}";
+    }
+
+    private static String detectedUnknownSerial(String address) {
+        return "{\"port\":{\"address\":\"" + address + "\",\"protocol\":\"serial\"}}";
     }
 
     private static Command captured(List<String> arguments) {

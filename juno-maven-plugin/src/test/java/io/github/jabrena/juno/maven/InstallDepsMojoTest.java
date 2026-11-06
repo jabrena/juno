@@ -30,7 +30,7 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
         FakeExecutor executor = new FakeExecutor();
-        for (int step = 0; step < 9; step++) {
+        for (int step = 0; step < 10; step++) {
             executor.respond(0, "installed");
         }
         mojo.useExecutor(executor);
@@ -39,17 +39,20 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         mojo.execute();
 
         // Then
-        assertThat(executor.invocations()).hasSize(9);
+        assertThat(executor.invocations()).hasSize(10);
         assertThat(executor.invocations().get(0).arguments())
                 .containsExactly("arduino-cli", "core", "install", "arduino:renesas_uno");
         assertThat(executor.invocations().get(1).arguments())
+                .containsExactly("arduino-cli", "core", "install", "esp32:esp32", "--additional-urls",
+                        "https://espressif.github.io/arduino-esp32/package_esp32_index.json");
+        assertThat(executor.invocations().get(2).arguments())
                 .containsExactly("arduino-cli", "core", "install", "m5stack:esp32", "--additional-urls",
                         "https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json");
-        assertThat(executor.invocations().subList(2, 9))
+        assertThat(executor.invocations().subList(3, 10))
                 .extracting(command -> command.arguments().get(3))
                 .containsExactly("Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1",
                         "M5GFX@0.2.31");
-        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (9 steps)"));
+        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (10 steps)"));
         assertThat(log.infos()).anyMatch(line -> line.contains("installation completed in"));
     }
 

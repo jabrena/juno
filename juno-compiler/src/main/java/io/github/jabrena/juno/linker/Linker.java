@@ -73,6 +73,8 @@ public final class Linker {
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoNano", "getWifi",
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
+            new MethodRef("io/github/jabrena/juno/hardware/Esp32Cam", "getWifi",
+                    "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getAccelerometer",
                     "()Lio/github/jabrena/juno/robotics/Accelerometer;"), Capability.ONBOARD_IMU,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getGyroscope",
@@ -384,6 +386,9 @@ public final class Linker {
                 Intrinsic.HTTP_SERVER_HEADER,
                 Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
         require(required, Capability.HTTPS_SERVER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
+        require(required, Capability.CAMERA, Intrinsic.CAMERA_BEGIN, Intrinsic.CAMERA_CAPTURE);
+        require(required, Capability.HTTP_STREAM, Intrinsic.HTTP_SERVER_BEGIN_STREAM,
+                Intrinsic.HTTP_SERVER_STREAM_BYTES, Intrinsic.HTTP_SERVER_STREAM_TEXT, Intrinsic.HTTP_SERVER_END_STREAM);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
                 Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR, Intrinsic.LEGO_HUB_HOLD_MOTOR,
                 Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,

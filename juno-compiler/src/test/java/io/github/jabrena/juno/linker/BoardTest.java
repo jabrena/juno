@@ -3,6 +3,8 @@ package io.github.jabrena.juno.linker;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
+import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
+import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.board.Capability;
@@ -75,6 +77,13 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true),
                 arguments(Board.NANO_ESP32, Capability.USB_HID, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.BIG_NUMBERS, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.BLUETOOTH_LE, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.CAMERA, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_STREAM, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_SERVER, true),
+                arguments(Board.NANO_ESP32, Capability.HTTP_STREAM, false),
+                arguments(Board.NANO_ESP32, Capability.CAMERA, false),
                 arguments(Board.M5_CARDPUTER, Capability.BIG_NUMBERS, true),
                 arguments(Board.M5_CARDPUTER, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.M5_CARDPUTER, Capability.USB_HID, true),
@@ -126,6 +135,23 @@ class BoardTest {
         assertThatThrownBy(() -> Board.fromId("arduino-one-q"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("arduino-one-q");
+    }
+
+    @Test
+    @DisplayName("The AI Thinker ESP32-CAM resolves to its Espressif target")
+    void shouldResolveAiThinkerEsp32CamTarget() {
+        // Given
+        Board board = Board.fromId("AI-THINKER-ESP32-CAM");
+
+        // When & Then
+        assertThat(board).isEqualTo(Board.AI_THINKER_ESP32_CAM);
+        assertThat(board.annotationArgument()).isEqualTo("AiThinkerEsp32CamBoard.class");
+        assertThat(board.fqbn()).isEqualTo("esp32:esp32:esp32cam");
+        assertThat(board.core()).isEqualTo(ArduinoCore.ESP32_CAM);
+        assertThat(board.core().architecture()).isEqualTo(Architecture.XTENSA);
+        assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(33);
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard"))
+                .isEqualTo(board);
     }
 
     @Test
@@ -618,7 +644,8 @@ class BoardTest {
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
                         && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
-                        && capability != Capability.ONBOARD_IMU)
+                        && capability != Capability.ONBOARD_IMU && capability != Capability.CAMERA
+                        && capability != Capability.HTTP_STREAM)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

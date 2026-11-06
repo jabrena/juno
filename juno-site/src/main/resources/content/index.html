@@ -105,6 +105,7 @@ public class Blink {
       <div class="juno-boards-track">
         <div class="juno-boards-set">
           <a class="juno-board" href="arduino-nano-esp32"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="ai-thinker-esp32-cam"><img src="{site.image('boards/ai-thinker-esp32-cam.jpg')}" alt="AI Thinker ESP32-CAM" loading="lazy"><span>ESP32-CAM</span><small>ESP32 &middot; Xtensa</small></a>
           <a class="juno-board" href="m5stack-cardputer"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
           <a class="juno-board" href="arduino-uno-q"><img src="{site.image('boards/arduino-uno-q.png')}" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-uno-r4-wifi"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="Arduino UNO R4 WiFi" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
@@ -113,6 +114,7 @@ public class Blink {
         </div>
         <div class="juno-boards-set" aria-hidden="true">
           <a class="juno-board" href="arduino-nano-esp32" tabindex="-1"><img src="{site.image('boards/arduino-nano-esp32.png')}" alt="" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
+          <a class="juno-board" href="ai-thinker-esp32-cam" tabindex="-1"><img src="{site.image('boards/ai-thinker-esp32-cam.jpg')}" alt="" loading="lazy"><span>ESP32-CAM</span><small>ESP32 &middot; Xtensa</small></a>
           <a class="juno-board" href="m5stack-cardputer" tabindex="-1"><img src="{site.image('boards/m5stack-cardputer.png')}" alt="" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
           <a class="juno-board" href="arduino-uno-q" tabindex="-1"><img src="{site.image('boards/arduino-uno-q.png')}" alt="" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-uno-r4-wifi" tabindex="-1"><img src="{site.image('boards/arduino-uno-r4-wifi.png')}" alt="" loading="lazy"><span>UNO R4 WiFi</span><small>Renesas RA4M1 &middot; Thumb-2</small></a>
@@ -196,11 +198,11 @@ public class Blink {
         <p>Exactly which parts of the Java language and libraries Juno supports today.</p>
         <span>Read more <i class="fa-solid fa-arrow-right"></i></span>
       </a>
-      <a class="juno-card" href="https://github.com/jabrena/juno" target="_blank" rel="noopener">
-        <i class="fa-brands fa-github"></i>
-        <h3>Juno on GitHub</h3>
-        <p>Browse the compiler, the examples and the Maven plugin, or open an issue.</p>
-        <span>Open the repository <i class="fa-solid fa-arrow-right"></i></span>
+      <a class="juno-card" href="boards">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <h3>Diversity of boards</h3>
+        <p>Juno supports multiple boards: 8-bit AVR, Cortex-M and Xtensa ESP32 targets, from the UNO R3 to the ESP32-CAM. One Java program, many boards.</p>
+        <span>Compare the boards <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="memory-model#concurrency-by-board">
         <i class="fa-solid fa-microchip"></i>
@@ -225,10 +227,12 @@ public class Blink {
 </section>
 
 <script>{|
-// Shuffle each carousel once per page load. Both copies of the set get the same permutation,
-// so the seamless loop still lines up.
+// Shuffle the shields, sensors and LEGO carousel once per page load. Both copies of the set get the same
+// permutation, so the seamless loop still lines up. Only on desktop, where the carousel runs. The boards
+// carousel keeps its authored order (most capable board first), on every screen size.
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('.juno-boards-track, .juno-eco-track').forEach(function (track) {
+  if (!window.matchMedia('(min-width: 768px)').matches) { return; }
+  document.querySelectorAll('.juno-eco-track').forEach(function (track) {
     var sets = Array.prototype.slice.call(track.children);
     var count = sets[0].children.length;
     var order = [];

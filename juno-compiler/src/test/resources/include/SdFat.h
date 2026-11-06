@@ -24,6 +24,7 @@ public:
   size_t size() { return 0; }
   void println(const char*) {}
   void print(const char*) {}
+  size_t write(const uint8_t*, size_t count) { return count; }
   void close() {}
   bool isDir() const { return true; }
   bool rmdir() { return true; }
