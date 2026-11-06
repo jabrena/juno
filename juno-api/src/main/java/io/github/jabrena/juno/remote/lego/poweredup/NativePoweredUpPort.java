@@ -5,7 +5,7 @@ package io.github.jabrena.juno.remote.lego.poweredup;
  * call, so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock {@link PoweredUpPort} instead.
  */
 final class NativePoweredUpPort implements PoweredUpPort {
-    /** The only instance, shared by every {@code new RemotePoweredUpHub()}. */
+    /** The only instance, shared by every hub built on {@link NativeBluetoothLe}. */
     static final NativePoweredUpPort INSTANCE = new NativePoweredUpPort();
 
     private NativePoweredUpPort() {

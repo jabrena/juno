@@ -131,7 +131,7 @@ public enum Capability {
                     + "for a fixed body";
         }
     },
-    BLUETOOTH_LE("RemotePoweredUpHub") {
+    BLUETOOTH_LE("ArduinoUno.getBluetoothLe") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";

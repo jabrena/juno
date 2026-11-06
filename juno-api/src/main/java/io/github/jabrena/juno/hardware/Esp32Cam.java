@@ -3,11 +3,13 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeCamera;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
+import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.time.Clock;
 import org.jspecify.annotations.Nullable;
@@ -54,5 +56,10 @@ public final class Esp32Cam {
             sdCard = card;
         }
         return card;
+    }
+
+    /** The AI Thinker ESP32-CAM's Bluetooth LE radio. */
+    public static BluetoothLe getBluetoothLe() {
+        return NativeBluetoothLe.bluetoothLe();
     }
 }

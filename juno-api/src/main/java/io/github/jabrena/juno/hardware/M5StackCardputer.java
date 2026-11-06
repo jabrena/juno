@@ -6,12 +6,14 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
+import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
+import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.power.Battery;
 import org.jspecify.annotations.Nullable;
@@ -70,5 +72,10 @@ public final class M5StackCardputer {
     /** The Cardputer's built-in battery. Its charge level is estimated; voltage is reported in millivolts. */
     public static Battery getBattery() {
         return NativeBattery.battery();
+    }
+
+    /** The M5Stack Cardputer's Bluetooth LE radio. */
+    public static BluetoothLe getBluetoothLe() {
+        return NativeBluetoothLe.bluetoothLe();
     }
 }

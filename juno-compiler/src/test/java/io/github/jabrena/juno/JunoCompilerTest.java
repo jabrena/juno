@@ -3797,13 +3797,14 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                     import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
                     import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                     @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class Train {
                         public static void main(String[] args) {
-                            RemotePoweredUpHub hub = new RemotePoweredUpHub();
+                            RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
                             if (hub.connect(10000) && hub.hubType() == RemotePoweredUpHub.TYPE_CITY_HUB) {
                                 hub.setLedColor(HubColor.GREEN);
                                 hub.getMotor(HubPort.A).drive(-50);

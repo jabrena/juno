@@ -3,6 +3,7 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeBoardMemory;
 import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
@@ -10,6 +11,7 @@ import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
+import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.time.Clock;
 
@@ -59,5 +61,10 @@ public final class ArduinoNano {
     /** Juno's arena usage and the program's flash footprint on the Nano ESP32. */
     public static BoardMemory getBoardMemory() {
         return NativeBoardMemory.boardMemory();
+    }
+
+    /** The Nano ESP32's Bluetooth LE radio. */
+    public static BluetoothLe getBluetoothLe() {
+        return NativeBluetoothLe.bluetoothLe();
     }
 }
