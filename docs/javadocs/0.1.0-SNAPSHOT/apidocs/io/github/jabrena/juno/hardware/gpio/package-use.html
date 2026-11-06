@@ -97,23 +97,27 @@ the program's flash usage).</div>
 4-bit mode plus 5 buttons read from a single resistor-ladder analog pin, wired for the shield's
 standard pinout.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.motor">io.github.jabrena.juno.hardware.device.motor</a></div>
 <div class="col-last even-row-color">
+<div class="block">DC-motor controller adapters.</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Drivers for TFT display shields, currently
 <a href="../device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="../device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.gpio">io.github.jabrena.juno.hardware.gpio</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.gpio">io.github.jabrena.juno.hardware.gpio</a></div>
+<div class="col-last even-row-color">
 <div class="block">General-purpose digital/analog I/O: <a href="Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a>, the raw
 pin-number operations (<code>pinMode</code>/<code>digitalWrite</code>/<code>digitalRead</code>/<code>
 analogRead</code>/<code>analogWrite</code>/<code>toggle</code>), and <a href="DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>DigitalOutput</code></a>, a zero-cost handle bound to one output pin
 (<code>high</code>/<code>low</code>/<code>toggle</code>/<code>isHigh</code>) for callers that prefer an
 object-shaped API over passing a pin number to every call.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
@@ -165,6 +169,19 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/Gpio.html#io.github.jabrena.juno.hardware.device.lcd">Gpio</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board's GPIO pins.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.motor">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.gpio</a> used by <a href="../device/motor/package-summary.html">io.github.jabrena.juno.hardware.device.motor</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/Gpio.html#io.github.jabrena.juno.hardware.device.motor">Gpio</a></div>
 <div class="col-last even-row-color">
 <div class="block">The board's GPIO pins.</div>
 </div>

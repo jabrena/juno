@@ -176,6 +176,13 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="block">A sensor on <code>signalPin</code> of <code>gpio</code> and <code>clock</code>: the form that works as a
 <a href="../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
 </div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
+ int&nbsp;signalPin)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
+</div>
 </div>
 </section>
 </li>
@@ -188,10 +195,16 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/imu/Lsm6ds3.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">Lsm6ds3</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
- <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi,
+<div class="col-second even-row-color"><code><a href="../../device/imu/Bmi088.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">Bmi088</a><wbr>(<a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;i2c,
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
+<div class="block">The Grove module on <code>i2c</code>; collaborators may be mocks in a unit test.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/imu/Lsm6ds3.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">Lsm6ds3</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">The IMU on the board's own pins, bus and clock.</div>
 </div>
 </div>
