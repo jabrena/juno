@@ -2,6 +2,7 @@ package io.github.jabrena.juno.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.robotics.LightDetector;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -14,13 +15,23 @@ import static org.mockito.Mockito.when;
 @DisplayName("Grove Light Sensor v1.2 as a LightDetector")
 class GroveLightV12Test {
     private final Gpio pins = mock(Gpio.class);
+    private int analogA0;
+    private int analogA2;
+
+    @BeforeEach
+    void resolveAnalogPins() {
+        when(pins.analogPin("A0")).thenReturn(14);
+        when(pins.analogPin("A2")).thenReturn(16);
+        analogA0 = pins.analogPin("A0");
+        analogA2 = pins.analogPin("A2");
+    }
 
     @Test
     @DisplayName("Normalizes the ADC sample of its own socket against the 10-bit full scale")
     void shouldNormalizeTheSampleOfItsSocket() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(1023, 0);
-        LightDetector light = new GroveLightV12(pins, Gpio.getA2(), GroveLightV12.ADC_10_BIT);
+        when(pins.analogRead(analogA2)).thenReturn(1023, 0);
+        LightDetector light = new GroveLightV12(pins, analogA2, GroveLightV12.ADC_10_BIT);
 
         // When
         float bright = light.getNormalizedLightValue();
@@ -35,8 +46,8 @@ class GroveLightV12Test {
     @DisplayName("Reports the light value as a percentage of the full scale")
     void shouldReportThePercentageOfTheFullScale() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(512);
-        LightDetector light = new GroveLightV12(pins, Gpio.getA2(), GroveLightV12.ADC_10_BIT);
+        when(pins.analogRead(analogA2)).thenReturn(512);
+        LightDetector light = new GroveLightV12(pins, analogA2, GroveLightV12.ADC_10_BIT);
 
         // When
         float percent = light.getLightValue();
@@ -49,8 +60,8 @@ class GroveLightV12Test {
     @DisplayName("Scales a 12-bit ADC sample against the 12-bit full scale")
     void shouldScaleATwelveBitSample() {
         // Given
-        when(pins.analogRead(Gpio.getA0())).thenReturn(4095);
-        LightDetector light = new GroveLightV12(pins, Gpio.getA0(), GroveLightV12.ADC_12_BIT);
+        when(pins.analogRead(analogA0)).thenReturn(4095);
+        LightDetector light = new GroveLightV12(pins, analogA0, GroveLightV12.ADC_12_BIT);
 
         // When
         float percent = light.getLightValue();
@@ -63,8 +74,8 @@ class GroveLightV12Test {
     @DisplayName("Clamps a sample above the declared full scale to the high value")
     void shouldClampASampleAboveTheFullScale() {
         // Given
-        when(pins.analogRead(Gpio.getA0())).thenReturn(4095);
-        LightDetector light = new GroveLightV12(pins, Gpio.getA0(), GroveLightV12.ADC_10_BIT);
+        when(pins.analogRead(analogA0)).thenReturn(4095);
+        LightDetector light = new GroveLightV12(pins, analogA0, GroveLightV12.ADC_10_BIT);
 
         // When
         float normalized = light.getNormalizedLightValue();
@@ -77,7 +88,7 @@ class GroveLightV12Test {
     @DisplayName("Rejects a non-positive ADC full scale")
     void shouldRejectANonPositiveFullScale() {
         // When / Then
-        assertThatThrownBy(() -> new GroveLightV12(pins, Gpio.getA0(), 0))
+        assertThatThrownBy(() -> new GroveLightV12(pins, analogA0, 0))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -85,8 +96,8 @@ class GroveLightV12Test {
     @DisplayName("Fetches the normalized light value as a one-element sample")
     void shouldFetchTheNormalizedLightValueAsASample() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(512);
-        GroveLightV12 light = new GroveLightV12(pins, Gpio.getA2(), GroveLightV12.ADC_10_BIT);
+        when(pins.analogRead(analogA2)).thenReturn(512);
+        GroveLightV12 light = new GroveLightV12(pins, analogA2, GroveLightV12.ADC_10_BIT);
         float[] sample = new float[2];
 
         // When

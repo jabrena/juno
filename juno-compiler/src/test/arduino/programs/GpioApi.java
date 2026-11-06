@@ -12,13 +12,17 @@ public final class GpioApi {
     public static void main(String[] args) {
         Gpio gpio = ArduinoUno.getGpio();
         Clock clock = ArduinoUno.getClock();
-        gpio.pinMode(Gpio.getD7(), Gpio.getOutput());
-        gpio.pinMode(Gpio.getD2(), Gpio.getInputPullup());
-        gpio.digitalWrite(Gpio.getD7(), true);
-        gpio.analogWrite(Gpio.getD9(), gpio.analogRead(Gpio.getA0()) / 4);
+        int digitalOutput = gpio.digitalPin("D7");
+        int digitalInput = gpio.digitalPin("D2");
+        int pwmOutput = gpio.digitalPin("D9");
+        int analogInput = gpio.analogPin("A0");
+        gpio.pinMode(digitalOutput, gpio.getOutput());
+        gpio.pinMode(digitalInput, gpio.getInputPullup());
+        gpio.digitalWrite(digitalOutput, true);
+        gpio.analogWrite(pwmOutput, gpio.analogRead(analogInput) / 4);
         Random.seed(clock.micros());
         int start = clock.millis();
-        while (clock.millis() - start < 10 && !gpio.digitalRead(Gpio.getD2())) {
+        while (clock.millis() - start < 10 && !gpio.digitalRead(digitalInput)) {
             Delay.micros(Random.nextInt(1, 100));
         }
         Delay.millis(1);

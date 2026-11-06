@@ -58,38 +58,38 @@ import org.jspecify.annotations.Nullable;
  * @see <a href="https://docs.arduino.cc/tutorials/nano-connector-carrier/getting-started-nano-connector-carrier/">Getting started with the Nano Connector Carrier</a>
  */
 public final class NanoConnectorCarrier {
-    /**
-     * The microSD slot's chip select as shipped. A compile-time constant, so a card taken in another class's static
-     * initializer never reads it before this class's own initializer has run.
-     */
-    private static final int SD_CHIP_SELECT = 4;
-    /** The chip selects the carrier's solder jumpers can move the microSD slot to. */
-    private static final int SD_CHIP_SELECT_JUMPER_D2 = Gpio.getD2();
-    private static final int SD_CHIP_SELECT_JUMPER_D3 = Gpio.getD3();
-
-    /** The SPI bus behind the microSD slot. */
-    private static final int SPI_MOSI = Gpio.getD11();
-    private static final int SPI_MISO = Gpio.getD12();
-    private static final int SPI_SCK = Gpio.getD13();
-
-    /** The analog sockets' signal and second wires. */
-    private static final int A0 = Gpio.getA0();
-    private static final int A1 = Gpio.getA1();
-    private static final int A2 = Gpio.getA2();
-    private static final int A3 = Gpio.getA3();
-
-    /** The I2C socket's and the Qwiic connector's shared bus pins. */
-    private static final int I2C_SDA = Gpio.getA4();
-    private static final int I2C_SCL = Gpio.getA5();
-
-    /** The UART socket's receive and transmit pins. */
-    private static final int UART_RX = Gpio.getD0();
-    private static final int UART_TX = Gpio.getD1();
-
+    private final int sdChipSelect;
+    private final int sdChipSelectJumperD2;
+    private final int sdChipSelectJumperD3;
+    private final int spiMosi;
+    private final int spiMiso;
+    private final int spiSck;
+    private final int a0;
+    private final int a1;
+    private final int a2;
+    private final int a3;
+    private final int i2cSda;
+    private final int i2cScl;
+    private final int uartRx;
+    private final int uartTx;
     private @Nullable SdCard sdCard;
 
-    /** Creates the carrier handle. Create it once, at startup, and reuse it. */
-    public NanoConnectorCarrier() {
+    /** Creates the carrier handle for a board GPIO context. Create it once, at startup, and reuse it. */
+    public NanoConnectorCarrier(Gpio gpio) {
+        sdChipSelect = gpio.digitalPin("D4");
+        sdChipSelectJumperD2 = gpio.digitalPin("D2");
+        sdChipSelectJumperD3 = gpio.digitalPin("D3");
+        spiMosi = gpio.digitalPin("D11");
+        spiMiso = gpio.digitalPin("D12");
+        spiSck = gpio.digitalPin("D13");
+        a0 = gpio.analogPin("A0");
+        a1 = gpio.analogPin("A1");
+        a2 = gpio.analogPin("A2");
+        a3 = gpio.analogPin("A3");
+        i2cSda = gpio.analogPin("A4");
+        i2cScl = gpio.analogPin("A5");
+        uartRx = gpio.digitalPin("D0");
+        uartTx = gpio.digitalPin("D1");
     }
 
     /**
@@ -99,7 +99,7 @@ public final class NanoConnectorCarrier {
     public SdCard getSdCard() {
         SdCard card = sdCard;
         if (card == null) {
-            card = NativeSdCard.sdCard(SD_CHIP_SELECT);
+            card = NativeSdCard.sdCard(sdChipSelect);
             sdCard = card;
         }
         return card;
@@ -107,86 +107,86 @@ public final class NanoConnectorCarrier {
 
     /** The signal pin of a module in the Grove A0/A1 socket: A0. */
     public int getGroveA0() {
-        return A0;
+        return a0;
     }
 
     /** The signal pin of a module in the Grove A2/A3 socket: A2. */
     public int getGroveA2() {
-        return A2;
+        return a2;
     }
 
     /** The signal pin of a module in the Grove UART socket: RX, D0. */
     public int getGroveUart() {
-        return UART_RX;
+        return uartRx;
     }
 
     /** The microSD slot's chip select, D4. */
     public int getSdChipSelect() {
-        return SD_CHIP_SELECT;
+        return sdChipSelect;
     }
 
     /** The microSD slot's chip select once its solder jumper is moved to D2. */
     public int getSdChipSelectJumperD2() {
-        return SD_CHIP_SELECT_JUMPER_D2;
+        return sdChipSelectJumperD2;
     }
 
     /** The microSD slot's chip select once its solder jumper is moved to D3. */
     public int getSdChipSelectJumperD3() {
-        return SD_CHIP_SELECT_JUMPER_D3;
+        return sdChipSelectJumperD3;
     }
 
     /** The microSD slot's SPI MOSI pin, D11. */
     public int getSpiMosi() {
-        return SPI_MOSI;
+        return spiMosi;
     }
 
     /** The microSD slot's SPI MISO pin, D12. */
     public int getSpiMiso() {
-        return SPI_MISO;
+        return spiMiso;
     }
 
     /** The microSD slot's SPI clock, D13, which is also the Nano's built-in LED. */
     public int getSpiSck() {
-        return SPI_SCK;
+        return spiSck;
     }
 
     /** The Grove A0/A1 socket's signal (yellow) wire, A0; the same pin as {@link #getGroveA0()}. */
     public int getA0() {
-        return A0;
+        return a0;
     }
 
     /** The Grove A0/A1 socket's second (white) wire, A1. */
     public int getA1() {
-        return A1;
+        return a1;
     }
 
     /** The Grove A2/A3 socket's signal (yellow) wire, A2; the same pin as {@link #getGroveA2()}. */
     public int getA2() {
-        return A2;
+        return a2;
     }
 
     /** The Grove A2/A3 socket's second (white) wire, A3. */
     public int getA3() {
-        return A3;
+        return a3;
     }
 
     /** SDA, A4, shared by the Grove I2C socket and the Qwiic connector. */
     public int getI2cSda() {
-        return I2C_SDA;
+        return i2cSda;
     }
 
     /** SCL, A5, shared by the Grove I2C socket and the Qwiic connector. */
     public int getI2cScl() {
-        return I2C_SCL;
+        return i2cScl;
     }
 
     /** The Grove UART socket's RX, D0; the same pin as {@link #getGroveUart()}. */
     public int getUartRx() {
-        return UART_RX;
+        return uartRx;
     }
 
     /** The Grove UART socket's TX, D1. */
     public int getUartTx() {
-        return UART_TX;
+        return uartTx;
     }
 }

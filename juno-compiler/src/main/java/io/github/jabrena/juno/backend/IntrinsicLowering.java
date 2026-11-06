@@ -326,6 +326,16 @@ public final class IntrinsicLowering {
         shim(Intrinsic.GPIO_ANALOG_READ, coreRuntime.gpioFunction("analogRead"), Result.WORD, List.of(arg(0)));
         shim(Intrinsic.GPIO_ANALOG_WRITE, coreRuntime.gpioFunction("analogWrite"), Result.NONE,
                 List.of(arg(0), arg(1)));
+        shim(Intrinsic.GPIO_DIGITAL_PIN, "juno_gpio_digital_pin", Result.WORD,
+                parameters(List.of(0), 0), ShimFeature.GPIO_PIN_LOOKUP, ShimFeature.EXCEPTIONS);
+        shim(Intrinsic.GPIO_ANALOG_PIN, "juno_gpio_analog_pin", Result.WORD,
+                parameters(List.of(0), 0), ShimFeature.GPIO_PIN_LOOKUP, ShimFeature.EXCEPTIONS);
+        lowerings.put(Intrinsic.GPIO_INPUT_MODE, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.gpioInputMode(), value)));
+        lowerings.put(Intrinsic.GPIO_OUTPUT_MODE, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.gpioOutputMode(), value)));
+        lowerings.put(Intrinsic.GPIO_INPUT_PULLUP_MODE, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, coreRuntime.gpioInputPullupMode(), value)));
         shim(Intrinsic.CLOCK_MILLIS, "millis", Result.WORD, List.of());
         shim(Intrinsic.CLOCK_MICROS, "micros", Result.WORD, List.of());
         shim(Intrinsic.RANDOM_SEED, "juno_random_seed", Result.NONE, List.of(arg(0)), ShimFeature.RANDOM);

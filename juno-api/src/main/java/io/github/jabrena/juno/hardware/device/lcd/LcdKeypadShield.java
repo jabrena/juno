@@ -115,13 +115,13 @@ public final class LcdKeypadShield {
 
     /** Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on. */
     public void begin() {
-        gpio.pinMode(pinRs, Gpio.getOutput());
-        gpio.pinMode(pinEnable, Gpio.getOutput());
-        gpio.pinMode(pinD4, Gpio.getOutput());
-        gpio.pinMode(pinD5, Gpio.getOutput());
-        gpio.pinMode(pinD6, Gpio.getOutput());
-        gpio.pinMode(pinD7, Gpio.getOutput());
-        gpio.pinMode(pinButtons, Gpio.getInput());
+        gpio.pinMode(pinRs, gpio.getOutput());
+        gpio.pinMode(pinEnable, gpio.getOutput());
+        gpio.pinMode(pinD4, gpio.getOutput());
+        gpio.pinMode(pinD5, gpio.getOutput());
+        gpio.pinMode(pinD6, gpio.getOutput());
+        gpio.pinMode(pinD7, gpio.getOutput());
+        gpio.pinMode(pinButtons, gpio.getInput());
         gpio.digitalWrite(pinRs, false);
         gpio.digitalWrite(pinEnable, false);
         backlight(true);
@@ -173,9 +173,9 @@ public final class LcdKeypadShield {
     public void backlight(boolean on) {
         gpio.digitalWrite(pinBacklight, false);
         if (on) {
-            gpio.pinMode(pinBacklight, Gpio.getInput());
+            gpio.pinMode(pinBacklight, gpio.getInput());
         } else {
-            gpio.pinMode(pinBacklight, Gpio.getOutput());
+            gpio.pinMode(pinBacklight, gpio.getOutput());
         }
     }
 

@@ -386,7 +386,7 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoAnalog", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        Serial.println(ArduinoUno.getGpio().analogRead(Gpio.getA0()));
+                        Serial.println(ArduinoUno.getGpio().analogRead(14));
                 """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.gpio.Gpio;\n");
 
         // When & Then
@@ -707,7 +707,7 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoSd", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        SdCard sdCard = new NanoConnectorCarrier().getSdCard();
+                        SdCard sdCard = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
                         if (sdCard.begin()) {
                             InputStream file = sdCard.open("app.txt");
                             if (file != null) {
@@ -722,6 +722,7 @@ class XtensaAsmBackendTest {
                             }
                         }
                 """, SERIAL_IMPORTS + """
+                import io.github.jabrena.juno.hardware.ArduinoNano;
                 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import java.io.InputStream;

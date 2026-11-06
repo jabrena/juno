@@ -82,7 +82,7 @@ public final class Lsm6ds3 implements Accelerometer, Gyroscope, SampleProvider {
      * for the gyroscope to settle and measures its bias over about 2 s, so keep the board still while it runs.
      */
     public boolean begin() {
-        gpio.pinMode(CHIP_SELECT, Gpio.getOutput());
+        gpio.pinMode(CHIP_SELECT, gpio.getOutput());
         gpio.digitalWrite(CHIP_SELECT, true);
         spi.begin();
         writeRegister(CTRL3_C, CTRL3_C_SW_RESET);

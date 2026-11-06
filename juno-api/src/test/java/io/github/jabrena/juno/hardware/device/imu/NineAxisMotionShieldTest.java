@@ -30,12 +30,15 @@ class NineAxisMotionShieldTest {
     private Gpio pins;
     private I2c bus;
     private NineAxisMotionShield imu;
+    private int resetPin;
 
     @BeforeEach
     void startWithAnEmptyBus() {
         Wire.resetBoard();
         pins = mock(Gpio.class);
         bus = mock(I2c.class);
+        when(pins.digitalPin("D7")).thenReturn(7);
+        resetPin = pins.digitalPin("D7");
         // A register a test does not set answers -1, like a device that does not acknowledge.
         when(bus.readRegister(anyInt(), anyInt())).thenReturn(-1);
         when(bus.readRegister16(anyInt(), anyInt())).thenReturn(-1);
@@ -53,9 +56,9 @@ class NineAxisMotionShieldTest {
 
         // Then
         InOrder order = inOrder(pins);
-        order.verify(pins).pinMode(Gpio.getD7(), Gpio.getOutput());
-        order.verify(pins).digitalWrite(Gpio.getD7(), false);
-        order.verify(pins).digitalWrite(Gpio.getD7(), true);
+        order.verify(pins).pinMode(resetPin, pins.getOutput());
+        order.verify(pins).digitalWrite(resetPin, false);
+        order.verify(pins).digitalWrite(resetPin, true);
     }
 
     @Test

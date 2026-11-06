@@ -56,6 +56,18 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return PIN_REMAP_WRAPPERS.getOrDefault(arduinoFunction, arduinoFunction);
     }
 
+    @Override
+    public String gpioAdditionalDigitalPins() {
+        return core == ArduinoCore.M5STACK_ESP32
+                ? "1, 2, 10, 12, 14, 38, 39, 40, 41, 42, 43, 44, 46, -1"
+                : "-1";
+    }
+
+    @Override
+    public String gpioAdditionalAnalogPins() {
+        return core == ArduinoCore.M5STACK_ESP32 ? "1, 2, 10, -1" : "-1";
+    }
+
     /** {@code LED_BUILTIN} under the core's default "By Arduino pin" numbering. */
     @Override
     public int builtinLedPin() {

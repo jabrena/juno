@@ -34,6 +34,8 @@ public enum ShimFeature {
     I2C,
     /** {@code Spi}: full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled library. */
     SPI,
+    /** Runtime parsing and board-specific resolution of {@code Gpio.digitalPin}/{@code analogPin} names. */
+    GPIO_PIN_LOOKUP,
     WIFI,
     UDP,
     /** Caller-owned, single-connection TCP transport. */

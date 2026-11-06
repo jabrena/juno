@@ -22,6 +22,8 @@ public final class IntrinsicRegistry {
      * document can be passed directly to the WiFi driver.
      */
     private static final Set<IntrinsicParameter> RUNTIME_STRING_PARAMETERS = Set.of(
+            new IntrinsicParameter(Intrinsic.GPIO_DIGITAL_PIN, 0),
+            new IntrinsicParameter(Intrinsic.GPIO_ANALOG_PIN, 0),
             new IntrinsicParameter(Intrinsic.HTTP_SERVER_RESPOND, 2),
             new IntrinsicParameter(Intrinsic.WIFI_BEGIN, 0),
             new IntrinsicParameter(Intrinsic.WIFI_BEGIN, 1),
@@ -128,6 +130,16 @@ public final class IntrinsicRegistry {
                     Intrinsic.GPIO_TOGGLE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "getBuiltinLed", "()I"),
                     Intrinsic.GPIO_BUILTIN_LED),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "digitalPin",
+                    "(Ljava/lang/String;)I"), Intrinsic.GPIO_DIGITAL_PIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "analogPin",
+                    "(Ljava/lang/String;)I"), Intrinsic.GPIO_ANALOG_PIN),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "getInput", "()I"),
+                    Intrinsic.GPIO_INPUT_MODE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "getOutput", "()I"),
+                    Intrinsic.GPIO_OUTPUT_MODE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "getInputPullup", "()I"),
+                    Intrinsic.GPIO_INPUT_PULLUP_MODE),
             Map.entry(new MethodRef("io/github/jabrena/juno/util/Delay", "millis", "(I)V"),
                     Intrinsic.DELAY_MILLIS),
             Map.entry(new MethodRef("io/github/jabrena/juno/util/Delay", "micros", "(I)V"),

@@ -53,7 +53,7 @@ class JunoCompilerTest {
                     public final class Blink {
                         public static void main(String[] args) {
                             Gpio gpio = ArduinoUno.getGpio();
-                            gpio.pinMode(13, Gpio.getOutput());
+                            gpio.pinMode(13, ArduinoUno.getGpio().getOutput());
                             gpio.digitalWrite(13, true);
                         }
                     }
@@ -73,6 +73,38 @@ class JunoCompilerTest {
             assertThat(assembly).hasContent(result.assembly());
             assertThat(shim).hasContent(result.runtimeShim());
             assertThat(result.report().board().fqbn()).isEqualTo(Board.UNO_R4_WIFI.fqbn());
+        }
+
+        @Test
+        @DisplayName("Compiles symbolic GPIO lookup for the Cardputer")
+        void shouldCompileSymbolicGpioLookupForCardputer() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                    import io.github.jabrena.juno.hardware.M5StackCardputer;
+                    import io.github.jabrena.juno.hardware.gpio.Gpio;
+                    @io.github.jabrena.juno.annotations.Board(M5StackCardputerBoard.class)
+                    public final class CardputerGpio {
+                        public static void main(String[] args) {
+                            Gpio gpio = M5StackCardputer.getGpio();
+                            int digital = gpio.digitalPin("D2");
+                            int analog = gpio.analogPin("A0");
+                            gpio.pinMode(digital, gpio.getOutput());
+                            gpio.digitalWrite(digital, true);
+                            gpio.analogRead(analog);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerGpio", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerGpio");
+
+            // Then
+            assertThat(result.assembly()).contains("juno_gpio_digital_pin", "juno_gpio_analog_pin");
+            assertThat(result.runtimeShim()).contains("Invalid digital pin name", "Invalid analog pin name");
+            assertThat(result.report().board()).isEqualTo(Board.M5_CARDPUTER);
         }
 
         @Test
@@ -501,7 +533,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.gpio.Gpio;
                     public final class R3Blink {
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
                             ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
                             Delay.millis(500);
                         }
@@ -558,7 +590,7 @@ class JunoCompilerTest {
                             app.run();
                         }
                         private void run() {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                         }
                     }
                     """;
@@ -803,9 +835,9 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.gpio.Gpio;
                     public final class Bumper {
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(4, Gpio.getInputPullup());
+                            ArduinoUno.getGpio().pinMode(4, ArduinoUno.getGpio().getInputPullup());
                             if (!ArduinoUno.getGpio().digitalRead(4)) {
-                                ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                                ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                             }
                         }
                     }
@@ -1175,7 +1207,7 @@ class JunoCompilerTest {
                         }
                         public static int unused() { return 99; }
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                             ArduinoUno.getGpio().digitalWrite(13, addTo(4) == 6);
                         }
                     }
@@ -1190,7 +1222,7 @@ class JunoCompilerTest {
             assertThat(generated).contains(".global juno_Main_asm", "bl pinMode", "bl digitalWrite");
             assertThat(result.report().reachableMethods())
                     .as("main, addTo, Gpio.board and NativeGpio's board, initializers and constructor; unused is not")
-                    .isEqualTo(7);
+                    .isEqualTo(6);
         }
 
         @Test
@@ -1209,7 +1241,7 @@ class JunoCompilerTest {
                         }
                         public static int unused() { return 99; }
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                             ArduinoUno.getGpio().digitalWrite(13, addTo(4) == 6);
                         }
                     }
@@ -1224,15 +1256,16 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Erases DigitalOutput objects to pin numbers with no heap allocation")
+            @DisplayName("Erases DigitalOutput objects to pin numbers without allocating the handle")
         void shouldEraseDigitalOutputObjectsToPinNumbersWithNoHeapAllocation() throws Exception {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
                     public final class ObjectStyleApi {
                         public static void main(String[] args) {
-                            DigitalOutput led = DigitalOutput.of(13);
+                            DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio(), "D13");
                             led.high();
                             led.low();
                         }
@@ -1244,12 +1277,12 @@ class JunoCompilerTest {
             String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ObjectStyleApi").assembly();
 
             // Then
-            // DigitalOutput.of(13) erases to pinMode(13, OUTPUT) followed by keeping the pin number itself
+            // DigitalOutput.of(gpio, "D13") resolves the name and erases the DigitalOutput handle to a pin number;
             // (r1=1 selects OUTPUT); high()/low() erase to digitalWrite(pin, 1) / digitalWrite(pin, 0) --
-            // there is no heap allocation anywhere in this program.
-            assertThat(generated).contains("movs r1, #1\n    bl pinMode",
+            // the only allocation is the board's lazily-created NativeGpio instance.
+            assertThat(generated).contains("juno_gpio_digital_pin", "movs r1, #1\n    bl pinMode",
                     "movs r1, #1\n    bl digitalWrite", "movs r1, #0\n    bl digitalWrite");
-            assertThat(generated).doesNotContain("bl juno_alloc");
+            assertThat(generated).containsOnlyOnce("bl juno_alloc");
         }
     }
 
@@ -1296,7 +1329,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.gpio.Gpio;
                     public final class Plain {
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                         }
                     }
                     """;
@@ -1439,11 +1472,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
                     public final class GroveDht22Demo {
                         public static void main(String[] args) {
-                            GroveBaseShield shield = new GroveBaseShield();
+                            GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
                             int[] reading = new int[GroveDht22.READING_LENGTH];
                             int[] frame = new int[GroveDht22.FRAME_LENGTH];
                             new GroveDht22().read(shield.getD4(), reading, reading.length, frame, frame.length);
@@ -1473,7 +1507,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
                     public final class GroveSensorsDemo {
                         public static void main(String[] args) {
-                            GroveBaseShield shield = new GroveBaseShield();
+                            GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
                             GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
                             GroveAnalogGas gasSensor = new GroveAnalogGas(ArduinoUno.getGpio());
                             pir.begin(shield.getD3());
@@ -1509,7 +1543,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureV12;
                     public final class GroveSensorBatchDemo {
                         public static void main(String[] args) {
-                            GroveBaseShield shield = new GroveBaseShield();
+                            GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
                             int[] reading = new int[GroveDht11.READING_LENGTH];
                             int[] frame = new int[GroveDht11.FRAME_LENGTH];
                             boolean valid = new GroveDht11().read(shield.getD4(), reading, reading.length,
@@ -1550,7 +1584,7 @@ class JunoCompilerTest {
                     public final class GroveLightDetectorDemo {
                         public static void main(String[] args) {
                             LightDetector light = new GroveLightV12(ArduinoUno.getGpio(),
-                                    new GroveBaseShield().getA2(), GroveLightV12.ADC_10_BIT);
+                                    new GroveBaseShield(ArduinoUno.getGpio()).getA2(), GroveLightV12.ADC_10_BIT);
                             Serial.println((int) light.getLightValue());
                             Serial.println(light.getNormalizedLightValue() > light.getLow());
                         }
@@ -1583,11 +1617,11 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.time.Clock;
                     public final class GroveRoboticsDemo {
                         public static void main(String[] args) {
-                            GroveBaseShield shield = new GroveBaseShield();
+                            GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
                             Gpio gpio = ArduinoUno.getGpio();
                             Clock clock = ArduinoUno.getClock();
                             I2c i2c = ArduinoUno.getI2c();
-                            L298nMotor motor = new L298nMotor(gpio, Gpio.getD3(), Gpio.getD4(), Gpio.getD5());
+                            L298nMotor motor = new L298nMotor(gpio, 3, 4, 5);
                             motor.begin();
                             motor.setPower(50);
                             motor.forward();
@@ -3837,7 +3871,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.gpio.Gpio;
                     public final class PlainBle {
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                         }
                     }
                     """;
@@ -3878,7 +3912,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.gpio.Gpio;
                     public final class Plain {
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                         }
                     }
                     """;
@@ -3984,7 +4018,7 @@ class JunoCompilerTest {
                             return value;
                         }
                         public static void main(String[] args) {
-                            ArduinoUno.getGpio().pinMode(13, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(13, ArduinoUno.getGpio().getOutput());
                             Delay.millis(addTo(4));
                         }
                     }
@@ -4004,9 +4038,10 @@ class JunoCompilerTest {
             assertThat(result.report().entryPoint().displayName()).isEqualTo("demo.Reported.main([Ljava/lang/String;)V");
             assertThat(result.report().reachableMethods())
                     .as("main, addTo, Gpio.board and NativeGpio's board, initializers and constructor, before inlining")
-                    .isEqualTo(7);
+                    .isEqualTo(6);
             assertThat(result.report().irBlocks()).as("addTo's loop needs more than one block per method").isGreaterThan(2);
-            assertThat(result.report().intrinsics()).isEqualTo(Set.of(Intrinsic.GPIO_PIN_MODE, Intrinsic.DELAY_MILLIS));
+            assertThat(result.report().intrinsics()).isEqualTo(Set.of(Intrinsic.GPIO_PIN_MODE,
+                    Intrinsic.GPIO_OUTPUT_MODE, Intrinsic.DELAY_MILLIS));
             assertThat(result.report().runtimeRisks().arenaCapacityBytes()).isEqualTo(8192);
             assertThat(result.report().runtimeRisks().estimatedMaxStackBytes()).isPositive();
         }
@@ -4189,7 +4224,7 @@ class JunoCompilerTest {
                             pins[1] = 3;
                             pins[2] = 4;
                             int total = sum(pins, pins.length);
-                            ArduinoUno.getGpio().pinMode(total, Gpio.getOutput());
+                            ArduinoUno.getGpio().pinMode(total, ArduinoUno.getGpio().getOutput());
                         }
                     }
                     """;
@@ -5194,7 +5229,7 @@ class JunoCompilerTest {
                     public final class PortBlink {
                         private final Gpio gpio;
                         PortBlink(Gpio gpio) { this.gpio = gpio; }
-                        void light(int pin) { gpio.pinMode(pin, Gpio.getOutput()); gpio.digitalWrite(pin, true); }
+                        void light(int pin) { gpio.pinMode(pin, gpio.getOutput()); gpio.digitalWrite(pin, true); }
                         public static void main(String[] args) {
                             new PortBlink(ArduinoUno.getGpio()).light(13);
                         }
@@ -5214,7 +5249,7 @@ class JunoCompilerTest {
             assertThat(assembly).contains("bl pinMode", "bl digitalWrite").doesNotContain(".LinterfaceNext");
             // The interface calls are the intrinsics themselves, so light() is cheap enough to inline into main: only the
             // NativeGpio static initializer remains as a non-entry function.
-            assertThat(countOccurrences(assembly, ".type juno_fn")).isEqualTo(1);
+            assertThat(countOccurrences(assembly, ".type juno_fn")).isEqualTo(2);
         }
 
         @Test

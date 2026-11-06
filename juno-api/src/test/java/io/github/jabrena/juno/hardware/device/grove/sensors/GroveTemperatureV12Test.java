@@ -16,10 +16,13 @@ import static org.mockito.Mockito.when;
 class GroveTemperatureV12Test {
     private Gpio pins;
     private GroveTemperatureV12 sensor;
+    private int analogPin;
 
     @BeforeEach
     void wireTheThermistorToAMockedPin() {
         pins = mock(Gpio.class);
+        when(pins.analogPin("A0")).thenReturn(14);
+        analogPin = pins.analogPin("A0");
         sensor = new GroveTemperatureV12(pins);
     }
 
@@ -27,14 +30,14 @@ class GroveTemperatureV12Test {
     @DisplayName("Reads the thermistor's analog pin and converts it to degrees Celsius")
     void shouldReadTheAnalogPinAndConvertItToCelsius() {
         // Given
-        when(pins.analogRead(Gpio.getA0())).thenReturn(502);
+        when(pins.analogRead(analogPin)).thenReturn(502);
 
         // When
-        float celsius = sensor.celsius(Gpio.getA0());
+        float celsius = sensor.celsius(analogPin);
 
         // Then
         assertThat(celsius).isCloseTo(24.23f, within(0.02f));
-        verify(pins).analogRead(Gpio.getA0());
+        verify(pins).analogRead(analogPin);
     }
 
     @Test
@@ -71,8 +74,8 @@ class GroveTemperatureV12Test {
     @DisplayName("Reads the thermistor on its bound analog socket as a Thermometer and SampleProvider")
     void shouldReadTheThermistorOnItsBoundSocket() {
         // Given
-        when(pins.analogRead(Gpio.getA0())).thenReturn(502);
-        GroveTemperatureV12 bound = new GroveTemperatureV12(pins, Gpio.getA0());
+        when(pins.analogRead(analogPin)).thenReturn(502);
+        GroveTemperatureV12 bound = new GroveTemperatureV12(pins, analogPin);
         float[] sample = new float[1];
 
         // When
@@ -88,8 +91,8 @@ class GroveTemperatureV12Test {
     @DisplayName("Reports NaN at the ADC rail on its bound socket")
     void shouldReportNaNAtTheRailOnItsBoundSocket() {
         // Given
-        when(pins.analogRead(Gpio.getA0())).thenReturn(1023);
-        GroveTemperatureV12 bound = new GroveTemperatureV12(pins, Gpio.getA0());
+        when(pins.analogRead(analogPin)).thenReturn(1023);
+        GroveTemperatureV12 bound = new GroveTemperatureV12(pins, analogPin);
 
         // When & Then
         assertThat(bound.getTemperatureCelsius()).isNaN();

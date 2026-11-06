@@ -17,7 +17,9 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Shield SD cards")
 class ShieldSdCardTest {
@@ -26,14 +28,24 @@ class ShieldSdCardTest {
         DataLoggerShield dataLogger = new DataLoggerShield();
         LcdKeypadShield lcd = new LcdKeypadShield(mock(Gpio.class));
         ArduinoWifiShield wifi = new ArduinoWifiShield();
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(pins());
         TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
         return Stream.of(
                 arguments("Data Logger Shield", (Supplier<SdCard>) dataLogger::getSdCard, 10),
                 arguments("TFT touch shield", (Supplier<SdCard>) tft::getSdCard, 10),
                 arguments("LCD Keypad Shield", (Supplier<SdCard>) lcd::getSdCard, 10),
                 arguments("Arduino WiFi Shield", (Supplier<SdCard>) wifi::getSdCard, 4),
-                arguments("Nano Connector Carrier", (Supplier<SdCard>) carrier::getSdCard, 4));
+                arguments("Nano Connector Carrier", (Supplier<SdCard>) carrier::getSdCard,
+                        carrier.getSdChipSelect()));
+    }
+
+    private static Gpio pins() {
+        Gpio pins = mock(Gpio.class);
+        when(pins.digitalPin(anyString())).thenAnswer(invocation -> Integer.parseInt(
+                invocation.<String>getArgument(0).substring(1)));
+        when(pins.analogPin(anyString())).thenAnswer(invocation -> 14 + Integer.parseInt(
+                invocation.<String>getArgument(0).substring(1)));
+        return pins;
     }
 
     @ParameterizedTest(name = "{0} selects its card on D{2}")

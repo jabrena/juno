@@ -37,11 +37,17 @@ class ViewRouterTest {
     private final FrameClock clock = new FrameClock();
     private TftTouchShield tft;
     private ViewRouter router;
+    private int touchXPin;
+    private int touchYPin;
 
     @BeforeEach
     void startWithAnIdleTouchPanel() {
         Wire.resetBoard();
         ParallelBus.reset();
+        when(pins.analogPin("A2")).thenReturn(16);
+        when(pins.analogPin("A3")).thenReturn(17);
+        touchXPin = pins.analogPin("A2");
+        touchYPin = pins.analogPin("A3");
         tft = new TftTouchShield(pins);
         ImmediateDelay.run(tft::begin);
         router = new ViewRouter(tft, 10, clock);
@@ -136,8 +142,8 @@ class ViewRouterTest {
     @DisplayName("A touch is delivered once per press")
     void shouldDeliverATouchOncePerPress() {
         // Given
-        when(pins.analogRead(Gpio.getA2())).thenReturn(523);
-        when(pins.analogRead(Gpio.getA3())).thenReturn(600);
+        when(pins.analogRead(touchXPin)).thenReturn(523);
+        when(pins.analogRead(touchYPin)).thenReturn(600);
         script.add(r -> { });
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });

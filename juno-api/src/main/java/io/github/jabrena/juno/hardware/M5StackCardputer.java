@@ -3,12 +3,14 @@ package io.github.jabrena.juno.hardware;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
+import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -31,6 +33,11 @@ public final class M5StackCardputer {
     private static @Nullable SdCard sdCard;
 
     private M5StackCardputer() {
+    }
+
+    /** The Cardputer's GPIO context. Use {@code D*} names for portable logical pins or {@code GPIO*} for its exposed pins. */
+    public static Gpio getGpio() {
+        return NativeGpio.gpio();
     }
 
     /**

@@ -42,6 +42,7 @@ public final class AvrRuntimeShim {
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+    private final GpioPinRuntime gpioPinRuntime = new GpioPinRuntime();
 
     /** Runtime-string slots; each is {@code RuntimeLimits.STRING_SLOT_CAPACITY_BYTES} bytes. */
     static final int STRING_SLOTS = 4;
@@ -208,6 +209,8 @@ public final class AvrRuntimeShim {
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses)),
+                new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
+                        throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/io/FileNotFoundException"),

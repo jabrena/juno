@@ -11,16 +11,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("Grove DHT11 temperature and humidity sensor")
 class GroveDht11Test {
     private Gpio pins;
     private GroveDht11 dht11;
+    private int digitalPin;
 
     @BeforeEach
     void startAtTimeZero() {
         Wire.resetBoard();
         pins = mock(Gpio.class);
+        when(pins.digitalPin("D2")).thenReturn(2);
+        digitalPin = pins.digitalPin("D2");
         dht11 = new GroveDht11(pins, SimulatedTime.clock());
     }
 
@@ -63,7 +67,7 @@ class GroveDht11Test {
         int[] frame = new int[5];
 
         // When
-        boolean read = dht11.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
+        boolean read = dht11.read(digitalPin, reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isTrue();
@@ -80,7 +84,7 @@ class GroveDht11Test {
         int[] frame = new int[5];
 
         // When
-        boolean read = dht11.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
+        boolean read = dht11.read(digitalPin, reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isFalse();
@@ -96,7 +100,7 @@ class GroveDht11Test {
         int[] frame = new int[5];
 
         // When
-        boolean read = dht11.read(Gpio.getD2(), reading, reading.length, frame, frame.length);
+        boolean read = dht11.read(digitalPin, reading, reading.length, frame, frame.length);
 
         // Then
         assertThat(read).isFalse();
@@ -110,7 +114,7 @@ class GroveDht11Test {
         int[] frame = new int[5];
 
         // When & Then
-        assertThatThrownBy(() -> dht11.read(Gpio.getD2(), new int[1], 1, frame, frame.length))
+        assertThatThrownBy(() -> dht11.read(digitalPin, new int[1], 1, frame, frame.length))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -121,7 +125,7 @@ class GroveDht11Test {
         int[] reading = new int[2];
 
         // When & Then
-        assertThatThrownBy(() -> dht11.read(Gpio.getD2(), reading, 2, new int[4], 4))
+        assertThatThrownBy(() -> dht11.read(digitalPin, reading, 2, new int[4], 4))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -130,7 +134,7 @@ class GroveDht11Test {
     void shouldReadThroughItsBoundPin() {
         // Given
         Wire.dhtReply(55, 0, 24, 0, 79).install(pins);
-        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), digitalPin);
         float[] sample = new float[3];
 
         // When
@@ -147,7 +151,7 @@ class GroveDht11Test {
     void shouldReadTheTemperatureThroughItsBoundPin() {
         // Given
         Wire.dhtReply(55, 0, 24, 0, 79).install(pins);
-        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), digitalPin);
 
         // When & Then
         assertThat(bound.getTemperatureCelsius()).isEqualTo(24f);
@@ -158,7 +162,7 @@ class GroveDht11Test {
     void shouldReportNaNWhenTheBoundPinGivesNoValidFrame() {
         // Given
         Wire.dhtReply(55, 0, 24, 0, 80).install(pins);
-        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), Gpio.getD2());
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), digitalPin);
         float[] sample = new float[2];
 
         // When

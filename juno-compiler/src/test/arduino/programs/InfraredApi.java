@@ -1,5 +1,6 @@
 package demo;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -10,8 +11,9 @@ public final class InfraredApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
+        Gpio gpio = ArduinoUno.getGpio();
         // Infrared.beginHX(receivePin, transmitPin, baudRate);
-        Infrared.beginHX(Gpio.getD2(), Gpio.getD3(), 2400);
+        Infrared.beginHX(gpio.digitalPin("D2"), gpio.digitalPin("D3"), 2400);
 
         // Two ways to transmit: a framed serial byte (start, 8 data bits, parity, stop), or raw pulses where
         // mark() lights the IR LED with the 38 kHz carrier and space() keeps it dark, 500 us each.

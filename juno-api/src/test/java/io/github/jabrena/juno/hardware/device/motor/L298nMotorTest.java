@@ -12,16 +12,26 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @DisplayName("L298N motor")
 class L298nMotorTest {
     private Gpio gpio;
     private L298nMotor motor;
+    private int enablePin;
+    private int in1Pin;
+    private int in2Pin;
 
     @BeforeEach
     void wireTheMotorToMockedPins() {
         gpio = mock(Gpio.class);
-        motor = new L298nMotor(gpio, 3, 4, 5);
+        when(gpio.digitalPin("D3")).thenReturn(3);
+        when(gpio.digitalPin("D4")).thenReturn(4);
+        when(gpio.digitalPin("D5")).thenReturn(5);
+        enablePin = gpio.digitalPin("D3");
+        in1Pin = gpio.digitalPin("D4");
+        in2Pin = gpio.digitalPin("D5");
+        motor = new L298nMotor(gpio, enablePin, in1Pin, in2Pin);
     }
 
     @Test
@@ -30,12 +40,12 @@ class L298nMotorTest {
         motor.begin();
 
         InOrder order = inOrder(gpio);
-        order.verify(gpio).pinMode(3, Gpio.getOutput());
-        order.verify(gpio).pinMode(4, Gpio.getOutput());
-        order.verify(gpio).pinMode(5, Gpio.getOutput());
-        order.verify(gpio).analogWrite(3, 0);
-        order.verify(gpio).digitalWrite(4, false);
-        order.verify(gpio).digitalWrite(5, false);
+        order.verify(gpio).pinMode(enablePin, gpio.getOutput());
+        order.verify(gpio).pinMode(in1Pin, gpio.getOutput());
+        order.verify(gpio).pinMode(in2Pin, gpio.getOutput());
+        order.verify(gpio).analogWrite(enablePin, 0);
+        order.verify(gpio).digitalWrite(in1Pin, false);
+        order.verify(gpio).digitalWrite(in2Pin, false);
     }
 
     @Test
@@ -46,9 +56,9 @@ class L298nMotorTest {
 
         motor.forward();
 
-        verify(gpio).digitalWrite(4, true);
-        verify(gpio).digitalWrite(5, false);
-        verify(gpio).analogWrite(3, 127);
+        verify(gpio).digitalWrite(in1Pin, true);
+        verify(gpio).digitalWrite(in2Pin, false);
+        verify(gpio).analogWrite(enablePin, 127);
         assertThat(motor.isMoving()).isTrue();
     }
 
@@ -74,14 +84,15 @@ class L298nMotorTest {
         clearInvocations(gpio);
         motor.stop();
 
-        verify(gpio).digitalWrite(4, false);
-        verify(gpio).analogWrite(3, 255);
+        verify(gpio).digitalWrite(in1Pin, false);
+        verify(gpio).analogWrite(enablePin, 255);
         assertThat(motor.isMoving()).isFalse();
     }
 
     @Test
     @DisplayName("Rejects repeated motor pins")
     void shouldRejectRepeatedPins() {
-        assertThatThrownBy(() -> new L298nMotor(gpio, 3, 3, 5)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new L298nMotor(gpio, enablePin, enablePin, in2Pin))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 }

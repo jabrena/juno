@@ -85,7 +85,7 @@ class BoundsCheckEliminationTest {
                     public static void main(String[] args) {
                         int total = 0;
                 %s
-                        ArduinoUno.getGpio().pinMode(total, Gpio.getOutput());
+                        ArduinoUno.getGpio().pinMode(total, ArduinoUno.getGpio().getOutput());
                     }
                 }
                 """.formatted(body.indent(8));

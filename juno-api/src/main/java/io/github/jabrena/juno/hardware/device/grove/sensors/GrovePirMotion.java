@@ -27,13 +27,13 @@ public final class GrovePirMotion implements MotionDetector, SampleProvider {
         this.gpio = gpio;
         this.signalPin = signalPin;
         if (signalPin != NO_PIN) {
-            gpio.pinMode(signalPin, Gpio.getInput());
+            gpio.pinMode(signalPin, gpio.getInput());
         }
     }
 
     /** Configures the signal pin as a digital input. */
     public void begin(int signalPin) {
-        gpio.pinMode(signalPin, Gpio.getInput());
+        gpio.pinMode(signalPin, gpio.getInput());
     }
 
     /** Returns {@code true} while the sensor's signal is high. */
