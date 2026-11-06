@@ -84,6 +84,12 @@ public interface SdCard {
     boolean appendLine(String path, String line);
 
     /**
+     * Creates or replaces {@code path} with the first {@code length} bytes of {@code data}, and returns whether the
+     * write succeeded. Use it for binary files such as JPEG frames; {@code path} is a compile-time string literal.
+     */
+    boolean writeBytes(String path, byte[] data, int length);
+
+    /**
      * Appends {@code text} to {@code path} exactly as given, creating the file first if it does not exist
      * yet: unlike {@link #appendLine(String, String)} no newline is added, so a record can be written in pieces
      * (each piece within the runtime-string limit above) or be raw text such as CSV fields. Returns
