@@ -12,30 +12,30 @@ language itself, see the [Java subset](../java-subset) page.
 
 ✓ supported · – not available · the notes after the table explain the exceptions.
 
-| Feature | UNO R3 | UNO WiFi Rev2 | UNO R4 WiFi | UNO Q | Nano ESP32 | M5Stack Cardputer |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| Wi-Fi | Shield | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Wi-Fi access point | – | ✓ | ✓ | ✓ | ✓ | ✓ |
-| HTTP client (plain) | Shield | ✓ | ✓ | – | ✓ | ✓ |
-| HTTPS client | – | ✓ | ✓ | ✓ | ✓ | ✓ |
-| HTTP server | – | – | ✓ | ✓ | ✓ | ✓ |
-| HTTPS server | – | – | – | ✓ | ✓ | ✓ |
-| Email over TLS | – | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Email STARTTLS | – | – | ✓ | – | ✓ | – |
-| SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Bluetooth LE | – | – | ✓ | ✓ | ✓ | ✓ |
-| USB HID mouse | – | – | ✓ | – | ✓ | ✓ |
-| LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – |
-| Built-in display, keyboard, speaker, battery | – | – | – | – | – | ✓ |
-| Hardware random numbers | Weak | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Watchdog | ✓ | ✓ | ✓ | – | ✓ | ✓ |
-| SD card | Shield | Shield | Shield | Shield | Carrier | Built-in |
-| Grove sockets | Shield | Shield | Shield | Shield | Carrier | – |
-| 9 Axis Motion Shield | Shield | Shield | Shield | Shield | – | – |
-| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | – | ✓ | – | – | – | – |
-| LCD Keypad Shield | Shield | Shield | Shield | Shield | – | – |
-| TFT Touch Shield | – | Shield | Shield | Shield | – | – |
-| Infrared link to LEGO RCX | – | – | ✓ | ✓ | ✓ | – |
+| Feature | UNO R3 | UNO WiFi Rev2 | UNO R4 WiFi | UNO Q | AI Thinker ESP32-CAM | Nano ESP32 | M5Stack Cardputer |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Wi-Fi | Shield | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Wi-Fi access point | – | ✓ | ✓ | ✓ | – | ✓ | ✓ |
+| HTTP client (plain) | Shield | ✓ | ✓ | – | – | ✓ | ✓ |
+| HTTPS client | – | ✓ | ✓ | ✓ | – | ✓ | ✓ |
+| HTTP server | – | – | ✓ | ✓ | – | ✓ | ✓ |
+| HTTPS server | – | – | – | ✓ | – | ✓ | ✓ |
+| Email over TLS | – | ✓ | ✓ | ✓ | – | ✓ | ✓ |
+| Email STARTTLS | – | – | ✓ | – | – | ✓ | – |
+| SNTP clock (`LocalDateTime.now()`) | Shield | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Bluetooth LE | – | – | ✓ | ✓ | ✓ | ✓ | ✓ |
+| USB HID mouse | – | – | ✓ | – | – | ✓ | ✓ |
+| LED matrix | – | – | ✓ (12 × 8) | ✓ (13 × 8) | – | – | – |
+| Built-in display, keyboard, speaker, battery | – | – | – | – | – | – | ✓ |
+| Hardware random numbers | Weak | ✓ | ✓ | ✓ | – | ✓ | ✓ |
+| Watchdog | ✓ | ✓ | ✓ | – | – | ✓ | ✓ |
+| SD card | Shield | Shield | Shield | Shield | Built-in | Carrier | Built-in |
+| Grove sockets | Shield | Shield | Shield | Shield | – | Carrier | – |
+| 9 Axis Motion Shield | Shield | Shield | Shield | Shield | – | – | – |
+| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | – | ✓ | – | – | – | – | – |
+| LCD Keypad Shield | Shield | Shield | Shield | Shield | – | – | – |
+| TFT Touch Shield | – | Shield | Shield | Shield | – | – | – |
+| Infrared link to LEGO RCX | – | – | ✓ | ✓ | – | ✓ | – |
 
 Notes:
 
