@@ -248,6 +248,10 @@ this shield instead.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#BACKSPACE" class="member-name-link">BACKSPACE</a> - Static variable in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#backward()" class="member-name-link">backward()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Drives the motor backward at its configured power.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#backward()" class="member-name-link">backward()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>
 <div class="block">Runs the motor backward at the current power.</div>
@@ -323,6 +327,14 @@ reported it.</div>
 <dd>
 <div class="block">Common baud rates exposed as named values by Juno's USB serial API.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Initializes the SSD1315 and transfers the current framebuffer.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Starts both BMI088 devices and returns <code>false</code> if either chip ID cannot be read.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">Starts the bus and the sensor, returning <code>false</code> if the sensor did not answer with its chip ID.</div>
@@ -334,6 +346,10 @@ reported it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>
 <div class="block">Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Configures the three pins and leaves the motor coasting.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -516,6 +532,14 @@ certificate themselves (e.g.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#BLUE" class="member-name-link">BLUE</a> - Static variable in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a> - Class in <a href="io/github/jabrena/juno/hardware/device/imu/package-summary.html">io.github.jabrena.juno.hardware.device.imu</a></dt>
+<dd>
+<div class="block">Grove 6-Axis Accelerometer &amp; Gyroscope (BMI088), accessed through I2C.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">Bmi088(I2c, Clock)</a> - Constructor for class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">The Grove module on <code>i2c</code>; collaborators may be mocks in a unit test.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/annotations/Board.html" class="type-name-link" title="annotation interface in io.github.jabrena.juno.annotations">Board</a> - Annotation Interface in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">Declares which Arduino board(s) a Juno program targets, e.g.</div>
@@ -974,6 +998,10 @@ digit, a decimal point, and another small digit, laid out left to right from ori
 <dd>
 <div class="block">Draws a line between (x0, y0) and (x1, y1), both endpoints inclusive, using Bresenham's algorithm.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#drawPixel(int,int,int)" class="member-name-link">drawPixel(int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Sets one pixel and transfers its containing byte.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#drawPixel(int,int,int)" class="member-name-link">drawPixel(int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Sets the pixel at (<code>x</code>, <code>y</code>) to <code>color</code>; off-screen pixels are ignored.</div>
@@ -1099,6 +1127,14 @@ both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/j
 <dd>
 <div class="block">Writes the temperature in degrees Celsius at <code>offset</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a></dt>
+<dd>
+<div class="block">Writes one range sample in metres, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> after a timeout.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Writes X, Y and Z acceleration in metres per second squared into the caller-owned buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; all zero before
@@ -1126,6 +1162,10 @@ failed is written as 0.</div>
 <div class="block">Fills a solid <code>width x height</code> rectangle whose top-left corner is at
 (<code>originX</code>, <code>originY</code>).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#fillRect(int,int,int,int,int)" class="member-name-link">fillRect(int, int, int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Fills the clipped rectangle with the requested monochrome color.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#fillRect(int,int,int,int,int)" class="member-name-link">fillRect(int, int, int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Fills a <code>w</code>x<code>h</code> rectangle whose top-left corner is (<code>x</code>, <code>y</code>), clipped to the screen.</div>
@@ -1134,6 +1174,10 @@ failed is written as 0.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#fillRect(int,int,int,int,int)" class="member-name-link">fillRect(int, int, int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#fillScreen(int)" class="member-name-link">fillScreen(int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Fills the framebuffer and immediately transfers it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#fillScreen(int)" class="member-name-link">fillScreen(int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Fills the whole screen with <code>color</code>.</div>
@@ -1165,6 +1209,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html#flashUsedBytes()" class="member-name-link">flashUsedBytes()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#flt()" class="member-name-link">flt()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Disables the bridge so the motor coasts.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#flt()" class="member-name-link">flt()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>
 <div class="block">Lets the motor coast to a stop, unlike <a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#stop()"><code>PFMotor.stop()</code></a>, which brakes it.</div>
@@ -1185,8 +1233,16 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dd>
 <div class="block">Removes power from both motors so they coast, as <a href="io/github/jabrena/juno/robotics/BaseMotor.html#flt()"><code>BaseMotor.flt()</code></a> does.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#flush()" class="member-name-link">flush()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Transfers all eight display pages from the framebuffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#FORBIDDEN" class="member-name-link">FORBIDDEN</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#forward()" class="member-name-link">forward()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Drives the motor forward at its configured power.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#forward()" class="member-name-link">forward()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>
 <div class="block">Runs the motor forward at the current power.</div>
@@ -1211,6 +1267,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.html#FRAME_LENGTH" class="member-name-link">FRAME_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht22</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#FRAMEBUFFER_SIZE" class="member-name-link">FRAMEBUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Required length of the caller-owned framebuffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#FRAMING_ERROR" class="member-name-link">FRAMING_ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#readByte(int)"><code>Infrared.readByte(int)</code></a> result when a byte arrived with a wrong parity bit or stop bit.</div>
@@ -1308,6 +1368,10 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The onboard accelerometer of the UNO WiFi Rev2 (LSM6DS3TR); other boards reject this call.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns heading in clockwise whole degrees, modulo 360.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a> or the last <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()"><code>Lsm6ds3.reset()</code></a>;
@@ -1321,6 +1385,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html#getAngle()" class="member-name-link">getAngle()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></dt>
 <dd>
 <div class="block">Returns the heading in whole degrees, from 0 up to 359, growing clockwise since the last <a href="io/github/jabrena/juno/robotics/Gyroscope.html#reset()"><code>Gyroscope.reset()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
@@ -1663,6 +1731,10 @@ high values are bright.</div>
 <dd>
 <div class="block">The pin mode OUTPUT, for <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Returns the configured PWM power percentage.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></dt>
@@ -1672,6 +1744,14 @@ high values are bright.</div>
 <dt><a href="io/github/jabrena/juno/robotics/DCMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></dt>
 <dd>
 <div class="block">Returns the current power setting, <code>0..100</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html#getRange()" class="member-name-link">getRange()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a></dt>
+<dd>
+<div class="block">Sends one trigger pulse and returns the measured range in metres, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> after a timeout.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RangeFinder.html#getRange()" class="member-name-link">getRange()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RangeFinder.html" title="interface in io.github.jabrena.juno.robotics">RangeFinder</a></dt>
+<dd>
+<div class="block">Returns the range in metres, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no valid range was measured.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getSd()" class="member-name-link">getSd()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
 <dd>
@@ -1825,6 +1905,10 @@ either ADC rail.</div>
 <dd>
 <div class="block">The Cardputer's built-in ESP32-S3 Wi-Fi radio.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns X acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
@@ -1837,6 +1921,10 @@ either ADC rail.</div>
 <dd>
 <div class="block">Returns the acceleration along the X axis, in metres per second squared.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns Y acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
@@ -1848,6 +1936,10 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/robotics/Accelerometer.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></dt>
 <dd>
 <div class="block">Returns the acceleration along the Y axis, in metres per second squared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns Z acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
@@ -1894,10 +1986,6 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveAnalogGas</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
 <dd>
 <div class="block">Reads the analog <code>SIG</code> output of a Grove gas sensor connected to an analog Grove socket.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html#%3Cinit%3E()" class="member-name-link">GroveAnalogGas()</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveAnalogGas</a></dt>
-<dd>
-<div class="block">A sensor on the board's own pins.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveAnalogGas(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveAnalogGas</a></dt>
 <dd>
@@ -1973,13 +2061,17 @@ Light Sensor v1.2</a> as a <a href="io/github/jabrena/juno/robotics/LightDetecto
 <div class="block">A sensor plugged into <code>analogPin</code> (such as a socket of a <code>GroveBaseShield</code>) and read through
 <code>gpio</code>, with an ADC whose full scale is <code>adcMaximum</code>: <a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html#ADC_10_BIT"><code>GroveLightV12.ADC_10_BIT</code></a> or <a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html#ADC_12_BIT"><code>GroveLightV12.ADC_12_BIT</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/display/package-summary.html">io.github.jabrena.juno.hardware.device.grove.display</a></dt>
+<dd>
+<div class="block">Grove 0.96-inch 128×64 yellow/blue OLED with an SSD1315 controller, connected over I2C.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,byte%5B%5D)" class="member-name-link">GroveOledSsd1315(I2c, byte[])</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">A display over <code>i2c</code>; pass a mock bus in a unit test.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
 <dd>
 <div class="block">A Grove PIR motion sensor with a digital <code>SIG</code> output.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html#%3Cinit%3E()" class="member-name-link">GrovePirMotion()</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a></dt>
-<dd>
-<div class="block">A sensor on the board's own pins.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePirMotion(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a></dt>
 <dd>
@@ -1994,10 +2086,6 @@ Light Sensor v1.2</a> as a <a href="io/github/jabrena/juno/robotics/LightDetecto
 <div class="block">Reads Seeed's analog <a href="https://wiki.seeedstudio.com/Grove-Sound_Sensor/">Grove Sound
 Sensor</a> (v1.6).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.html#%3Cinit%3E()" class="member-name-link">GroveSoundV16()</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveSoundV16</a></dt>
-<dd>
-<div class="block">A sensor on the board's own pins.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveSoundV16(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveSoundV16.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveSoundV16</a></dt>
 <dd>
 <div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
@@ -2007,10 +2095,6 @@ Sensor</a> (v1.6).</div>
 <div class="block">Reads Seeed's <a href="https://wiki.seeedstudio.com/Grove-Temperature_Sensor_V1.2/">Grove
 Temperature Sensor v1.2</a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E()" class="member-name-link">GroveTemperatureV12()</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveTemperatureV12</a></dt>
-<dd>
-<div class="block">A sensor on the board's own pins.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveTemperatureV12(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveTemperatureV12</a></dt>
 <dd>
 <div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
@@ -2018,6 +2102,14 @@ Temperature Sensor v1.2</a>.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GroveTemperatureV12(Gpio, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveTemperatureV12</a></dt>
 <dd>
 <div class="block">A sensor plugged into <code>analogPin</code> (such as <a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getA0()"><code>GroveBaseShield.getA0()</code></a>) and read through <code>gpio</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
+<dd>
+<div class="block">Grove Ultrasonic Ranger (v1 or v2) on one Grove digital socket.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger(Gpio, Clock, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a></dt>
+<dd>
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
@@ -2056,6 +2148,10 @@ such header.</div>
 <dd>
 <div class="block">The heading, in millidegrees, normalised to <code>0</code> through <code>359_999</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Returns 64.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Current height in pixels, for the current rotation.</div>
@@ -2066,6 +2162,10 @@ such header.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#HEIGHT" class="member-name-link">HEIGHT</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Display pixel height.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#HEIGHT" class="member-name-link">HEIGHT</a> - Static variable in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led">LedCanvas</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html#HEIGHT" class="member-name-link">HEIGHT</a> - Static variable in class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html" title="class in io.github.jabrena.juno.util.image">ArduinoNanoEsp32Image</a></dt>
@@ -2327,6 +2427,10 @@ connectors are ordinary Nano header pins, so a carrier needs no compiler intrins
 <dd>
 <div class="block">Zero-allocation drivers and pin names for peripherals connected through the Grove Base Shield.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/package-summary.html">io.github.jabrena.juno.hardware.device.grove.display</a> - package io.github.jabrena.juno.hardware.device.grove.display</dt>
+<dd>
+<div class="block">Grove monochrome display adapters.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a> - package io.github.jabrena.juno.hardware.device.grove.sensors</dt>
 <dd>
 <div class="block">Allocation-free Grove sensor drivers for digital, analog, I2C and infrared modules connected through the
@@ -2358,6 +2462,10 @@ bytes over a 38 kHz IR receiver module and an IR LED on plain pins.</div>
 <a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd"><code>LcdKeypadShield</code></a>: a 16x2 HD44780-compatible display in
 4-bit mode plus 5 buttons read from a single resistor-ladder analog pin, wired for the shield's
 standard pinout.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/package-summary.html">io.github.jabrena.juno.hardware.device.motor</a> - package io.github.jabrena.juno.hardware.device.motor</dt>
+<dd>
+<div class="block">DC-motor controller adapters.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/package-summary.html">io.github.jabrena.juno.hardware.device.sd</a> - package io.github.jabrena.juno.hardware.device.sd</dt>
 <dd>
@@ -2544,6 +2652,10 @@ boards.</div>
 <dd>
 <div class="block">Returns whether motion was detected at the last reading.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Returns whether this channel is driving the motor with non-zero power.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></dt>
@@ -2668,6 +2780,14 @@ boards.</div>
 </dl>
 <h2 class="title" id="I:L">L</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a> - Class in <a href="io/github/jabrena/juno/hardware/device/motor/package-summary.html">io.github.jabrena.juno.hardware.device.motor</a></dt>
+<dd>
+<div class="block">One brushed DC-motor channel of an L298N dual H-bridge module.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int,int)" class="member-name-link">L298nMotor(Gpio, int, int, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">A motor driven through <code>gpio</code>; supply a mock in a unit test.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#LANDSCAPE" class="member-name-link">LANDSCAPE</a> - Static variable in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Landscape, rotated 90 degrees clockwise from <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#PORTRAIT"><code>TftTouchShield.PORTRAIT</code></a>.</div>
@@ -3371,6 +3491,10 @@ at the cursor, without wrapping.</div>
 <div class="block">Prints the first <code>length</code> bytes of <code>buffer</code> as ASCII characters at the cursor,
 like <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#print(java.lang.String)"><code>TftTouchShield.print(String)</code></a> — for text that already lives in a caller-owned byte buffer (e.g.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#print(char)" class="member-name-link">print(char)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Draws one ASCII character and advances the cursor by six scaled pixels.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#print(char)" class="member-name-link">print(char)</a> - Method in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#print(char)" class="member-name-link">print(char)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
@@ -3403,6 +3527,10 @@ shows <code>07</code>), starting at the cursor.</div>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#print(long)" class="member-name-link">print(long)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
 <div class="block">Prints a 64-bit integer without a trailing line ending.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#print(java.lang.String)" class="member-name-link">print(String)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Draws a string without allocating.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#print(java.lang.String)" class="member-name-link">print(String)</a> - Method in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>
@@ -3440,6 +3568,10 @@ cursor.</div>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#println(long)" class="member-name-link">println(long)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
 <div class="block">Prints a 64-bit integer followed by a line ending.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#println(java.lang.String)" class="member-name-link">println(String)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Draws a string then moves the cursor to the first column of the next text row.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#println(java.lang.String)" class="member-name-link">println(String)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
@@ -3505,6 +3637,10 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 <dt><a href="io/github/jabrena/juno/util/Random.html" class="type-name-link" title="class in io.github.jabrena.juno.util">Random</a> - Class in <a href="io/github/jabrena/juno/util/package-summary.html">io.github.jabrena.juno.util</a></dt>
 <dd>
 <div class="block">Pseudorandom-number operations backed by Arduino's random generator.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RangeFinder.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RangeFinder</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
+<dd>
+<div class="block">A sensor that reports the distance to the nearest object.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html#rawValue(int)" class="member-name-link">rawValue(int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveAnalogGas</a></dt>
 <dd>
@@ -3706,6 +3842,10 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <div class="block">The input's raw value in the mode its sensor set, or <code>-1</code> if the brick did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Measures the stationary Z-axis gyro bias over 64 samples.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">Measures the gyroscope's bias again; keep the board still for about 2 s.</div>
@@ -3873,6 +4013,10 @@ storage.</div>
 <dd>
 <div class="block">Sends an HTTPS request whose host, path, request headers, and optional body are held in caller-owned storage.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Resets the integrated heading to zero.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">Sets the heading back to zero, so <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngle()"><code>Lsm6ds3.getAngle()</code></a> counts the turns made from now on.</div>
@@ -4000,6 +4144,14 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveTemperatureV12</a></dt>
 <dd>
 <div class="block">Returns 1: the sample is one temperature in degrees Celsius.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a></dt>
+<dd>
+<div class="block">Returns one range sample.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
+<dd>
+<div class="block">Returns three acceleration components (X, Y, Z), in metres per second squared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
@@ -4133,6 +4285,10 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Sets the mode that <a href="io/github/jabrena/juno/robotics/SampleProvider.html#fetchSample(float%5B%5D,int)"><code>SampleProvider.fetchSample(float[], int)</code></a> reads.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#setCursor(int,int)" class="member-name-link">setCursor(int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Sets the top-left text position in pixels.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#setCursor(int,int)" class="member-name-link">setCursor(int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>
 <div class="block">Moves the cursor to <code>column</code> (0-15) on <code>row</code> (0-1).</div>
@@ -4212,6 +4368,10 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Lights pixel (x, y), silently ignoring coordinates outside the frame.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#setPower(int)" class="member-name-link">setPower(int)</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Changes the open-loop PWM power, clamped to <code>0..100</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html#setPower(int)" class="member-name-link">setPower(int)</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></dt>
 <dd>
 <div class="block">Sets the power, <code>0..100</code>, applied at once if the motor is moving.</div>
@@ -4275,6 +4435,10 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Configures <code>input</code> for a temperature sensor, read in tenths of a degree Celsius by <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#temperatureTenths(int)"><code>RcxBrick.temperatureTenths(int)</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#setTextColor(int,int)" class="member-name-link">setTextColor(int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Selects monochrome foreground and background pixels; non-black colors are on.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#setTextColor(int,int)" class="member-name-link">setTextColor(int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Sets the text foreground and background colors.</div>
@@ -4283,6 +4447,10 @@ whole-program emulator in a test, never on the board.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#setTextColor(int,int)" class="member-name-link">setTextColor(int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#setTextSize(int)" class="member-name-link">setTextSize(int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Selects a positive integer scale for the built-in 5×7 ASCII font.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#setTextSize(int)" class="member-name-link">setTextSize(int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Scales text by an integer factor (1 = 6x8-pixel cells, 2 = 12x16, ...); values below 1 are treated as 1.</div>
@@ -4471,6 +4639,10 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dt><a href="io/github/jabrena/juno/hardware/audio/Audio.html#stop()" class="member-name-link">stop()</a> - Method in interface io.github.jabrena.juno.hardware.audio.<a href="io/github/jabrena/juno/hardware/audio/Audio.html" title="interface in io.github.jabrena.juno.hardware.audio">Audio</a></dt>
 <dd>
 <div class="block">Stops the currently playing tone, if any.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
+<dd>
+<div class="block">Brakes the motor by driving both bridge inputs low while the bridge remains enabled.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>&nbsp;</dd>
@@ -4842,6 +5014,10 @@ when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#WHITE" class="member-name-link">WHITE</a> - Static variable in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#width()" class="member-name-link">width()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Returns 128.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#width()" class="member-name-link">width()</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Current width in pixels, for the current rotation.</div>
@@ -4855,6 +5031,10 @@ when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html
 <dt><a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#width()" class="member-name-link">width()</a> - Static method in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led">LedCanvas</a></dt>
 <dd>
 <div class="block">The matrix width of the board this program is compiled for: 12 on the UNO R4 WiFi, 13 on the UNO Q.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#WIDTH" class="member-name-link">WIDTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
+<dd>
+<div class="block">Display pixel width.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html#WIDTH" class="member-name-link">WIDTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft">ParallelBus</a></dt>
 <dd>

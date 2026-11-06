@@ -4,15 +4,15 @@ description: "Remote-controlling LEGO Powered Up hubs and Mindstorms RCX bricks 
 layout: page
 ---
 
-LEGO has made several generations of motorised, remote-controlled systems. Juno drives two of them today from the
-same kind of Java program, and three more are pending. Each is a small remote-control class: the board plays the part of LEGO's remote, app or
+LEGO has made several generations of motorised, remote-controlled systems. Juno drives three of them today from the
+same kind of Java program, and two more are pending. Each is a small remote-control class: the board plays the part of LEGO's remote, app or
 infrared tower, and the LEGO hardware does the rest.
 
 | System | Since | What it is | Protocol used | Board with support | Juno class |
 |---|---|---|---|---|---|
 | Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
 | Mindstorms EV3 | 2013 | The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux | Bluetooth Classic (serial port profile), LEGO's EV3 direct commands | — | Pending |
-| Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | — | Pending |
+| Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java) |
 | Mindstorms NXT | 2006 | The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker | Bluetooth Classic (serial port profile), LEGO's NXT direct commands | — | Pending |
 | Mindstorms RCX | 1998 | The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker | Infrared, through an IR LED and receiver on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) |
 
@@ -89,6 +89,40 @@ if (hub.portDevice(HubPort.A) != RemotePoweredUpHub.DEVICE_NONE) {
 
 [`MagicSquarePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java) drives a two-motor vehicle (ports A and B) around a square. To drive two motors as one, as a vehicle's left and
 right wheels, pair them with `linkMotors(PORT_A, PORT_B)` and drive the pair with `setLinkedMotorPower`.
+
+## LEGO Power Functions
+
+[`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java)
+drives the red (A) and blue (B) outputs of a LEGO Power Functions IR Receiver 8884. `PFLink` sends the 38 kHz
+Power Functions protocol through an HX-53 emitter on a GPIO pin or a Grove infrared emitter. The link and receiver
+have been tested with Power Functions motors; Juno also exposes the outputs as `PFMotor` instances implementing the
+board-independent `DCMotor` contract.
+
+With a Grove Base Shield, connect the clear Grove infrared emitter to D3 and point it at the receiver. Create the link
+once at startup, then bind motors to the receiver channel and output:
+
+```java
+GroveBaseShield shield = new GroveBaseShield();
+PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
+link.begin();
+RemotePF remote = new RemotePF(link);
+PFMotor left = new PFMotor(remote, PFChannel.CHANNEL_1, PFPort.RED);
+PFMotor right = new PFMotor(remote, PFChannel.CHANNEL_1, PFPort.BLUE);
+
+left.setPower(70);
+right.setPower(70);
+left.forward();
+right.forward();
+Delay.millis(2000);
+left.flt();
+right.flt();
+```
+
+`PFMotor.setPower` accepts `0..100` percent and maps it to the receiver's seven protocol speed steps. Use
+`forward()`, `backward()`, `stop()` for an active brake, or `flt()` to let an output coast. The receiver channel switch
+must match the `PFChannel` used by both motors. See [`PFPowerSequenceWithGrove`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/pf/PFPowerSequenceWithGrove.java)
+and [`MagicSquarePFWithGrove`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/pf/MagicSquarePFWithGrove.java)
+for complete examples.
 
 ## Lego mindstorms RCX
 

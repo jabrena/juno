@@ -1467,14 +1467,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
                     import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
                     import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
                     public final class GroveSensorsDemo {
                         public static void main(String[] args) {
                             GroveBaseShield shield = new GroveBaseShield();
-                            GrovePirMotion pir = new GrovePirMotion();
-                            GroveAnalogGas gasSensor = new GroveAnalogGas();
+                            GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
+                            GroveAnalogGas gasSensor = new GroveAnalogGas(ArduinoUno.getGpio());
                             pir.begin(shield.getD3());
                             int gas = gasSensor.rawValue(shield.getA0());
                             boolean motion = pir.motionDetected(shield.getD3());
@@ -1513,10 +1514,10 @@ class JunoCompilerTest {
                             int[] frame = new int[GroveDht11.FRAME_LENGTH];
                             boolean valid = new GroveDht11().read(shield.getD4(), reading, reading.length,
                                     frame, frame.length);
-                            GroveTemperatureV12 thermistor = new GroveTemperatureV12();
+                            GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
                             int temperature = thermistor.rawValue(shield.getA0());
                             float celsius = thermistor.celsiusFromRaw(temperature);
-                            int sound = new GroveSoundV16().rawValue(shield.getA1());
+                            int sound = new GroveSoundV16(ArduinoUno.getGpio()).rawValue(shield.getA1());
                             float light = new GroveLightV12(ArduinoUno.getGpio(), shield.getA2(), GroveLightV12.ADC_10_BIT).getLightValue();
                             if (valid && temperature + sound + light > 0) {
                                 io.github.jabrena.juno.hardware.serial.Serial.println(celsius);
@@ -1563,6 +1564,54 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.assembly()).contains("bl analogRead");
+        }
+
+        @Test
+        @DisplayName("The Grove robotics and SSD1315 adapters lower through injected board transports")
+        void shouldLowerTheGroveRoboticsAndOledAdapters() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.display.GroveOledSsd1315;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
+                    import io.github.jabrena.juno.hardware.device.imu.Bmi088;
+                    import io.github.jabrena.juno.hardware.device.motor.L298nMotor;
+                    import io.github.jabrena.juno.hardware.gpio.Gpio;
+                    import io.github.jabrena.juno.hardware.i2c.I2c;
+                    import io.github.jabrena.juno.hardware.time.Clock;
+                    public final class GroveRoboticsDemo {
+                        public static void main(String[] args) {
+                            GroveBaseShield shield = new GroveBaseShield();
+                            Gpio gpio = ArduinoUno.getGpio();
+                            Clock clock = ArduinoUno.getClock();
+                            I2c i2c = ArduinoUno.getI2c();
+                            L298nMotor motor = new L298nMotor(gpio, Gpio.getD3(), Gpio.getD4(), Gpio.getD5());
+                            motor.begin();
+                            motor.setPower(50);
+                            motor.forward();
+                            GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, shield.getD2());
+                            float range = ranger.getRange();
+                            Bmi088 imu = new Bmi088(i2c, clock);
+                            if (imu.begin() && range >= 0f) {
+                                imu.getAngularVelocity();
+                            }
+                            byte[] framebuffer = new byte[GroveOledSsd1315.FRAMEBUFFER_SIZE];
+                            GroveOledSsd1315 oled = new GroveOledSsd1315(i2c, framebuffer);
+                            oled.drawPixel(0, 0, GroveOledSsd1315.WHITE);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveRoboticsDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveRoboticsDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead", "bl analogWrite",
+                    "bl micros", "bl juno_i2c_begin", "bl juno_i2c_write_register", "bl juno_i2c_read_register");
+            assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
         }
     }
 

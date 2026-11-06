@@ -53,7 +53,7 @@ public final class SupabaseGroveTemperatures {
 
     private final GroveDht22 dht22 = new GroveDht22();
     private final GroveDht11 dht11 = new GroveDht11();
-    private final GroveTemperatureV12 thermistor = new GroveTemperatureV12();
+    private final GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
     private final int[] dht22Reading = new int[GroveDht22.READING_LENGTH];
     private final int[] dht11Reading = new int[GroveDht11.READING_LENGTH];
     private final int[] frame = new int[GroveDht22.FRAME_LENGTH];

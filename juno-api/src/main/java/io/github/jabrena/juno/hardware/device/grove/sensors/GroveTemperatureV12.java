@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.robotics.SampleProvider;
@@ -22,11 +21,6 @@ public final class GroveTemperatureV12 implements Thermometer, SampleProvider {
 
     private final Gpio gpio;
     private final int analogPin;
-
-    /** A sensor on the board's own pins. Create it once, at startup. */
-    public GroveTemperatureV12() {
-        this(ArduinoUno.getGpio());
-    }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */
     public GroveTemperatureV12(Gpio gpio) {

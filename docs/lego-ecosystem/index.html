@@ -311,8 +311,8 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>LEGO ecosystem</h1>
 </header>
     <div class="content-prose">
-<p>LEGO has made several generations of motorised, remote-controlled systems. Juno drives two of them today from the
-same kind of Java program, and three more are pending. Each is a small remote-control class: the board plays the part of LEGO's remote, app or
+<p>LEGO has made several generations of motorised, remote-controlled systems. Juno drives three of them today from the
+same kind of Java program, and two more are pending. Each is a small remote-control class: the board plays the part of LEGO's remote, app or
 infrared tower, and the LEGO hardware does the rest.</p>
 <table>
 <thead>
@@ -347,8 +347,8 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>2007</td>
 <td>Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885)</td>
 <td>Infrared, through an IR LED on the board</td>
-<td>—</td>
-<td>Pending</td>
+<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java"><code>RemotePF</code></a></td>
 </tr>
 <tr>
 <td>Mindstorms NXT</td>
@@ -424,6 +424,34 @@ detected on a port:</p>
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java"><code>MagicSquarePoweredUpHub</code></a> drives a two-motor vehicle (ports A and B) around a square. To drive two motors as one, as a vehicle's left and
 right wheels, pair them with <code>linkMotors(PORT_A, PORT_B)</code> and drive the pair with <code>setLinkedMotorPower</code>.</p>
+<h2 id="lego-power-functions">LEGO Power Functions</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java"><code>RemotePF</code></a>
+drives the red (A) and blue (B) outputs of a LEGO Power Functions IR Receiver 8884. <code>PFLink</code> sends the 38 kHz
+Power Functions protocol through an HX-53 emitter on a GPIO pin or a Grove infrared emitter. The link and receiver
+have been tested with Power Functions motors; Juno also exposes the outputs as <code>PFMotor</code> instances implementing the
+board-independent <code>DCMotor</code> contract.</p>
+<p>With a Grove Base Shield, connect the clear Grove infrared emitter to D3 and point it at the receiver. Create the link
+once at startup, then bind motors to the receiver channel and output:</p>
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
+PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
+link.begin();
+RemotePF remote = new RemotePF(link);
+PFMotor left = new PFMotor(remote, PFChannel.CHANNEL_1, PFPort.RED);
+PFMotor right = new PFMotor(remote, PFChannel.CHANNEL_1, PFPort.BLUE);
+
+left.setPower(70);
+right.setPower(70);
+left.forward();
+right.forward();
+Delay.millis(2000);
+left.flt();
+right.flt();
+</code></pre>
+<p><code>PFMotor.setPower</code> accepts <code>0..100</code> percent and maps it to the receiver's seven protocol speed steps. Use
+<code>forward()</code>, <code>backward()</code>, <code>stop()</code> for an active brake, or <code>flt()</code> to let an output coast. The receiver channel switch
+must match the <code>PFChannel</code> used by both motors. See <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/pf/PFPowerSequenceWithGrove.java"><code>PFPowerSequenceWithGrove</code></a>
+and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/pf/MagicSquarePFWithGrove.java"><code>MagicSquarePFWithGrove</code></a>
+for complete examples.</p>
 <h2 id="lego-mindstorms-rcx">Lego mindstorms RCX</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java"><code>RemoteRcx</code></a> (<code>io.github.jabrena.juno.remote.lego.rcx</code>) lets a Juno program remote-control a LEGO
 Mindstorms RCX brick over infrared: run its motors, read its sensors and buttons, play sounds and read its batteries.

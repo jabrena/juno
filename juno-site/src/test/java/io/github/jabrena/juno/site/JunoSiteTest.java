@@ -157,6 +157,19 @@ class JunoSiteTest {
     }
 
     @Test
+    void homeSecondCarouselIncludesNewHardwareImages() {
+        RestAssured.given().when().get("/").then().statusCode(200)
+                .body(containsString("images/grove/grove-bmi088.jpg"))
+                .body(containsString("images/grove/grove-ultrasonic-ranger.png"))
+                .body(containsString("images/grove/grove-oled-ssd1315.jpg"))
+                .body(containsString("images/motors/l298n-driver.png"))
+                .body(containsString("images/motors/tt-gear-motor.jpeg"))
+                .body(containsString("BMI088 IMU"))
+                .body(containsString("L298N driver"))
+                .body(containsString("TT gear motor"));
+    }
+
+    @Test
     void showcaseIsInMainNavigation() {
         RestAssured.given().when().get("/").then().statusCode(200)
                 .body(containsString("Showcase"));

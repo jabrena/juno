@@ -90,25 +90,29 @@ the program's flash usage).</div>
 <div class="block">Motion sensing: <a href="../hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu"><code>NineAxisMotionShield</code></a>, the orientation sensor of the Arduino
 9 Axis Motion Shield, over <a href="../hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.remote.lego.pf">io.github.jabrena.juno.remote.lego.pf</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.motor">io.github.jabrena.juno.hardware.device.motor</a></div>
 <div class="col-last odd-row-color">
+<div class="block">DC-motor controller adapters.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.pf">io.github.jabrena.juno.remote.lego.pf</a></div>
+<div class="col-last even-row-color">
 <div class="block">LEGO Power Functions infrared remote control.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.poweredup">io.github.jabrena.juno.remote.lego.poweredup</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.remote.lego.poweredup">io.github.jabrena.juno.remote.lego.poweredup</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Remote control of LEGO Powered Up hubs over Bluetooth Low Energy, backed by the Arduino
 <code>ArduinoBLE</code> library.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.remote.lego.rcx">io.github.jabrena.juno.remote.lego.rcx</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.rcx">io.github.jabrena.juno.remote.lego.rcx</a></div>
+<div class="col-last even-row-color">
 <div class="block">LEGO Mindstorms RCX infrared remote control, brick commands, sensors, and firmware transfer.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.robotics">io.github.jabrena.juno.robotics</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics">io.github.jabrena.juno.robotics</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Board-independent motor and sensor contracts.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-last even-row-color">
 <div class="block">Board-independent motion coordination.</div>
 </div>
 </div>
@@ -146,12 +150,16 @@ provides it.</div>
 <div class="col-last odd-row-color">
 <div class="block">A device that reports whether it has detected motion within its field of view.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.hardware.device.grove.sensors">SampleProvider</a></div>
+<div class="col-first even-row-color"><a href="class-use/RangeFinder.html#io.github.jabrena.juno.hardware.device.grove.sensors">RangeFinder</a></div>
 <div class="col-last even-row-color">
+<div class="block">A sensor that reports the distance to the nearest object.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.hardware.device.grove.sensors">SampleProvider</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Source of sensor samples.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/Thermometer.html#io.github.jabrena.juno.hardware.device.grove.sensors">Thermometer</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="class-use/Thermometer.html#io.github.jabrena.juno.hardware.device.grove.sensors">Thermometer</a></div>
+<div class="col-last even-row-color">
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
 </div>
 </div>
@@ -174,6 +182,23 @@ provides it.</div>
 <div class="col-first even-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.hardware.device.imu">SampleProvider</a></div>
 <div class="col-last even-row-color">
 <div class="block">Source of sensor samples.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.motor">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.robotics</a> used by <a href="../hardware/device/motor/package-summary.html">io.github.jabrena.juno.hardware.device.motor</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/BaseMotor.html#io.github.jabrena.juno.hardware.device.motor">BaseMotor</a></div>
+<div class="col-last even-row-color">
+<div class="block">A motor that runs forward or backward until it is stopped.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/DCMotor.html#io.github.jabrena.juno.hardware.device.motor">DCMotor</a></div>
+<div class="col-last odd-row-color">
+<div class="block">A DC motor driven by a power level.</div>
 </div>
 </div>
 </section>

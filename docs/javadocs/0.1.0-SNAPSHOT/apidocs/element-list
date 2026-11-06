@@ -3,12 +3,14 @@ io.github.jabrena.juno.hardware
 io.github.jabrena.juno.hardware.audio
 io.github.jabrena.juno.hardware.device.carrier
 io.github.jabrena.juno.hardware.device.grove
+io.github.jabrena.juno.hardware.device.grove.display
 io.github.jabrena.juno.hardware.device.grove.sensors
 io.github.jabrena.juno.hardware.device.imu
 io.github.jabrena.juno.hardware.device.ir
 io.github.jabrena.juno.hardware.device.ir.hx
 io.github.jabrena.juno.hardware.device.kasa
 io.github.jabrena.juno.hardware.device.lcd
+io.github.jabrena.juno.hardware.device.motor
 io.github.jabrena.juno.hardware.device.sd
 io.github.jabrena.juno.hardware.device.servo
 io.github.jabrena.juno.hardware.device.tft
