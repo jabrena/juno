@@ -21,7 +21,7 @@ public final class NanoCarrierRcxFirmwareDownload {
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
         RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
-        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxFirmwareDownload.download(remote);
     }
 }

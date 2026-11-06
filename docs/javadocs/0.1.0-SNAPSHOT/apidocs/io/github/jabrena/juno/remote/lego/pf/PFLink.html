@@ -76,11 +76,6 @@ initTheme();
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" tabindex="0">PFLink(InfraredEmitter)</a></li>
 </ol>
 </li>
-<li><a href="#method-detail" tabindex="0">Method Details</a>
-<ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
-</ol>
-</li>
 </ol>
 <button class="hide-sidebar"><span>Hide sidebar&nbsp;</span><img src="../../../../../../../resource-files/left.svg" alt="Hide sidebar"></button><button class="show-sidebar"><img src="../../../../../../../resource-files/right.svg" alt="Show sidebar"><span>&nbsp;Show sidebar</span></button></nav>
 <main role="main">
@@ -98,8 +93,8 @@ initTheme();
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">The Power Functions infrared link: the message framing and the transmission of a Power Functions command over an
 <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir"><code>InfraredEmitter</code></a>, as <a href="../rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> is for the RCX. Create one at
-startup with the emitter, call <a href="#begin()"><code>begin()</code></a> once, and share it with every <a href="RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf"><code>RemotePF</code></a> that talks to the same
-receivers, so they share one toggle bit.
+startup with the emitter and share it with every <a href="RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf"><code>RemotePF</code></a> that talks to the same receivers, so they share
+one toggle bit.
 
 <p>A message is 16 bits of four 4-bit fields (toggle, escape and channel; output and mode; data; checksum) sent as a
 38 kHz burst of 6 cycles per bit, followed by a pause of 10 cycles for a 0, 21 for a 1 and 39 for the start and stop
@@ -127,21 +122,6 @@ marks. It is sent six times, so the receiver does not miss it, which takes about
 <li>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
-<div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
-<div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Method</div>
-<div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Configures the emitter's transmit pin.</div>
-</div>
-</div>
-</div>
-</div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#method-summary" title="class in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#clone()" title="clone()" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="equals(Object)" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#finalize()" title="finalize()" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#getClass()" title="getClass()" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#hashCode()" title="hashCode()" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notify()" title="notify()" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notifyAll()" title="notifyAll()" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#toString()" title="toString()" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait()" title="wait()" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long)" title="wait(long)" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="wait(long, int)" class="external-link">wait</a></code></div>
@@ -162,23 +142,6 @@ marks. It is sent six times, so the receiver does not miss it, which takes about
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">PFLink</span><wbr><span class="parameters">(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</span></div>
 <div class="block">A link that transmits through <code>emitter</code>, for example an <code>HX53InfraredEmitter</code> or a <code>GroveInfraredEmitter</code>.</div>
-</div>
-</section>
-</li>
-</ul>
-</section>
-</li>
-<!-- ============ METHOD DETAIL ========== -->
-<li>
-<section class="method-details" id="method-detail">
-<h2>Method Details</h2>
-<ul class="member-list">
-<li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Configures the emitter's transmit pin. There is no receiver, so the pulses are sent but never read back.</div>
 </div>
 </section>
 </li>

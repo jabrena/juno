@@ -94,17 +94,11 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int)" tabindex="0">RemoteRcx(RcxLink, int, int)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" tabindex="0">RemoteRcx(RcxLink, InfraredReceiver, InfraredEmitter)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" tabindex="0">RemoteRcx(RcxLink, int, InfraredReceiver, InfraredEmitter)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemoteRcx(RcxLink, InfraredReceiver, InfraredEmitter, Clock)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemoteRcx(RcxLink, int, InfraredReceiver, InfraredEmitter, Clock)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemoteRcx(RcxLink, int, int, Clock)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)" tabindex="0">RemoteRcx(RcxLink, RcxChannel)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#getMotorA()" tabindex="0">getMotorA()</a></li>
 <li><a href="#getMotorB()" tabindex="0">getMotorB()</a></li>
 <li><a href="#getMotorC()" tabindex="0">getMotorC()</a></li>
@@ -138,8 +132,8 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">RemoteRcx</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">A LEGO Mindstorms RCX brick reached over infrared: create it once, at
-startup, with the infrared <a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and the pins of the IR receiver module and the IR LED, call
-<a href="#begin()"><code>begin()</code></a>, and get the brick's parts from it — its motors (<a href="#getMotorA()"><code>getMotorA()</code></a>, <a href="#getMotorB()"><code>getMotorB()</code></a>, <a href="#getMotorC()"><code>getMotorC()</code></a>), its sensor inputs
+startup, with the already-configured infrared <a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and a firmware channel; construction
+creates the brick's parts from the link — its motors (<a href="#getMotorA()"><code>getMotorA()</code></a>, <a href="#getMotorB()"><code>getMotorB()</code></a>, <a href="#getMotorC()"><code>getMotorC()</code></a>), its sensor inputs
 (<a href="#getSensor1()"><code>getSensor1()</code></a>, <a href="#getSensor2()"><code>getSensor2()</code></a>, <a href="#getSensor3()"><code>getSensor3()</code></a>), its display (<a href="#getLcd()"><code>getLcd()</code></a>), its speaker
 (<a href="#getAudio()"><code>getAudio()</code></a>), its batteries (<a href="#getBattery()"><code>getBattery()</code></a>) and its firmware loader (<a href="#getFirmware()"><code>getFirmware()</code></a>). Every
 part shares one <a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a>, so the brick sees one toggle bit, and is allocated here, so getting one allocates
@@ -241,47 +235,10 @@ not while <code>Delay.millis</code> is waiting. Works on both boards.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;receivePin,
- int&nbsp;transmitPin)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ <a href="RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a>&nbsp;channel)</code></div>
 <div class="col-last even-row-color">
-<div class="block">A brick reached over <code>link</code>, with an IR receiver module on <code>receivePin</code> and an IR LED on
-<code>transmitPin</code>, either <code>-1</code> when unused.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;receivePin,
- int&nbsp;transmitPin,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">As the three-argument constructor, timing the button hold and firmware waits on <code>clock</code>: a simulated clock in a unit test.</div>
-</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;channel,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</code></div>
-<div class="col-last even-row-color">
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;channel,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules and timed by <code>clock</code>.</div>
-</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</code></div>
-<div class="col-last even-row-color">
-<div class="block">A brick reached through typed infrared modules, using the UNO clock.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">A brick reached through typed infrared modules and timed by <code>clock</code>.</div>
+<div class="block">A brick reached through the already-configured link on a Juno firmware channel or the original broadcast.</div>
 </div>
 </div>
 </section>
@@ -297,87 +254,82 @@ not while <code>Delay.millis</code> is waiting. Works on both boards.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buttons()" class="member-name-link">buttons</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Configures the IR receiver and IR LED pins given to the constructor.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#buttons()" class="member-name-link">buttons</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The buttons currently held on the remote as a mask of the button constants, or <code>0</code> when
 none is held.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxAudio</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAudio()" class="member-name-link">getAudio</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxAudio</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAudio()" class="member-name-link">getAudio</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The speaker.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxBattery.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBattery</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBattery()" class="member-name-link">getBattery</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxBattery.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBattery</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBattery()" class="member-name-link">getBattery</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The batteries.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxButtons.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxButtons</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getButtons()" class="member-name-link">getButtons</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxButtons.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxButtons</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getButtons()" class="member-name-link">getButtons</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The brick's own View, Prgm and Run buttons; needs Juno's own RCX firmware.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFirmware()" class="member-name-link">getFirmware</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFirmware()" class="member-name-link">getFirmware</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The firmware loader, which the brick's boot ROM answers even with no firmware installed.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxLcd.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcd()" class="member-name-link">getLcd</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxLcd.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcd()" class="member-name-link">getLcd</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The display.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorA()" class="member-name-link">getMotorA</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorA()" class="member-name-link">getMotorA</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Output A.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorB()" class="member-name-link">getMotorB</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorB()" class="member-name-link">getMotorB</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Output B.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorC()" class="member-name-link">getMotorC</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMotorC()" class="member-name-link">getMotorC</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Output C.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor1()" class="member-name-link">getSensor1</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor1()" class="member-name-link">getSensor1</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sensor input 1.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor2()" class="member-name-link">getSensor2</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor2()" class="member-name-link">getSensor2</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sensor input 2.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor3()" class="member-name-link">getSensor3</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSensor3()" class="member-name-link">getSensor3</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sensor input 3.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#message()" class="member-name-link">message</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#message()" class="member-name-link">message</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The value of the most recent RCX <code>message</code> command (opcode <code>0xF7</code>, e.g. sent by
 another RCX or by <a href="#sendMessage(int)"><code>sendMessage(int)</code></a>), <code>0..255</code>, or <code>-1</code> if none has arrived
 since the last call.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits a remote-control command with <code>buttonMask</code> to RCX bricks in range, as the remote does.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
 </div>
 </div>
@@ -666,75 +618,12 @@ since the last call.</div>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int)">
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)">
 <h3>RemoteRcx</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;receivePin,
- int&nbsp;transmitPin)</span></div>
-<div class="block">A brick reached over <code>link</code>, with an IR receiver module on <code>receivePin</code> and an IR LED on
-<code>transmitPin</code>, either <code>-1</code> when unused. Create it once, at startup, and call <a href="#begin()"><code>begin()</code></a> to set up
-the pins. Share <code>link</code> with any other RCX class, so they share one toggle bit.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)">
-<h3>RemoteRcx</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</span></div>
-<div class="block">A brick reached through typed infrared modules, using the UNO clock.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)">
-<h3>RemoteRcx</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;channel,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</span></div>
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RemoteRcx</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">A brick reached through typed infrared modules and timed by <code>clock</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RemoteRcx</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;channel,
- <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules and timed by <code>clock</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RemoteRcx</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemoteRcx</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- int&nbsp;receivePin,
- int&nbsp;transmitPin,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">As the three-argument constructor, timing the button hold and firmware waits on <code>clock</code>: a simulated clock in a unit test.</div>
+ <a href="RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a>&nbsp;channel)</span></div>
+<div class="block">A brick reached through the already-configured link on a Juno firmware channel or the original broadcast.</div>
 </div>
 </section>
 </li>
@@ -746,16 +635,6 @@ the pins. Share <code>link</code> with any other RCX class, so they share one to
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Configures the IR receiver and IR LED pins given to the constructor. Without the receiver, the parts' commands
-cannot hear the brick's answers: reads return <code>-1</code> and acknowledgements <code>false</code>.</div>
-</div>
-</section>
-</li>
 <li>
 <section class="detail" id="getMotorA()">
 <h3>getMotorA</h3>

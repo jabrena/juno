@@ -78,7 +78,6 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#temperatureTenths()" tabindex="0">temperatureTenths()</a></li>
 </ol>
 </li>
@@ -128,14 +127,9 @@ initTheme();
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#temperatureTenths()" class="member-name-link">temperatureTenths</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Configures the input for a temperature sensor reading Celsius.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#temperatureTenths()" class="member-name-link">temperatureTenths</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The temperature in tenths of a degree Celsius (235 is 23.5 degrees), or <code>0</code> if the brick did not answer.</div>
 </div>
 </div>
@@ -160,7 +154,7 @@ initTheme();
 <h3>RcxTemperatureSensor</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxTemperatureSensor</span><wbr><span class="parameters">(<a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a>&nbsp;port)</span></div>
-<div class="block">A temperature sensor on <code>port</code>. Create it once, at startup, and call <a href="#begin()"><code>begin()</code></a> after <a href="RemoteRcx.html#begin()"><code>RemoteRcx.begin()</code></a>.</div>
+<div class="block">A temperature sensor on <code>port</code>. Create it once, at startup; construction configures the port.</div>
 </div>
 </section>
 </li>
@@ -172,15 +166,6 @@ initTheme();
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Configures the input for a temperature sensor reading Celsius. Returns whether the brick acknowledged.</div>
-</div>
-</section>
-</li>
 <li>
 <section class="detail" id="temperatureTenths()">
 <h3>temperatureTenths</h3>

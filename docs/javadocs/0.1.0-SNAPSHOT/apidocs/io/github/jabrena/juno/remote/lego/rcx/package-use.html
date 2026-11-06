@@ -97,29 +97,33 @@ initTheme();
 <div class="col-last even-row-color">
 <div class="block">An RCX brick's own View, Prgm and Run buttons, from <a href="RemoteRcx.html#getButtons()"><code>RemoteRcx.getButtons()</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/RcxFirmware.html#io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></div>
+<div class="col-first odd-row-color"><a href="class-use/RcxChannel.html#io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></div>
 <div class="col-last odd-row-color">
+<div class="block">A Juno firmware channel of an RCX brick, or the original unchannelized broadcast.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/RcxFirmware.html#io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></div>
+<div class="col-last even-row-color">
 <div class="block">Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM
 answers these four commands even when it has no firmware, which is the state it is in after its batteries
 were out (the display then shows program <code>0</code>).</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/RcxLcd.html#io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/RcxLcd.html#io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></div>
+<div class="col-last odd-row-color">
 <div class="block">An RCX brick's display, from <a href="RemoteRcx.html#getLcd()"><code>RemoteRcx.getLcd()</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/RcxLink.html#io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="class-use/RcxLink.html#io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></div>
+<div class="col-last even-row-color">
 <div class="block">The RCX infrared framing: a message is <code>55 FF 00</code> followed by the opcode, its arguments and a checksum, each
 byte followed by its complement.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/RcxMotor.html#io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/RcxMotor.html#io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></div>
+<div class="col-last odd-row-color">
 <div class="block">One or more of an RCX brick's outputs, driven with direct commands over infrared: get them from
 <a href="RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/RcxSensor.html#io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="class-use/RcxSensor.html#io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></div>
+<div class="col-last even-row-color">
 <div class="block">One of an RCX brick's three sensor inputs: get it from <a href="RemoteRcx.html#getSensor1()"><code>RemoteRcx.getSensor1()</code></a>,
 <a href="RemoteRcx.html#getSensor2()"><code>RemoteRcx.getSensor2()</code></a> or <a href="RemoteRcx.html#getSensor3()"><code>RemoteRcx.getSensor3()</code></a> and hand it to the sensor plugged into it, an
 <a href="RcxTouchSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxTouchSensor</code></a>, <a href="RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLightSensor</code></a>, <a href="RcxTemperatureSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxTemperatureSensor</code></a> or <a href="RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRotationSensor</code></a>, created

@@ -38,7 +38,7 @@ public class RcxIcons {
 
     public static void main(String[] args) {
         RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
-        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxLcd lcd = remote.getLcd();
         RcxMotor motorA = remote.getMotorA();
         RcxIcons app = new RcxIcons(lcd);

@@ -339,49 +339,9 @@ reported it.</div>
 <dd>
 <div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
-<dd>
-<div class="block">Initializes the SSD1315 and transfers the current framebuffer.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
-<dd>
-<div class="block">Starts both BMI088 devices and returns <code>false</code> if either chip ID cannot be read.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">Starts the bus and the sensor, returning <code>false</code> if the sensor did not answer with its chip ID.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
-<dd>
-<div class="block">Starts the sensor at <code>NineAxisMotionShield.ADDRESS_DEFAULT</code> in IMU fusion mode, returning <code>false</code> if no BNO055 answered.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
-<dd>
-<div class="block">Configures the shield's pins, runs the HD44780 4-bit init sequence, and turns the backlight on.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
-<dd>
-<div class="block">Configures the three pins and leaves the motor coasting.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
-<div class="block">Initializes the card on the chip-select pin of the socket it came from (D10 on the data logger and TFT shields,
-D4 on the Arduino WiFi Shield and the Nano Connector Carrier, or GPIO12 on the Cardputer) and returns whether it
-was detected successfully.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
-<dd>
-<div class="block">Starts I2C and sets the shield at <code>0x40</code> to the 50 Hz servo frame.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
-<dd>
-<div class="block">Configures the shield's pins, resets and initializes the ILI9341 in 16-bit color, and selects
-<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#PORTRAIT"><code>TftTouchShield.PORTRAIT</code></a> rotation, a size-1 white-on-black text style, and ELEGOO's default touch
-calibration.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/display/Display.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
-<dd>
-<div class="block">Initializes the display hardware.</div>
+<div class="block">Initializes the card on its socket's chip-select pin and returns whether it was detected successfully.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/hid/Mouse.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.hid.<a href="io/github/jabrena/juno/hardware/hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></dt>
 <dd>
@@ -419,30 +379,6 @@ calibration.</div>
 <dd>
 <div class="block">Starts the bus as a controller in SPI mode 0, most significant bit first, at the core's default clock.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFLink</a></dt>
-<dd>
-<div class="block">Configures the emitter's transmit pin.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLightSensor</a></dt>
-<dd>
-<div class="block">Configures the input for a light sensor reading percent.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRotationSensor</a></dt>
-<dd>
-<div class="block">Configures the input for a rotation sensor counting 16 steps per turn.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTemperatureSensor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxTemperatureSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTemperatureSensor</a></dt>
-<dd>
-<div class="block">Configures the input for a temperature sensor reading Celsius.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTouchSensor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxTouchSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTouchSensor</a></dt>
-<dd>
-<div class="block">Configures the input for a touch sensor.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">Configures the IR receiver and IR LED pins given to the constructor.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a></dt>
 <dd>
 <div class="block">Configures the signal pin as a digital input.</div>
@@ -450,10 +386,6 @@ calibration.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin(int)" class="member-name-link">begin(int)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
 <div class="block">Initializes the card on <code>chipSelectPin</code> and returns whether it was detected successfully.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
-<dd>
-<div class="block">Starts I2C and sets the shield at <code>shieldAddress</code> to the 50 Hz servo frame.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
@@ -468,18 +400,6 @@ calibration.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html#begin(int%5B%5D,int)" class="member-name-link">begin(int[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft">ParallelBus</a></dt>
 <dd>
 <div class="block">Uses <code>dataPins</code> (<a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html#WIDTH"><code>ParallelBus.WIDTH</code></a> of them, bit 0 first) and <code>strobePin</code>, which is left high.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,int)" class="member-name-link">begin(InfraredReceiver, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveInfraredEmitter</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/ir/hx/HX53InfraredEmitter.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,int)" class="member-name-link">begin(InfraredReceiver, int)</a> - Method in class io.github.jabrena.juno.hardware.device.ir.hx.<a href="io/github/jabrena/juno/hardware/device/ir/hx/HX53InfraredEmitter.html" title="class in io.github.jabrena.juno.hardware.device.ir.hx">HX53InfraredEmitter</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,int)" class="member-name-link">begin(InfraredReceiver, int)</a> - Method in interface io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a></dt>
-<dd>
-<div class="block">Configures this emitter with <code>receiver</code> for framed bytes at <code>baud</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">begin(InfraredReceiver, InfraredEmitter)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
-<dd>
-<div class="block">Configures an RCX link with a typed receiver and emitter pair.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#begin(io.github.jabrena.juno.hardware.serial.BaudRate)" class="member-name-link">begin(BaudRate)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
@@ -596,6 +516,10 @@ exchanges messages with one characteristic of that service.</div>
 <dd>
 <div class="block">Actively brakes both motors of a virtual port.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#BROADCAST" class="member-name-link">BROADCAST</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">All bricks listening to the original unchannelized RCX protocol.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">broadcastDiscovery(DatagramSocket, DatagramPacket)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Encrypts the system-information query into <code>request</code> and broadcasts it, returning its length or <code>-1</code>.</div>
@@ -659,17 +583,37 @@ y = 319.</div>
 <dd>
 <div class="block">The receiver's channel switch set to 1.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#CHANNEL_1" class="member-name-link">CHANNEL_1</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">The first Juno firmware channel.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html#CHANNEL_2" class="member-name-link">CHANNEL_2</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a></dt>
 <dd>
 <div class="block">The receiver's channel switch set to 2.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#CHANNEL_2" class="member-name-link">CHANNEL_2</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">The second Juno firmware channel.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html#CHANNEL_3" class="member-name-link">CHANNEL_3</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a></dt>
 <dd>
 <div class="block">The receiver's channel switch set to 3.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#CHANNEL_3" class="member-name-link">CHANNEL_3</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">The third Juno firmware channel.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html#CHANNEL_4" class="member-name-link">CHANNEL_4</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a></dt>
 <dd>
 <div class="block">The receiver's channel switch set to 4.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#CHANNEL_4" class="member-name-link">CHANNEL_4</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">The fourth Juno firmware channel.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#CHANNEL_5" class="member-name-link">CHANNEL_5</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">The fifth Juno firmware channel.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#CHANNELS" class="member-name-link">CHANNELS</a> - Static variable in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>&nbsp;</dd>
@@ -1113,6 +1057,22 @@ level, and <code>0</code> brakes them.</div>
 <div class="block">Creates geometry for equal wheel diameter and track width, with independent encoder ratios for
 the left and right sides.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.html#driver()" class="member-name-link">driver()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveInfraredEmitter</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredReceiver.html#driver()" class="member-name-link">driver()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredReceiver.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveInfraredReceiver</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/hx/HX53InfraredEmitter.html#driver()" class="member-name-link">driver()</a> - Method in class io.github.jabrena.juno.hardware.device.ir.hx.<a href="io/github/jabrena/juno/hardware/device/ir/hx/HX53InfraredEmitter.html" title="class in io.github.jabrena.juno.hardware.device.ir.hx">HX53InfraredEmitter</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/hx/HXM121InfraredReceiver.html#driver()" class="member-name-link">driver()</a> - Method in class io.github.jabrena.juno.hardware.device.ir.hx.<a href="io/github/jabrena/juno/hardware/device/ir/hx/HXM121InfraredReceiver.html" title="class in io.github.jabrena.juno.hardware.device.ir.hx">HXM121InfraredReceiver</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html#driver()" class="member-name-link">driver()</a> - Method in interface io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a></dt>
+<dd>
+<div class="block">The carrier driver required by this emitter.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredReceiver.html#driver()" class="member-name-link">driver()</a> - Method in interface io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a></dt>
+<dd>
+<div class="block">The carrier driver required by this receiver.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:E">E</h2>
 <dl class="index">
@@ -1191,7 +1151,7 @@ both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/j
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
 <div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; all zero before
-<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+construction.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -1411,12 +1371,11 @@ too short for a typical query string).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a> or the last <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()"><code>Lsm6ds3.reset()</code></a>;
-<code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since construction or the last <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()"><code>Lsm6ds3.reset()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#begin()"><code>NineAxisMotionShield.begin()</code></a> or the last <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#reset()"><code>NineAxisMotionShield.reset()</code></a>;
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <code>NineAxisMotionShield.begin()</code> or the last <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#reset()"><code>NineAxisMotionShield.reset()</code></a>;
 <code>-1</code> if the read failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
@@ -1429,11 +1388,11 @@ too short for a typical query string).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
-<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+<div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
-<div class="block">The yaw rate in degrees per second, clockwise positive; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+<div class="block">The yaw rate in degrees per second, clockwise positive; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -1956,11 +1915,11 @@ either ADC rail.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
-<div class="block">Returns X acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+<div class="block">Returns X acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
-<div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+<div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -1976,11 +1935,11 @@ either ADC rail.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
-<div class="block">Returns Y acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+<div class="block">Returns Y acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
-<div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+<div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -1996,11 +1955,11 @@ either ADC rail.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
-<div class="block">Returns Z acceleration in whole metres per second squared, or zero before <a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#begin()"><code>Bmi088.begin()</code></a>.</div>
+<div class="block">Returns Z acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
 <dd>
-<div class="block">The acceleration along the board's Z axis in whole metres per second squared; <code>0</code> before <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#begin()"><code>Lsm6ds3.begin()</code></a>.</div>
+<div class="block">The acceleration along the board's Z axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -2044,6 +2003,10 @@ either ADC rail.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#GREEN" class="member-name-link">GREEN</a> - Static variable in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#GROVE" class="member-name-link">GROVE</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
+<dd>
+<div class="block">The hardware-carrier driver used by Grove modules on ESP32 boards.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveAnalogGas.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveAnalogGas</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
 <dd>
 <div class="block">Reads the analog <code>SIG</code> output of a Grove gas sensor connected to an analog Grove socket.</div>
@@ -2294,6 +2257,10 @@ sensors of the Technic Hub (88012), which report on their own port numbers once 
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.html#HUMIDITY_TENTHS_PERCENT" class="member-name-link">HUMIDITY_TENTHS_PERCENT</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht22</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#HX" class="member-name-link">HX</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
+<dd>
+<div class="block">The original software-carrier driver used by HX modules.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/hx/HX53InfraredEmitter.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.ir.hx">HX53InfraredEmitter</a> - Class in <a href="io/github/jabrena/juno/hardware/device/ir/hx/package-summary.html">io.github.jabrena.juno.hardware.device.ir.hx</a></dt>
 <dd>
 <div class="block">An HX-53 infrared emitter using Juno's original software-carrier driver.</div>
@@ -2385,6 +2352,18 @@ sensors of the Technic Hub (88012), which report on their own port numbers once 
 <dd>
 <div class="block">Serial bytes over modulated infrared light, recognized as compiler intrinsics by Juno and
 bit-banged on two plain pins, with no Arduino library.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver</a> - Class in <a href="io/github/jabrena/juno/hardware/device/ir/package-summary.html">io.github.jabrena.juno.hardware.device.ir</a></dt>
+<dd>
+<div class="block">Configures one of the two low-level infrared carrier implementations.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredDriver.Type,int,int,int)" class="member-name-link">InfraredDriver(InfraredDriver.Type, int, int, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.html" title="class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver</a></dt>
+<dd>
+<div class="block">Configures both endpoints of the shared infrared transport.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" class="type-name-link" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a> - Enum Class in <a href="io/github/jabrena/juno/hardware/device/ir/package-summary.html">io.github.jabrena.juno.hardware.device.ir</a></dt>
+<dd>
+<div class="block">The supported infrared carrier implementations.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a> - Interface in <a href="io/github/jabrena/juno/hardware/device/ir/package-summary.html">io.github.jabrena.juno.hardware.device.ir</a></dt>
 <dd>
@@ -3704,13 +3683,9 @@ cursor.</div>
 <div class="block">The "16 x 12-bit PWM &amp; Servo Shield": an NXP PCA9685 that generates sixteen servo signals on its own, driven
 over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#%3Cinit%3E()" class="member-name-link">PwmServoShield()</a> - Constructor for class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,int)" class="member-name-link">PwmServoShield(I2c, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>
-<div class="block">A shield on the board's own I2C bus.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c)" class="member-name-link">PwmServoShield(I2c)</a> - Constructor for class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
-<dd>
-<div class="block">A shield driven through <code>i2c</code>: a mocked one in a unit test.</div>
+<div class="block">A shield at <code>shieldAddress</code> driven through <code>i2c</code>; collaborators may be mocks in a unit test.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:Q">Q</h2>
@@ -3759,17 +3734,13 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 <div class="block">The RCX's direct commands that answer back, the protocol under <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RemoteRcx</code></a>'s motors, sensors, display, sound
 and battery; use <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RemoteRcx</code></a> in a program.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#%3Cinit%3E()" class="member-name-link">RcxBrick()</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
-<dd>
-<div class="block">A brick on the board's own infrared link.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxBrick(RcxLink)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
-<dd>
-<div class="block">A brick on a link shared with other RCX classes, so they share one toggle bit.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxButtons.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxButtons</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
 <div class="block">An RCX brick's own View, Prgm and Run buttons, from <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getButtons()"><code>RemoteRcx.getButtons()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a> - Enum Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
+<dd>
+<div class="block">A Juno firmware channel of an RCX brick, or the original unchannelized broadcast.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
@@ -3777,17 +3748,9 @@ and battery; use <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html"
 answers these four commands even when it has no firmware, which is the state it is in after its batteries
 were out (the display then shows program <code>0</code>).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#%3Cinit%3E()" class="member-name-link">RcxFirmware()</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></dt>
-<dd>
-<div class="block">A firmware loader on the board's own infrared link and timer.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxFirmware(RcxLink)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></dt>
 <dd>
 <div class="block">A firmware loader on a link shared with other RCX classes, so they share one toggle bit.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxFirmware(RcxLink, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></dt>
-<dd>
-<div class="block">A firmware loader on <code>link</code>, timing its waits on <code>clock</code>: a simulated clock in a unit test.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
@@ -3814,13 +3777,9 @@ were out (the display then shows program <code>0</code>).</div>
 <div class="block">The RCX infrared framing: a message is <code>55 FF 00</code> followed by the opcode, its arguments and a checksum, each
 byte followed by its complement.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#%3Cinit%3E()" class="member-name-link">RcxLink()</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink(InfraredEmitter, InfraredReceiver, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
 <dd>
-<div class="block">A link on the board's own timer.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#%3Cinit%3E(io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink(Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
-<dd>
-<div class="block">A link that times its replies on <code>clock</code>: a simulated one in a unit test.</div>
+<div class="block">A link configured with its infrared modules and timer; construction completes the link setup.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
@@ -4040,35 +3999,14 @@ backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib ins
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
 <div class="block">A LEGO Mindstorms RCX brick reached over infrared: create it once, at
-startup, with the infrared <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and the pins of the IR receiver module and the IR LED, call
-<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#begin()"><code>RemoteRcx.begin()</code></a>, and get the brick's parts from it — its motors (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>), its sensor inputs
+startup, with the already-configured infrared <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and a firmware channel; construction
+creates the brick's parts from the link — its motors (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>), its sensor inputs
 (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor1()"><code>RemoteRcx.getSensor1()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor2()"><code>RemoteRcx.getSensor2()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor3()"><code>RemoteRcx.getSensor3()</code></a>), its display (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getLcd()"><code>RemoteRcx.getLcd()</code></a>), its speaker
 (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getAudio()"><code>RemoteRcx.getAudio()</code></a>), its batteries (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getBattery()"><code>RemoteRcx.getBattery()</code></a>) and its firmware loader (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getFirmware()"><code>RemoteRcx.getFirmware()</code></a>).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int)" class="member-name-link">RemoteRcx(RcxLink, int, int)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)" class="member-name-link">RemoteRcx(RcxLink, RcxChannel)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
-<div class="block">A brick reached over <code>link</code>, with an IR receiver module on <code>receivePin</code> and an IR LED on
-<code>transmitPin</code>, either <code>-1</code> when unused.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx(RcxLink, int, int, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">As the three-argument constructor, timing the button hold and firmware waits on <code>clock</code>: a simulated clock in a unit test.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">RemoteRcx(RcxLink, int, InfraredReceiver, InfraredEmitter)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx(RcxLink, int, InfraredReceiver, InfraredEmitter, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">A brick on Juno firmware channel <code>1..5</code>, reached through typed infrared modules and timed by <code>clock</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">RemoteRcx(RcxLink, InfraredReceiver, InfraredEmitter)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">A brick reached through typed infrared modules, using the UNO clock.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemoteRcx(RcxLink, InfraredReceiver, InfraredEmitter, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
-<dd>
-<div class="block">A brick reached through typed infrared modules and timed by <code>clock</code>.</div>
+<div class="block">A brick reached through the already-configured link on a Juno firmware channel or the original broadcast.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#remove(java.lang.String)" class="member-name-link">remove(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -5002,6 +4940,10 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/annotations/Board.html#value()" class="member-name-link">value()</a> - Element in annotation interface io.github.jabrena.juno.annotations.<a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/BaudRate.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/BaudRate.html" title="enum class in io.github.jabrena.juno.hardware.serial">BaudRate</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
@@ -5021,6 +4963,15 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/BaudRate.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/BaudRate.html" title="enum class in io.github.jabrena.juno.hardware.serial">BaudRate</a></dt>
 <dd>
@@ -5043,6 +4994,11 @@ the order they are declared.</div>
 the order they are declared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>

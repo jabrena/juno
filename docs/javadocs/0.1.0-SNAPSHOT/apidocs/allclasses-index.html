@@ -344,6 +344,14 @@ sensors of the Technic Hub (88012), which report on their own port numbers once 
 <div class="block">Serial bytes over modulated infrared light, recognized as compiler intrinsics by Juno and
 bit-banged on two plain pins, with no Arduino library.</div>
 </div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.html" title="class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Configures one of the two low-level infrared carrier implementations.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="block">The supported infrared carrier implementations.</div>
+</div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">An infrared emitter module that configures the low-level transport required by its circuit.</div>
@@ -623,157 +631,161 @@ and battery; use <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html"
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">An RCX brick's own View, Prgm and Run buttons, from <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getButtons()"><code>RemoteRcx.getButtons()</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="block">A Juno firmware channel of an RCX brick, or the original unchannelized broadcast.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM
 answers these four commands even when it has no firmware, which is the state it is in after its batteries
 were out (the display then shows program <code>0</code>).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">An RCX brick's display, from <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getLcd()"><code>RemoteRcx.getLcd()</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLight</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLight</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A lamp connected to one of an RCX brick's motor outputs for tone activity indication.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLightSensor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLightSensor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A light sensor plugged into an RCX input, e.g.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The RCX infrared framing: a message is <code>55 FF 00</code> followed by the opcode, its arguments and a checksum, each
 byte followed by its complement.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">One or more of an RCX brick's outputs, driven with direct commands over infrared: get them from
 <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRotationSensor</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRotationSensor</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A rotation sensor plugged into an RCX input, e.g.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">One of an RCX brick's three sensor inputs: get it from <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor1()"><code>RemoteRcx.getSensor1()</code></a>,
 <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor2()"><code>RemoteRcx.getSensor2()</code></a> or <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor3()"><code>RemoteRcx.getSensor3()</code></a> and hand it to the sensor plugged into it, an
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxTouchSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxTouchSensor</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLightSensor</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RcxTemperatureSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxTemperatureSensor</code></a> or <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRotationSensor</code></a>, created
 once, at startup.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTemperatureSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTemperatureSensor</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTemperatureSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTemperatureSensor</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A temperature sensor plugged into an RCX input, e.g.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTouchSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTouchSensor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxTouchSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxTouchSensor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A touch sensor plugged into an RCX input, e.g.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A motor with encoder feedback and closed-loop speed/position control.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf">RemotePF</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf">RemotePF</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A LEGO Power Functions infrared remote (8885), which drives the motors, lights and servos plugged
 into an IR Receiver (8884) set to one of its four channels.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A LEGO Powered Up hub (City Hub 88009, Technic Hub 88012, BOOST Move Hub 88006, DUPLO Train
 Hub, ...) controlled over Bluetooth Low Energy, recognized as compiler intrinsics by Juno and
 backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib install ArduinoBLE</code>).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A LEGO Mindstorms RCX brick reached over infrared: create it once, at
-startup, with the infrared <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and the pins of the IR receiver module and the IR LED, call
-<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#begin()"><code>RemoteRcx.begin()</code></a>, and get the brick's parts from it — its motors (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>), its sensor inputs
+startup, with the already-configured infrared <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> and a firmware channel; construction
+creates the brick's parts from the link — its motors (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>), its sensor inputs
 (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor1()"><code>RemoteRcx.getSensor1()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor2()"><code>RemoteRcx.getSensor2()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor3()"><code>RemoteRcx.getSensor3()</code></a>), its display (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getLcd()"><code>RemoteRcx.getLcd()</code></a>), its speaker
 (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getAudio()"><code>RemoteRcx.getAudio()</code></a>), its batteries (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getBattery()"><code>RemoteRcx.getBattery()</code></a>) and its firmware loader (<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getFirmware()"><code>RemoteRcx.getFirmware()</code></a>).</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Source of sensor samples.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Access to an SPI SD card, backed by the Arduino <code>SdFat</code> library with long-file-name support
 enabled.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One way of reading a sensor: a <a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a> with a name, such as a
 temperature or a humidity mode of the same device.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A sensor with several modes.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">USB serial output recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A zero-cost servo motor handle for a standard 3-wire hobby servo (signal, power, ground),
 backed by the Arduino <code>Servo</code> library.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/email/Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/email/Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal SMTP client recognized as a compiler intrinsic by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The SNTP server behind the internet-backed <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a> intrinsic, which synchronizes UTC
 over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
 millisecond counter.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/Task.html" title="interface in io.github.jabrena.juno.util.mvc">Task</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/Task.html" title="interface in io.github.jabrena.juno.util.mvc">Task</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Background work a <a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc"><code>ViewRouter</code></a> advances a little every frame, before the active view renders: the
 single-threaded alternative to a background thread, for a board whose RAM has no room for a thread stack.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
 <code>TouchScreen</code> libraries.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/UuidCodec.html" title="class in io.github.jabrena.juno.util">UuidCodec</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/UuidCodec.html" title="class in io.github.jabrena.juno.util">UuidCodec</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Converts UUID values to and from their 16-byte, most-significant-byte-first network representation.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One screen of a multi-view program.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">ViewRouter</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">ViewRouter</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The controller of a multi-view TFT program: it owns the views, runs the frame loop and switches the active view
 when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html" title="interface in io.github.jabrena.juno.util.mvc"><code>Navigator</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab6">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab6">
 <div class="block">Enables the target's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Wi-Fi connection control.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
 <a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>

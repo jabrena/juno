@@ -82,9 +82,7 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E()" tabindex="0">RcxFirmware()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" tabindex="0">RcxFirmware(RcxLink)</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RcxFirmware(RcxLink, Clock)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -113,12 +111,12 @@ initTheme();
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">Loads firmware into an RCX brick over infrared, as the LEGO IR tower does: the brick's boot ROM
 answers these four commands even when it has no firmware, which is the state it is in after its batteries
-were out (the display then shows program <code>0</code>). Get it from <a href="RemoteRcx.html#getFirmware()"><code>RemoteRcx.getFirmware()</code></a> and set up the link with <a href="RemoteRcx.html#begin()"><code>RemoteRcx.begin()</code></a> first,
-with both the IR LED and the IR receiver module wired, since every step waits for the brick's reply.
+were out (the display then shows program <code>0</code>). Get it from <a href="RemoteRcx.html#getFirmware()"><code>RemoteRcx.getFirmware()</code></a> after constructing the
+<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> with both the IR LED and the IR receiver module, since every step waits for the brick's reply.
 
 <p>The sequence is <a href="#delete()"><code>delete()</code></a>, <a href="#start(int,int)"><code>start(int, int)</code></a> with the image's entry address and checksum, one
 successful <a href="#transfer(int,byte%5B%5D,int)"><code>transfer(int, byte[], int)</code></a> per block of up to <a href="#BLOCK_SIZE">200</a> bytes numbered from 1, then <a href="#unlock()"><code>unlock()</code></a>; a
-16 KB image takes about three minutes at 2400 baud.</div>
+16 KB image takes about three minutes at 2400 baud. The <a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> is configured before this loader is created.</div>
 </div>
 </section>
 <section class="summary">
@@ -163,18 +161,9 @@ successful <a href="#transfer(int,byte%5B%5D,int)"><code>transfer(int, byte[], i
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RcxFirmware</a>()</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxFirmware</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link)</code></div>
 <div class="col-last even-row-color">
-<div class="block">A firmware loader on the board's own infrared link and timer.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxFirmware</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link)</code></div>
-<div class="col-last odd-row-color">
 <div class="block">A firmware loader on a link shared with other RCX classes, so they share one toggle bit.</div>
-</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxFirmware</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last even-row-color">
-<div class="block">A firmware loader on <code>link</code>, timing its waits on <code>clock</code>: a simulated clock in a unit test.</div>
 </div>
 </div>
 </section>
@@ -315,30 +304,11 @@ up to <code>checksum</code> (modulo 65536).</div>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
-<h3>RcxFirmware</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxFirmware</span>()</div>
-<div class="block">A firmware loader on the board's own infrared link and timer. Create it once, at startup.</div>
-</div>
-</section>
-</li>
-<li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink)">
 <h3>RcxFirmware</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxFirmware</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link)</span></div>
 <div class="block">A firmware loader on a link shared with other RCX classes, so they share one toggle bit.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RcxFirmware</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxFirmware</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">A firmware loader on <code>link</code>, timing its waits on <code>clock</code>: a simulated clock in a unit test.</div>
 </div>
 </section>
 </li>

@@ -70,7 +70,6 @@ initTheme();
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
 <li><a href="#field-summary" tabindex="0">Field Summary</a></li>
-<li><a href="#constructor-summary" tabindex="0">Constructor Summary</a></li>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
@@ -80,12 +79,6 @@ initTheme();
 <li><a href="#OUTPUT_A" tabindex="0">OUTPUT_A</a></li>
 <li><a href="#OUTPUT_B" tabindex="0">OUTPUT_B</a></li>
 <li><a href="#OUTPUT_C" tabindex="0">OUTPUT_C</a></li>
-</ol>
-</li>
-<li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
-<ol class="toc-list">
-<li><a href="#%3Cinit%3E()" tabindex="0">RcxBrick()</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" tabindex="0">RcxBrick(RcxLink)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -133,7 +126,7 @@ initTheme();
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">The RCX's direct commands that answer back, the protocol under <a href="RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RemoteRcx</code></a>'s motors, sensors, display, sound
 and battery; use <a href="RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RemoteRcx</code></a> in a program. Set up the
-link with <a href="RemoteRcx.html#begin()"><code>RemoteRcx.begin()</code></a> or <a href="RcxLink.html#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)"><code>RcxLink.begin(InfraredReceiver, InfraredEmitter)</code></a> first, with both the IR LED and the IR receiver module
+construct an <a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> with both the IR LED and the IR receiver module
 wired. Plain Java on <a href="../../../hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir"><code>Infrared</code></a>.
 
 <p>Each call is a request and a reply, which takes 100 ms or more; they return <code>-1</code> when the
@@ -174,25 +167,6 @@ not been verified on a brick.</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#OUTPUT_C" class="member-name-link">OUTPUT_C</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
-</div>
-</section>
-</li>
-<!-- ======== CONSTRUCTOR SUMMARY ======== -->
-<li>
-<section class="constructor-summary" id="constructor-summary">
-<h2>Constructor Summary</h2>
-<div class="caption"><span>Constructors</span></div>
-<div class="summary-table two-column-summary">
-<div class="table-header col-first">Constructor</div>
-<div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RcxBrick</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">A brick on the board's own infrared link.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink)" class="member-name-link">RcxBrick</a><wbr>(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">A brick on a link shared with other RCX classes, so they share one toggle bit.</div>
-</div>
 </div>
 </section>
 </li>
@@ -456,32 +430,6 @@ cannot draw show blank).</div>
 </ul>
 </dd>
 </dl>
-</div>
-</section>
-</li>
-</ul>
-</section>
-</li>
-<!-- ========= CONSTRUCTOR DETAIL ======== -->
-<li>
-<section class="constructor-details" id="constructor-detail">
-<h2>Constructor Details</h2>
-<ul class="member-list">
-<li>
-<section class="detail" id="&lt;init&gt;()">
-<h3>RcxBrick</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxBrick</span>()</div>
-<div class="block">A brick on the board's own infrared link. Create it once, at startup.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.remote.lego.rcx.RcxLink)">
-<h3>RcxBrick</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxBrick</span><wbr><span class="parameters">(<a href="RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link)</span></div>
-<div class="block">A brick on a link shared with other RCX classes, so they share one toggle bit.</div>
 </div>
 </section>
 </li>

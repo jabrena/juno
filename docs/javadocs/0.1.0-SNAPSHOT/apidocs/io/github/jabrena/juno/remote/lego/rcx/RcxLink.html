@@ -73,14 +73,12 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
-<li><a href="#%3Cinit%3E()" tabindex="0">RcxLink()</a></li>
-<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RcxLink(Clock)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RcxLink(InfraredEmitter, InfraredReceiver, Clock)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#getChannelIndicatorOpcode()" tabindex="0">getChannelIndicatorOpcode()</a></li>
-<li><a href="#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" tabindex="0">begin(InfraredReceiver, InfraredEmitter)</a></li>
 <li><a href="#send(int,int,int,int)" tabindex="0">send(int, int, int, int)</a></li>
 <li><a href="#sendButtons(int)" tabindex="0">sendButtons(int)</a></li>
 <li><a href="#sendMessage(int)" tabindex="0">sendMessage(int)</a></li>
@@ -116,13 +114,11 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RcxLink</a>()</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink</a><wbr>(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
+ <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
+ <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
-<div class="block">A link on the board's own timer.</div>
-</div>
-<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink</a><wbr>(<a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">A link that times its replies on <code>clock</code>: a simulated one in a unit test.</div>
+<div class="block">A link configured with its infrared modules and timer; construction completes the link setup.</div>
 </div>
 </div>
 </section>
@@ -138,40 +134,34 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)" class="member-name-link">begin</a><wbr>(<a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Configures an RCX link with a typed receiver and emitter pair.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getChannelIndicatorOpcode()" class="member-name-link">getChannelIndicatorOpcode</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getChannelIndicatorOpcode()" class="member-name-link">getChannelIndicatorOpcode</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#send(int,int,int,int)" class="member-name-link">send</a><wbr>(int&nbsp;opcode,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#send(int,int,int,int)" class="member-name-link">send</a><wbr>(int&nbsp;opcode,
  int&nbsp;first,
  int&nbsp;second,
  int&nbsp;arguments)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits <code>opcode</code> with <code>arguments</code> (0..2) arguments <code>first</code> and <code>second</code>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits a remote-control command with <code>buttonMask</code>, <code>RemoteRcx</code>'s button bits, as the RCX Remote Control does.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChannelTone(int,int,int)" class="member-name-link">sendChannelTone</a><wbr>(int&nbsp;channel,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendChannelTone(int,int,int)" class="member-name-link">sendChannelTone</a><wbr>(int&nbsp;channel,
  int&nbsp;frequencyHz,
  int&nbsp;durationCentiseconds)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits a tone to one channel of Juno's channelized RCX firmware.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
 </div>
 </div>
@@ -192,20 +182,13 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="&lt;init&gt;()">
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)">
 <h3>RcxLink</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxLink</span>()</div>
-<div class="block">A link on the board's own timer. Create it once, at startup, and share it with every class that talks to the brick.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.time.Clock)">
-<h3>RcxLink</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxLink</span><wbr><span class="parameters">(<a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
-<div class="block">A link that times its replies on <code>clock</code>: a simulated one in a unit test.</div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxLink</span><wbr><span class="parameters">(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
+ <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
+ <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
+<div class="block">A link configured with its infrared modules and timer; construction completes the link setup.</div>
 </div>
 </section>
 </li>
@@ -223,16 +206,6 @@ byte followed by its complement. Plain Java on top of <a href="../../../hardware
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getChannelIndicatorOpcode</span>()</div>
 <div class="block">Returns the opcode used to configure a channel's tone indicator motor output.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="begin(io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.device.ir.InfraredEmitter)">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span><wbr><span class="parameters">(<a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
- <a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter)</span></div>
-<div class="block">Configures an RCX link with a typed receiver and emitter pair.</div>
 </div>
 </section>
 </li>

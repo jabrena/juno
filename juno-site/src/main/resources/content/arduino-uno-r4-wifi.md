@@ -132,7 +132,6 @@ API, wiring and touch calibration are on the [Arduino Shields](../arduino-shield
 
 ```java
 TftTouchShield tft = new TftTouchShield();
-tft.begin();
 tft.setRotation(TftTouchShield.LANDSCAPE);
 tft.fillScreen(TftTouchShield.BLACK);
 tft.setCursor(10, 10);
@@ -180,17 +179,15 @@ once a minute and publishes them to Supabase. See [Grove](../grove-system) for t
 
 The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 `NineAxisMotionShield` reads it over I2C as plain Java, with no Arduino library. The heading is relative to the direction
-the sensor pointed at `begin()`, which suits measuring how far a vehicle has turned. `begin()` drives D7, the sensor's
-reset line, so don't use D7 for anything else:
+the sensor pointed at construction, which suits measuring how far a vehicle has turned. Construction drives D7, the
+sensor's reset line, so don't use D7 for anything else:
 
 ```java
 NineAxisMotionShield imu = new NineAxisMotionShield();
-if (imu.begin()) {
-    imu.reset();                                  // count the turn from here
-    while (true) {
-        Serial.println(imu.getAngle());           // heading since the reset, whole degrees, clockwise
-        Delay.millis(200);
-    }
+imu.reset();                                      // count the turn from here
+while (true) {
+    Serial.println(imu.getAngle());               // heading since the reset, whole degrees, clockwise
+    Delay.millis(200);
 }
 ```
 
@@ -205,7 +202,6 @@ the LCD uses D4-D9 and its backlight D10.
 
 ```java
 LcdKeypadShield lcd = new LcdKeypadShield();
-lcd.begin();
 lcd.print("Hello, Juno");
 
 while (true) {

@@ -79,7 +79,6 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#getXAccel()" tabindex="0">getXAccel()</a></li>
 <li><a href="#getYAccel()" tabindex="0">getYAccel()</a></li>
 <li><a href="#getZAccel()" tabindex="0">getZAccel()</a></li>
@@ -113,11 +112,10 @@ initTheme();
 implements <a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
 <div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
 <a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library). The sensor fuses its accelerometer and gyroscope itself, in the
-<code>IMU</code> fusion mode: the heading is relative to the direction the sensor pointed at <a href="#begin()"><code>begin()</code></a>, needs no
+<code>IMU</code> fusion mode: the heading is relative to the direction the sensor pointed at construction, needs no
 compass calibration and is not disturbed by magnetic fields.
 
 <pre><code>NineAxisMotionShield imu = new NineAxisMotionShield();   // once, at startup
-imu.begin();
 imu.reset();                                             // count the turn from here
 // ... turn left until imu.getAngle() &gt;= 270 (heading grows clockwise)
 </code></pre>
@@ -170,57 +168,52 @@ in a unit test.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code> in IMU fusion mode, returning <code>false</code> if no BNO055 answered.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
  int&nbsp;offset)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; an axis whose read
 failed is written as 0.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <code>begin()</code> or the last <a href="#reset()"><code>reset()</code></a>;
 <code>-1</code> if the read failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The yaw rate in degrees per second, clockwise positive; <code>NaN</code> if the read failed.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The acceleration along the sensor's X axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The acceleration along the sensor's Y axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The acceleration along the sensor's Z axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Makes the current heading the zero of <a href="#getAngle()"><code>getAngle()</code></a>; does nothing if the read failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
 </div>
 </div>
@@ -269,16 +262,6 @@ in a unit test.</div>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Starts the sensor at <code>ADDRESS_DEFAULT</code> in IMU fusion mode, returning <code>false</code> if no BNO055 answered.
-Waits for the sensor to boot, so call it once at startup; the heading counts from this moment.</div>
-</div>
-</section>
-</li>
-<li>
 <section class="detail" id="getXAccel()">
 <h3>getXAccel</h3>
 <div class="horizontal-scroll">
@@ -322,7 +305,7 @@ Waits for the sensor to boot, so call it once at startup; the heading counts fro
 <h3>getAngle</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getAngle</span>()</div>
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="#begin()"><code>begin()</code></a> or the last <a href="#reset()"><code>reset()</code></a>;
+<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <code>begin()</code> or the last <a href="#reset()"><code>reset()</code></a>;
 <code>-1</code> if the read failed.</div>
 <dl class="notes">
 <dt>Specified by:</dt>

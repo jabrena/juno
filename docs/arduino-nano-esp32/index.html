@@ -667,9 +667,8 @@ minutes. The brick then answers on channel 1:</p>
 <pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
 GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
 GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-RemoteRcx rcx = new RemoteRcx(new RcxLink(ArduinoNano.getClock()), 1, receiver, emitter,
-        ArduinoNano.getClock());
-rcx.begin();
+RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
 
 RcxMotor motor = rcx.getMotorA();
 motor.setPower(57);

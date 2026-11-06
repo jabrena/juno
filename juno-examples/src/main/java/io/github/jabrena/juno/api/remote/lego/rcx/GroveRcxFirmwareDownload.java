@@ -25,7 +25,7 @@ public final class GroveRcxFirmwareDownload {
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
         RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
-        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxFirmwareDownload.download(remote);
     }
 }

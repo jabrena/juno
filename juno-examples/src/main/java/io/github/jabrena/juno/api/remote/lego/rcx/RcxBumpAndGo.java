@@ -42,7 +42,7 @@ public class RcxBumpAndGo {
 
     public static void main(String[] args) {
         RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
-        RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
+        RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.begin(BaudRate.BAUD_115200);
         RcxBumpAndGo app = new RcxBumpAndGo(remote);
 
