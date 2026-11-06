@@ -37,7 +37,7 @@ public final class IoRuntime {
         return features.contains(ShimFeature.HTTP) || features.contains(ShimFeature.HTTPS)
                 || (worker && features.contains(ShimFeature.WIFI))
                 || features.contains(ShimFeature.HTTP_SERVER) || features.contains(ShimFeature.SD)
-                || features.contains(ShimFeature.LEGO_POWERED_UP);
+                || features.contains(ShimFeature.BLUETOOTH_LE);
     }
 
     /** Whether waiting device calls run on the core's I/O worker: the core has one and the program makes them. */

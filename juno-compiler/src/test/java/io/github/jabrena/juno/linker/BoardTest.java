@@ -545,7 +545,7 @@ class BoardTest {
                 @Board(ArduinoUnoR3Board.class)
                 public final class NoRadio {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         hub.connect(1000);
                     }
                 }
@@ -573,7 +573,7 @@ class BoardTest {
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (hub.connect(1000)) {
                             hub.getMotor(HubPort.A).drive(50);
                         }
@@ -604,7 +604,7 @@ class BoardTest {
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (hub.connect(1000)) {
                             hub.getMotor(HubPort.A).drive(50);
                         }

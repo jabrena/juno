@@ -690,7 +690,7 @@ class XtensaAsmBackendTest {
     void shouldRunPoweredUpOverTheEsp32Ble() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHub", """
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         Serial.println(hub.connect(0) ? 1 : 0);
                 """, "import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;"
                 + " import io.github.jabrena.juno.hardware.serial.Serial;");

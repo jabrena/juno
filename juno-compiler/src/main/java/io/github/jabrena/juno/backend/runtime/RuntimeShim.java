@@ -107,7 +107,7 @@ public final class RuntimeShim {
             shim.append(core.cameraIncludes());
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
-        if (uses(ShimFeature.LEGO_POWERED_UP)) {
+        if (uses(ShimFeature.BLUETOOTH_LE)) {
             shim.append(core.bleIncludes());
         }
         if (uses(ShimFeature.I2C)) {
@@ -238,9 +238,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SERVO)) {
             shim.append(shimLibraries.servoHelpers());
         }
-        if (uses(ShimFeature.LEGO_POWERED_UP)) {
+        if (uses(ShimFeature.BLUETOOTH_LE)) {
             shim.append(core.bleHelpers());
-            shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS), core.bleNames()));
+            shim.append(shimLibraries.bleCentralHelpers(uses(ShimFeature.THREADS), core.bleNames()));
         }
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraHelpers());

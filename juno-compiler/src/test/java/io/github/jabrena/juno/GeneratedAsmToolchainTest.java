@@ -966,7 +966,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.BLUE);
                         hub.getMotor(HubPort.A).drive(40);
@@ -1370,7 +1370,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         hub.enableSensor(HubPort.TECHNIC_GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
                         hub.setLedRgb(255, 128, 0);
@@ -1412,7 +1412,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         byte[] name = new byte[20];
                         int length = hub.hubName(name, name.length);
@@ -1450,7 +1450,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         if (hub.portDevice(HubPort.B)
                                 == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR) {
@@ -1489,7 +1489,7 @@ class GeneratedAsmToolchainTest {
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.GREEN);
                         hub.getMotor(HubPort.A).drive(-40);
@@ -2126,41 +2126,35 @@ class GeneratedAsmToolchainTest {
     }
 
     /**
-     * Runs the generated LEGO Powered Up shim on the host against the module's fake {@code ArduinoBLE.h},
-     * which plays one City Hub: every command must reach the hub as the exact LEGO Wireless Protocol 3.0
-     * frame, and the hub's Port Value notifications must decode into {@code readSensor} values.
+     * Runs the generated BLE central shim on the host against the module's fake {@code ArduinoBLE.h}, which plays one
+     * advertising device: connect must copy the manufacturer data, a write must reach the device as the same bytes, and
+     * a notification must come back through read, once, then nothing. The LEGO frames themselves are checked on the JVM
+     * against {@code LegoWirelessPort}, which is the Java side of the same radio.
      */
     @Test
-    @DisplayName("The generated LEGO Powered Up shim speaks the LEGO Wireless Protocol at runtime")
-    void shouldSpeakTheLegoWirelessProtocolAtRuntimeInTheGeneratedLegoPoweredUpShim() throws Exception {
+    @DisplayName("The generated BLE central shim connects, writes, reads and disconnects through the fake ArduinoBLE")
+    void shouldDriveTheBleCentralShimThroughTheFakeArduinoBle() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
-                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
-                public final class LegoRuntime {
+                import io.github.jabrena.juno.hardware.net.BluetoothLe;
+                public final class BleRuntime {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
-                        if (hub.connect(0) && hub.isConnected()) {
-                            hub.enableSensor(HubPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
-                            hub.getMotor(HubPort.A).drive(hub.readSensor(HubPort.A));
-                            hub.setLedRgb(hub.hubType(), 0, 0);
-                            hub.getMotor(HubPort.A).stop();
-                            hub.switchOff();
-                            hub.disconnect();
-                        }
+                        BluetoothLe radio = ArduinoUno.getBluetoothLe();
+                        radio.disconnect();
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.LegoRuntime", source);
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LegoRuntime");
-        Path sketch = temporaryDirectory.resolve("LegoRuntime.cpp");
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.BleRuntime", source);
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BleRuntime");
+        Path sketch = temporaryDirectory.resolve("BleRuntime.cpp");
         String harness = """
 
                 #include <stdio.h>
+                #include <string.h>
 
                 // Provided by the generated entry-point assembly on a board; see the JSON runtime test.
                 extern "C" {
@@ -2169,180 +2163,40 @@ class GeneratedAsmToolchainTest {
                   uint8_t juno_gc_static_end;
                 }
 
-                static int junoCheckedWrites = 0;
-
-                static bool junoExpectWrite(const uint8_t* expected, int length) {
-                  if (junoCheckedWrites >= junofake::writes) return false;
-                  const junofake::Message& actual = junofake::written[junoCheckedWrites++];
-                  bool same = actual.length == length && memcmp(actual.bytes, expected, length) == 0;
-                  if (!same) {
-                    printf("write %d expected:", junoCheckedWrites - 1);
-                    for (int i = 0; i < length; i++) printf(" %02X", expected[i]);
-                    printf(" actual:");
-                    for (int i = 0; i < actual.length; i++) printf(" %02X", actual.bytes[i]);
-                    printf("\\n");
-                  }
-                  return same;
-                }
-
-                #define EXPECT_WRITE(code, ...) do { \\
-                    const uint8_t expected[] = {__VA_ARGS__}; \\
-                    if (!junoExpectWrite(expected, sizeof(expected))) return code; \\
-                  } while (0)
-                #define NOTIFY(...) do { \\
-                    const uint8_t message[] = {__VA_ARGS__}; \\
-                    junofake::notify(message, sizeof(message)); \\
-                  } while (0)
+                static const char kService[] = "00001623-1212-efde-1623-785feabcd123";
+                static const char kCharacteristic[] = "00001624-1212-efde-1623-785feabcd123";
 
                 int main() {
                   uint8_t stackTopMarker;
                   juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
+                  uint8_t advertisement[4] = {0, 0, 0, 0};
+                  uint8_t buffer[32];
 
-                  if (juno_lego_hub_type_id() != 0 || juno_lego_hub_is_connected() != 0) return 1;
-                  // Commands before connecting are dropped, not queued.
-                  juno_lego_hub_set_motor_power(0, 50);
-                  if (junofake::writes != 0) return 2;
+                  if (juno_ble_is_connected() != 0) return 1;
+                  // The fake device advertises eight bytes of manufacturer data; four are copied.
+                  if (juno_ble_connect(kService, kCharacteristic, 0, advertisement, 4) != 4) return 2;
+                  if (advertisement[0] != 0x97 || advertisement[1] != 0x03 || advertisement[3] != 0x41) return 3;
+                  if (juno_ble_is_connected() != 1 || !junofake::subscribed) return 4;
 
-                  if (juno_lego_hub_connect(0) != 1 || juno_lego_hub_is_connected() != 1) return 3;
-                  if (!junofake::subscribed || juno_lego_hub_type_id() != 0x41) return 4;
+                  const uint8_t message[] = {0x03, 0x00, 0x45};
+                  juno_ble_write(const_cast<uint8_t*>(message), sizeof(message));
+                  if (junofake::writes != 1 || junofake::written[0].length != 3) return 5;
+                  if (memcmp(junofake::written[0].bytes, message, 3) != 0) return 6;
 
-                  // Port output command 0x81, execute immediately with feedback 0x11, WriteDirectModeData 0x51, mode 0.
-                  juno_lego_hub_set_motor_power(0, 50);
-                  EXPECT_WRITE(10, 0x08, 0x00, 0x81, 0x00, 0x11, 0x51, 0x00, 0x32);
-                  juno_lego_hub_set_motor_power(1, -150);  // clamped to -100
-                  EXPECT_WRITE(11, 0x08, 0x00, 0x81, 0x01, 0x11, 0x51, 0x00, 0x9C);
-                  juno_lego_hub_set_motor_power(3, 101);  // clamped to 100
-                  EXPECT_WRITE(12, 0x08, 0x00, 0x81, 0x03, 0x11, 0x51, 0x00, 0x64);
-                  juno_lego_hub_brake_motor(0);
-                  EXPECT_WRITE(13, 0x08, 0x00, 0x81, 0x00, 0x11, 0x51, 0x00, 0x7F);
+                  if (juno_ble_read(buffer, 32) != 0) return 7;  // nothing queued yet
+                  const uint8_t notification[] = {0x04, 0x00, 0x45, 0x00};
+                  junofake::notify(notification, sizeof(notification));
+                  if (juno_ble_read(buffer, 32) != 4) return 8;
+                  if (buffer[0] != 0x04 || buffer[2] != 0x45 || buffer[3] != 0x00) return 9;
+                  if (juno_ble_read(buffer, 32) != 0) return 10;  // delivered once
 
-                  // The City Hub's LED is port 0x32: one input format setup (notifications off), then the color.
-                  juno_lego_hub_set_led_color(9);
-                  EXPECT_WRITE(20, 0x0A, 0x00, 0x41, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
-                  EXPECT_WRITE(21, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x09);
-                  juno_lego_hub_set_led_color(3);
-                  EXPECT_WRITE(22, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x03);
-                  // RGB mode (1) needs its own input format setup; going back to color indexes sets mode 0 up again.
-                  juno_lego_hub_set_led_rgb(10, 20, 300);  // channels keep their low 8 bits
-                  EXPECT_WRITE(23, 0x0A, 0x00, 0x41, 0x32, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00);
-                  EXPECT_WRITE(24, 0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, 0x0A, 0x14, 0x2C);
-                  juno_lego_hub_set_led_rgb(1, 2, 3);
-                  EXPECT_WRITE(25, 0x0A, 0x00, 0x81, 0x32, 0x11, 0x51, 0x01, 0x01, 0x02, 0x03);
-                  juno_lego_hub_set_led_color(6);
-                  EXPECT_WRITE(26, 0x0A, 0x00, 0x41, 0x32, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00);
-                  EXPECT_WRITE(27, 0x08, 0x00, 0x81, 0x32, 0x11, 0x51, 0x00, 0x06);
-
-                  // Port input format setup 0x41: port, mode, delta 1 (uint32 LE), notifications on.
-                  juno_lego_hub_enable_sensor(0, 2);
-                  EXPECT_WRITE(30, 0x0A, 0x00, 0x41, 0x00, 0x02, 0x01, 0x00, 0x00, 0x00, 0x01);
-                  if (juno_lego_hub_read_sensor(0) != 0) return 31;
-                  NOTIFY(0x08, 0x00, 0x45, 0x00, 0x68, 0x01, 0x00, 0x00);  // Port Value 0x45: 360 degrees
-                  if (juno_lego_hub_read_sensor(0) != 360) return 32;
-                  NOTIFY(0x08, 0x00, 0x45, 0x00, 0xA6, 0xFF, 0xFF, 0xFF);  // -90 degrees
-                  if (juno_lego_hub_read_sensor(0) != -90) return 33;
-                  NOTIFY(0x0F, 0x00, 0x04, 0x00, 0x01, 0x2E, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
-                  if (juno_lego_hub_read_sensor(0) != -90) return 34;  // Hub Attached I/O 0x04 is not a value
-                  // A length of 128 or more takes two bytes (7 bits each); readers must skip both.
-                  NOTIFY(0x89, 0x00, 0x00, 0x45, 0x00, 0x10, 0x00, 0x00, 0x00);
-                  if (juno_lego_hub_read_sensor(0) != 16) return 35;
-
-                  juno_lego_hub_enable_sensor(1, 0);
-                  EXPECT_WRITE(40, 0x0A, 0x00, 0x41, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
-                  NOTIFY(0x05, 0x00, 0x45, 0x01, 0xFF);  // int8: a remote's minus button
-                  if (juno_lego_hub_read_sensor(1) != -1) return 41;
-                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);  // port 2 is not enabled yet
-                  if (juno_lego_hub_read_sensor(2) != 0) return 42;
-                  juno_lego_hub_enable_sensor(2, 0);
-                  EXPECT_WRITE(43, 0x0A, 0x00, 0x41, 0x02, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
-                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);  // int16: 300
-                  if (juno_lego_hub_read_sensor(2) != 300) return 44;
-                  if (juno_lego_hub_read_sensor(0) != 16 || juno_lego_hub_read_sensor(1) != -1) return 45;
-
-                  // Eight ports report at once; a ninth is refused without a write, re-enabling reuses a slot.
-                  for (int port = 3; port < 8; port++) juno_lego_hub_enable_sensor(port, 0);
-                  junoCheckedWrites += 5;
-                  juno_lego_hub_enable_sensor(8, 0);
-                  if (junofake::writes != junoCheckedWrites) return 50;
-                  juno_lego_hub_enable_sensor(0, 1);
-                  EXPECT_WRITE(51, 0x0A, 0x00, 0x41, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x01);
-                  if (juno_lego_hub_read_sensor(0) != 0) return 52;
-
-                  // Hub Properties 0x01: the first property call subscribes (0x02) to button, RSSI and battery and
-                  // requests (0x05) name, firmware and hardware; the answers are updates (0x06). The test clock
-                  // never advances, so the answers are queued first to end the wait for them.
-                  NOTIFY(0x06, 0x00, 0x01, 0x06, 0x06, 0x55);  // battery 85 %
-                  NOTIFY(0x09, 0x00, 0x01, 0x03, 0x06, 0x40, 0x00, 0x23, 0x10);  // firmware 1.0.23 build 64
-                  NOTIFY(0x09, 0x00, 0x01, 0x04, 0x06, 0x01, 0x00, 0x00, 0x10);  // hardware 1.0.0 build 1
-                  NOTIFY(0x08, 0x00, 0x01, 0x01, 0x06, 'H', 'u', 'b');  // name
-                  NOTIFY(0x06, 0x00, 0x01, 0x02, 0x06, 0x01);  // button down
-                  NOTIFY(0x06, 0x00, 0x01, 0x05, 0x06, 0xC4);  // RSSI -60 dBm
-                  if (juno_lego_hub_battery_percent() != 85) return 80;
-                  EXPECT_WRITE(81, 0x05, 0x00, 0x01, 0x02, 0x02);
-                  EXPECT_WRITE(82, 0x05, 0x00, 0x01, 0x05, 0x02);
-                  EXPECT_WRITE(83, 0x05, 0x00, 0x01, 0x06, 0x02);
-                  EXPECT_WRITE(84, 0x05, 0x00, 0x01, 0x01, 0x05);
-                  EXPECT_WRITE(85, 0x05, 0x00, 0x01, 0x03, 0x05);
-                  EXPECT_WRITE(86, 0x05, 0x00, 0x01, 0x04, 0x05);
-                  if (juno_lego_hub_firmware_version() != 0x10230040) return 87;
-                  if (juno_lego_hub_hardware_version() != 0x10000001) return 88;
-                  if (juno_lego_hub_button_pressed() != 1 || juno_lego_hub_rssi() != -60) return 89;
-                  uint8_t hubName[8];
-                  if (juno_lego_hub_name(hubName, 8) != 3 || memcmp(hubName, "Hub", 3) != 0) return 90;
-                  if (juno_lego_hub_name(hubName, 2) != 2) return 91;
-                  if (junofake::writes != junoCheckedWrites) return 92;  // requested once, not on every call
-
-                  juno_lego_hub_switch_off();  // Hub action 0x02: switch off 0x01
-                  EXPECT_WRITE(60, 0x04, 0x00, 0x02, 0x01);
-                  juno_lego_hub_disconnect();
-                  if (juno_lego_hub_is_connected() != 0) return 61;
-                  juno_lego_hub_set_motor_power(0, 50);
-                  if (junofake::writes != junoCheckedWrites) return 62;
-
-                  // Reconnecting starts with no ports reporting.
-                  if (juno_lego_hub_connect(0) != 1) return 70;
-                  if (juno_lego_hub_read_sensor(2) != 0) return 71;
-                  NOTIFY(0x06, 0x00, 0x45, 0x02, 0x2C, 0x01);
-                  if (juno_lego_hub_read_sensor(2) != 0) return 72;
-
-                  // Multi-value reports, e.g. the Technic Hub's gyroscope (port 0x62): three int16 values.
-                  juno_lego_hub_enable_sensor(0x62, 0);
-                  EXPECT_WRITE(100, 0x0A, 0x00, 0x41, 0x62, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01);
-                  if (juno_lego_hub_sensor_report_size(0x62) != 0 || juno_lego_hub_read_sensor_value(0x62, 0, 2) != 0) return 101;
-                  NOTIFY(0x0A, 0x00, 0x45, 0x62, 0x34, 0x12, 0xFE, 0xFF, 0x0A, 0x00);
-                  if (juno_lego_hub_sensor_report_size(0x62) != 6) return 102;
-                  if (juno_lego_hub_read_sensor_value(0x62, 0, 2) != 0x1234) return 103;
-                  if (juno_lego_hub_read_sensor_value(0x62, 1, 2) != -2) return 104;
-                  if (juno_lego_hub_read_sensor_value(0x62, 2, 2) != 10) return 105;
-                  if (juno_lego_hub_sensor_report_count(0x62) != 1) return 111;
-                  NOTIFY(0x0A, 0x00, 0x45, 0x62, 0x34, 0x12, 0xFE, 0xFF, 0x0A, 0x00);  // an unchanged report still counts
-                  if (juno_lego_hub_sensor_report_count(0x62) != 2 || juno_lego_hub_sensor_report_count(0x05) != 0) return 112;
-                  if (juno_lego_hub_read_sensor_value(0x62, 3, 2) != 0) return 106;  // beyond the report
-                  if (juno_lego_hub_read_sensor_value(0x62, 0, 4) != static_cast<int32_t>(0xFFFE1234)) return 107;
-                  if (juno_lego_hub_read_sensor_value(0x62, 5, 1) != 0) return 108;  // a high byte of the third value
-                  if (juno_lego_hub_read_sensor_value(0x62, 0, 3) != 0) return 109;  // widths are 1, 2 or 4
-                  if (juno_lego_hub_read_sensor_value(0x05, 0, 2) != 0) return 110;  // a port nobody enabled
-
-                  // Virtual port: Virtual Port Setup 0x61 connect (0x01); the hub answers with Hub Attached I/O 0x04,
-                  // event 0x02, announcing the new port 0x10 that pairs ports 0 and 1.
-                  NOTIFY(0x09, 0x00, 0x04, 0x10, 0x02, 0x46, 0x00, 0x00, 0x01);
-                  if (juno_lego_hub_link_motors(0, 1) != 0x10) return 120;
-                  EXPECT_WRITE(121, 0x06, 0x00, 0x61, 0x01, 0x00, 0x01);
-                  if (juno_lego_hub_link_motors(1, 0) != 0x10 || junofake::writes != junoCheckedWrites) return 122;
-                  // StartPower with two powers (subcommand 0x02), clamped; 127 is brake.
-                  juno_lego_hub_set_linked_motor_power(0x10, 50, -150);
-                  EXPECT_WRITE(123, 0x08, 0x00, 0x81, 0x10, 0x11, 0x02, 0x32, 0x9C);
-                  juno_lego_hub_brake_linked_motors(0x10);
-                  EXPECT_WRITE(124, 0x08, 0x00, 0x81, 0x10, 0x11, 0x02, 0x7F, 0x7F);
-                  juno_lego_hub_unlink_motors(0x10);  // disconnect (0x00)
-                  EXPECT_WRITE(125, 0x05, 0x00, 0x61, 0x00, 0x10);
-                  NOTIFY(0x09, 0x00, 0x04, 0x11, 0x02, 0x46, 0x00, 0x02, 0x03);
-                  if (juno_lego_hub_link_motors(3, 2) != 0x11) return 126;  // pairs are matched in either order
-                  EXPECT_WRITE(127, 0x06, 0x00, 0x61, 0x01, 0x03, 0x02);
+                  juno_ble_disconnect();
+                  if (juno_ble_is_connected() != 0) return 11;
                   return 0;
                 }
                 """;
         Files.writeString(sketch, result.runtimeShim() + harness, StandardCharsets.UTF_8);
-        Path executable = temporaryDirectory.resolve("lego-runtime");
+        Path executable = temporaryDirectory.resolve("ble-runtime");
 
         // When
         Process compile = new ProcessBuilder(compiler, "-std=c++17", "-x", "c++",
@@ -2356,7 +2210,7 @@ class GeneratedAsmToolchainTest {
 
         Process run = new ProcessBuilder(executable.toString()).redirectErrorStream(true).start();
         boolean finished = run.waitFor(20, TimeUnit.SECONDS);
-        Assumptions.assumeTrue(finished, "Generated LEGO runtime test timed out");
+        Assumptions.assumeTrue(finished, "Generated BLE runtime test timed out");
         String output = new String(run.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
         // Then

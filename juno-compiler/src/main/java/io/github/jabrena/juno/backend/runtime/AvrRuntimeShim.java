@@ -55,7 +55,7 @@ public final class AvrRuntimeShim {
 
     /** Shim features this board's runtime does not have; the linker's capability checks normally stop them first. */
     private static final Set<ShimFeature> UNSUPPORTED = EnumSet.of(ShimFeature.LED_MATRIX, ShimFeature.MOUSE,
-            ShimFeature.LEGO_POWERED_UP, ShimFeature.SMTP);
+            ShimFeature.BLUETOOTH_LE, ShimFeature.SMTP);
 
     private final CoreRuntime core;
     private final RuntimeConfig config;

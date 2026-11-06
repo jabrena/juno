@@ -397,15 +397,8 @@ public final class Linker {
         require(required, Capability.CAMERA, Intrinsic.CAMERA_BEGIN, Intrinsic.CAMERA_CAPTURE);
         require(required, Capability.HTTP_STREAM, Intrinsic.HTTP_SERVER_BEGIN_STREAM,
                 Intrinsic.HTTP_SERVER_STREAM_BYTES, Intrinsic.HTTP_SERVER_STREAM_TEXT, Intrinsic.HTTP_SERVER_END_STREAM);
-        require(required, Capability.BLUETOOTH_LE, Intrinsic.LEGO_HUB_CONNECT, Intrinsic.LEGO_HUB_IS_CONNECTED,
-                Intrinsic.LEGO_HUB_TYPE, Intrinsic.LEGO_HUB_SET_MOTOR_POWER, Intrinsic.LEGO_HUB_BRAKE_MOTOR, Intrinsic.LEGO_HUB_HOLD_MOTOR,
-                Intrinsic.LEGO_HUB_SET_LED_COLOR, Intrinsic.LEGO_HUB_ENABLE_SENSOR, Intrinsic.LEGO_HUB_READ_SENSOR,
-                Intrinsic.LEGO_HUB_DISCONNECT, Intrinsic.LEGO_HUB_SWITCH_OFF, Intrinsic.LEGO_HUB_BATTERY_PERCENT,
-                Intrinsic.LEGO_HUB_BUTTON_PRESSED, Intrinsic.LEGO_HUB_RSSI, Intrinsic.LEGO_HUB_FIRMWARE_VERSION,
-                Intrinsic.LEGO_HUB_HARDWARE_VERSION, Intrinsic.LEGO_HUB_PORT_DEVICE, Intrinsic.LEGO_HUB_NAME, Intrinsic.LEGO_HUB_READ_SENSOR_VALUE,
-                Intrinsic.LEGO_HUB_SENSOR_REPORT_SIZE, Intrinsic.LEGO_HUB_SENSOR_REPORT_COUNT, Intrinsic.LEGO_HUB_SET_LED_RGB, Intrinsic.LEGO_HUB_LINK_MOTORS,
-                Intrinsic.LEGO_HUB_UNLINK_MOTORS, Intrinsic.LEGO_HUB_SET_LINKED_MOTOR_POWER,
-                Intrinsic.LEGO_HUB_BRAKE_LINKED_MOTORS);
+        require(required, Capability.BLUETOOTH_LE, Intrinsic.BLE_CONNECT, Intrinsic.BLE_IS_CONNECTED,
+                Intrinsic.BLE_WRITE, Intrinsic.BLE_READ, Intrinsic.BLE_DISCONNECT);
         return Collections.unmodifiableMap(required);
     }
 
