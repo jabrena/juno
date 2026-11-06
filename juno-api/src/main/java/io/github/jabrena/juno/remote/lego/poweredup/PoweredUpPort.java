@@ -1,10 +1,11 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
 /**
- * The Powered Up hub intrinsics as an interface: {@link NativePoweredUpPort} drives the real hub on the board, and a
- * mock or fake takes its place in a unit test through {@link RemotePoweredUpHub#RemotePoweredUpHub(PoweredUpPort, io.github.jabrena.juno.hardware.time.Clock)}.
+ * The Powered Up hub operations the controllers call, one method per hub command or reading. {@link LegoWirelessPort}
+ * implements them over the board's Bluetooth LE radio; a unit test passes a mock or fake in their place through the
+ * package-private {@code RemotePoweredUpHub} constructor that takes one.
  */
-public interface PoweredUpPort {
+interface PoweredUpPort {
     boolean connect(int timeoutMillis);
     boolean isConnected();
     int hubType();

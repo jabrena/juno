@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -39,15 +38,15 @@ public final class RemotePoweredUpHub {
 
     /**
      * A hub controller that links to hubs over the board's Bluetooth LE radio {@code bluetooth}, such as
-     * {@code ArduinoUno.getBluetoothLe()}, and times its waits on the board's own clock. Create it once, at startup.
-     * Only the boards with a BLE radio can be given one.
+     * {@code ArduinoUno.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code ArduinoUno.getClock()}.
+     * Create it once, at startup. Only the boards with a BLE radio can be given one.
      */
-    public RemotePoweredUpHub(BluetoothLe bluetooth) {
-        this(NativePoweredUpPort.INSTANCE, ArduinoUno.getClock());
+    public RemotePoweredUpHub(BluetoothLe bluetooth, Clock clock) {
+        this(new LegoWirelessPort(bluetooth, clock), clock);
     }
 
     /** A hub controller that drives {@code port} and gives its battery {@code clock} for its waits: fakes in a unit test. */
-    public RemotePoweredUpHub(PoweredUpPort port, Clock clock) {
+    RemotePoweredUpHub(PoweredUpPort port, Clock clock) {
         this.hubPort = port;
         motors[HubPort.A.value()] = new PoweredUpMotor(port, HubPort.A);
         motors[HubPort.B.value()] = new PoweredUpMotor(port, HubPort.B);

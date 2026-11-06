@@ -7,6 +7,7 @@ import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
+import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
@@ -16,6 +17,7 @@ import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.power.Battery;
+import io.github.jabrena.juno.hardware.time.Clock;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -75,6 +77,11 @@ public final class M5StackCardputer {
     }
 
     /** The M5Stack Cardputer's Bluetooth LE radio. */
+    /** The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock(). */
+    public static Clock getClock() {
+        return NativeClock.clock();
+    }
+
     public static BluetoothLe getBluetoothLe() {
         return NativeBluetoothLe.bluetoothLe();
     }
