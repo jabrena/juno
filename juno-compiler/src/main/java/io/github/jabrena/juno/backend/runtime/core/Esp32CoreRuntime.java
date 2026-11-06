@@ -13,14 +13,15 @@ import io.github.jabrena.juno.board.ArduinoCore;
 import java.util.Map;
 
 /**
- * The Nano ESP32's {@code arduino:esp32} core. {@code delay()}/{@code delayMicroseconds()} and {@code yield()} are
+ * The Arduino ESP32-family core. {@code delay()}/{@code delayMicroseconds()} and {@code yield()} are
  * plain C symbols the assembly calls directly. The board builds with {@code BOARD_HAS_PIN_REMAP}, which turns
  * {@code pinMode}/{@code digitalWrite} and friends into macros translating the printed pin number ({@code D13}) to
  * the ESP32-S3 GPIO number (48); the real symbols take GPIO numbers, so the assembly reaches them through
  * {@code juno_*} wrappers compiled with the macros in effect. Threads are FreeRTOS tasks handing a baton (see
- * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers over the core's default SPI pins, and the
- * USB HID mouse is the core's {@code USBHIDMouse} rather than the {@code Mouse} library. A capability the board does
- * not declare is not wired to this core and fails at compile time.
+ * {@link ThreadRuntime#esp32Port}). SD cards use the shared SdFat helpers; the AI Thinker ESP32-CAM selects its
+ * onboard socket's SPI pins explicitly, while the other ESP32 boards use their core defaults. The USB HID mouse is
+ * the core's {@code USBHIDMouse} rather than the {@code Mouse} library. A capability the board does not declare is
+ * not wired to this core and fails at compile time.
  */
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
@@ -58,7 +59,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /** {@code LED_BUILTIN} under the core's default "By Arduino pin" numbering. */
     @Override
     public int builtinLedPin() {
-        return 13;
+        return core == ArduinoCore.ESP32_CAM ? 33 : 13;
     }
 
     @Override
@@ -235,7 +236,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
      */
     private String taskWatchdogSetup(int timeoutSeconds) {
         return switch (core) {
-            case M5STACK_ESP32 -> "esp_task_wdt_config_t config = {" + timeoutSeconds * 1000 + "u, 0u, true};\n"
+            case ESP32_CAM, M5STACK_ESP32 -> "esp_task_wdt_config_t config = {" + timeoutSeconds * 1000 + "u, 0u, true};\n"
                     + "if (esp_task_wdt_init(&config) == ESP_ERR_INVALID_STATE) esp_task_wdt_reconfigure(&config);\n"
                     + "esp_task_wdt_add(nullptr);";
             default -> "esp_task_wdt_init(" + timeoutSeconds + "u, true);\nesp_task_wdt_add(nullptr);";
@@ -249,6 +250,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        if (core == ArduinoCore.ESP32_CAM) {
+            return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
+                    "static SPIClass juno_sd_spi(VSPI);",
+                    "juno_sd_spi.begin(14, 2, 15, chipSelectPin), juno_sd.begin(SdSpiConfig(chipSelectPin, SHARED_SPI, "
+                            + "SD_SCK_MHZ(20), &juno_sd_spi))");
+        }
         return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
                 "", "juno_sd.begin(juno_nano_pin(chipSelectPin))");
     }
@@ -261,6 +268,35 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public String uuidRandomHelpers() {
         return runtimeSource.load("esp32/uuid-random.cpp");
+    }
+
+    /** Streamed responses on the ESP32 transport: headers without a length, then parts written to the open client. */
+    @Override
+    public String httpStreamHelpers() {
+        return runtimeSource.load("esp32/http-stream.cpp");
+    }
+
+    /** The AI Thinker ESP32-CAM's OV2640 driver, shipped with the core as {@code esp_camera}. */
+    @Override
+    public String cameraIncludes() {
+        requireCamera();
+        return """
+                #include <esp_camera.h>
+                #include <string.h>
+                """;
+    }
+
+    /** JPEG frames from the OV2640 into PSRAM, copied into the program's buffer by {@code juno_camera_capture}. */
+    @Override
+    public String cameraHelpers() {
+        requireCamera();
+        return runtimeSource.load("esp32/camera.cpp");
+    }
+
+    private void requireCamera() {
+        if (core != ArduinoCore.ESP32_CAM) {
+            throw new IllegalStateException("Only the AI Thinker ESP32-CAM has a camera on the ESP32 core");
+        }
     }
 
     /** The core's BLE library, which the adapter below drives through the names of {@link #bleNames()}. */

@@ -668,6 +668,19 @@ public final class IntrinsicLowering {
                 ShimFeature.SD_CAPACITY);
         shim(Intrinsic.SD_FREE_KIB, "juno_sd_free_kib", Result.WORD, List.of(), ShimFeature.SD,
                 ShimFeature.SD_CAPACITY);
+        shim(Intrinsic.CAMERA_BEGIN, "juno_camera_begin", Result.WORD, List.of(), ShimFeature.CAMERA);
+        shim(Intrinsic.CAMERA_CAPTURE, "juno_camera_capture", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.CAMERA);
+        shim(Intrinsic.HTTP_SERVER_BEGIN_STREAM, "juno_http_server_begin_stream", Result.NONE,
+                parameters(List.of(1), 0, 1), ShimFeature.HTTP_STREAM);
+        shim(Intrinsic.HTTP_SERVER_STREAM_BYTES, "juno_http_server_stream_bytes", Result.WORD,
+                parameters(List.of(), 0, 1), ShimFeature.HTTP_STREAM);
+        shim(Intrinsic.HTTP_SERVER_STREAM_TEXT, "juno_http_server_stream_text", Result.WORD,
+                parameters(List.of(0), 0), ShimFeature.HTTP_STREAM);
+        shim(Intrinsic.HTTP_SERVER_END_STREAM, "juno_http_server_end_stream", Result.NONE, List.of(),
+                ShimFeature.HTTP_STREAM);
+        shim(Intrinsic.SD_WRITE_BYTES, "juno_sd_write_bytes", Result.WORD,
+                parameters(List.of(0), 0, 1, 2), ShimFeature.SD);
         registerRandomAccessFile();
         shim(Intrinsic.PROPERTIES_NEW, "juno_properties_new", Result.WORD, List.of(), ShimFeature.SD);
         shim(Intrinsic.PROPERTIES_LOAD, "juno_properties_load", Result.NONE, List.of(RECEIVER, arg(0)),

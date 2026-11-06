@@ -242,6 +242,21 @@ public interface CoreRuntime {
         return BleNames.ARDUINO_BLE;
     }
 
+    /** Core-specific streamed-response helpers, emitted after the HTTP server transport; only the ESP32-CAM provides them. */
+    default String httpStreamHelpers() {
+        throw new IllegalStateException("This core cannot stream HTTP responses; the linker should have rejected beginStream");
+    }
+
+    /** Core-specific headers of the camera driver; only a core whose board declares {@code CAMERA} provides them. */
+    default String cameraIncludes() {
+        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+    }
+
+    /** Core-specific implementation of the camera intrinsics, emitted only for a program that uses them. */
+    default String cameraHelpers() {
+        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+    }
+
     /** Core-specific headers of the BLE central. */
     default String bleIncludes() {
         return "#include <ArduinoBLE.h>\n";

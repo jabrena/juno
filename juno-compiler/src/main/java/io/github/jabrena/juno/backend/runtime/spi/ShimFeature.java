@@ -22,6 +22,10 @@ public enum ShimFeature {
     SERVO,
     /** {@code RemotePoweredUpHub}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
     LEGO_POWERED_UP,
+    /** {@code HttpServer.beginStream}: an open response the program keeps writing parts to, on the ESP32 transport. */
+    HTTP_STREAM,
+    /** {@code Esp32Cam.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
+    CAMERA,
     /** {@code ParallelBus}: eight data pins and a strobe, written through the core's GPIO port registers. */
     PARALLEL_BUS,
     /** {@code Infrared}: bit-banged framed bytes over a 38 kHz IR receiver and LED, no library. */

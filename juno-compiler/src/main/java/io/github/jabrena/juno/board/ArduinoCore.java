@@ -29,6 +29,8 @@ public enum ArduinoCore {
      * 8 KiB of stack by default: windowed-ABI frames carry 32 bytes of save area each and the S3 has RAM to spare.
      */
     ESP32("ESP32", Architecture.XTENSA, 8192, 0, 0, 0),
+    /** {@code esp32:esp32}: the AI Thinker ESP32-CAM's original ESP32 core and GPIO numbering. */
+    ESP32_CAM("ESP32-CAM", Architecture.XTENSA, 8192, 0, 0, 0),
     /**
      * {@code m5stack:esp32}: the M5Stack Cardputer's ESP32-S3 core, built on ESP-IDF 5 rather than the Arduino-ESP32
      * 2.x line the Nano uses. Its runtime matches the Nano's, except that the task watchdog takes a configuration

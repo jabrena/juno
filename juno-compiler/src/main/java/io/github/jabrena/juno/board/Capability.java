@@ -124,10 +124,23 @@ public enum Capability {
                     + "speaks TLS from the first byte); use Smtp.sendTls with implicit TLS, usually port 465";
         }
     },
+    HTTP_STREAM("HttpServer.beginStream") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " cannot keep an HTTP response open for streaming; use HttpServer.respond "
+                    + "for a fixed body";
+        }
+    },
     BLUETOOTH_LE("RemotePoweredUpHub") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";
+        }
+    },
+    CAMERA("Esp32Cam.getCamera") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no onboard camera; only the AI Thinker ESP32-CAM has one";
         }
     },
     WATCHDOG("@Watchdog") {

@@ -31,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("Xtensa assembly backend")
 class XtensaAsmBackendTest {
     private static final String NANO_ESP32 = Board.NANO_ESP32.id();
+    private static final String AI_THINKER_ESP32_CAM = Board.AI_THINKER_ESP32_CAM.id();
 
     private static final String BLINK = """
                     DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
@@ -286,9 +287,13 @@ class XtensaAsmBackendTest {
     }
 
     private CompilationResult compileSource(String className, String source) throws Exception {
+        return compileSource(className, source, NANO_ESP32);
+    }
+
+    private CompilationResult compileSource(String className, String source, String board) throws Exception {
         Path classes = CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, className, source);
         return new JunoCompiler().compile(CompilerTestSupport.classpath(classes), className, false,
-                Optional.of(NANO_ESP32));
+                Optional.of(board));
     }
 
     @Test
@@ -309,6 +314,33 @@ class XtensaAsmBackendTest {
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board"))
                 .isEqualTo(Board.NANO_ESP32);
         assertThat(Board.NANO_ESP32.annotationArgument()).isEqualTo("ArduinoNanoEsp32Board.class");
+    }
+
+    @Test
+    @DisplayName("The AI Thinker ESP32-CAM blink uses its GPIO33 status LED")
+    void shouldLowerAiThinkerEsp32CamBlinkToItsStatusLed() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class AiThinkerEsp32CamBlink {
+                    public static void main(String[] args) {
+                    DigitalOutput led = DigitalOutput.of(Esp32Cam.getGpio().getBuiltinLed());
+                        led.high();
+                    }
+                }
+                """;
+
+        // When
+        CompilationResult result = compileSource("demo.AiThinkerEsp32CamBlink", source, AI_THINKER_ESP32_CAM);
+
+        // Then
+        assertThat(result.report().board()).isEqualTo(Board.AI_THINKER_ESP32_CAM);
+        assertThat(result.assembly()).contains("movi a8, 33\n", "call8 juno_pin_mode\n", "call8 juno_digital_write\n");
     }
 
     @Test
@@ -703,6 +735,37 @@ class XtensaAsmBackendTest {
                 .contains("#include <SPI.h>\n#include <SdFat.h>\n", "static SdFat32 juno_sd;")
                 .contains("extern \"C\" int32_t juno_sd_begin(int32_t chipSelectPin) {")
                 .contains("juno_sd.begin(juno_nano_pin(chipSelectPin))");
+    }
+
+    @Test
+    @DisplayName("Lowers the AI Thinker ESP32-CAM Wi-Fi and onboard SD-card APIs")
+    void shouldLowerAiThinkerEsp32CamWifiAndSdCard() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.device.sd.SdCard;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class AiThinkerEsp32CamWifiFromSd {
+                    private static final Wifi WIFI = Esp32Cam.getWifi();
+                    private static final SdCard SD_CARD = Esp32Cam.getSdCard();
+                    public static void main(String[] args) {
+                        if (SD_CARD.begin()) WIFI.begin("ssid", "password");
+                    }
+                }
+                """;
+
+        // When
+        CompilationResult result = compileSource("demo.AiThinkerEsp32CamWifiFromSd", source, AI_THINKER_ESP32_CAM);
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <WiFi.h>\n", "static SPIClass juno_sd_spi(VSPI);",
+                "juno_sd_spi.begin(14, 2, 15, chipSelectPin)",
+                "juno_sd.begin(SdSpiConfig(chipSelectPin, SHARED_SPI, SD_SCK_MHZ(20), &juno_sd_spi))");
+        assertThat(result.assembly()).contains("call8 juno_wifi_begin\n", "call8 juno_sd_begin\n");
     }
 
     @Test

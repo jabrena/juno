@@ -190,6 +190,15 @@ extern "C" void juno_sd_file_close(int32_t handle) {
   juno_sd_file_used[index] = false;
 }
 
+extern "C" int32_t juno_sd_write_bytes(const char* path, const uint8_t* data, int32_t length) {
+  juno_sd.remove(path);
+  File32 file = juno_sd.open(path, O_WRITE | O_CREAT);
+  if (!file) return 0;
+  size_t written = file.write(data, static_cast<size_t>(length));
+  file.close();
+  return written == static_cast<size_t>(length) ? 1 : 0;
+}
+
 extern "C" int32_t juno_sd_file_append_line(const char* path, const char* line) {
   File32 file = juno_sd.open(path, O_WRITE | O_CREAT | O_APPEND);
   if (!file) return 0;

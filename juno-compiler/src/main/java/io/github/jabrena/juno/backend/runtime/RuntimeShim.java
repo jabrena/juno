@@ -103,6 +103,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SERVO)) {
             shim.append("#include <Servo.h>\n");
         }
+        if (uses(ShimFeature.CAMERA)) {
+            shim.append(core.cameraIncludes());
+        }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.LEGO_POWERED_UP)) {
             shim.append(core.bleIncludes());
@@ -239,6 +242,9 @@ public final class RuntimeShim {
             shim.append(core.bleHelpers());
             shim.append(shimLibraries.legoPoweredUpHelpers(uses(ShimFeature.THREADS), core.bleNames()));
         }
+        if (uses(ShimFeature.CAMERA)) {
+            shim.append(core.cameraHelpers());
+        }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());
         }
@@ -306,6 +312,9 @@ public final class RuntimeShim {
             shim.append(networkShimLibraries.httpServerHelpers(
                     uses(ShimFeature.HTTPS_SERVER) ? core.httpsServerTransport() : core.httpServerTransport(),
                     ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
+        }
+        if (uses(ShimFeature.HTTP_STREAM)) {
+            shim.append(core.httpStreamHelpers());
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),
