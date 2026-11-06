@@ -86,8 +86,13 @@ the program's flash usage).</div>
 <div class="block">Motion sensing: <a href="../../hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu"><code>NineAxisMotionShield</code></a>, the orientation sensor of the Arduino
 9 Axis Motion Shield, over <a href="../../hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.poweredup">io.github.jabrena.juno.remote.lego.poweredup</a></div>
 <div class="col-last even-row-color">
+<div class="block">Remote control of LEGO Powered Up hubs over Bluetooth Low Energy, backed by the Arduino
+<code>ArduinoBLE</code> library.</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Board-independent motion coordination.</div>
 </div>
 </div>
@@ -133,6 +138,33 @@ top of <a href="../../hardware/spi/Spi.html" title="interface in io.github.jabre
 <div class="col-last even-row-color">
 <div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
 <a href="../../hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library).</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.remote.lego.poweredup">
+<h2>Uses of <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> in <a href="../../remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></h2>
+<div class="caption"><span>Classes in <a href="../../remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a> that implement <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../remote/lego/poweredup/PoweredUpGyroscope.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The Technic Hub's gyroscope.</div>
+</div>
+</div>
+<div class="caption"><span>Methods in <a href="../../remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a> that return <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code><a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../../remote/lego/poweredup/RemotePoweredUpHub.html#getGyroscope()" class="member-name-link">getGyroscope</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The Technic Hub's gyroscope, which returns the same object on every call.</div>
 </div>
 </div>
 </section>

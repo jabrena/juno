@@ -3790,20 +3790,21 @@ class JunoCompilerTest {
         Path temporaryDirectory;
 
         @Test
-        @DisplayName("Lowers the LEGO Powered UP intrinsics and omits the header when unused")
+        @DisplayName("Lowers the BLE radio intrinsics for a LEGO hub and omits the header when unused")
         void shouldLowerLegoPoweredUpIntrinsicsAndOmitUnusedHeader() throws Exception {
             // Given
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                     import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
                     import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
                     @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class Train {
                         public static void main(String[] args) {
-                            RemotePoweredUpHub hub = new RemotePoweredUpHub();
+                            RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                             if (hub.connect(10000) && hub.hubType() == RemotePoweredUpHub.TYPE_CITY_HUB) {
                                 hub.setLedColor(HubColor.GREEN);
                                 hub.getMotor(HubPort.A).drive(-50);
@@ -3824,13 +3825,11 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Train");
 
             // Then
-            assertThat(result.assembly()).contains("bl juno_lego_hub_connect", "bl juno_lego_hub_type_id",
-                    "bl juno_lego_hub_set_led_color", "bl juno_lego_hub_set_motor_power",
-                    "bl juno_lego_hub_brake_motor", "bl juno_lego_hub_enable_sensor", "bl juno_lego_hub_read_sensor",
-                    "bl juno_lego_hub_is_connected", "bl juno_lego_hub_disconnect", "bl juno_lego_hub_switch_off");
+            assertThat(result.assembly()).contains("bl juno_ble_connect", "bl juno_ble_is_connected",
+                    "bl juno_ble_write", "bl juno_ble_read", "bl juno_ble_disconnect",
+                    "\"00001623-1212-efde-1623-785feabcd123\"");
             assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>",
-                    "\"00001623-1212-efde-1623-785feabcd123\"",
-                    "extern \"C\" void juno_lego_hub_set_motor_power(int32_t port, int32_t powerPercent)");
+                    "extern \"C\" int32_t juno_ble_connect(const char* serviceUuid");
 
             String plainSource = """
                     package demo;
@@ -3845,7 +3844,7 @@ class JunoCompilerTest {
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.PlainBle", plainSource);
 
             CompilationResult plainResult = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PlainBle");
-            assertThat(plainResult.runtimeShim()).doesNotContain("ArduinoBLE.h", "juno_lego_");
+            assertThat(plainResult.runtimeShim()).doesNotContain("ArduinoBLE.h", "juno_ble_");
         }
 
         @Test

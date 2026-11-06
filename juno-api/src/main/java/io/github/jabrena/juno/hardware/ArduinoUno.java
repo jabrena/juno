@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.device.imu.Lsm6ds3;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeBoardMemory;
 import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
@@ -14,6 +15,7 @@ import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSpi;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.spi.Spi;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -113,5 +115,10 @@ public final class ArduinoUno {
     /** Juno's arena usage and the program's flash footprint on this board. */
     public static BoardMemory getBoardMemory() {
         return NativeBoardMemory.boardMemory();
+    }
+
+    /** The Bluetooth LE radio of the UNO R4 WiFi and UNO Q. The UNO R3 and UNO WiFi Rev2 have none, so the compiler rejects this call there. */
+    public static BluetoothLe getBluetoothLe() {
+        return NativeBluetoothLe.bluetoothLe();
     }
 }

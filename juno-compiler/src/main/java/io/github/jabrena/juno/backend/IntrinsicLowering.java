@@ -775,56 +775,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.MOUSE_MOVE, "juno_mouse_move", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.MOUSE);
         shim(Intrinsic.SERVO_OF, "juno_servo_attach", Result.FIRST_ARGUMENT, List.of(arg(0)), ShimFeature.SERVO);
         shim(Intrinsic.SERVO_WRITE, "juno_servo_write", Result.NONE, List.of(RECEIVER, arg(0)), ShimFeature.SERVO);
-        shim(Intrinsic.LEGO_HUB_CONNECT, "juno_lego_hub_connect", Result.WORD, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_IS_CONNECTED, "juno_lego_hub_is_connected", Result.WORD, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_TYPE, "juno_lego_hub_type_id", Result.WORD, List.of(), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SET_MOTOR_POWER, "juno_lego_hub_set_motor_power", Result.NONE,
-                List.of(arg(0), arg(1)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_BRAKE_MOTOR, "juno_lego_hub_brake_motor", Result.NONE, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_HOLD_MOTOR, "juno_lego_hub_hold_motor", Result.NONE, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SET_LED_COLOR, "juno_lego_hub_set_led_color", Result.NONE, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_ENABLE_SENSOR, "juno_lego_hub_enable_sensor", Result.NONE, List.of(arg(0), arg(1)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_READ_SENSOR, "juno_lego_hub_read_sensor", Result.WORD, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_DISCONNECT, "juno_lego_hub_disconnect", Result.NONE, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SWITCH_OFF, "juno_lego_hub_switch_off", Result.NONE, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_BATTERY_PERCENT, "juno_lego_hub_battery_percent", Result.WORD, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_BUTTON_PRESSED, "juno_lego_hub_button_pressed", Result.WORD, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_RSSI, "juno_lego_hub_rssi", Result.WORD, List.of(), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_FIRMWARE_VERSION, "juno_lego_hub_firmware_version", Result.WORD, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_HARDWARE_VERSION, "juno_lego_hub_hardware_version", Result.WORD, List.of(),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_PORT_DEVICE, "juno_lego_hub_port_device", Result.WORD, List.of(arg(0)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_NAME, "juno_lego_hub_name", Result.WORD, List.of(arg(0), arg(1)),
-                ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_READ_SENSOR_VALUE, "juno_lego_hub_read_sensor_value", Result.WORD,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SENSOR_REPORT_SIZE, "juno_lego_hub_sensor_report_size", Result.WORD,
-                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SENSOR_REPORT_COUNT, "juno_lego_hub_sensor_report_count", Result.WORD,
-                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SET_LED_RGB, "juno_lego_hub_set_led_rgb", Result.NONE,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_LINK_MOTORS, "juno_lego_hub_link_motors", Result.WORD,
-                List.of(arg(0), arg(1)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_UNLINK_MOTORS, "juno_lego_hub_unlink_motors", Result.NONE,
-                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_SET_LINKED_MOTOR_POWER, "juno_lego_hub_set_linked_motor_power", Result.NONE,
-                List.of(arg(0), arg(1), arg(2)), ShimFeature.LEGO_POWERED_UP);
-        shim(Intrinsic.LEGO_HUB_BRAKE_LINKED_MOTORS, "juno_lego_hub_brake_linked_motors", Result.NONE,
-                List.of(arg(0)), ShimFeature.LEGO_POWERED_UP);
+        shim(Intrinsic.BLE_CONNECT, "juno_ble_connect", Result.WORD,
+                parameters(List.of(0, 1), 0, 1, 2, 3, 4), ShimFeature.BLUETOOTH_LE);
+        shim(Intrinsic.BLE_IS_CONNECTED, "juno_ble_is_connected", Result.WORD, List.of(), ShimFeature.BLUETOOTH_LE);
+        shim(Intrinsic.BLE_WRITE, "juno_ble_write", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.BLUETOOTH_LE);
+        shim(Intrinsic.BLE_READ, "juno_ble_read", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.BLUETOOTH_LE);
+        shim(Intrinsic.BLE_DISCONNECT, "juno_ble_disconnect", Result.NONE, List.of(), ShimFeature.BLUETOOTH_LE);
         shim(Intrinsic.PARALLEL_BUS_BEGIN, "juno_parallel_bus_begin", Result.NONE, List.of(arg(0), arg(1)),
                 ShimFeature.PARALLEL_BUS);
         shim(Intrinsic.PARALLEL_BUS_WRITE, "juno_parallel_bus_write", Result.NONE, List.of(arg(0)),

@@ -77,6 +77,7 @@ initTheme();
 <li><a href="#getClock()" tabindex="0">getClock()</a></li>
 <li><a href="#getCamera()" tabindex="0">getCamera()</a></li>
 <li><a href="#getSdCard()" tabindex="0">getSdCard()</a></li>
+<li><a href="#getBluetoothLe()" tabindex="0">getBluetoothLe()</a></li>
 </ol>
 </li>
 </ol>
@@ -110,29 +111,34 @@ initTheme();
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getCamera()" class="member-name-link">getCamera</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBluetoothLe()" class="member-name-link">getBluetoothLe</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The AI Thinker ESP32-CAM's Bluetooth LE radio.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getCamera()" class="member-name-link">getCamera</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The AI Thinker ESP32-CAM's OV2640 camera, which delivers JPEG frames into a caller-owned buffer.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The AI Thinker ESP32-CAM's millisecond and microsecond clock, the same object on every call.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The AI Thinker ESP32-CAM's GPIO pins.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The card in the AI Thinker ESP32-CAM's microSD socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The AI Thinker ESP32-CAM's onboard Wi-Fi radio.</div>
 </div>
 </div>
@@ -195,6 +201,15 @@ initTheme();
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></span>&nbsp;<span class="element-name">getSdCard</span>()</div>
 <div class="block">The card in the AI Thinker ESP32-CAM's microSD socket. Its <a href="device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> selects GPIO13; the runtime
 configures the socket's SPI pins (SCK 14, MISO 2 and MOSI 15). The same instance is returned every call.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getBluetoothLe()">
+<h3>getBluetoothLe</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></span>&nbsp;<span class="element-name">getBluetoothLe</span>()</div>
+<div class="block">The AI Thinker ESP32-CAM's Bluetooth LE radio.</div>
 </div>
 </section>
 </li>

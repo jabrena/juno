@@ -1,13 +1,15 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
+import io.github.jabrena.juno.hardware.time.Clock;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @DisplayName("Powered Up hub version word")
 class RemotePoweredUpHubTest {
-    private final RemotePoweredUpHub hub = new RemotePoweredUpHub();
+    private final RemotePoweredUpHub hub = new RemotePoweredUpHub(mock(PoweredUpPort.class), mock(Clock.class));
 
     @Test
     @DisplayName("Unpacks major, minor, BCD bug-fix and build from a version word")

@@ -72,7 +72,6 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#drive(int)" tabindex="0">drive(int)</a></li>
 <li><a href="#setPower(int)" tabindex="0">setPower(int)</a></li>
 <li><a href="#getPower()" tabindex="0">getPower()</a></li>
@@ -109,7 +108,7 @@ implements <a href="../../../robotics/EncoderMotor.html" title="interface in io.
 <div class="block">The motor on one external port of a Powered Up hub, as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>. Get it from
 <a href="RemotePoweredUpHub.html#getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)"><code>RemotePoweredUpHub.getMotor(HubPort)</code></a>, which returns the same object for a port on every call.
 
-<p>Call <a href="#begin()"><code>begin()</code></a> once after the hub connects, and again after a reconnect, so the hub reports the position.
+<p>The hub reports the position once the first read asks for it, and again after each reconnect.
 <a href="#getTachoCount()"><code>getTachoCount()</code></a> counts from zero at <a href="#resetTachoCount()"><code>resetTachoCount()</code></a>, which keeps the hub's own count and only
 remembers an offset, since the hub has no reset command.</div>
 </div>
@@ -133,59 +132,54 @@ remembers an offset, since the hub has no reset command.</div>
 <div class="block">Runs the motor backward at the current power.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drive(int)" class="member-name-link">drive</a><wbr>(int&nbsp;percent)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Subscribes the port to the hub's motor-position reports, which <a href="#getTachoCount()"><code>getTachoCount()</code></a> reads.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drive(int)" class="member-name-link">drive</a><wbr>(int&nbsp;percent)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs the motor at <code>percent</code>, <code>-100..100</code> (clamped): the sign is the direction, the size the power,
 and <code>0</code> lets it coast.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#flt()" class="member-name-link">flt</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#flt()" class="member-name-link">flt</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Lets the motor coast to a stop, unlike <a href="#stop()"><code>stop()</code></a>, which brakes it.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#forward()" class="member-name-link">forward</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#forward()" class="member-name-link">forward</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Runs the motor forward at the current power.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPower()" class="member-name-link">getPower</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPower()" class="member-name-link">getPower</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the current power setting, <code>0..100</code>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTachoCount()" class="member-name-link">getTachoCount</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The position in degrees since the last <a href="#resetTachoCount()"><code>resetTachoCount()</code></a>, or since <a href="#begin()"><code>begin()</code></a> if never reset.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hold()" class="member-name-link">hold</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTachoCount()" class="member-name-link">getTachoCount</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Holds the motor where it is, resisting being turned: a speed command of 0 that the hub's speed control holds.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns <code>true</code> while the motor is commanded to move, otherwise <code>false</code>.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resetTachoCount()" class="member-name-link">resetTachoCount</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Makes the current position read as zero.</div>
+<div class="block">The position in degrees since the last <a href="#resetTachoCount()"><code>resetTachoCount()</code></a>, or since the hub's zero if never reset.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPower(int)" class="member-name-link">setPower</a><wbr>(int&nbsp;power)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#hold()" class="member-name-link">hold</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Sets the power, <code>0..100</code> (clamped), applied at once if the motor is moving.</div>
+<div class="block">Holds the motor where it is, resisting being turned: a speed command of 0 that the hub's speed control holds.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns <code>true</code> while the motor is commanded to move, otherwise <code>false</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#resetTachoCount()" class="member-name-link">resetTachoCount</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Makes the current position read as zero.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPower(int)" class="member-name-link">setPower</a><wbr>(int&nbsp;power)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the power, <code>0..100</code> (clamped), applied at once if the motor is moving.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Actively brakes the motor, unlike <a href="#flt()"><code>flt()</code></a>, which lets it coast.</div>
 </div>
 </div>
@@ -205,15 +199,6 @@ and <code>0</code> lets it coast.</div>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
-<li>
-<section class="detail" id="begin()">
-<h3>begin</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Subscribes the port to the hub's motor-position reports, which <a href="#getTachoCount()"><code>getTachoCount()</code></a> reads.</div>
-</div>
-</section>
-</li>
 <li>
 <section class="detail" id="drive(int)">
 <h3>drive</h3>
@@ -333,7 +318,7 @@ command releases the hold.</div>
 <h3>getTachoCount</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getTachoCount</span>()</div>
-<div class="block">The position in degrees since the last <a href="#resetTachoCount()"><code>resetTachoCount()</code></a>, or since <a href="#begin()"><code>begin()</code></a> if never reset. The hub
+<div class="block">The position in degrees since the last <a href="#resetTachoCount()"><code>resetTachoCount()</code></a>, or since the hub's zero if never reset. The hub
 reports positions while a hub call runs, so call it regularly; it reads <code>0</code> before the first report.</div>
 <dl class="notes">
 <dt>Specified by:</dt>

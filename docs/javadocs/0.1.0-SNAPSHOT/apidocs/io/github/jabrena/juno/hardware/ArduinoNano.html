@@ -79,6 +79,7 @@ initTheme();
 <li><a href="#getClock()" tabindex="0">getClock()</a></li>
 <li><a href="#getBoardModel()" tabindex="0">getBoardModel()</a></li>
 <li><a href="#getBoardMemory()" tabindex="0">getBoardMemory()</a></li>
+<li><a href="#getBluetoothLe()" tabindex="0">getBluetoothLe()</a></li>
 </ol>
 </li>
 </ol>
@@ -115,40 +116,45 @@ them; a unit test can pass a mock of the corresponding interface instead.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BoardMemory.html" title="interface in io.github.jabrena.juno.hardware">BoardMemory</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoardMemory()" class="member-name-link">getBoardMemory</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBluetoothLe()" class="member-name-link">getBluetoothLe</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The Nano ESP32's Bluetooth LE radio.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BoardMemory.html" title="interface in io.github.jabrena.juno.hardware">BoardMemory</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoardMemory()" class="member-name-link">getBoardMemory</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Juno's arena usage and the program's flash footprint on the Nano ESP32.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoardModel()" class="member-name-link">getBoardModel</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBoardModel()" class="member-name-link">getBoardModel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Which board the program was compiled for.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Nano ESP32's monotonic clock.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Nano ESP32's pins, using the pin numbers printed on the board.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getI2c()" class="member-name-link">getI2c</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getI2c()" class="member-name-link">getI2c</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Nano ESP32's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Nano ESP32 acting as a USB HID mouse, through the core's TinyUSB stack: the USB port stays the serial
 console too.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Nano ESP32's onboard Wi-Fi radio.</div>
 </div>
 </div>
@@ -229,6 +235,15 @@ console too.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="BoardMemory.html" title="interface in io.github.jabrena.juno.hardware">BoardMemory</a></span>&nbsp;<span class="element-name">getBoardMemory</span>()</div>
 <div class="block">Juno's arena usage and the program's flash footprint on the Nano ESP32.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getBluetoothLe()">
+<h3>getBluetoothLe</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></span>&nbsp;<span class="element-name">getBluetoothLe</span>()</div>
+<div class="block">The Nano ESP32's Bluetooth LE radio.</div>
 </div>
 </section>
 </li>

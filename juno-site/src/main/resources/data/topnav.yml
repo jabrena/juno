@@ -32,6 +32,8 @@ items:
         path: "/arduino-nano-esp32"
       - title: "M5Stack Cardputer"
         path: "/m5stack-cardputer"
+      - title: "ESP32-CAM"
+        path: "/ai-thinker-esp32-cam"
       - title: "UNO Q"
         path: "/arduino-uno-q"
       - title: "UNO R4 WiFi"

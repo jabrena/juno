@@ -6,7 +6,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -99,31 +98,11 @@ class RemotePoweredUpHubDelegationTest {
     }
 
     @Test
-    @DisplayName("Battery voltage scales the internal sensor reading to millivolts")
+    @DisplayName("The battery's voltage scales the internal sensor reading to millivolts")
     void shouldScaleTheVoltageReadingToMillivolts() {
         when(port.sensorReportSize(HubPort.TECHNIC_VOLTAGE.value())).thenReturn(2);
         when(port.readSensorValue(HubPort.TECHNIC_VOLTAGE.value(), 0, 2)).thenReturn(2048);
 
-        assertThat(hub.batteryMillivolts()).isEqualTo(2048 * 9615 / 4095);
-    }
-
-    @Test
-    @DisplayName("Current reads the internal sensor after subscribing to it, then gives up after the wait")
-    void shouldSubscribeToTheCurrentSensorAndGiveUpWhenItStaysSilent() {
-        when(port.sensorReportSize(HubPort.TECHNIC_CURRENT.value())).thenReturn(0);
-        when(time.millis()).thenReturn(0, 100, 400);
-
-        assertThat(hub.currentMilliamps()).isEqualTo(-1);
-        verify(port).enableSensor(HubPort.TECHNIC_CURRENT.value(), RemotePoweredUpHub.MODE_IMU_VALUES);
-        verify(port, org.mockito.Mockito.atLeastOnce()).readSensor(HubPort.TECHNIC_CURRENT.value());
-    }
-
-    @Test
-    @DisplayName("Current scales a sensor reading that has arrived")
-    void shouldScaleTheCurrentReadingWhenItHasArrived() {
-        when(port.sensorReportSize(HubPort.TECHNIC_CURRENT.value())).thenReturn(2);
-        when(port.readSensorValue(anyInt(), anyInt(), anyInt())).thenReturn(4095);
-
-        assertThat(hub.currentMilliamps()).isEqualTo(4175);
+        assertThat(hub.getBattery().voltageMillivolts()).isEqualTo(2048 * 9615 / 4095);
     }
 }

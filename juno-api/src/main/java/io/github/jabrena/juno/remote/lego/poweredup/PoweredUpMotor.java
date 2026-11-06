@@ -6,7 +6,7 @@ import io.github.jabrena.juno.robotics.EncoderMotor;
  * The motor on one external port of a Powered Up hub, as an {@link EncoderMotor}. Get it from
  * {@link RemotePoweredUpHub#getMotor}, which returns the same object for a port on every call.
  *
- * <p>Call {@link #begin} once after the hub connects, and again after a reconnect, so the hub reports the position.
+ * <p>The hub reports the position once the first read asks for it, and again after each reconnect.
  * {@link #getTachoCount} counts from zero at {@link #resetTachoCount}, which keeps the hub's own count and only
  * remembers an offset, since the hub has no reset command.
  */
@@ -19,6 +19,7 @@ public final class PoweredUpMotor implements EncoderMotor {
     /** {@code 1} for forward, {@code -1} for backward, {@code 0} when not driving. */
     private int direction;
     private boolean moving;
+    private boolean subscribed;
     private int zeroOffset;
 
     PoweredUpMotor(PoweredUpPort hubPort, HubPort port) {
@@ -26,9 +27,18 @@ public final class PoweredUpMotor implements EncoderMotor {
         this.port = port;
     }
 
-    /** Subscribes the port to the hub's motor-position reports, which {@link #getTachoCount} reads. */
-    public void begin() {
-        hubPort.enableSensor(port.value(), RemotePoweredUpHub.MODE_MOTOR_POSITION);
+    /** Called by the hub on every connect: the next position read subscribes to the hub's reports again. */
+    void onConnect() {
+        subscribed = false;
+    }
+
+    /** The hub's raw position, subscribing to its reports on the first read after each connect. */
+    private int position() {
+        if (!subscribed) {
+            hubPort.enableSensor(port.value(), RemotePoweredUpHub.MODE_MOTOR_POSITION);
+            subscribed = true;
+        }
+        return hubPort.readSensor(port.value());
     }
 
     /**
@@ -107,18 +117,18 @@ public final class PoweredUpMotor implements EncoderMotor {
     }
 
     /**
-     * The position in degrees since the last {@link #resetTachoCount}, or since {@link #begin} if never reset. The hub
+     * The position in degrees since the last {@link #resetTachoCount}, or since the hub's zero if never reset. The hub
      * reports positions while a hub call runs, so call it regularly; it reads {@code 0} before the first report.
      */
     @Override
     public int getTachoCount() {
-        return hubPort.readSensor(port.value()) - zeroOffset;
+        return position() - zeroOffset;
     }
 
     /** Makes the current position read as zero. */
     @Override
     public void resetTachoCount() {
-        zeroOffset = hubPort.readSensor(port.value());
+        zeroOffset = position();
     }
 
     /** Sends the current direction at the current power. */

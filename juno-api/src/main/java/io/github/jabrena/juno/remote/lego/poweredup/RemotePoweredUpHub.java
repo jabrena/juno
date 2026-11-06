@@ -1,7 +1,10 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.robotics.Accelerometer;
+import io.github.jabrena.juno.robotics.Gyroscope;
+import io.github.jabrena.juno.robotics.SampleProvider;
 
 /**
  * A LEGO Powered Up hub (City Hub 88009, Technic Hub 88012, BOOST Move Hub 88006, DUPLO Train
@@ -27,27 +30,52 @@ public final class RemotePoweredUpHub {
     private static final int EXTERNAL_PORTS = 4;
 
     private final PoweredUpPort hubPort;
-    private final Clock clock;
     private final PoweredUpMotor[] motors = new PoweredUpMotor[EXTERNAL_PORTS];
+    private final PoweredUpTilt tilt;
+    private final PoweredUpGyroscope gyroscope;
+    private final PoweredUpAccelerometer accelerometer;
+    private final PoweredUpBattery battery;
 
-    /** A hub controller on the board's own Bluetooth stack and timer. Create it once, at startup. */
-    public RemotePoweredUpHub() {
-        this(NativePoweredUpPort.INSTANCE, ArduinoUno.getClock());
+    /**
+     * A hub controller that links to hubs over the board's Bluetooth LE radio {@code bluetooth}, such as
+     * {@code ArduinoUno.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code ArduinoUno.getClock()}.
+     * Create it once, at startup. Only the boards with a BLE radio can be given one.
+     */
+    public RemotePoweredUpHub(BluetoothLe bluetooth, Clock clock) {
+        this(new LegoWirelessPort(bluetooth, clock), clock);
     }
 
-    /** A hub controller that drives {@code port} and times its waits on {@code clock}: fakes in a unit test. */
-    public RemotePoweredUpHub(PoweredUpPort port, Clock clock) {
+    /** A hub controller that drives {@code port} and gives its battery {@code clock} for its waits: fakes in a unit test. */
+    RemotePoweredUpHub(PoweredUpPort port, Clock clock) {
         this.hubPort = port;
-        this.clock = clock;
         motors[HubPort.A.value()] = new PoweredUpMotor(port, HubPort.A);
         motors[HubPort.B.value()] = new PoweredUpMotor(port, HubPort.B);
         motors[HubPort.C.value()] = new PoweredUpMotor(port, HubPort.C);
         motors[HubPort.D.value()] = new PoweredUpMotor(port, HubPort.D);
+        tilt = new PoweredUpTilt(port);
+        gyroscope = new PoweredUpGyroscope(port, tilt);
+        accelerometer = new PoweredUpAccelerometer(port);
+        battery = new PoweredUpBattery(port, clock);
+    }
+
+    /** The Technic Hub's accelerometer, which returns the same object on every call. The hub subscribes it on connect. */
+    public Accelerometer getAccelerometer() {
+        return accelerometer;
+    }
+
+    /** The Technic Hub's gyroscope, which returns the same object on every call. The hub subscribes it on connect. */
+    public Gyroscope getGyroscope() {
+        return gyroscope;
+    }
+
+    /** The Technic Hub's tilt sensor, which returns the same object on every call. The hub subscribes it on connect. */
+    public SampleProvider getTilt() {
+        return tilt;
     }
 
     /**
      * The motor on the external port {@code port} (A to D), as an {@link io.github.jabrena.juno.robotics.EncoderMotor}.
-     * The same object is returned on every call. Its position needs {@link PoweredUpMotor#begin} after each connect.
+     * The same object is returned on every call. Its position is subscribed on the first read after each connect.
      *
      * @throws IllegalArgumentException if {@code port} is one of the Technic Hub's built-in sensor ports
      */
@@ -98,7 +126,18 @@ public final class RemotePoweredUpHub {
      * negative. Returns {@code true} immediately if a hub is already connected.
      */
     public boolean connect(int timeoutMillis) {
-        return hubPort.connect(timeoutMillis);
+        boolean connected = hubPort.connect(timeoutMillis);
+        if (connected) {
+            for (PoweredUpMotor motor : motors) {
+                motor.onConnect();
+            }
+        }
+        if (connected && hubType() == TYPE_TECHNIC_HUB) {
+            accelerometer.subscribe();
+            gyroscope.subscribe();
+            tilt.subscribe();
+        }
+        return connected;
     }
 
     /** Whether a hub is currently connected; turns {@code false} once the hub switches off or goes out of range. */
@@ -227,7 +266,7 @@ public final class RemotePoweredUpHub {
         return version & 0xFFFF;
     }
 
-    /** Mode 0 of the three built-in sensors: gravity per axis, rotation rate per axis, and tilt angles in degrees. */
+    /** Mode 0 of the Technic Hub's three motion-sensor ports, which report three values each: see {@link PoweredUpAccelerometer}, {@link PoweredUpGyroscope} and {@link PoweredUpTilt}. */
     public static final int MODE_IMU_VALUES = 0;
 
     /**
@@ -290,43 +329,13 @@ public final class RemotePoweredUpHub {
         hubPort.brakeLinkedMotors(virtualPort);
     }
 
-    private static final int RAW_FULL_SCALE = 4095;
-    private static final int VOLTAGE_FULL_SCALE_MILLIVOLTS = 9615;
-    private static final int CURRENT_FULL_SCALE_MILLIAMPS = 4175;
-    private static final int INTERNAL_SENSOR_WAIT_MILLIS = 300;
 
     /**
-     * The Technic Hub's supply voltage in millivolts (about 9000 with fresh batteries), or {@code -1} if
-     * the hub has not answered. The first call subscribes to the hub's voltage sensor and waits up to
-     * 300 ms for its first report, so later calls return the latest value without blocking. The scale
-     * (a raw 0 to 4095 reading spanning 0 to 9.615 V) comes from the community protocol documentation
-     * and is not verified.
+     * The Technic Hub's battery: its charge level, supply voltage and supply current. The same object is returned on
+     * every call.
      */
-    public int batteryMillivolts() {
-        int raw = internalReading(HubPort.TECHNIC_VOLTAGE);
-        return raw < 0 ? -1 : raw * VOLTAGE_FULL_SCALE_MILLIVOLTS / RAW_FULL_SCALE;
-    }
-
-    /**
-     * The current the Technic Hub draws, in milliamps (all motors and the hub together), or {@code -1} if
-     * the hub has not answered; subscribed on the first call like {@link #batteryMillivolts}. Its scale (a
-     * raw 0 to 4095 reading spanning 0 to 4175 mA) is likewise unverified.
-     */
-    public int currentMilliamps() {
-        int raw = internalReading(HubPort.TECHNIC_CURRENT);
-        return raw < 0 ? -1 : raw * CURRENT_FULL_SCALE_MILLIAMPS / RAW_FULL_SCALE;
-    }
-
-    /** Subscribes to an internal sensor if it has not reported yet, waits briefly for the report, and returns its raw value or -1. */
-    private int internalReading(HubPort port) {
-        if (sensorReportSize(port) == 0) {
-            enableSensor(port, MODE_IMU_VALUES);
-            int started = clock.millis();
-            while (sensorReportSize(port) == 0 && clock.millis() - started < INTERNAL_SENSOR_WAIT_MILLIS) {
-                readSensor(port);
-            }
-        }
-        return sensorReportSize(port) == 0 ? -1 : readSensorValue(port, 0, 2);
+    public PoweredUpBattery getBattery() {
+        return battery;
     }
 
     /** Closes the BLE connection, leaving the hub on and advertising again. */

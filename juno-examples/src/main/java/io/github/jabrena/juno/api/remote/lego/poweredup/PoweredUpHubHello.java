@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
@@ -15,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class PoweredUpHubHello {
-    private static final RemotePoweredUpHub HUB = new RemotePoweredUpHub();
+    private static final int CONNECT_TIMEOUT_MILLIS = 10_000;
     private static final int COLOR_MILLIS = 600;
     private static final HubColor[] COLORS = {
         HubColor.RED,
@@ -33,26 +34,27 @@ public class PoweredUpHubHello {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("PoweredUpHubHello started");
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
         while (true) {
-            if (!HUB.isConnected()) {
+            if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
-                if (!HUB.connect(10000)) {
+                if (!hub.connect(CONNECT_TIMEOUT_MILLIS)) {
                     Serial.println("No connection; retrying");
                     Delay.millis(1000);
                     continue;
                 }
                 Serial.print("Connected, battery ");
-                Serial.print(HUB.batteryPercent());
+                Serial.print(hub.batteryPercent());
                 Serial.println(" %");
             }
             for (int i = 0; i < COLORS.length; i++) {
-                if (!HUB.isConnected()) {
+                if (!hub.isConnected()) {
                     Serial.println("Hub disconnected");
                     break;
                 }
                 Serial.print("color index=");
                 Serial.println(i);
-                HUB.setLedColor(COLORS[i]);
+                hub.setLedColor(COLORS[i]);
                 Delay.millis(COLOR_MILLIS);
             }
         }

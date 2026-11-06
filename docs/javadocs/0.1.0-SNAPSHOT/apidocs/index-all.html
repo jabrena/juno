@@ -211,6 +211,11 @@ this shield instead.</div>
 <dd>
 <div class="block">Returns the number of direct array elements, or <code>-1</code> on failure or a type mismatch.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.cv.aruco">ArucoMarker</a> - Class in <a href="io/github/jabrena/juno/robotics/cv/aruco/package-summary.html">io.github.jabrena.juno.robotics.cv.aruco</a></dt>
+<dd>
+<div class="block">An ArUco fiducial marker from the <code>DICT_4X4_50</code> dictionary: ids 0 to 49, each a 6x6 grid of cells
+whose outer ring is black and whose inner 4x4 cells encode the id.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#audio()" class="member-name-link">audio()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>
 <div class="block">The audio device the M5StackCardputer facade hands out.</div>
@@ -290,18 +295,11 @@ this shield instead.</div>
 <dd>
 <div class="block">Battery readings exposed by a board.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#batteryMillivolts()" class="member-name-link">batteryMillivolts()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
-<dd>
-<div class="block">The Technic Hub's supply voltage in millivolts (about 9000 with fresh batteries), or <code>-1</code> if
-the hub has not answered.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#batteryMillivolts()" class="member-name-link">batteryMillivolts()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
 <div class="block">The brick's battery voltage in millivolts (about 9000 with fresh batteries, and the brick warns
 below about 6000), or <code>-1</code> if it did not answer.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#batteryPercent()" class="member-name-link">batteryPercent()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#batteryPercent()" class="member-name-link">batteryPercent()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The hub's battery level as a percentage, <code>0..100</code>, or <code>-1</code> before the hub has
@@ -418,10 +416,6 @@ calibration.</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFLink</a></dt>
 <dd>
 <div class="block">Configures the emitter's transmit pin.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></dt>
-<dd>
-<div class="block">Subscribes the port to the hub's motor-position reports, which <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#getTachoCount()"><code>PoweredUpMotor.getTachoCount()</code></a> reads.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLightSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLightSensor</a></dt>
 <dd>
@@ -547,6 +541,15 @@ certificate themselves (e.g.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#BLUE" class="member-name-link">BLUE</a> - Static variable in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#bluetoothLe()" class="member-name-link">bluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
+<dd>
+<div class="block">The radio the board facades hand out.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a> - Interface in <a href="io/github/jabrena/juno/hardware/net/package-summary.html">io.github.jabrena.juno.hardware.net</a></dt>
+<dd>
+<div class="block">The board's Bluetooth LE radio, as a central: it scans for a device that advertises a service, connects to it, and
+exchanges messages with one characteristic of that service.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a> - Class in <a href="io/github/jabrena/juno/hardware/device/imu/package-summary.html">io.github.jabrena.juno.hardware.device.imu</a></dt>
 <dd>
 <div class="block">Grove 6-Axis Accelerometer &amp; Gyroscope (BMI088), accessed through I2C.</div>
@@ -583,20 +586,14 @@ certificate themselves (e.g.</div>
 <dd>
 <div class="block">Actively brakes <code>port</code>, unlike <code>setSpeed(channel, port, 0)</code>, which lets it coast.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#brakeLinkedMotors(int)" class="member-name-link">brakeLinkedMotors(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#brakeLinkedMotors(int)" class="member-name-link">brakeLinkedMotors(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Actively brakes both motors of a virtual port.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#brakeMotor(int)" class="member-name-link">brakeMotor(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#broadcastDiscovery(java.net.DatagramSocket,java.net.DatagramPacket)" class="member-name-link">broadcastDiscovery(DatagramSocket, DatagramPacket)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">Encrypts the system-information query into <code>request</code> and broadcasts it, returning its length or <code>-1</code>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#buttonPressed()" class="member-name-link">buttonPressed()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#buttonPressed()" class="member-name-link">buttonPressed()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Whether the hub's green button is held down right now.</div>
@@ -768,12 +765,17 @@ reply.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CONFLICT" class="member-name-link">CONFLICT</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#connect(int)" class="member-name-link">connect(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#connect(int)" class="member-name-link">connect(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Scans for the first advertising Powered Up hub and connects to it, returning whether a hub is
 connected afterwards.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#connect(java.lang.String,java.lang.String,int,byte%5B%5D,int)" class="member-name-link">connect(String, String, int, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#connect(java.lang.String,java.lang.String,int,byte%5B%5D,int)" class="member-name-link">connect(String, String, int, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
+<dd>
+<div class="block">Scans for the first device advertising <code>serviceUuid</code>, connects to it, and subscribes to notifications on
+<code>characteristicUuid</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CONTENT_TOO_LARGE" class="member-name-link">CONTENT_TOO_LARGE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
@@ -794,11 +796,6 @@ had none.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#createDirectory(java.lang.String)" class="member-name-link">createDirectory(String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#currentMilliamps()" class="member-name-link">currentMilliamps()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
-<dd>
-<div class="block">The current the Technic Hub draws, in milliamps (all motors and the hub together), or <code>-1</code> if
-the hub has not answered; subscribed on the first call like <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#batteryMillivolts()"><code>RemotePoweredUpHub.batteryMillivolts()</code></a>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#CYAN" class="member-name-link">CYAN</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
 <div class="block">Cyan.</div>
@@ -933,8 +930,12 @@ the hub has not answered; subscribed on the first call like <a href="io/github/j
 <dd>
 <div class="block">digit: 0-9. col: 0 (left) to <a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html#GLYPH_WIDTH"><code>LedMatrixFontSmall.GLYPH_WIDTH</code></a> - 1. row: 0 (top) to <a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html#GLYPH_HEIGHT"><code>LedMatrixFontSmall.GLYPH_HEIGHT</code></a> - 1.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#disconnect()" class="member-name-link">disconnect()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#disconnect()" class="member-name-link">disconnect()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#disconnect()" class="member-name-link">disconnect()</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
+<dd>
+<div class="block">Disconnects from the connected device.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#disconnect()" class="member-name-link">disconnect()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Closes the BLE connection, leaving the hub on and advertising again.</div>
@@ -988,6 +989,11 @@ system-information query <a href="io/github/jabrena/juno/hardware/device/kasa/Ka
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/util/image/M5StackCardputerImage.html#draw(int,int,int,int)" class="member-name-link">draw(int, int, int, int)</a> - Method in class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/M5StackCardputerImage.html" title="class in io.github.jabrena.juno.util.image">M5StackCardputerImage</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html#draw(io.github.jabrena.juno.hardware.device.tft.TftTouchShield,int,int,int,int)" class="member-name-link">draw(TftTouchShield, int, int, int, int)</a> - Static method in class io.github.jabrena.juno.robotics.cv.aruco.<a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html" title="class in io.github.jabrena.juno.robotics.cv.aruco">ArucoMarker</a></dt>
+<dd>
+<div class="block">Draws marker <code>id</code> with its black border's top-left corner at (<code>x</code>, <code>y</code>), each cell
+<code>cellSize</code> pixels square, and a white quiet zone of one cell around it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/image/Drawable.html" class="type-name-link" title="interface in io.github.jabrena.juno.util.image">Drawable</a> - Interface in <a href="io/github/jabrena/juno/util/image/package-summary.html">io.github.jabrena.juno.util.image</a></dt>
 <dd>
 <div class="block">An image that draws itself on the TFT, centred over the current viewport.</div>
@@ -1103,8 +1109,6 @@ the left and right sides.</div>
 <div class="block">Transmits one framed byte like <a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#writeByte(int)"><code>Infrared.writeByte(int)</code></a> while reading it back through the receiver
 module, which hears the board's own IR LED.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#enableSensor(int,int)" class="member-name-link">enableSensor(int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)" class="member-name-link">enableSensor(HubPort, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Asks the hub to report every change of <code>mode</code> of the motor or sensor on <code>port</code>,
@@ -1182,6 +1186,12 @@ both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/j
 <div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; an axis whose read
 failed is written as 0.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/SampleProvider.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></dt>
 <dd>
 <div class="block">Fetches one sample into <code>sample</code>, writing <a href="io/github/jabrena/juno/robotics/SampleProvider.html#sampleSize()"><code>SampleProvider.sampleSize()</code></a> elements starting at <code>offset</code>.</div>
@@ -1227,8 +1237,6 @@ failed is written as 0.</div>
 <dd>
 <div class="block">Fills the solid triangle with the given three vertices.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#firmwareVersion()" class="member-name-link">firmwareVersion()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#firmwareVersion()" class="member-name-link">firmwareVersion()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The hub's firmware version as the protocol's packed number, or <code>-1</code> if unknown; take it apart
@@ -1405,6 +1413,10 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The onboard accelerometer of the UNO WiFi Rev2 (LSM6DS3TR); other boards reject this call.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getAccelerometer()" class="member-name-link">getAccelerometer()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
+<dd>
+<div class="block">The Technic Hub's accelerometer, which returns the same object on every call.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Returns heading in clockwise whole degrees, modulo 360.</div>
@@ -1418,6 +1430,10 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#begin()"><code>NineAxisMotionShield.begin()</code></a> or the last <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#reset()"><code>NineAxisMotionShield.reset()</code></a>;
 <code>-1</code> if the read failed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>
+<div class="block">The heading in whole degrees, <code>0..359</code>, clockwise since the last <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#reset()"><code>PoweredUpGyroscope.reset()</code></a>, from the tilt yaw.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html#getAngle()" class="member-name-link">getAngle()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></dt>
 <dd>
@@ -1435,6 +1451,10 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The yaw rate in degrees per second, clockwise positive; <code>NaN</code> if the read failed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>
+<div class="block">The yaw rate in degrees per second, clockwise positive.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></dt>
 <dd>
 <div class="block">Returns the angular velocity in degrees per second, clockwise positive: the direction <a href="io/github/jabrena/juno/robotics/Gyroscope.html#getAngle()"><code>Gyroscope.getAngle()</code></a> grows.</div>
@@ -1451,10 +1471,28 @@ too short for a typical query string).</div>
 <dd>
 <div class="block">The Cardputer's built-in battery.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getBattery()" class="member-name-link">getBattery()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
+<dd>
+<div class="block">The Technic Hub's battery: its charge level, supply voltage and supply current.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getBattery()" class="member-name-link">getBattery()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
 <div class="block">The batteries.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/ArduinoNano.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoNano.html" title="class in io.github.jabrena.juno.hardware">ArduinoNano</a></dt>
+<dd>
+<div class="block">The Nano ESP32's Bluetooth LE radio.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
+<dd>
+<div class="block">The Bluetooth LE radio of the UNO R4 WiFi and UNO Q.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
+<dd>
+<div class="block">The AI Thinker ESP32-CAM's Bluetooth LE radio.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoNano.html#getBoardMemory()" class="member-name-link">getBoardMemory()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoNano.html" title="class in io.github.jabrena.juno.hardware">ArduinoNano</a></dt>
 <dd>
 <div class="block">Juno's arena usage and the program's flash footprint on the Nano ESP32.</div>
@@ -1504,6 +1542,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
 <dd>
 <div class="block">The AI Thinker ESP32-CAM's millisecond and microsecond clock, the same object on every call.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
+<dd>
+<div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/SensorModes.html#getCurrentMode()" class="member-name-link">getCurrentMode()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></dt>
 <dd>
@@ -1632,6 +1674,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getGyroscope()" class="member-name-link">getGyroscope()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
 <dd>
 <div class="block">The onboard gyroscope of the UNO WiFi Rev2 (LSM6DS3TR); other boards reject this call.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getGyroscope()" class="member-name-link">getGyroscope()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
+<dd>
+<div class="block">The Technic Hub's gyroscope, which returns the same object on every call.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html#getHeight()" class="member-name-link">getHeight()</a> - Method in class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html" title="class in io.github.jabrena.juno.util.image">ArduinoNanoEsp32Image</a></dt>
 <dd>&nbsp;</dd>
@@ -1891,7 +1937,7 @@ missing, resolves to an object or array, or the raw text is too long for Juno's 
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#getTachoCount()" class="member-name-link">getTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></dt>
 <dd>
-<div class="block">The position in degrees since the last <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#resetTachoCount()"><code>PoweredUpMotor.resetTachoCount()</code></a>, or since <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#begin()"><code>PoweredUpMotor.begin()</code></a> if never reset.</div>
+<div class="block">The position in degrees since the last <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#resetTachoCount()"><code>PoweredUpMotor.resetTachoCount()</code></a>, or since the hub's zero if never reset.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Encoder.html#getTachoCount()" class="member-name-link">getTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></dt>
 <dd>
@@ -1913,6 +1959,10 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/robotics/Thermometer.html#getTemperatureCelsius()" class="member-name-link">getTemperatureCelsius()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics">Thermometer</a></dt>
 <dd>
 <div class="block">Returns the temperature in degrees Celsius, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when the sensor could not give a reading.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getTilt()" class="member-name-link">getTilt()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
+<dd>
+<div class="block">The Technic Hub's tilt sensor, which returns the same object on every call.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getUartRx()" class="member-name-link">getUartRx()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
@@ -1974,6 +2024,10 @@ either ADC rail.</div>
 <dd>
 <div class="block">The acceleration along the sensor's X axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></dt>
+<dd>
+<div class="block">The acceleration along X, in whole metres per second squared.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Accelerometer.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></dt>
 <dd>
 <div class="block">Returns the acceleration along the X axis, in metres per second squared.</div>
@@ -1990,6 +2044,10 @@ either ADC rail.</div>
 <dd>
 <div class="block">The acceleration along the sensor's Y axis in whole metres per second squared; <code>0</code> if the read failed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></dt>
+<dd>
+<div class="block">The acceleration along Y, in whole metres per second squared.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Accelerometer.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></dt>
 <dd>
 <div class="block">Returns the acceleration along the Y axis, in metres per second squared.</div>
@@ -2005,6 +2063,10 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">The acceleration along the sensor's Z axis in whole metres per second squared; <code>0</code> if the read failed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></dt>
+<dd>
+<div class="block">The acceleration along Z, in whole metres per second squared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Accelerometer.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a></dt>
 <dd>
@@ -2175,8 +2237,6 @@ Temperature Sensor v1.2</a>.</div>
 </dl>
 <h2 class="title" id="I:H">H</h2>
 <dl class="index">
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#hardwareVersion()" class="member-name-link">hardwareVersion()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#hardwareVersion()" class="member-name-link">hardwareVersion()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The hub's hardware version in the same packed form as <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#firmwareVersion()"><code>RemotePoweredUpHub.firmwareVersion()</code></a>, or <code>-1</code> if unknown.</div>
@@ -2245,8 +2305,6 @@ such header.</div>
 <dd>
 <div class="block">Drives forward with a proportional correction toward the target heading.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#holdMotor(int)" class="member-name-link">holdMotor(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#home()" class="member-name-link">home()</a> - Method in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>
 <div class="block">Returns the cursor to (0, 0) without clearing the display.</div>
@@ -2275,8 +2333,6 @@ intrinsic or type, exactly like <a href="io/github/jabrena/juno/hardware/gpio/Gp
 <dd>
 <div class="block">A colour of a Powered Up hub's status LED, one of the eleven fixed colours the hub's LED protocol offers.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#hubName(byte%5B%5D,int)" class="member-name-link">hubName(byte[], int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#hubName(byte%5B%5D,int)" class="member-name-link">hubName(byte[], int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Copies the hub's advertised name (up to 20 characters, ASCII bytes, no terminator) into
@@ -2288,8 +2344,6 @@ the hub has not reported its name.</div>
 <div class="block">A port of a Powered Up hub: the external ports <a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html#A"><code>HubPort.A</code></a> to <a href="io/github/jabrena/juno/remote/lego/poweredup/HubPort.html#D"><code>HubPort.D</code></a> (a City Hub has A and B), and the built-in
 sensors of the Technic Hub (88012), which report on their own port numbers once subscribed.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#hubType()" class="member-name-link">hubType()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#hubType()" class="member-name-link">hubType()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The connected hub's <code>TYPE_*</code> system type id, or <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_UNKNOWN"><code>RemotePoweredUpHub.TYPE_UNKNOWN</code></a> before <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#connect(int)"><code>RemotePoweredUpHub.connect(int)</code></a>.</div>
@@ -2649,6 +2703,10 @@ without blocking.</div>
 <dd>
 <div class="block">Board-independent motor and sensor contracts.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/cv/aruco/package-summary.html">io.github.jabrena.juno.robotics.cv.aruco</a> - package io.github.jabrena.juno.robotics.cv.aruco</dt>
+<dd>
+<div class="block">ArUco fiducial markers.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a> - package io.github.jabrena.juno.robotics.navigation</dt>
 <dd>
 <div class="block">Board-independent motion coordination.</div>
@@ -2679,8 +2737,12 @@ boards.</div>
 <dd>
 <div class="block">Whether the number of pressed keys changed during the last update.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#isConnected()" class="member-name-link">isConnected()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#isConnected()" class="member-name-link">isConnected()</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
+<dd>
+<div class="block">Whether a device connected by <a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#connect(java.lang.String,java.lang.String,int,byte%5B%5D,int)"><code>BluetoothLe.connect(String, String, int, byte[], int)</code></a> is still connected.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Whether a hub is currently connected; turns <code>false</code> once the hub switches off or goes out of range.</div>
@@ -2914,6 +2976,10 @@ glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT 
 <dd>
 <div class="block">The estimated battery charge level as a percentage in the range <code>0..100</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpBattery.html#levelPercent()" class="member-name-link">levelPercent()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpBattery.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></dt>
+<dd>
+<div class="block">The hub's own charge estimate, <code>0..100</code>; <code>0</code> until the hub has reported it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#LIGHT_BLUE" class="member-name-link">LIGHT_BLUE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
 <div class="block">Light blue.</div>
@@ -2927,8 +2993,6 @@ provides it.</div>
 <dd>
 <div class="block">The light level in percent, <code>0..100</code>, or <code>-1</code> if the brick did not answer.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#linkMotors(int,int)" class="member-name-link">linkMotors(int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.HubPort,io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">linkMotors(HubPort, HubPort)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Pairs the motors on ports <code>portA</code> and <code>portB</code> into one virtual port, so a single
@@ -3011,6 +3075,10 @@ list.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#mark(int)" class="member-name-link">mark(int)</a> - Static method in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block">Transmits a burst of the 38 kHz carrier for <code>micros</code> microseconds.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html#MARKERS" class="member-name-link">MARKERS</a> - Static variable in class io.github.jabrena.juno.robotics.cv.aruco.<a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html" title="class in io.github.jabrena.juno.robotics.cv.aruco">ArucoMarker</a></dt>
+<dd>
+<div class="block">Number of markers in the dictionary; valid ids are <code>0</code> to <code>MARKERS - 1</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#MAX_ANGLE" class="member-name-link">MAX_ANGLE</a> - Static variable in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>&nbsp;</dd>
@@ -3112,7 +3180,7 @@ or <code>-1</code> when it detects none.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#MODE_IMU_VALUES" class="member-name-link">MODE_IMU_VALUES</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
-<div class="block">Mode 0 of the three built-in sensors: gravity per axis, rotation rate per axis, and tilt angles in degrees.</div>
+<div class="block">Mode 0 of the Technic Hub's three motion-sensor ports, which report three values each: see <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpAccelerometer</code></a>, <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpGyroscope</code></a> and <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpTilt</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#MODE_MOTOR_POSITION" class="member-name-link">MODE_MOTOR_POSITION</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -3209,6 +3277,10 @@ sockets and one Qwiic connector, all wired to ordinary Nano header pins.</div>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBattery.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeBattery</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
 <div class="block">The M5Stack Cardputer's battery, implemented by compiler intrinsics over M5Cardputer.Power.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">The board's <a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net"><code>BluetoothLe</code></a>: the only instance, shared by every board facade's <code>getBluetoothLe()</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -3476,8 +3548,6 @@ board-specific implicit-TLS transport as
 <dd>
 <div class="block">Motor output C.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#portDevice(int)" class="member-name-link">portDevice(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#portDevice(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">portDevice(HubPort)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The I/O device type the hub reported (Hub Attached I/O) for the external port <code>port</code>
@@ -3530,14 +3600,26 @@ board-specific implicit-TLS transport as
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#POST" class="member-name-link">POST</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a> - Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
+<dd>
+<div class="block">The Technic Hub's accelerometer: gravity-compensated acceleration along X, Y and Z.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpBattery.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a> - Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
+<dd>
+<div class="block">The Technic Hub's battery as the board's shared <a href="io/github/jabrena/juno/hardware/power/Battery.html" title="interface in io.github.jabrena.juno.hardware.power"><code>Battery</code></a> interface: the hub's own charge percentage, and its
+supply voltage read from the hub's internal voltage sensor.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a> - Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
+<dd>
+<div class="block">The Technic Hub's gyroscope.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a> - Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
 <dd>
 <div class="block">The motor on one external port of a Powered Up hub, as an <a href="io/github/jabrena/juno/robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" class="type-name-link" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a> - Interface in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a> - Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
 <dd>
-<div class="block">The Powered Up hub intrinsics as an interface: <code>NativePoweredUpPort</code> drives the real hub on the board, and a
-mock or fake takes its place in a unit test through <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)"><code>RemotePoweredUpHub(PoweredUpPort, io.github.jabrena.juno.hardware.time.Clock)</code></a>.</div>
+<div class="block">The Technic Hub's tilt sensor: three angles in degrees, yaw first, then pitch and roll.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxButtons.html#PRGM" class="member-name-link">PRGM</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxButtons.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxButtons</a></dt>
 <dd>&nbsp;</dd>
@@ -3831,6 +3913,13 @@ once, at startup.</div>
 <dd>
 <div class="block">A touch sensor on <code>port</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#read(byte%5B%5D,int)" class="member-name-link">read(byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#read(byte%5B%5D,int)" class="member-name-link">read(byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
+<dd>
+<div class="block">Copies the next notification from the connected device into <code>buffer</code>, up to <code>capacity</code> bytes, and
+returns its length.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#read(int,int%5B%5D,int,int%5B%5D,int)" class="member-name-link">read(int, int[], int, int[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>
 <div class="block">Reads one checksum-valid DHT11 frame using caller-owned buffers.</div>
@@ -3873,8 +3962,6 @@ each bounded to <code>headersBuffer</code>) into <code>headersBuffer</code> and 
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html#readRegister16(int,int)" class="member-name-link">readRegister16(int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#readSensor(int)" class="member-name-link">readSensor(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#readSensor(int)" class="member-name-link">readSensor(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
 <div class="block">The value of the sensor on <code>input</code> (for a touch sensor 1 pressed, 0 released), or <code>-1</code> if no reply.</div>
@@ -3884,8 +3971,6 @@ each bounded to <code>headersBuffer</code>) into <code>headersBuffer</code> and 
 <div class="block">The latest value reported by the port <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to, or <code>0</code>
 before the first report.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#readSensorValue(int,int,int)" class="member-name-link">readSensorValue(int, int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#readSensorValue(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int,int)" class="member-name-link">readSensorValue(HubPort, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The <code>index</code>-th value of the latest report of the port <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to,
@@ -3917,6 +4002,10 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>
+<div class="block">Does nothing: the hub calibrates its own sensors, and this library measures no offset to subtract.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></dt>
 <dd>
@@ -3997,13 +4086,10 @@ into an IR Receiver (8884) set to one of its four channels.</div>
 Hub, ...) controlled over Bluetooth Low Energy, recognized as compiler intrinsics by Juno and
 backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib install ArduinoBLE</code>).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E()" class="member-name-link">RemotePoweredUpHub()</a> - Constructor for class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub(BluetoothLe, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
-<div class="block">A hub controller on the board's own Bluetooth stack and timer.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub(PoweredUpPort, Clock)</a> - Constructor for class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
-<dd>
-<div class="block">A hub controller that drives <code>port</code> and times its waits on <code>clock</code>: fakes in a unit test.</div>
+<div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
+<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
@@ -4089,6 +4175,10 @@ storage.</div>
 <dd>
 <div class="block">Makes the current heading the zero of <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngle()"><code>NineAxisMotionShield.getAngle()</code></a>; does nothing if the read failed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>
+<div class="block">Sets the heading to zero at the current tilt yaw.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRotationSensor</a></dt>
 <dd>
 <div class="block">Sets the count back to zero.</div>
@@ -4159,8 +4249,6 @@ storage.</div>
 <dd>
 <div class="block">Character rows.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#rssi()" class="member-name-link">rssi()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#rssi()" class="member-name-link">rssi()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The Bluetooth signal strength the hub reports for this link in dBm (a negative number), or <code>0</code> if unknown.</div>
@@ -4225,6 +4313,14 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dd>
 <div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
+<dd>
+<div class="block">The rotation rate about X, Y and Z, in degrees per second.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/SampleProvider.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></dt>
 <dd>
 <div class="block">Returns the number of elements in a sample; it does not change while the program runs.</div>
@@ -4290,15 +4386,11 @@ temperature or a humidity mode of the same device.</div>
 <dd>
 <div class="block">A sensor with several modes.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#sensorReportCount(int)" class="member-name-link">sensorReportCount(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#sensorReportCount(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">sensorReportCount(HubPort)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">How many reports the hub has sent for <code>port</code> since <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to it,
 counting repeats of an unchanged value, so a program can measure how often the hub reports.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#sensorReportSize(int)" class="member-name-link">sensorReportSize(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#sensorReportSize(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">sensorReportSize(HubPort)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">How many value bytes the latest report of <code>port</code> carried (at most 16), <code>0</code> before the first.</div>
@@ -4383,8 +4475,6 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Makes the M5StackCardputer facade hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#setLedColor(int)" class="member-name-link">setLedColor(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLedColor(io.github.jabrena.juno.remote.lego.poweredup.HubColor)" class="member-name-link">setLedColor(HubColor)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Sets the hub's status LED to one of the <a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>HubColor</code></a> values.</div>
@@ -4394,8 +4484,6 @@ whole-program emulator in a test, never on the board.</div>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getLedMatrix()"><code>ArduinoUno.getLedMatrix()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator or a unit test, never on the board.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#setLedRgb(int,int,int)" class="member-name-link">setLedRgb(int, int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLedRgb(int,int,int)" class="member-name-link">setLedRgb(int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Sets the hub's status LED to any colour, each channel <code>0..255</code>; unlike <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLedColor(io.github.jabrena.juno.remote.lego.poweredup.HubColor)"><code>RemotePoweredUpHub.setLedColor(HubColor)</code></a>'s 11 indexes.</div>
@@ -4405,8 +4493,6 @@ whole-program emulator or a unit test, never on the board.</div>
 <div class="block">Configures <code>input</code> for a light sensor reading the light level as a percentage, <code>0..100</code>, which
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#readSensor(int)"><code>RcxBrick.readSensor(int)</code></a> then returns.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#setLinkedMotorPower(int,int,int)" class="member-name-link">setLinkedMotorPower(int, int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLinkedMotorPower(int,int,int)" class="member-name-link">setLinkedMotorPower(int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Drives the two motors of a virtual port in one message: <code>first</code> for the motor on the first
@@ -4417,8 +4503,6 @@ port given to <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePowere
 <dd>
 <div class="block">Sets the direction of the outputs, forwards or backwards.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#setMotorPower(int,int)" class="member-name-link">setMotorPower(int, int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#setMotorPower(int,int)" class="member-name-link">setMotorPower(int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
 <div class="block">Sets the power level of the outputs, <code>0..</code><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#MAX_LEVEL"><code>RcxMotor.MAX_LEVEL</code></a> (clamped); it takes effect while they are on.</div>
@@ -4746,8 +4830,6 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Writes <code>text</code> to the open stream.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#switchOff()" class="member-name-link">switchOff()</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#switchOff()" class="member-name-link">switchOff()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Asks the hub to switch itself off, which also ends the connection.</div>
@@ -4945,8 +5027,6 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#UNAUTHORIZED" class="member-name-link">UNAUTHORIZED</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html#unlinkMotors(int)" class="member-name-link">unlinkMotors(int)</a> - Method in interface io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></dt>
-<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#unlinkMotors(int)" class="member-name-link">unlinkMotors(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Takes the virtual port <code>virtualPort</code> apart, so the two motors are driven separately again.</div>
@@ -5063,6 +5143,11 @@ when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html
 <dd>
 <div class="block">The battery voltage in millivolts.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpBattery.html#voltageMillivolts()" class="member-name-link">voltageMillivolts()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpBattery.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></dt>
+<dd>
+<div class="block">The Technic Hub's supply voltage in millivolts (about 9000 with fresh batteries), or <code>-1</code> if the hub has
+not answered.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:W">W</h2>
 <dl class="index">
@@ -5133,6 +5218,12 @@ when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
 <a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#write(byte%5B%5D,int)" class="member-name-link">write(byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#write(byte%5B%5D,int)" class="member-name-link">write(byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
+<dd>
+<div class="block">Writes the first <code>length</code> bytes of <code>message</code> to the connected device's characteristic.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html#write(int)" class="member-name-link">write(int)</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></dt>
 <dd>

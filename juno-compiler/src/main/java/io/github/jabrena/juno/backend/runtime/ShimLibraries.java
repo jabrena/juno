@@ -45,29 +45,27 @@ public final class ShimLibraries {
     }
 
     /**
-     * A BLE central for one LEGO Powered Up hub, speaking LEGO Wireless Protocol 3.0 through the
-     * optional {@code ArduinoBLE} library: every command is one write to the hub's single
-     * characteristic, framed as {@code [length, hub id 0, message type, payload...]}, and the hub's
-     * notifications on that characteristic carry the sensor values {@code enableSensor} asked for.
+     * The board's BLE central behind {@code BluetoothLe}: one scan-and-connect to the first device advertising a service,
+     * one characteristic to write to and to read notifications from, and a disconnect. The protocol on top is Java.
      */
-    String legoPoweredUpHelpers(boolean threads) {
-        return legoPoweredUpHelpers(threads, CoreRuntime.BleNames.ARDUINO_BLE);
+    String bleCentralHelpers(boolean threads) {
+        return bleCentralHelpers(threads, CoreRuntime.BleNames.ARDUINO_BLE);
     }
 
-    /** {@link #legoPoweredUpHelpers(boolean)} over the BLE central {@code names} of the core. */
-    String legoPoweredUpHelpers(boolean threads, CoreRuntime.BleNames names) {
+    /** {@link #bleCentralHelpers(boolean)} over the BLE central {@code names} of the core. */
+    String bleCentralHelpers(boolean threads, CoreRuntime.BleNames names) {
         String wait = threads
                 ? """
                   extern "C" void juno_thread_yield();
-                  static void juno_lego_wait() {
+                  static void juno_ble_wait() {
                     juno_thread_yield();
                   }"""
                 : """
-                  static void juno_lego_wait() {
+                  static void juno_ble_wait() {
                   }""";
-        // Continuation lines line up with the ${JUNO_LEGO_WAIT} placeholder's column in the template.
-        return runtimeSource.load("common/lego-powered-up.cpp")
-                .replace("${JUNO_LEGO_WAIT}", wait.replace("\n", "\n                "))
+        // Continuation lines line up with the ${JUNO_BLE_WAIT} placeholder's column in the template.
+        return runtimeSource.load("common/ble-central.cpp")
+                .replace("${JUNO_BLE_WAIT}", wait.replace("\n", "\n                "))
                 .replace("BLEDevice", names.device())
                 .replace("BLECharacteristic", names.characteristic())
                 .replace("BLE.", names.central() + ".");

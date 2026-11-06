@@ -88,7 +88,7 @@ initTheme();
 <ul class="summary-list">
 <li>
 <div id="class-summary">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab1" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab1', 2)" class="table-tab">Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
 <div id="class-summary.tabpanel" role="tabpanel" aria-labelledby="class-summary-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
@@ -102,17 +102,29 @@ initTheme();
 <div class="block">A port of a Powered Up hub: the external ports <a href="HubPort.html#A"><code>HubPort.A</code></a> to <a href="HubPort.html#D"><code>HubPort.D</code></a> (a City Hub has A and B), and the built-in
 sensors of the Technic Hub (88012), which report on their own port numbers once subscribed.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">The Technic Hub's accelerometer: gravity-compensated acceleration along X, Y and Z.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="PoweredUpBattery.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpBattery</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">The Technic Hub's battery as the board's shared <a href="../../../hardware/power/Battery.html" title="interface in io.github.jabrena.juno.hardware.power"><code>Battery</code></a> interface: the hub's own charge percentage, and its
+supply voltage read from the hub's internal voltage sensor.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">The Technic Hub's gyroscope.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The motor on one external port of a Powered Up hub, as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="PoweredUpPort.html" title="interface in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab1">
-<div class="block">The Powered Up hub intrinsics as an interface: <code>NativePoweredUpPort</code> drives the real hub on the board, and a
-mock or fake takes its place in a unit test through <a href="RemotePoweredUpHub.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.hardware.time.Clock)"><code>RemotePoweredUpHub(PoweredUpPort, io.github.jabrena.juno.hardware.time.Clock)</code></a>.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">The Technic Hub's tilt sensor: three angles in degrees, yaw first, then pitch and roll.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">A LEGO Powered Up hub (City Hub 88009, Technic Hub 88012, BOOST Move Hub 88006, DUPLO Train
 Hub, ...) controlled over Bluetooth Low Energy, recognized as compiler intrinsics by Juno and
 backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib install ArduinoBLE</code>).</div>

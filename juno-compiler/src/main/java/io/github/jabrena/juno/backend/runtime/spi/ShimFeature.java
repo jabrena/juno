@@ -20,8 +20,8 @@ public enum ShimFeature {
     M5_BATTERY,
     MOUSE,
     SERVO,
-    /** {@code RemotePoweredUpHub}: a BLE central for LEGO Powered Up hubs over the optional {@code ArduinoBLE} library. */
-    LEGO_POWERED_UP,
+    /** {@code NativeBluetoothLe}: the board's BLE central (scan, connect, one characteristic) over the core's BLE library. */
+    BLUETOOTH_LE,
     /** {@code HttpServer.beginStream}: an open response the program keeps writing parts to, on the ESP32 transport. */
     HTTP_STREAM,
     /** {@code Esp32Cam.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */

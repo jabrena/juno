@@ -122,71 +122,75 @@ the program's flash usage).</div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The M5Stack Cardputer's battery, implemented by compiler intrinsics over M5Cardputer.Power.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">The board's <a href="../net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net"><code>BluetoothLe</code></a>: the only instance, shared by every board facade's <code>getBluetoothLe()</code>.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a>: each method is an intrinsic the compiler lowers to its runtime shim, so it has no
 Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a>: each method is an intrinsic the compiler folds to a constant for the target board,
 so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The AI Thinker ESP32-CAM's camera: <a href="NativeCamera.html#begin()"><code>NativeCamera.begin()</code></a> and the native capture are intrinsics the compiler lowers to the
 core's <code>esp_camera</code> driver, so they have no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeClock.html" title="class in io.github.jabrena.juno.hardware.internal">NativeClock</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeClock.html" title="class in io.github.jabrena.juno.hardware.internal">NativeClock</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time"><code>Clock</code></a>: each method is a clock intrinsic the compiler lowers to the Arduino core call, so it has
 no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeDigitalOutput.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDigitalOutput</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeDigitalOutput.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDigitalOutput</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>DigitalOutput</code></a> factory: <a href="NativeDigitalOutput.html#of(int)"><code>NativeDigitalOutput.of(int)</code></a> is a GPIO intrinsic the compiler lowers to a
 pin mode and returns the pin number as the handle.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The M5Stack Cardputer's <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>, implemented by compiler intrinsics over M5StackCardputer.Display.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a>: each method is a GPIO intrinsic the compiler lowers to the Arduino core call, so it has no
 Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a>: each method is an I2C intrinsic the compiler lowers to the core-bundled <code>Wire</code>
 library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The M5Stack Cardputer's <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over M5StackCardputer.Keyboard.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>: each method is an LED matrix intrinsic the compiler lowers to the
 <code>Arduino_LED_Matrix</code> library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>: each method is a USB HID intrinsic the compiler lowers to the Arduino <code>Mouse</code>
 library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The card in a shield's SD socket: each method but <a href="NativeSdCard.html#begin()"><code>NativeSdCard.begin()</code></a> is an SD intrinsic the compiler lowers to the
 <code>SdFat</code> library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSpi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSpi</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeSpi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSpi</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi"><code>Spi</code></a> bus: each method is an SPI intrinsic the compiler lowers to the core-bundled <code>SPI</code>
 library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>: each method is a Wi-Fi intrinsic the compiler lowers to the board's networking library,
 so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>

@@ -130,7 +130,6 @@ class PoweredUpMotorTest {
         when(port.readSensor(HubPort.A.value())).thenReturn(90);
         PoweredUpMotor motor = hub.getMotor(HubPort.A);
 
-        motor.begin();
         assertThat(motor.getTachoCount()).isEqualTo(90);
         verify(port).enableSensor(HubPort.A.value(), RemotePoweredUpHub.MODE_MOTOR_POSITION);
 
