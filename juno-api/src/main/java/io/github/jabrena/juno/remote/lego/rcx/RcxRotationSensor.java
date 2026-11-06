@@ -4,13 +4,16 @@ package io.github.jabrena.juno.remote.lego.rcx;
 public final class RcxRotationSensor {
     private final RcxSensor port;
 
-    /** A rotation sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
+    /** A rotation sensor on {@code port}. Create it once, at startup; construction configures the port. */
     public RcxRotationSensor(RcxSensor port) {
         this.port = port;
+        if (!begin()) {
+            throw new IllegalStateException("RCX rotation sensor did not acknowledge initialization");
+        }
     }
 
     /** Configures the input for a rotation sensor counting 16 steps per turn. Returns whether the brick acknowledged. */
-    public boolean begin() {
+    private boolean begin() {
         return port.setRotation();
     }
 

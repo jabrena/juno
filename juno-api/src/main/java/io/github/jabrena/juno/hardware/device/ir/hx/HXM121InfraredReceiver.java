@@ -1,9 +1,11 @@
 package io.github.jabrena.juno.hardware.device.ir.hx;
 
+import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 
 /** An HX-M121 38 kHz demodulating infrared receiver. */
 public final class HXM121InfraredReceiver implements InfraredReceiver {
+    private static final InfraredDriver.Type DRIVER = InfraredDriver.Type.HX;
     private final int signalPin;
 
     /** Creates an HX-M121 receiver connected to {@code signalPin}. */
@@ -17,5 +19,10 @@ public final class HXM121InfraredReceiver implements InfraredReceiver {
     @Override
     public int signalPin() {
         return signalPin;
+    }
+
+    @Override
+    public InfraredDriver.Type driver() {
+        return DRIVER;
     }
 }

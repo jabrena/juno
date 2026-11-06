@@ -10,7 +10,7 @@ package io.github.jabrena.juno.remote.lego.pf;
  * both boards. The pulse timings follow the published protocol and have not been verified on a
  * receiver.
  *
- * <p>Create one {@link PFLink} at startup, call its {@code begin} once, and create the remote with it.
+ * <p>Create one {@link PFLink} at startup; its emitter is configured by the link constructor.
  */
 public final class RemotePF {
     /** The fastest speed in either direction for {@link #setSpeed}; the PWM has seven steps. */

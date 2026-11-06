@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.hardware.device.ir.hx;
 
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
+import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+import io.github.jabrena.juno.testing.SimulatedTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,7 @@ class HXInfraredModulesTest {
         HX53InfraredEmitter emitter = new HX53InfraredEmitter(3);
         HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(2);
 
-        emitter.begin(receiver, 2400);
+        new RcxLink(emitter, receiver, SimulatedTime.clock());
 
         assertThat(emitter.signalPin()).isEqualTo(3);
         assertThat(receiver.signalPin()).isEqualTo(2);

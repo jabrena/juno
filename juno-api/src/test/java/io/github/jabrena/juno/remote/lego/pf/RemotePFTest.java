@@ -30,7 +30,6 @@ class RemotePFTest {
         Wire.resetBoard();
         Infrared.reset();
         PFLink link = new PFLink(new HX53InfraredEmitter(3));
-        link.begin();
         remote = new RemotePF(link);
     }
 
@@ -38,8 +37,6 @@ class RemotePFTest {
     @DisplayName("Grove emitter selects the Grove hardware carrier")
     void shouldSelectTheGroveHardwareCarrier() {
         PFLink link = new PFLink(new GroveInfraredEmitter(4));
-        link.begin();
-
         assertThat(Infrared.receivePin).isEqualTo(-1);
         assertThat(Infrared.transmitPin).isEqualTo(4);
         assertThat(Infrared.groveDriver).isTrue();

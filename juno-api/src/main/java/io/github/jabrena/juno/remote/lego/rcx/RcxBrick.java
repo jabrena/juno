@@ -3,7 +3,7 @@ package io.github.jabrena.juno.remote.lego.rcx;
 /**
  * The RCX's direct commands that answer back, the protocol under {@link RemoteRcx}'s motors, sensors, display, sound
  * and battery; use {@link RemoteRcx} in a program. Set up the
- * link with {@link RemoteRcx#begin} or {@link RcxLink#begin} first, with both the IR LED and the IR receiver module
+ * construct an {@link RcxLink} with both the IR LED and the IR receiver module
  * wired. Plain Java on {@link io.github.jabrena.juno.hardware.device.ir.Infrared}.
  *
  * <p>Each call is a request and a reply, which takes 100 ms or more; they return {@code -1} when the
@@ -15,24 +15,10 @@ public final class RcxBrick {
     /** Zero preserves the original broadcast RCX protocol; 1..5 use Juno's channel selector. */
     private final int channel;
 
-    /** A brick on the board's own infrared link. Create it once, at startup. */
-    public RcxBrick() {
-        this(new RcxLink());
-    }
-
-    /** A brick on a link shared with other RCX classes, so they share one toggle bit. */
-    public RcxBrick(RcxLink link) {
-        this(link, 0);
-    }
-
-    RcxBrick(RcxLink link, int channel) {
-        if (channel < 0 || channel > 5) {
-            throw new IllegalArgumentException("RCX channel must be zero or between 1 and 5");
-        }
+    RcxBrick(RcxLink link, RcxChannel channel) {
         this.link = link;
-        this.channel = channel;
+        this.channel = channel.value();
     }
-
 
     /** The RCX's three sensor inputs, numbered 1 to 3 on the brick. */
     public static final int INPUT_1 = 0;

@@ -1,17 +1,12 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
-import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
-import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
-import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
  * A LEGO Mindstorms RCX brick reached over infrared: create it once, at
- * startup, with the infrared {@link RcxLink} and the pins of the IR receiver module and the IR LED, call
- * {@link #begin}, and get the brick's parts from it — its motors ({@link #getMotorA()}, {@link #getMotorB()}, {@link #getMotorC()}), its sensor inputs
+ * startup, with the already-configured infrared {@link RcxLink} and a firmware channel; construction
+ * creates the brick's parts from the link — its motors ({@link #getMotorA()}, {@link #getMotorB()}, {@link #getMotorC()}), its sensor inputs
  * ({@link #getSensor1()}, {@link #getSensor2()}, {@link #getSensor3()}), its display ({@link #getLcd()}), its speaker
  * ({@link #getAudio()}), its batteries ({@link #getBattery()}) and its firmware loader ({@link #getFirmware()}). Every
  * part shares one {@link RcxLink}, so the brick sees one toggle bit, and is allocated here, so getting one allocates
@@ -36,9 +31,7 @@ import io.github.jabrena.juno.hardware.time.Clock;
  */
 public final class RemoteRcx {
     private final RcxLink link;
-    private final int channel;
-    private final InfraredReceiver receiver;
-    private final InfraredEmitter emitter;
+    private final RcxChannel channel;
     private final Clock clock;
     private final RcxMotor motorA;
     private final RcxMotor motorB;
@@ -52,37 +45,11 @@ public final class RemoteRcx {
     private final RcxButtons buttons;
     private final RcxFirmware firmware;
 
-    /**
-     * A brick reached over {@code link}, with an IR receiver module on {@code receivePin} and an IR LED on
-     * {@code transmitPin}, either {@code -1} when unused. Create it once, at startup, and call {@link #begin} to set up
-     * the pins. Share {@code link} with any other RCX class, so they share one toggle bit.
-     */
-    public RemoteRcx(RcxLink link, int receivePin, int transmitPin) {
-        this(link, new HXM121InfraredReceiver(receivePin), new HX53InfraredEmitter(transmitPin), ArduinoUno.getClock());
-    }
-
-    /** A brick reached through typed infrared modules, using the UNO clock. */
-    public RemoteRcx(RcxLink link, InfraredReceiver receiver, InfraredEmitter emitter) {
-        this(link, 0, receiver, emitter, ArduinoUno.getClock());
-    }
-
-    /** A brick on Juno firmware channel {@code 1..5}, reached through typed infrared modules. */
-    public RemoteRcx(RcxLink link, int channel, InfraredReceiver receiver, InfraredEmitter emitter) {
-        this(link, channel, receiver, emitter, ArduinoUno.getClock());
-    }
-
-    /** A brick reached through typed infrared modules and timed by {@code clock}. */
-    public RemoteRcx(RcxLink link, InfraredReceiver receiver, InfraredEmitter emitter, Clock clock) {
-        this(link, 0, receiver, emitter, clock);
-    }
-
-    /** A brick on Juno firmware channel {@code 1..5}, reached through typed infrared modules and timed by {@code clock}. */
-    public RemoteRcx(RcxLink link, int channel, InfraredReceiver receiver, InfraredEmitter emitter, Clock clock) {
+    /** A brick reached through the already-configured link on a Juno firmware channel or the original broadcast. */
+    public RemoteRcx(RcxLink link, RcxChannel channel) {
         this.link = link;
         this.channel = channel;
-        this.receiver = receiver;
-        this.emitter = emitter;
-        this.clock = clock;
+        this.clock = link.clock();
         RcxBrick brick = new RcxBrick(link, channel);
         this.motorA = new RcxMotor(brick, RcxBrick.OUTPUT_A);
         this.motorB = new RcxMotor(brick, RcxBrick.OUTPUT_B);
@@ -94,14 +61,8 @@ public final class RemoteRcx {
         this.audio = new RcxAudio(brick);
         this.battery = new RcxBattery(brick);
         this.buttons = new RcxButtons(brick);
-        this.firmware = new RcxFirmware(link, clock);
+        this.firmware = new RcxFirmware(link);
     }
-
-    /** As the three-argument constructor, timing the button hold and firmware waits on {@code clock}: a simulated clock in a unit test. */
-    public RemoteRcx(RcxLink link, int receivePin, int transmitPin, Clock clock) {
-        this(link, new HXM121InfraredReceiver(receivePin), new HX53InfraredEmitter(transmitPin), clock);
-    }
-
 
     private static final int HOLD_MILLIS = 300;
 
@@ -129,14 +90,6 @@ public final class RemoteRcx {
     /** The stop button, and the sound button. */
     public static final int STOP = 0x4000;
     public static final int SOUND = 0x8000;
-
-    /**
-     * Configures the IR receiver and IR LED pins given to the constructor. Without the receiver, the parts' commands
-     * cannot hear the brick's answers: reads return {@code -1} and acknowledgements {@code false}.
-     */
-    public void begin() {
-        link.begin(receiver, emitter);
-    }
 
     /** Output A. */
     public RcxMotor getMotorA() {
@@ -217,19 +170,19 @@ public final class RemoteRcx {
 
     /** Transmits a remote-control command with {@code buttonMask} to RCX bricks in range, as the remote does. */
     public void sendButtons(int buttonMask) {
-        if (channel == 0) {
+        if (channel == RcxChannel.BROADCAST) {
             link.sendButtons(buttonMask);
         } else {
-            link.sendButtonsChannel(channel, buttonMask);
+            link.sendButtonsChannel(channel.value(), buttonMask);
         }
     }
 
     /** Transmits an RCX {@code message} command carrying the low 8 bits of {@code value}. */
     public void sendMessage(int value) {
-        if (channel == 0) {
+        if (channel == RcxChannel.BROADCAST) {
             link.sendMessage(value);
         } else {
-            link.sendMessageChannel(channel, value);
+            link.sendMessageChannel(channel.value(), value);
         }
     }
 

@@ -4,13 +4,16 @@ package io.github.jabrena.juno.remote.lego.rcx;
 public final class RcxTemperatureSensor {
     private final RcxSensor port;
 
-    /** A temperature sensor on {@code port}. Create it once, at startup, and call {@link #begin} after {@link RemoteRcx#begin}. */
+    /** A temperature sensor on {@code port}. Create it once, at startup; construction configures the port. */
     public RcxTemperatureSensor(RcxSensor port) {
         this.port = port;
+        if (!begin()) {
+            throw new IllegalStateException("RCX temperature sensor did not acknowledge initialization");
+        }
     }
 
     /** Configures the input for a temperature sensor reading Celsius. Returns whether the brick acknowledged. */
-    public boolean begin() {
+    private boolean begin() {
         return port.setTemperature();
     }
 
