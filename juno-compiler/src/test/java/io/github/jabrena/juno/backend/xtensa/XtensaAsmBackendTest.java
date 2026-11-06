@@ -59,9 +59,9 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String LONGS = """
-                    long value = ArduinoUno.getGpio().analogRead(0);
-                    long other = ArduinoUno.getGpio().analogRead(1) + 1L;
-                    int shift = ArduinoUno.getGpio().analogRead(2);
+                    long value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                    long other = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A1")) + 1L;
+                    int shift = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A2"));
                     long mixed = value * value + other - value / other + value % other;
                     mixed = (mixed & other) | (mixed ^ value);
                     mixed = (mixed << shift) + (mixed >> shift) + (mixed >>> shift) - mixed;
@@ -71,7 +71,7 @@ class XtensaAsmBackendTest {
                     Serial.println((int) (mixed + 5_000_000_000L));
             """;
     private static final String FLOATS = """
-                    int raw = ArduinoUno.getGpio().analogRead(3);
+                    int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A3"));
                     float reading = raw;
                     float volts = reading * 1.5f + 0.25f - reading / 3f + reading % 2f;
                     if (volts > 2.0f) {
@@ -83,7 +83,7 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String DOUBLES = """
-                    double sample = ArduinoUno.getGpio().analogRead(4);
+                    double sample = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A4"));
                     double mixed = sample * 0.1 + 2.5 - sample / 3.0 + sample % 2.0;
                     if (mixed > 2.0) {
                         mixed = -mixed;
@@ -124,7 +124,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int raw = ArduinoNano.getGpio().analogRead(0);
+                    int raw = ArduinoNano.getGpio().analogRead(ArduinoNano.getGpio().analogPin("A0"));
                     int offset = raw & 7;
                     Operation square = value -> value * value;
                     Operation captured = value -> value + offset + raw;
@@ -165,7 +165,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) throws InterruptedException {
-                    int limit = ArduinoUno.getGpio().analogRead(0);
+                    int limit = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
                     Total total = new Total();
                     Thread first = Thread.startVirtualThread(new Counter(total, limit));
                     Thread second = Thread.startVirtualThread(new Counter(total, limit));
@@ -192,7 +192,7 @@ class XtensaAsmBackendTest {
                     return a <= 0 ? f + g * 3 + h * 5 + b + c + d + e : mixed(a - 1, b, c, d, e, f, g, h);
                 }
                 public static void main(String[] args) {
-                    int raw = ArduinoUno.getGpio().analogRead(0);
+                    int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
                     Serial.println(sum(raw, 1, 2, 3, 4, 5, 6));
                     Serial.println(mixed(raw, raw + 1, 2, 3, 4, raw * 1000L, raw + 7, raw + 8));
                 }
@@ -241,7 +241,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int value = ArduinoUno.getGpio().analogRead(0);
+                    int value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
                     byte[] bytes = new byte[4];
                     char[] chars = new char[4];
                     short[] shorts = new short[4];
@@ -381,16 +381,17 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Juno's A0-A5 numbers (14-19) reach the Nano's A0-A5 instead of its RGB LED pins")
-    void shouldTranslateAnalogPinNumbersToTheNanosOwn() throws Exception {
+    @DisplayName("The Nano resolves A0 through the board-aware analog pin resolver")
+    void shouldResolveAnalogPinThroughTheNanosOwn() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoAnalog", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        Serial.println(ArduinoUno.getGpio().analogRead(14));
+                        Serial.println(ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")));
                 """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.gpio.Gpio;\n");
 
         // When & Then
-        assertThat(result.assembly()).contains("movi a10, 14\n", "call8 juno_analog_read\n");
+        assertThat(result.assembly()).contains(".asciz \"A0\"", "call8 juno_gpio_analog_pin\n",
+                "call8 juno_analog_read\n");
         assertThat(result.runtimeShim())
                 .contains("A0, A1, A2, A3, A4, A5", "return pin >= 0 && pin < 20 ? pins[pin] : pin;")
                 .contains("return analogRead(juno_nano_pin(pin));", "digitalWrite(juno_nano_pin(pin), value);")
@@ -437,7 +438,7 @@ class XtensaAsmBackendTest {
                         return a <= 0 ? b - c : mix(a - 1, a * b, c);
                     }
                     public static void main(String[] args) {
-                        Serial.println(mix(ArduinoUno.getGpio().analogRead(0), 7, 2));
+                        Serial.println(mix(ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")), 7, 2));
                     }
                 }
                 """;
@@ -455,8 +456,8 @@ class XtensaAsmBackendTest {
     void shouldGuardDivisionByMinusOne() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoDivide", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
-                        int divisor = ArduinoUno.getGpio().analogRead(1);
+                        int value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                        int divisor = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A1"));
                         Serial.println(value / divisor);
                         Serial.println(value % divisor);
                         Serial.println(value >> divisor);
@@ -823,7 +824,7 @@ class XtensaAsmBackendTest {
                         return value * scale;
                     }
                     public static void main(String[] args) {
-                        int raw = ArduinoUno.getGpio().analogRead(0);
+                        int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
                         total = twice(raw, raw * 1000L);
                         Serial.println((int) (total >>> 3));
                         Serial.println((int) scaled(raw));
@@ -859,7 +860,7 @@ class XtensaAsmBackendTest {
     void shouldLowerDoublePrecisionMath() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoMath", """
-                        double angle = ArduinoUno.getGpio().analogRead(0) / 100.0;
+                        double angle = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")) / 100.0;
                         Serial.println(Math.sin(angle) + Math.sqrt(angle) + Math.pow(angle, 3) + Math.atan2(angle, 2));
                 """, SERIAL_IMPORTS);
 

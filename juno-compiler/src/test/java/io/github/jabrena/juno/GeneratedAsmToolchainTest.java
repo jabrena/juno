@@ -437,7 +437,8 @@ class GeneratedAsmToolchainTest {
                         return add ? new Add() : new Multiply();
                     }
                     public static void main(String[] args) {
-                        Operation operation = choose(ArduinoUno.getGpio().analogRead(0) > 0);
+                        Operation operation = choose(
+                                ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")) > 0);
                         Delay.millis(operation.apply(5));
                     }
                 }
