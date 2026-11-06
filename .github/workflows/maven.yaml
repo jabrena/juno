@@ -46,6 +46,7 @@ jobs:
       kotlin: ${{ steps.select.outputs.kotlin }}
       scala: ${{ steps.select.outputs.scala }}
       clojure: ${{ steps.select.outputs.clojure }}
+      groovy: ${{ steps.select.outputs.groovy }}
       arduino: ${{ steps.select.outputs.arduino }}
       other_arduino: ${{ steps.select.outputs.other_arduino }}
       board_scope: ${{ steps.select.outputs.board_scope }}
@@ -90,24 +91,27 @@ jobs:
           kotlin=false
           scala=false
           clojure=false
+          groovy=false
           if changed '^juno-examples/src/main/java/io/github/jabrena/juno/language/'; then java=true; fi
           if changed '^juno-examples/src/main/kotlin/io/github/jabrena/juno/language/kotlin/'; then kotlin=true; fi
           if changed '^juno-examples/src/main/scala/io/github/jabrena/juno/language/scala/'; then scala=true; fi
           if changed '^juno-examples/src/main/clojure/io/github/jabrena/juno/language/clojure/'; then clojure=true; fi
+          if changed '^juno-examples/src/main/groovy/io/github/jabrena/juno/language/groovy/'; then groovy=true; fi
 
           if [[ "$full" == true ]]; then
             java=true
             kotlin=true
             scala=true
             clojure=true
+            groovy=true
             board_scope=all
             other_arduino=true
-            arduino_languages='["full","kotlin","scala","clojure"]'
+            arduino_languages='["full","kotlin","scala","clojure","groovy"]'
           else
             board_scope=representative
             arduino_languages='['
             separator=''
-            for language in kotlin scala clojure; do
+            for language in kotlin scala clojure groovy; do
               if [[ "${!language}" == true ]]; then
                 arduino_languages+="${separator}\"$language\""
                 separator=,
@@ -123,7 +127,7 @@ jobs:
           fi
 
           arduino=false
-          if [[ "$java" == true || "$kotlin" == true || "$scala" == true || "$clojure" == true ]]; then
+          if [[ "$java" == true || "$kotlin" == true || "$scala" == true || "$clojure" == true || "$groovy" == true ]]; then
             arduino=true
           fi
 
@@ -133,6 +137,7 @@ jobs:
             echo "kotlin=$kotlin"
             echo "scala=$scala"
             echo "clojure=$clojure"
+            echo "groovy=$groovy"
             echo "arduino=$arduino"
             echo "other_arduino=$other_arduino"
             echo "board_scope=$board_scope"
