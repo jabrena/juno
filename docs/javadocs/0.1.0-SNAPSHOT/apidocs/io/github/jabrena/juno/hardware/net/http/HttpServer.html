@@ -86,6 +86,10 @@ initTheme();
 <li><a href="#contentLength()" tabindex="0">contentLength()</a></li>
 <li><a href="#header(java.lang.String,byte%5B%5D,int)" tabindex="0">header(String, byte[], int)</a></li>
 <li><a href="#respond(int,java.lang.String,java.lang.String)" tabindex="0">respond(int, String, String)</a></li>
+<li><a href="#beginStream(int,java.lang.String)" tabindex="0">beginStream(int, String)</a></li>
+<li><a href="#streamBytes(byte%5B%5D,int)" tabindex="0">streamBytes(byte[], int)</a></li>
+<li><a href="#streamText(java.lang.String)" tabindex="0">streamText(String)</a></li>
+<li><a href="#endStream()" tabindex="0">endStream()</a></li>
 <li><a href="#respond(int,java.lang.String,java.lang.StringBuilder)" tabindex="0">respond(int, String, StringBuilder)</a></li>
 </ol>
 </li>
@@ -170,22 +174,34 @@ that might not fit, <a href="#respond(int,java.lang.String,java.lang.StringBuild
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Starts listening on <code>port</code>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls</a><wbr>(int&nbsp;port,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#beginStream(int,java.lang.String)" class="member-name-link">beginStream</a><wbr>(int&nbsp;status,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;contentType)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Starts a response that has no fixed length and keeps the client connected until <a href="#endStream()"><code>endStream()</code></a>, for
+example <code>multipart/x-mixed-replace</code> video.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls</a><wbr>(int&nbsp;port,
  byte[]&nbsp;certificate,
  int&nbsp;certificateLength,
  byte[]&nbsp;privateKey,
  int&nbsp;privateKeyLength)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Starts listening for HTTPS on <code>port</code> (usually 443), presenting <code>certificate</code> and proving it with
 <code>privateKey</code>: both PEM text, typically a self-signed pair read from the SD card, so clients must trust the
 certificate themselves (e.g.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#contentLength()" class="member-name-link">contentLength</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#contentLength()" class="member-name-link">contentLength</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The <code>Content-Length</code> header of the request from the most recent <a href="#accept(byte%5B%5D,int)"><code>accept(byte[], int)</code></a>, or <code>-1</code> when it
 had none.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#endStream()" class="member-name-link">endStream</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Ends the open stream and closes the client connection.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#header(java.lang.String,byte%5B%5D,int)" class="member-name-link">header</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name,
@@ -219,6 +235,17 @@ such header.</div>
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/StringBuilder.html" title="class in java.lang" class="external-link">StringBuilder</a>&nbsp;body)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Replies with <code>body</code>'s current contents (built at runtime), then closes the connection.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#streamBytes(byte%5B%5D,int)" class="member-name-link">streamBytes</a><wbr>(byte[]&nbsp;data,
+ int&nbsp;length)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#streamText(java.lang.String)" class="member-name-link">streamText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Writes <code>text</code> to the open stream.</div>
 </div>
 </div>
 </div>
@@ -357,6 +384,48 @@ header lines are kept, so a header past that reads as absent.</div>
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;contentType,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;body)</span></div>
 <div class="block">Replies with <code>body</code> (a literal or a runtime <code>String</code>), then closes the connection.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="beginStream(int,java.lang.String)">
+<h3>beginStream</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">beginStream</span><wbr><span class="parameters">(int&nbsp;status,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;contentType)</span></div>
+<div class="block">Starts a response that has no fixed length and keeps the client connected until <a href="#endStream()"><code>endStream()</code></a>, for
+example <code>multipart/x-mixed-replace</code> video. Send the headers with this call, then write parts with
+<a href="#streamBytes(byte%5B%5D,int)"><code>streamBytes(byte[], int)</code></a> and <a href="#streamText(java.lang.String)"><code>streamText(String)</code></a>. Served one client at a time, from the same
+<a href="#accept(byte%5B%5D,int)"><code>accept(byte[], int)</code></a> loop. ESP32 boards with the camera capability only (AI Thinker ESP32-CAM).</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="streamBytes(byte[],int)">
+<h3>streamBytes</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">streamBytes</span><wbr><span class="parameters">(byte[]&nbsp;data,
+ int&nbsp;length)</span></div>
+<div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream. Returns <code>false</code> once the client
+has disconnected, so the program can stop producing parts.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="streamText(java.lang.String)">
+<h3>streamText</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">streamText</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</span></div>
+<div class="block">Writes <code>text</code> to the open stream. Returns <code>false</code> once the client has disconnected.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="endStream()">
+<h3>endStream</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">endStream</span>()</div>
+<div class="block">Ends the open stream and closes the client connection.</div>
 </div>
 </section>
 </li>

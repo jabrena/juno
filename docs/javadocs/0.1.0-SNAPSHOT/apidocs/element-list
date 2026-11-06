@@ -1,6 +1,7 @@
 io.github.jabrena.juno.annotations
 io.github.jabrena.juno.hardware
 io.github.jabrena.juno.hardware.audio
+io.github.jabrena.juno.hardware.device.camera
 io.github.jabrena.juno.hardware.device.carrier
 io.github.jabrena.juno.hardware.device.grove
 io.github.jabrena.juno.hardware.device.grove.display

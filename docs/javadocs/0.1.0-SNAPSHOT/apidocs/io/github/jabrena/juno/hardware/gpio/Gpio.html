@@ -119,7 +119,8 @@ initTheme();
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Gpio</span></div>
-<div class="block">The board's GPIO pins. <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> is the board's own pins, which the compiler lowers to the Arduino core
+<div class="block">The board's GPIO pins. A board facade such as <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> or
+<a href="../Esp32Cam.html#getGpio()"><code>Esp32Cam.getGpio()</code></a> exposes the board's own pins, which the compiler lowers to the Arduino core
 calls; a unit test passes <code>mock(Gpio.class)</code> instead. Pin numbers and modes come from the static getters
 (<a href="#getD13()"><code>getD13()</code></a>, <a href="#getOutput()"><code>getOutput()</code></a>): portable pin identifiers, D0-D13 as 0-13 and A0-A5 as 14-19.
 The runtime translates these identifiers to the linked board's pins and modes; they are not raw MCU GPIO

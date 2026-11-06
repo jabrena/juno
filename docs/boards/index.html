@@ -326,6 +326,7 @@ by memory.</p>
 <tr>
 <th></th>
 <th>Nano ESP32</th>
+<th>AI Thinker ESP32-CAM</th>
 <th>M5Stack Cardputer</th>
 <th>UNO Q</th>
 <th>UNO R4 WiFi</th>
@@ -337,6 +338,7 @@ by memory.</p>
 <tr>
 <td>Microcontroller</td>
 <td>ESP32-S3 (NORA-W106)</td>
+<td>ESP32</td>
 <td>ESP32-S3</td>
 <td>STM32U585</td>
 <td>Renesas RA4M1</td>
@@ -346,6 +348,7 @@ by memory.</p>
 <tr>
 <td>CPU</td>
 <td>Dual-core 32-bit Xtensa LX7</td>
+<td>Dual-core 32-bit Xtensa LX6</td>
 <td>Dual-core 32-bit Xtensa LX7</td>
 <td>32-bit Cortex-M33F</td>
 <td>32-bit Cortex-M4F</td>
@@ -356,6 +359,7 @@ by memory.</p>
 <td>Clock</td>
 <td>240 MHz</td>
 <td>240 MHz</td>
+<td>240 MHz</td>
 <td>160 MHz</td>
 <td>48 MHz</td>
 <td>16 MHz</td>
@@ -364,6 +368,7 @@ by memory.</p>
 <tr>
 <td>Flash</td>
 <td>16 MB</td>
+<td>4 MB</td>
 <td>8 MB</td>
 <td>2 MB</td>
 <td>256 kB</td>
@@ -373,6 +378,7 @@ by memory.</p>
 <tr>
 <td>SRAM</td>
 <td>512 kB + 8 MB PSRAM</td>
+<td>520 kB + 4 MB PSRAM</td>
 <td>512 kB</td>
 <td>786 kB</td>
 <td>32 kB</td>
@@ -384,12 +390,14 @@ by memory.</p>
 <td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
+<td>3.3 V</td>
 <td>5 V</td>
 <td>5 V</td>
 <td>5 V</td>
 </tr>
 <tr>
 <td>Radio</td>
+<td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE on the Linux side</td>
@@ -400,6 +408,7 @@ by memory.</p>
 <tr>
 <td>Extras</td>
 <td></td>
+<td>OV2640 camera, microSD socket</td>
 <td>Display, keyboard, speaker, battery</td>
 <td>13×8 LED matrix, Linux MPU</td>
 <td>12×8 LED matrix</td>
@@ -409,6 +418,7 @@ by memory.</p>
 <tr>
 <td>Arduino core</td>
 <td><code>arduino:esp32</code></td>
+<td><code>esp32:esp32</code></td>
 <td><code>m5stack:esp32</code></td>
 <td><code>arduino:zephyr</code></td>
 <td><code>arduino:renesas_uno</code></td>
@@ -418,6 +428,7 @@ by memory.</p>
 <tr>
 <td>Juno board id</td>
 <td><code>arduino-nano-esp32</code></td>
+<td><code>ai-thinker-esp32-cam</code></td>
 <td><code>m5stack-cardputer</code></td>
 <td><code>arduino-uno-q</code></td>
 <td><code>arduino-uno-r4-wifi</code></td>
@@ -433,6 +444,7 @@ by memory.</p>
 <tr>
 <th>Juno API or feature</th>
 <th align="center">Nano ESP32</th>
+<th align="center">AI Thinker ESP32-CAM</th>
 <th align="center">M5Stack Cardputer</th>
 <th align="center">UNO Q</th>
 <th align="center">UNO R4 WiFi</th>
@@ -449,9 +461,11 @@ by memory.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td><code>BigInteger</code>, <code>BigDecimal</code></td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -462,6 +476,7 @@ by memory.</p>
 <tr>
 <td>Double-precision <code>Math</code> functions</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -471,6 +486,7 @@ by memory.</p>
 <tr>
 <td>Threads, <code>StructuredTaskScope</code>, <code>ScopedValue</code>, locks</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -484,11 +500,13 @@ by memory.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center">WiFi Shield</td>
 </tr>
 <tr>
 <td>Wi-Fi access point</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -498,6 +516,7 @@ by memory.</p>
 <tr>
 <td>HTTP client</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">✓</td>
@@ -507,6 +526,7 @@ by memory.</p>
 <tr>
 <td>HTTPS client</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -516,6 +536,7 @@ by memory.</p>
 <tr>
 <td>HTTP server</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -525,6 +546,7 @@ by memory.</p>
 <tr>
 <td>HTTPS server</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
@@ -534,6 +556,7 @@ by memory.</p>
 <tr>
 <td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -543,6 +566,7 @@ by memory.</p>
 <tr>
 <td>Email over STARTTLS (<code>Smtp.send</code>)</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
@@ -555,12 +579,14 @@ by memory.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">✓</td>
@@ -571,6 +597,7 @@ by memory.</p>
 <td>Onboard LED matrix</td>
 <td align="center">—</td>
 <td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
@@ -579,6 +606,7 @@ by memory.</p>
 <tr>
 <td><code>@Watchdog</code></td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">✓</td>
@@ -588,6 +616,7 @@ by memory.</p>
 <tr>
 <td>Cryptographic <code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -596,6 +625,7 @@ by memory.</p>
 </tr>
 <tr>
 <td>Display, keyboard, speaker, battery</td>
+<td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
