@@ -29,12 +29,15 @@ It is a compiler intrinsic backed by the Arduino `ArduinoBLE` library.
 
 ### Connect to a hub
 
-Create one `RemotePoweredUpHub` at startup, press the hub's green button so it advertises, and call `connect`. It
-scans for the first hub it finds, for up to the given milliseconds (`0` waits forever). The hub drops the link when it
-switches off or goes out of range, so check `isConnected()` in long-running loops and connect again:
+Create one `RemotePoweredUpHub` at startup, from the board's Bluetooth LE radio, press the hub's green button so it
+advertises, and call `connect`. It scans for the first hub it finds, for up to the given milliseconds (`0` waits
+forever). The hub drops the link when it switches off or goes out of range, so check `isConnected()` in long-running
+loops and connect again. A Technic Hub's built-in sensors (see [Read the sensors](#read-the-sensors)) are subscribed
+on every connect. Only the boards with a BLE adapter (UNO R4 WiFi, UNO Q, Nano ESP32, AI Thinker ESP32-CAM and
+M5Stack Cardputer) have `getBluetoothLe()`; on the UNO R3 or UNO WiFi Rev2 the compiler rejects the call:
 
 ```java
-RemotePoweredUpHub hub = new RemotePoweredUpHub();
+RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe());
 
 while (true) {
     if (!hub.isConnected()) {
@@ -52,16 +55,16 @@ connection at a time.
 
 ### Set the LED color
 
-The hub's status LED takes a LEGO color index, from `COLOR_OFF` through `COLOR_PINK`, `COLOR_BLUE`, `COLOR_GREEN`,
-`COLOR_YELLOW`, `COLOR_RED` to `COLOR_WHITE`:
+The hub's status LED takes a `HubColor`: `OFF`, `PINK`, `PURPLE`, `BLUE`, `LIGHT_BLUE`, `CYAN`, `GREEN`, `YELLOW`,
+`ORANGE`, `RED` or `WHITE`. For any other color, `setLedRgb(red, green, blue)` takes each channel from `0` to `255`:
 
 ```java
-int[] colors = {
+HubColor[] colors = {
     HubColor.RED, HubColor.GREEN, HubColor.BLUE
 };
 
 while (hub.isConnected()) {
-    for (int color : colors) {
+    for (HubColor color : colors) {
         hub.setLedColor(color);
         Delay.millis(1000);
     }
@@ -72,10 +75,9 @@ while (hub.isConnected()) {
 
 ### Drive the motors
 
-`setMotorPower(port, percent)` runs any Powered Up motor on `PORT_A` to `PORT_D`, from `-100` (full reverse) to `100`
-(full forward). There are three ways to stop: `setMotorPower(port, 0)` lets the motor coast, `brakeMotor` stops it
-actively, and `holdMotor` holds a motor with a rotation sensor in place. `portDevice(port)` tells which motor the hub
-detected on a port:
+`getMotor(port)` returns the motor on `HubPort.A` to `HubPort.D`. `drive(percent)` runs it from `-100` (full reverse) to
+`100` (full forward). There are three ways to stop: `flt()` lets the motor coast, `stop()` brakes it actively, and
+`hold()` holds it where it is. `portDevice(port)` tells which motor the hub detected on a port:
 
 ```java
 if (hub.portDevice(HubPort.A) != RemotePoweredUpHub.DEVICE_NONE) {
@@ -83,9 +85,28 @@ if (hub.portDevice(HubPort.A) != RemotePoweredUpHub.DEVICE_NONE) {
     Delay.millis(2000);
     hub.getMotor(HubPort.A).drive(-50);   // half speed backward
     Delay.millis(2000);
-    hub.getMotor(HubPort.A).stop();
+    hub.getMotor(HubPort.A).stop();       // brakes; flt() would coast
 }
 ```
+
+### Read the sensors
+
+The Technic Hub (88012) has three built-in motion sensors, each on its own port. `getAccelerometer()` returns the
+acceleration as an `Accelerometer`, `getGyroscope()` returns the heading and yaw rate as a `Gyroscope`, and
+`getTilt()` returns the yaw, pitch and roll angles as a `SampleProvider`. Each returns the same object on every call,
+and `connect` subscribes them, so a read needs no start-up call. A read returns zero until the hub has reported.
+
+```java
+Accelerometer accelerometer = hub.getAccelerometer();
+Gyroscope gyroscope = hub.getGyroscope();
+gyroscope.reset();                                   // heading zero at the current tilt yaw
+int heading = gyroscope.getAngle();                  // 0..359, clockwise since reset
+int xAccel = accelerometer.getXAccel();              // whole m/s^2
+int millivolts = hub.getBattery().voltageMillivolts();
+```
+
+The scales come from the community protocol documentation and are not verified on hardware. The
+`PoweredUpHubSensorModesMonitor` example prints the raw values so you can check them on your hub.
 
 [`MagicSquarePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java) drives a two-motor vehicle (ports A and B) around a square. To drive two motors as one, as a vehicle's left and
 right wheels, pair them with `linkMotors(PORT_A, PORT_B)` and drive the pair with `setLinkedMotorPower`.
