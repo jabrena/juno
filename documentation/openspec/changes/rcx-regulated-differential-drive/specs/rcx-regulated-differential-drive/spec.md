@@ -255,6 +255,7 @@ implementation:
 | `REG_ARM` | `0x63` | session ID, mapping ID, configuration flags |
 | `REG_PROFILE` | `0x67` | session ID, maximum speed, acceleration, tolerance, timeout |
 | `REG_START` | `0x76` | session ID, motion ID, left target, right target |
+| `REG_BATTERY` | `0x70` | none; reply: battery millivolts (low, high), no session needed |
 
 The `0x08` opcode toggle SHALL be treated only as a transport retry marker. It SHALL NOT identify a motion or replace an
 application sequence identifier. Existing open-loop, sensor, display, sound, battery, channel-selection, and firmware
@@ -346,6 +347,7 @@ report `LINK_UNKNOWN`; it SHALL not assume success. Reply payloads SHALL have th
 REG_ARM:     result u8, protocol version u8, mapping ID u8
 REG_PROFILE: result u8
 REG_START:   result u8, session ID u8, motion ID u8
+REG_BATTERY: millivolts u16 (no arguments; the battery needs no session)
 REG_STOP:    result u8, session ID u8, motion ID u8
 REG_STATUS:  session ID u8, motion ID u8, state u8, fault bits u8,
              left position u16, right position u16

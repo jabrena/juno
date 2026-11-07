@@ -109,6 +109,7 @@ audited against the complete existing opcode space and probed on RCX hardware be
 | `REG_ARM` | `0x63` | session ID, mapping ID, configuration flags |
 | `REG_PROFILE` | `0x67` | session ID, maximum speed, acceleration, tolerance, timeout |
 | `REG_START` | `0x76` | session ID, motion ID, left target, right target |
+| `REG_BATTERY` | `0x70` | none; reply: battery millivolts (low, high), no session needed |
 
 The `0x08` opcode toggle SHALL remain a transport-level retry marker and SHALL NOT be used as an application
 identifier. The request frame SHALL remain `55 FF 00`, followed by each byte and its complement, and a checksum equal to
