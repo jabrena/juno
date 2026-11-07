@@ -30,7 +30,8 @@ public class RcxRegulatedDifferentialDrive {
     private static final int MAX_POWER_LEVEL = 4;
     /** LEGO part 2998, measured at 81.6 mm and rounded to whole millimetres for the geometry. */
     private static final int WHEEL_DIAMETER_MILLIMETRES = 82;
-    private static final int TRACK_WIDTH_MILLIMETRES = 140;
+    /** Measured at 16 cm between the driven wheels; an in-place turn checks the effective track width. */
+    private static final int TRACK_WIDTH_MILLIMETRES = 160;
     /** Illustrative: encoder degrees for one turn of a wheel, for both sides. */
     private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
     private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
