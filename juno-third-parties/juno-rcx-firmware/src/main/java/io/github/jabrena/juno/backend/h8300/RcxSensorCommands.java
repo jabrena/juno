@@ -21,7 +21,7 @@ final class RcxSensorCommands {
     static final String POWER_ALL = "power_sensors";
 
     /** Three {@code sensor_t} structs, one per input. */
-    private static final int SENSORS = 0xC080;
+    static final int SENSORS = 0xC080;
     private static final int SENSOR_SIZE = 8;
     private static final int INPUTS = 3;
     private static final int TYPE = 0;
@@ -45,16 +45,18 @@ final class RcxSensorCommands {
     private static final int SOURCE_MESSAGE = 15;
 
     private static final String UPDATE_ONE = "update_sensor";
-    private static final String POWER_ONE = "power_sensor";
+    static final String POWER_ONE = "power_sensor";
     private static final String MODES_TABLE = "sensor_modes";
     private static final String POLL_ZERO = "poll_zero";
 
     private final RcxCode code;
     private final H8Assembler assembler;
+    private final RcxRegulator regulator;
 
-    RcxSensorCommands(RcxCode code) {
+    RcxSensorCommands(RcxCode code, RcxRegulator regulator) {
         this.code = code;
         this.assembler = code.assembler();
+        this.regulator = regulator;
     }
 
     /** All the command handlers, the subroutines and the default-mode table. */
@@ -86,9 +88,23 @@ final class RcxSensorCommands {
         }
     }
 
+    /**
+     * While the regulator owns the wheels' sensors, inputs 1 and 3 (indexes 0 and 2) keep their configuration: a command
+     * that would change one is rejected with an acknowledgement and no change.
+     */
+    private void ownInputs() {
+        String allowed = code.newLabel();
+        regulator.branchIfNotOwned(allowed);
+        assembler.compareImmediate(1, H8ByteRegister.R2L);
+        code.jumpIf(H8Condition.EQUAL, allowed);
+        assembler.jump(RcxCode.REPLY_ACK);
+        assembler.label(allowed);
+    }
+
     private void setType() {
         assembler.label(SET_TYPE);
         selectInput(1, RcxCode.REPLY_ACK);
+        ownInputs();
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
         assembler.moveImmediate(0, H8ByteRegister.R0H);
         assembler.compareImmediate(DEFAULT_MODES.length, H8ByteRegister.R0L);
@@ -104,6 +120,7 @@ final class RcxSensorCommands {
     private void setMode() {
         assembler.label(SET_MODE);
         selectInput(1, RcxCode.REPLY_ACK);
+        ownInputs();
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
         assembler.storeByteIndexed(H8ByteRegister.R0L, MODE, H8Register.R4);
         clearReading();
@@ -113,6 +130,7 @@ final class RcxSensorCommands {
     private void clear() {
         assembler.label(CLEAR);
         selectInput(1, RcxCode.REPLY_ACK);
+        ownInputs();
         clearReading();
         code.replyWith(1);
     }
