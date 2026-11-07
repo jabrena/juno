@@ -99,7 +99,7 @@ public class RcxRegulatedDifferentialDrive {
         Serial.print(": ended in state ");
         Serial.println(state.ordinal());
         if (state == RcxRegulatedState.STALLED) {
-            Serial.println("A wheel stalled: check the wiring, the battery and the load");
+            Serial.println("A wheel stalled: check the wiring and the load");
         } else if (state == RcxRegulatedState.TIMED_OUT) {
             Serial.println("The move timed out before both wheels reached their targets");
         } else if (state == RcxRegulatedState.LINK_UNKNOWN) {
