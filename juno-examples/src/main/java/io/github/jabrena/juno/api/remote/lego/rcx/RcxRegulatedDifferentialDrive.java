@@ -25,16 +25,16 @@ import io.github.jabrena.juno.util.Delay;
  */
 public class RcxRegulatedDifferentialDrive {
     private static final int SESSION = 1;
-    /** Illustrative: 16 sensor steps per sensor turn at a 1:1 gearing. */
+    /** Measured: the rotation sensor sits on the wheel axle, so one sensor turn is one wheel turn, 16 steps. */
     private static final int STEPS_PER_MOTOR_REVOLUTION = 16;
     private static final int MAX_POWER_LEVEL = 4;
     /** LEGO part 2998, measured at 81.6 mm and rounded to whole millimetres for the geometry. */
     private static final int WHEEL_DIAMETER_MILLIMETRES = 82;
     /** Measured at 16 cm between the driven wheels; an in-place turn checks the effective track width. */
     private static final int TRACK_WIDTH_MILLIMETRES = 160;
-    /** Illustrative: encoder degrees for one turn of a wheel, for both sides. */
-    private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
-    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
+    /** Measured: the sensor is on each wheel's axle at 1:1, so one wheel turn is 360 encoder degrees on both sides. */
+    private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 360;
+    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 360;
     private static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
     private static final int TRAVEL_MILLIMETRES = 500;
     private static final int TURN_DEGREES = 90;
