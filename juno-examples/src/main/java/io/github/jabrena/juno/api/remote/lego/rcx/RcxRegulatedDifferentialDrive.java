@@ -19,6 +19,10 @@ import io.github.jabrena.juno.util.Delay;
  * reports the state it ends in; a stall, a timeout or an unknown link outcome is printed and the program stops both
  * wheels rather than continuing.
  *
+ * <p>The battery is read through the regulated protocol before the travel and again before the turn. A reading below
+ * {@link #LOW_BATTERY_MILLIVOLTS} is printed and no further move starts, so a weak pack cannot leave the wheels short of
+ * their targets partway through a move. The battery is read without arming, so the check works even if arming fails.
+ *
  * <p>The geometry below is illustrative. Replace the wheel diameter, the track width and the encoder degrees per wheel
  * revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
  * distances. Wiring and the firmware are as in {@link RcxRegulatedMotorCalibration}.
@@ -41,6 +45,8 @@ public class RcxRegulatedDifferentialDrive {
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
     private static final int IDLE_SECONDS = 5;
+    /** Illustrative: the battery voltage below which the program does not start a move. Measure your pack's low point. */
+    private static final int LOW_BATTERY_MILLIVOLTS = 6000;
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
@@ -62,10 +68,12 @@ public class RcxRegulatedDifferentialDrive {
         RegulatedDifferentialDrive drive = new RegulatedDifferentialDrive(pair, geometry);
         drive.setLinearSpeedMillimetresPerSecond(LINEAR_SPEED_MILLIMETRES_PER_SECOND);
 
-        drive.travelMillimetres(TRAVEL_MILLIMETRES);
-        if (finishedCleanly(pair, "travel")) {
-            drive.turnDegrees(TURN_DEGREES);
-            finishedCleanly(pair, "turn");
+        if (batteryOk(pair)) {
+            drive.travelMillimetres(TRAVEL_MILLIMETRES);
+            if (finishedCleanly(pair, "travel") && batteryOk(pair)) {
+                drive.turnDegrees(TURN_DEGREES);
+                finishedCleanly(pair, "turn");
+            }
         }
         drive.stop();
         Serial.println("Stopped; the program now idles");
@@ -82,6 +90,26 @@ public class RcxRegulatedDifferentialDrive {
         } catch (IllegalStateException refused) {
             return false;
         }
+    }
+
+    /**
+     * Reads the battery through the regulated protocol and reports it. Returns {@code false} when the brick did not answer
+     * or the battery is below {@link #LOW_BATTERY_MILLIVOLTS}, so the caller starts no move.
+     */
+    private static boolean batteryOk(RcxRegulatedPair pair) {
+        int millivolts = pair.batteryMillivolts();
+        if (millivolts < 0) {
+            Serial.println("The brick did not report its battery: no move starts");
+            return false;
+        }
+        Serial.print("Battery: ");
+        Serial.print(millivolts);
+        Serial.println(" mV");
+        if (millivolts < LOW_BATTERY_MILLIVOLTS) {
+            Serial.println("Battery low: no move starts; charge or replace the pack");
+            return false;
+        }
+        return true;
     }
 
     /**
