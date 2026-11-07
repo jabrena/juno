@@ -25,6 +25,8 @@ final class RcxRegulator {
     static final int OPCODE_ARM = 0x63;
     static final int OPCODE_PROFILE = 0x67;
     static final int OPCODE_START = 0x76;
+    /** The battery in millivolts: the classical battery reply, shared, so the regulator adds no code of its own. */
+    static final int OPCODE_BATTERY = 0x70;
 
     static final String STATUS = "reg_status";
     static final String STOP = "reg_stop";

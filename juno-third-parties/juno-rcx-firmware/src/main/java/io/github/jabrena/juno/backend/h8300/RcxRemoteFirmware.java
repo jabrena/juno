@@ -53,6 +53,8 @@ import java.util.Objects;
  * <tr><td>0x67</td><td>regulated pair: profile (session, speed, acceleration, tolerance, timeout)</td><td>result</td></tr>
  * <tr><td>0x76</td><td>regulated pair: start a motion (session, motion, left target, right target)</td>
  * <td>result, session, motion</td></tr>
+ * <tr><td>0x70</td><td>regulated pair: the battery, as the classical battery command (no arguments)</td>
+ * <td>millivolts (low, high)</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -359,6 +361,7 @@ public final class RcxRemoteFirmware {
         handler(RcxRegulator.OPCODE_ARM, RcxRegulator.ARM);
         handler(RcxRegulator.OPCODE_PROFILE, RcxRegulator.PROFILE);
         handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
+        handler(RcxRegulator.OPCODE_BATTERY, "battery");
         assembler.jump(RcxCode.LOOP);
     }
 
