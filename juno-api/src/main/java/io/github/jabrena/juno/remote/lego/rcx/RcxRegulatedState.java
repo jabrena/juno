@@ -21,6 +21,14 @@ public enum RcxRegulatedState {
         NOT_ARMED, READY, RUNNING, COMPLETE, STOPPED, STALLED, TIMED_OUT, FAULT
     };
 
+    /**
+     * Maps a status reply to the state the host reports: an external override latched in the fault bits wins over the
+     * firmware's own state.
+     */
+    static RcxRegulatedState fromStatus(int firmwareCode, int faults) {
+        return (faults & RcxRegulatedProtocol.STATUS_EXTERNAL_OVERRIDE) != 0 ? EXTERNAL_OVERRIDE : fromFirmware(firmwareCode);
+    }
+
     /** Maps a firmware state code ({@code 0..7}) to its state; any other code is {@link #FAULT}. */
     static RcxRegulatedState fromFirmware(int code) {
         return code >= 0 && code < FIRMWARE_STATES.length ? FIRMWARE_STATES[code] : FAULT;

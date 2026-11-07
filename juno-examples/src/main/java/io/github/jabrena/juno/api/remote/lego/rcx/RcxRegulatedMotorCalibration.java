@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * gearing and quantization before you set the geometry in {@code RcxRegulatedDifferentialDrive}.
  *
  * <p>Wiring: a Grove Base Shield on the UNO R4 WiFi, with the Grove infrared emitter in its D3 socket and the Grove
- * infrared receiver in its D2 socket, both pointed at the RCX's IR window. The RCX runs no
+ * infrared receiver in its D4 socket, both pointed at the RCX's IR window. The RCX runs no
  * program of its own; it needs only the regulator firmware, installed by {@code RcxFirmwareDownload}. The sensor
  * steps per motor revolution below are the values for a 1:1 gearing (16 steps per sensor turn); measure your build and
  * change them. The speed, acceleration and tolerance are starting points, not measured values.
@@ -39,7 +39,7 @@ public class RcxRegulatedMotorCalibration {
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD2()),
+        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD4()),
                 ArduinoUno.getClock());
         RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL),
                 STEPS_PER_MOTOR_REVOLUTION);

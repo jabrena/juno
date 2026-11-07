@@ -19,26 +19,26 @@ import io.github.jabrena.juno.util.Delay;
  * reports the state it ends in; a stall, a timeout or an unknown link outcome is printed and the program stops both
  * wheels rather than continuing.
  *
- * <p>The turn is asymmetric: the geometry gives the two sides different encoder ratios, so each wheel's target comes from
- * its own ratio and the wheels travel the same arc in opposite directions.
+ * <p>The turn gives each wheel its own target, from its own encoder ratio, so the wheels travel the same arc in opposite
+ * directions. The measured build has 1:1 gearing on both sides, so the two ratios are equal here; a build with different
+ * gearing on each side turns the same way with different targets.
  *
- * <p>The geometry below is illustrative. Replace the wheel diameter, the track width and the encoder degrees per wheel
- * revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
+ * <p>The geometry below was measured for this build. Replace the wheel diameter, the track width and the encoder degrees
+ * per wheel revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
  * distances. Wiring and the firmware are as in {@link RcxRegulatedMotorCalibration}.
  */
 public class RcxRegulatedDifferentialDrive {
     private static final int SESSION = 1;
-    /** Illustrative: 16 sensor steps per sensor turn at a 1:1 gearing. */
+    /** Measured: the rotation sensor sits on the wheel axle, so one sensor turn is one wheel turn, 16 steps. */
     private static final int STEPS_PER_MOTOR_REVOLUTION = 16;
     private static final int MAX_POWER_LEVEL = 4;
-    private static final int WHEEL_DIAMETER_MILLIMETRES = 81;
-    private static final int TRACK_WIDTH_MILLIMETRES = 140;
-    /**
-     * Illustrative, and deliberately asymmetric: the two sides have different encoder ratios, so an in-place turn gives
-     * each wheel its own target. The left wheel needs 1800 encoder degrees per turn and the right 1500.
-     */
-    private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
-    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 1500;
+    /** LEGO part 2998, measured at 81.6 mm and rounded to whole millimetres for the geometry. */
+    private static final int WHEEL_DIAMETER_MILLIMETRES = 82;
+    /** Measured at 16 cm between the driven wheels; an in-place turn checks the effective track width. */
+    private static final int TRACK_WIDTH_MILLIMETRES = 160;
+    /** Measured: the sensor is on each wheel's axle at 1:1, so one wheel turn is 360 encoder degrees on both sides. */
+    private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 360;
+    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 360;
     private static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
     private static final int TRAVEL_MILLIMETRES = 500;
     private static final int TURN_DEGREES = 90;
@@ -50,7 +50,7 @@ public class RcxRegulatedDifferentialDrive {
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD2()),
+        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD4()),
                 ArduinoUno.getClock());
         RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL),
                 STEPS_PER_MOTOR_REVOLUTION);
@@ -105,7 +105,7 @@ public class RcxRegulatedDifferentialDrive {
         Serial.print(": ended in state ");
         Serial.println(state.ordinal());
         if (state == RcxRegulatedState.STALLED) {
-            Serial.println("A wheel stalled: check the wiring, the battery and the load");
+            Serial.println("A wheel stalled: check the wiring and the load");
         } else if (state == RcxRegulatedState.TIMED_OUT) {
             Serial.println("The move timed out before both wheels reached their targets");
         } else if (state == RcxRegulatedState.LINK_UNKNOWN) {
