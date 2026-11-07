@@ -24,6 +24,8 @@ public final class DifferentialDriveOdometry {
     private int referenceHeadingMillidegrees;
     private int poseHeadingAtReference;
     private boolean initialized;
+    /** Whether a valid IMU sample has set the reference heading yet; encoder-only odometry runs until one does. */
+    private boolean referenceEstablished;
 
     /** Creates odometry that updates {@code pose} in place. */
     public DifferentialDriveOdometry(
@@ -50,6 +52,7 @@ public final class DifferentialDriveOdometry {
         rightEncoder.resetTachoCount();
         pose.reset();
         initialized = false;
+        referenceEstablished = false;
     }
 
     /**
@@ -66,12 +69,11 @@ public final class DifferentialDriveOdometry {
         if (!initialized) {
             previousLeftDegrees = leftDegrees;
             previousRightDegrees = rightDegrees;
+            initialized = true;
             if (!imuValid) {
                 return false;
             }
-            referenceHeadingMillidegrees = gyroHeading;
-            poseHeadingAtReference = pose.headingMillidegrees();
-            initialized = true;
+            establishReference(gyroHeading);
             return true;
         }
 
@@ -79,6 +81,9 @@ public final class DifferentialDriveOdometry {
         int rightDistance = geometry.rightDistanceMillimetres(rightDegrees - previousRightDegrees);
         previousLeftDegrees = leftDegrees;
         previousRightDegrees = rightDegrees;
+        if (imuValid && !referenceEstablished) {
+            establishReference(gyroHeading);
+        }
 
         int previousHeading = pose.headingMillidegrees();
         int wheelHeading = previousHeading + wheelHeadingDelta(leftDistance, rightDistance);
@@ -90,6 +95,13 @@ public final class DifferentialDriveOdometry {
         pose.advance(distance, midpointHeading);
         pose.advance(0, newHeading);
         return imuValid;
+    }
+
+    /** Takes the current pose heading as the one the IMU's {@code gyroHeading} is measured from. */
+    private void establishReference(int gyroHeading) {
+        referenceHeadingMillidegrees = gyroHeading;
+        poseHeadingAtReference = pose.headingMillidegrees();
+        referenceEstablished = true;
     }
 
     private int wheelHeadingDelta(int leftDistance, int rightDistance) {

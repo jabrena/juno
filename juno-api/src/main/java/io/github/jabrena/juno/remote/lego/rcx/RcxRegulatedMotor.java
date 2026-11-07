@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.robotics.Encoder;
 import io.github.jabrena.juno.robotics.RegulatedMotor;
 
 /**
@@ -10,7 +11,7 @@ import io.github.jabrena.juno.robotics.RegulatedMotor;
  * <p>Only regulated movements exist on the brick, so the open-loop calls ({@link #forward}, {@link #backward},
  * {@link #flt}, {@link #setPower}, {@link #getPower}) throw {@link UnsupportedOperationException}; use {@link #rotate}.
  */
-public final class RcxRegulatedMotor implements RegulatedMotor {
+public final class RcxRegulatedMotor implements RegulatedMotor, Encoder {
     private final RcxRegulatedPair pair;
     private final int side;
 
@@ -58,6 +59,12 @@ public final class RcxRegulatedMotor implements RegulatedMotor {
 
     @Override
     public int tachoCount() {
+        return pair.tachoCount(side);
+    }
+
+    /** The tachometer in encoder-shaft degrees, as the {@link Encoder} contract reads it; refreshes the status first. */
+    @Override
+    public int getTachoCount() {
         return pair.tachoCount(side);
     }
 
