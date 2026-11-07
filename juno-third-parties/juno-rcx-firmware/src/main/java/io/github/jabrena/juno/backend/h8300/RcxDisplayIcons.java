@@ -77,7 +77,7 @@ final class RcxDisplayIcons {
     /** The command handler, the subroutines and the table of drawn icons. */
     void handlers(RcxMotorCommands motors, RcxSensorCommands sensors, RcxDisplayText text) {
         setIcon(text);
-        tick(motors);
+        tick();
         update(motors, sensors, text);
         assembler.label(DRAWN_TABLE);
         assembler.data(DRAWN);
@@ -98,7 +98,7 @@ final class RcxDisplayIcons {
         code.replyWith(1);
     }
 
-    private void tick(RcxMotorCommands motors) {
+    private void tick() {
         String still = code.newLabel();
         assembler.label(TICK);
         assembler.load(PHASE, H8Register.R0);
@@ -109,7 +109,6 @@ final class RcxDisplayIcons {
         assembler.subs(1, H8Register.R0);
         assembler.store(H8Register.R0, RECEIVING);
         assembler.label(still);
-        motors.toneIndicatorTick(RcxRemoteFirmware.TONE_INDICATOR, RcxRemoteFirmware.TONE_OUTPUT);
         assembler.call(UPDATE);
         assembler.returnFromSubroutine();
     }
