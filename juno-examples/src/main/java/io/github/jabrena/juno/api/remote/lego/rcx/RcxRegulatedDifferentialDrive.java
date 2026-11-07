@@ -19,8 +19,12 @@ import io.github.jabrena.juno.util.Delay;
  * reports the state it ends in; a stall, a timeout or an unknown link outcome is printed and the program stops both
  * wheels rather than continuing.
  *
- * <p>The geometry below is illustrative. Replace the wheel diameter, the track width and the encoder degrees per wheel
- * revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
+ * <p>The turn gives each wheel its own target, from its own encoder ratio, so the wheels travel the same arc in opposite
+ * directions. The measured build has 1:1 gearing on both sides, so the two ratios are equal here; a build with different
+ * gearing on each side turns the same way with different targets.
+ *
+ * <p>The geometry below was measured for this build. Replace the wheel diameter, the track width and the encoder degrees
+ * per wheel revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
  * distances. Wiring and the firmware are as in {@link RcxRegulatedMotorCalibration}.
  */
 public class RcxRegulatedDifferentialDrive {
