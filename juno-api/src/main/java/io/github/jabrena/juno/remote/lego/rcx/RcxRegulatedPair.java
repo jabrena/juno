@@ -186,15 +186,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
         }
     }
 
-    /** Rotates one side by {@code degrees} while the other stays where it is. Used by its {@link RcxRegulatedMotor}. */
-    void rotateSide(int side, int degrees, boolean immediateReturn) {
-        if (side == LEFT) {
-            rotate(degrees, 0, immediateReturn);
-        } else {
-            rotate(0, degrees, immediateReturn);
-        }
-    }
-
     /** Stops both sides, qualified by the active motion so a stale stop cannot stop a newer movement. */
     @Override
     public void stop() {
@@ -206,7 +197,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
             state = RcxRegulatedState.LINK_UNKNOWN;
             throw new IllegalStateException("REG_STOP outcome unknown; the outputs may still be moving");
         }
-        if (!accepted(ack)) {
+        if (!RcxRegulatedProtocol.accepted(ack)) {
             throw new IllegalStateException("REG_STOP " + describe(ack));
         }
         refreshStatus();
@@ -269,9 +260,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
 
     /** Sets the side's tachometer zero to its current position; rejected while the pair moves. */
     void resetTachoCount(int side) {
-        if (state == RcxRegulatedState.RUNNING) {
-            throw new IllegalStateException("the tachometer cannot be reset while the pair is moving");
-        }
         refreshStatus();
         positions.zeroHere(side);
     }
@@ -282,7 +270,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
             state = RcxRegulatedState.LINK_UNKNOWN;
             throw new IllegalStateException("REG_START outcome unknown; read status() before moving again");
         }
-        if (!accepted(ack)) {
+        if (!RcxRegulatedProtocol.accepted(ack)) {
             throw new IllegalStateException("REG_START " + describe(ack));
         }
         state = RcxRegulatedState.RUNNING;
@@ -302,17 +290,10 @@ public final class RcxRegulatedPair implements RegulatedPair {
             return false;
         }
         faults = protocol.statusFaults;
-        state = (faults & RcxRegulatedProtocol.STATUS_EXTERNAL_OVERRIDE) != 0
-                ? RcxRegulatedState.EXTERNAL_OVERRIDE
-                : RcxRegulatedState.fromFirmware(protocol.statusState);
+        state = RcxRegulatedState.fromStatus(protocol.statusState, faults);
         positions.record(LEFT, protocol.statusLeft);
         positions.record(RIGHT, protocol.statusRight);
         return true;
-    }
-
-    /** Whether the brick accepted a command, or had already accepted this identical one. */
-    private static boolean accepted(int ack) {
-        return ack == RcxRegulatedProtocol.ACCEPTED || ack == RcxRegulatedProtocol.DUPLICATE;
     }
 
     private static String describe(int ack) {
