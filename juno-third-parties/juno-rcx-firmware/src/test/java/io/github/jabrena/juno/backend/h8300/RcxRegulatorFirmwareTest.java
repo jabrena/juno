@@ -375,6 +375,26 @@ class RcxRegulatorFirmwareTest {
         }
 
         @Test
+        @DisplayName("A move smaller than the deadband settles within tolerance instead of hunting")
+        void shouldSettleASmallMoveWithinTheDeadband() {
+            // Given
+            rcx.continuousAnalog();
+            rcx.wheelPlant();
+            rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
+            rcx.receive(START, SESSION, 1, 3, 0, 0xFD, 0xFF);
+            rcx.receiveAfter(200, STATUS, SESSION);
+
+            // When
+            run(STEPS);
+
+            // Then
+            assertThat(lastReplyTo(STATUS)[3]).isEqualTo(COMPLETE);
+            assertThat(rcx.wheelPosition(LEFT)).isBetween(2, 4);
+            assertThat(rcx.wheelPosition(RIGHT)).isBetween(-4, -2);
+        }
+
+        @Test
         @DisplayName("The remote's stop button ends a running movement on both wheels")
         void shouldStopAMotionFromTheRemote() {
             // Given

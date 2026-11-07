@@ -94,6 +94,8 @@ final class RcxRegulator {
     static final int KP_DIVISOR = 4;
     /** Placeholder: the error saturates here, where proportional power reaches the byte range. */
     static final int SATURATED_ERROR = 1019;
+    /** Placeholder (task 1.6): an error this small or smaller applies no power, so the wheel holds instead of hunting. */
+    static final int DEADBAND = 1;
     /** Placeholder: the least power that moves a wheel from rest. */
     static final int MIN_START_POWER = 2;
     /** Placeholder: the most the power may rise in one cycle. */
@@ -584,9 +586,9 @@ final class RcxRegulator {
         assembler.label(errorAhead);
         absolute(H8Register.R1);
         String zeroPower = code.newLabel();
-        assembler.moveImmediate(0, H8Register.R4);
+        assembler.moveImmediate(DEADBAND, H8Register.R4);
         assembler.compare(H8Register.R4, H8Register.R1);
-        code.jumpIf(H8Condition.EQUAL, zeroPower);
+        code.jumpIf(H8Condition.LOWER_OR_SAME, zeroPower);
         assembler.moveImmediate(SATURATED_ERROR, H8Register.R4);
         assembler.compare(H8Register.R4, H8Register.R1);
         String unsaturated = code.newLabel();
