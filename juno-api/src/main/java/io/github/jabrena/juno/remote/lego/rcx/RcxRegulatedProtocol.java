@@ -14,6 +14,8 @@ final class RcxRegulatedProtocol {
     static final int OPCODE_ARM = 0x63;
     static final int OPCODE_PROFILE = 0x67;
     static final int OPCODE_START = 0x76;
+    /** The battery in millivolts; it needs no session, since the battery belongs to the brick. */
+    static final int OPCODE_BATTERY = 0x70;
 
     static final int ACCEPTED = 0;
     static final int DUPLICATE = 1;
@@ -50,6 +52,7 @@ final class RcxRegulatedProtocol {
     private static final int START_REPLY = 3;
     private static final int STOP_REPLY = 3;
     private static final int STATUS_REPLY = 8;
+    private static final int BATTERY_REPLY = 2;
 
     private final RcxLink link;
     private final int[] arguments = new int[MAX_ARGUMENTS];
@@ -116,6 +119,17 @@ final class RcxRegulatedProtocol {
             return NO_REPLY;
         }
         return reply[0];
+    }
+
+    /**
+     * Reads {@code REG_BATTERY}: the battery in millivolts, low byte first, or {@link #NO_REPLY} when the brick
+     * did not answer. The command takes no arguments.
+     */
+    int battery() {
+        if (!roundTrip(OPCODE_BATTERY, 0, BATTERY_REPLY)) {
+            return NO_REPLY;
+        }
+        return reply[0] | (reply[1] << 8);
     }
 
     /** Reads {@code REG_STATUS} into the status fields; returns {@code false} when no valid reply came. */

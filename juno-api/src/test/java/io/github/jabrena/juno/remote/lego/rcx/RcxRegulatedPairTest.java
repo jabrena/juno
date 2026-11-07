@@ -591,6 +591,23 @@ class RcxRegulatedPairTest {
                 .isInstanceOf(IllegalStateException.class);
     }
 
+    @Test
+    @DisplayName("The battery is read without arming, as millivolts from two bytes, low byte first")
+    void shouldReadTheBatteryWithoutArming() {
+        // Given: 812 millivolts, which is 0x032C
+        reply(0x70, 0x2C, 0x03);
+
+        // When / Then
+        assertThat(pair.batteryMillivolts()).isEqualTo(812);
+        assertThat(sent(0x70).get(0)).containsExactly(0x70);
+    }
+
+    @Test
+    @DisplayName("A battery read with no reply is reported as -1, not as an empty battery")
+    void shouldReportNoBatteryWithoutAReply() {
+        assertThat(pair.batteryMillivolts()).isEqualTo(-1);
+    }
+
     /** Arms the pair: the arm reply, then a status reading the new session as ready. */
     private void armed() {
         reply(ARM, 0, 1, 1);

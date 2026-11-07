@@ -193,6 +193,14 @@ public final class RcxRegulatedPair implements RegulatedPair {
         refreshStatus();
     }
 
+    /**
+     * The battery in millivolts, or {@code -1} when the brick did not answer. It needs no arming: the battery belongs to
+     * the brick, so it can be read before a session starts and during a motion.
+     */
+    public int batteryMillivolts() {
+        return protocol.battery();
+    }
+
     /** Returns the cached state; {@link #status()} refreshes it first. */
     public RcxRegulatedState cachedState() {
         return state;
