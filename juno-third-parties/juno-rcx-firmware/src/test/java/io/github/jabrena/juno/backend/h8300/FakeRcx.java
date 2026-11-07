@@ -50,6 +50,7 @@ final class FakeRcx implements H8Simulator.Rom {
     private final boolean[] jammed = new boolean[3];
     private final int[] commandedMode = new int[3];
     private final int[] commandedPower = new int[3];
+    private final int[] highestPower = new int[3];
 
     /** Queues a message: the opcode and its arguments; the checksum is added as the ROM would receive it. */
     void receive(int... message) {
@@ -89,6 +90,11 @@ final class FakeRcx implements H8Simulator.Rom {
     /** The position of the wheel on {@code input} (0 for sensor 1, 2 for sensor 3). */
     int wheelPosition(int input) {
         return wheelPosition[input];
+    }
+
+    /** The highest power commanded to drive an output, forward or backward, during the run. */
+    int highestPower(int output) {
+        return highestPower[output];
     }
 
     /** The mode last commanded on an output: 1 forward, 2 backward, 3 brake, 4 float. */
@@ -292,6 +298,9 @@ final class FakeRcx implements H8Simulator.Rom {
                 calls.add("motor %X %d %d".formatted(r6, cpu.stackArgument(0), cpu.stackArgument(1)));
                 commandedMode[r6 - RcxRom.MOTOR_A] = cpu.stackArgument(0);
                 commandedPower[r6 - RcxRom.MOTOR_A] = cpu.stackArgument(1);
+                if (cpu.stackArgument(0) == RcxRom.MOTOR_FORWARD || cpu.stackArgument(0) == RcxRom.MOTOR_BACKWARD) {
+                    highestPower[r6 - RcxRom.MOTOR_A] = Math.max(highestPower[r6 - RcxRom.MOTOR_A], cpu.stackArgument(1));
+                }
             }
             case RcxRom.PLAY_SYSTEM_SOUND -> calls.add("sound " + cpu.stackArgument(0));
             case RcxRom.PLAY_SOUND_OR_SET_DATA_POINTER -> calls.add("tone %d %d".formatted(cpu.stackArgument(0),
@@ -367,6 +376,7 @@ final class FakeRcx implements H8Simulator.Rom {
         if (!wheelPlant) {
             return;
         }
+        calls.add("tick");
         for (int output : new int[] {0, 2}) {
             if (jammed[output]) {
                 continue;
