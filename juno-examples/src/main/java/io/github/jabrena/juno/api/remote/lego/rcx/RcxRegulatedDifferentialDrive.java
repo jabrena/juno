@@ -28,7 +28,8 @@ public class RcxRegulatedDifferentialDrive {
     /** Illustrative: 16 sensor steps per sensor turn at a 1:1 gearing. */
     private static final int STEPS_PER_MOTOR_REVOLUTION = 16;
     private static final int MAX_POWER_LEVEL = 4;
-    private static final int WHEEL_DIAMETER_MILLIMETRES = 81;
+    /** LEGO part 2998, measured at 81.6 mm and rounded to whole millimetres for the geometry. */
+    private static final int WHEEL_DIAMETER_MILLIMETRES = 82;
     private static final int TRACK_WIDTH_MILLIMETRES = 140;
     /** Illustrative: encoder degrees for one turn of a wheel, for both sides. */
     private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
