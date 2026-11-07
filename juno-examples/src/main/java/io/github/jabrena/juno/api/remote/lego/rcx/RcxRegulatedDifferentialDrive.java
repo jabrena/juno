@@ -19,6 +19,9 @@ import io.github.jabrena.juno.util.Delay;
  * reports the state it ends in; a stall, a timeout or an unknown link outcome is printed and the program stops both
  * wheels rather than continuing.
  *
+ * <p>The turn is asymmetric: the geometry gives the two sides different encoder ratios, so each wheel's target comes from
+ * its own ratio and the wheels travel the same arc in opposite directions.
+ *
  * <p>The geometry below is illustrative. Replace the wheel diameter, the track width and the encoder degrees per wheel
  * revolution with the values {@link RcxRegulatedMotorCalibration} measures for your build before you rely on the
  * distances. Wiring and the firmware are as in {@link RcxRegulatedMotorCalibration}.
@@ -30,9 +33,12 @@ public class RcxRegulatedDifferentialDrive {
     private static final int MAX_POWER_LEVEL = 4;
     private static final int WHEEL_DIAMETER_MILLIMETRES = 81;
     private static final int TRACK_WIDTH_MILLIMETRES = 140;
-    /** Illustrative: encoder degrees for one turn of a wheel, for both sides. */
+    /**
+     * Illustrative, and deliberately asymmetric: the two sides have different encoder ratios, so an in-place turn gives
+     * each wheel its own target. The left wheel needs 1800 encoder degrees per turn and the right 1500.
+     */
     private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
-    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 1800;
+    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 1500;
     private static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
     private static final int TRAVEL_MILLIMETRES = 500;
     private static final int TURN_DEGREES = 90;
