@@ -25,6 +25,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
     public static final int INVERT_RIGHT_SENSOR = 0x08;
     /** Configuration flag: brake rather than coast when a movement stops or completes. */
     public static final int BRAKE_ON_STOP = 0x10;
+    /** The configuration bits that hold the maximum motor power, 1 to 7. */
+    private static final int MAX_POWER_MASK = 0xE0;
 
     /** The only mapping the v1 firmware defines: motor A with sensor 1 on the left, motor C with sensor 3 on the right. */
     static final int MAPPING_ID = 1;
@@ -63,6 +65,10 @@ public final class RcxRegulatedPair implements RegulatedPair {
         if (configurationFlags < 0 || configurationFlags > MAX_BYTE) {
             throw new IllegalArgumentException("configuration flags must fit in one byte");
         }
+        if ((configurationFlags & MAX_POWER_MASK) == 0) {
+            throw new IllegalArgumentException(
+                    "maximum motor power must be 1 to 7: pass RcxRegulatedPair.maxPower(level) in the flags");
+        }
         if (!link.canReceive()) {
             throw new IllegalArgumentException("regulated commands need an infrared receiver to hear the brick's replies");
         }
@@ -74,6 +80,17 @@ public final class RcxRegulatedPair implements RegulatedPair {
         this.configurationFlags = configurationFlags;
         this.left = new RcxRegulatedMotor(this, LEFT);
         this.right = new RcxRegulatedMotor(this, RIGHT);
+    }
+
+    /**
+     * The configuration bits for a maximum motor power of {@code level} (1 to 7, full power is 7), to OR into the
+     * configuration flags. A pair with no maximum power would never move, so the constructor rejects one.
+     */
+    public static int maxPower(int level) {
+        if (level < 1 || level > 7) {
+            throw new IllegalArgumentException("maximum motor power must be between 1 and 7");
+        }
+        return level << 5;
     }
 
     /** The left side, the motor A output, as a {@link RcxRegulatedMotor} view of this pair. */
