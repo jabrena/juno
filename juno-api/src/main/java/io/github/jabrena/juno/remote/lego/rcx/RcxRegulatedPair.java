@@ -25,8 +25,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
     public static final int INVERT_RIGHT_SENSOR = 0x08;
     /** Configuration flag: brake rather than coast when a movement stops or completes. */
     public static final int BRAKE_ON_STOP = 0x10;
-    /** The configuration bits that hold the maximum motor power, 1 to 7. */
-    private static final int MAX_POWER_MASK = 0xE0;
 
     /** The only mapping the v1 firmware defines: motor A with sensor 1 on the left, motor C with sensor 3 on the right. */
     static final int MAPPING_ID = 1;
@@ -49,6 +47,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
     private final RcxRegulatedMotor right;
 
     private int motion;
+    private int lastAcknowledgement;
     private int faults;
     private RcxRegulatedState state = RcxRegulatedState.NOT_ARMED;
 
@@ -59,19 +58,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
      * of motor shaft.
      */
     public RcxRegulatedPair(RcxLink link, int session, int configurationFlags, int sensorStepsPerMotorRevolution) {
-        if (session < 1 || session > MAX_MOTION_ID) {
-            throw new IllegalArgumentException("session must be between 1 and 255");
-        }
-        if (configurationFlags < 0 || configurationFlags > MAX_BYTE) {
-            throw new IllegalArgumentException("configuration flags must fit in one byte");
-        }
-        if ((configurationFlags & MAX_POWER_MASK) == 0) {
-            throw new IllegalArgumentException(
-                    "maximum motor power must be 1 to 7: pass RcxRegulatedPair.maxPower(level) in the flags");
-        }
-        if (!link.canReceive()) {
-            throw new IllegalArgumentException("regulated commands need an infrared receiver to hear the brick's replies");
-        }
+        RcxRegulatedConfiguration configuration = new RcxRegulatedConfiguration(link, session, configurationFlags);
         this.protocol = new RcxRegulatedProtocol(link);
         this.scale = new RcxRegulatedScale(sensorStepsPerMotorRevolution);
         this.profile = new RcxRegulatedProfile(scale);
@@ -113,10 +100,11 @@ public final class RcxRegulatedPair implements RegulatedPair {
     public void arm() {
         int ack = protocol.arm(session, MAPPING_ID, configurationFlags);
         if (ack != RcxRegulatedProtocol.ACCEPTED) {
-            throw new IllegalStateException("REG_ARM " + describe(ack));
+            lastAcknowledgement = ack;
+            throw new IllegalStateException("REG_ARM was not accepted");
         }
         if (protocol.mapping != MAPPING_ID) {
-            throw new IllegalStateException("the brick mapped the pair to " + protocol.mapping + ", not " + MAPPING_ID);
+            throw new IllegalStateException("the brick mapped the pair to another mapping");
         }
         motion = 0;
         if (!refreshStatus()) {
@@ -166,7 +154,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
             throw new IllegalStateException("no status reply; nothing was started");
         }
         if (!state.canStart()) {
-            throw new IllegalStateException("the pair is " + state + "; arm it before rotating");
+            throw new IllegalStateException("the pair is not ready to start; arm it before rotating");
         }
         int leftSteps = scale.steps(leftDegrees);
         int rightSteps = scale.steps(rightDegrees);
@@ -175,10 +163,11 @@ public final class RcxRegulatedPair implements RegulatedPair {
         }
         int leftTarget = positions.target(LEFT, leftSteps);
         int rightTarget = positions.target(RIGHT, rightSteps);
-        motion++;
+        motion = motion + 1;
         int profileAck = profile.send(protocol, session);
         if (profileAck != RcxRegulatedProtocol.ACCEPTED) {
-            throw new IllegalStateException("REG_PROFILE " + describe(profileAck));
+            lastAcknowledgement = profileAck;
+            throw new IllegalStateException("REG_PROFILE was not accepted");
         }
         startMotion(leftTarget, rightTarget);
         if (!immediateReturn) {
@@ -198,7 +187,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
             throw new IllegalStateException("REG_STOP outcome unknown; the outputs may still be moving");
         }
         if (!RcxRegulatedProtocol.accepted(ack)) {
-            throw new IllegalStateException("REG_STOP " + describe(ack));
+            lastAcknowledgement = ack;
+            throw new IllegalStateException("REG_STOP was not accepted");
         }
         refreshStatus();
     }
@@ -271,7 +261,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
             throw new IllegalStateException("REG_START outcome unknown; read status() before moving again");
         }
         if (!RcxRegulatedProtocol.accepted(ack)) {
-            throw new IllegalStateException("REG_START " + describe(ack));
+            lastAcknowledgement = ack;
+            throw new IllegalStateException("REG_START was not accepted");
         }
         state = RcxRegulatedState.RUNNING;
     }
@@ -296,7 +287,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
         return true;
     }
 
-    private static String describe(int ack) {
-        return "was not accepted: " + RcxRegulatedProtocol.ackName(ack);
+    /** The acknowledgement code of the last command the brick refused, as {@link RcxRegulatedProtocol} numbers them. */
+    public int lastAcknowledgement() {
+        return lastAcknowledgement;
     }
 }
