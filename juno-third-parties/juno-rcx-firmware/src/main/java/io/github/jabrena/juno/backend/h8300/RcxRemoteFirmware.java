@@ -45,6 +45,14 @@ import java.util.Objects;
  * message buttons set the message to 1-3, stop floats every output, sound beeps; program buttons are ignored</td>
  * <td>no reply, as the remote expects none</td></tr>
  * <tr><td>0xF7</td><td>set the message (0-255)</td><td>no reply</td></tr>
+ * <tr><td>0x61</td><td>regulated pair: status (session)</td><td>session, motion, state, fault bits, left and right
+ * positions (low, high each)</td></tr>
+ * <tr><td>0x62</td><td>regulated pair: stop the motion (session, motion)</td><td>result, session, motion</td></tr>
+ * <tr><td>0x63</td><td>regulated pair: arm the session (session, mapping 1, configuration flags)</td>
+ * <td>result, protocol version, mapping</td></tr>
+ * <tr><td>0x67</td><td>regulated pair: profile (session, speed, acceleration, tolerance, timeout)</td><td>result</td></tr>
+ * <tr><td>0x76</td><td>regulated pair: start a motion (session, motion, left target, right target)</td>
+ * <td>result, session, motion</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -154,8 +162,9 @@ public final class RcxRemoteFirmware {
     private final H8Assembler assembler = new H8Assembler(RcxRom.FIRMWARE_START);
     private final RcxCode code = new RcxCode(assembler);
     private final RcxRom rom = code.rom();
-    private final RcxMotorCommands motors = new RcxMotorCommands(code);
-    private final RcxSensorCommands sensors = new RcxSensorCommands(code);
+    private final RcxRegulator regulator = new RcxRegulator(code);
+    private final RcxMotorCommands motors = new RcxMotorCommands(code, regulator);
+    private final RcxSensorCommands sensors = new RcxSensorCommands(code, regulator);
     private final RcxDisplayIcons icons = new RcxDisplayIcons(code);
     private final RcxRemoteControl remote = new RcxRemoteControl(code, motors);
     private final RcxChannel channel = new RcxChannel(code);
@@ -224,6 +233,8 @@ public final class RcxRemoteFirmware {
         powerOff();
         motors.handlers();
         sensors.handlers();
+        regulator.handlers();
+        regulator.subroutines();
         remote.handlers();
         buttons.handlers();
         channel.handlers();
@@ -282,7 +293,9 @@ public final class RcxRemoteFirmware {
         assembler.moveImmediate(0, H8ByteRegister.R6L);
         assembler.storeByte(H8ByteRegister.R6L, ANALOG_READY);
         assembler.call(RcxSensorCommands.UPDATE_ALL);
+        assembler.call(RcxRegulator.TICK);
         assembler.label(received);
+        assembler.call(RcxRegulator.IDLE_TICK);
         assembler.call(RcxBrickButtons.CHECK);
         if (withIcons) {
             String noTick = code.newLabel();
@@ -341,6 +354,11 @@ public final class RcxRemoteFirmware {
         handler(OPCODE_SET_CHARACTER, RcxDisplayText.SET_CHARACTER);
         handler(OPCODE_REMOTE_BUTTONS, RcxRemoteControl.BUTTONS);
         handler(OPCODE_SET_MESSAGE, RcxRemoteControl.SET_MESSAGE);
+        handler(RcxRegulator.OPCODE_STATUS, RcxRegulator.STATUS);
+        handler(RcxRegulator.OPCODE_STOP, RcxRegulator.STOP);
+        handler(RcxRegulator.OPCODE_ARM, RcxRegulator.ARM);
+        handler(RcxRegulator.OPCODE_PROFILE, RcxRegulator.PROFILE);
+        handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
         assembler.jump(RcxCode.LOOP);
     }
 
