@@ -376,6 +376,7 @@ final class FakeRcx implements H8Simulator.Rom {
         if (!wheelPlant) {
             return;
         }
+        calls.add("tick");
         for (int output : new int[] {0, 2}) {
             if (jammed[output]) {
                 continue;

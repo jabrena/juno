@@ -135,15 +135,15 @@ final class RcxRegulator {
     static final int IDLE = BASE + 20;
 
     /** Per side: done, power, direction, stall count, target, trajectory, velocity, position and last position. */
-    private static final int DONE = 0;
-    private static final int POWER = 1;
-    private static final int DIRECTION = 2;
-    private static final int STALL = 4;
-    private static final int TARGET = 6;
-    private static final int TRAJECTORY = 8;
-    private static final int VELOCITY = 10;
+    static final int DONE = 0;
+    static final int POWER = 1;
+    static final int DIRECTION = 2;
+    static final int STALL = 4;
+    static final int TARGET = 6;
+    static final int TRAJECTORY = 8;
+    static final int VELOCITY = 10;
     static final int POSITION = 12;
-    private static final int LAST = 14;
+    static final int LAST = 14;
 
     /** The sensor struct's converted value: {@code char type, char mode, short raw, short value, char boolean}. */
     private static final int SENSOR_SIZE = 8;
