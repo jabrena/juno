@@ -36,6 +36,11 @@ final class RcxRegulatedProtocol {
         "ID_CONFLICT", "STALE_COMMAND", "UNSUPPORTED"
     };
 
+    /** Whether the brick accepted a command, or had already accepted this identical one. */
+    static boolean accepted(int code) {
+        return code == ACCEPTED || code == DUPLICATE;
+    }
+
     static final int STATUS_LEFT_STALL = 0x01;
     static final int STATUS_RIGHT_STALL = 0x02;
     static final int STATUS_LEFT_STALE = 0x04;

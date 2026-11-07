@@ -52,6 +52,8 @@ public final class RcxLink {
     int argument1;
     private int lastCommand = -1;
     private boolean receiveEnabled;
+    /** Set while a regulated pair owns this link: direct commands would race its regulated commands, so they are refused. */
+    private boolean regulated;
     /** The opcode, up to ten arguments and the checksum: the longest reply decoded, the brick's version report. */
     private static final int FRAME_VALUES = 12;
     /**
@@ -71,6 +73,7 @@ public final class RcxLink {
      * count, or {@code -1} when there was no valid frame.
      */
     int receive() {
+        requireDirectUse();
         if (!Infrared.receiving()) {
             return -1;
         }
@@ -172,6 +175,7 @@ public final class RcxLink {
     }
 
     private void sendFrame(int code, int first, int second, int third, int arguments) {
+        requireDirectUse();
         int sum = code;
         Infrared.writeByte(0x55);
         Infrared.writeByte(0xFF);
@@ -215,6 +219,24 @@ public final class RcxLink {
     /** Whether the link has an infrared receiver, so a request can hear the brick's reply. */
     boolean canReceive() {
         return receiveEnabled;
+    }
+
+    /**
+     * Gives the link to a regulated pair. One pair owns the link for the program's lifetime, and direct commands on it
+     * are refused from then on, so the brick sees only the pair's commands.
+     */
+    void claimForRegulation() {
+        if (regulated) {
+            throw new IllegalStateException("this link is already owned by a regulated pair");
+        }
+        regulated = true;
+    }
+
+    /** Refuses a direct command or read while a regulated pair owns the link. */
+    private void requireDirectUse() {
+        if (regulated) {
+            throw new IllegalStateException("the link belongs to a regulated pair; a direct command would race its regulated commands");
+        }
     }
 
     /**

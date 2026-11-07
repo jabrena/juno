@@ -43,7 +43,7 @@ class RcxRegulatedPairTest {
         Wire.resetBoard();
         Infrared.reset();
         link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
-        pair = new RcxRegulatedPair(link, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR, 16);
+        pair = new RcxRegulatedPair(link, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(7), 16);
     }
 
     @Test
@@ -57,7 +57,8 @@ class RcxRegulatedPairTest {
         pair.arm();
 
         // Then
-        assertThat(sent(ARM).get(0)).containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR);
+        assertThat(sent(ARM).get(0))
+                .containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(7));
         assertThat(pair.cachedState()).isEqualTo(RcxRegulatedState.READY);
     }
 
@@ -262,6 +263,16 @@ class RcxRegulatedPairTest {
         // Then
         assertThat(sent(STOP).get(0)).containsExactly(STOP, 1, 1);
         assertThat(pair.cachedState()).isEqualTo(RcxRegulatedState.STOPPED);
+    }
+
+    @Test
+    @DisplayName("A pair with no maximum motor power is rejected, since it would never move")
+    void shouldRejectZeroMaximumPower() {
+        assertThatThrownBy(() -> new RcxRegulatedPair(link, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR, 16))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("maxPower");
+        assertThatThrownBy(() -> RcxRegulatedPair.maxPower(8)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(RcxRegulatedPair.maxPower(7)).isEqualTo(0xE0);
     }
 
     @Test
@@ -525,7 +536,7 @@ class RcxRegulatedPairTest {
                 SimulatedTime.clock());
 
         // When / Then
-        assertThatThrownBy(() -> new RcxRegulatedPair(emitterOnly, 1, 0, 16))
+        assertThatThrownBy(() -> new RcxRegulatedPair(emitterOnly, 1, RcxRegulatedPair.maxPower(7), 16))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("receiver");
     }
@@ -566,6 +577,14 @@ class RcxRegulatedPairTest {
         reply(PROFILE, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
+    }
+
+    @Test
+    @DisplayName("A regulated link refuses direct commands and a second owner")
+    void shouldRefuseDirectCommandsAndASecondOwner() {
+        assertThatThrownBy(() -> link.send(0x13, 1, 2, 2)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new RcxRegulatedPair(link, 2, RcxRegulatedPair.maxPower(7), 16))
+                .isInstanceOf(IllegalStateException.class);
     }
 
     /** Arms the pair: the arm reply, then a status reading the new session as ready. */

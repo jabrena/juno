@@ -40,6 +40,10 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   on `juno-api` and the generated image from `juno-third-parties/juno-rcx-firmware`.
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
   live once, in `src/main/resources/public/images/`; the README links to them there.
+- `documentation/openspec/` – canonical OpenSpec project. Active changes belong in
+  `documentation/openspec/changes/`, and archived changes belong in
+  `documentation/openspec/changes/archive/`. Do not create or leave active OpenSpec changes under the root-level
+  `openspec/` directory.
 
 ## Code style
 
@@ -135,6 +139,14 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 # juno-site/target/ instead, never docs/; see README's Previewing the site locally section)
 ./mvnw -f juno-site/pom.xml clean package quarkus:run -Dquarkus.http.root-path=/
 jwebserver -d "$(pwd)/juno-site/target/roq" -p 8000   # then open http://127.0.0.1:8000/
+
+# OpenSpec commands: run them from documentation/ because documentation/openspec is the canonical OpenSpec root
+cd documentation
+openspec list
+openspec validate --all
+openspec status --change <change-id>
+openspec show <change-id>
+cd ..
 ```
 
 See [Getting Started](https://jabrena.github.io/juno/getting-started) for the full
@@ -164,6 +176,9 @@ See [Getting Started](https://jabrena.github.io/juno/getting-started) for the fu
 
 ## Boundaries
 
+- ✅ **Always do:** create, update, validate, and archive OpenSpec artifacts from `documentation/`; the canonical change
+  path is `documentation/openspec/changes/<change-id>/`. If a task references the root-level `openspec/` directory,
+  treat it as legacy/empty and do not place new active changes there.
 - ✅ **Always do:** upload to every board over USB serial, never over the network: pass `-Djuno.port=<serial port>`
   (the `/dev/cu.*` entry that `juno:boards` lists, such as the UNO Q's when it is plugged in). The network address that
   `juno:boards` may also list needs interactive credentials that the Maven goal cannot provide.

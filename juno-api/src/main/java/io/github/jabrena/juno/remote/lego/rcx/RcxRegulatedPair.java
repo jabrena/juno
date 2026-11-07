@@ -25,6 +25,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
     public static final int INVERT_RIGHT_SENSOR = 0x08;
     /** Configuration flag: brake rather than coast when a movement stops or completes. */
     public static final int BRAKE_ON_STOP = 0x10;
+    /** The configuration bits that hold the maximum motor power, 1 to 7. */
+    private static final int MAX_POWER_MASK = 0xE0;
 
     /** The only mapping the v1 firmware defines: motor A with sensor 1 on the left, motor C with sensor 3 on the right. */
     static final int MAPPING_ID = 1;
@@ -63,6 +65,10 @@ public final class RcxRegulatedPair implements RegulatedPair {
         if (configurationFlags < 0 || configurationFlags > MAX_BYTE) {
             throw new IllegalArgumentException("configuration flags must fit in one byte");
         }
+        if ((configurationFlags & MAX_POWER_MASK) == 0) {
+            throw new IllegalArgumentException(
+                    "maximum motor power must be 1 to 7: pass RcxRegulatedPair.maxPower(level) in the flags");
+        }
         if (!link.canReceive()) {
             throw new IllegalArgumentException("regulated commands need an infrared receiver to hear the brick's replies");
         }
@@ -74,6 +80,19 @@ public final class RcxRegulatedPair implements RegulatedPair {
         this.configurationFlags = configurationFlags;
         this.left = new RcxRegulatedMotor(this, LEFT);
         this.right = new RcxRegulatedMotor(this, RIGHT);
+        // Claimed last, so a rejected configuration leaves the link free for another pair.
+        link.claimForRegulation();
+    }
+
+    /**
+     * The configuration bits for a maximum motor power of {@code level} (1 to 7, full power is 7), to OR into the
+     * configuration flags. A pair with no maximum power would never move, so the constructor rejects one.
+     */
+    public static int maxPower(int level) {
+        if (level < 1 || level > 7) {
+            throw new IllegalArgumentException("maximum motor power must be between 1 and 7");
+        }
+        return level << 5;
     }
 
     /** The left side, the motor A output, as a {@link RcxRegulatedMotor} view of this pair. */
@@ -167,15 +186,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
         }
     }
 
-    /** Rotates one side by {@code degrees} while the other stays where it is. Used by its {@link RcxRegulatedMotor}. */
-    void rotateSide(int side, int degrees, boolean immediateReturn) {
-        if (side == LEFT) {
-            rotate(degrees, 0, immediateReturn);
-        } else {
-            rotate(0, degrees, immediateReturn);
-        }
-    }
-
     /** Stops both sides, qualified by the active motion so a stale stop cannot stop a newer movement. */
     @Override
     public void stop() {
@@ -187,7 +197,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
             state = RcxRegulatedState.LINK_UNKNOWN;
             throw new IllegalStateException("REG_STOP outcome unknown; the outputs may still be moving");
         }
-        if (!accepted(ack)) {
+        if (!RcxRegulatedProtocol.accepted(ack)) {
             throw new IllegalStateException("REG_STOP " + describe(ack));
         }
         refreshStatus();
@@ -250,9 +260,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
 
     /** Sets the side's tachometer zero to its current position; rejected while the pair moves. */
     void resetTachoCount(int side) {
-        if (state == RcxRegulatedState.RUNNING) {
-            throw new IllegalStateException("the tachometer cannot be reset while the pair is moving");
-        }
         refreshStatus();
         positions.zeroHere(side);
     }
@@ -263,7 +270,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
             state = RcxRegulatedState.LINK_UNKNOWN;
             throw new IllegalStateException("REG_START outcome unknown; read status() before moving again");
         }
-        if (!accepted(ack)) {
+        if (!RcxRegulatedProtocol.accepted(ack)) {
             throw new IllegalStateException("REG_START " + describe(ack));
         }
         state = RcxRegulatedState.RUNNING;
@@ -283,17 +290,10 @@ public final class RcxRegulatedPair implements RegulatedPair {
             return false;
         }
         faults = protocol.statusFaults;
-        state = (faults & RcxRegulatedProtocol.STATUS_EXTERNAL_OVERRIDE) != 0
-                ? RcxRegulatedState.EXTERNAL_OVERRIDE
-                : RcxRegulatedState.fromFirmware(protocol.statusState);
+        state = RcxRegulatedState.fromStatus(protocol.statusState, faults);
         positions.record(LEFT, protocol.statusLeft);
         positions.record(RIGHT, protocol.statusRight);
         return true;
-    }
-
-    /** Whether the brick accepted a command, or had already accepted this identical one. */
-    private static boolean accepted(int ack) {
-        return ack == RcxRegulatedProtocol.ACCEPTED || ack == RcxRegulatedProtocol.DUPLICATE;
     }
 
     private static String describe(int ack) {

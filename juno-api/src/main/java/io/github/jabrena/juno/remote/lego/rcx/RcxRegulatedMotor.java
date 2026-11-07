@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.robotics.Encoder;
 import io.github.jabrena.juno.robotics.RegulatedMotor;
 
 /**
@@ -10,7 +11,7 @@ import io.github.jabrena.juno.robotics.RegulatedMotor;
  * <p>Only regulated movements exist on the brick, so the open-loop calls ({@link #forward}, {@link #backward},
  * {@link #flt}, {@link #setPower}, {@link #getPower}) throw {@link UnsupportedOperationException}; use {@link #rotate}.
  */
-public final class RcxRegulatedMotor implements RegulatedMotor {
+public final class RcxRegulatedMotor implements RegulatedMotor, Encoder {
     private final RcxRegulatedPair pair;
     private final int side;
 
@@ -43,7 +44,7 @@ public final class RcxRegulatedMotor implements RegulatedMotor {
 
     @Override
     public void rotate(int degrees, boolean immediateReturn) {
-        pair.rotateSide(side, degrees, immediateReturn);
+        rotateThisSide(degrees, immediateReturn);
     }
 
     @Override
@@ -53,7 +54,7 @@ public final class RcxRegulatedMotor implements RegulatedMotor {
 
     @Override
     public void rotateTo(int limitAngle, boolean immediateReturn) {
-        pair.rotateSide(side, limitAngle - pair.tachoCount(side), immediateReturn);
+        rotateThisSide(limitAngle - pair.tachoCount(side), immediateReturn);
     }
 
     @Override
@@ -61,10 +62,28 @@ public final class RcxRegulatedMotor implements RegulatedMotor {
         return pair.tachoCount(side);
     }
 
+    /** The tachometer in encoder-shaft degrees, as the {@link Encoder} contract reads it; refreshes the status first. */
+    @Override
+    public int getTachoCount() {
+        return pair.tachoCount(side);
+    }
+
     /** Sets this side's tachometer zero to where it is now; rejected while the pair moves. */
     @Override
     public void resetTachoCount() {
+        if (pair.isMoving()) {
+            throw new IllegalStateException("the tachometer cannot be reset while the pair is moving");
+        }
         pair.resetTachoCount(side);
+    }
+
+    /** Rotates this side by {@code degrees} while the other stays where it is: the other side's target is its position. */
+    private void rotateThisSide(int degrees, boolean immediateReturn) {
+        if (side == RcxRegulatedPair.LEFT) {
+            pair.rotate(degrees, 0, immediateReturn);
+        } else {
+            pair.rotate(0, degrees, immediateReturn);
+        }
     }
 
     @Override
