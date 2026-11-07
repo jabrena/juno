@@ -579,6 +579,14 @@ class RcxRegulatedPairTest {
         pair.rotate(360, 0, true);
     }
 
+    @Test
+    @DisplayName("A regulated link refuses direct commands and a second owner")
+    void shouldRefuseDirectCommandsAndASecondOwner() {
+        assertThatThrownBy(() -> link.send(0x13, 1, 2, 2)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> new RcxRegulatedPair(link, 2, RcxRegulatedPair.maxPower(7), 16))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
     /** Arms the pair: the arm reply, then a status reading the new session as ready. */
     private void armed() {
         reply(ARM, 0, 1, 1);

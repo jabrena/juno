@@ -80,6 +80,8 @@ public final class RcxRegulatedPair implements RegulatedPair {
         this.configurationFlags = configurationFlags;
         this.left = new RcxRegulatedMotor(this, LEFT);
         this.right = new RcxRegulatedMotor(this, RIGHT);
+        // Claimed last, so a rejected configuration leaves the link free for another pair.
+        link.claimForRegulation();
     }
 
     /**
