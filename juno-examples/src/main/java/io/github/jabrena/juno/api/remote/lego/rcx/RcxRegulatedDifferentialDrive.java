@@ -46,7 +46,7 @@ public class RcxRegulatedDifferentialDrive {
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD2()),
+        RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD4()),
                 ArduinoUno.getClock());
         RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL),
                 STEPS_PER_MOTOR_REVOLUTION);
