@@ -45,7 +45,7 @@
 ## 5. Prepare examples and validate end to end
 
 - [x] 5.1 Implement the `RcxRegulatedMotorCalibration` planning example under the existing RCX examples package, using the final public API names and documenting A/C, input-1/input-3, polarity, gearing, raw steps, quantization, wheel calibration, and effective track width.
-- [ ] 5.2 Implement the `RcxRegulatedDifferentialDrive` planning example under the existing RCX examples package, using calibrated geometry and demonstrating finite travel, asymmetric in-place rotation, status handling, error states, and paired stop.
+- [x] 5.2 Implement the `RcxRegulatedDifferentialDrive` planning example under the existing RCX examples package, using calibrated geometry and demonstrating finite travel, asymmetric in-place rotation, status handling, error states, and paired stop.
 - [ ] 5.3 Verify both examples follow board-side zero-allocation guidance, start serial output before reporting, use documented wiring/constants, and preserve existing RCX example conventions.
 - [ ] 5.4 Add a deterministic motor/encoder plant, raw-frame transport harness, dropped/duplicated/delayed/corrupt reply injector, reset/power-loss simulation, and assertions over both state and A/C outputs.
 - [ ] 5.5 Run the normal Maven tests and the affected firmware/image/protocol test suites; retain generated assembly, shim, image, RAM/stack, and timing evidence for failures.
