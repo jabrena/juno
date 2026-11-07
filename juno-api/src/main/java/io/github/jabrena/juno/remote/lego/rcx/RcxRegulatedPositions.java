@@ -18,7 +18,8 @@ final class RcxRegulatedPositions {
     /** Records a fresh 16-bit reading of {@code side}, unwrapping it into the count since the previous reading. */
     void record(int side, int position) {
         int change = (((position - raw[side]) & MAX_WORD) ^ SIGN_BIT) - SIGN_BIT;
-        unwrapped[side] += change;
+        int total = unwrapped[side] + change;
+        unwrapped[side] = total;
         raw[side] = position;
     }
 

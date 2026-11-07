@@ -134,7 +134,8 @@ class RcxRegulatedPairTest {
         // When / Then
         assertThatThrownBy(() -> pair.rotate(360, -360, false))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("BUSY");
+                .hasMessageContaining("REG_START");
+        assertThat(pair.lastAcknowledgement()).isEqualTo(BUSY);
     }
 
     @Test
@@ -295,7 +296,8 @@ class RcxRegulatedPairTest {
 
         assertThatThrownBy(() -> pair.arm())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("BUSY");
+                .hasMessageContaining("REG_ARM");
+        assertThat(pair.lastAcknowledgement()).isEqualTo(BUSY);
     }
 
     @Test
@@ -339,7 +341,7 @@ class RcxRegulatedPairTest {
         // When / Then
         assertThatThrownBy(() -> pair.rotate(360, 0, true))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("STALLED");
+                .hasMessageContaining("not ready to start");
     }
 
     @Test
@@ -391,7 +393,8 @@ class RcxRegulatedPairTest {
         // When / Then
         assertThatThrownBy(() -> pair.stop())
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("STALE_COMMAND");
+                .hasMessageContaining("REG_STOP");
+        assertThat(pair.lastAcknowledgement()).isEqualTo(STALE_COMMAND);
     }
 
     @Test
@@ -517,7 +520,8 @@ class RcxRegulatedPairTest {
         // When / Then
         assertThatThrownBy(() -> pair.rotate(0, 0, true))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("UNKNOWN_42");
+                .hasMessageContaining("REG_START");
+        assertThat(pair.lastAcknowledgement()).isEqualTo(42);
     }
 
     @Test

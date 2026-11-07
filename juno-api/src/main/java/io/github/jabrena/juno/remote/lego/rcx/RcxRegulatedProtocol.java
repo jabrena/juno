@@ -31,11 +31,6 @@ final class RcxRegulatedProtocol {
     /** An identical command is sent at most this many times again after a missing reply. */
     static final int MAX_RETRIES = 2;
 
-    private static final String[] ACK_NAMES = {
-        "ACCEPTED", "DUPLICATE", "NOT_ARMED", "BUSY", "INVALID_SESSION", "INVALID_ARGUMENT", "OUT_OF_RANGE",
-        "ID_CONFLICT", "STALE_COMMAND", "UNSUPPORTED"
-    };
-
     static final int STATUS_LEFT_STALL = 0x01;
     static final int STATUS_RIGHT_STALL = 0x02;
     static final int STATUS_LEFT_STALE = 0x04;
@@ -131,14 +126,6 @@ final class RcxRegulatedProtocol {
         statusLeft = reply[4] | (reply[5] << 8);
         statusRight = reply[6] | (reply[7] << 8);
         return true;
-    }
-
-    /** The name of an acknowledgement code, for error messages. */
-    static String ackName(int code) {
-        if (code == NO_REPLY) {
-            return "LINK_UNKNOWN";
-        }
-        return code >= 0 && code < ACK_NAMES.length ? ACK_NAMES[code] : "UNKNOWN_" + code;
     }
 
     private void putWord(int index, int value) {

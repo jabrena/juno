@@ -27,10 +27,10 @@ final class RcxRegulatedScale {
     int steps(int degrees) {
         long steps = roundedQuotient((long) degrees * stepsPerMotorRevolution, DEGREES_PER_TURN);
         if (degrees != 0 && steps == 0) {
-            throw new IllegalArgumentException(degrees + " degrees is less than one sensor step");
+            throw new IllegalArgumentException("a movement is less than one sensor step");
         }
         if (steps >= AMBIGUOUS_STEPS || steps <= -AMBIGUOUS_STEPS) {
-            throw new IllegalArgumentException(degrees + " degrees is 32768 sensor steps or more");
+            throw new IllegalArgumentException("a movement is 32768 sensor steps or more");
         }
         return (int) steps;
     }
@@ -42,7 +42,7 @@ final class RcxRegulatedScale {
         }
         long counts = roundedQuotient((long) degreesPerSecond * stepsPerMotorRevolution, DEGREES_PER_TURN);
         if (counts == 0 || counts > MAX_WORD) {
-            throw new IllegalArgumentException(degreesPerSecond + " degrees per second does not fit the brick's profile");
+            throw new IllegalArgumentException("a rate does not fit the brick's profile");
         }
         return (int) counts;
     }
