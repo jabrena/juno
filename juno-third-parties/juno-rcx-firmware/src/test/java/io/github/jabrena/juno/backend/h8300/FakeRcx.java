@@ -41,9 +41,20 @@ final class FakeRcx implements H8Simulator.Rom {
     private final Set<Integer> icons = new TreeSet<>();
     private final Set<Integer> everLit = new TreeSet<>();
     private final List<String> displayCalls = new ArrayList<>();
+    /** Passes each queued message waits before the firmware may receive it; kept in step with {@link #messages}. */
+    private final Deque<Integer> messageWaits = new ArrayDeque<>();
+    /** The wheel model, when enabled: an input's position follows its output's commanded motion. */
+    private boolean wheelPlant;
+    private boolean continuousAnalog;
+    private final int[] wheelPosition = new int[3];
+    private final boolean[] jammed = new boolean[3];
+    private final int[] commandedMode = new int[3];
+    private final int[] commandedPower = new int[3];
+    private final int[] highestPower = new int[3];
 
     /** Queues a message: the opcode and its arguments; the checksum is added as the ROM would receive it. */
     void receive(int... message) {
+        messageWaits.add(0);
         int[] withChecksum = new int[message.length + 1];
         int sum = 0;
         for (int i = 0; i < message.length; i++) {
@@ -52,6 +63,43 @@ final class FakeRcx implements H8Simulator.Rom {
         }
         withChecksum[message.length] = sum & 0xFF;
         messages.add(withChecksum);
+    }
+
+    /** Queues a message that the firmware receives only after {@code polls} main-loop passes. */
+    void receiveAfter(int polls, int... message) {
+        receive(message);
+        messageWaits.removeLast();
+        messageWaits.add(polls);
+    }
+
+    /** The A/D handler flags fresh readings on every main-loop pass, so each pass is one control cycle. */
+    void continuousAnalog() {
+        continuousAnalog = true;
+    }
+
+    /** Enables the wheel model: output A is input 0 and output C is input 2, each moving by its commanded power. */
+    void wheelPlant() {
+        wheelPlant = true;
+    }
+
+    /** Holds an output's wheel still, as if jammed. */
+    void jam(int output) {
+        jammed[output] = true;
+    }
+
+    /** The position of the wheel on {@code input} (0 for sensor 1, 2 for sensor 3). */
+    int wheelPosition(int input) {
+        return wheelPosition[input];
+    }
+
+    /** The highest power commanded to drive an output, forward or backward, during the run. */
+    int highestPower(int output) {
+        return highestPower[output];
+    }
+
+    /** The mode last commanded on an output: 1 forward, 2 backward, 3 brake, 4 float. */
+    int commandedMode(int output) {
+        return commandedMode[output];
     }
 
     void batteryReading(int reading) {
@@ -210,11 +258,16 @@ final class FakeRcx implements H8Simulator.Rom {
             case RcxRom.CHECK_FOR_DATA -> {
                 mainLoopRunning = true;
                 if (!messages.isEmpty()) {
-                    cpu.writeByte(r6, 1);
+                    if (messageWaits.peek() > 0) {
+                        messageWaits.addFirst(messageWaits.removeFirst() - 1);
+                    } else {
+                        cpu.writeByte(r6, 1);
+                    }
                 }
             }
             case RcxRom.RECEIVE_DATA -> {
                 int[] message = messages.remove();
+                messageWaits.remove();
                 int capacity = cpu.stackArgument(0);
                 for (int i = 0; i < Math.min(capacity, message.length); i++) {
                     cpu.writeByte(r6 + i, message[i]);
@@ -241,8 +294,14 @@ final class FakeRcx implements H8Simulator.Rom {
                 int held = mainLoopRunning && !brickButtonClicks.isEmpty() ? brickButtonClicks.remove() : 0;
                 cpu.writeWord(cpu.stackArgument(0), held);
             }
-            case RcxRom.CONTROL_MOTOR -> calls.add("motor %X %d %d".formatted(r6, cpu.stackArgument(0),
-                    cpu.stackArgument(1)));
+            case RcxRom.CONTROL_MOTOR -> {
+                calls.add("motor %X %d %d".formatted(r6, cpu.stackArgument(0), cpu.stackArgument(1)));
+                commandedMode[r6 - RcxRom.MOTOR_A] = cpu.stackArgument(0);
+                commandedPower[r6 - RcxRom.MOTOR_A] = cpu.stackArgument(1);
+                if (cpu.stackArgument(0) == RcxRom.MOTOR_FORWARD || cpu.stackArgument(0) == RcxRom.MOTOR_BACKWARD) {
+                    highestPower[r6 - RcxRom.MOTOR_A] = Math.max(highestPower[r6 - RcxRom.MOTOR_A], cpu.stackArgument(1));
+                }
+            }
             case RcxRom.PLAY_SYSTEM_SOUND -> calls.add("sound " + cpu.stackArgument(0));
             case RcxRom.PLAY_SOUND_OR_SET_DATA_POINTER -> calls.add("tone %d %d".formatted(cpu.stackArgument(0),
                     cpu.stackArgument(1)));
@@ -280,7 +339,9 @@ final class FakeRcx implements H8Simulator.Rom {
                 calls.add("read %X".formatted(r6));
                 int[] reading = readings[r6 - RcxRom.SENSOR_1];
                 int sensor = cpu.stackArgument(0);
-                int value = reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
+                int value = wheelPlant
+                        ? wheelPosition[r6 - RcxRom.SENSOR_1] & 0xFFFF
+                        : reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
                 cpu.writeWord(sensor + 2, reading[0]);
                 cpu.writeWord(sensor + 4, value);
                 cpu.writeByte(sensor + 6, value != 0 ? 1 : 0);
@@ -310,9 +371,31 @@ final class FakeRcx implements H8Simulator.Rom {
         }
     }
 
+    /** Moves each wheel by its commanded power, one count per level, forward or backward, unless it is jammed. */
+    private void advanceWheels() {
+        if (!wheelPlant) {
+            return;
+        }
+        calls.add("tick");
+        for (int output : new int[] {0, 2}) {
+            if (jammed[output]) {
+                continue;
+            }
+            if (commandedMode[output] == 1) {
+                wheelPosition[output] += commandedPower[output];
+            } else if (commandedMode[output] == 2) {
+                wheelPosition[output] -= commandedPower[output];
+            }
+        }
+    }
+
     private void pollMainLoop(H8Simulator cpu) {
+        if (continuousAnalog) {
+            analogReady = true;
+        }
         if (analogReady) {
             analogReady = false;
+            advanceWheels();
             cpu.writeByte(RcxRemoteFirmware.DISPATCH, 1);
         }
         if (messages.isEmpty() && idlePolls > 0) {

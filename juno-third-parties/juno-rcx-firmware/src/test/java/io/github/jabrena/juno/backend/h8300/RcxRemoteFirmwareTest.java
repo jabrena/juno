@@ -469,7 +469,7 @@ class RcxRemoteFirmwareTest {
             run();
 
             // Then
-            assertThat(callsAfterBoot()).containsExactly("sound 2", "tone 440 50", "motor 2000 1 7");
+            assertThat(callsAfterBoot()).containsExactly("sound 2", "tone 440 50");
             assertThat(rcx.replies()).containsExactly(new int[] {0xAE}, new int[] {0xDC});
         }
 
@@ -523,7 +523,8 @@ class RcxRemoteFirmwareTest {
         @DisplayName("Leaves unknown messages unanswered")
         void shouldLeaveUnknownMessagesUnanswered() {
             // Given
-            rcx.receive(0x67, 1);
+            // 0x64 is still unassigned; 0x67 is now the regulator's profile command.
+            rcx.receive(0x64, 1);
             rcx.receive(0x10);
 
             // When
@@ -728,69 +729,8 @@ class RcxRemoteFirmwareTest {
             run();
 
             // Then
-            assertThat(rcx.calls()).contains("tone 440 10");
-            assertThat(rcx.calls()).containsSubsequence("tone 440 10", "motor 2000 1 7");
+            assertThat(callsAfterBoot()).containsExactly("tone 440 10");
             assertThat(rcx.icons()).as("no datalog spinner for a tone").doesNotContain(RcxRom.LCD_ICONS + 0x18);
-        }
-
-        @Test
-        @DisplayName("Uses a configured B output for the channel tone indicator")
-        void shouldUseAConfiguredToneIndicatorOutput() {
-            // Given
-            rcx.receive(0x92, 1, 1);
-            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
-            rcx.idlePolls(5);
-
-            // When
-            run();
-
-            // Then
-            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2001 1 7", "motor 2001 4 7");
-            assertThat(rcx.calls()).doesNotContain("motor 2000 1 7", "motor 2002 1 7");
-        }
-
-        @Test
-        @DisplayName("Uses a configured C output for the channel tone indicator")
-        void shouldUseAConfiguredCOutputForTheToneIndicator() {
-            // Given
-            rcx.receive(0x92, 1, 2);
-            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
-            rcx.idlePolls(5);
-
-            // When
-            run();
-
-            // Then
-            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2002 1 7", "motor 2002 4 7");
-            assertThat(rcx.calls()).doesNotContain("motor 2000 1 7", "motor 2001 1 7");
-        }
-
-        @Test
-        @DisplayName("Floats the tone indicator after its coarse playback window")
-        void shouldFloatTheToneIndicatorAfterPlayback() {
-            // Given
-            rcx.receive(0xA3, 440 & 0xFF, 440 >> 8, 50);
-            rcx.idlePolls(5);
-
-            // When
-            run();
-
-            // Then
-            assertThat(rcx.calls()).containsSubsequence("tone 440 50", "motor 2000 1 7", "motor 2000 4 7");
-        }
-
-        @Test
-        @DisplayName("Does not show tone activity for another channel")
-        void shouldIgnoreToneActivityForAnotherChannel() {
-            // Given
-            rcx.receive(0xB3, 440 & 0xFF, 440 >> 8, 10);
-
-            // When
-            run();
-
-            // Then
-            assertThat(rcx.calls()).doesNotContain("tone 440 10");
-            assertThat(rcx.icons()).doesNotContain(RcxRom.LCD_ICONS + 0x18);
         }
 
         @Test

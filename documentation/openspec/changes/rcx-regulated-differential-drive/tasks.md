@@ -12,17 +12,17 @@
 
 ## 2. Implement the RCX firmware regulator
 
-- [ ] 2.1 Add firmware state for the armed session, last/current motion ID, configured profile, target positions, measured counts, controller state, and error status.
-- [ ] 2.2 Implement `NOT_ARMED` → `READY` → `RUNNING` → terminal-state transitions and reject stale sessions, stale IDs, and conflicting duplicate commands without state mutation.
-- [ ] 2.3 Implement exact `REG_ARM`, `REG_PROFILE`, `REG_START`, `REG_STOP`, and `REG_STATUS` dispatch/reply behavior while preserving all existing opcodes.
-- [ ] 2.4 Configure inputs 1/3 as rotation sensors, read the converted `value` field through internal indexes 0/2, snapshot both values after each fresh analog update, and keep stale-sensor and stall detection distinct.
+- [x] 2.1 Add firmware state for the armed session, last/current motion ID, configured profile, target positions, measured counts, controller state, and error status.
+- [x] 2.2 Implement `NOT_ARMED` → `READY` → `RUNNING` → terminal-state transitions and reject stale sessions, stale IDs, and conflicting duplicate commands without state mutation.
+- [x] 2.3 Implement exact `REG_ARM`, `REG_PROFILE`, `REG_START`, `REG_STOP`, and `REG_STATUS` dispatch/reply behavior while preserving all existing opcodes.
+- [x] 2.4 Configure inputs 1/3 as rotation sensors, read the converted `value` field through internal indexes 0/2, snapshot both values after each fresh analog update, and keep stale-sensor and stall detection distinct.
 - [ ] 2.5 Add a dedicated monotonic 100 ms regulator time base without starving infrared, display, or sensor handlers.
-- [ ] 2.6 Implement bounded integer/fixed-point single-wheel proportional regulation using the approved `KP_Q8` formula, minimum starting power, deadband, power slew limit, trajectory acceleration, and reversal-through-zero behavior; do not add integral or derivative state.
-- [ ] 2.7 Implement atomic logical A/C motion, side-complete hold policy, zero-distance completion, finite-motion timeout, stall detection, explicit ID-qualified stop, and status reporting.
-- [ ] 2.8 Implement ownership arbitration: reject legacy A/C and input-1/3 commands while owned, allow remote STOP to win, and latch `EXTERNAL_OVERRIDE` for other manual overrides.
-- [ ] 2.9 Implement latched terminal-state recovery through safe re-arm and reset behavior; status polling must remain read-only.
-- [ ] 2.10 Add generated-firmware tests for command dispatch, malformed/semantic rejection, session and motion identity, duplicate idempotency, sensor mode, controller timing/formula, paired output ordering/skew, stop, stall, stale sensor, timeout, reset safety, ownership, and compatibility with existing opcodes.
-- [ ] 2.11 Regenerate the tracked S-record and Java firmware image from the single assembled image and verify deterministic output, image-source consistency, image size, RAM/stack budgets, and non-overlapping RAM state.
+- [x] 2.6 Implement bounded integer/fixed-point single-wheel proportional regulation using the approved `KP_Q8` formula, minimum starting power, deadband, power slew limit, trajectory acceleration, and reversal-through-zero behavior; do not add integral or derivative state.
+- [x] 2.7 Implement atomic logical A/C motion, side-complete hold policy, zero-distance completion, finite-motion timeout, stall detection, explicit ID-qualified stop, and status reporting.
+- [x] 2.8 Implement ownership arbitration: reject legacy A/C and input-1/3 commands while owned, allow remote STOP to win, and latch `EXTERNAL_OVERRIDE` for other manual overrides.
+- [x] 2.9 Implement latched terminal-state recovery through safe re-arm and reset behavior; status polling must remain read-only.
+- [x] 2.10 Add generated-firmware tests for command dispatch, malformed/semantic rejection, session and motion identity, duplicate idempotency, sensor mode, controller timing/formula, paired output ordering/skew, stop, stall, stale sensor, timeout, reset safety, ownership, and compatibility with existing opcodes.
+- [x] 2.11 Regenerate the tracked S-record and Java firmware image from the single assembled image and verify deterministic output, image-source consistency, image size, RAM/stack budgets, and non-overlapping RAM state.
 
 ## 3. Add the Java RCX regulated adapter
 
