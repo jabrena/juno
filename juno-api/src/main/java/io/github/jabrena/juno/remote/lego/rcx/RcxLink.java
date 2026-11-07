@@ -212,6 +212,46 @@ public final class RcxLink {
         command(opcode, first, second, third, arguments);
     }
 
+    /** Whether the link has an infrared receiver, so a request can hear the brick's reply. */
+    boolean canReceive() {
+        return receiveEnabled;
+    }
+
+    /**
+     * Sends a fixed-width request with {@code count} (0..7) argument bytes from {@code arguments}, then waits for the
+     * brick's reply and copies its argument bytes into {@code reply}. Returns the reply's argument count, or {@code -1}
+     * when no valid reply came. The toggle bit marks a repeated opcode as {@link #send} does, so a retry is marked too.
+     */
+    int exchange(int opcode, int[] arguments, int count, int[] reply) {
+        transmit(opcode, arguments, count);
+        int replyCount = awaitReply(opcode, REPLY_TIMEOUT_MILLIS);
+        if (replyCount < 0) {
+            return -1;
+        }
+        for (int index = 0; index < replyCount; index++) {
+            reply[index] = FRAME[index + 1];
+        }
+        return replyCount;
+    }
+
+    private void transmit(int opcode, int[] arguments, int count) {
+        int code = opcode;
+        if (code == lastCommand) {
+            code ^= OPCODE_TOGGLE;
+        }
+        lastCommand = code;
+        int sum = code;
+        Infrared.writeByte(0x55);
+        Infrared.writeByte(0xFF);
+        Infrared.writeByte(0x00);
+        sendPair(code);
+        for (int index = 0; index < count; index++) {
+            sum += arguments[index];
+            sendPair(arguments[index]);
+        }
+        sendPair(sum & 0xFF);
+    }
+
     /**
      * Sends a direct command and waits for the brick's reply, whose opcode is the complement of the
      * command's. The receiver module also hears the vehicle's own LED, so frames with other opcodes (the
