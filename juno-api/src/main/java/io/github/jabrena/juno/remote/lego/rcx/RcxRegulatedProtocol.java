@@ -31,6 +31,11 @@ final class RcxRegulatedProtocol {
     /** An identical command is sent at most this many times again after a missing reply. */
     static final int MAX_RETRIES = 2;
 
+    /** Whether the brick accepted a command, or had already accepted this identical one. */
+    static boolean accepted(int code) {
+        return code == ACCEPTED || code == DUPLICATE;
+    }
+
     static final int STATUS_LEFT_STALL = 0x01;
     static final int STATUS_RIGHT_STALL = 0x02;
     static final int STATUS_LEFT_STALE = 0x04;

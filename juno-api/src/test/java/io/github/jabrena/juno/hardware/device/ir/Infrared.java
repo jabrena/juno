@@ -32,6 +32,8 @@ public final class Infrared {
 
     public static void reset() {
         written.clear();
+        answeredUpTo = 0;
+        brick = null;
         replies.clear();
         pulses.clear();
         receivePin = -1;
@@ -61,11 +63,35 @@ public final class Infrared {
 
     public static int readByte(int timeoutMicros) {
         if (replies.isEmpty()) {
+            answerSentFrames();
+        }
+        if (replies.isEmpty()) {
             SimulatedTime.now += timeoutMicros;
             return TIMEOUT;
         }
         SimulatedTime.now++;
         return replies.poll();
+    }
+
+    /**
+     * A brick that answers the frames the link writes, consulted when the reply queue runs empty. Null, the default, is no
+     * brick: reads then time out as before.
+     */
+    public static Brick brick;
+    private static int answeredUpTo;
+
+    /** A brick: given the bytes written since its last answer, returns the bytes it sends back, possibly none. */
+    public interface Brick {
+        List<Integer> answer(List<Integer> sent);
+    }
+
+    private static void answerSentFrames() {
+        if (brick == null) {
+            return;
+        }
+        List<Integer> sent = List.copyOf(written.subList(answeredUpTo, written.size()));
+        answeredUpTo = written.size();
+        replies.addAll(brick.answer(sent));
     }
 
     public static void writeByte(int value) {
