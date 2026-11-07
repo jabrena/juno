@@ -31,21 +31,21 @@
 - [x] 3.3 Implement the RCX regulated motor/pair adapter using the existing `RegulatedMotor` semantics and preserve the open-loop `RcxMotor` API.
 - [x] 3.4 Implement pair-owned relative/absolute rotation, pair-level speed/acceleration profile, Java-side tacho offsets, asynchronous acceptance, bounded completion waiting, movement state, stall reporting, and distinct error mapping for `STALLED`, `TIMED_OUT`, `FAULT`, `EXTERNAL_OVERRIDE`, `UNSUPPORTED`, and `LINK_UNKNOWN`.
 - [ ] 3.5 Keep setup-time state allocation only; verify that motion polling and status reads allocate nothing on the board.
-- [ ] 3.6 Add shared-link ownership checks so one owner serializes `RcxLink` use and direct `RcxBrick` operations cannot race regulated control.
+- [x] 3.6 Add shared-link ownership checks so one owner serializes `RcxLink` use and direct `RcxBrick` operations cannot race regulated control.
 - [ ] 3.7 Add Java unit tests for adapter semantics, single-side paired rotation, reset behavior, cached versus refreshed status, raw wire vectors, retry/idempotency for every command, stale status/IDs, quantized encoder values, asynchronous completion, stop, stall, timeout, and invalid configuration.
 
 ## 4. Integrate regulated local navigation
 
 - [x] 4.1 Add a regulated differential-drive navigation type that composes the paired RCX controller with existing `DriveGeometry` and does not change power-based `DifferentialDrive` behavior.
 - [x] 4.2 Convert millimetre travel and robot-heading rotations into bounded left/right encoder targets using independent encoder ratios and documented sign conventions.
-- [ ] 4.3 Integrate final tacho positions with `DifferentialDriveOdometry`/`Pose` where the existing interfaces permit it, documenting degraded behavior when no valid heading source exists.
+- [x] 4.3 Integrate final tacho positions with `DifferentialDriveOdometry`/`Pose` where the existing interfaces permit it, documenting degraded behavior when no valid heading source exists.
 - [x] 4.4 Add navigation tests for symmetric travel, in-place turns, asymmetric gearing, invalid geometry, overflow/range handling, and target quantization.
 - [ ] 4.5 Keep RCX modulo arithmetic inside the adapter and verify positive-heading/counter-clockwise sign conventions with effective track width calibration.
 
 ## 5. Prepare examples and validate end to end
 
-- [ ] 5.1 Implement the `RcxRegulatedMotorCalibration` planning example under the existing RCX examples package, using the final public API names and documenting A/C, input-1/input-3, polarity, gearing, raw steps, quantization, wheel calibration, and effective track width.
-- [ ] 5.2 Implement the `RcxRegulatedDifferentialDrive` planning example under the existing RCX examples package, using calibrated geometry and demonstrating finite travel, asymmetric in-place rotation, status handling, error states, and paired stop.
+- [x] 5.1 Implement the `RcxRegulatedMotorCalibration` planning example under the existing RCX examples package, using the final public API names and documenting A/C, input-1/input-3, polarity, gearing, raw steps, quantization, wheel calibration, and effective track width.
+- [x] 5.2 Implement the `RcxRegulatedDifferentialDrive` planning example under the existing RCX examples package, using calibrated geometry and demonstrating finite travel, asymmetric in-place rotation, status handling, error states, and paired stop.
 - [ ] 5.3 Verify both examples follow board-side zero-allocation guidance, start serial output before reporting, use documented wiring/constants, and preserve existing RCX example conventions.
 - [ ] 5.4 Add a deterministic motor/encoder plant, raw-frame transport harness, dropped/duplicated/delayed/corrupt reply injector, reset/power-loss simulation, and assertions over both state and A/C outputs.
 - [ ] 5.5 Run the normal Maven tests and the affected firmware/image/protocol test suites; retain generated assembly, shim, image, RAM/stack, and timing evidence for failures.

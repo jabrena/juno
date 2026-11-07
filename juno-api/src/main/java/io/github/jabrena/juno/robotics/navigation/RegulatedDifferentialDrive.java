@@ -38,7 +38,7 @@ public final class RegulatedDifferentialDrive {
                 || geometry.trackWidthMillimetres() > MAX_GEOMETRY
                 || geometry.leftEncoderDegreesPerWheelRevolution() > MAX_GEOMETRY
                 || geometry.rightEncoderDegreesPerWheelRevolution() > MAX_GEOMETRY) {
-            throw new IllegalArgumentException("geometry values must be at most " + MAX_GEOMETRY);
+            throw new IllegalArgumentException("geometry values must be at most one million");
         }
         this.pair = pair;
         this.geometry = geometry;
@@ -50,7 +50,7 @@ public final class RegulatedDifferentialDrive {
      */
     public void setLinearSpeedMillimetresPerSecond(int millimetresPerSecond) {
         if (millimetresPerSecond <= 0 || millimetresPerSecond > MAX_MILLIMETRES) {
-            throw new IllegalArgumentException("speed must be between 1 and " + MAX_MILLIMETRES + " mm/s");
+            throw new IllegalArgumentException("speed must be between 1 and one million mm/s");
         }
         int degrees = wheelDegrees(millimetresPerSecond, geometry.leftEncoderDegreesPerWheelRevolution());
         if (degrees == 0) {
@@ -66,10 +66,10 @@ public final class RegulatedDifferentialDrive {
 
     /** Drives straight by {@code millimetres}, returning at once when {@code immediateReturn} is set. */
     public void travelMillimetres(int millimetres, boolean immediateReturn) {
-        checkMagnitude(millimetres, MAX_MILLIMETRES, "travel");
+        checkMagnitude(millimetres, MAX_MILLIMETRES);
         int left = wheelDegrees(millimetres, geometry.leftEncoderDegreesPerWheelRevolution());
         int right = wheelDegrees(millimetres, geometry.rightEncoderDegreesPerWheelRevolution());
-        requireRepresentable(millimetres, left, right);
+        requireRepresentable(millimetres != 0, left, right);
         pair.rotate(left, right, immediateReturn);
     }
 
@@ -80,10 +80,10 @@ public final class RegulatedDifferentialDrive {
 
     /** Turns in place by {@code degrees}, returning at once when {@code immediateReturn} is set. */
     public void turnDegrees(int degrees, boolean immediateReturn) {
-        checkMagnitude(degrees, MAX_ANGLE_DEGREES, "turn");
+        checkMagnitude(degrees, MAX_ANGLE_DEGREES);
         int left = -turnWheelDegrees(degrees, geometry.leftEncoderDegreesPerWheelRevolution());
         int right = turnWheelDegrees(degrees, geometry.rightEncoderDegreesPerWheelRevolution());
-        requireRepresentable(degrees, left, right);
+        requireRepresentable(degrees != 0, left, right);
         pair.rotate(left, right, immediateReturn);
     }
 
@@ -121,15 +121,15 @@ public final class RegulatedDifferentialDrive {
         return (int) roundedQuotient(numerator, 360L * geometry.wheelDiameterMillimetres());
     }
 
-    private static void checkMagnitude(int value, int limit, String what) {
+    private static void checkMagnitude(int value, int limit) {
         if (value > limit || value < -limit) {
-            throw new IllegalArgumentException(what + " must be between -" + limit + " and " + limit);
+            throw new IllegalArgumentException("a movement is outside the supported range");
         }
     }
 
-    private static void requireRepresentable(int input, int left, int right) {
-        if (input != 0 && (left == 0 || right == 0)) {
-            throw new IllegalArgumentException(input + " quantizes to zero encoder degrees on a side");
+    private static void requireRepresentable(boolean moving, int left, int right) {
+        if (moving && (left == 0 || right == 0)) {
+            throw new IllegalArgumentException("a movement quantizes to zero encoder degrees on a side");
         }
     }
 
