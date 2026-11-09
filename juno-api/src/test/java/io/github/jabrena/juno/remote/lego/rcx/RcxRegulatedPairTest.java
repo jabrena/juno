@@ -52,6 +52,23 @@ class RcxRegulatedPairTest {
     }
 
     @Test
+    @DisplayName("Reads both tachometers from one status reply, with no further round trip")
+    void shouldReadBothTachometersFromOneStatus() {
+        // Given: 16 steps a turn, so 8 steps on the left are 180 degrees and 4 on the right 90
+        armed();
+        reply(STATUS, 1, 0, READY, 0, 8, 0, 4, 0);
+
+        // When
+        pair.status();
+        int framesAfterStatus = sentFrames().size();
+
+        // Then
+        assertThat(pair.cachedLeftTachoCount()).isEqualTo(180);
+        assertThat(pair.cachedRightTachoCount()).isEqualTo(90);
+        assertThat(sentFrames()).hasSize(framesAfterStatus);
+    }
+
+    @Test
     @DisplayName("Reads the drive diagnostic: each side's power and its held cycles, low byte first")
     void shouldReadTheDriveDiagnostic() {
         // Given
@@ -59,16 +76,16 @@ class RcxRegulatedPairTest {
         reply(DRIVE, 0, 1, 0x2C, 0x01, 0, 0);
 
         // When
-        boolean answered = pair.refreshDriveDiagnostics();
+        boolean answered = pair.diagnostics().refreshDrive();
 
         // Then
         assertThat(answered).isTrue();
-        assertThat(pair.leftDrivePower()).isZero();
-        assertThat(pair.rightDrivePower()).isEqualTo(1);
-        assertThat(pair.leftHeldCycles()).isEqualTo(300);
-        assertThat(pair.rightHeldCycles()).isZero();
+        assertThat(pair.diagnostics().leftPower()).isZero();
+        assertThat(pair.diagnostics().rightPower()).isEqualTo(1);
+        assertThat(pair.diagnostics().leftHeldCycles()).isEqualTo(300);
+        assertThat(pair.diagnostics().rightHeldCycles()).isZero();
         assertThat(sent(DRIVE).get(0)).containsExactly(DRIVE, 1);
-        assertThat(pair.refreshDriveDiagnostics()).isFalse();
+        assertThat(pair.diagnostics().refreshDrive()).isFalse();
     }
 
     @Test
@@ -79,12 +96,12 @@ class RcxRegulatedPairTest {
         reply(CYCLES, 0x34, 0x12);
 
         // When
-        int cycles = pair.controlCycles();
+        int cycles = pair.diagnostics().controlCycles();
 
         // Then
         assertThat(cycles).isEqualTo(0x1234);
         assertThat(sent(CYCLES).get(0)).containsExactly(CYCLES, 1);
-        assertThat(pair.controlCycles()).isEqualTo(-1);
+        assertThat(pair.diagnostics().controlCycles()).isEqualTo(-1);
     }
 
     @Test

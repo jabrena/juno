@@ -48,6 +48,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
     private int configurationFlags;
     private final RcxRegulatedMotor left;
     private final RcxRegulatedMotor right;
+    private final RcxRegulatedDiagnostics diagnostics;
 
     private int motion;
     private int lastAcknowledgement;
@@ -70,6 +71,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
         this.configurationFlags = configurationFlags;
         this.left = new RcxRegulatedMotor(this, LEFT);
         this.right = new RcxRegulatedMotor(this, RIGHT);
+        this.diagnostics = new RcxRegulatedDiagnostics(protocol, session);
         // Claimed last, so a rejected configuration leaves the link free for another pair.
         link.claimForRegulation();
     }
@@ -100,6 +102,11 @@ public final class RcxRegulatedPair implements RegulatedPair {
     /** The configured maximum motor power, 1 to 7, as the next {@link #arm()} sends it. */
     public int maxPower() {
         return (configurationFlags & MAX_POWER_BITS) >> MAX_POWER_SHIFT;
+    }
+
+    /** The brick-side diagnostics of this pair: its control-cycle counter and how the wheel sync drives each side. */
+    public RcxRegulatedDiagnostics diagnostics() {
+        return diagnostics;
     }
 
     /** The left side, the motor A output, as a {@link RcxRegulatedMotor} view of this pair. */
@@ -262,6 +269,19 @@ public final class RcxRegulatedPair implements RegulatedPair {
         }
     }
 
+    /**
+     * The left side's tachometer in encoder-shaft degrees as the last {@link #status()} read it, without another round
+     * trip; with {@link #cachedRightTachoCount()} after one {@code status()}, both sides come from the same instant.
+     */
+    public int cachedLeftTachoCount() {
+        return scale.degrees(positions.stepsFromZero(LEFT));
+    }
+
+    /** The right side's tachometer as the last {@link #status()} read it; see {@link #cachedLeftTachoCount()}. */
+    public int cachedRightTachoCount() {
+        return scale.degrees(positions.stepsFromZero(RIGHT));
+    }
+
     /** The side's tachometer in encoder-shaft degrees, measured from its last zero; refreshes the status first. */
     int tachoCount(int side) {
         refreshStatus();
@@ -305,45 +325,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
         positions.record(LEFT, protocol.statusLeft);
         positions.record(RIGHT, protocol.statusRight);
         return true;
-    }
-
-    /**
-     * Diagnostic: the brick's count of regulator control cycles since it booted, 0 to 65535 and wrapping, or {@code -1}
-     * when it did not answer. Two reads a known time apart give the cycle rate, which converts profile speeds to
-     * per-cycle steps in the firmware. Unlike {@link #status()}, it changes no cached state.
-     */
-    public int controlCycles() {
-        int cycles = protocol.cycles(session);
-        return cycles == RcxRegulatedProtocol.NO_REPLY ? -1 : cycles;
-    }
-
-    /**
-     * Diagnostic: reads each side's motor power this cycle (0 while it is braked) and the cycles of the current motion each
-     * was held braked to let the other catch up. Returns whether the brick answered; the values are then in
-     * {@link #leftDrivePower()} and the like. Changes no cached state.
-     */
-    public boolean refreshDriveDiagnostics() {
-        return protocol.drive(session);
-    }
-
-    /** The left side's power at the last {@link #refreshDriveDiagnostics()}, 0 while braked. */
-    public int leftDrivePower() {
-        return protocol.driveLeftPower;
-    }
-
-    /** The right side's power at the last {@link #refreshDriveDiagnostics()}, 0 while braked. */
-    public int rightDrivePower() {
-        return protocol.driveRightPower;
-    }
-
-    /** Control cycles the left side was held braked in the current motion, at the last read. */
-    public int leftHeldCycles() {
-        return protocol.driveLeftHeld;
-    }
-
-    /** Control cycles the right side was held braked in the current motion, at the last read. */
-    public int rightHeldCycles() {
-        return protocol.driveRightHeld;
     }
 
     /** The acknowledgement code of the last command the brick refused, as {@link RcxRegulatedProtocol} numbers them. */
