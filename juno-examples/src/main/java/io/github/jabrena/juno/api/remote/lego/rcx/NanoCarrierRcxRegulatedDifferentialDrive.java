@@ -67,7 +67,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     /** Measured: the rotation sensor sits on the wheel axle, so one sensor turn is one wheel turn, 16 steps. */
     private static final int STEPS_PER_MOTOR_REVOLUTION = 16;
     /** Of 7: lower than full, so a wheel that briefly falls behind is not driven hard enough to jerk the robot aside. */
-    private static final int MAX_POWER_LEVEL = 2;
+    private static final int MAX_POWER_LEVEL = 1;
     /**
      * Measured on the reference build, whose forward is away from the RCX's IR window: output A drives the wheel on the
      * robot's right and runs backward for forward, while C runs forward; input 1 counts up with A forward and input 3
@@ -118,6 +118,8 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     /** The gyro is read this often between trace polls, and for this long after the stop before the final heading. */
     private static final int GYRO_SAMPLE_MILLIS = 10;
     private static final int SETTLE_MILLIS = 500;
+    /** How long the cycle counter is watched; the infrared round trips at either end add a few percent. */
+    private static final int CYCLE_WINDOW_MILLIS = 3000;
     /** Past the brick's own timeout, the outcome is reported as unknown rather than waited for. */
     private static final int TRACE_MARGIN_MILLIS = 2000;
     /** Starting a move is retried this often, a pause apart, to tell a timing problem from a refusal. */
@@ -169,6 +171,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
             Delay.millis(RETRY_MILLIS);
         }
         report(syslog, Syslog.NOTICE, "Armed");
+        measureCycleRate(pair, imu, clock, syslog);
         DriveGeometry geometry = new DriveGeometry(WHEEL_DIAMETER_MILLIMETRES, TRACK_WIDTH_MILLIMETRES,
                 LEFT_DEGREES_PER_WHEEL_REVOLUTION, RIGHT_DEGREES_PER_WHEEL_REVOLUTION);
         RegulatedDifferentialDrive drive = new RegulatedDifferentialDrive(pair, geometry);
@@ -340,6 +343,25 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
             imu.getAngle();
             Delay.millis(GYRO_SAMPLE_MILLIS);
         }
+    }
+
+    /**
+     * Logs the brick's control cycles per second: its cycle counter read twice {@link #CYCLE_WINDOW_MILLIS} apart, while
+     * the robot stands still. The firmware converts profile speeds to per-cycle steps with this rate.
+     */
+    private static void measureCycleRate(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog) {
+        int first = pair.controlCycles();
+        int started = clock.millis();
+        followGyro(imu, CYCLE_WINDOW_MILLIS);
+        int second = pair.controlCycles();
+        int elapsed = clock.millis() - started;
+        if (first < 0 || second < 0) {
+            report(syslog, Syslog.WARNING, "Control cycles: no answer from the brick");
+            return;
+        }
+        int cycles = (second - first) & 0xFFFF;
+        syslog.begin(Syslog.NOTICE).text("Control cycles: ").number(cycles).text(" in ").number(elapsed)
+                .text(" ms, ").number(cycles * 1000 / elapsed).text(" per second").send();
     }
 
     /** Traces the running move, then reports how it ended; returns whether both wheels completed. */
