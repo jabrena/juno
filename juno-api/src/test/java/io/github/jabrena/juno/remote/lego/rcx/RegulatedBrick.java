@@ -35,6 +35,8 @@ final class RegulatedBrick implements Infrared.Brick {
     private int state;
     private int targetLeft;
     private int targetRight;
+    private int pendingLeft;
+    private int pendingRight;
     private int positionLeft;
     private int positionRight;
 
@@ -68,7 +70,7 @@ final class RegulatedBrick implements Infrared.Brick {
         int opcode = request[0] & ~OPCODE_TOGGLE;
         int occurrence = requests.merge(opcode, 1, Integer::sum) - 1;
         int[] reply = execute(opcode, java.util.Arrays.copyOfRange(request, 1, request.length));
-        if (opcode == 0x76 && reply[0] == 0) {
+        if (opcode == 0x52 && reply[0] == 0) {
             accepted.merge(opcode, 1, Integer::sum);
         }
         Fault fault = faultFor(opcode, occurrence);
@@ -94,8 +96,10 @@ final class RegulatedBrick implements Infrared.Brick {
     private int[] execute(int opcode, int[] arguments) {
         return switch (opcode) {
             case 0x63 -> arm(arguments);
-            case 0x67 -> profile(arguments);
-            case 0x76 -> start(arguments);
+            case 0x64, 0x74 -> profile(arguments);
+            case 0x33 -> stage(arguments, true);
+            case 0x43 -> stage(arguments, false);
+            case 0x52 -> start(arguments);
             case 0x62 -> stop(arguments);
             case 0x61 -> status();
             default -> new int[] {0};
@@ -118,11 +122,25 @@ final class RegulatedBrick implements Infrared.Brick {
         return arguments[0] == session ? new int[] {0} : new int[] {4};
     }
 
+    /** Stages a side's target for the next start, as the firmware's 0x33 and 0x43 do. */
+    private int[] stage(int[] arguments, boolean leftSide) {
+        if (arguments[0] != session) {
+            return new int[] {4};
+        }
+        int target = (short) (arguments[1] | arguments[2] << 8);
+        if (leftSide) {
+            pendingLeft = target;
+        } else {
+            pendingRight = target;
+        }
+        return new int[] {0};
+    }
+
     private int[] start(int[] arguments) {
         int requestedSession = arguments[0];
         int requestedMotion = arguments[1];
-        int left = (short) (arguments[2] | arguments[3] << 8);
-        int right = (short) (arguments[4] | arguments[5] << 8);
+        int left = pendingLeft;
+        int right = pendingRight;
         if (requestedSession != session) {
             return new int[] {4, requestedSession, requestedMotion};
         }

@@ -48,8 +48,10 @@ import java.util.Objects;
  * <tr><td>0x62</td><td>regulated pair: stop the motion (session, motion)</td><td>result, session, motion</td></tr>
  * <tr><td>0x63</td><td>regulated pair: arm the session (session, mapping 1, configuration flags)</td>
  * <td>result, protocol version, mapping</td></tr>
- * <tr><td>0x67</td><td>regulated pair: profile (session, speed, acceleration, tolerance, timeout)</td><td>result</td></tr>
- * <tr><td>0x76</td><td>regulated pair: start a motion (session, motion, left target, right target)</td>
+ * <tr><td>0x64</td><td>regulated pair: speed (session, speed, tolerance)</td><td>result</td></tr>
+ * <tr><td>0x74</td><td>regulated pair: acceleration (session, acceleration, timeout)</td><td>result</td></tr>
+ * <tr><td>0x33, 0x43</td><td>regulated pair: stage the left or right target (session, target)</td><td>result</td></tr>
+ * <tr><td>0x52</td><td>regulated pair: start a motion toward the staged targets (session, motion)</td>
  * <td>result, session, motion</td></tr>
  * </table>
  *
@@ -346,7 +348,10 @@ public final class RcxRemoteFirmware {
         handler(RcxRegulator.OPCODE_STATUS, RcxRegulator.STATUS);
         handler(RcxRegulator.OPCODE_STOP, RcxRegulator.STOP);
         handler(RcxRegulator.OPCODE_ARM, RcxRegulator.ARM);
-        handler(RcxRegulator.OPCODE_PROFILE, RcxRegulator.PROFILE);
+        handler(RcxRegulator.OPCODE_SPEED, RcxRegulator.SET_SPEED);
+        handler(RcxRegulator.OPCODE_ACCELERATION, RcxRegulator.SET_ACCELERATION);
+        handler(RcxRegulator.OPCODE_TARGET_LEFT, RcxRegulator.TARGET_LEFT);
+        handler(RcxRegulator.OPCODE_TARGET_RIGHT, RcxRegulator.TARGET_RIGHT);
         handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
         assembler.jump(RcxCode.LOOP);
     }

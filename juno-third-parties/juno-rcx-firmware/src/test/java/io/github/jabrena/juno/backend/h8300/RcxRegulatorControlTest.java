@@ -15,13 +15,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RcxRegulatorControlTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
     private static final int SESSION = 1;
     private static final int FULL_POWER_FLAGS = 0xE0;
     private static final int STEPS = 3_000_000;
-    private static final int SPEED = 100;
-    private static final int ACCELERATION = 40;
+    /** Ten counts per cycle and two per cycle squared at the firmware's rate, so a cycle's change is visible. */
+    private static final int SPEED = 10 * RcxRegulator.TICKS_PER_SECOND;
+    private static final int ACCELERATION = 2 * RcxRegulator.TICKS_PER_SECOND;
     private static final int LEFT = RcxRegulator.BASE + 0x20;
     private static final int SENSOR_SIZE = 8;
     private static final int MAX_POWER = 7;
@@ -74,8 +78,11 @@ class RcxRegulatorControlTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x70, 0xFE);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x70, 0xFE);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(2000, STATUS, SESSION);
 
         // When
@@ -148,8 +155,11 @@ class RcxRegulatorControlTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x70, 0xFE);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x70, 0xFE);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(2000, STATUS, SESSION);
         H8Simulator cpu = boot(rcx);
 
@@ -163,7 +173,9 @@ class RcxRegulatorControlTest {
             if (cycles != lastCycle) {
                 lastCycle = cycles;
                 int velocity = cpu.readWord(LEFT + RcxRegulator.VELOCITY);
-                int expected = Math.min(cycles * (ACCELERATION / 20), SPEED / 20);
+                // In 1/256 counts per cycle: the profile's per-second rates times 256 over the cycle rate.
+                int expected = Math.min(cycles * ACCELERATION * RcxRegulator.Q8_PER_RATE,
+                        SPEED * RcxRegulator.Q8_PER_RATE);
                 assertThat(velocity).as("velocity after cycle %d", cycles).isEqualTo(expected);
                 checked++;
             }
@@ -171,6 +183,34 @@ class RcxRegulatorControlTest {
 
         // Then
         assertThat(checked).isGreaterThan(8);
+    }
+
+    @Test
+    @DisplayName("A speed below one count per cycle advances the trajectory at that speed, not a count every cycle")
+    void shouldAdvanceASlowTrajectoryByItsFraction() {
+        // Given: a quarter of a count per cycle, reached at once, toward a far target
+        int quarterCountPerCycle = RcxRegulator.TICKS_PER_SECOND / 4;
+        int instant = 255;
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, quarterCountPerCycle, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, instant, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
+        H8Simulator cpu = boot(rcx);
+
+        // When: forty cycles run
+        int cycles = 0;
+        for (int step = 0; step < STEPS && cycles < 40; step++) {
+            cpu.runFor(1);
+            cycles = cpu.readWord(RcxRegulator.ELAPSED);
+        }
+
+        // Then: the trajectory moved ten counts, a quarter per cycle; rounded up to a count per cycle it would be forty
+        assertThat((short) cpu.readWord(LEFT + RcxRegulator.TRAJECTORY)).isEqualTo((short) 10);
     }
 
     @Test
@@ -182,8 +222,11 @@ class RcxRegulatorControlTest {
         rcx.wheelPlant();
         rcx.jam(0);
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0, 0);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(2000, STATUS, SESSION);
         H8Simulator cpu = boot(rcx);
 

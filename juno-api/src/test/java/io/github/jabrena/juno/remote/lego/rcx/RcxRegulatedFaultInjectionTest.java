@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 @DisplayName("RCX regulated pair under transport faults")
 class RcxRegulatedFaultInjectionTest {
-    private static final int START = 0x76;
+    private static final int START = 0x52;
     private static final int STATUS = 0x61;
 
     private RegulatedBrick brick;

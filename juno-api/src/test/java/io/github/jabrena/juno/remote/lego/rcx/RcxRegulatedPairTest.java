@@ -21,8 +21,11 @@ class RcxRegulatedPairTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
     private static final int STOP = 0x62;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
     private static final int READY = 1;
     private static final int COMPLETE = 3;
     private static final int STOPPED = 4;
@@ -68,7 +71,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 116, 0, 184, 0);
 
@@ -76,8 +82,11 @@ class RcxRegulatedPairTest {
         pair.rotate(360, -360, false);
 
         // Then
-        assertThat(sent(PROFILE).get(0)).containsExactly(PROFILE, 1, 8, 0, 16, 0, 1, 10);
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x74, 0, 0xB8, 0);
+        assertThat(sent(SPEED_COMMAND).get(0)).containsExactly(SPEED_COMMAND, 1, 8, 0, 1);
+        assertThat(sent(ACCELERATION_COMMAND).get(0)).containsExactly(ACCELERATION_COMMAND, 1, 16, 0, 10);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x74, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0xB8, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
         assertThat(pair.cachedState()).isEqualTo(RcxRegulatedState.COMPLETE);
     }
 
@@ -87,7 +96,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 0);
         reply(START, DUPLICATE, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 116, 0, 184, 0);
@@ -109,7 +121,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 0);
         reply(START, ACCEPTED, 0);
         reply(START, ACCEPTED, 0);
@@ -128,7 +143,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, BUSY, 1, 1);
 
         // When / Then
@@ -144,7 +162,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, STALLED, STALL_FAULT, 100, 0, 200, 0);
 
@@ -212,7 +233,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
 
@@ -252,7 +276,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
         reply(STOP, ACCEPTED, 1, 1);
@@ -418,7 +445,10 @@ class RcxRegulatedPairTest {
         armed();
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 0x20, 0, 0, 0);
 
@@ -426,7 +456,9 @@ class RcxRegulatedPairTest {
         pair.left().rotateTo(720);
 
         // Then
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x20, 0, 0, 0);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x20, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
     }
 
     @Test
@@ -435,7 +467,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 100, 0, 216, 0);
 
@@ -443,7 +478,9 @@ class RcxRegulatedPairTest {
         pair.right().rotate(360);
 
         // Then
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x64, 0, 0xD8, 0);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x64, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0xD8, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
     }
 
     @Test
@@ -496,7 +533,10 @@ class RcxRegulatedPairTest {
         armed();
         for (int motion = 1; motion <= 255; motion++) {
             reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-            reply(PROFILE, ACCEPTED);
+            reply(SPEED_COMMAND, ACCEPTED);
+            reply(ACCELERATION_COMMAND, ACCEPTED);
+            reply(TARGET_LEFT, ACCEPTED);
+            reply(TARGET_RIGHT, ACCEPTED);
             reply(START, ACCEPTED, 1, motion);
             pair.rotate(0, 0, true);
         }
@@ -514,7 +554,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, 42, 1, 1);
 
         // When / Then
@@ -578,7 +621,10 @@ class RcxRegulatedPairTest {
     private void startMotion() {
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
     }

@@ -5,7 +5,8 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
 /**
  * The regulated differential drive of {@link RcxRemoteFirmware}: outputs A and C, the left and right wheels, each
  * regulated locally by the firmware from its rotation sensor (inputs 1 and 3), so infrared is a command channel and not
- * a control loop. The commands are 0x61 status, 0x62 stop, 0x63 arm, 0x67 profile and 0x76 start; the acknowledgements,
+ * a control loop. The commands are 0x61 status, 0x62 stop, 0x63 arm, 0x64 speed, 0x74 acceleration, 0x33 and 0x43
+ * the left and right targets, and 0x52 start; the acknowledgements,
  * states and payloads are the ones {@code RcxRegulatedProtocol} expects on the host (OpenSpec change
  * {@code rcx-regulated-differential-drive}).
  *
@@ -23,13 +24,28 @@ final class RcxRegulator {
     static final int OPCODE_STATUS = 0x61;
     static final int OPCODE_STOP = 0x62;
     static final int OPCODE_ARM = 0x63;
-    static final int OPCODE_PROFILE = 0x67;
-    static final int OPCODE_START = 0x76;
+    /**
+     * The profile is two commands, not one: the ROM takes an opcode's low three bits as its argument count except for
+     * 7, which it reads as one argument (0xF7, the message, is one byte). A seven-argument profile at 0x67 therefore
+     * never reached the firmware on the brick; each half has four arguments.
+     */
+    static final int OPCODE_SPEED = 0x64;
+    static final int OPCODE_ACCELERATION = 0x74;
+    /**
+     * A move is three commands for the same reason: the brick dropped the six-argument start at 0x76, while frames of up
+     * to four arguments reach the firmware. Each target is staged on its own, and the start begins both at once.
+     */
+    static final int OPCODE_TARGET_LEFT = 0x33;
+    static final int OPCODE_TARGET_RIGHT = 0x43;
+    static final int OPCODE_START = 0x52;
 
     static final String STATUS = "reg_status";
     static final String STOP = "reg_stop";
     static final String ARM = "reg_arm";
-    static final String PROFILE = "reg_profile";
+    static final String SET_SPEED = "reg_speed";
+    static final String SET_ACCELERATION = "reg_acceleration";
+    static final String TARGET_LEFT = "reg_target_left";
+    static final String TARGET_RIGHT = "reg_target_right";
     static final String START = "reg_start";
     /** Subroutine: one control cycle, after a fresh analog update. */
     static final String TICK = "reg_tick";
@@ -96,14 +112,25 @@ final class RcxRegulator {
     static final int SATURATED_ERROR = 1019;
     /** Placeholder (task 1.6): an error this small or smaller applies no power, so the wheel holds instead of hunting. */
     static final int DEADBAND = 1;
-    /** Placeholder: the least power that moves a wheel from rest. */
-    static final int MIN_START_POWER = 2;
+    /** The least power that moves a loaded wheel from rest: power 2 did not move the reference build on the floor. */
+    static final int MIN_START_POWER = 3;
     /** Placeholder: the most the power may rise in one cycle. */
     static final int SLEW_PER_TICK = 1;
-    /** Placeholder (task 1.3): control cycles per second, the rate that converts profile units to per-cycle units. */
-    static final int TICKS_PER_SECOND = 20;
-    /** Placeholder: cycles a driven wheel may stay still before it counts as stalled. */
-    static final int STALL_TICKS = 20;
+    /**
+     * Control cycles per second, the rate that converts profile units to per-cycle units. Measured on the brick: a stall
+     * after 20 cycles was reported 312 ms after the start, about 64 cycles per second (task 1.3).
+     */
+    static final int TICKS_PER_SECOND = 64;
+    /** Cycles a driven wheel may stay still before it counts as stalled: one second at {@link #TICKS_PER_SECOND}. */
+    static final int STALL_TICKS = TICKS_PER_SECOND;
+    /** A rate in counts per second becomes this many 1/256 counts per cycle: 256 over the cycle rate, a power of two. */
+    static final int Q8_PER_RATE = 256 / TICKS_PER_SECOND;
+
+    static {
+        if (256 % TICKS_PER_SECOND != 0 || Integer.bitCount(Q8_PER_RATE) != 1) {
+            throw new IllegalStateException("TICKS_PER_SECOND must divide 256 by a power of two");
+        }
+    }
     /** Placeholder: main-loop passes without a fresh analog update before the sensors count as stale. */
     static final int STALE_PASSES = 200;
     /** Profile speed and acceleration arrive in counts per second; more than this would not divide into a byte. */
@@ -128,11 +155,15 @@ final class RcxRegulator {
     static final int TIMEOUT_SECONDS = BASE + 7;
     static final int SPEED = BASE + 8;
     static final int ACCELERATION = BASE + 10;
+    /** Speed and acceleration per cycle, in 1/256 counts (Q8): see {@link #storeRate}. */
     static final int SPEED_TICK = BASE + 12;
     static final int ACCELERATION_TICK = BASE + 14;
     static final int ELAPSED = BASE + 16;
     static final int TIMEOUT_TICKS = BASE + 18;
     static final int IDLE = BASE + 20;
+    /** The targets the next start applies, as staged by the target commands. */
+    static final int PENDING_LEFT = BASE + 22;
+    static final int PENDING_RIGHT = BASE + 24;
 
     /** Per side: done, power, direction, stall count, target, trajectory, velocity, position and last position. */
     static final int DONE = 0;
@@ -141,9 +172,12 @@ final class RcxRegulator {
     static final int STALL = 4;
     static final int TARGET = 6;
     static final int TRAJECTORY = 8;
+    /** The trajectory's velocity, in 1/256 counts per cycle (Q8), so a slow speed is not rounded up to a count. */
     static final int VELOCITY = 10;
     static final int POSITION = 12;
     static final int LAST = 14;
+    /** The trajectory's fraction of a count, in 1/256 counts, carried from one cycle's step to the next. */
+    static final int FRACTION = 16;
 
     /** The sensor struct's converted value: {@code char type, char mode, short raw, short value, char boolean}. */
     private static final int SENSOR_SIZE = 8;
@@ -160,8 +194,6 @@ final class RcxRegulator {
             FAULT_RIGHT_STALL);
     private static final Side[] SIDES = {LEFT, RIGHT};
 
-    private static final int LEFT_TARGET_ARGUMENT = RcxCode.REQUEST + 3;
-    private static final int RIGHT_TARGET_ARGUMENT = RcxCode.REQUEST + 5;
 
     private final RcxCode code;
     private final H8Assembler assembler;
@@ -193,7 +225,10 @@ final class RcxRegulator {
         status();
         stop();
         arm();
-        profile();
+        speed();
+        acceleration();
+        target(TARGET_LEFT, PENDING_LEFT);
+        target(TARGET_RIGHT, PENDING_RIGHT);
         start();
     }
 
@@ -210,8 +245,14 @@ final class RcxRegulator {
         sharedAcknowledgements();
     }
 
+    /**
+     * Replies with the live positions: the control cycle refreshes them only while a movement runs, so without this
+     * snapshot a status read after arming reported the previous run's last positions, and the host's next targets were
+     * offset by them (the reference build overshot and timed out).
+     */
     private void status() {
         assembler.label(STATUS);
+        assembler.call(SNAPSHOT);
         replyByte(SESSION, 1);
         replyByte(MOTION, 2);
         replyByte(STATE, 3);
@@ -273,28 +314,51 @@ final class RcxRegulator {
         replyArm(ACCEPTED);
     }
 
-    private void profile() {
-        assembler.label(PROFILE);
+    /** Speed (counts per second, low byte first) and the position tolerance: session, speed, tolerance. */
+    private void speed() {
+        assembler.label(SET_SPEED);
         requireSession(1);
-        String notRunning = code.newLabel();
-        assembler.loadByte(STATE, H8ByteRegister.R0L);
-        assembler.compareImmediate(RUNNING, H8ByteRegister.R0L);
-        assembler.branch(H8Condition.NOT_EQUAL, notRunning);
-        replyAck(BUSY, 1);
-        assembler.label(notRunning);
+        rejectWhileRunning();
         checkRate(RcxCode.REQUEST + 2);
-        checkRate(RcxCode.REQUEST + 4);
-        assembler.loadByte(RcxCode.REQUEST + 7, H8ByteRegister.R0L);
+        assembler.loadByte(RcxCode.REQUEST + 4, H8ByteRegister.R0L);
+        assembler.storeByte(H8ByteRegister.R0L, TOLERANCE);
+        storeRate(RcxCode.REQUEST + 2, SPEED, SPEED_TICK);
+        replyAck(ACCEPTED, 1);
+    }
+
+    /** Acceleration (counts per second squared, low byte first) and the timeout: session, acceleration, timeout. */
+    private void acceleration() {
+        assembler.label(SET_ACCELERATION);
+        requireSession(1);
+        rejectWhileRunning();
+        checkRate(RcxCode.REQUEST + 2);
+        assembler.loadByte(RcxCode.REQUEST + 4, H8ByteRegister.R0L);
         assembler.compareImmediate(0, H8ByteRegister.R0L);
         String timeout = code.newLabel();
         assembler.branch(H8Condition.NOT_EQUAL, timeout);
         replyAck(INVALID_ARGUMENT, 1);
         assembler.label(timeout);
         assembler.storeByte(H8ByteRegister.R0L, TIMEOUT_SECONDS);
-        assembler.loadByte(RcxCode.REQUEST + 6, H8ByteRegister.R0L);
-        assembler.storeByte(H8ByteRegister.R0L, TOLERANCE);
-        storeRate(RcxCode.REQUEST + 2, SPEED, SPEED_TICK);
-        storeRate(RcxCode.REQUEST + 4, ACCELERATION, ACCELERATION_TICK);
+        storeRate(RcxCode.REQUEST + 2, ACCELERATION, ACCELERATION_TICK);
+        replyAck(ACCEPTED, 1);
+    }
+
+    /** A profile change while a movement runs is refused as busy. */
+    private void rejectWhileRunning() {
+        String notRunning = code.newLabel();
+        assembler.loadByte(STATE, H8ByteRegister.R0L);
+        assembler.compareImmediate(RUNNING, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.NOT_EQUAL, notRunning);
+        replyAck(BUSY, 1);
+        assembler.label(notRunning);
+    }
+
+    /** Stages one side's target (session, target low byte first) for the next start; a running movement keeps its own. */
+    private void target(String label, int pending) {
+        assembler.label(label);
+        requireSession(1);
+        loadWordArgument(RcxCode.REQUEST + 2, H8Register.R0);
+        assembler.store(H8Register.R0, pending);
         replyAck(ACCEPTED, 1);
     }
 
@@ -318,11 +382,11 @@ final class RcxRegulator {
         replyAck(STALE_COMMAND, 3);
         assembler.label(same);
         String conflict = code.newLabel();
-        loadWordArgument(LEFT_TARGET_ARGUMENT, H8Register.R0);
+        assembler.load(PENDING_LEFT, H8Register.R0);
         assembler.load(LEFT.base() + TARGET, H8Register.R1);
         assembler.compare(H8Register.R1, H8Register.R0);
         assembler.branch(H8Condition.NOT_EQUAL, conflict);
-        loadWordArgument(RIGHT_TARGET_ARGUMENT, H8Register.R0);
+        assembler.load(PENDING_RIGHT, H8Register.R0);
         assembler.load(RIGHT.base() + TARGET, H8Register.R1);
         assembler.compare(H8Register.R1, H8Register.R0);
         assembler.branch(H8Condition.NOT_EQUAL, conflict);
@@ -349,7 +413,7 @@ final class RcxRegulator {
         assembler.call(SNAPSHOT);
         for (Side side : SIDES) {
             String inRing = code.newLabel();
-            loadWordArgument(argumentOf(side), H8Register.R0);
+            assembler.load(pendingOf(side), H8Register.R0);
             assembler.load(side.base() + POSITION, H8Register.R1);
             assembler.subtract(H8Register.R1, H8Register.R0);
             assembler.moveImmediate(0x8000, H8Register.R1);
@@ -361,13 +425,14 @@ final class RcxRegulator {
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
         assembler.storeByte(H8ByteRegister.R0L, MOTION);
         for (Side side : SIDES) {
-            loadWordArgument(argumentOf(side), H8Register.R0);
+            assembler.load(pendingOf(side), H8Register.R0);
             assembler.store(H8Register.R0, side.base() + TARGET);
             assembler.load(side.base() + POSITION, H8Register.R0);
             assembler.store(H8Register.R0, side.base() + TRAJECTORY);
             assembler.store(H8Register.R0, side.base() + LAST);
             assembler.moveImmediate(0, H8Register.R0);
             assembler.store(H8Register.R0, side.base() + VELOCITY);
+            assembler.store(H8Register.R0, side.base() + FRACTION);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);
@@ -522,7 +587,15 @@ final class RcxRegulator {
         assembler.move(H8Register.R4, H8Register.R3);
         assembler.label(velocityCapped);
         assembler.store(H8Register.R3, side.base() + VELOCITY);
-        // The step is the smaller of the velocity and the remaining distance, in the remaining distance's direction.
+        // The velocity is in 1/256 counts: added to the carried fraction, the whole counts are this cycle's step (r6)
+        // and the rest is carried, so a speed below one count per cycle advances the trajectory every few cycles.
+        assembler.load(side.base() + FRACTION, H8Register.R0);
+        assembler.add(H8Register.R3, H8Register.R0);
+        assembler.move(H8ByteRegister.R0H, H8ByteRegister.R6L);
+        assembler.moveImmediate(0, H8ByteRegister.R6H);
+        assembler.moveImmediate(0, H8ByteRegister.R0H);
+        assembler.store(H8Register.R0, side.base() + FRACTION);
+        // The step is the smaller of the whole counts and the remaining distance, in the remaining distance's direction.
         assembler.moveImmediate(0, H8Register.R5);
         assembler.moveImmediate(0, H8Register.R4);
         assembler.compare(H8Register.R4, H8Register.R1);
@@ -533,10 +606,10 @@ final class RcxRegulator {
         assembler.subtract(H8Register.R1, H8Register.R4);
         assembler.move(H8Register.R4, H8Register.R1);
         assembler.label(ahead);
-        assembler.compare(H8Register.R3, H8Register.R1);
+        assembler.compare(H8Register.R6, H8Register.R1);
         String smaller = code.newLabel();
         assembler.branch(H8Condition.LOWER_OR_SAME, smaller);
-        assembler.move(H8Register.R3, H8Register.R1);
+        assembler.move(H8Register.R6, H8Register.R1);
         assembler.label(smaller);
         assembler.load(side.base() + TRAJECTORY, H8Register.R2);
         assembler.moveImmediate(0, H8Register.R4);
@@ -741,6 +814,7 @@ final class RcxRegulator {
         assembler.store(H8Register.R0, IDLE);
         for (Side side : SIDES) {
             assembler.store(H8Register.R0, side.base() + VELOCITY);
+            assembler.store(H8Register.R0, side.base() + FRACTION);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);
@@ -812,19 +886,17 @@ final class RcxRegulator {
         assembler.label(inRange);
     }
 
-    /** Stores the rate at {@code argument} as given, and per control cycle, at least one, in {@code perTick}. */
+    /**
+     * Stores the rate at {@code argument} as given, and per control cycle in 1/256 counts (Q8) in {@code perTick}: the
+     * rate times {@code 256 / TICKS_PER_SECOND}, a power of two, so the conversion is exact shifts. {@link #MAX_RATE}
+     * keeps the result within a word.
+     */
     private void storeRate(int argument, int rate, int perTick) {
         loadWordArgument(argument, H8Register.R0);
         assembler.store(H8Register.R0, rate);
-        assembler.moveImmediate(TICKS_PER_SECOND, H8ByteRegister.R1L);
-        assembler.divideUnsigned(H8ByteRegister.R1L, H8Register.R0);
-        assembler.moveImmediate(0, H8ByteRegister.R0H);
-        assembler.moveImmediate(0, H8Register.R1);
-        assembler.compare(H8Register.R1, H8Register.R0);
-        String nonZero = code.newLabel();
-        assembler.branch(H8Condition.NOT_EQUAL, nonZero);
-        assembler.moveImmediate(1, H8Register.R0);
-        assembler.label(nonZero);
+        for (int scale = 1; scale < Q8_PER_RATE; scale *= 2) {
+            assembler.add(H8Register.R0, H8Register.R0);
+        }
         assembler.store(H8Register.R0, perTick);
     }
 
@@ -898,7 +970,7 @@ final class RcxRegulator {
         assembler.label(positive);
     }
 
-    private static int argumentOf(Side side) {
-        return side == LEFT ? LEFT_TARGET_ARGUMENT : RIGHT_TARGET_ARGUMENT;
+    private static int pendingOf(Side side) {
+        return side == LEFT ? PENDING_LEFT : PENDING_RIGHT;
     }
 }

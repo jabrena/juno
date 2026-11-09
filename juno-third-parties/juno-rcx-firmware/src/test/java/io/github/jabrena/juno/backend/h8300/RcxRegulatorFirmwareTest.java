@@ -17,8 +17,11 @@ class RcxRegulatorFirmwareTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
     private static final int STOP = 0x62;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
     private static final int ON_OFF = 0x21;
     private static final int SET_INPUT_TYPE = 0x32;
     private static final int REMOTE_BUTTONS = 0xD2;
@@ -104,15 +107,19 @@ class RcxRegulatorFirmwareTest {
         @DisplayName("Commands before arming are refused as not armed")
         void shouldRefuseCommandsBeforeArming() {
             // Given
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
 
             // When
             run(STEPS);
 
             // Then
-            assertThat(lastReplyTo(PROFILE)).containsExactly(0x98, NOT_ARMED);
-            assertThat(lastReplyTo(START)).containsExactly(0x89, NOT_ARMED, SESSION, 1);
+            assertThat(lastReplyTo(SPEED_COMMAND)).containsExactly(0x9B, NOT_ARMED);
+            assertThat(lastReplyTo(ACCELERATION_COMMAND)).containsExactly(0x8B, NOT_ARMED);
+            assertThat(lastReplyTo(START)).containsExactly(0xAD, NOT_ARMED, SESSION, 1);
         }
 
         @Test
@@ -120,16 +127,21 @@ class RcxRegulatorFirmwareTest {
         void shouldRejectBadProfiles() {
             // Given
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 0, 0, 200, 0, 1, 10);
-            rcx.receive(PROFILE, SESSION, 0x00, 0x20, 200, 0, 1, 10);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 0, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(SPEED_COMMAND, SESSION, 0x00, 0x40, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 0);
 
             // When
             run(STEPS);
 
             // Then
-            assertThat(repliesTo(PROFILE).stream().map(reply -> reply[1]).toList())
-                    .containsExactly(5, 6, 5);
+            assertThat(repliesTo(SPEED_COMMAND).stream().map(reply -> reply[1]).toList())
+                    .containsExactly(5, 6, 0);
+            assertThat(repliesTo(ACCELERATION_COMMAND).stream().map(reply -> reply[1]).toList())
+                    .containsExactly(0, 0, 5);
         }
 
         @Test
@@ -158,8 +170,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0xD8, 0xFF);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(400, STATUS, SESSION);
 
             // When
@@ -176,22 +191,52 @@ class RcxRegulatorFirmwareTest {
         }
 
         @Test
+        @DisplayName("A status right after arming again reports the restarted positions, not the last motion's")
+        void shouldReportRestartedPositionsRightAfterRearming() {
+            // Given: a completed motion leaves both wheels away from zero, then the pair is armed again
+            rcx.continuousAnalog();
+            rcx.wheelPlant();
+            rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
+            rcx.receiveAfter(400, ARM, SESSION, 1, FULL_POWER_FLAGS);
+            rcx.receive(STATUS, SESSION);
+
+            // When
+            run(STEPS);
+
+            // Then: the host builds its next targets on these positions, so they must be the restarted ones
+            int[] status = lastReplyTo(STATUS);
+            assertThat(status[3]).isEqualTo(READY);
+            assertThat(signed(status[5], status[6])).isZero();
+            assertThat(signed(status[7], status[8])).isZero();
+        }
+
+        @Test
         @DisplayName("A repeated start of the running motion is a duplicate that does not restart it")
         void shouldAnswerARepeatedStartAsDuplicate() {
             // Given
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0xD8, 0xFF);
-            rcx.receiveAfter(5, START, SESSION, 1, 40, 0, 0xD8, 0xFF);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
+            rcx.receiveAfter(5, TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(200, STATUS, SESSION);
 
             // When
             run(STEPS);
 
             // Then
-            assertThat(lastReplyTo(START)).containsExactly(0x89, DUPLICATE, SESSION, 1);
+            assertThat(lastReplyTo(START)).containsExactly(0xAD, DUPLICATE, SESSION, 1);
             assertThat(lastReplyTo(STATUS)[3]).isEqualTo(COMPLETE);
         }
 
@@ -202,15 +247,20 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0xD8, 0xFF);
-            rcx.receiveAfter(5, START, SESSION, 1, 90, 0, 0xD8, 0xFF);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
+            rcx.receiveAfter(5, TARGET_LEFT, SESSION, 90, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 1);
 
             // When
             run(STEPS);
 
             // Then
-            assertThat(lastReplyTo(START)).containsExactly(0x89, ID_CONFLICT, SESSION, 1);
+            assertThat(lastReplyTo(START)).containsExactly(0xAD, ID_CONFLICT, SESSION, 1);
         }
 
         @Test
@@ -220,15 +270,20 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
-            rcx.receiveAfter(5, START, SESSION, 2, 40, 0, 0xD8, 0xFF);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+            rcx.receive(START, SESSION, 1);
+            rcx.receiveAfter(5, TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
+            rcx.receive(START, SESSION, 2);
 
             // When
             run(STEPS);
 
             // Then
-            assertThat(lastReplyTo(START)).containsExactly(0x89, BUSY, SESSION, 2);
+            assertThat(lastReplyTo(START)).containsExactly(0xAD, BUSY, SESSION, 2);
         }
 
         @Test
@@ -238,8 +293,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(60, STOP, SESSION, 1);
             rcx.receiveAfter(200, STATUS, SESSION);
 
@@ -263,8 +321,11 @@ class RcxRegulatorFirmwareTest {
             rcx.wheelPlant();
             rcx.jam(LEFT);
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(200, STATUS, SESSION);
 
             // When
@@ -284,8 +345,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 5, 0, 200, 0, 1, 1);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 5, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 1);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(200, STATUS, SESSION);
 
             // When
@@ -303,8 +367,11 @@ class RcxRegulatorFirmwareTest {
             // Given
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(400, STATUS, SESSION);
 
             // When
@@ -323,8 +390,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(10, ON_OFF, 0x80 | 0x01);
             rcx.receiveAfter(200, STATUS, SESSION);
 
@@ -345,8 +415,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(10, ON_OFF, 0x80 | 0x02);
             rcx.receiveAfter(200, STATUS, SESSION);
 
@@ -381,8 +454,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 3, 0, 0xFD, 0xFF);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 3, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0xFD, 0xFF);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(200, STATUS, SESSION);
 
             // When
@@ -401,8 +477,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(60, REMOTE_BUTTONS, 0x40, 0x00);
             rcx.receiveAfter(200, STATUS, SESSION);
 
@@ -421,8 +500,11 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+            rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(10, REMOTE_BUTTONS, 0x00, 0x08);
             rcx.receiveAfter(200, STATUS, SESSION);
 
@@ -443,8 +525,11 @@ class RcxRegulatorFirmwareTest {
             rcx.wheelPlant();
             rcx.jam(LEFT);
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-            rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+            rcx.receive(START, SESSION, 1);
             rcx.receiveAfter(200, ARM, SESSION, 1, FULL_POWER_FLAGS);
             rcx.receiveAfter(5, STATUS, SESSION);
 

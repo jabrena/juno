@@ -47,6 +47,11 @@ final class FakeRcx implements H8Simulator.Rom {
     private boolean wheelPlant;
     private boolean continuousAnalog;
     private final int[] wheelPosition = new int[3];
+    /**
+     * Each wheel's position when its sensor was last read. The ROM adds a rotation sensor's steps to the value it keeps,
+     * so a firmware that zeroes the value restarts the count there (hardware-confirmed: arming restarts both counts).
+     */
+    private final int[] wheelPositionRead = new int[3];
     private final boolean[] jammed = new boolean[3];
     private final int[] commandedMode = new int[3];
     private final int[] commandedPower = new int[3];
@@ -339,9 +344,14 @@ final class FakeRcx implements H8Simulator.Rom {
                 calls.add("read %X".formatted(r6));
                 int[] reading = readings[r6 - RcxRom.SENSOR_1];
                 int sensor = cpu.stackArgument(0);
-                int value = wheelPlant
-                        ? wheelPosition[r6 - RcxRom.SENSOR_1] & 0xFFFF
-                        : reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
+                int input = r6 - RcxRom.SENSOR_1;
+                int value;
+                if (wheelPlant) {
+                    value = (cpu.readWord(sensor + 4) + wheelPosition[input] - wheelPositionRead[input]) & 0xFFFF;
+                    wheelPositionRead[input] = wheelPosition[input];
+                } else {
+                    value = reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
+                }
                 cpu.writeWord(sensor + 2, reading[0]);
                 cpu.writeWord(sensor + 4, value);
                 cpu.writeByte(sensor + 6, value != 0 ? 1 : 0);
