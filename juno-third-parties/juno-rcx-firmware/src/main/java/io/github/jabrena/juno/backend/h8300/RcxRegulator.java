@@ -39,6 +39,11 @@ final class RcxRegulator {
     static final int OPCODE_START = 0x52;
     /** Diagnostic: replies with the free-running control-cycle counter, so the host can measure the cycle rate. */
     static final int OPCODE_CYCLES = 0x71;
+    /**
+     * Diagnostic: replies with each side's power this cycle (0 when braked) and the cycles each was held braked in the
+     * current motion, so a floor run shows whether the level-keeping acts.
+     */
+    static final int OPCODE_DRIVE = 0x81;
 
     static final String STATUS = "reg_status";
     static final String STOP = "reg_stop";
@@ -49,6 +54,7 @@ final class RcxRegulator {
     static final String TARGET_RIGHT = "reg_target_right";
     static final String START = "reg_start";
     static final String CYCLES = "reg_cycles";
+    static final String DRIVE = "reg_drive";
     /** Subroutine: one control cycle, after a fresh analog update. */
     static final String TICK = "reg_tick";
     /** Subroutine: counts a main-loop pass without a fresh analog update, for the stale check. */
@@ -174,6 +180,8 @@ final class RcxRegulator {
     /** The side's position when the motion started, and the distance to cover from it, in counts (unsigned). */
     static final int START_POSITION = 18;
     static final int DISTANCE = 20;
+    /** Cycles of the current motion the side was held braked to let the other catch up: a diagnostic. */
+    static final int HELD_CYCLES = 22;
 
     /** The sensor struct's converted value: {@code char type, char mode, short raw, short value, char boolean}. */
     private static final int SENSOR_SIZE = 8;
@@ -227,6 +235,7 @@ final class RcxRegulator {
         target(TARGET_RIGHT, PENDING_RIGHT);
         start();
         cycles();
+        drive();
     }
 
     /** The subroutines the handlers and the main loop call. */
@@ -362,6 +371,16 @@ final class RcxRegulator {
         code.replyWithWord(H8Register.R0);
     }
 
+    /** Replies left power, right power, then each side's held cycles, low byte first; takes the session byte. */
+    private void drive() {
+        assembler.label(DRIVE);
+        replyByte(LEFT.base() + POWER, 1);
+        replyByte(RIGHT.base() + POWER, 2);
+        replyWord(LEFT.base() + HELD_CYCLES, 3);
+        replyWord(RIGHT.base() + HELD_CYCLES, 5);
+        code.replyWith(7);
+    }
+
     /** Stages one side's target (session, target low byte first) for the next start; a running movement keeps its own. */
     private void target(String label, int pending) {
         assembler.label(label);
@@ -457,6 +476,7 @@ final class RcxRegulator {
             assembler.moveImmediate(0, H8Register.R0);
             assembler.store(H8Register.R0, side.base() + VELOCITY);
             assembler.store(H8Register.R0, side.base() + FRACTION);
+            assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);
@@ -625,8 +645,11 @@ final class RcxRegulator {
         lowerPowerByOne(H8Register.R3);
         assembler.label(notSlowing);
         // Keep the wheels level: a side ahead of the other (still moving) side by a count drops a level, by more brakes.
+        // Until the other side has moved at all, a side that has brakes after its first count, so the slower motor's
+        // late start does not leave the faster one ahead for the whole move.
         Side other = side == LEFT ? RIGHT : LEFT;
         String level = code.newLabel();
+        String hold = code.newLabel();
         assembler.loadByte(other.base() + DONE, H8ByteRegister.R0L);
         assembler.compareImmediate(0, H8ByteRegister.R0L);
         code.jumpIf(H8Condition.NOT_EQUAL, level);
@@ -636,12 +659,24 @@ final class RcxRegulator {
         assembler.moveImmediate(1, H8Register.R5);
         assembler.compare(H8Register.R5, H8Register.R4);
         code.jumpIf(H8Condition.LESS, level);
+        assembler.compare(H8Register.R5, H8Register.R6);
+        code.jumpIf(H8Condition.LESS, hold);
         lowerPowerByOne(H8Register.R3);
         assembler.moveImmediate(2, H8Register.R5);
         assembler.compare(H8Register.R5, H8Register.R4);
         code.jumpIf(H8Condition.LESS, level);
+        assembler.label(hold);
         assembler.moveImmediate(NO_POWER, H8Register.R3);
         assembler.label(level);
+        // Counts the cycles the side is held braked, for the diagnostic command.
+        String driven = code.newLabel();
+        assembler.moveImmediate(0, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R3);
+        code.jumpIf(H8Condition.NOT_EQUAL, driven);
+        assembler.load(side.base() + HELD_CYCLES, H8Register.R0);
+        assembler.adds(1, H8Register.R0);
+        assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
+        assembler.label(driven);
         assembler.move(H8Register.R3, H8Register.R1);
         assembler.storeByte(H8ByteRegister.R1L, side.base() + POWER);
         // A driven wheel that does not move for the stall window is stalled.
@@ -742,6 +777,7 @@ final class RcxRegulator {
         for (Side side : SIDES) {
             assembler.store(H8Register.R0, side.base() + VELOCITY);
             assembler.store(H8Register.R0, side.base() + FRACTION);
+            assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);

@@ -48,7 +48,9 @@ final class FakeRcx implements H8Simulator.Rom {
     private boolean continuousAnalog;
     private final int[] wheelPosition = new int[3];
     private final int[] wheelPowerAccumulated = new int[3];
-    private static final int POWER_PER_COUNT = 8;
+    /** How strongly each output turns its wheel per power level: 2 is a normal motor, 1 a weak one. */
+    private final int[] wheelStrength = {2, 2, 2};
+    private static final int POWER_PER_COUNT = 16;
     /**
      * Each wheel's position when its sensor was last read. The ROM adds a rotation sensor's steps to the value it keeps,
      * so a firmware that zeroes the value restarts the count there (hardware-confirmed: arming restarts both counts).
@@ -87,6 +89,11 @@ final class FakeRcx implements H8Simulator.Rom {
     /** Enables the wheel model: output A is input 0 and output C is input 2, each moving by its commanded power. */
     void wheelPlant() {
         wheelPlant = true;
+    }
+
+    /** Makes an output's motor turn its wheel at half the speed of the other, as a slower or stiffer motor would. */
+    void weaken(int output) {
+        wheelStrength[output] = 1;
     }
 
     /** Holds an output's wheel still, as if jammed. */
@@ -398,7 +405,7 @@ final class FakeRcx implements H8Simulator.Rom {
                 continue;
             }
             int direction = commandedMode[output] == 1 ? 1 : commandedMode[output] == 2 ? -1 : 0;
-            wheelPowerAccumulated[output] += commandedPower[output] * direction;
+            wheelPowerAccumulated[output] += commandedPower[output] * wheelStrength[output] * direction;
             while (wheelPowerAccumulated[output] >= POWER_PER_COUNT) {
                 wheelPowerAccumulated[output] -= POWER_PER_COUNT;
                 wheelPosition[output]++;

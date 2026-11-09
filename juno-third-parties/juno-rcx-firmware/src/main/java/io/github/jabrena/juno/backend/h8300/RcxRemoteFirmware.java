@@ -54,6 +54,8 @@ import java.util.Objects;
  * <tr><td>0x52</td><td>regulated pair: start a motion toward the staged targets (session, motion)</td>
  * <td>result, session, motion</td></tr>
  * <tr><td>0x71</td><td>regulated pair diagnostic: control cycles run since boot (session)</td><td>cycles</td></tr>
+ * <tr><td>0x81</td><td>regulated pair diagnostic: drive (session)</td><td>left power, right power, left held cycles,
+ * right held cycles</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -187,6 +189,13 @@ public final class RcxRemoteFirmware {
         this.withIcons = withIcons;
     }
 
+    /**
+     * The image length is padded with zero bytes to a multiple of this: the boot ROM rejected the final download block of
+     * a 7811-byte image, three bytes long, with a firmware checksum error in every session, while every image whose last
+     * block held 31 bytes or more downloaded. Zeros leave the byte-sum checksum unchanged and sit past the code.
+     */
+    static final int DOWNLOAD_ALIGNMENT = 16;
+
     public static void main(String[] args) throws IOException {
         boolean withIcons = !List.of(args).contains(NO_ICONS);
         List<String> rest = List.of(args).stream().filter(arg -> !arg.equals(NO_ICONS)).toList();
@@ -236,7 +245,7 @@ public final class RcxRemoteFirmware {
             icons.handlers(motors, sensors, text);
         }
         assembler.string(RcxRom.UNLOCK_TEXT);
-        return assembler.assemble("start");
+        return assembler.assemble("start").paddedTo(DOWNLOAD_ALIGNMENT);
     }
 
     /** Clears the data area and sets the outputs' defaults; runs after the download and every wake-up. */
@@ -355,6 +364,7 @@ public final class RcxRemoteFirmware {
         handler(RcxRegulator.OPCODE_TARGET_RIGHT, RcxRegulator.TARGET_RIGHT);
         handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
         handler(RcxRegulator.OPCODE_CYCLES, RcxRegulator.CYCLES);
+        handler(RcxRegulator.OPCODE_DRIVE, RcxRegulator.DRIVE);
         assembler.jump(RcxCode.LOOP);
     }
 

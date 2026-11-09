@@ -26,6 +26,12 @@ public record H8Image(int origin, int entry, byte[] bytes) {
         return bytes.clone();
     }
 
+    /** This image with zero bytes appended until its length is a multiple of {@code multiple}. */
+    public H8Image paddedTo(int multiple) {
+        int padded = (bytes.length + multiple - 1) / multiple * multiple;
+        return new H8Image(origin, entry, Arrays.copyOf(bytes, padded));
+    }
+
     @Override
     public boolean equals(Object other) {
         if (this == other) {

@@ -21,6 +21,8 @@ class RcxRegulatorControlTest {
     private static final int TARGET_RIGHT = 0x43;
     private static final int START = 0x52;
     private static final int CYCLES = 0x71;
+    private static final int DRIVE = 0x81;
+    private static final int COMPLETE_STATE = RcxRegulator.COMPLETE;
     private static final int SESSION = 1;
     private static final int FULL_POWER_FLAGS = 0xE0;
     private static final int STEPS = 3_000_000;
@@ -185,6 +187,7 @@ class RcxRegulatorControlTest {
         rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
         rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
         rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(80, DRIVE, SESSION);
         H8Simulator cpu = boot(rcx);
 
         // When: a hundred cycles run, well before the right wheel's stall window
@@ -194,11 +197,50 @@ class RcxRegulatorControlTest {
             cycles = cpu.readWord(RcxRegulator.ELAPSED);
         }
 
-        // Then: the left wheel waits two counts ahead, braked at full braking power, instead of driving on: the ROM
-        // brakes with the power it is given, so a brake at power 0 would let it coast
-        assertThat(rcx.wheelPosition(0)).isBetween(2, 3);
+        // Then: the left wheel waits after its first count, since the right has not moved, braked at full braking power
+        // instead of driving on (the ROM brakes with the power it is given, so a brake at power 0 would let it coast);
+        // the diagnostic reports it unpowered (0x81 complemented is 0x7E) and held for cycles
+        assertThat(rcx.wheelPosition(0)).isBetween(1, 2);
         assertThat(cpu.readByte(LEFT + RcxRegulator.POWER)).isZero();
         assertThat(rcx.calls()).contains("motor 2000 3 7");
+        int[] drive = rcx.replies().stream().filter(reply -> reply[0] == 0x7E).findFirst().orElseThrow();
+        assertThat(drive[1]).isZero();
+        assertThat(drive[3] | drive[4] << 8).isPositive();
+    }
+
+    @Test
+    @DisplayName("A slower left motor does not fall behind: the faster wheel waits, and both finish together")
+    void shouldKeepAFasterWheelLevelWithASlowerOne() {
+        // Given: the left motor turns its wheel at half the right's speed
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.weaken(0);
+        rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 31, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 31, 0);
+        rcx.receive(START, SESSION, 1);
+        H8Simulator cpu = boot(rcx);
+
+        // When: the motion runs to completion, watching the gap between the wheels every cycle
+        int worstGap = 0;
+        int lastCycle = 0;
+        for (int step = 0; step < STEPS && cpu.readByte(RcxRegulator.STATE) != COMPLETE_STATE; step++) {
+            cpu.runFor(1);
+            int cycle = cpu.readWord(RcxRegulator.ELAPSED);
+            if (cycle != lastCycle) {
+                lastCycle = cycle;
+                worstGap = Math.max(worstGap, Math.abs(rcx.wheelPosition(0) - rcx.wheelPosition(2)));
+            }
+        }
+
+        // Then: never more than two counts apart, and both on the target
+        assertThat(cpu.readByte(RcxRegulator.STATE)).isEqualTo(COMPLETE_STATE);
+        assertThat(worstGap).isLessThanOrEqualTo(2);
+        assertThat(rcx.wheelPosition(0)).isBetween(31, 32);
+        assertThat(rcx.wheelPosition(2)).isBetween(31, 32);
     }
 
     @Test
