@@ -94,9 +94,18 @@ initTheme();
 <div class="block">A firmware loader on a link shared with other RCX classes, so they share one toggle bit.</div>
 </div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)" class="member-name-link">RemoteRcx</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
- <a href="../RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a>&nbsp;channel)</code></div>
+<div class="col-second odd-row-color"><code><a href="../RcxRegulatedPair.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int)" class="member-name-link">RcxRegulatedPair</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ int&nbsp;session,
+ int&nbsp;configurationFlags,
+ int&nbsp;sensorStepsPerMotorRevolution)</code></div>
 <div class="col-last odd-row-color">
+<div class="block">Creates a pair for <code>session</code> (1..255) over an infrared link that has a receiver, since every regulated
+command is answered.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../RemoteRcx.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,io.github.jabrena.juno.remote.lego.rcx.RcxChannel)" class="member-name-link">RemoteRcx</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ <a href="../RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a>&nbsp;channel)</code></div>
+<div class="col-last even-row-color">
 <div class="block">A brick reached through the already-configured link on a Juno firmware channel or the original broadcast.</div>
 </div>
 </div>

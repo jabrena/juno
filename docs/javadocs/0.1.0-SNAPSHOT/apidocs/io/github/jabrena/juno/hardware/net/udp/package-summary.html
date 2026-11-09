@@ -82,8 +82,10 @@ initTheme();
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.net.udp</span></div>
 <section class="package-description" id="package-description">
 <div class="block">The SNTP clock behind <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>: <a href="SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>SntpClock</code></a>
-configures the server, and the exchange runs on a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link"><code>DatagramSocket</code></a> of its own. Programs use the JDK's
-socket classes directly; their subset is described in <code>io.github.jabrena.juno.intrinsic.DatagramMethods</code>.</div>
+configures the server, and the exchange runs on a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/net/DatagramSocket.html" title="class in java.net" class="external-link"><code>DatagramSocket</code></a> of its own. Remote logging:
+<a href="Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp"><code>Syslog</code></a> sends RFC 5424 frames on the program's own socket, received by
+<code>juno:monitor -Djuno.syslog=&lt;port&gt;</code>. Programs use the JDK's socket classes directly; their subset is described in
+<code>io.github.jabrena.juno.intrinsic.DatagramMethods</code>.</div>
 </section>
 </div>
 <section class="summary">
@@ -129,6 +131,11 @@ values directly out of a response buffer without building a parsed document, and
 <div class="block">The SNTP server behind the internet-backed <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a> intrinsic, which synchronizes UTC
 over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
 millisecond counter.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Sends log lines as RFC 5424 syslog datagrams over UDP (RFC 5426), so a board can be followed over Wi-Fi without a USB
+cable; <code>juno:monitor -Djuno.syslog=&lt;port&gt;</code> receives them.</div>
 </div>
 </div>
 </div>

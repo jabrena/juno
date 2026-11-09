@@ -99,6 +99,10 @@ initTheme();
 <dd>
 <div class="block">Selects the AI Thinker ESP32-CAM as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#ALERT" class="member-name-link">ALERT</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Action must be taken immediately.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#analogPin(java.lang.String)" class="member-name-link">analogPin(String)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
 <div class="block">Resolves a logical analog pin name for this board.</div>
@@ -213,6 +217,11 @@ this shield instead.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html#arenaUsedBytes()" class="member-name-link">arenaUsedBytes()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#arm()" class="member-name-link">arm()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Arms the session: the brick reconfigures its sensors, clears its motion history and faults, and reports
+<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#READY"><code>RcxRegulatedState.READY</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#arraySize(byte%5B%5D,int,java.lang.String)" class="member-name-link">arraySize(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
 <dd>
 <div class="block">Returns the number of direct array elements, or <code>-1</code> on failure or a type mismatch.</div>
@@ -278,6 +287,10 @@ whose outer ring is black and whose inner 4x4 cells encode the id.</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#backward()" class="member-name-link">backward()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>
 <div class="block">Runs the outputs backwards, at the power level last set.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#backward()" class="member-name-link">backward()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Not supported: the brick only runs finite regulated movements; use <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotate(int)"><code>RcxRegulatedMotor.rotate(int)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#backward()" class="member-name-link">backward()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
@@ -392,6 +405,10 @@ reported it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#begin(int)" class="member-name-link">begin(int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Starts listening on <code>port</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Starts a new frame at <code>severity</code>, discarding any unsent one; continue with <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#text(java.lang.String)"><code>Syslog.text(String)</code></a> and <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#number(int)"><code>Syslog.number(int)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#begin(int)" class="member-name-link">begin(int)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
@@ -512,6 +529,10 @@ exchanges messages with one characteristic of that service.</div>
 <dd>
 <div class="block">Actively brakes <code>port</code>, unlike <code>setSpeed(channel, port, 0)</code>, which lets it coast.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#BRAKE_ON_STOP" class="member-name-link">BRAKE_ON_STOP</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Configuration flag: brake rather than coast when a movement stops or completes.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#brakeLinkedMotors(int)" class="member-name-link">brakeLinkedMotors(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Actively brakes both motors of a virtual port.</div>
@@ -548,6 +569,10 @@ none is held.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#C_FORWARD" class="member-name-link">C_FORWARD</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#cachedState()" class="member-name-link">cachedState()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Returns the cached state; <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#status()"><code>RcxRegulatedPair.status()</code></a> refreshes it first.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#calibrateTouch(int,int,int,int)" class="member-name-link">calibrateTouch(int, int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
 <div class="block">Replaces the touch calibration: the raw readings at portrait x = 0, x = 239, y = 0, and
@@ -708,6 +733,8 @@ reply.</div>
 <dd>
 <div class="block">Character columns per row.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#COMPLETE" class="member-name-link">COMPLETE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html#configure(java.util.Properties)" class="member-name-link">configure(Properties)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></dt>
 <dd>
 <div class="block">Applies optional <code>sntp.host</code> and <code>sntp.port</code> values loaded by the application, normally from
@@ -746,6 +773,10 @@ had none.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#createDirectory(java.lang.String)" class="member-name-link">createDirectory(String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#CRITICAL" class="member-name-link">CRITICAL</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Critical condition.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#CYAN" class="member-name-link">CYAN</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
 <div class="block">Cyan.</div>
@@ -774,6 +805,14 @@ had none.</div>
 <dd>
 <div class="block">A DC motor driven by a power level.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#debug(java.lang.String)" class="member-name-link">debug(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEBUG"><code>Syslog.DEBUG</code></a>; returns whether the datagram left the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEBUG" class="member-name-link">DEBUG</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Debug-level message.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#DEFAULT_ACCESS_POINT_PASSWORD" class="member-name-link">DEFAULT_ACCESS_POINT_PASSWORD</a> - Static variable in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>
 <div class="block">An empty passphrase deliberately makes <a href="io/github/jabrena/juno/hardware/net/Wifi.html#DEFAULT_ACCESS_POINT_SSID"><code>Wifi.DEFAULT_ACCESS_POINT_SSID</code></a> an open network.</div>
@@ -793,6 +832,10 @@ had none.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html#DEFAULT_HEADERS_BUFFER_SIZE" class="member-name-link">DEFAULT_HEADERS_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.net.email.<a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a></dt>
 <dd>
 <div class="block">A reasonable default size for a caller's headers buffer, in bytes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEFAULT_PORT" class="member-name-link">DEFAULT_PORT</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">The UDP port <code>juno:monitor</code> listens on by default; the standard 514 needs root on most computers.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#DEFAULT_RESPONSE_BUFFER_SIZE" class="member-name-link">DEFAULT_RESPONSE_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -1081,6 +1124,10 @@ the left and right sides.</div>
 <div class="block">Transmits one framed byte like <a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#writeByte(int)"><code>Infrared.writeByte(int)</code></a> while reading it back through the receiver
 module, which hears the board's own IR LED.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#EMERGENCY" class="member-name-link">EMERGENCY</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">System is unusable.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)" class="member-name-link">enableSensor(HubPort, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Asks the hub to report every change of <code>mode</code> of the motor or sensor on <code>port</code>,
@@ -1105,6 +1152,14 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#ENTER" class="member-name-link">ENTER</a> - Static variable in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#error(java.lang.String)" class="member-name-link">error(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#ERROR"><code>Syslog.ERROR</code></a>; returns whether the datagram left the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#ERROR" class="member-name-link">ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Error condition.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a> - Class in <a href="io/github/jabrena/juno/hardware/package-summary.html">io.github.jabrena.juno.hardware</a></dt>
 <dd>
 <div class="block">The AI Thinker ESP32-CAM's board features: GPIO, onboard Wi-Fi, its built-in microSD socket, and its OV2640 camera.</div>
@@ -1115,9 +1170,21 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#exists(java.lang.String)" class="member-name-link">exists(String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#EXTERNAL_OVERRIDE" class="member-name-link">EXTERNAL_OVERRIDE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:F">F</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#failures()" class="member-name-link">failures()</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">How many sends have failed since this logger was created.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#FAULT" class="member-name-link">FAULT</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#faults()" class="member-name-link">faults()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Returns the cached fault bits of the last status read.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>
 <div class="block">Writes the temperature in degrees Celsius and the relative humidity from 0 to 1, starting at <code>offset</code>;
@@ -1242,6 +1309,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dd>
 <div class="block">Switches the outputs off with the motors free to coast.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#flt()" class="member-name-link">flt()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Not supported: the brick only runs finite regulated movements; use <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#stop()"><code>RcxRegulatedMotor.stop()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#flt()" class="member-name-link">flt()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
 <div class="block">Removes all power so the motor coasts to a stop, unlike <a href="io/github/jabrena/juno/robotics/BaseMotor.html#stop()"><code>BaseMotor.stop()</code></a>, which holds it in place.</div>
@@ -1271,6 +1342,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#forward()" class="member-name-link">forward()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>
 <div class="block">Runs the outputs forwards, at the power level last set.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#forward()" class="member-name-link">forward()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Not supported: the brick only runs finite regulated movements; use <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotate(int)"><code>RcxRegulatedMotor.rotate(int)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#forward()" class="member-name-link">forward()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
@@ -1737,6 +1812,10 @@ high values are bright.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Not supported: the brick regulates speed itself, through the pair's profile.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/DCMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></dt>
 <dd>
 <div class="block">Returns the current power setting, <code>0..100</code>.</div>
@@ -1839,6 +1918,10 @@ missing, resolves to an object or array, or the raw text is too long for Juno's 
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#getTachoCount()" class="member-name-link">getTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></dt>
 <dd>
 <div class="block">The position in degrees since the last <a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpMotor.html#resetTachoCount()"><code>PoweredUpMotor.resetTachoCount()</code></a>, or since the hub's zero if never reset.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#getTachoCount()" class="member-name-link">getTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">The tachometer in encoder-shaft degrees, as the <a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a> contract reads it; refreshes the status first.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Encoder.html#getTachoCount()" class="member-name-link">getTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></dt>
 <dd>
@@ -2348,6 +2431,14 @@ sensors of the Technic Hub (88012), which report on their own port numbers once 
 <dd>
 <div class="block">Returns whether <code>(x, y)</code> lies on the matrix: <code>x</code> below <a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#width()"><code>LedCanvas.width()</code></a>, <code>y</code> below <a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#HEIGHT"><code>LedCanvas.HEIGHT</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#info(java.lang.String)" class="member-name-link">info(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#INFO"><code>Syslog.INFO</code></a>; returns whether the datagram left the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#INFO" class="member-name-link">INFO</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Informational message.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a> - Class in <a href="io/github/jabrena/juno/hardware/device/ir/package-summary.html">io.github.jabrena.juno.hardware.device.ir</a></dt>
 <dd>
 <div class="block">Serial bytes over modulated infrared light, recognized as compiler intrinsics by Juno and
@@ -2432,6 +2523,22 @@ it ignores motor, sensor and sound commands until firmware is loaded), or <a hre
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#INTERNAL_SERVER_ERROR" class="member-name-link">INTERNAL_SERVER_ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#INVERT_LEFT_MOTOR" class="member-name-link">INVERT_LEFT_MOTOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Configuration flag: invert the left motor's direction.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#INVERT_LEFT_SENSOR" class="member-name-link">INVERT_LEFT_SENSOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Configuration flag: invert the left rotation sensor's count.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#INVERT_RIGHT_MOTOR" class="member-name-link">INVERT_RIGHT_MOTOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Configuration flag: invert the right motor's direction.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#INVERT_RIGHT_SENSOR" class="member-name-link">INVERT_RIGHT_SENSOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Configuration flag: invert the right rotation sensor's count.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a> - package io.github.jabrena.juno.annotations</dt>
 <dd>
 <div class="block">Compile-time-only annotations an entry-point class uses to configure Juno's compilation, read
@@ -2707,13 +2814,27 @@ boards.</div>
 <div class="block">Returns <code>true</code> while the outputs are commanded on, as the last <a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#drive(int)"><code>RcxMotor.drive(int)</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#forward()"><code>RcxMotor.forward()</code></a> or
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#backward()"><code>RcxMotor.backward()</code></a> left them.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Returns the cached state without a round trip: <code>true</code> while a movement is running.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
 <div class="block">Returns <code>true</code> while the motor is commanded to move, otherwise <code>false</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Returns whether a movement is in progress.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Returns whether the motor is currently executing a movement.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#isMoving()" class="member-name-link">isMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Returns whether a coordinated movement is in progress.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isOptionPressed()" class="member-name-link">isOptionPressed()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
@@ -2755,9 +2876,19 @@ boards.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isShiftPressed()" class="member-name-link">isShiftPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#isStalled()" class="member-name-link">isStalled()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#isStalled()" class="member-name-link">isStalled()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Returns the cached state: <code>true</code> when the controller stopped a side because it made no progress.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#isStalled()" class="member-name-link">isStalled()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Returns whether the controller has detected that the motor cannot complete its movement.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#isStalled()" class="member-name-link">isStalled()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Returns whether the controller has detected that a side cannot complete its movement.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:J">J</h2>
@@ -2838,6 +2969,10 @@ boards.</div>
 <dd>
 <div class="block">Landscape, rotated 180 degrees from <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#LANDSCAPE"><code>TftTouchShield.LANDSCAPE</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#lastAcknowledgement()" class="member-name-link">lastAcknowledgement()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">The acknowledgement code of the last command the brick refused, as <code>RcxRegulatedProtocol</code> numbers them.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/lcd/package-summary.html">io.github.jabrena.juno.hardware.device.lcd</a></dt>
 <dd>
 <div class="block">Driver for the common "LCD Keypad Shield" (a 16x2 HD44780-compatible character LCD in 4-bit
@@ -2881,6 +3016,10 @@ glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT 
 <div class="block">A compact 3x5 dot-matrix font for digits 0-9, offered as a smaller alternative to the 5x7
 <a href="io/github/jabrena/juno/hardware/led/LedMatrixFont.html" title="class in io.github.jabrena.juno.hardware.led"><code>LedMatrixFont</code></a> (which it does not replace).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#left()" class="member-name-link">left()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">The left side, the motor A output, as a <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedMotor</code></a> view of this pair.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#LEFT" class="member-name-link">LEFT</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html#leftEncoderDegreesPerWheelRevolution()" class="member-name-link">leftEncoderDegreesPerWheelRevolution()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></dt>
@@ -2914,6 +3053,8 @@ provides it.</div>
 <dd>
 <div class="block">The light level in percent, <code>0..100</code>, or <code>-1</code> if the brick did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#LINK_UNKNOWN" class="member-name-link">LINK_UNKNOWN</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.HubPort,io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">linkMotors(HubPort, HubPort)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Pairs the motors on ports <code>portA</code> and <code>portB</code> into one virtual port, so a single
@@ -2948,6 +3089,10 @@ all four, the last holding the final 8 pixels in its top bits.</div>
 <dd>
 <div class="block">Writes the board's current IPv4 address into <code>octets</code> (caller-owned, at least 4
 entries), one byte value (0-255) per element, most significant first — e.g.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#log(int,java.lang.String)" class="member-name-link">log(int, String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <code>severity</code>, <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#EMERGENCY"><code>Syslog.EMERGENCY</code></a> to <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEBUG"><code>Syslog.DEBUG</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html#low()" class="member-name-link">low()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></dt>
 <dd>
@@ -3032,6 +3177,11 @@ list.</div>
 <dd>
 <div class="block">The widest supported matrix (UNO Q, 13 columns): the width every frame is allocated with.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#maxPower(int)" class="member-name-link">maxPower(int)</a> - Static method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">The configuration bits for a maximum motor power of <code>level</code> (1 to 7, full power is 7), to OR into the
+configuration flags.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#message()" class="member-name-link">message()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
 <div class="block">The value of the most recent RCX <code>message</code> command (opcode <code>0xF7</code>, e.g. sent by
@@ -3092,6 +3242,10 @@ failing step: connect (<code>-1</code>), greeting (<code>-2</code>), <code>USER<
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html#MIN_POWER" class="member-name-link">MIN_POWER</a> - Static variable in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></dt>
 <dd>
 <div class="block">The lowest signed power accepted by drive commands.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#MINIMUM_BUFFER_LENGTH" class="member-name-link">MINIMUM_BUFFER_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">The smallest buffer that holds a frame's header with one-character names and a few characters of message.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#MODE_COLOR" class="member-name-link">MODE_COLOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -3311,10 +3465,24 @@ in a unit test.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#NONE" class="member-name-link">NONE</a> - Static variable in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#NOT_ARMED" class="member-name-link">NOT_ARMED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#NOT_FOUND" class="member-name-link">NOT_FOUND</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#NOT_IMPLEMENTED" class="member-name-link">NOT_IMPLEMENTED</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#notice(java.lang.String)" class="member-name-link">notice(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#NOTICE"><code>Syslog.NOTICE</code></a>; returns whether the datagram left the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#NOTICE" class="member-name-link">NOTICE</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Normal but significant condition.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#number(int)" class="member-name-link">number(int)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Appends <code>value</code> in decimal, with a leading <code>-</code> when negative.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:O">O</h2>
 <dl class="index">
@@ -3787,6 +3955,29 @@ byte followed by its complement.</div>
 <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
+<dd>
+<div class="block">One side of an <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedPair</code></a>, as the <a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedMotor</code></a> contract: speed and acceleration are the
+pair's, a rotation of this side starts a movement in which the other side stays where it is, and the tachometer is
+this side's own.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
+<dd>
+<div class="block">The A and C outputs of an RCX regulated by its own firmware, with their rotation sensors on inputs 1 and 3, driven as
+one pair: a movement sets both wheels' targets in a single infrared command, and the brick regulates both on its own
+between commands.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int)" class="member-name-link">RcxRegulatedPair(RcxLink, int, int, int)</a> - Constructor for class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Creates a pair for <code>session</code> (1..255) over an infrared link that has a receiver, since every regulated
+command is answered.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a> - Enum Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
+<dd>
+<div class="block">The state of a regulated RCX pair, as the firmware reports it, plus two states the host itself determines:
+<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#EXTERNAL_OVERRIDE"><code>RcxRegulatedState.EXTERNAL_OVERRIDE</code></a> when a manual output command took the outputs back, and <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#LINK_UNKNOWN"><code>RcxRegulatedState.LINK_UNKNOWN</code></a> when the
+outcome of the last command could not be resolved over the infrared link.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRotationSensor.html" class="type-name-link" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRotationSensor</a> - Class in <a href="io/github/jabrena/juno/remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></dt>
 <dd>
 <div class="block">A rotation sensor plugged into an RCX input, e.g.</div>
@@ -3896,6 +4087,8 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <div class="block">The input's raw value in the mode its sensor set, or <code>-1</code> if the brick did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#READY" class="member-name-link">READY</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Measures the stationary Z-axis gyro bias over 64 samples.</div>
@@ -3944,9 +4137,22 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <div class="block">Registers <code>view</code> under <code>viewId</code>, so that <a href="io/github/jabrena/juno/util/mvc/ViewRouter.html#show(int)"><code>ViewRouter.show(int)</code></a> can switch to it.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Drives a two-wheel robot by distance and heading, with its wheels regulated by a <a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedPair</code></a> (such as an
+RCX pair).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry)" class="member-name-link">RegulatedDifferentialDrive(RegulatedPair, DriveGeometry)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">A motor with encoder feedback and closed-loop speed/position control.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
+<dd>
+<div class="block">Two regulated motors that start, stop and report as one unit, such as the two drive wheels of a vehicle.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#RELAY_OFF" class="member-name-link">RELAY_OFF</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -4083,6 +4289,10 @@ storage.</div>
 <dd>
 <div class="block">Makes the current position read as zero.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#resetTachoCount()" class="member-name-link">resetTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Sets this side's tachometer zero to where it is now; rejected while the pair moves.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Encoder.html#resetTachoCount()" class="member-name-link">resetTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></dt>
 <dd>
 <div class="block">Resets the tachometer count to zero.</div>
@@ -4099,24 +4309,46 @@ storage.</div>
 <dd>
 <div class="block">Replies with <code>body</code>'s current contents (built at runtime), then closes the connection.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#right()" class="member-name-link">right()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">The right side, the motor C output, as a <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedMotor</code></a> view of this pair.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#RIGHT" class="member-name-link">RIGHT</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html#rightEncoderDegreesPerWheelRevolution()" class="member-name-link">rightEncoderDegreesPerWheelRevolution()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></dt>
 <dd>
 <div class="block">The right encoder's degrees for one revolution of the right wheel.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Rotates by <code>degrees</code> relative to the current tachometer position.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotate(int,boolean)" class="member-name-link">rotate(int, boolean)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#rotate(int,boolean)" class="member-name-link">rotate(int, boolean)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Rotates by <code>degrees</code>, optionally returning before the motion completes.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#rotate(int,int,boolean)" class="member-name-link">rotate(int, int, boolean)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Starts one coordinated movement: the left and right sides each move relative to their current position, by their
+degrees, in the same infrared command.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#rotate(int,int,boolean)" class="member-name-link">rotate(int, int, boolean)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Rotates the left side by <code>leftDegrees</code> and the right side by <code>rightDegrees</code>, relative to their current
+positions, starting both in one coordinated movement.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotateTo(int)" class="member-name-link">rotateTo(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#rotateTo(int)" class="member-name-link">rotateTo(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Rotates to the absolute tachometer position <code>limitAngle</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotateTo(int,boolean)" class="member-name-link">rotateTo(int, boolean)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#rotateTo(int,boolean)" class="member-name-link">rotateTo(int, boolean)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Rotates to <code>limitAngle</code>, optionally returning before the motion completes.</div>
@@ -4154,6 +4386,8 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxButtons.html#clicked()"><code>RcxButtons.clicked()</code></a> bits.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#RUNNING" class="member-name-link">RUNNING</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:S">S</h2>
 <dl class="index">
@@ -4229,6 +4463,10 @@ enabled.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#SELECT" class="member-name-link">SELECT</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#send()" class="member-name-link">send()</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends the frame begun by <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#begin(int)"><code>Syslog.begin(int)</code></a>; a failure is counted in <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#failures()"><code>Syslog.failures()</code></a> instead of thrown.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#send(int,int,int,int)" class="member-name-link">send(int, int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
 <dd>
 <div class="block">Transmits <code>opcode</code> with <code>arguments</code> (0..2) arguments <code>first</code> and <code>second</code>.</div>
@@ -4290,9 +4528,21 @@ counting repeats of an unchanged value, so a program can measure how often the h
 <div class="block">A zero-cost servo motor handle for a standard 3-wire hobby servo (signal, power, ground),
 backed by the Arduino <code>Servo</code> library.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#setAcceleration(int)" class="member-name-link">setAcceleration(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Sets the acceleration of the pair, in degrees per second squared; it applies to both sides.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#setAcceleration(int)" class="member-name-link">setAcceleration(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the acceleration, in encoder-shaft degrees per second squared, applied to the next movement.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#setAcceleration(int)" class="member-name-link">setAcceleration(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Sets the acceleration used by subsequent regulated movements.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#setAcceleration(int)" class="member-name-link">setAcceleration(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the acceleration, in degrees per second squared, used by subsequent movements of both sides.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#setAudio(io.github.jabrena.juno.hardware.audio.Audio)" class="member-name-link">setAudio(Audio)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>
@@ -4377,6 +4627,11 @@ whole-program emulator or a unit test, never on the board.</div>
 <div class="block">Configures <code>input</code> for a light sensor reading the light level as a percentage, <code>0..100</code>, which
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#readSensor(int)"><code>RcxBrick.readSensor(int)</code></a> then returns.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#setLinearSpeedMillimetresPerSecond(int)" class="member-name-link">setLinearSpeedMillimetresPerSecond(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Sets the forward speed, in millimetres per second, by the left wheel's encoder ratio; the pair applies one speed
+to both sides, so asymmetric gearing changes only the timing of the two sides, not where they stop.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLinkedMotorPower(int,int,int)" class="member-name-link">setLinkedMotorPower(int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Drives the two motors of a virtual port in one message: <code>first</code> for the motor on the first
@@ -4417,6 +4672,10 @@ whole-program emulator in a test, never on the board.</div>
 <div class="block">Sets the power, <code>0..100</code> (clamped), mapped onto the <code>0..</code><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#MAX_LEVEL"><code>RcxMotor.MAX_LEVEL</code></a> levels; it takes effect
 while the outputs are on.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#setPower(int)" class="member-name-link">setPower(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Not supported: the brick regulates speed itself, through the pair's profile.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/DCMotor.html#setPower(int)" class="member-name-link">setPower(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></dt>
 <dd>
 <div class="block">Sets the power applied to the motor, <code>0..100</code>; out-of-range values are clamped.</div>
@@ -4440,9 +4699,21 @@ test, never on the board.</div>
 <dd>
 <div class="block">Sends a raw protocol speed, <code>-7..7</code>: positive forward, negative backward, <code>0</code> coasts.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#setSpeed(int)" class="member-name-link">setSpeed(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Sets the target speed of the pair, in degrees per second; it applies to both sides.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#setSpeed(int)" class="member-name-link">setSpeed(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the target speed, in encoder-shaft degrees per second, applied to the next movement.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#setSpeed(int)" class="member-name-link">setSpeed(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Sets the target speed used by subsequent regulated movements.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#setSpeed(int)" class="member-name-link">setSpeed(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the target speed, in degrees per second, used by subsequent movements of both sides.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html#setSpeed(io.github.jabrena.juno.remote.lego.pf.PFChannel,io.github.jabrena.juno.remote.lego.pf.PFPort,int)" class="member-name-link">setSpeed(PFChannel, PFPort, int)</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf">RemotePF</a></dt>
 <dd>
@@ -4496,6 +4767,14 @@ whole-program emulator in a test, never on the board.</div>
 <div class="block">Sets how long every later request waits, in milliseconds: on ESP32 boards (Nano ESP32, M5Stack Cardputer) to
 connect and then again for the response, elsewhere for the response only, as those boards' WiFi clients take no
 connect timeout.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#setTimeoutSeconds(int)" class="member-name-link">setTimeoutSeconds(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the time, in seconds (1..255), a movement may run before the brick times it out.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#setTolerance(int)" class="member-name-link">setTolerance(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Sets the position tolerance, in sensor steps (0..255): a side within it counts as complete.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#setTouchSensor(int)" class="member-name-link">setTouchSensor(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
@@ -4618,6 +4897,12 @@ millisecond counter.</div>
 <dd>
 <div class="block">Keeps the IR LED dark for <code>micros</code> microseconds.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#speed()" class="member-name-link">speed()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#speed()" class="member-name-link">speed()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Returns the target speed, in encoder-shaft degrees per second.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#speed()" class="member-name-link">speed()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Returns the configured target speed in degrees per second.</div>
@@ -4630,6 +4915,8 @@ millisecond counter.</div>
 <dd>
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#STALLED" class="member-name-link">STALLED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/KeyboardViewRouter.html#start(int)" class="member-name-link">start(int)</a> - Method in class io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/KeyboardViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">KeyboardViewRouter</a></dt>
 <dd>
 <div class="block">Selects and enters the first view.</div>
@@ -4647,6 +4934,10 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#status()" class="member-name-link">status()</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#status()" class="member-name-link">status()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Reads the brick's status, updates the cached state and positions, and returns the state.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#STATUS_AP_LISTENING" class="member-name-link">STATUS_AP_LISTENING</a> - Static variable in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>
 <div class="block">The <a href="io/github/jabrena/juno/hardware/net/Wifi.html#status()"><code>Wifi.status()</code></a> value once <a href="io/github/jabrena/juno/hardware/net/Wifi.html#beginAP(java.lang.String,java.lang.String)"><code>Wifi.beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code> (UNO R4 WiFi only).</div>
@@ -4690,6 +4981,14 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Switches the outputs off with the motors braking.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>
+<div class="block">Stops both sides of the pair, the movement being shared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Stops both sides, qualified by the active motion so a stale stop cannot stop a newer movement.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#stop()" class="member-name-link">stop()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
 <div class="block">Halts the motor at once and resists further movement, unlike <a href="io/github/jabrena/juno/robotics/BaseMotor.html#flt()"><code>BaseMotor.flt()</code></a>, which lets it coast.</div>
@@ -4697,6 +4996,14 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></dt>
 <dd>
 <div class="block">Stops both motors with active braking, as <a href="io/github/jabrena/juno/robotics/BaseMotor.html#stop()"><code>BaseMotor.stop()</code></a> does.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Stops both wheels.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#stop()" class="member-name-link">stop()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Stops the movement on both sides.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html#stop(io.github.jabrena.juno.remote.lego.pf.PFChannel)" class="member-name-link">stop(PFChannel)</a> - Method in class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/RemotePF.html" title="class in io.github.jabrena.juno.remote.lego.pf">RemotePF</a></dt>
 <dd>
@@ -4706,6 +5013,8 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">The stop button, and the sound button.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#STOPPED" class="member-name-link">STOPPED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamBytes(byte%5B%5D,int)" class="member-name-link">streamBytes(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream.</div>
@@ -4718,10 +5027,21 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Asks the hub to switch itself off, which also ends the connection.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a> - Class in <a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a></dt>
+<dd>
+<div class="block">Sends log lines as RFC 5424 syslog datagrams over UDP (RFC 5426), so a board can be followed over Wi-Fi without a USB
+cable; <code>juno:monitor -Djuno.syslog=&lt;port&gt;</code> receives them.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#%3Cinit%3E(java.net.DatagramSocket,java.net.InetAddress,int,java.lang.String,java.lang.String,byte%5B%5D)" class="member-name-link">Syslog(DatagramSocket, InetAddress, int, String, String, byte[])</a> - Constructor for class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">A logger sending to <code>destination:port</code> on <code>socket</code>.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:T">T</h2>
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#TAB" class="member-name-link">TAB</a> - Static variable in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#tachoCount()" class="member-name-link">tachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#tachoCount()" class="member-name-link">tachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
@@ -4772,6 +5092,10 @@ single-threaded alternative to a background thread, for a board whose RAM has no
 <dd>
 <div class="block">The temperature on <code>input</code> in tenths of a degree Celsius (235 is 23.5 degrees), or <code>0</code> if the brick did not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#text(java.lang.String)" class="member-name-link">text(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Appends <code>value</code> to the frame begun by <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#begin(int)"><code>Syslog.begin(int)</code></a>, truncating at the end of the buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/tft/package-summary.html">io.github.jabrena.juno.hardware.device.tft</a></dt>
 <dd>
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
@@ -4791,6 +5115,8 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dd>
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#TIMED_OUT" class="member-name-link">TIMED_OUT</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#TIMEOUT" class="member-name-link">TIMEOUT</a> - Static variable in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#readByte(int)"><code>Infrared.readByte(int)</code></a> result when no start bit arrived before the timeout.</div>
@@ -4861,6 +5187,22 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dd>
 <div class="block">Sends block number <code>index</code> (1 for the first) holding the first <code>length</code> bytes of <code>block</code>
 (at most <a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#BLOCK_SIZE">200</a>), once; a full block takes about two seconds.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#travelMillimetres(int)" class="member-name-link">travelMillimetres(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Drives straight forward (or backward, when negative) by <code>millimetres</code>, and waits until it completes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#travelMillimetres(int,boolean)" class="member-name-link">travelMillimetres(int, boolean)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Drives straight by <code>millimetres</code>, returning at once when <code>immediateReturn</code> is set.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#turnDegrees(int)" class="member-name-link">turnDegrees(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Turns in place by <code>degrees</code> (positive is counter-clockwise), and waits until it completes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#turnDegrees(int,boolean)" class="member-name-link">turnDegrees(int, boolean)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Turns in place by <code>degrees</code>, returning at once when <code>immediateReturn</code> is set.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#turnOff(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">turnOff(InetAddress, byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -4968,6 +5310,10 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
@@ -4999,6 +5345,11 @@ the order they are declared.</div>
 the order they are declared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxChannel</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
@@ -5053,9 +5404,31 @@ not answered.</div>
 </dl>
 <h2 class="title" id="I:W">W</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#waitComplete()" class="member-name-link">waitComplete()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#waitComplete()" class="member-name-link">waitComplete()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">Polls the status until the movement completes or latches an error.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#waitComplete()" class="member-name-link">waitComplete()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Waits until the current movement completes or reports an error state.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#waitComplete()" class="member-name-link">waitComplete()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Waits until the current regulated movement completes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#waitComplete()" class="member-name-link">waitComplete()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Waits until the current movement completes or reports an error state.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#warning(java.lang.String)" class="member-name-link">warning(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#WARNING"><code>Syslog.WARNING</code></a>; returns whether the datagram left the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#WARNING" class="member-name-link">WARNING</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
+<dd>
+<div class="block">Warning condition.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/annotations/Watchdog.html" class="type-name-link" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a> - Annotation Interface in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>

@@ -19,7 +19,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
 | `juno:upload` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
 | `juno:boards` | (none — run explicitly) | Lists the connected boards and serial ports (address, protocol, board name, FQBN). Read-only. |
-| `juno:monitor` | (none — run explicitly) | Resolves the board's serial port and opens an interactive `arduino-cli monitor` session. |
+| `juno:monitor` | (none — run explicitly) | Resolves the board's serial port and opens an interactive `arduino-cli monitor` session; with `-Djuno.syslog=<port>`, receives the board's syslog messages over the network instead. |
 
 `compile`, `verify`, and `upload` each (re)build the sketch first, so running any one of them
 always reflects the current Java source — there is no separate "just compile" step to remember.
@@ -58,6 +58,7 @@ many programs, so every `compile`, `verify` or `upload` names one, for example
 | `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
 | `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../serial)). |
+| `juno.syslog` | `monitor` | *(unset: serial)* | UDP port to receive RFC 5424 syslog on, e.g. `5514`; no board or serial port is needed (see [Remote logging with syslog](../wifi#remote-logging-with-syslog)). |
 
 Every property can be set in `<configuration>` or passed with `-D` on the command line; `-D`
 always wins for a given run.
@@ -121,6 +122,19 @@ Flashes the sketch. `upload` auto-detects the port when exactly one matching boa
 Opens the serial monitor at 115200 baud (`-Djuno.baudRate` to change it). Always use `juno:monitor` rather than a raw
 `arduino-cli monitor` call: it resolves the same port logic as `upload` and defaults to the baud rate every
 `juno-examples` program uses.
+
+### Watch a board over the network
+
+A program that logs with [`Syslog`](../wifi#remote-logging-with-syslog) can be followed without a USB cable, for
+example a robot driving across the floor:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.syslog=5514
+```
+
+The goal listens on UDP port 5514 on every interface, so broadcast messages arrive too, and prints one line per message
+with its arrival time, severity, host and app name until Ctrl+C. It needs no `-Djuno.board` and opens no serial port.
+The computer's firewall must allow incoming UDP on that port; on macOS, allow Java when asked.
 
 ## Juno flags
 

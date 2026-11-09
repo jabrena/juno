@@ -122,6 +122,18 @@ byte followed by its complement.</div>
 <a href="RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
 </div>
+<div class="col-first even-row-color"><a href="class-use/RcxRegulatedMotor.html#io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></div>
+<div class="col-last even-row-color">
+<div class="block">One side of an <a href="RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedPair</code></a>, as the <a href="../../../robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedMotor</code></a> contract: speed and acceleration are the
+pair's, a rotation of this side starts a movement in which the other side stays where it is, and the tachometer is
+this side's own.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/RcxRegulatedState.html#io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></div>
+<div class="col-last odd-row-color">
+<div class="block">The state of a regulated RCX pair, as the firmware reports it, plus two states the host itself determines:
+<a href="RcxRegulatedState.html#EXTERNAL_OVERRIDE"><code>RcxRegulatedState.EXTERNAL_OVERRIDE</code></a> when a manual output command took the outputs back, and <a href="RcxRegulatedState.html#LINK_UNKNOWN"><code>RcxRegulatedState.LINK_UNKNOWN</code></a> when the
+outcome of the last command could not be resolved over the infrared link.</div>
+</div>
 <div class="col-first even-row-color"><a href="class-use/RcxSensor.html#io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></div>
 <div class="col-last even-row-color">
 <div class="block">One of an RCX brick's three sensor inputs: get it from <a href="RemoteRcx.html#getSensor1()"><code>RemoteRcx.getSensor1()</code></a>,
