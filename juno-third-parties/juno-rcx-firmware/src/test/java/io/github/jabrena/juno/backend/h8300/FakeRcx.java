@@ -47,6 +47,15 @@ final class FakeRcx implements H8Simulator.Rom {
     private boolean wheelPlant;
     private boolean continuousAnalog;
     private final int[] wheelPosition = new int[3];
+    private final int[] wheelPowerAccumulated = new int[3];
+    /** How strongly each output turns its wheel per power level: 2 is a normal motor, 1 a weak one. */
+    private final int[] wheelStrength = {2, 2, 2};
+    private static final int POWER_PER_COUNT = 16;
+    /**
+     * Each wheel's position when its sensor was last read. The ROM adds a rotation sensor's steps to the value it keeps,
+     * so a firmware that zeroes the value restarts the count there (hardware-confirmed: arming restarts both counts).
+     */
+    private final int[] wheelPositionRead = new int[3];
     private final boolean[] jammed = new boolean[3];
     private final int[] commandedMode = new int[3];
     private final int[] commandedPower = new int[3];
@@ -80,6 +89,11 @@ final class FakeRcx implements H8Simulator.Rom {
     /** Enables the wheel model: output A is input 0 and output C is input 2, each moving by its commanded power. */
     void wheelPlant() {
         wheelPlant = true;
+    }
+
+    /** Makes an output's motor turn its wheel at half the speed of the other, as a slower or stiffer motor would. */
+    void weaken(int output) {
+        wheelStrength[output] = 1;
     }
 
     /** Holds an output's wheel still, as if jammed. */
@@ -339,9 +353,14 @@ final class FakeRcx implements H8Simulator.Rom {
                 calls.add("read %X".formatted(r6));
                 int[] reading = readings[r6 - RcxRom.SENSOR_1];
                 int sensor = cpu.stackArgument(0);
-                int value = wheelPlant
-                        ? wheelPosition[r6 - RcxRom.SENSOR_1] & 0xFFFF
-                        : reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
+                int input = r6 - RcxRom.SENSOR_1;
+                int value;
+                if (wheelPlant) {
+                    value = (cpu.readWord(sensor + 4) + wheelPosition[input] - wheelPositionRead[input]) & 0xFFFF;
+                    wheelPositionRead[input] = wheelPosition[input];
+                } else {
+                    value = reading[2] != 0 ? cpu.readWord(sensor + 4) + reading[2] : reading[1];
+                }
                 cpu.writeWord(sensor + 2, reading[0]);
                 cpu.writeWord(sensor + 4, value);
                 cpu.writeByte(sensor + 6, value != 0 ? 1 : 0);
@@ -371,7 +390,11 @@ final class FakeRcx implements H8Simulator.Rom {
         }
     }
 
-    /** Moves each wheel by its commanded power, one count per level, forward or backward, unless it is jammed. */
+    /**
+     * Moves each wheel by its commanded power, forward or backward, unless it is jammed: a count per {@link #POWER_PER_COUNT}
+     * levels accumulated, so full power is under a count per update, as a real wheel turns far less than a sensor step
+     * between two 3 ms analog updates.
+     */
     private void advanceWheels() {
         if (!wheelPlant) {
             return;
@@ -381,10 +404,15 @@ final class FakeRcx implements H8Simulator.Rom {
             if (jammed[output]) {
                 continue;
             }
-            if (commandedMode[output] == 1) {
-                wheelPosition[output] += commandedPower[output];
-            } else if (commandedMode[output] == 2) {
-                wheelPosition[output] -= commandedPower[output];
+            int direction = commandedMode[output] == 1 ? 1 : commandedMode[output] == 2 ? -1 : 0;
+            wheelPowerAccumulated[output] += commandedPower[output] * wheelStrength[output] * direction;
+            while (wheelPowerAccumulated[output] >= POWER_PER_COUNT) {
+                wheelPowerAccumulated[output] -= POWER_PER_COUNT;
+                wheelPosition[output]++;
+            }
+            while (wheelPowerAccumulated[output] <= -POWER_PER_COUNT) {
+                wheelPowerAccumulated[output] += POWER_PER_COUNT;
+                wheelPosition[output]--;
             }
         }
     }

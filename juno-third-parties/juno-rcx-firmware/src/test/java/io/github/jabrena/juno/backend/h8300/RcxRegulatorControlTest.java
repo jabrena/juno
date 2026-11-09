@@ -15,14 +15,24 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RcxRegulatorControlTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
+    private static final int CYCLES = 0x71;
+    private static final int DRIVE = 0x81;
+    private static final int COMPLETE_STATE = RcxRegulator.COMPLETE;
     private static final int SESSION = 1;
     private static final int FULL_POWER_FLAGS = 0xE0;
     private static final int STEPS = 3_000_000;
-    private static final int SPEED = 100;
-    private static final int ACCELERATION = 40;
+    /** About two counts per cycle and 0.4 per cycle squared at the firmware's rate, so a cycle's change is visible. */
+    private static final int SPEED = 640;
+    private static final int ACCELERATION = 128;
+    /** The highest rate the brick accepts: about three counts per cycle, so the error clears the deadband at once. */
+    private static final int FAST = RcxRegulator.MAX_RATE;
     private static final int LEFT = RcxRegulator.BASE + 0x20;
+    private static final int RIGHT = RcxRegulator.BASE + 0x40;
     private static final int SENSOR_SIZE = 8;
     private static final int MAX_POWER = 7;
 
@@ -39,14 +49,6 @@ class RcxRegulatorControlTest {
         int opcode = ~command & 0xFF;
         return rcx.replies().stream().filter(reply -> reply[0] == opcode).reduce((first, second) -> second)
                 .orElseThrow();
-    }
-
-    /** The power the regulator must apply: the proportional law on the error, clamped, then slew-limited. */
-    static int expectedPower(int error, int previous) {
-        int proportional = (Math.abs(error) + 2) / RcxRegulator.KP_DIVISOR;
-        int clamped = Math.min(Math.max(proportional, RcxRegulator.MIN_START_POWER), MAX_POWER);
-        int slewCap = Math.max(previous + RcxRegulator.SLEW_PER_TICK, RcxRegulator.MIN_START_POWER);
-        return Math.min(clamped, slewCap);
     }
 
     @Test
@@ -74,8 +76,11 @@ class RcxRegulatorControlTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x70, 0xFE);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x70, 0xFE);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(2000, STATUS, SESSION);
 
         // When
@@ -141,71 +146,151 @@ class RcxRegulatorControlTest {
     }
 
     @Test
-    @DisplayName("The velocity rises by the acceleration each cycle until it reaches the speed, then holds")
-    void shouldRampTheVelocityThenHoldIt() {
-        // Given
+    @DisplayName("Both wheels drive at the maximum power while they are level")
+    void shouldDriveBothWheelsAtTheMaximumPowerWhileLevel() {
+        // Given: a far target on both sides
         FakeRcx rcx = new FakeRcx();
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x70, 0xFE);
-        rcx.receiveAfter(2000, STATUS, SESSION);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
         H8Simulator cpu = boot(rcx);
 
-        // When: sample after every cycle, once the cycle counter moves
+        // When: twenty cycles run
         int cycles = 0;
-        int checked = 0;
-        int lastCycle = 0;
-        for (int step = 0; step < STEPS && cycles < 10; step++) {
+        for (int step = 0; step < STEPS && cycles < 20; step++) {
             cpu.runFor(1);
             cycles = cpu.readWord(RcxRegulator.ELAPSED);
-            if (cycles != lastCycle) {
-                lastCycle = cycles;
-                int velocity = cpu.readWord(LEFT + RcxRegulator.VELOCITY);
-                int expected = Math.min(cycles * (ACCELERATION / 20), SPEED / 20);
-                assertThat(velocity).as("velocity after cycle %d", cycles).isEqualTo(expected);
-                checked++;
-            }
         }
 
-        // Then
-        assertThat(checked).isGreaterThan(8);
+        // Then: level wheels, both driven at full power
+        assertThat(cpu.readByte(LEFT + RcxRegulator.POWER)).isEqualTo(MAX_POWER);
+        assertThat(cpu.readByte(RIGHT + RcxRegulator.POWER)).isEqualTo(MAX_POWER);
+        assertThat(rcx.wheelPosition(0) - rcx.wheelPosition(2)).isBetween(-1, 1);
     }
 
     @Test
-    @DisplayName("The power follows the proportional law on the error, with the slew limit on the way up")
-    void shouldDrivePowerFromTheErrorWithTheSlewLimit() {
-        // Given: the left wheel is jammed, so its error grows with the trajectory
+    @DisplayName("A wheel two counts ahead of the other brakes until the other catches up")
+    void shouldBrakeAWheelThatGetsAheadOfTheOther() {
+        // Given: the right wheel is jammed, so the left gets ahead
         FakeRcx rcx = new FakeRcx();
         rcx.continuousAnalog();
         rcx.wheelPlant();
-        rcx.jam(0);
+        rcx.jam(2);
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, SPEED, 0, ACCELERATION, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0, 0);
-        rcx.receiveAfter(2000, STATUS, SESSION);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(80, DRIVE, SESSION);
         H8Simulator cpu = boot(rcx);
 
-        // When / Then: after each cycle, the commanded power is the law's value for the error that cycle
+        // When: a hundred cycles run, well before the right wheel's stall window
         int cycles = 0;
-        int lastCycle = 0;
-        int previous = 0;
-        int checked = 0;
-        for (int step = 0; step < STEPS && cycles < 12; step++) {
+        for (int step = 0; step < STEPS && cycles < 100; step++) {
             cpu.runFor(1);
             cycles = cpu.readWord(RcxRegulator.ELAPSED);
-            if (cycles != lastCycle) {
-                lastCycle = cycles;
-                int trajectory = (short) cpu.readWord(LEFT + RcxRegulator.TRAJECTORY);
-                int position = (short) cpu.readWord(LEFT + RcxRegulator.POSITION);
-                int power = cpu.readByte(LEFT + RcxRegulator.POWER);
-                assertThat(power).as("power after cycle %d", cycles)
-                        .isEqualTo(expectedPower(trajectory - position, previous));
-                previous = power;
-                checked++;
+        }
+
+        // Then: the left wheel waits after its first count, since the right has not moved, braked at full braking power
+        // instead of driving on (the ROM brakes with the power it is given, so a brake at power 0 would let it coast);
+        // the diagnostic reports it unpowered (0x81 complemented is 0x7E) and held for cycles
+        assertThat(rcx.wheelPosition(0)).isBetween(1, 2);
+        assertThat(cpu.readByte(LEFT + RcxRegulator.POWER)).isZero();
+        assertThat(rcx.calls()).contains("motor 2000 3 7");
+        int[] drive = rcx.replies().stream().filter(reply -> reply[0] == 0x7E).findFirst().orElseThrow();
+        assertThat(drive[1]).isZero();
+        assertThat(drive[3] | drive[4] << 8).isPositive();
+    }
+
+    @Test
+    @DisplayName("A slower left motor does not fall behind: the faster wheel waits, and both finish together")
+    void shouldKeepAFasterWheelLevelWithASlowerOne() {
+        // Given: the left motor turns its wheel at half the right's speed
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.weaken(0);
+        rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 31, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 31, 0);
+        rcx.receive(START, SESSION, 1);
+        H8Simulator cpu = boot(rcx);
+
+        // When: the motion runs to completion, watching the gap between the wheels every cycle
+        int worstGap = 0;
+        int lastCycle = 0;
+        for (int step = 0; step < STEPS && cpu.readByte(RcxRegulator.STATE) != COMPLETE_STATE; step++) {
+            cpu.runFor(1);
+            int cycle = cpu.readWord(RcxRegulator.ELAPSED);
+            if (cycle != lastCycle) {
+                lastCycle = cycle;
+                worstGap = Math.max(worstGap, Math.abs(rcx.wheelPosition(0) - rcx.wheelPosition(2)));
             }
         }
-        assertThat(checked).isGreaterThan(8);
+
+        // Then: never more than two counts apart, and both on the target
+        assertThat(cpu.readByte(RcxRegulator.STATE)).isEqualTo(COMPLETE_STATE);
+        assertThat(worstGap).isLessThanOrEqualTo(2);
+        assertThat(rcx.wheelPosition(0)).isBetween(31, 32);
+        assertThat(rcx.wheelPosition(2)).isBetween(31, 32);
     }
+
+    @Test
+    @DisplayName("A timeout in seconds becomes that many seconds of 333 control cycles, and one past a word is refused")
+    void shouldConvertTheTimeoutToControlCycles() {
+        // Given: a ten-second timeout, then one too long to count in a word
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(5, ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8,
+                RcxRegulator.MAX_TIMEOUT_SECONDS + 1);
+        H8Simulator cpu = boot(rcx);
+
+        // When
+        cpu.runFor(STEPS);
+
+        // Then: 10 s is 3330 cycles; the second profile is refused, as running (busy) or out of range, never accepted
+        assertThat(cpu.readWord(RcxRegulator.TIMEOUT_TICKS)).isEqualTo(10 * RcxRegulator.TICKS_PER_SECOND);
+        List<int[]> replies = rcx.replies().stream().filter(reply -> reply[0] == 0x8B).toList();
+        assertThat(replies).hasSize(2);
+        assertThat(replies.get(1)[1]).isNotZero();
+    }
+
+    @Test
+    @DisplayName("The cycle counter runs in any state and the diagnostic command reports it, low byte first")
+    void shouldCountControlCyclesWhileIdle() {
+        // Given: never armed, so only the counter runs; two reads some cycles apart
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.receiveAfter(50, CYCLES, SESSION);
+        rcx.receiveAfter(50, CYCLES, SESSION);
+        H8Simulator cpu = boot(rcx);
+
+        // When
+        cpu.runFor(STEPS);
+
+        // Then: two replies (0x71 complemented is 0x8E), the second further on, both matching the counter's range
+        List<int[]> replies = rcx.replies().stream().filter(reply -> reply[0] == 0x8E).toList();
+        assertThat(replies).hasSize(2);
+        int first = replies.get(0)[1] | replies.get(0)[2] << 8;
+        int second = replies.get(1)[1] | replies.get(1)[2] << 8;
+        assertThat(first).isPositive();
+        assertThat(second).isGreaterThan(first);
+        assertThat(cpu.readWord(RcxRegulator.CYCLES_RUN)).isGreaterThanOrEqualTo(second);
+    }
+
 }

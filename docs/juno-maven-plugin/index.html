@@ -358,7 +358,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 <tr>
 <td><code>juno:monitor</code></td>
 <td>(none — run explicitly)</td>
-<td>Resolves the board's serial port and opens an interactive <code>arduino-cli monitor</code> session.</td>
+<td>Resolves the board's serial port and opens an interactive <code>arduino-cli monitor</code> session; with <code>-Djuno.syslog=&lt;port&gt;</code>, receives the board's syslog messages over the network instead.</td>
 </tr>
 </tbody>
 </table>
@@ -441,6 +441,12 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>uploa
 <td><code>115200</code></td>
 <td>Must match the program's <code>Serial.begin(...)</code> rate (see <a href="../serial">docs/SERIAL.md</a>).</td>
 </tr>
+<tr>
+<td><code>juno.syslog</code></td>
+<td><code>monitor</code></td>
+<td><em>(unset: serial)</em></td>
+<td>UDP port to receive RFC 5424 syslog on, e.g. <code>5514</code>; no board or serial port is needed (see <a href="../wifi#remote-logging-with-syslog">Remote logging with syslog</a>).</td>
+</tr>
 </tbody>
 </table>
 <p>Every property can be set in <code>&lt;configuration&gt;</code> or passed with <code>-D</code> on the command line; <code>-D</code>
@@ -510,6 +516,14 @@ Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code
 <p>Opens the serial monitor at 115200 baud (<code>-Djuno.baudRate</code> to change it). Always use <code>juno:monitor</code> rather than a raw
 <code>arduino-cli monitor</code> call: it resolves the same port logic as <code>upload</code> and defaults to the baud rate every
 <code>juno-examples</code> program uses.</p>
+<h3 id="watch-a-board-over-the-network">Watch a board over the network</h3>
+<p>A program that logs with <a href="../wifi#remote-logging-with-syslog"><code>Syslog</code></a> can be followed without a USB cable, for
+example a robot driving across the floor:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.syslog=5514
+</code></pre>
+<p>The goal listens on UDP port 5514 on every interface, so broadcast messages arrive too, and prints one line per message
+with its arrival time, severity, host and app name until Ctrl+C. It needs no <code>-Djuno.board</code> and opens no serial port.
+The computer's firewall must allow incoming UDP on that port; on macOS, allow Java when asked.</p>
 <h2 id="juno-flags">Juno flags</h2>
 <p>Four <code>juno.*</code> properties change the runtime that the program is built with. They work like the JVM's <code>-Xmx</code>, <code>-Xss</code>
 and thread options: they change what the program can hold, never what it means. Set them in <code>&lt;configuration&gt;</code> or pass

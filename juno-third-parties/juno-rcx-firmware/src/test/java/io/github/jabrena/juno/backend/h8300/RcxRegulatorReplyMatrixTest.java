@@ -16,8 +16,11 @@ class RcxRegulatorReplyMatrixTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
     private static final int STOP = 0x62;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
     private static final int SESSION = 1;
     private static final int STEPS = 3_000_000;
     private static final int FULL_POWER_FLAGS = 0xE0;
@@ -60,15 +63,20 @@ class RcxRegulatorReplyMatrixTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
-        rcx.receiveAfter(5, PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(5, SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
 
         // When
         run();
 
         // Then
-        assertThat(lastReplyTo(PROFILE)).containsExactly(0x98, BUSY);
+        assertThat(lastReplyTo(SPEED_COMMAND)).containsExactly(0x9B, BUSY);
+        assertThat(lastReplyTo(ACCELERATION_COMMAND)).containsExactly(0x8B, BUSY);
     }
 
     @Test
@@ -78,8 +86,11 @@ class RcxRegulatorReplyMatrixTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(5, ARM, SESSION, 1, FULL_POWER_FLAGS);
 
         // When
@@ -107,13 +118,15 @@ class RcxRegulatorReplyMatrixTest {
     void shouldRefuseMotionZero() {
         // Given
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(START, SESSION, 0, 0, 0, 0, 0);
+        rcx.receive(TARGET_LEFT, SESSION, 0, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 0);
 
         // When
         run();
 
         // Then
-        assertThat(lastReplyTo(START)).containsExactly(0x89, INVALID_ARGUMENT, SESSION, 0);
+        assertThat(lastReplyTo(START)).containsExactly(0xAD, INVALID_ARGUMENT, SESSION, 0);
     }
 
     @Test
@@ -121,13 +134,15 @@ class RcxRegulatorReplyMatrixTest {
     void shouldRefuseAnAmbiguousTarget() {
         // Given
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(START, SESSION, 1, 0x00, 0x80, 0, 0);
+        rcx.receive(TARGET_LEFT, SESSION, 0x00, 0x80);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
 
         // When
         run();
 
         // Then
-        assertThat(lastReplyTo(START)).containsExactly(0x89, OUT_OF_RANGE, SESSION, 1);
+        assertThat(lastReplyTo(START)).containsExactly(0xAD, OUT_OF_RANGE, SESSION, 1);
     }
 
     @Test
@@ -135,14 +150,18 @@ class RcxRegulatorReplyMatrixTest {
     void shouldRefuseAnOlderMotion() {
         // Given
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(START, SESSION, 2, 0, 0, 0, 0);
-        rcx.receive(START, SESSION, 1, 0, 0, 0, 0);
+        rcx.receive(TARGET_LEFT, SESSION, 0, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 2);
+        rcx.receive(TARGET_LEFT, SESSION, 0, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
 
         // When
         run();
 
         // Then
-        assertThat(lastReplyTo(START)).containsExactly(0x89, STALE_COMMAND, SESSION, 1);
+        assertThat(lastReplyTo(START)).containsExactly(0xAD, STALE_COMMAND, SESSION, 1);
     }
 
     @Test
@@ -153,15 +172,20 @@ class RcxRegulatorReplyMatrixTest {
         rcx.wheelPlant();
         rcx.jam(LEFT);
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
-        rcx.receiveAfter(200, START, SESSION, 2, 40, 0, 0, 0);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(600, TARGET_LEFT, SESSION, 40, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 2);
 
         // When
         run();
 
         // Then
-        assertThat(lastReplyTo(START)).containsExactly(0x89, NOT_ARMED, SESSION, 2);
+        assertThat(lastReplyTo(START)).containsExactly(0xAD, NOT_ARMED, SESSION, 2);
     }
 
     @Test
@@ -171,8 +195,11 @@ class RcxRegulatorReplyMatrixTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(200, STOP, SESSION, 1);
 
         // When
@@ -201,7 +228,9 @@ class RcxRegulatorReplyMatrixTest {
     void shouldReportTheMotionInStatus() {
         // Given
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-        rcx.receive(START, SESSION, 1, 0, 0, 0, 0);
+        rcx.receive(TARGET_LEFT, SESSION, 0, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
         rcx.receive(STATUS, SESSION);
 
         // When
@@ -218,8 +247,11 @@ class RcxRegulatorReplyMatrixTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS | 0x10);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 0x90, 0x01, 0x90, 0x01);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(60, STOP, SESSION, 1);
 
         // When
@@ -236,8 +268,11 @@ class RcxRegulatorReplyMatrixTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(ARM, SESSION, 1, 0x40);
-        rcx.receive(PROFILE, SESSION, 100, 0, 200, 0, 1, 10);
-        rcx.receive(START, SESSION, 1, 40, 0, 0, 0);
+        rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, SESSION, 40, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
+        rcx.receive(START, SESSION, 1);
         rcx.receiveAfter(200, STATUS, SESSION);
 
         // When

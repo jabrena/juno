@@ -21,8 +21,13 @@ class RcxRegulatedPairTest {
     private static final int ARM = 0x63;
     private static final int STATUS = 0x61;
     private static final int STOP = 0x62;
-    private static final int PROFILE = 0x67;
-    private static final int START = 0x76;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
+    private static final int CYCLES = 0x71;
+    private static final int DRIVE = 0x81;
     private static final int READY = 1;
     private static final int COMPLETE = 3;
     private static final int STOPPED = 4;
@@ -47,6 +52,42 @@ class RcxRegulatedPairTest {
     }
 
     @Test
+    @DisplayName("Reads the drive diagnostic: each side's power and its held cycles, low byte first")
+    void shouldReadTheDriveDiagnostic() {
+        // Given
+        armed();
+        reply(DRIVE, 0, 1, 0x2C, 0x01, 0, 0);
+
+        // When
+        boolean answered = pair.refreshDriveDiagnostics();
+
+        // Then
+        assertThat(answered).isTrue();
+        assertThat(pair.leftDrivePower()).isZero();
+        assertThat(pair.rightDrivePower()).isEqualTo(1);
+        assertThat(pair.leftHeldCycles()).isEqualTo(300);
+        assertThat(pair.rightHeldCycles()).isZero();
+        assertThat(sent(DRIVE).get(0)).containsExactly(DRIVE, 1);
+        assertThat(pair.refreshDriveDiagnostics()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Reads the brick's control-cycle counter low byte first, or -1 when it does not answer")
+    void shouldReadTheControlCycleCounter() {
+        // Given
+        armed();
+        reply(CYCLES, 0x34, 0x12);
+
+        // When
+        int cycles = pair.controlCycles();
+
+        // Then
+        assertThat(cycles).isEqualTo(0x1234);
+        assertThat(sent(CYCLES).get(0)).containsExactly(CYCLES, 1);
+        assertThat(pair.controlCycles()).isEqualTo(-1);
+    }
+
+    @Test
     @DisplayName("Arm sends the session, mapping 1 and the configuration flags, then reads the state as ready")
     void shouldArmTheSessionAndReadReady() {
         // Given
@@ -63,12 +104,40 @@ class RcxRegulatedPairTest {
     }
 
     @Test
+    @DisplayName("A new maximum power keeps the other flags and is sent with the next arm")
+    void shouldSendANewMaximumPowerWithTheNextArm() {
+        // Given
+        pair.setMaxPower(2);
+        reply(ARM, 0, 1, 1);
+        reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
+
+        // When
+        pair.arm();
+
+        // Then
+        assertThat(pair.maxPower()).isEqualTo(2);
+        assertThat(sent(ARM).get(0))
+                .containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(2));
+    }
+
+    @Test
+    @DisplayName("A maximum power outside 1 to 7 is rejected and the configured one stays")
+    void shouldRejectAMaximumPowerOutsideItsRange() {
+        assertThatThrownBy(() -> pair.setMaxPower(0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pair.setMaxPower(8)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(pair.maxPower()).isEqualTo(7);
+    }
+
+    @Test
     @DisplayName("Rotating both sides sends the profile, then one start with little-endian targets, then waits")
     void shouldStartBothSidesInOneCommandWithLittleEndianTargets() {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 116, 0, 184, 0);
 
@@ -76,8 +145,11 @@ class RcxRegulatedPairTest {
         pair.rotate(360, -360, false);
 
         // Then
-        assertThat(sent(PROFILE).get(0)).containsExactly(PROFILE, 1, 8, 0, 16, 0, 1, 10);
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x74, 0, 0xB8, 0);
+        assertThat(sent(SPEED_COMMAND).get(0)).containsExactly(SPEED_COMMAND, 1, 8, 0, 1);
+        assertThat(sent(ACCELERATION_COMMAND).get(0)).containsExactly(ACCELERATION_COMMAND, 1, 16, 0, 10);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x74, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0xB8, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
         assertThat(pair.cachedState()).isEqualTo(RcxRegulatedState.COMPLETE);
     }
 
@@ -87,7 +159,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 0);
         reply(START, DUPLICATE, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 116, 0, 184, 0);
@@ -109,7 +184,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 0);
         reply(START, ACCEPTED, 0);
         reply(START, ACCEPTED, 0);
@@ -128,7 +206,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, BUSY, 1, 1);
 
         // When / Then
@@ -144,7 +225,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, STALLED, STALL_FAULT, 100, 0, 200, 0);
 
@@ -212,7 +296,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
 
@@ -252,7 +339,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
         reply(STOP, ACCEPTED, 1, 1);
@@ -418,7 +508,10 @@ class RcxRegulatedPairTest {
         armed();
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 0x20, 0, 0, 0);
 
@@ -426,7 +519,9 @@ class RcxRegulatedPairTest {
         pair.left().rotateTo(720);
 
         // Then
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x20, 0, 0, 0);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x20, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
     }
 
     @Test
@@ -435,7 +530,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         reply(STATUS, 1, 1, COMPLETE, 0, 100, 0, 216, 0);
 
@@ -443,7 +541,9 @@ class RcxRegulatedPairTest {
         pair.right().rotate(360);
 
         // Then
-        assertThat(sent(START).get(0)).containsExactly(START, 1, 1, 0x64, 0, 0xD8, 0);
+        assertThat(sent(TARGET_LEFT).get(0)).containsExactly(TARGET_LEFT, 1, 0x64, 0);
+        assertThat(sent(TARGET_RIGHT).get(0)).containsExactly(TARGET_RIGHT, 1, 0xD8, 0);
+        assertThat(sent(START).get(0)).containsExactly(START, 1, 1);
     }
 
     @Test
@@ -496,7 +596,10 @@ class RcxRegulatedPairTest {
         armed();
         for (int motion = 1; motion <= 255; motion++) {
             reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-            reply(PROFILE, ACCEPTED);
+            reply(SPEED_COMMAND, ACCEPTED);
+            reply(ACCELERATION_COMMAND, ACCEPTED);
+            reply(TARGET_LEFT, ACCEPTED);
+            reply(TARGET_RIGHT, ACCEPTED);
             reply(START, ACCEPTED, 1, motion);
             pair.rotate(0, 0, true);
         }
@@ -514,7 +617,10 @@ class RcxRegulatedPairTest {
         // Given
         armed();
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, 42, 1, 1);
 
         // When / Then
@@ -578,7 +684,10 @@ class RcxRegulatedPairTest {
     private void startMotion() {
         armed();
         reply(STATUS, 1, 0, READY, 0, 100, 0, 200, 0);
-        reply(PROFILE, ACCEPTED);
+        reply(SPEED_COMMAND, ACCEPTED);
+        reply(ACCELERATION_COMMAND, ACCEPTED);
+        reply(TARGET_LEFT, ACCEPTED);
+        reply(TARGET_RIGHT, ACCEPTED);
         reply(START, ACCEPTED, 1, 1);
         pair.rotate(360, 0, true);
     }

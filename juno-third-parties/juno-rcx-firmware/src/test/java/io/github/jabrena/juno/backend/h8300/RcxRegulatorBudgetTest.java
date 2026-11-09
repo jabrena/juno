@@ -16,6 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("RCX regulated pair budgets")
 class RcxRegulatorBudgetTest {
+    private static final int TARGET_LEFT = 0x33;
+    private static final int TARGET_RIGHT = 0x43;
+    private static final int START = 0x52;
+    private static final int SPEED_COMMAND = 0x64;
+    private static final int ACCELERATION_COMMAND = 0x74;
+
     /** The RAM the regulator uses: its state word through the right side's last field. */
     private static final int REGULATOR_RAM = 0x50;
     private static final int RAM_START = 0xC000;
@@ -58,8 +64,11 @@ class RcxRegulatorBudgetTest {
         rcx.continuousAnalog();
         rcx.wheelPlant();
         rcx.receive(0x63, 1, 1, 0xE0);
-        rcx.receive(0x67, 1, 100, 0, 200, 0, 1, 10);
-        rcx.receive(0x76, 1, 1, 0x90, 0x01, 0x90, 0x01);
+        rcx.receive(SPEED_COMMAND, 1, 100, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, 1, 200, 0, 10);
+        rcx.receive(TARGET_LEFT, 1, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, 1, 0x90, 0x01);
+        rcx.receive(START, 1, 1);
         rcx.receiveAfter(20, 0xD2, 0x00, 0x02);
         rcx.receiveAfter(40, 0x21, 0x80 | 0x02);
         rcx.receiveAfter(60, 0x62, 1, 1);

@@ -37,6 +37,47 @@ if (sd.begin()) {
 A program that runs for a long time should also decide what to do after a disconnection, for example by calling
 `Wifi.begin` again before its next request.
 
+## Remote logging with syslog
+
+Once a program is on the network, `Syslog` sends log lines as RFC 5424 syslog datagrams over UDP, so the board can be
+followed without a USB cable; `juno:monitor -Djuno.syslog=5514` receives them on a computer on the same network.
+
+Create the logger once, at startup, on the program's own `DatagramSocket` (a program has a single UDP socket on the
+board, so a program that also uses UDP shares it), with a destination, the host and app names that identify the sender,
+and a buffer that holds one frame. Sending to the broadcast address reaches any monitor on the local network without
+configuring the computer's address:
+
+```java
+InetAddress everyone = InetAddress.getByAddress(new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+Syslog syslog = new Syslog(new DatagramSocket(5515), everyone, Syslog.DEFAULT_PORT, "nano-rcx", "regulated-drive",
+        new byte[128]);
+
+syslog.info("travel started");
+// A line built from fields: no String concatenation, so logging in a loop allocates nothing.
+syslog.begin(Syslog.DEBUG).text("t=").number(elapsed).text(" left=").number(left).text(" right=").number(right).send();
+```
+
+Each call sends one datagram such as `<135>1 - nano-rcx regulated-drive - - - t=400 left=118 right=-121`: facility
+`local0`, the severity (`ERROR`, `WARNING`, `NOTICE`, `INFO`, `DEBUG` and the rest of RFC 5424's), and a nil timestamp,
+since a board need not know the time; the monitor stamps the arrival. A message longer than the buffer is truncated, and
+a failed send is counted in `failures()` instead of thrown, so logging never breaks a control loop.
+
+On the computer:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.syslog=5514
+```
+
+```
+[INFO] Listening for syslog on UDP port 5514; press Ctrl+C to stop
+[INFO] 12:04:07.218 NOTICE    nano-rcx regulated-drive: Armed
+[INFO] 12:04:07.412 DEBUG     nano-rcx regulated-drive: travel t=400 state=RUNNING faults=0 left=118 right=-121
+```
+
+[`NanoCarrierRcxRegulatedDifferentialDrive`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRegulatedDifferentialDrive.java)
+logs an RCX robot's regulated drive this way: every poll of a move sends the elapsed time, the regulator's state and
+both wheels' tachometers.
+
 ## Troubleshooting
 
 - **Wi-Fi never reaches `STATUS_CONNECTED`:** check the network name and password, and the signal strength. A bounded

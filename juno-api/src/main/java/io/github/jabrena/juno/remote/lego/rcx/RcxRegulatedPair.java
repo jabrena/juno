@@ -25,6 +25,9 @@ public final class RcxRegulatedPair implements RegulatedPair {
     public static final int INVERT_RIGHT_SENSOR = 0x08;
     /** Configuration flag: brake rather than coast when a movement stops or completes. */
     public static final int BRAKE_ON_STOP = 0x10;
+    /** The configuration bits that hold the maximum motor power, 1 to 7, and where they start. */
+    private static final int MAX_POWER_SHIFT = 5;
+    private static final int MAX_POWER_BITS = 0x07 << MAX_POWER_SHIFT;
 
     /** The only mapping the v1 firmware defines: motor A with sensor 1 on the left, motor C with sensor 3 on the right. */
     static final int MAPPING_ID = 1;
@@ -42,7 +45,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
     private final RcxRegulatedPositions positions = new RcxRegulatedPositions();
     private final Clock clock;
     private final int session;
-    private final int configurationFlags;
+    private int configurationFlags;
     private final RcxRegulatedMotor left;
     private final RcxRegulatedMotor right;
 
@@ -79,7 +82,24 @@ public final class RcxRegulatedPair implements RegulatedPair {
         if (level < 1 || level > 7) {
             throw new IllegalArgumentException("maximum motor power must be between 1 and 7");
         }
-        return level << 5;
+        return level << MAX_POWER_SHIFT;
+    }
+
+    /**
+     * Sets the maximum motor power, 1 to 7, keeping the other configuration flags. The brick receives the configuration
+     * when the pair is armed, so the new power applies from the next {@link #arm()}; rejected while the pair moves.
+     */
+    public void setMaxPower(int level) {
+        int power = maxPower(level);
+        if (isMoving()) {
+            throw new IllegalStateException("the maximum power cannot change while the pair is moving");
+        }
+        configurationFlags = configurationFlags & ~MAX_POWER_BITS | power;
+    }
+
+    /** The configured maximum motor power, 1 to 7, as the next {@link #arm()} sends it. */
+    public int maxPower() {
+        return (configurationFlags & MAX_POWER_BITS) >> MAX_POWER_SHIFT;
     }
 
     /** The left side, the motor A output, as a {@link RcxRegulatedMotor} view of this pair. */
@@ -285,6 +305,45 @@ public final class RcxRegulatedPair implements RegulatedPair {
         positions.record(LEFT, protocol.statusLeft);
         positions.record(RIGHT, protocol.statusRight);
         return true;
+    }
+
+    /**
+     * Diagnostic: the brick's count of regulator control cycles since it booted, 0 to 65535 and wrapping, or {@code -1}
+     * when it did not answer. Two reads a known time apart give the cycle rate, which converts profile speeds to
+     * per-cycle steps in the firmware. Unlike {@link #status()}, it changes no cached state.
+     */
+    public int controlCycles() {
+        int cycles = protocol.cycles(session);
+        return cycles == RcxRegulatedProtocol.NO_REPLY ? -1 : cycles;
+    }
+
+    /**
+     * Diagnostic: reads each side's motor power this cycle (0 while it is braked) and the cycles of the current motion each
+     * was held braked to let the other catch up. Returns whether the brick answered; the values are then in
+     * {@link #leftDrivePower()} and the like. Changes no cached state.
+     */
+    public boolean refreshDriveDiagnostics() {
+        return protocol.drive(session);
+    }
+
+    /** The left side's power at the last {@link #refreshDriveDiagnostics()}, 0 while braked. */
+    public int leftDrivePower() {
+        return protocol.driveLeftPower;
+    }
+
+    /** The right side's power at the last {@link #refreshDriveDiagnostics()}, 0 while braked. */
+    public int rightDrivePower() {
+        return protocol.driveRightPower;
+    }
+
+    /** Control cycles the left side was held braked in the current motion, at the last read. */
+    public int leftHeldCycles() {
+        return protocol.driveLeftHeld;
+    }
+
+    /** Control cycles the right side was held braked in the current motion, at the last read. */
+    public int rightHeldCycles() {
+        return protocol.driveRightHeld;
     }
 
     /** The acknowledgement code of the last command the brick refused, as {@link RcxRegulatedProtocol} numbers them. */

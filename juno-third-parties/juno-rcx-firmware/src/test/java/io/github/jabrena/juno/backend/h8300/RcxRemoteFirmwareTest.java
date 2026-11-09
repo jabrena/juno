@@ -523,8 +523,8 @@ class RcxRemoteFirmwareTest {
         @DisplayName("Leaves unknown messages unanswered")
         void shouldLeaveUnknownMessagesUnanswered() {
             // Given
-            // 0x64 is still unassigned; 0x67 is now the regulator's profile command.
-            rcx.receive(0x64, 1);
+            // 0x66 is unassigned; 0x64 and 0x74 are now the regulator's profile commands.
+            rcx.receive(0x66, 1);
             rcx.receive(0x10);
 
             // When

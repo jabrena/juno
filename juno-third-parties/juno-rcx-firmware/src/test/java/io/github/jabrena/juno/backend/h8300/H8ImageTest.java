@@ -17,6 +17,29 @@ class H8ImageTest {
 
 
     @Test
+    @DisplayName("Padding appends zero bytes up to the next multiple and keeps the origin, entry and byte sum")
+    void shouldPadWithZeroBytesToTheNextMultiple() {
+        // Given
+        H8Image image = new H8Image(0x8000, 0x8002, new byte[] {1, 2, 3});
+
+        // When
+        H8Image padded = image.paddedTo(16);
+
+        // Then
+        assertThat(padded.bytes()).hasSize(16).startsWith(1, 2, 3);
+        assertThat(java.util.Arrays.copyOfRange(padded.bytes(), 3, 16)).containsOnly(0);
+        assertThat(padded.origin()).isEqualTo(0x8000);
+        assertThat(padded.entry()).isEqualTo(0x8002);
+        assertThat(new H8Image(0x8000, 0x8002, new byte[16]).paddedTo(16).bytes()).hasSize(16);
+    }
+
+    @Test
+    @DisplayName("The RCX firmware ends on a 16-byte boundary, so its final download block is never a few bytes long")
+    void shouldEndTheFirmwareOnADownloadBoundary() {
+        assertThat(new RcxRemoteFirmware().image().bytes().length % RcxRemoteFirmware.DOWNLOAD_ALIGNMENT).isZero();
+    }
+
+    @Test
     @DisplayName("Writes header, data and entry records with checksums")
     void shouldWriteHeaderDataAndEntryRecordsWithChecksums() {
         // Given

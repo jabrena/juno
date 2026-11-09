@@ -60,12 +60,14 @@ final class FieldLowering implements InstructionLowering {
     private final OperandStack stack;
     private final FreshValues values;
     private final EnumResolver enums;
+    private final EnumStaticFieldGuard enumStatics;
 
     FieldLowering(MethodContext context) {
         this.context = context;
         this.stack = context.stack();
         this.values = context.values();
         this.enums = new EnumResolver(context.classes(), context.program().decoder());
+        this.enumStatics = new EnumStaticFieldGuard(context.classes(), context.program().decoder());
     }
 
     @Override
@@ -115,6 +117,7 @@ final class FieldLowering implements InstructionLowering {
             context.facts().markKnownArray(target, mapping.size());
             stack.push(target);
         } else {
+            enumStatics.requireNoInitializerOnlyStatic(field);
             Value target = values.of(staticFieldType(instruction, field));
             context.emit(new IrInstruction.LoadStatic(target, field));
             stack.push(target);

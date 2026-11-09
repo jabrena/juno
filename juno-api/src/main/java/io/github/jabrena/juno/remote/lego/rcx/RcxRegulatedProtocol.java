@@ -12,8 +12,21 @@ final class RcxRegulatedProtocol {
     static final int OPCODE_STATUS = 0x61;
     static final int OPCODE_STOP = 0x62;
     static final int OPCODE_ARM = 0x63;
-    static final int OPCODE_PROFILE = 0x67;
-    static final int OPCODE_START = 0x76;
+    /**
+     * The profile goes in two four-argument commands: the brick's ROM reads an opcode ending in 7 as carrying one
+     * argument, so a single seven-argument profile frame never reached the firmware.
+     */
+    static final int OPCODE_SPEED = 0x64;
+    static final int OPCODE_ACCELERATION = 0x74;
+    /**
+     * A start is three commands: the brick also dropped the six-argument start at 0x76, so each target is staged in a
+     * three-argument command and the two-argument start begins both sides at once.
+     */
+    static final int OPCODE_TARGET_LEFT = 0x33;
+    static final int OPCODE_TARGET_RIGHT = 0x43;
+    static final int OPCODE_START = 0x52;
+    static final int OPCODE_CYCLES = 0x71;
+    static final int OPCODE_DRIVE = 0x81;
 
     static final int ACCEPTED = 0;
     static final int DUPLICATE = 1;
@@ -44,9 +57,12 @@ final class RcxRegulatedProtocol {
     static final int STATUS_EXTERNAL_OVERRIDE = 0x20;
     static final int STATUS_INVALID_CONFIGURATION = 0x40;
 
-    private static final int MAX_ARGUMENTS = 7;
+    private static final int MAX_ARGUMENTS = 4;
     private static final int ARM_REPLY = 3;
     private static final int PROFILE_REPLY = 1;
+    private static final int TARGET_REPLY = 1;
+    private static final int CYCLES_REPLY = 2;
+    private static final int DRIVE_REPLY = 6;
     private static final int START_REPLY = 3;
     private static final int STOP_REPLY = 3;
     private static final int STATUS_REPLY = 8;
@@ -83,29 +99,86 @@ final class RcxRegulatedProtocol {
         return reply[0];
     }
 
-    /** Returns the acknowledgement code of {@code REG_PROFILE}, or {@link #NO_REPLY}. */
+    /**
+     * Sends the profile as {@code REG_SPEED} then {@code REG_ACCELERATION}; returns the first acknowledgement that is
+     * not {@link #ACCEPTED}, {@link #NO_REPLY} when a half got no reply, or {@link #ACCEPTED} when both were accepted.
+     */
     int profile(int session, int maxSpeed, int acceleration, int tolerance, int timeoutSeconds) {
+        int speed = profileHalf(OPCODE_SPEED, session, maxSpeed, tolerance);
+        if (speed != ACCEPTED) {
+            return speed;
+        }
+        return profileHalf(OPCODE_ACCELERATION, session, acceleration, timeoutSeconds);
+    }
+
+    /** One four-argument profile command: session, a rate word (low byte first), then one byte. */
+    private int profileHalf(int opcode, int session, int rate, int last) {
         arguments[0] = session;
-        putWord(1, maxSpeed);
-        putWord(3, acceleration);
-        arguments[5] = tolerance;
-        arguments[6] = timeoutSeconds;
-        if (!roundTrip(OPCODE_PROFILE, 7, PROFILE_REPLY)) {
+        putWord(1, rate);
+        arguments[3] = last;
+        if (!roundTrip(opcode, 4, PROFILE_REPLY)) {
             return NO_REPLY;
         }
         return reply[0];
     }
 
-    /** Returns the acknowledgement code of {@code REG_START}, or {@link #NO_REPLY}. */
+    /**
+     * Stages both targets, then sends {@code REG_START}; returns the first acknowledgement that is not {@link #ACCEPTED},
+     * or {@link #NO_REPLY} when a command got no reply.
+     */
     int start(int session, int motion, int leftTarget, int rightTarget) {
+        int left = stageTarget(OPCODE_TARGET_LEFT, session, leftTarget);
+        if (left != ACCEPTED) {
+            return left;
+        }
+        int right = stageTarget(OPCODE_TARGET_RIGHT, session, rightTarget);
+        if (right != ACCEPTED) {
+            return right;
+        }
         arguments[0] = session;
         arguments[1] = motion;
-        putWord(2, leftTarget);
-        putWord(4, rightTarget);
-        if (!roundTrip(OPCODE_START, 6, START_REPLY)) {
+        if (!roundTrip(OPCODE_START, 2, START_REPLY)) {
             return NO_REPLY;
         }
         return reply[0];
+    }
+
+    /** Stages one side's target for the next start: session, then the target word, low byte first. */
+    private int stageTarget(int opcode, int session, int target) {
+        arguments[0] = session;
+        putWord(1, target);
+        if (!roundTrip(opcode, 3, TARGET_REPLY)) {
+            return NO_REPLY;
+        }
+        return reply[0];
+    }
+
+    /** Returns the brick's control-cycle counter (0..65535, wrapping), or {@link #NO_REPLY}. */
+    int cycles(int session) {
+        arguments[0] = session;
+        if (!roundTrip(OPCODE_CYCLES, 1, CYCLES_REPLY)) {
+            return NO_REPLY;
+        }
+        return reply[0] | reply[1] << 8;
+    }
+
+    /** The last drive diagnostic: each side's power this cycle and the cycles each was held braked. */
+    int driveLeftPower;
+    int driveRightPower;
+    int driveLeftHeld;
+    int driveRightHeld;
+
+    /** Reads the drive diagnostic into the {@code drive*} fields; returns whether the brick answered. */
+    boolean drive(int session) {
+        arguments[0] = session;
+        if (!roundTrip(OPCODE_DRIVE, 1, DRIVE_REPLY)) {
+            return false;
+        }
+        driveLeftPower = reply[0];
+        driveRightPower = reply[1];
+        driveLeftHeld = reply[2] | reply[3] << 8;
+        driveRightHeld = reply[4] | reply[5] << 8;
+        return true;
     }
 
     /** Returns the acknowledgement code of {@code REG_STOP}, or {@link #NO_REPLY}. */
