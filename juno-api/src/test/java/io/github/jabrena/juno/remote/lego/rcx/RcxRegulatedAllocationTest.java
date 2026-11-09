@@ -83,8 +83,12 @@ class RcxRegulatedAllocationTest {
                 pair.status();
             }
         };
+        // Both are run once before measuring, so neither measurement includes the JVM compiling its code: measured cold,
+        // the pair's polls occasionally counted a few hundred bytes more when other tests had run first.
         queueStatusReplies(POLLS);
         allocatedBytesDuring(linkPolls);
+        queueStatusReplies(POLLS);
+        allocatedBytesDuring(pairPolls);
         queueStatusReplies(POLLS);
         Infrared.written.clear();
         long linkBytes = allocatedBytesDuring(() -> {
@@ -100,6 +104,8 @@ class RcxRegulatedAllocationTest {
         // Then: the measurement is meaningful only if this JVM counts a thread's allocations
         assertThat(threads.isThreadAllocatedMemorySupported()).isTrue();
         assertThat(linkBytes).isPositive();
-        assertThat(pairBytes).isLessThanOrEqualTo(linkBytes);
+        // Less than a byte per poll beyond the link: an allocation in the poll would cost at least 16 bytes each time,
+        // while the JVM can add a few hundred bytes once while measuring, as parallel builds showed.
+        assertThat(pairBytes - linkBytes).isLessThan(POLLS);
     }
 }
