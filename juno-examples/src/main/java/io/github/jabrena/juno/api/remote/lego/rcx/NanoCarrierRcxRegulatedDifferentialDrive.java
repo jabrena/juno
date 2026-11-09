@@ -181,8 +181,9 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         imu.reset();
         // Each wheel's tachometer just before the move: the trace reports progress from here, as the firmware measures
         // it, since a rotation sensor can count a step or two while it settles after arming.
-        int leftStart = pair.left().tachoCount();
-        int rightStart = pair.right().tachoCount();
+        pair.status();
+        int leftStart = pair.cachedLeftTachoCount();
+        int rightStart = pair.cachedRightTachoCount();
         syslog.begin(Syslog.DEBUG).text("travel from left=").number(leftStart).text(" right=").number(rightStart).send();
         if (started(drive, pair, syslog)) {
             traced(pair, imu, clock, syslog, "travel", leftStart, rightStart);
@@ -288,17 +289,19 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         int limit = TIMEOUT_SECONDS * 1000 + TRACE_MARGIN_MILLIS;
         RcxRegulatedState state = RcxRegulatedState.RUNNING;
         while (state == RcxRegulatedState.RUNNING || state == RcxRegulatedState.LINK_UNKNOWN) {
-            int left = pair.left().tachoCount() - leftStart;
-            int right = pair.right().tachoCount() - rightStart;
-            state = pair.cachedState();
+            // One status read for both wheels: reading them one after the other, a round trip apart, made the wheel
+            // read second look a few steps ahead.
+            state = pair.status();
+            int left = pair.cachedLeftTachoCount() - leftStart;
+            int right = pair.cachedRightTachoCount() - rightStart;
             int elapsed = clock.millis() - started;
             syslog.begin(Syslog.DEBUG).text(move).text(" t=").number(elapsed).text(" state=").text(name(state))
                     .text(" faults=").number(pair.faults()).text(" left=").number(left).text(" right=").number(right)
                     .text(" heading=").number(imu.getAngle());
             // Each side's power this cycle (0 while braked) and the cycles it was held for the other to catch up.
-            if (pair.refreshDriveDiagnostics()) {
-                syslog.text(" power=").number(pair.leftDrivePower()).text("/").number(pair.rightDrivePower())
-                        .text(" held=").number(pair.leftHeldCycles()).text("/").number(pair.rightHeldCycles());
+            if (pair.diagnostics().refreshDrive()) {
+                syslog.text(" power=").number(pair.diagnostics().leftPower()).text("/").number(pair.diagnostics().rightPower())
+                        .text(" held=").number(pair.diagnostics().leftHeldCycles()).text("/").number(pair.diagnostics().rightHeldCycles());
             }
             syslog.send();
             if (elapsed > limit) {
@@ -363,10 +366,10 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * the robot stands still. The firmware converts profile speeds to per-cycle steps with this rate.
      */
     private static void measureCycleRate(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog) {
-        int first = pair.controlCycles();
+        int first = pair.diagnostics().controlCycles();
         int started = clock.millis();
         followGyro(imu, CYCLE_WINDOW_MILLIS);
-        int second = pair.controlCycles();
+        int second = pair.diagnostics().controlCycles();
         int elapsed = clock.millis() - started;
         if (first < 0 || second < 0) {
             report(syslog, Syslog.WARNING, "Control cycles: no answer from the brick");
