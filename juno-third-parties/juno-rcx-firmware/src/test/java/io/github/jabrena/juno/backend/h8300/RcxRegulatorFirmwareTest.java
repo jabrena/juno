@@ -191,6 +191,30 @@ class RcxRegulatorFirmwareTest {
         }
 
         @Test
+        @DisplayName("At the lowest maximum power a motion still completes: the slow-down near the target keeps one level")
+        void shouldCompleteAMotionAtTheLowestMaximumPower() {
+            // Given: maximum power 1 (bits 5-7), so slowing a level near the target would mean braking short of it
+            rcx.continuousAnalog();
+            rcx.wheelPlant();
+            rcx.receive(ARM, SESSION, 1, 0x20);
+            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(TARGET_LEFT, SESSION, 20, 0);
+            rcx.receive(TARGET_RIGHT, SESSION, 20, 0);
+            rcx.receive(START, SESSION, 1);
+            rcx.receiveAfter(1500, STATUS, SESSION);
+
+            // When
+            run(STEPS);
+
+            // Then
+            int[] status = lastReplyTo(STATUS);
+            assertThat(status[3]).isEqualTo(COMPLETE);
+            assertThat(rcx.wheelPosition(LEFT)).isBetween(20, 21);
+            assertThat(rcx.wheelPosition(RIGHT)).isBetween(20, 21);
+        }
+
+        @Test
         @DisplayName("A status right after arming again reports the restarted positions, not the last motion's")
         void shouldReportRestartedPositionsRightAfterRearming() {
             // Given: a completed motion leaves both wheels away from zero, then the pair is armed again
@@ -326,7 +350,7 @@ class RcxRegulatorFirmwareTest {
             rcx.receive(TARGET_LEFT, SESSION, 40, 0);
             rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
             rcx.receive(START, SESSION, 1);
-            rcx.receiveAfter(200, STATUS, SESSION);
+            rcx.receiveAfter(600, STATUS, SESSION);
 
             // When
             run(STEPS);
@@ -350,7 +374,7 @@ class RcxRegulatorFirmwareTest {
             rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
             rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
             rcx.receive(START, SESSION, 1);
-            rcx.receiveAfter(200, STATUS, SESSION);
+            rcx.receiveAfter(600, STATUS, SESSION);
 
             // When
             run(STEPS);
@@ -530,7 +554,7 @@ class RcxRegulatorFirmwareTest {
             rcx.receive(TARGET_LEFT, SESSION, 40, 0);
             rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
             rcx.receive(START, SESSION, 1);
-            rcx.receiveAfter(200, ARM, SESSION, 1, FULL_POWER_FLAGS);
+            rcx.receiveAfter(600, ARM, SESSION, 1, FULL_POWER_FLAGS);
             rcx.receiveAfter(5, STATUS, SESSION);
 
             // When

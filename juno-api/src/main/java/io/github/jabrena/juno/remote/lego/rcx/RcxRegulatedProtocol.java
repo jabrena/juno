@@ -25,6 +25,7 @@ final class RcxRegulatedProtocol {
     static final int OPCODE_TARGET_LEFT = 0x33;
     static final int OPCODE_TARGET_RIGHT = 0x43;
     static final int OPCODE_START = 0x52;
+    static final int OPCODE_CYCLES = 0x71;
 
     static final int ACCEPTED = 0;
     static final int DUPLICATE = 1;
@@ -59,6 +60,7 @@ final class RcxRegulatedProtocol {
     private static final int ARM_REPLY = 3;
     private static final int PROFILE_REPLY = 1;
     private static final int TARGET_REPLY = 1;
+    private static final int CYCLES_REPLY = 2;
     private static final int START_REPLY = 3;
     private static final int STOP_REPLY = 3;
     private static final int STATUS_REPLY = 8;
@@ -147,6 +149,15 @@ final class RcxRegulatedProtocol {
             return NO_REPLY;
         }
         return reply[0];
+    }
+
+    /** Returns the brick's control-cycle counter (0..65535, wrapping), or {@link #NO_REPLY}. */
+    int cycles(int session) {
+        arguments[0] = session;
+        if (!roundTrip(OPCODE_CYCLES, 1, CYCLES_REPLY)) {
+            return NO_REPLY;
+        }
+        return reply[0] | reply[1] << 8;
     }
 
     /** Returns the acknowledgement code of {@code REG_STOP}, or {@link #NO_REPLY}. */

@@ -287,6 +287,16 @@ public final class RcxRegulatedPair implements RegulatedPair {
         return true;
     }
 
+    /**
+     * Diagnostic: the brick's count of regulator control cycles since it booted, 0 to 65535 and wrapping, or {@code -1}
+     * when it did not answer. Two reads a known time apart give the cycle rate, which converts profile speeds to
+     * per-cycle steps in the firmware. Unlike {@link #status()}, it changes no cached state.
+     */
+    public int controlCycles() {
+        int cycles = protocol.cycles(session);
+        return cycles == RcxRegulatedProtocol.NO_REPLY ? -1 : cycles;
+    }
+
     /** The acknowledgement code of the last command the brick refused, as {@link RcxRegulatedProtocol} numbers them. */
     public int lastAcknowledgement() {
         return lastAcknowledgement;

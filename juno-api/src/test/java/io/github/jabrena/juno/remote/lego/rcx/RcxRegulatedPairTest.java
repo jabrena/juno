@@ -26,6 +26,7 @@ class RcxRegulatedPairTest {
     private static final int TARGET_LEFT = 0x33;
     private static final int TARGET_RIGHT = 0x43;
     private static final int START = 0x52;
+    private static final int CYCLES = 0x71;
     private static final int READY = 1;
     private static final int COMPLETE = 3;
     private static final int STOPPED = 4;
@@ -47,6 +48,22 @@ class RcxRegulatedPairTest {
         Infrared.reset();
         link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
         pair = new RcxRegulatedPair(link, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(7), 16);
+    }
+
+    @Test
+    @DisplayName("Reads the brick's control-cycle counter low byte first, or -1 when it does not answer")
+    void shouldReadTheControlCycleCounter() {
+        // Given
+        armed();
+        reply(CYCLES, 0x34, 0x12);
+
+        // When
+        int cycles = pair.controlCycles();
+
+        // Then
+        assertThat(cycles).isEqualTo(0x1234);
+        assertThat(sent(CYCLES).get(0)).containsExactly(CYCLES, 1);
+        assertThat(pair.controlCycles()).isEqualTo(-1);
     }
 
     @Test

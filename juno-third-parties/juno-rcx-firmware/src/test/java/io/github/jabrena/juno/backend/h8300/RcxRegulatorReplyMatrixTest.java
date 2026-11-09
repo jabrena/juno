@@ -177,7 +177,7 @@ class RcxRegulatorReplyMatrixTest {
         rcx.receive(TARGET_LEFT, SESSION, 40, 0);
         rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
         rcx.receive(START, SESSION, 1);
-        rcx.receiveAfter(200, TARGET_LEFT, SESSION, 40, 0);
+        rcx.receiveAfter(600, TARGET_LEFT, SESSION, 40, 0);
         rcx.receive(TARGET_RIGHT, SESSION, 0, 0);
         rcx.receive(START, SESSION, 2);
 

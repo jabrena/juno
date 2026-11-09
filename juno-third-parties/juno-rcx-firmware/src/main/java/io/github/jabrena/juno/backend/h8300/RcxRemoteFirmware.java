@@ -53,6 +53,7 @@ import java.util.Objects;
  * <tr><td>0x33, 0x43</td><td>regulated pair: stage the left or right target (session, target)</td><td>result</td></tr>
  * <tr><td>0x52</td><td>regulated pair: start a motion toward the staged targets (session, motion)</td>
  * <td>result, session, motion</td></tr>
+ * <tr><td>0x71</td><td>regulated pair diagnostic: control cycles run since boot (session)</td><td>cycles</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -353,6 +354,7 @@ public final class RcxRemoteFirmware {
         handler(RcxRegulator.OPCODE_TARGET_LEFT, RcxRegulator.TARGET_LEFT);
         handler(RcxRegulator.OPCODE_TARGET_RIGHT, RcxRegulator.TARGET_RIGHT);
         handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
+        handler(RcxRegulator.OPCODE_CYCLES, RcxRegulator.CYCLES);
         assembler.jump(RcxCode.LOOP);
     }
 

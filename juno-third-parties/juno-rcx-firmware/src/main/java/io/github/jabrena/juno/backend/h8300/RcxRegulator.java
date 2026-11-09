@@ -10,15 +10,14 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
  * states and payloads are the ones {@code RcxRegulatedProtocol} expects on the host (OpenSpec change
  * {@code rcx-regulated-differential-drive}).
  *
- * <p>The regulator runs once per fresh analog update, after the sensors are read. Each side follows a trajectory that
- * accelerates toward its target and then applies bounded proportional power to its error (the spec's
- * {@code (KP_Q8 * |e| + 128) >> 8} with {@code KP_Q8 = 64}, which is {@code (|e| + 2) / 4} for integers), clamped to the
- * minimum starting power and the configured maximum, with a slew limit on the rise and a zero-power reversal.
+ * <p>The regulator runs once per fresh analog update, every 3 ms, after the sensors are read. Both sides drive at the
+ * configured maximum power toward their targets, and the rotation sensors keep them level: a side one count ahead of the
+ * other drops a level, two or more counts ahead brakes until the other catches up. A side brakes and is done once it has
+ * covered its whole distance from where the motion started, after slowing a level over the last {@link #SLOW_COUNTS}.
+ * This suits the RCX: its rotation sensors count 16 steps a turn, too coarse for a position loop to pace a wheel
+ * smoothly, and its motors run at nearly the same speed at any power, so a paced trajectory turned into stop-and-go.
  *
- * <p>The values marked as placeholders below are not measured yet (tasks 1.3 and 1.6): the minimum starting power, the
- * slew, the stall and stale windows, and the time base, which is the analog-update cadence rather than a 100 ms timer.
- * Profile speed and acceleration arrive in counts per second and are divided by {@link #TICKS_PER_SECOND} once, when
- * the profile is set, so the control loop works in counts per tick.
+ * <p>The profile's speed and acceleration are still checked and stored, for the protocol; the pace is the power's.
  */
 final class RcxRegulator {
     static final int OPCODE_STATUS = 0x61;
@@ -38,6 +37,8 @@ final class RcxRegulator {
     static final int OPCODE_TARGET_LEFT = 0x33;
     static final int OPCODE_TARGET_RIGHT = 0x43;
     static final int OPCODE_START = 0x52;
+    /** Diagnostic: replies with the free-running control-cycle counter, so the host can measure the cycle rate. */
+    static final int OPCODE_CYCLES = 0x71;
 
     static final String STATUS = "reg_status";
     static final String STOP = "reg_stop";
@@ -47,6 +48,7 @@ final class RcxRegulator {
     static final String TARGET_LEFT = "reg_target_left";
     static final String TARGET_RIGHT = "reg_target_right";
     static final String START = "reg_start";
+    static final String CYCLES = "reg_cycles";
     /** Subroutine: one control cycle, after a fresh analog update. */
     static final String TICK = "reg_tick";
     /** Subroutine: counts a main-loop pass without a fresh analog update, for the stale check. */
@@ -106,35 +108,24 @@ final class RcxRegulator {
     /** The outputs A and C within the output selection of the legacy commands: bits 0 and 2. */
     static final int REGULATED_OUTPUTS = 0x05;
 
-    /** Placeholder (task 1.6): proportional power is {@code (|e| + 2) / 4}, that is {@code KP_Q8 = 64}. */
-    static final int KP_DIVISOR = 4;
-    /** Placeholder: the error saturates here, where proportional power reaches the byte range. */
-    static final int SATURATED_ERROR = 1019;
-    /** Placeholder (task 1.6): an error this small or smaller applies no power, so the wheel holds instead of hunting. */
-    static final int DEADBAND = 1;
-    /** The least power that moves a loaded wheel from rest: power 2 did not move the reference build on the floor. */
-    static final int MIN_START_POWER = 3;
-    /** Placeholder: the most the power may rise in one cycle. */
-    static final int SLEW_PER_TICK = 1;
     /**
-     * Control cycles per second, the rate that converts profile units to per-cycle units. Measured on the brick: a stall
-     * after 20 cycles was reported 312 ms after the start, about 64 cycles per second (task 1.3).
+     * Control cycles per second: one per fresh analog update, every 3 ms. Measured on the brick with
+     * {@link #OPCODE_CYCLES}: 1135 cycles in 3401 ms (task 1.3).
      */
-    static final int TICKS_PER_SECOND = 64;
+    static final int TICKS_PER_SECOND = 333;
     /** Cycles a driven wheel may stay still before it counts as stalled: one second at {@link #TICKS_PER_SECOND}. */
     static final int STALL_TICKS = TICKS_PER_SECOND;
-    /** A rate in counts per second becomes this many 1/256 counts per cycle: 256 over the cycle rate, a power of two. */
-    static final int Q8_PER_RATE = 256 / TICKS_PER_SECOND;
-
-    static {
-        if (256 % TICKS_PER_SECOND != 0 || Integer.bitCount(Q8_PER_RATE) != 1) {
-            throw new IllegalStateException("TICKS_PER_SECOND must divide 256 by a power of two");
-        }
-    }
+    /** Over the last this many counts of its distance, a side drives one level below the maximum, to limit overshoot. */
+    static final int SLOW_COUNTS = 2;
+    /** The longest timeout whose cycle count, seconds times {@link #TICKS_PER_SECOND}, fits a word. */
+    static final int MAX_TIMEOUT_SECONDS = 0xFFFF / TICKS_PER_SECOND;
     /** Placeholder: main-loop passes without a fresh analog update before the sensors count as stale. */
     static final int STALE_PASSES = 200;
-    /** Profile speed and acceleration arrive in counts per second; more than this would not divide into a byte. */
-    static final int MAX_RATE = 255 * TICKS_PER_SECOND;
+    /**
+     * Profile speed and acceleration arrive in counts per second, at most this: the conversion divides the rate by 4 into
+     * a byte. Far beyond an RCX motor, which turns about 4 times a second, 64 counts.
+     */
+    static final int MAX_RATE = 255 * 4;
 
     /** Motor-mode and sensor-type values, as the ROM takes them: the sensor's rotation type and its mode. */
     private static final int SENSOR_TYPE_ROTATION = 4;
@@ -164,6 +155,8 @@ final class RcxRegulator {
     /** The targets the next start applies, as staged by the target commands. */
     static final int PENDING_LEFT = BASE + 22;
     static final int PENDING_RIGHT = BASE + 24;
+    /** Control cycles run since boot, in any state, wrapping at 16 bits: read by {@link #OPCODE_CYCLES}. */
+    static final int CYCLES_RUN = BASE + 26;
 
     /** Per side: done, power, direction, stall count, target, trajectory, velocity, position and last position. */
     static final int DONE = 0;
@@ -178,6 +171,9 @@ final class RcxRegulator {
     static final int LAST = 14;
     /** The trajectory's fraction of a count, in 1/256 counts, carried from one cycle's step to the next. */
     static final int FRACTION = 16;
+    /** The side's position when the motion started, and the distance to cover from it, in counts (unsigned). */
+    static final int START_POSITION = 18;
+    static final int DISTANCE = 20;
 
     /** The sensor struct's converted value: {@code char type, char mode, short raw, short value, char boolean}. */
     private static final int SENSOR_SIZE = 8;
@@ -230,6 +226,7 @@ final class RcxRegulator {
         target(TARGET_LEFT, PENDING_LEFT);
         target(TARGET_RIGHT, PENDING_RIGHT);
         start();
+        cycles();
     }
 
     /** The subroutines the handlers and the main loop call. */
@@ -338,6 +335,11 @@ final class RcxRegulator {
         assembler.branch(H8Condition.NOT_EQUAL, timeout);
         replyAck(INVALID_ARGUMENT, 1);
         assembler.label(timeout);
+        assembler.compareImmediate(MAX_TIMEOUT_SECONDS, H8ByteRegister.R0L);
+        String timeoutFits = code.newLabel();
+        assembler.branch(H8Condition.LOWER_OR_SAME, timeoutFits);
+        replyAck(OUT_OF_RANGE, 1);
+        assembler.label(timeoutFits);
         assembler.storeByte(H8ByteRegister.R0L, TIMEOUT_SECONDS);
         storeRate(RcxCode.REQUEST + 2, ACCELERATION, ACCELERATION_TICK);
         replyAck(ACCEPTED, 1);
@@ -351,6 +353,13 @@ final class RcxRegulator {
         assembler.branch(H8Condition.NOT_EQUAL, notRunning);
         replyAck(BUSY, 1);
         assembler.label(notRunning);
+    }
+
+    /** Replies with the control cycles run since boot, low byte first; takes the session byte, which it ignores. */
+    private void cycles() {
+        assembler.label(CYCLES);
+        assembler.load(CYCLES_RUN, H8Register.R0);
+        code.replyWithWord(H8Register.R0);
     }
 
     /** Stages one side's target (session, target low byte first) for the next start; a running movement keeps its own. */
@@ -427,6 +436,21 @@ final class RcxRegulator {
         for (Side side : SIDES) {
             assembler.load(pendingOf(side), H8Register.R0);
             assembler.store(H8Register.R0, side.base() + TARGET);
+            // The distance from here to the target, and the direction it lies in: 0 forward, 1 backward.
+            assembler.load(side.base() + POSITION, H8Register.R1);
+            assembler.store(H8Register.R1, side.base() + START_POSITION);
+            assembler.subtract(H8Register.R1, H8Register.R0);
+            assembler.moveImmediate(0, H8ByteRegister.R2L);
+            String ahead = code.newLabel();
+            assembler.moveImmediate(0, H8Register.R3);
+            assembler.compare(H8Register.R3, H8Register.R0);
+            code.jumpIf(H8Condition.GREATER_OR_EQUAL, ahead);
+            assembler.moveImmediate(1, H8ByteRegister.R2L);
+            assembler.subtract(H8Register.R0, H8Register.R3);
+            assembler.move(H8Register.R3, H8Register.R0);
+            assembler.label(ahead);
+            assembler.store(H8Register.R0, side.base() + DISTANCE);
+            assembler.storeByte(H8ByteRegister.R2L, side.base() + DIRECTION);
             assembler.load(side.base() + POSITION, H8Register.R0);
             assembler.store(H8Register.R0, side.base() + TRAJECTORY);
             assembler.store(H8Register.R0, side.base() + LAST);
@@ -436,18 +460,12 @@ final class RcxRegulator {
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);
-            assembler.storeByte(H8ByteRegister.R0L, side.base() + DIRECTION);
         }
         assembler.moveImmediate(0, H8Register.R0);
         assembler.store(H8Register.R0, ELAPSED);
         assembler.store(H8Register.R0, IDLE);
         assembler.storeByte(H8ByteRegister.R0L, FAULTS);
-        loadByteWord(TIMEOUT_SECONDS, H8Register.R0);
-        assembler.moveImmediate(0, H8Register.R1);
-        for (int tick = 0; tick < TICKS_PER_SECOND; tick++) {
-            assembler.add(H8Register.R0, H8Register.R1);
-        }
-        assembler.store(H8Register.R1, TIMEOUT_TICKS);
+        storeTimeoutTicks();
         assembler.moveImmediate(RUNNING, H8ByteRegister.R0L);
         assembler.storeByte(H8ByteRegister.R0L, STATE);
         replyAck(ACCEPTED, 3);
@@ -457,6 +475,9 @@ final class RcxRegulator {
     private void tick() {
         assembler.label(TICK);
         String done = code.newLabel();
+        assembler.load(CYCLES_RUN, H8Register.R0);
+        assembler.adds(1, H8Register.R0);
+        assembler.store(H8Register.R0, CYCLES_RUN);
         assembler.moveImmediate(0, H8Register.R0);
         assembler.store(H8Register.R0, IDLE);
         assembler.loadByte(STATE, H8ByteRegister.R0L);
@@ -572,70 +593,13 @@ final class RcxRegulator {
         assembler.loadByte(side.base() + DONE, H8ByteRegister.R0L);
         assembler.compareImmediate(0, H8ByteRegister.R0L);
         code.jumpIf(H8Condition.NOT_EQUAL, ret);
-        // The trajectory's remaining distance, target minus trajectory, in r1; the sign of that is kept in r5.
-        assembler.load(side.base() + TARGET, H8Register.R1);
-        assembler.load(side.base() + TRAJECTORY, H8Register.R2);
-        assembler.subtract(H8Register.R2, H8Register.R1);
-        // The velocity grows by the acceleration each cycle, up to the speed.
-        assembler.load(side.base() + VELOCITY, H8Register.R3);
-        assembler.load(ACCELERATION_TICK, H8Register.R4);
-        assembler.add(H8Register.R4, H8Register.R3);
-        assembler.load(SPEED_TICK, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R3);
-        String velocityCapped = code.newLabel();
-        assembler.branch(H8Condition.LOWER_OR_SAME, velocityCapped);
-        assembler.move(H8Register.R4, H8Register.R3);
-        assembler.label(velocityCapped);
-        assembler.store(H8Register.R3, side.base() + VELOCITY);
-        // The velocity is in 1/256 counts: added to the carried fraction, the whole counts are this cycle's step (r6)
-        // and the rest is carried, so a speed below one count per cycle advances the trajectory every few cycles.
-        assembler.load(side.base() + FRACTION, H8Register.R0);
-        assembler.add(H8Register.R3, H8Register.R0);
-        assembler.move(H8ByteRegister.R0H, H8ByteRegister.R6L);
-        assembler.moveImmediate(0, H8ByteRegister.R6H);
-        assembler.moveImmediate(0, H8ByteRegister.R0H);
-        assembler.store(H8Register.R0, side.base() + FRACTION);
-        // The step is the smaller of the whole counts and the remaining distance, in the remaining distance's direction.
-        assembler.moveImmediate(0, H8Register.R5);
-        assembler.moveImmediate(0, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String ahead = code.newLabel();
-        assembler.branch(H8Condition.GREATER_OR_EQUAL, ahead);
-        assembler.moveImmediate(1, H8Register.R5);
-        assembler.moveImmediate(0, H8Register.R4);
-        assembler.subtract(H8Register.R1, H8Register.R4);
-        assembler.move(H8Register.R4, H8Register.R1);
-        assembler.label(ahead);
-        assembler.compare(H8Register.R6, H8Register.R1);
-        String smaller = code.newLabel();
-        assembler.branch(H8Condition.LOWER_OR_SAME, smaller);
-        assembler.move(H8Register.R6, H8Register.R1);
-        assembler.label(smaller);
-        assembler.load(side.base() + TRAJECTORY, H8Register.R2);
-        assembler.moveImmediate(0, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R5);
-        String forward = code.newLabel();
-        String moved = code.newLabel();
-        assembler.branch(H8Condition.EQUAL, forward);
-        assembler.subtract(H8Register.R1, H8Register.R2);
-        assembler.jump(moved);
-        assembler.label(forward);
-        assembler.add(H8Register.R1, H8Register.R2);
-        assembler.label(moved);
-        assembler.store(H8Register.R2, side.base() + TRAJECTORY);
-        // Done when the trajectory has reached the target and the position is within the tolerance.
+        // Progress from the start toward the target, in counts (r1), and the distance to cover (r2).
+        loadProgress(side, H8Register.R1, H8Register.R0);
+        assembler.load(side.base() + DISTANCE, H8Register.R2);
+        // Done once the whole distance is covered: the brake (or float) holds the wheel there.
         String notDone = code.newLabel();
-        assembler.load(side.base() + TRAJECTORY, H8Register.R1);
-        assembler.load(side.base() + TARGET, H8Register.R2);
         assembler.compare(H8Register.R2, H8Register.R1);
-        assembler.branch(H8Condition.NOT_EQUAL, notDone);
-        assembler.load(side.base() + TARGET, H8Register.R1);
-        assembler.load(side.base() + POSITION, H8Register.R2);
-        assembler.subtract(H8Register.R2, H8Register.R1);
-        absolute(H8Register.R1);
-        loadByteWord(TOLERANCE, H8Register.R2);
-        assembler.compare(H8Register.R2, H8Register.R1);
-        assembler.branch(H8Condition.HIGHER, notDone);
+        code.jumpIf(H8Condition.LESS, notDone);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
         assembler.moveImmediate(NO_POWER, H8Register.R0);
@@ -646,78 +610,39 @@ final class RcxRegulator {
                 Argument.register(H8Register.R1), Argument.register(H8Register.R2));
         assembler.jump(ret);
         assembler.label(notDone);
-        // The error is the trajectory minus the position; the power is bounded proportional to its size.
-        assembler.load(side.base() + TRAJECTORY, H8Register.R1);
-        assembler.load(side.base() + POSITION, H8Register.R2);
-        assembler.subtract(H8Register.R2, H8Register.R1);
-        assembler.moveImmediate(0, H8Register.R5);
-        assembler.moveImmediate(0, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String errorAhead = code.newLabel();
-        assembler.branch(H8Condition.GREATER_OR_EQUAL, errorAhead);
-        assembler.moveImmediate(1, H8Register.R5);
-        assembler.label(errorAhead);
-        absolute(H8Register.R1);
-        String zeroPower = code.newLabel();
-        assembler.moveImmediate(DEADBAND, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        code.jumpIf(H8Condition.LOWER_OR_SAME, zeroPower);
-        assembler.moveImmediate(SATURATED_ERROR, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String unsaturated = code.newLabel();
-        assembler.branch(H8Condition.LOWER_OR_SAME, unsaturated);
-        assembler.move(H8Register.R4, H8Register.R1);
-        assembler.label(unsaturated);
-        assembler.moveImmediate(2, H8Register.R4);
-        assembler.add(H8Register.R4, H8Register.R1);
-        assembler.moveImmediate(KP_DIVISOR, H8ByteRegister.R6L);
-        assembler.divideUnsigned(H8ByteRegister.R6L, H8Register.R1);
-        assembler.moveImmediate(0, H8ByteRegister.R1H);
-        assembler.moveImmediate(MIN_START_POWER, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String aboveMinimum = code.newLabel();
-        assembler.branch(H8Condition.CARRY_CLEAR, aboveMinimum);
-        assembler.move(H8Register.R4, H8Register.R1);
-        assembler.label(aboveMinimum);
-        loadByteWord(MAX_POWER, H8Register.R4);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String withinMaximum = code.newLabel();
-        assembler.branch(H8Condition.LOWER_OR_SAME, withinMaximum);
-        assembler.move(H8Register.R4, H8Register.R1);
-        assembler.label(withinMaximum);
-        // The power rises by at most the slew limit, and at least to the minimum starting power.
-        loadByteWord(side.base() + POWER, H8Register.R4);
-        assembler.moveImmediate(SLEW_PER_TICK, H8Register.R6);
-        assembler.add(H8Register.R6, H8Register.R4);
-        assembler.moveImmediate(MIN_START_POWER, H8Register.R6);
-        assembler.compare(H8Register.R6, H8Register.R4);
-        String slewFloor = code.newLabel();
-        assembler.branch(H8Condition.CARRY_CLEAR, slewFloor);
-        assembler.move(H8Register.R6, H8Register.R4);
-        assembler.label(slewFloor);
-        assembler.compare(H8Register.R4, H8Register.R1);
-        String slewed = code.newLabel();
-        assembler.branch(H8Condition.LOWER_OR_SAME, slewed);
-        assembler.move(H8Register.R4, H8Register.R1);
-        assembler.label(slewed);
-        // A reversal drops the power to zero first, and the direction changes once the power is zero.
-        String setDirection = code.newLabel();
-        String keepDirection = code.newLabel();
-        loadByteWord(side.base() + DIRECTION, H8Register.R4);
+        // The base power is the configured maximum, one level less over the last few counts to limit the overshoot.
+        loadByteWord(MAX_POWER, H8Register.R3);
+        assembler.move(H8Register.R2, H8Register.R4);
+        assembler.subtract(H8Register.R1, H8Register.R4);
+        assembler.moveImmediate(SLOW_COUNTS, H8Register.R5);
         assembler.compare(H8Register.R5, H8Register.R4);
-        assembler.branch(H8Condition.EQUAL, setDirection);
-        loadByteWord(side.base() + POWER, H8Register.R4);
-        assembler.moveImmediate(0, H8Register.R6);
-        assembler.compare(H8Register.R6, H8Register.R4);
-        assembler.branch(H8Condition.EQUAL, setDirection);
-        assembler.moveImmediate(0, H8Register.R1);
-        assembler.jump(keepDirection);
-        assembler.label(setDirection);
-        assembler.storeByte(H8ByteRegister.R5L, side.base() + DIRECTION);
-        assembler.jump(keepDirection);
-        assembler.label(zeroPower);
-        assembler.moveImmediate(0, H8Register.R1);
-        assembler.label(keepDirection);
+        String notSlowing = code.newLabel();
+        code.jumpIf(H8Condition.GREATER, notSlowing);
+        // Not below one level: at no power the wheel would brake short of its target and never finish.
+        assembler.moveImmediate(1, H8Register.R5);
+        assembler.compare(H8Register.R5, H8Register.R3);
+        code.jumpIf(H8Condition.LOWER_OR_SAME, notSlowing);
+        lowerPowerByOne(H8Register.R3);
+        assembler.label(notSlowing);
+        // Keep the wheels level: a side ahead of the other (still moving) side by a count drops a level, by more brakes.
+        Side other = side == LEFT ? RIGHT : LEFT;
+        String level = code.newLabel();
+        assembler.loadByte(other.base() + DONE, H8ByteRegister.R0L);
+        assembler.compareImmediate(0, H8ByteRegister.R0L);
+        code.jumpIf(H8Condition.NOT_EQUAL, level);
+        loadProgress(other, H8Register.R6, H8Register.R0);
+        assembler.move(H8Register.R1, H8Register.R4);
+        assembler.subtract(H8Register.R6, H8Register.R4);
+        assembler.moveImmediate(1, H8Register.R5);
+        assembler.compare(H8Register.R5, H8Register.R4);
+        code.jumpIf(H8Condition.LESS, level);
+        lowerPowerByOne(H8Register.R3);
+        assembler.moveImmediate(2, H8Register.R5);
+        assembler.compare(H8Register.R5, H8Register.R4);
+        code.jumpIf(H8Condition.LESS, level);
+        assembler.moveImmediate(NO_POWER, H8Register.R3);
+        assembler.label(level);
+        assembler.move(H8Register.R3, H8Register.R1);
         assembler.storeByte(H8ByteRegister.R1L, side.base() + POWER);
         // A driven wheel that does not move for the stall window is stalled.
         String stallStore = code.newLabel();
@@ -744,7 +669,8 @@ final class RcxRegulator {
         assembler.or(side.stallFault(), H8ByteRegister.R2L);
         assembler.storeByte(H8ByteRegister.R2L, FAULTS);
         assembler.label(noStall);
-        // The output runs in the direction, flipped for a reversed motor; no power brakes it.
+        // The output runs in the direction, flipped for a reversed motor. No power brakes it, at full braking power:
+        // the ROM brakes with the power it is given, so a brake at power 0 let a waiting wheel coast on ahead.
         assembler.moveImmediate(RcxRom.MOTOR_FORWARD, H8Register.R4);
         loadByteWord(side.base() + DIRECTION, H8Register.R5);
         assembler.loadByte(CONFIG, H8ByteRegister.R6L);
@@ -761,6 +687,7 @@ final class RcxRegulator {
         String drive = code.newLabel();
         assembler.branch(H8Condition.NOT_EQUAL, drive);
         assembler.moveImmediate(RcxRom.MOTOR_BRAKE, H8Register.R4);
+        assembler.moveImmediate(FULL_POWER, H8Register.R1);
         assembler.label(drive);
         code.rom().call(RcxRom.CONTROL_MOTOR, Argument.constant(side.motor()),
                 Argument.register(H8Register.R4), Argument.register(H8Register.R1));
@@ -888,16 +815,52 @@ final class RcxRegulator {
 
     /**
      * Stores the rate at {@code argument} as given, and per control cycle in 1/256 counts (Q8) in {@code perTick}: the
-     * rate times {@code 256 / TICKS_PER_SECOND}, a power of two, so the conversion is exact shifts. {@link #MAX_RATE}
-     * keeps the result within a word.
+     * rate times 256 / {@link #TICKS_PER_SECOND}, 0.769, computed as {@code rate - rate / 4 + rate / 64}, 0.766, since the
+     * H8 here has a divide but no multiply. {@link #perCycleQ8} is the same arithmetic, for the tests.
      */
     private void storeRate(int argument, int rate, int perTick) {
         loadWordArgument(argument, H8Register.R0);
         assembler.store(H8Register.R0, rate);
-        for (int scale = 1; scale < Q8_PER_RATE; scale *= 2) {
-            assembler.add(H8Register.R0, H8Register.R0);
-        }
+        assembler.move(H8Register.R0, H8Register.R2);
+        assembler.moveImmediate(4, H8ByteRegister.R6L);
+        assembler.divideUnsigned(H8ByteRegister.R6L, H8Register.R2);
+        assembler.moveImmediate(0, H8ByteRegister.R2H);
+        assembler.move(H8Register.R0, H8Register.R3);
+        assembler.moveImmediate(64, H8ByteRegister.R6L);
+        assembler.divideUnsigned(H8ByteRegister.R6L, H8Register.R3);
+        assembler.moveImmediate(0, H8ByteRegister.R3H);
+        assembler.subtract(H8Register.R2, H8Register.R0);
+        assembler.add(H8Register.R3, H8Register.R0);
         assembler.store(H8Register.R0, perTick);
+    }
+
+    /** A rate in counts per second as the firmware converts it to 1/256 counts per control cycle. */
+    static int perCycleQ8(int ratePerSecond) {
+        return ratePerSecond - ratePerSecond / 4 + ratePerSecond / 64;
+    }
+
+    /**
+     * Stores the timeout in control cycles, {@code TIMEOUT_SECONDS * 333}, as {@code seconds * 256 + seconds * 77} by
+     * doubling and adding: 77 is 64 + 8 + 4 + 1. The acceleration command keeps the seconds within a word's worth.
+     */
+    private void storeTimeoutTicks() {
+        if (TICKS_PER_SECOND != 256 + 64 + 8 + 4 + 1) {
+            throw new IllegalStateException("storeTimeoutTicks multiplies by 333 only");
+        }
+        loadByteWord(TIMEOUT_SECONDS, H8Register.R2);
+        // r1 = seconds * 256: the seconds in the high byte.
+        assembler.loadByte(TIMEOUT_SECONDS, H8ByteRegister.R1H);
+        assembler.moveImmediate(0, H8ByteRegister.R1L);
+        assembler.add(H8Register.R2, H8Register.R1);
+        int doubled = 1;
+        for (int multiple : new int[] {4, 8, 64}) {
+            while (doubled < multiple) {
+                assembler.add(H8Register.R2, H8Register.R2);
+                doubled *= 2;
+            }
+            assembler.add(H8Register.R2, H8Register.R1);
+        }
+        assembler.store(H8Register.R1, TIMEOUT_TICKS);
     }
 
     /**
@@ -934,6 +897,34 @@ final class RcxRegulator {
         code.replyWith(4);
     }
 
+    /**
+     * Loads the side's progress from its start toward its target into {@code destination}, signed counts: the position
+     * minus the start, negated for a side that moves backward. Clobbers {@code scratch}.
+     */
+    private void loadProgress(Side side, H8Register destination, H8Register scratch) {
+        assembler.load(side.base() + POSITION, destination);
+        assembler.load(side.base() + START_POSITION, scratch);
+        assembler.subtract(scratch, destination);
+        String forward = code.newLabel();
+        assembler.loadByte(side.base() + DIRECTION, H8ByteRegister.low(scratch));
+        assembler.compareImmediate(0, H8ByteRegister.low(scratch));
+        code.jumpIf(H8Condition.EQUAL, forward);
+        assembler.moveImmediate(0, scratch);
+        assembler.subtract(destination, scratch);
+        assembler.move(scratch, destination);
+        assembler.label(forward);
+    }
+
+    /** Lowers the power in {@code power} by one level, not below zero. */
+    private void lowerPowerByOne(H8Register power) {
+        String zero = code.newLabel();
+        assembler.moveImmediate(0, H8Register.R0);
+        assembler.compare(H8Register.R0, power);
+        code.jumpIf(H8Condition.EQUAL, zero);
+        assembler.subs(1, power);
+        assembler.label(zero);
+    }
+
     private void replyByte(int address, int index) {
         assembler.loadByte(address, H8ByteRegister.R0L);
         assembler.storeByte(H8ByteRegister.R0L, RcxCode.REPLY + index);
@@ -958,17 +949,6 @@ final class RcxRegulator {
         assembler.moveImmediate(0, H8ByteRegister.high(destination));
     }
 
-    /** Replaces {@code register} with its magnitude, as a signed word. */
-    private void absolute(H8Register register) {
-        String positive = code.newLabel();
-        assembler.moveImmediate(0, H8Register.R6);
-        assembler.compare(H8Register.R6, register);
-        code.jumpIf(H8Condition.GREATER_OR_EQUAL, positive);
-        assembler.moveImmediate(0, H8Register.R6);
-        assembler.subtract(register, H8Register.R6);
-        assembler.move(H8Register.R6, register);
-        assembler.label(positive);
-    }
 
     private static int pendingOf(Side side) {
         return side == LEFT ? PENDING_LEFT : PENDING_RIGHT;

@@ -47,6 +47,8 @@ final class FakeRcx implements H8Simulator.Rom {
     private boolean wheelPlant;
     private boolean continuousAnalog;
     private final int[] wheelPosition = new int[3];
+    private final int[] wheelPowerAccumulated = new int[3];
+    private static final int POWER_PER_COUNT = 8;
     /**
      * Each wheel's position when its sensor was last read. The ROM adds a rotation sensor's steps to the value it keeps,
      * so a firmware that zeroes the value restarts the count there (hardware-confirmed: arming restarts both counts).
@@ -381,7 +383,11 @@ final class FakeRcx implements H8Simulator.Rom {
         }
     }
 
-    /** Moves each wheel by its commanded power, one count per level, forward or backward, unless it is jammed. */
+    /**
+     * Moves each wheel by its commanded power, forward or backward, unless it is jammed: a count per {@link #POWER_PER_COUNT}
+     * levels accumulated, so full power is under a count per update, as a real wheel turns far less than a sensor step
+     * between two 3 ms analog updates.
+     */
     private void advanceWheels() {
         if (!wheelPlant) {
             return;
@@ -391,10 +397,15 @@ final class FakeRcx implements H8Simulator.Rom {
             if (jammed[output]) {
                 continue;
             }
-            if (commandedMode[output] == 1) {
-                wheelPosition[output] += commandedPower[output];
-            } else if (commandedMode[output] == 2) {
-                wheelPosition[output] -= commandedPower[output];
+            int direction = commandedMode[output] == 1 ? 1 : commandedMode[output] == 2 ? -1 : 0;
+            wheelPowerAccumulated[output] += commandedPower[output] * direction;
+            while (wheelPowerAccumulated[output] >= POWER_PER_COUNT) {
+                wheelPowerAccumulated[output] -= POWER_PER_COUNT;
+                wheelPosition[output]++;
+            }
+            while (wheelPowerAccumulated[output] <= -POWER_PER_COUNT) {
+                wheelPowerAccumulated[output] += POWER_PER_COUNT;
+                wheelPosition[output]--;
             }
         }
     }
