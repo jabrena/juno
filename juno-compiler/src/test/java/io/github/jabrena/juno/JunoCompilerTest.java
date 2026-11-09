@@ -4888,6 +4888,71 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Rejects reading an enum static field its static initializer assigns, which would read as null")
+        void shouldRejectReadingAnEnumStaticFieldItsInitializerAssigns() throws Exception {
+            // Given: the enum's <clinit> never runs on the board, so ALL would stay null and a read would fault
+            String enumSource = """
+                    package demo;
+                    public enum Phase {
+                        IDLE, RUNNING, DONE;
+                        private static final Phase[] ALL = {IDLE, RUNNING, DONE};
+                        static Phase of(int code) {
+                            return code >= 0 && code < ALL.length ? ALL[code] : IDLE;
+                        }
+                    }
+                    """;
+            String usingSource = """
+                    package demo;
+                    public final class UsesPhaseTable {
+                        public static void main() {
+                            Phase phase = Phase.of(1);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Phase", enumSource);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesPhaseTable", usingSource);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesPhaseTable"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("Enum static fields initialized in the enum are not supported")
+                    .hasMessageContaining("demo.Phase.ALL");
+        }
+
+        @Test
+        @DisplayName("Still reads an enum static field that methods assign, since it needs no static initializer")
+        void shouldReadAnEnumStaticFieldThatMethodsAssign() throws Exception {
+            // Given
+            String enumSource = """
+                    package demo;
+                    public enum Counter {
+                        ONLY;
+                        private static int count;
+                        static int next() {
+                            count = count + 1;
+                            return count;
+                        }
+                    }
+                    """;
+            String usingSource = """
+                    package demo;
+                    public final class UsesCounter {
+                        public static void main() {
+                            int first = Counter.next();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Counter", enumSource);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesCounter", usingSource);
+
+            // When
+            String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UsesCounter").assembly();
+
+            // Then
+            assertThat(generated).contains("juno_static_demo_Counter_count");
+        }
+
+        @Test
         @DisplayName("Supports an integer value associated with each enum constant")
         void shouldSupportAnIntegerValueAssociatedWithEachEnumConstant() throws Exception {
             // Given

@@ -17,10 +17,6 @@ public enum RcxRegulatedState {
     EXTERNAL_OVERRIDE,
     LINK_UNKNOWN;
 
-    private static final RcxRegulatedState[] FIRMWARE_STATES = {
-        NOT_ARMED, READY, RUNNING, COMPLETE, STOPPED, STALLED, TIMED_OUT, FAULT
-    };
-
     /**
      * Maps a status reply to the state the host reports: an external override latched in the fault bits wins over the
      * firmware's own state.
@@ -31,7 +27,17 @@ public enum RcxRegulatedState {
 
     /** Maps a firmware state code ({@code 0..7}) to its state; any other code is {@link #FAULT}. */
     static RcxRegulatedState fromFirmware(int code) {
-        return code >= 0 && code < FIRMWARE_STATES.length ? FIRMWARE_STATES[code] : FAULT;
+        // A switch, not a static table: Juno never runs an enum's static initializer, so a table here would be null.
+        return switch (code) {
+            case 0 -> NOT_ARMED;
+            case 1 -> READY;
+            case 2 -> RUNNING;
+            case 3 -> COMPLETE;
+            case 4 -> STOPPED;
+            case 5 -> STALLED;
+            case 6 -> TIMED_OUT;
+            default -> FAULT;
+        };
     }
 
     /** Whether a new motion may start from this state: the firmware accepts a start when ready or after a finished one. */
