@@ -27,6 +27,7 @@ class RcxRegulatedPairTest {
     private static final int TARGET_RIGHT = 0x43;
     private static final int START = 0x52;
     private static final int CYCLES = 0x71;
+    private static final int DRIVE = 0x81;
     private static final int READY = 1;
     private static final int COMPLETE = 3;
     private static final int STOPPED = 4;
@@ -48,6 +49,26 @@ class RcxRegulatedPairTest {
         Infrared.reset();
         link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
         pair = new RcxRegulatedPair(link, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(7), 16);
+    }
+
+    @Test
+    @DisplayName("Reads the drive diagnostic: each side's power and its held cycles, low byte first")
+    void shouldReadTheDriveDiagnostic() {
+        // Given
+        armed();
+        reply(DRIVE, 0, 1, 0x2C, 0x01, 0, 0);
+
+        // When
+        boolean answered = pair.refreshDriveDiagnostics();
+
+        // Then
+        assertThat(answered).isTrue();
+        assertThat(pair.leftDrivePower()).isZero();
+        assertThat(pair.rightDrivePower()).isEqualTo(1);
+        assertThat(pair.leftHeldCycles()).isEqualTo(300);
+        assertThat(pair.rightHeldCycles()).isZero();
+        assertThat(sent(DRIVE).get(0)).containsExactly(DRIVE, 1);
+        assertThat(pair.refreshDriveDiagnostics()).isFalse();
     }
 
     @Test
@@ -80,6 +101,31 @@ class RcxRegulatedPairTest {
         assertThat(sent(ARM).get(0))
                 .containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(7));
         assertThat(pair.cachedState()).isEqualTo(RcxRegulatedState.READY);
+    }
+
+    @Test
+    @DisplayName("A new maximum power keeps the other flags and is sent with the next arm")
+    void shouldSendANewMaximumPowerWithTheNextArm() {
+        // Given
+        pair.setMaxPower(2);
+        reply(ARM, 0, 1, 1);
+        reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
+
+        // When
+        pair.arm();
+
+        // Then
+        assertThat(pair.maxPower()).isEqualTo(2);
+        assertThat(sent(ARM).get(0))
+                .containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(2));
+    }
+
+    @Test
+    @DisplayName("A maximum power outside 1 to 7 is rejected and the configured one stays")
+    void shouldRejectAMaximumPowerOutsideItsRange() {
+        assertThatThrownBy(() -> pair.setMaxPower(0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pair.setMaxPower(8)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(pair.maxPower()).isEqualTo(7);
     }
 
     @Test

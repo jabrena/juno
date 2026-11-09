@@ -26,6 +26,7 @@ final class RcxRegulatedProtocol {
     static final int OPCODE_TARGET_RIGHT = 0x43;
     static final int OPCODE_START = 0x52;
     static final int OPCODE_CYCLES = 0x71;
+    static final int OPCODE_DRIVE = 0x81;
 
     static final int ACCEPTED = 0;
     static final int DUPLICATE = 1;
@@ -61,6 +62,7 @@ final class RcxRegulatedProtocol {
     private static final int PROFILE_REPLY = 1;
     private static final int TARGET_REPLY = 1;
     private static final int CYCLES_REPLY = 2;
+    private static final int DRIVE_REPLY = 6;
     private static final int START_REPLY = 3;
     private static final int STOP_REPLY = 3;
     private static final int STATUS_REPLY = 8;
@@ -158,6 +160,25 @@ final class RcxRegulatedProtocol {
             return NO_REPLY;
         }
         return reply[0] | reply[1] << 8;
+    }
+
+    /** The last drive diagnostic: each side's power this cycle and the cycles each was held braked. */
+    int driveLeftPower;
+    int driveRightPower;
+    int driveLeftHeld;
+    int driveRightHeld;
+
+    /** Reads the drive diagnostic into the {@code drive*} fields; returns whether the brick answered. */
+    boolean drive(int session) {
+        arguments[0] = session;
+        if (!roundTrip(OPCODE_DRIVE, 1, DRIVE_REPLY)) {
+            return false;
+        }
+        driveLeftPower = reply[0];
+        driveRightPower = reply[1];
+        driveLeftHeld = reply[2] | reply[3] << 8;
+        driveRightHeld = reply[4] | reply[5] << 8;
+        return true;
     }
 
     /** Returns the acknowledgement code of {@code REG_STOP}, or {@link #NO_REPLY}. */
