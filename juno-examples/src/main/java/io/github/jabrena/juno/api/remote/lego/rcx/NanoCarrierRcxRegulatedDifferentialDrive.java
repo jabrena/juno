@@ -112,7 +112,8 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     private static final String APP_NAME = "regulated-drive";
     /** The board's own UDP port, which the datagrams are sent from; the monitor listens on Syslog.DEFAULT_PORT. */
     private static final int SYSLOG_SOURCE_PORT = 5515;
-    private static final int SYSLOG_BUFFER_BYTES = 128;
+    /** A trace line with the drive diagnostic runs past 128 bytes with the frame's header. */
+    private static final int SYSLOG_BUFFER_BYTES = 192;
     /** Between trace lines; each poll also spends two status round trips on the infrared link. */
     private static final int TRACE_PERIOD_MILLIS = 50;
     /** The gyro is read this often between trace polls, and for this long after the stop before the final heading. */
@@ -178,8 +179,13 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         drive.setLinearSpeedMillimetresPerSecond(LINEAR_SPEED_MILLIMETRES_PER_SECOND);
 
         imu.reset();
+        // Each wheel's tachometer just before the move: the trace reports progress from here, as the firmware measures
+        // it, since a rotation sensor can count a step or two while it settles after arming.
+        int leftStart = pair.left().tachoCount();
+        int rightStart = pair.right().tachoCount();
+        syslog.begin(Syslog.DEBUG).text("travel from left=").number(leftStart).text(" right=").number(rightStart).send();
         if (started(drive, pair, syslog)) {
-            traced(pair, imu, clock, syslog, "travel");
+            traced(pair, imu, clock, syslog, "travel", leftStart, rightStart);
         }
         drive.stop();
         followGyro(imu, SETTLE_MILLIS);
@@ -276,18 +282,25 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * tachometer read refreshes the status, so the state comes with them. Gives up past the brick's own timeout plus a
      * margin, as {@link RcxRegulatedPair#waitComplete()} does.
      */
-    private static void trace(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move) {
+    private static void trace(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move, int leftStart,
+            int rightStart) {
         int started = clock.millis();
         int limit = TIMEOUT_SECONDS * 1000 + TRACE_MARGIN_MILLIS;
         RcxRegulatedState state = RcxRegulatedState.RUNNING;
         while (state == RcxRegulatedState.RUNNING || state == RcxRegulatedState.LINK_UNKNOWN) {
-            int left = pair.left().tachoCount();
-            int right = pair.right().tachoCount();
+            int left = pair.left().tachoCount() - leftStart;
+            int right = pair.right().tachoCount() - rightStart;
             state = pair.cachedState();
             int elapsed = clock.millis() - started;
             syslog.begin(Syslog.DEBUG).text(move).text(" t=").number(elapsed).text(" state=").text(name(state))
                     .text(" faults=").number(pair.faults()).text(" left=").number(left).text(" right=").number(right)
-                    .text(" heading=").number(imu.getAngle()).send();
+                    .text(" heading=").number(imu.getAngle());
+            // Each side's power this cycle (0 while braked) and the cycles it was held for the other to catch up.
+            if (pair.refreshDriveDiagnostics()) {
+                syslog.text(" power=").number(pair.leftDrivePower()).text("/").number(pair.rightDrivePower())
+                        .text(" held=").number(pair.leftHeldCycles()).text("/").number(pair.rightHeldCycles());
+            }
+            syslog.send();
             if (elapsed > limit) {
                 return;
             }
@@ -365,8 +378,9 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Traces the running move, then reports how it ended; returns whether both wheels completed. */
-    private static boolean traced(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move) {
-        trace(pair, imu, clock, syslog, move);
+    private static boolean traced(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move,
+            int leftStart, int rightStart) {
+        trace(pair, imu, clock, syslog, move, leftStart, rightStart);
         return finishedCleanly(pair, syslog, move);
     }
 
