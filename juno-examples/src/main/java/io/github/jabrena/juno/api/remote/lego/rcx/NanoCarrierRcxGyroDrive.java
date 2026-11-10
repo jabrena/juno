@@ -94,8 +94,8 @@ public final class NanoCarrierRcxGyroDrive {
     private NanoCarrierRcxGyroDrive() {
     }
 
-    /** The BMI088 with its FIFO, read only while the infrared link is off the air. */
-    private static final class LinkQuietGyroscope implements BufferedGyroscope {
+    /** The BMI088 with its FIFO, read only while the infrared link is off the air; {@link NanoCarrierRcxNavigator} too. */
+    static final class LinkQuietGyroscope implements BufferedGyroscope {
         private final BufferedGyroscope gyroscope;
         private final RcxLink link;
 
