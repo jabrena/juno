@@ -12,6 +12,10 @@ import io.github.jabrena.juno.robotics.RegulatedPair;
  * left wheel turns backwards and the right forwards in a positive turn. Straight travel uses the same millimetres for
  * both wheels, but each side's encoder ratio decides its target, so a robot whose sides are calibrated differently
  * still covers the same distance on each wheel. Create it once at startup.
+ *
+ * <p>Left and right are the robot's, seen from behind as it drives forward, and the geometry's encoder ratios are the
+ * physical left and right wheels'. A build whose pair has its left side on the robot's right wheel is created with
+ * {@code sidesSwapped}, so a counter-clockwise turn still turns counter-clockwise.
  */
 public final class RegulatedDifferentialDrive {
     /** Scale of {@link #PI_MILLION}: π × 10⁶ rounded to an integer. */
@@ -27,6 +31,7 @@ public final class RegulatedDifferentialDrive {
 
     private final RegulatedPair pair;
     private final DriveGeometry geometry;
+    private final boolean sidesSwapped;
 
     /**
      * Creates the drive over {@code pair} with {@code geometry}.
@@ -34,6 +39,16 @@ public final class RegulatedDifferentialDrive {
      * @throws IllegalArgumentException if a geometry value is too large for the conversion's arithmetic
      */
     public RegulatedDifferentialDrive(RegulatedPair pair, DriveGeometry geometry) {
+        this(pair, geometry, false);
+    }
+
+    /**
+     * Creates the drive over {@code pair} with {@code geometry}; with {@code sidesSwapped}, the pair's left side drives
+     * the robot's right wheel and its right side the left wheel.
+     *
+     * @throws IllegalArgumentException if a geometry value is too large for the conversion's arithmetic
+     */
+    public RegulatedDifferentialDrive(RegulatedPair pair, DriveGeometry geometry, boolean sidesSwapped) {
         if (geometry.wheelDiameterMillimetres() > MAX_GEOMETRY
                 || geometry.trackWidthMillimetres() > MAX_GEOMETRY
                 || geometry.leftEncoderDegreesPerWheelRevolution() > MAX_GEOMETRY
@@ -42,6 +57,7 @@ public final class RegulatedDifferentialDrive {
         }
         this.pair = pair;
         this.geometry = geometry;
+        this.sidesSwapped = sidesSwapped;
     }
 
     /**
@@ -70,7 +86,7 @@ public final class RegulatedDifferentialDrive {
         int left = wheelDegrees(millimetres, geometry.leftEncoderDegreesPerWheelRevolution());
         int right = wheelDegrees(millimetres, geometry.rightEncoderDegreesPerWheelRevolution());
         requireRepresentable(millimetres != 0, left, right);
-        pair.rotate(left, right, immediateReturn);
+        rotate(left, right, immediateReturn);
     }
 
     /** Turns in place by {@code degrees} (positive is counter-clockwise), and waits until it completes. */
@@ -84,7 +100,7 @@ public final class RegulatedDifferentialDrive {
         int left = -turnWheelDegrees(degrees, geometry.leftEncoderDegreesPerWheelRevolution());
         int right = turnWheelDegrees(degrees, geometry.rightEncoderDegreesPerWheelRevolution());
         requireRepresentable(degrees != 0, left, right);
-        pair.rotate(left, right, immediateReturn);
+        rotate(left, right, immediateReturn);
     }
 
     /** Stops both wheels. */
@@ -100,6 +116,15 @@ public final class RegulatedDifferentialDrive {
     /** Waits until the current movement completes or reports an error state. */
     public void waitComplete() {
         pair.waitComplete();
+    }
+
+    /** Moves the robot's left and right wheels by their degrees, on the pair's sides that drive them. */
+    private void rotate(int leftWheel, int rightWheel, boolean immediateReturn) {
+        if (sidesSwapped) {
+            pair.rotate(rightWheel, leftWheel, immediateReturn);
+        } else {
+            pair.rotate(leftWheel, rightWheel, immediateReturn);
+        }
     }
 
     /**

@@ -106,6 +106,36 @@ class RegulatedDifferentialDriveTest {
     }
 
     @Test
+    @DisplayName("With the sides swapped, a counter-clockwise turn sends the right wheel's forward target to the pair's left")
+    void shouldTurnCounterClockwiseOnABuildWithSwappedSides() {
+        // Given: the pair's left side drives the robot's right wheel, as on the reference RCX build
+        RecordingPair pair = new RecordingPair();
+        RegulatedDifferentialDrive drive = new RegulatedDifferentialDrive(pair, REFERENCE, true);
+
+        // When
+        drive.turnDegrees(90);
+
+        // Then: the robot's right wheel, on the pair's left, forward; its left wheel, on the pair's right, backward
+        assertThat(pair.leftDegrees).isEqualTo(778);
+        assertThat(pair.rightDegrees).isEqualTo(-778);
+    }
+
+    @Test
+    @DisplayName("With the sides swapped, each wheel keeps its own encoder ratio on the pair's other side")
+    void shouldKeepEachWheelsRatioWhenTheSidesAreSwapped() {
+        // Given: the robot's left wheel geared at 1800 degrees a turn, its right at 900
+        RecordingPair pair = new RecordingPair();
+        RegulatedDifferentialDrive drive = new RegulatedDifferentialDrive(pair, new DriveGeometry(81, 140, 1800, 900), true);
+
+        // When
+        drive.travelMillimetres(100);
+
+        // Then: the right wheel's 354 degrees go to the pair's left, the left wheel's 707 to its right
+        assertThat(pair.leftDegrees).isEqualTo(354);
+        assertThat(pair.rightDegrees).isEqualTo(707);
+    }
+
+    @Test
     @DisplayName("A negative turn reverses the signs")
     void shouldTurnClockwise() {
         RecordingPair pair = new RecordingPair();
