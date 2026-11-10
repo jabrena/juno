@@ -51,7 +51,7 @@ import java.net.InetAddress;
  * <p>Wiring: the Nano Connector Carrier with the Grove infrared emitter in its A0/A1 socket and the Grove infrared
  * receiver in its A2/A3 socket, both pointed at the RCX's IR window, and the Grove BMI088 6-axis IMU in its I2C socket:
  * its gyro measures the heading during the travel and logs it as {@code heading=}, clockwise degrees, without steering. Set the carrier's VCC switch to 3.3 V, or the
- * Grove modules stay unpowered. The left wheel is on output A with its rotation sensor on input 1, the right wheel on
+ * Grove modules stay unpowered. The left motor is on output A with its rotation sensor on input 1, the right motor on
  * output C with its sensor on input 3, and a touch sensor on input 2 starts the run. The RCX runs no program of its own; it needs only the regulator firmware, installed
  * by {@link NanoCarrierRcxFirmwareDownload}. The Wi-Fi network comes from {@code application.properties} on the
  * carrier's microSD card ({@code wifi.ssid} and {@code wifi.password}, see {@link WifiCredentials}); without Wi-Fi the
@@ -69,10 +69,13 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     /** Of 7: lower than full, so a wheel that briefly falls behind is not driven hard enough to jerk the robot aside. */
     static final int MAX_POWER_LEVEL = 1;
     /**
-     * Measured on the reference build, whose forward is away from the RCX's IR window: output A drives the wheel on the
-     * robot's right and runs backward for forward, while C runs forward; input 1 counts up with A forward and input 3
-     * counts down with C forward ({@link NanoCarrierRcxDriveACSyslog}), so both sensors are inverted to count up as the
-     * robot moves forward. A turn needs no swapped sides ({@link NanoCarrierRcxRegulatedTurn} measured it). The brake stops a wheel at its target instead of letting it coast. Replace with your build's measurement.
+     * The ports define the roles, wherever the parts sit on the chassis: output A is the left motor with its rotation
+     * sensor on input 1, and output C the right motor with its sensor on input 3. Measured on the reference build: the
+     * left motor runs backward for forward, so it is inverted, while the right motor runs forward; input 1 counts up with
+     * A forward and input 3 counts down with C forward ({@link NanoCarrierRcxDriveACSyslog}), so both sensors are
+     * inverted to count up as the robot moves forward. A turn needs no swapped sides ({@link NanoCarrierRcxRegulatedTurn}
+     * measured it). The brake stops a wheel at its target instead of letting it coast. Replace with your build's
+     * measurement.
      */
     static final int SENSOR_DIRECTIONS = RcxRegulatedPair.INVERT_LEFT_MOTOR | RcxRegulatedPair.INVERT_LEFT_SENSOR
             | RcxRegulatedPair.INVERT_RIGHT_SENSOR | RcxRegulatedPair.BRAKE_ON_STOP;
