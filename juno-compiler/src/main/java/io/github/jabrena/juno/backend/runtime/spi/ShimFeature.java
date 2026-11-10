@@ -36,6 +36,8 @@ public enum ShimFeature {
     SPI,
     /** Runtime parsing and board-specific resolution of {@code Gpio.digitalPin}/{@code analogPin} names. */
     GPIO_PIN_LOOKUP,
+    /** {@code Gpio.pulseIn}: one pulse timed by the core's {@code pulseIn}, so a thread switch cannot stretch it. */
+    GPIO_PULSE_IN,
     WIFI,
     UDP,
     /** Caller-owned, single-connection TCP transport. */

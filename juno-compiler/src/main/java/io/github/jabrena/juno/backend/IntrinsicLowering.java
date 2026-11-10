@@ -324,6 +324,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.GPIO_DIGITAL_WRITE, digitalWrite, Result.NONE, List.of(arg(0), arg(1)));
         shim(Intrinsic.GPIO_DIGITAL_READ, coreRuntime.gpioFunction("digitalRead"), Result.WORD, List.of(arg(0)));
         shim(Intrinsic.GPIO_ANALOG_READ, coreRuntime.gpioFunction("analogRead"), Result.WORD, List.of(arg(0)));
+        shim(Intrinsic.GPIO_PULSE_IN, "juno_pulse_in", Result.WORD, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.GPIO_PULSE_IN);
         shim(Intrinsic.GPIO_ANALOG_WRITE, coreRuntime.gpioFunction("analogWrite"), Result.NONE,
                 List.of(arg(0), arg(1)));
         shim(Intrinsic.GPIO_DIGITAL_PIN, "juno_gpio_digital_pin", Result.WORD,

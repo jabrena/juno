@@ -56,6 +56,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return PIN_REMAP_WRAPPERS.getOrDefault(arduinoFunction, arduinoFunction);
     }
 
+    /** The Nano's printed pin number, translated as the other GPIO wrappers in the core glue translate it. */
+    @Override
+    public String pulseInPin() {
+        return "juno_nano_pin(pin)";
+    }
+
     @Override
     public String gpioAdditionalDigitalPins() {
         return core == ArduinoCore.M5STACK_ESP32

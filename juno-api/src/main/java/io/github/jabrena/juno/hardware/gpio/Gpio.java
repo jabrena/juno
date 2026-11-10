@@ -18,6 +18,15 @@ public interface Gpio {
 
     int analogRead(int pin);
 
+    /**
+     * Waits for a pulse on {@code pin}, a rise to high and a fall back when {@code high} (the other way round
+     * otherwise), and returns its length in microseconds, or {@code 0} when no whole pulse arrives within
+     * {@code timeoutMicros}. On the board the core times it, as Arduino's {@code pulseIn} does, so a switch to another
+     * thread in the middle cannot stretch it, as it could a pulse timed by polling {@link #digitalRead} from Java. It
+     * blocks for up to the timeout.
+     */
+    int pulseIn(int pin, boolean high, int timeoutMicros);
+
     void analogWrite(int pin, int value);
 
     void toggle(int pin);

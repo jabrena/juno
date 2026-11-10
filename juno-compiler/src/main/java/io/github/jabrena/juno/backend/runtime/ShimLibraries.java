@@ -25,6 +25,11 @@ public final class ShimLibraries {
         return runtimeSource.load("common/servo.cpp");
     }
 
+    /** {@code juno_pulse_in}: the core's {@code pulseIn} on the pin {@code pinExpression} names, from {@code pin}. */
+    String pulseInHelpers(String pinExpression) {
+        return runtimeSource.load("common/pulse-in.cpp").replace("${JUNO_PULSE_PIN}", pinExpression);
+    }
+
     /** Register reads and writes on the primary {@code Wire} bus, with the core-bundled {@code Wire} library. */
     String i2cHelpers() {
         return runtimeSource.load("common/i2c.cpp");
