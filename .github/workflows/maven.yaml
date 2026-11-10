@@ -715,6 +715,8 @@ jobs:
             board_id: arduino-uno-q
           - board: M5Stack Cardputer
             board_id: m5stack-cardputer
+          - board: Raspberry Pi Pico 2 W
+            board_id: raspberry-pi-pico-2-w
     steps:
       - uses: actions/checkout@v7
         with:
