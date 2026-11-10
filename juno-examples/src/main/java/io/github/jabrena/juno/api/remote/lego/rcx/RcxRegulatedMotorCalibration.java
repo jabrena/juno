@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * the right wheel on output C with its sensor on input 3. It arms the brick's regulator, zeroes both tachometers, turns
  * the left wheel forward and then the right wheel backward for a fixed angle, and prints each side's measured degrees and
  * the brick's state after each move. Compare the printed angles with the commanded angle to find each side's polarity,
- * gearing and quantization before you set the geometry in {@code RcxRegulatedDifferentialDrive}.
+ * gearing and quantization before you set the geometry in {@link RcxRegulatedTravelAndTurn}.
  *
  * <p>Wiring: a Grove Base Shield on the UNO R4 WiFi, with the Grove infrared emitter in its D3 socket and the Grove
  * infrared receiver in its D4 socket, both pointed at the RCX's IR window. The RCX runs no
