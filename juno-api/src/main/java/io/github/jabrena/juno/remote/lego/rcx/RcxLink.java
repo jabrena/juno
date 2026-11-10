@@ -10,6 +10,11 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * The RCX infrared framing: a message is {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each
  * byte followed by its complement. Plain Java on top of {@link Infrared}.
+ *
+ * <p>Every frame the link sends or receives, and every request's wait for its reply, runs while holding this link's
+ * monitor. The Grove receiver reads each byte by watching the pin, so a thread that took the processor between two bytes
+ * would make the link miss the next one's start bit; a thread that must not interrupt the air, such as one reading a
+ * gyroscope for a {@code GyroHeading}, synchronizes on the link and waits for the frame to end instead.
  */
 public final class RcxLink {
     private final Clock clock;
@@ -74,10 +79,12 @@ public final class RcxLink {
      */
     int receive() {
         requireDirectUse();
-        if (!Infrared.receiving()) {
-            return -1;
+        synchronized (this) {
+            if (!Infrared.receiving()) {
+                return -1;
+            }
+            return receiveFrame(FIRST_BYTE_MICROS);
         }
-        return receiveFrame(FIRST_BYTE_MICROS);
     }
 
     /**
@@ -171,7 +178,9 @@ public final class RcxLink {
             code ^= OPCODE_TOGGLE;
         }
         lastCommand = code;
-        sendFrame(code, first, second, third, arguments);
+        synchronized (this) {
+            sendFrame(code, first, second, third, arguments);
+        }
     }
 
     private void sendFrame(int code, int first, int second, int third, int arguments) {
@@ -245,8 +254,11 @@ public final class RcxLink {
      * when no valid reply came. The toggle bit marks a repeated opcode as {@link #send} does, so a retry is marked too.
      */
     int exchange(int opcode, int[] arguments, int count, int[] reply) {
-        transmit(opcode, arguments, count);
-        int replyCount = awaitReply(opcode, REPLY_TIMEOUT_MILLIS);
+        int replyCount;
+        synchronized (this) {
+            transmit(opcode, arguments, count);
+            replyCount = awaitReply(opcode, REPLY_TIMEOUT_MILLIS);
+        }
         if (replyCount < 0) {
             return -1;
         }
@@ -286,8 +298,10 @@ public final class RcxLink {
 
     /** Like the two-argument request, for commands with up to three arguments. */
     int request(int command, int first, int second, int third, int arguments) {
-        send(command, first, second, third, arguments);
-        return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+        synchronized (this) {
+            send(command, first, second, third, arguments);
+            return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+        }
     }
 
     /** Sends a request only to {@code channel} and waits for that brick's reply. */
@@ -311,11 +325,13 @@ public final class RcxLink {
      */
     int awaitReply(int command, int timeoutMillis) {
         int replyOpcode = ~command & 0xFF & ~OPCODE_TOGGLE;
-        int started = clock.millis();
-        while (clock.millis() - started < timeoutMillis) {
-            int count = receiveFrame(REPLY_POLL_MICROS);
-            if (count >= 0 && opcode == replyOpcode) {
-                return count;
+        synchronized (this) {
+            int started = clock.millis();
+            while (clock.millis() - started < timeoutMillis) {
+                int count = receiveFrame(REPLY_POLL_MICROS);
+                if (count >= 0 && opcode == replyOpcode) {
+                    return count;
+                }
             }
         }
         return -1;

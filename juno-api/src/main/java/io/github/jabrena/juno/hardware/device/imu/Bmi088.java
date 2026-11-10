@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.device.imu;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
-import io.github.jabrena.juno.robotics.Gyroscope;
+import io.github.jabrena.juno.robotics.BufferedGyroscope;
 import io.github.jabrena.juno.robotics.SampleProvider;
 
 /**
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.robotics.SampleProvider;
  * construction or {@link #reset()} and therefore drifts over time. Create it once at startup and keep it still
  * while {@link #recalibrateOffset()} runs.
  */
-public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
+public final class Bmi088 implements Accelerometer, BufferedGyroscope, SampleProvider {
     private static final int ACCEL_ADDRESS_DEFAULT = 0x19;
     private static final int GYRO_ADDRESS_DEFAULT = 0x69;
     private static final int ACCEL_CHIP_ID = 0x00;
@@ -29,6 +29,20 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
     private static final int ACCEL_RANGE = 0x41;
     private static final int GYRO_RANGE = 0x0F;
     private static final int GYRO_POWER_MODE = 0x11;
+    /** Output data rate and filter bandwidth; after reset 2000 Hz, which would fill the FIFO in 50 ms. */
+    private static final int GYRO_BANDWIDTH = 0x10;
+    /** 100 Hz output data rate, 32 Hz filter bandwidth. */
+    private static final int GYRO_100_HZ = 0x07;
+    /** Overrun in bit 7, frames in the FIFO in bits 0-6. */
+    private static final int GYRO_FIFO_STATUS = 0x0E;
+    private static final int FIFO_FRAME_COUNT = 0x7F;
+    /** FIFO mode in bits 6-7, axes in bits 0-1. */
+    private static final int GYRO_FIFO_CONFIG_1 = 0x3E;
+    /** Stream mode (the oldest frame is dropped when full) with the Z axis only: a frame is one 16-bit rate. */
+    private static final int FIFO_STREAM_Z_ONLY = 0x83;
+    /** Each read of two bytes here takes the oldest frame out of the FIFO. */
+    private static final int GYRO_FIFO_DATA = 0x3F;
+    private static final int FIFO_PERIOD_MILLIS = 10;
     private static final int ACCEL_ENABLED = 0x04;
     private static final int ACCEL_ACTIVE = 0x00;
     /** Normal bandwidth and 100 Hz output-data rate. */
@@ -50,6 +64,7 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
     private int gyroRateZ;
     private int lastMillis;
     private boolean started;
+    private int bufferedSamples;
 
     /** The Grove module on {@code i2c}; collaborators may be mocks in a unit test. */
     public Bmi088(I2c i2c, Clock clock) {
@@ -152,6 +167,56 @@ public final class Bmi088 implements Accelerometer, Gyroscope, SampleProvider {
         sample[offset] = acceleration(ACCEL_X_LSB);
         sample[offset + 1] = acceleration(ACCEL_X_LSB + 2);
         sample[offset + 2] = acceleration(ACCEL_X_LSB + 4);
+    }
+
+    /** Sets the gyroscope to 100 Hz and restarts its FIFO in stream mode, the Z axis only, empty. */
+    @Override
+    public void startBuffering() {
+        if (!started) {
+            return;
+        }
+        i2c.writeRegister(GYRO_ADDRESS_DEFAULT, GYRO_BANDWIDTH, GYRO_100_HZ);
+        // Writing the FIFO configuration also empties the FIFO.
+        i2c.writeRegister(GYRO_ADDRESS_DEFAULT, GYRO_FIFO_CONFIG_1, FIFO_STREAM_Z_ONLY);
+        bufferedSamples = 0;
+    }
+
+    /** Ten milliseconds: the 100 Hz rate {@link #startBuffering()} sets. */
+    @Override
+    public int samplePeriodMillis() {
+        return FIFO_PERIOD_MILLIS;
+    }
+
+    /**
+     * Reads every Z rate in the FIFO, oldest first, and returns their clockwise rotation in thousandths of a degree, the
+     * stored offset removed. The FIFO holds 100 frames, a second at 100 Hz; when the reads come further apart, the oldest
+     * are lost and the rotation of that time with them.
+     */
+    @Override
+    public int readBufferedRotation() {
+        bufferedSamples = 0;
+        if (!started) {
+            return 0;
+        }
+        int status = i2c.readRegister(GYRO_ADDRESS_DEFAULT, GYRO_FIFO_STATUS);
+        if (status < 0) {
+            return 0;
+        }
+        int frames = status & FIFO_FRAME_COUNT;
+        int sum = 0;
+        for (int frame = 0; frame < frames; frame++) {
+            sum += signed(i2c.readRegister16(GYRO_ADDRESS_DEFAULT, GYRO_FIFO_DATA)) - gyroBiasZ;
+        }
+        bufferedSamples = frames;
+        // Each frame's rate in degrees per second times its 10 ms is thousandths of a degree; the sensor's Z axis counts
+        // counter-clockwise.
+        return (int) (-sum * GYRO_DEGREES_PER_SECOND_PER_LSB * FIFO_PERIOD_MILLIS);
+    }
+
+    /** How many frames the last {@link #readBufferedRotation()} read. */
+    @Override
+    public int bufferedSamples() {
+        return bufferedSamples;
     }
 
     private float acceleration(int register) {

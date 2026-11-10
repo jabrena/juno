@@ -103,6 +103,32 @@ public final class RegulatedDifferentialDrive {
         rotate(left, right, immediateReturn);
     }
 
+    /** Turns about one wheel by {@code degrees} (positive is counter-clockwise), and waits until it completes. */
+    public void pivotDegrees(int degrees) {
+        pivotDegrees(degrees, false);
+    }
+
+    /**
+     * Turns about one wheel by {@code degrees}, positive counter-clockwise, returning at once when
+     * {@code immediateReturn} is set: the outer wheel, the right one for a counter-clockwise pivot, moves forward along
+     * an arc of the whole track width while the other stays. A pivot moves one wheel only, so its finest turn is one
+     * sensor step of one wheel, half an in-place turn's: a small heading correction.
+     *
+     * @throws IllegalArgumentException if the pivot is outside the supported range or quantizes to zero degrees
+     */
+    public void pivotDegrees(int degrees, boolean immediateReturn) {
+        checkMagnitude(degrees, MAX_ANGLE_DEGREES);
+        if (degrees > 0) {
+            int right = 2 * turnWheelDegrees(degrees, geometry.rightEncoderDegreesPerWheelRevolution());
+            requireRepresentable(true, right, right);
+            rotate(0, right, immediateReturn);
+        } else if (degrees < 0) {
+            int left = 2 * turnWheelDegrees(-degrees, geometry.leftEncoderDegreesPerWheelRevolution());
+            requireRepresentable(true, left, left);
+            rotate(left, 0, immediateReturn);
+        }
+    }
+
     /** Stops both wheels. */
     public void stop() {
         pair.stop();
