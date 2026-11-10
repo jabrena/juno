@@ -8,16 +8,15 @@ A shield plugs onto a board's headers and adds hardware the board does not have.
 Java: most need no Arduino library, and every shield class hands its pins and devices to the program, so a unit test
 can pass mocks instead. Seat a shield directly on the board, and check the pins before stacking two.
 
-| Shield | Adds | UNO R3 | UNO WiFi Rev2 | UNO R4 WiFi | UNO Q | Nano ESP32 | Pico 2 W |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| [TFT Touch Shield](#tft-touch-shield) | 2.8" color touch display, microSD | | ✓ | ✓ | ✓ | | |
-| [Grove Base Shield](#grove-base-shield) | Grove sockets | ✓ | ✓ | ✓ | ✓ | | |
-| [Grove Shield for Pi Pico](#grove-shield-for-pi-pico) | Grove sockets | | | | | | ✓ |
-| [Arduino 9 Axis Motion Shield](#arduino-9-axis-motion-shield) | BNO055 orientation sensor | ✓ | ✓ | ✓ | ✓ | | |
-| [LCD Keypad Shield](#lcd-keypad-shield) | 16 × 2 character LCD, five buttons | ✓ | ✓ | ✓ | ✓ | | |
-| [AZDelivery Data Logger Shield](#azdelivery-data-logger-shield) | microSD, real-time clock | ✓ | ✓ | ✓ | ✓ | | |
-| [Arduino WiFi Shield](#arduino-wifi-shield) | Wi-Fi for a board without a radio | ✓ | | | | | |
-| [Nano Connector Carrier](#nano-connector-carrier) | microSD, Grove and Qwiic sockets | | | | | ✓ | |
+| Shield | Adds | UNO R3 | UNO WiFi Rev2 | UNO R4 WiFi | UNO Q | Nano ESP32 |
+|---|---|:---:|:---:|:---:|:---:|:---:|
+| [TFT Touch Shield](#tft-touch-shield) | 2.8" color touch display, microSD | | ✓ | ✓ | ✓ | |
+| [Grove Base Shield](#grove-base-shield) | Grove sockets | ✓ | ✓ | ✓ | ✓ | |
+| [Arduino 9 Axis Motion Shield](#arduino-9-axis-motion-shield) | BNO055 orientation sensor | ✓ | ✓ | ✓ | ✓ | |
+| [LCD Keypad Shield](#lcd-keypad-shield) | 16 × 2 character LCD, five buttons | ✓ | ✓ | ✓ | ✓ | |
+| [AZDelivery Data Logger Shield](#azdelivery-data-logger-shield) | microSD, real-time clock | ✓ | ✓ | ✓ | ✓ | |
+| [Arduino WiFi Shield](#arduino-wifi-shield) | Wi-Fi for a board without a radio | ✓ | | | | |
+| [Nano Connector Carrier](#nano-connector-carrier) | microSD, Grove and Qwiic sockets | | | | | ✓ |
 
 ## TFT Touch Shield
 
@@ -99,49 +98,6 @@ public final class GroveDht22Example {
 
 [`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java)
 formats the two values as degrees and percent.
-
-## Grove Shield for Pi Pico
-
-<img src="../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
-
-Seeed Studio's [Grove Shield for Pi Pico v1.0](https://www.seeedstudio.com/Grove-Shield-for-Pi-Pico-v1-0-p-4846.html)
-does for the [Raspberry Pi Pico 2 W](../raspberry-pi-pico-2-w) what the Grove Base Shield does for the UNO: it is
-passive, and `GrovePicoShield` names its sockets. The digital sockets carry their GPIO number in the label (`D16` is
-GP16), the analog sockets `A0`–`A2` are the Pico's ADC pins GP26–GP28, and the I2C0 (GP8/GP9) and I2C1 (GP6/GP7)
-socket pins are exposed for drivers that wire their own bus. The UART and SPI sockets are not mapped yet. Set the
-shield's power switch to 3.3 V for modules that need it.
-
-With a Grove LED in socket D16 and an analog module, such as a light sensor, in A0:
-
-```java
-import io.github.jabrena.juno.hardware.RaspberryPico2;
-import io.github.jabrena.juno.hardware.device.grove.GrovePicoShield;
-import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
-import io.github.jabrena.juno.hardware.gpio.Gpio;
-import io.github.jabrena.juno.hardware.serial.BaudRate;
-import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.util.Delay;
-
-public final class GrovePicoExample {
-    public static void main(String[] args) {
-        Gpio gpio = RaspberryPico2.getGpio();
-        GrovePicoShield shield = new GrovePicoShield(gpio);
-        DigitalOutput led = DigitalOutput.of(shield.getD16());
-        Serial.begin(BaudRate.BAUD_9600);
-
-        while (true) {
-            led.high();
-            Delay.millis(500);
-            led.low();
-            Serial.println(gpio.analogRead(shield.getA0()));
-            Delay.millis(500);
-        }
-    }
-}
-```
-
-[`RaspberryPico2GroveShield`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java)
-is the complete example.
 
 ## Arduino 9 Axis Motion Shield
 
