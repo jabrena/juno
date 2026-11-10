@@ -29,8 +29,8 @@ import io.github.jabrena.juno.robotics.navigation.Waypoint;
  * blocked again on the way to the same waypoint, the next detour takes the other side and then steps wider; after three
  * it gives up.
  *
- * <p>The ranger times its echo in Java, and with the gyroscope's and the navigator's threads running, a thread switch
- * during the echo makes a reading look a few centimetres further: keep the stop distance generous.
+ * <p>The ranger times its echo in the core ({@code Gpio.pulseIn}), so the gyroscope's and the navigator's threads cannot
+ * stretch a reading. A reading waits up to 30 ms for its echo, which is why the pilot reads it less often than it drives.
  *
  * <p>Build, wiring and start are {@link PoweredUpRobot}'s, plus the Grove Ultrasonic Ranger in the carrier's A0/A1
  * socket, at the front of the vehicle, looking ahead. Serial at 115200 baud reports each detour and each point reached;
