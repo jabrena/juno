@@ -63,39 +63,38 @@ import java.net.InetAddress;
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class NanoCarrierRcxRegulatedDifferentialDrive {
-    private static final int SESSION = 1;
+    static final int SESSION = 1;
     /** Measured: the rotation sensor sits on the wheel axle, so one sensor turn is one wheel turn, 16 steps. */
-    private static final int STEPS_PER_MOTOR_REVOLUTION = 16;
+    static final int STEPS_PER_MOTOR_REVOLUTION = 16;
     /** Of 7: lower than full, so a wheel that briefly falls behind is not driven hard enough to jerk the robot aside. */
-    private static final int MAX_POWER_LEVEL = 1;
+    static final int MAX_POWER_LEVEL = 1;
     /**
      * Measured on the reference build, whose forward is away from the RCX's IR window: output A drives the wheel on the
      * robot's right and runs backward for forward, while C runs forward; input 1 counts up with A forward and input 3
      * counts down with C forward ({@link NanoCarrierRcxDriveACSyslog}), so both sensors are inverted to count up as the
-     * robot moves forward. Because A is on the right, a counter-clockwise turn would come out clockwise on this build. The
-     * brake stops a wheel at its target instead of letting it coast. Replace with your build's measurement.
+     * robot moves forward. A turn needs no swapped sides ({@link NanoCarrierRcxRegulatedTurn} measured it). The brake stops a wheel at its target instead of letting it coast. Replace with your build's measurement.
      */
-    private static final int SENSOR_DIRECTIONS = RcxRegulatedPair.INVERT_LEFT_MOTOR | RcxRegulatedPair.INVERT_LEFT_SENSOR
+    static final int SENSOR_DIRECTIONS = RcxRegulatedPair.INVERT_LEFT_MOTOR | RcxRegulatedPair.INVERT_LEFT_SENSOR
             | RcxRegulatedPair.INVERT_RIGHT_SENSOR | RcxRegulatedPair.BRAKE_ON_STOP;
     /** LEGO part 2998, measured at 81.6 mm and rounded to whole millimetres for the geometry. */
-    private static final int WHEEL_DIAMETER_MILLIMETRES = 82;
+    static final int WHEEL_DIAMETER_MILLIMETRES = 82;
     /** Measured at 16 cm between the driven wheels; an in-place turn checks the effective track width. */
-    private static final int TRACK_WIDTH_MILLIMETRES = 160;
+    static final int TRACK_WIDTH_MILLIMETRES = 160;
     /** Measured: the sensor is on each wheel's axle at 1:1, so one wheel turn is 360 encoder degrees on both sides. */
-    private static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 360;
-    private static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 360;
-    private static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
+    static final int LEFT_DEGREES_PER_WHEEL_REVOLUTION = 360;
+    static final int RIGHT_DEGREES_PER_WHEEL_REVOLUTION = 360;
+    static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
     private static final int TRAVEL_MILLIMETRES = 500;
-    private static final int TOLERANCE_STEPS = 1;
+    static final int TOLERANCE_STEPS = 1;
     /**
      * Control cycles of coasting the brick brakes early by (see {@link RcxRegulatedPair#setBrakeLead}): raise it while the
      * {@code rest} line shows the wheels past 31 steps (500 mm), lower it while they stop short; 0 brakes on the target.
      */
-    private static final int BRAKE_LEAD_CYCLES = RcxRegulatedPair.DEFAULT_BRAKE_LEAD;
-    private static final int TIMEOUT_SECONDS = 10;
-    private static final int START_MILLIS = 2000;
-    private static final int RETRY_MILLIS = 1000;
-    private static final int IDLE_SECONDS = 5;
+    static final int BRAKE_LEAD_CYCLES = RcxRegulatedPair.DEFAULT_BRAKE_LEAD;
+    static final int TIMEOUT_SECONDS = 10;
+    static final int START_MILLIS = 2000;
+    static final int RETRY_MILLIS = 1000;
+    static final int IDLE_SECONDS = 5;
 
     /** A4 for each count, A5 for "go". */
     private static final int COUNT_HZ = 440;
@@ -113,17 +112,17 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
 
     private static final int WIFI_ATTEMPTS = 20;
     private static final int WIFI_RETRY_MILLIS = 1000;
-    private static final String HOST_NAME = "nano-rcx";
+    static final String HOST_NAME = "nano-rcx";
     private static final String APP_NAME = "regulated-drive";
     /** The board's own UDP port, which the datagrams are sent from; the monitor listens on Syslog.DEFAULT_PORT. */
-    private static final int SYSLOG_SOURCE_PORT = 5515;
+    static final int SYSLOG_SOURCE_PORT = 5515;
     /** A trace line with the drive diagnostic runs past 128 bytes with the frame's header. */
-    private static final int SYSLOG_BUFFER_BYTES = 192;
+    static final int SYSLOG_BUFFER_BYTES = 192;
     /** Between trace lines; each poll also spends two status round trips on the infrared link. */
     private static final int TRACE_PERIOD_MILLIS = 50;
     /** The gyro is read this often between trace polls, and for this long after the stop before the final heading. */
     private static final int GYRO_SAMPLE_MILLIS = 10;
-    private static final int SETTLE_MILLIS = 500;
+    static final int SETTLE_MILLIS = 500;
     /** How long the cycle counter is watched; the infrared round trips at either end add a few percent. */
     private static final int CYCLE_WINDOW_MILLIS = 3000;
     /** Past the brick's own timeout, the outcome is reported as unknown rather than waited for. */
@@ -210,7 +209,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Joins the network named on the microSD card; reports the address on Serial once connected. */
-    private static boolean connectWifi(Wifi wifi, SdCard sdCard) {
+    static boolean connectWifi(Wifi wifi, SdCard sdCard) {
         // Opening a file needs an initialized card: SdCard.open does not initialize it.
         if (!sdCard.begin()) {
             Serial.println("microSD card not detected: is a card in the carrier's slot?");
@@ -245,7 +244,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Configures the touch sensor on input 2, retrying until the brick acknowledges. */
-    private static RcxTouchSensor touchSensor(RemoteRcx remote, Syslog syslog) {
+    static RcxTouchSensor touchSensor(RemoteRcx remote, Syslog syslog) {
         while (true) {
             try {
                 return new RcxTouchSensor(remote.getSensor2());
@@ -257,7 +256,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Waits for the start button to be pressed and then released, reminding every few seconds while it waits. */
-    private static void waitForClick(RcxTouchSensor startButton, Syslog syslog) {
+    static void waitForClick(RcxTouchSensor startButton, Syslog syslog) {
         report(syslog, Syslog.NOTICE, "Press and release the touch sensor on input 2 to start");
         int waited = 0;
         while (!startButton.isPressed()) {
@@ -276,7 +275,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Beeps "3, 2, 1" a second apart on the brick, then a longer, higher "go"; each step is also reported. */
-    private static void countdown(RcxAudio audio, Syslog syslog) {
+    static void countdown(RcxAudio audio, Syslog syslog) {
         for (int count = COUNT_FROM; count > 0; count--) {
             Serial.println(count);
             syslog.begin(Syslog.INFO).text("countdown ").number(count).send();
@@ -293,7 +292,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * tachometer read refreshes the status, so the state comes with them. Gives up past the brick's own timeout plus a
      * margin, as {@link RcxRegulatedPair#waitComplete()} does.
      */
-    private static void trace(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move, int leftStart,
+    static void trace(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog, String move, int leftStart,
             int rightStart) {
         int started = clock.millis();
         int limit = TIMEOUT_SECONDS * 1000 + TRACE_MARGIN_MILLIS;
@@ -351,7 +350,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         return false;
     }
 
-    private static void reportRefusal(Syslog syslog, RcxRegulatedPair pair, String move, String reason) {
+    static void reportRefusal(Syslog syslog, RcxRegulatedPair pair, String move, String reason) {
         String message = reason != null ? reason : "no message";
         Serial.print(move);
         Serial.print(" did not start: ");
@@ -364,7 +363,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * Waits {@code millis} while sampling the gyro every few milliseconds, since the heading is the rate integrated
      * between reads: the infrared round trips of a trace poll leave longer gaps, so it is sampled densely in between.
      */
-    private static void followGyro(Bmi088 imu, int millis) {
+    static void followGyro(Bmi088 imu, int millis) {
         for (int waited = 0; waited < millis; waited += GYRO_SAMPLE_MILLIS) {
             imu.getAngle();
             Delay.millis(GYRO_SAMPLE_MILLIS);
@@ -375,7 +374,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * Logs the brick's control cycles per second: its cycle counter read twice {@link #CYCLE_WINDOW_MILLIS} apart, while
      * the robot stands still. The firmware converts profile speeds to per-cycle steps with this rate.
      */
-    private static void measureCycleRate(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog) {
+    static void measureCycleRate(RcxRegulatedPair pair, Bmi088 imu, Clock clock, Syslog syslog) {
         int first = pair.diagnostics().controlCycles();
         int started = clock.millis();
         followGyro(imu, CYCLE_WINDOW_MILLIS);
@@ -398,7 +397,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Arms the session and reports whether the brick accepted it. */
-    private static boolean armed(RcxRegulatedPair pair, Syslog syslog) {
+    static boolean armed(RcxRegulatedPair pair, Syslog syslog) {
         try {
             pair.arm();
             return true;
@@ -414,7 +413,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * Reports how a move ended. Returns {@code true} only when both wheels completed; a stall, a timeout or an unknown
      * link outcome is reported as such and returns {@code false}, so the caller does not start the next move.
      */
-    private static boolean finishedCleanly(RcxRegulatedPair pair, Syslog syslog, String move) {
+    static boolean finishedCleanly(RcxRegulatedPair pair, Syslog syslog, String move) {
         RcxRegulatedState state = pair.status();
         if (state == RcxRegulatedState.COMPLETE) {
             Serial.print(move);
@@ -438,13 +437,13 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     /** Prints {@code message} on Serial and sends it at {@code severity}. */
-    private static void report(Syslog syslog, int severity, String message) {
+    static void report(Syslog syslog, int severity, String message) {
         Serial.println(message);
         syslog.log(severity, message);
     }
 
     /** The state's name as a constant, so a trace line is built without allocating. */
-    private static String name(RcxRegulatedState state) {
+    static String name(RcxRegulatedState state) {
         if (state == RcxRegulatedState.NOT_ARMED) {
             return "NOT_ARMED";
         } else if (state == RcxRegulatedState.READY) {
