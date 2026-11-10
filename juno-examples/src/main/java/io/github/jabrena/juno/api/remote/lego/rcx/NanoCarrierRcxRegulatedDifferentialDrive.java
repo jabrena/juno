@@ -34,7 +34,7 @@ import java.net.InetAddress;
  * as UDP syslog so it can be followed across the floor without a USB cable. It waits until the touch sensor on input 2
  * is pressed and released, so the run starts only when the robot is on the floor and the hand is clear; then a
  * "3, 2, 1, go!" countdown on the brick's speaker, 500 millimetres straight forward at 150 millimetres per second, then
- * a stop of both wheels. Turning is left for a separate example, once the straight travel is measured. A stall, a timeout or an unknown link outcome is reported and the program stops both wheels
+ * a stop of both wheels, braked early by the distance they coast so they stop on the target. Turning is left for a separate example, once the straight travel is measured. A stall, a timeout or an unknown link outcome is reported and the program stops both wheels
  * rather than continuing.
  *
  * <p>While each move runs, every poll sends one trace line: elapsed milliseconds, the regulator's state and fault bits,
@@ -87,6 +87,11 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     private static final int LINEAR_SPEED_MILLIMETRES_PER_SECOND = 150;
     private static final int TRAVEL_MILLIMETRES = 500;
     private static final int TOLERANCE_STEPS = 1;
+    /**
+     * Control cycles of coasting the brick brakes early by (see {@link RcxRegulatedPair#setBrakeLead}): raise it while the
+     * {@code rest} line shows the wheels past 31 steps (500 mm), lower it while they stop short; 0 brakes on the target.
+     */
+    private static final int BRAKE_LEAD_CYCLES = RcxRegulatedPair.DEFAULT_BRAKE_LEAD;
     private static final int TIMEOUT_SECONDS = 10;
     private static final int START_MILLIS = 2000;
     private static final int RETRY_MILLIS = 1000;
@@ -165,6 +170,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL) | SENSOR_DIRECTIONS,
                 STEPS_PER_MOTOR_REVOLUTION);
         pair.setTolerance(TOLERANCE_STEPS);
+        pair.setBrakeLead(BRAKE_LEAD_CYCLES);
         pair.setTimeoutSeconds(TIMEOUT_SECONDS);
 
         while (!armed(pair, syslog)) {
@@ -190,6 +196,10 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         }
         drive.stop();
         followGyro(imu, SETTLE_MILLIS);
+        // The brake can end the move before the wheels stop: where they came to rest is what the brake lead is tuned by.
+        pair.status();
+        syslog.begin(Syslog.NOTICE).text("rest left=").number(pair.cachedLeftTachoCount() - leftStart).text(" right=")
+                .number(pair.cachedRightTachoCount() - rightStart).text(" lead=").number(pair.brakeLead()).send();
         syslog.begin(Syslog.NOTICE).text("Final heading ").number(imu.getAngle()).text(" degrees").send();
         report(syslog, Syslog.NOTICE, "Stopped; the program now idles");
         while (true) {
@@ -393,7 +403,9 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
             pair.arm();
             return true;
         } catch (IllegalStateException refused) {
-            syslog.begin(Syslog.WARNING).text("arm refused, ack=").number(pair.lastAcknowledgement()).send();
+            // A brick with older firmware never answers the brake lead: reinstall it with NanoCarrierRcxFirmwareDownload.
+            syslog.begin(Syslog.WARNING).text("arm refused, ack=").number(pair.lastAcknowledgement()).text(": ")
+                    .text(refused.getMessage() != null ? refused.getMessage() : "no message").send();
             return false;
         }
     }
