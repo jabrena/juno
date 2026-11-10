@@ -94,6 +94,29 @@ initTheme();
 <div class="block">A firmware loader on a link shared with other RCX classes, so they share one toggle bit.</div>
 </div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry)" class="member-name-link">RcxRegulatedDifferentialDrive</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ int&nbsp;session,
+ int&nbsp;configurationFlags,
+ int&nbsp;sensorStepsPerMotorRevolution,
+ <a href="../../../../robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the drive over <code>link</code> for <code>session</code> (1..255), with the pair's <code>configurationFlags</code> (its
+<code>INVERT_*</code> and <a href="../RcxRegulatedPair.html#BRAKE_ON_STOP"><code>RcxRegulatedPair.BRAKE_ON_STOP</code></a> bits and <a href="../RcxRegulatedPair.html#maxPower(int)"><code>RcxRegulatedPair.maxPower(int)</code></a>), the
+rotation sensor's steps per motor revolution, and the measured <code>geometry</code>.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)" class="member-name-link">RcxRegulatedDifferentialDrive</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ int&nbsp;session,
+ int&nbsp;configurationFlags,
+ int&nbsp;sensorStepsPerMotorRevolution,
+ <a href="../../../../robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ boolean&nbsp;sidesSwapped)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the drive as <a href="../RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry)"><code>RcxRegulatedDifferentialDrive(RcxLink, int, int, int, DriveGeometry)</code></a> does; with
+<code>sidesSwapped</code>, the pair's left side (motor A) drives the robot's right wheel, so a counter-clockwise turn
+still turns counter-clockwise.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../RcxRegulatedPair.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int)" class="member-name-link">RcxRegulatedPair</a><wbr>(<a href="../RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
  int&nbsp;session,
  int&nbsp;configurationFlags,

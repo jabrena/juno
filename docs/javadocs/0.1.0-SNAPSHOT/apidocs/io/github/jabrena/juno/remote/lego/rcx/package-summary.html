@@ -142,6 +142,17 @@ byte followed by its complement.</div>
 <a href="RemoteRcx.html#getMotorA()"><code>RemoteRcx.getMotorA()</code></a>, <a href="RemoteRcx.html#getMotorB()"><code>RemoteRcx.getMotorB()</code></a> and <a href="RemoteRcx.html#getMotorC()"><code>RemoteRcx.getMotorC()</code></a>, and combine them with
 <a href="RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)"><code>RcxMotor.and(RcxMotor)</code></a> so that several outputs start and stop in the same command, e.g. the two sides of a vehicle.</div>
 </div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RcxRegulatedDiagnostics.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDiagnostics</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Diagnostics read from the brick for a regulated pair, for tuning and floor tests: the control-cycle counter, which
+gives the brick's cycle rate, and how the wheel sync drives each side.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RcxRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDifferentialDrive</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">A two-wheel RCX vehicle whose wheels are regulated on the brick: one <a href="RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedPair</code></a> on the firmware's only
+mapping (motor A with sensor 1 as the pair's left side, motor C with sensor 3 as its right side) driven by distance and
+heading through a <a href="../../../robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>RegulatedDifferentialDrive</code></a>.</div>
+</div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">One side of an <a href="RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedPair</code></a>, as the <a href="../../../robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedMotor</code></a> contract: speed and acceleration are the

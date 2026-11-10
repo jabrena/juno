@@ -24,6 +24,9 @@ static int32_t juno_gpio_alias(const char* name, const int32_t* pins) {
   if (name[0] == 'G') {
     if (name[1] == 'P' && name[2] == 'I' && name[3] == 'O') {
       offset = 4;
+    } else if (name[1] == 'P') {
+      // The Raspberry Pi Pico's own GPn pin names.
+      offset = 2;
     } else {
       offset = 1;
     }

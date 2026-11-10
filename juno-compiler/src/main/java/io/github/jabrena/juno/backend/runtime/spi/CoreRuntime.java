@@ -302,6 +302,14 @@ public interface CoreRuntime {
         return "";
     }
 
+    /**
+     * Statements that select the primary {@code Wire} bus's pins before {@code Wire.begin()}, each followed by a newline
+     * and two-space indent; empty when the core's default pins are the board's I2C pins.
+     */
+    default String i2cPinSetup() {
+        return "";
+    }
+
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
     default String mouseIncludes() {
         return "#include <Mouse.h>\n";

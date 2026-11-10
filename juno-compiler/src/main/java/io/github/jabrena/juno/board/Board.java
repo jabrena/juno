@@ -86,7 +86,17 @@ public enum Board {
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
-                    Capability.TLS_EMAIL, Capability.USB_HID));
+                    Capability.TLS_EMAIL, Capability.USB_HID)),
+    /**
+     * Raspberry Pi Pico 2 W: the RP2350's Cortex-M33 on Earle Philhower's arduino-pico core, reached through
+     * {@code RaspberryPico2}. It runs GPIO, delays, USB serial, {@code java.math} and the onboard CYW43439 Wi-Fi
+     * (station and access point, with UDP, TCP sockets and SNTP); its built-in LED sits on that radio chip, which the
+     * core drives as pin 64. HTTP, TLS and Bluetooth LE are not wired to Juno yet.
+     */
+    PICO_2_W("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard", "raspberry-pi-pico-2-w",
+            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w", ArduinoCore.RP2350, UnoGeneration.NANO,
+            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+                    Capability.WIFI_ACCESS_POINT));
 
     private final String apiClassName;
     private final String id;

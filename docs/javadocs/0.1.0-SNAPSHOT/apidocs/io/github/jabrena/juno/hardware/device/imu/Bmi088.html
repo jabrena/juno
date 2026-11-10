@@ -87,6 +87,10 @@ initTheme();
 <li><a href="#reset()" tabindex="0">reset()</a></li>
 <li><a href="#sampleSize()" tabindex="0">sampleSize()</a></li>
 <li><a href="#fetchSample(float%5B%5D,int)" tabindex="0">fetchSample(float[], int)</a></li>
+<li><a href="#startBuffering()" tabindex="0">startBuffering()</a></li>
+<li><a href="#samplePeriodMillis()" tabindex="0">samplePeriodMillis()</a></li>
+<li><a href="#readBufferedRotation()" tabindex="0">readBufferedRotation()</a></li>
+<li><a href="#bufferedSamples()" tabindex="0">bufferedSamples()</a></li>
 </ol>
 </li>
 </ol>
@@ -102,13 +106,13 @@ initTheme();
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Implemented Interfaces:</dt>
-<dd><code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
+<dd><code><a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></code></dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Bmi088</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
-implements <a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
+implements <a href="../../../robotics/Accelerometer.html" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a>, <a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a>, <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics">SampleProvider</a></span></div>
 <div class="block">Grove 6-Axis Accelerometer &amp; Gyroscope (BMI088), accessed through I2C.
 
 <p>The module contains independent accelerometer and gyroscope I2C devices. It is configured for ±3 g and ±2000
@@ -146,36 +150,47 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
- int&nbsp;offset)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bufferedSamples()" class="member-name-link">bufferedSamples</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">How many frames the last <a href="#readBufferedRotation()"><code>readBufferedRotation()</code></a> read.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample</a><wbr>(float[]&nbsp;sample,
+ int&nbsp;offset)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Writes X, Y and Z acceleration in metres per second squared into the caller-owned buffer.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngle()" class="member-name-link">getAngle</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns heading in clockwise whole degrees, modulo 360.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>float</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getAngularVelocity()" class="member-name-link">getAngularVelocity</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getXAccel()" class="member-name-link">getXAccel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns X acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getYAccel()" class="member-name-link">getYAccel</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns Y acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getZAccel()" class="member-name-link">getZAccel</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns Z acceleration in whole metres per second squared, or zero if initialization failed.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readBufferedRotation()" class="member-name-link">readBufferedRotation</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Reads every Z rate in the FIFO, oldest first, and returns their clockwise rotation in thousandths of a degree, the
+stored offset removed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#recalibrateOffset()" class="member-name-link">recalibrateOffset</a>()</code></div>
@@ -188,9 +203,19 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <div class="block">Resets the integrated heading to zero.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#samplePeriodMillis()" class="member-name-link">samplePeriodMillis</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Ten milliseconds: the 100 Hz rate <a href="#startBuffering()"><code>startBuffering()</code></a> sets.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sampleSize()" class="member-name-link">sampleSize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns three acceleration components (X, Y, Z), in metres per second squared.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#startBuffering()" class="member-name-link">startBuffering</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the gyroscope to 100 Hz and restarts its FIFO in stream mode, the Z axis only, empty.</div>
 </div>
 </div>
 </div>
@@ -344,6 +369,60 @@ while <a href="#recalibrateOffset()"><code>recalibrateOffset()</code></a> runs.<
 <dt>Parameters:</dt>
 <dd><code>sample</code> - the caller-owned array that receives the sample</dd>
 <dd><code>offset</code> - the index of the first element to write</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="startBuffering()">
+<h3>startBuffering</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">startBuffering</span>()</div>
+<div class="block">Sets the gyroscope to 100 Hz and restarts its FIFO in stream mode, the Z axis only, empty.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BufferedGyroscope.html#startBuffering()">startBuffering</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="samplePeriodMillis()">
+<h3>samplePeriodMillis</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">samplePeriodMillis</span>()</div>
+<div class="block">Ten milliseconds: the 100 Hz rate <a href="#startBuffering()"><code>startBuffering()</code></a> sets.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BufferedGyroscope.html#samplePeriodMillis()">samplePeriodMillis</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="readBufferedRotation()">
+<h3>readBufferedRotation</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">readBufferedRotation</span>()</div>
+<div class="block">Reads every Z rate in the FIFO, oldest first, and returns their clockwise rotation in thousandths of a degree, the
+stored offset removed. The FIFO holds 100 frames, a second at 100 Hz; when the reads come further apart, the oldest
+are lost and the rotation of that time with them.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BufferedGyroscope.html#readBufferedRotation()">readBufferedRotation</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="bufferedSamples()">
+<h3>bufferedSamples</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">bufferedSamples</span>()</div>
+<div class="block">How many frames the last <a href="#readBufferedRotation()"><code>readBufferedRotation()</code></a> read.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/BufferedGyroscope.html#bufferedSamples()">bufferedSamples</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></code></dd>
 </dl>
 </div>
 </section>

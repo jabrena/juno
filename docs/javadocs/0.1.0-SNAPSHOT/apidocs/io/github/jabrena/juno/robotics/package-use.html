@@ -175,12 +175,17 @@ provides it.</div>
 <div class="col-last even-row-color">
 <div class="block">An acceleration sensor.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/Gyroscope.html#io.github.jabrena.juno.hardware.device.imu">Gyroscope</a></div>
+<div class="col-first odd-row-color"><a href="class-use/BufferedGyroscope.html#io.github.jabrena.juno.hardware.device.imu">BufferedGyroscope</a></div>
 <div class="col-last odd-row-color">
+<div class="block">A <a href="Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a> that keeps sampling its angular velocity at a fixed period in a buffer of its own, such as a FIFO
+on the sensor, so a reader that comes late still gets every sample since its previous read.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/Gyroscope.html#io.github.jabrena.juno.hardware.device.imu">Gyroscope</a></div>
+<div class="col-last even-row-color">
 <div class="block">The minimal contract for a gyroscope.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.hardware.device.imu">SampleProvider</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.hardware.device.imu">SampleProvider</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Source of sensor samples.</div>
 </div>
 </div>
@@ -305,12 +310,16 @@ provides it.</div>
 <div class="col-last even-row-color">
 <div class="block">Tachometer feedback for a motor or wheel.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.robotics">SampleProvider</a></div>
+<div class="col-first odd-row-color"><a href="class-use/Gyroscope.html#io.github.jabrena.juno.robotics">Gyroscope</a></div>
 <div class="col-last odd-row-color">
+<div class="block">The minimal contract for a gyroscope.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/SampleProvider.html#io.github.jabrena.juno.robotics">SampleProvider</a></div>
+<div class="col-last even-row-color">
 <div class="block">Source of sensor samples.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/SensorMode.html#io.github.jabrena.juno.robotics">SensorMode</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/SensorMode.html#io.github.jabrena.juno.robotics">SensorMode</a></div>
+<div class="col-last odd-row-color">
 <div class="block">One way of reading a sensor: a <a href="SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a> with a name, such as a
 temperature or a humidity mode of the same device.</div>
 </div>
@@ -323,9 +332,19 @@ temperature or a humidity mode of the same device.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="class-use/DCMotor.html#io.github.jabrena.juno.robotics.navigation">DCMotor</a></div>
+<div class="col-first even-row-color"><a href="class-use/BufferedGyroscope.html#io.github.jabrena.juno.robotics.navigation">BufferedGyroscope</a></div>
 <div class="col-last even-row-color">
+<div class="block">A <a href="Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a> that keeps sampling its angular velocity at a fixed period in a buffer of its own, such as a FIFO
+on the sensor, so a reader that comes late still gets every sample since its previous read.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/DCMotor.html#io.github.jabrena.juno.robotics.navigation">DCMotor</a></div>
+<div class="col-last odd-row-color">
 <div class="block">A DC motor driven by a power level.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/DirectionFinder.html#io.github.jabrena.juno.robotics.navigation">DirectionFinder</a></div>
+<div class="col-last even-row-color">
+<div class="block">A source of the robot's direction in Cartesian degrees, which grow counter-clockwise, as a drive's positive turn
+does.</div>
 </div>
 <div class="col-first odd-row-color"><a href="class-use/Encoder.html#io.github.jabrena.juno.robotics.navigation">Encoder</a></div>
 <div class="col-last odd-row-color">

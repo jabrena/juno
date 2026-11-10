@@ -4,7 +4,7 @@ import io.github.jabrena.juno.CompileException;
 
 /**
  * The instruction set an {@link ArduinoCore} runs generated code on, which picks the code generator: the UNO R4's
- * Cortex-M4 and the UNO Q's Cortex-M33 share one Thumb-2 backend, the UNO WiFi Rev2's ATmega4809 has its own AVR one,
+ * Cortex-M4 and the UNO Q's and Pico 2 W's Cortex-M33 share one Thumb-2 backend, the UNO WiFi Rev2's ATmega4809 has its own AVR one,
  * and the Nano ESP32's ESP32-S3 an Xtensa one.
  */
 public enum Architecture {
