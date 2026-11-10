@@ -77,4 +77,36 @@ class Bmi088Test {
 
         assertThat(imu.getAngle()).isZero();
     }
+
+    @Test
+    void shouldStartTheFifoAt100HertzWithTheZAxisOnly() {
+        imu.startBuffering();
+
+        // 100 Hz with a 32 Hz filter, then stream mode with the Z axis only, which also empties the FIFO
+        verify(i2c).writeRegister(0x69, 0x10, 0x07);
+        verify(i2c).writeRegister(0x69, 0x3E, 0x83);
+        assertThat(imu.samplePeriodMillis()).isEqualTo(10);
+    }
+
+    @Test
+    void shouldAddEveryBufferedZRateAsClockwiseRotation() {
+        // Given: three frames, two counter-clockwise at 1000 LSB and one at zero
+        when(i2c.readRegister(0x69, 0x0E)).thenReturn(3);
+        when(i2c.readRegister16(0x69, 0x3F)).thenReturn(1000, 1000, 0);
+
+        // When
+        int rotation = imu.readBufferedRotation();
+
+        // Then: 2000 LSB of 0.061 degrees per second for 10 ms, counter-clockwise, is -1220 thousandths clockwise
+        assertThat(imu.bufferedSamples()).isEqualTo(3);
+        assertThat(rotation).isEqualTo(-1220);
+    }
+
+    @Test
+    void shouldReadNothingWhenTheFifoStatusFails() {
+        when(i2c.readRegister(0x69, 0x0E)).thenReturn(-1);
+
+        assertThat(imu.readBufferedRotation()).isZero();
+        assertThat(imu.bufferedSamples()).isZero();
+    }
 }

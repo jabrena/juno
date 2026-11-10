@@ -65,6 +65,31 @@ class DatagramSocketTest {
     }
 
     @Test
+    @DisplayName("Compiles the juno-api Syslog logger onto the same datagram shims, with no intrinsics of its own")
+    void shouldCompileTheSyslogLoggerOntoTheDatagramShims() throws Exception {
+        // Given
+        CompilationResult result = compile("""
+                public static void main() throws java.io.IOException {
+                    java.net.InetAddress everyone = java.net.InetAddress.getByAddress(
+                            new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
+                    io.github.jabrena.juno.hardware.net.udp.Syslog syslog = new io.github.jabrena.juno.hardware.net.udp.Syslog(
+                            new java.net.DatagramSocket(5515), everyone,
+                            io.github.jabrena.juno.hardware.net.udp.Syslog.DEFAULT_PORT, "board", "app", new byte[64]);
+                    syslog.info("ready");
+                    for (int i = 0; i < 3; i++) {
+                        syslog.begin(io.github.jabrena.juno.hardware.net.udp.Syslog.DEBUG).text("i=").number(i).send();
+                    }
+                }
+                """);
+
+        // When & Then
+        assertThat(result.assembly()).contains(
+                "bl juno_datagram_socket_new", "bl juno_inet_address_get_by_address",
+                "bl juno_datagram_packet_new_send", "bl juno_datagram_packet_set_length",
+                "bl juno_datagram_socket_send");
+    }
+
+    @Test
     @DisplayName("Rejects an InetAddress lookup by name, which the subset does not support")
     void shouldRejectAnInetAddressLookupByName() {
         // Given

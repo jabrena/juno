@@ -43,6 +43,20 @@ import java.util.Objects;
  * message buttons set the message to 1-3, stop floats every output, sound beeps; program buttons are ignored</td>
  * <td>no reply, as the remote expects none</td></tr>
  * <tr><td>0xF7</td><td>set the message (0-255)</td><td>no reply</td></tr>
+ * <tr><td>0x61</td><td>regulated pair: status (session)</td><td>session, motion, state, fault bits, left and right
+ * positions (low, high each)</td></tr>
+ * <tr><td>0x62</td><td>regulated pair: stop the motion (session, motion)</td><td>result, session, motion</td></tr>
+ * <tr><td>0x63</td><td>regulated pair: arm the session (session, mapping 1, configuration flags)</td>
+ * <td>result, protocol version, mapping</td></tr>
+ * <tr><td>0x64</td><td>regulated pair: speed (session, speed, tolerance)</td><td>result</td></tr>
+ * <tr><td>0x74</td><td>regulated pair: acceleration (session, acceleration, timeout)</td><td>result</td></tr>
+ * <tr><td>0x33, 0x43</td><td>regulated pair: stage the left or right target (session, target)</td><td>result</td></tr>
+ * <tr><td>0x52</td><td>regulated pair: start a motion toward the staged targets (session, motion)</td>
+ * <td>result, session, motion</td></tr>
+ * <tr><td>0x71</td><td>regulated pair diagnostic: control cycles run since boot (session)</td><td>cycles</td></tr>
+ * <tr><td>0x81</td><td>regulated pair diagnostic: drive (session)</td><td>left power, right power, left held cycles,
+ * right held cycles</td></tr>
+ * <tr><td>0x92</td><td>regulated pair: brake lead in control cycles, 0 for none (session, lead)</td><td>result</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -145,8 +159,9 @@ public final class RcxRemoteFirmware {
     private final H8Assembler assembler = new H8Assembler(RcxRom.FIRMWARE_START);
     private final RcxCode code = new RcxCode(assembler);
     private final RcxRom rom = code.rom();
-    private final RcxMotorCommands motors = new RcxMotorCommands(code);
-    private final RcxSensorCommands sensors = new RcxSensorCommands(code);
+    private final RcxRegulator regulator = new RcxRegulator(code);
+    private final RcxMotorCommands motors = new RcxMotorCommands(code, regulator);
+    private final RcxSensorCommands sensors = new RcxSensorCommands(code, regulator);
     private final RcxDisplayIcons icons = new RcxDisplayIcons(code);
     private final RcxRemoteControl remote = new RcxRemoteControl(code, motors);
     private final RcxChannel channel = new RcxChannel(code);
@@ -174,6 +189,13 @@ public final class RcxRemoteFirmware {
         this.autoOffMinutes = autoOffMinutes;
         this.withIcons = withIcons;
     }
+
+    /**
+     * The image length is padded with zero bytes to a multiple of this: the boot ROM rejected the final download block of
+     * a 7811-byte image, three bytes long, with a firmware checksum error in every session, while every image whose last
+     * block held 31 bytes or more downloaded. Zeros leave the byte-sum checksum unchanged and sit past the code.
+     */
+    static final int DOWNLOAD_ALIGNMENT = 16;
 
     public static void main(String[] args) throws IOException {
         boolean withIcons = !List.of(args).contains(NO_ICONS);
@@ -214,6 +236,8 @@ public final class RcxRemoteFirmware {
         powerOff();
         motors.handlers();
         sensors.handlers();
+        regulator.handlers();
+        regulator.subroutines();
         remote.handlers();
         buttons.handlers();
         channel.handlers();
@@ -222,7 +246,7 @@ public final class RcxRemoteFirmware {
             icons.handlers(motors, sensors, text);
         }
         assembler.string(RcxRom.UNLOCK_TEXT);
-        return assembler.assemble("start");
+        return assembler.assemble("start").paddedTo(DOWNLOAD_ALIGNMENT);
     }
 
     /** Clears the data area and sets the outputs' defaults; runs after the download and every wake-up. */
@@ -272,7 +296,9 @@ public final class RcxRemoteFirmware {
         assembler.moveImmediate(0, H8ByteRegister.R6L);
         assembler.storeByte(H8ByteRegister.R6L, ANALOG_READY);
         assembler.call(RcxSensorCommands.UPDATE_ALL);
+        assembler.call(RcxRegulator.TICK);
         assembler.label(received);
+        assembler.call(RcxRegulator.IDLE_TICK);
         assembler.call(RcxBrickButtons.CHECK);
         if (withIcons) {
             String noTick = code.newLabel();
@@ -330,6 +356,17 @@ public final class RcxRemoteFirmware {
         handler(OPCODE_SET_CHARACTER, RcxDisplayText.SET_CHARACTER);
         handler(OPCODE_REMOTE_BUTTONS, RcxRemoteControl.BUTTONS);
         handler(OPCODE_SET_MESSAGE, RcxRemoteControl.SET_MESSAGE);
+        handler(RcxRegulator.OPCODE_STATUS, RcxRegulator.STATUS);
+        handler(RcxRegulator.OPCODE_STOP, RcxRegulator.STOP);
+        handler(RcxRegulator.OPCODE_ARM, RcxRegulator.ARM);
+        handler(RcxRegulator.OPCODE_SPEED, RcxRegulator.SET_SPEED);
+        handler(RcxRegulator.OPCODE_ACCELERATION, RcxRegulator.SET_ACCELERATION);
+        handler(RcxRegulator.OPCODE_TARGET_LEFT, RcxRegulator.TARGET_LEFT);
+        handler(RcxRegulator.OPCODE_TARGET_RIGHT, RcxRegulator.TARGET_RIGHT);
+        handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
+        handler(RcxRegulator.OPCODE_CYCLES, RcxRegulator.CYCLES);
+        handler(RcxRegulator.OPCODE_DRIVE, RcxRegulator.DRIVE);
+        handler(RcxRegulator.OPCODE_BRAKE_LEAD, RcxRegulator.SET_BRAKE_LEAD);
         assembler.jump(RcxCode.LOOP);
     }
 

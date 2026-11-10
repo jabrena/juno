@@ -15,7 +15,7 @@ final class RcxMotorCommands {
     static final String APPLY = "apply_motors";
 
     /** Per output A, B, C, one word each: the LEGO mode (0x80 on, 0x40 off, 0x00 float). */
-    private static final int MODES = 0xC04A;
+    static final int MODES = 0xC04A;
     /** Per output, one word each: 0x80 forward, 0x00 backward. */
     private static final int DIRECTIONS = 0xC050;
     /** Per output, one word each: power 0-7. */
@@ -43,10 +43,12 @@ final class RcxMotorCommands {
 
     private final RcxCode code;
     private final H8Assembler assembler;
+    private final RcxRegulator regulator;
 
-    RcxMotorCommands(RcxCode code) {
+    RcxMotorCommands(RcxCode code, RcxRegulator regulator) {
         this.code = code;
         this.assembler = code.assembler();
+        this.regulator = regulator;
     }
 
     /** Leaves every output floating, forward, at full power, as LEGO's firmware starts them. */
@@ -74,6 +76,23 @@ final class RcxMotorCommands {
      * remote did not start keep running. Stop floats every output.
      */
     void remoteDrive(int buttons) {
+        String drive = code.newLabel();
+        String done = code.newLabel();
+        String override = code.newLabel();
+        regulator.branchIfNotOwned(drive);
+        // Holding a regulated output's button is an external override; the stop button stops a running movement.
+        for (int[] button : new int[][] {REMOTE_FORWARD[0], REMOTE_BACKWARD[0], REMOTE_FORWARD[2], REMOTE_BACKWARD[2]}) {
+            assembler.loadByte(buttons + button[0], H8ByteRegister.R0L);
+            assembler.and(button[1], H8ByteRegister.R0L);
+            code.jumpIf(H8Condition.NOT_EQUAL, override);
+        }
+        String noStop = code.newLabel();
+        assembler.loadByte(buttons, H8ByteRegister.R0L);
+        assembler.and(REMOTE_STOP, H8ByteRegister.R0L);
+        code.jumpIf(H8Condition.EQUAL, noStop);
+        assembler.call(RcxRegulator.REMOTE_STOP);
+        assembler.label(noStop);
+        assembler.label(drive);
         for (int output = 0; output < OUTPUTS; output++) {
             String forward = code.newLabel();
             String backward = code.newLabel();
@@ -110,6 +129,10 @@ final class RcxMotorCommands {
         }
         assembler.label(apply);
         assembler.call(APPLY);
+        assembler.jump(done);
+        assembler.label(override);
+        assembler.call(RcxRegulator.OVERRIDE);
+        assembler.label(done);
     }
 
     /** Branches to {@code target} if the button {@code {offset, bit}} of the state at {@code buttons} is held. */
@@ -117,6 +140,21 @@ final class RcxMotorCommands {
         assembler.loadByte(buttons + button[0], H8ByteRegister.R0L);
         assembler.and(button[1], H8ByteRegister.R0L);
         assembler.branch(H8Condition.NOT_EQUAL, target);
+    }
+
+    /**
+     * While the regulator owns A and C, a command that selects either is an external override: the regulator stops,
+     * the fault is latched, and the command is not applied. A command for B alone goes on.
+     */
+    private void ownOutputs() {
+        String normal = code.newLabel();
+        regulator.branchIfNotOwned(normal);
+        assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R2L);
+        assembler.and(RcxRegulator.REGULATED_OUTPUTS, H8ByteRegister.R2L);
+        code.jumpIf(H8Condition.EQUAL, normal);
+        assembler.call(RcxRegulator.OVERRIDE);
+        code.replyWith(1);
+        assembler.label(normal);
     }
 
     /** All the command handlers and the {@link #APPLY} subroutine. */
@@ -130,6 +168,7 @@ final class RcxMotorCommands {
     /** Stores the mode bits of the argument for every output its low three bits select. */
     private void onOffFloat() {
         assembler.label(ON_OFF_FLOAT);
+        ownOutputs();
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R1L);
         for (int output = 0; output < OUTPUTS; output++) {
             String skip = code.newLabel();
@@ -147,6 +186,7 @@ final class RcxMotorCommands {
     /** Sets or flips the direction of every selected output. */
     private void direction() {
         assembler.label(DIRECTION);
+        ownOutputs();
         assembler.loadByte(RcxCode.REQUEST + 1, H8ByteRegister.R1L);
         for (int output = 0; output < OUTPUTS; output++) {
             String skip = code.newLabel();
@@ -176,6 +216,7 @@ final class RcxMotorCommands {
         assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R2L);
         assembler.compareImmediate(SOURCE_CONSTANT, H8ByteRegister.R2L);
         code.jumpIf(H8Condition.NOT_EQUAL, RcxCode.REPLY_ACK);
+        ownOutputs();
         assembler.loadByte(RcxCode.REQUEST + 3, H8ByteRegister.R3L);
         assembler.and(POWER_BITS, H8ByteRegister.R3L);
         assembler.moveImmediate(0, H8ByteRegister.R3H);
@@ -199,6 +240,11 @@ final class RcxMotorCommands {
         assembler.label(APPLY);
         for (int output = 0; output < OUTPUTS; output++) {
             String control = code.newLabel();
+            String next = code.newLabel();
+            // The regulator drives A and C while it owns them; the legacy state of those outputs waits.
+            if (output != 1) {
+                regulator.branchIfOwned(next);
+            }
             assembler.moveImmediate(RcxRom.MOTOR_FLOAT, H8Register.R1);
             assembler.load(MODES + 2 * output, H8Register.R0);
             assembler.branch(H8Condition.EQUAL, control);
@@ -213,6 +259,7 @@ final class RcxMotorCommands {
             assembler.load(POWERS + 2 * output, H8Register.R2);
             code.rom().call(RcxRom.CONTROL_MOTOR, Argument.constant(RcxRom.MOTOR_A + output),
                     Argument.register(H8Register.R1), Argument.register(H8Register.R2));
+            assembler.label(next);
         }
         assembler.returnFromSubroutine();
     }

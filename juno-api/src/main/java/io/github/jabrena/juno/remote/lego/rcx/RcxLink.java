@@ -10,6 +10,11 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * The RCX infrared framing: a message is {@code 55 FF 00} followed by the opcode, its arguments and a checksum, each
  * byte followed by its complement. Plain Java on top of {@link Infrared}.
+ *
+ * <p>Every frame the link sends or receives, and every request's wait for its reply, runs while holding this link's
+ * monitor. The Grove receiver reads each byte by watching the pin, so a thread that took the processor between two bytes
+ * would make the link miss the next one's start bit; a thread that must not interrupt the air, such as one reading a
+ * gyroscope for a {@code GyroHeading}, synchronizes on the link and waits for the frame to end instead.
  */
 public final class RcxLink {
     private final Clock clock;
@@ -52,6 +57,8 @@ public final class RcxLink {
     int argument1;
     private int lastCommand = -1;
     private boolean receiveEnabled;
+    /** Set while a regulated pair owns this link: direct commands would race its regulated commands, so they are refused. */
+    private boolean regulated;
     /** The opcode, up to ten arguments and the checksum: the longest reply decoded, the brick's version report. */
     private static final int FRAME_VALUES = 12;
     /**
@@ -71,10 +78,13 @@ public final class RcxLink {
      * count, or {@code -1} when there was no valid frame.
      */
     int receive() {
-        if (!Infrared.receiving()) {
-            return -1;
+        requireDirectUse();
+        synchronized (this) {
+            if (!Infrared.receiving()) {
+                return -1;
+            }
+            return receiveFrame(FIRST_BYTE_MICROS);
         }
-        return receiveFrame(FIRST_BYTE_MICROS);
     }
 
     /**
@@ -168,10 +178,13 @@ public final class RcxLink {
             code ^= OPCODE_TOGGLE;
         }
         lastCommand = code;
-        sendFrame(code, first, second, third, arguments);
+        synchronized (this) {
+            sendFrame(code, first, second, third, arguments);
+        }
     }
 
     private void sendFrame(int code, int first, int second, int third, int arguments) {
+        requireDirectUse();
         int sum = code;
         Infrared.writeByte(0x55);
         Infrared.writeByte(0xFF);
@@ -212,6 +225,67 @@ public final class RcxLink {
         command(opcode, first, second, third, arguments);
     }
 
+    /** Whether the link has an infrared receiver, so a request can hear the brick's reply. */
+    boolean canReceive() {
+        return receiveEnabled;
+    }
+
+    /**
+     * Gives the link to a regulated pair. One pair owns the link for the program's lifetime, and direct commands on it
+     * are refused from then on, so the brick sees only the pair's commands.
+     */
+    void claimForRegulation() {
+        if (regulated) {
+            throw new IllegalStateException("this link is already owned by a regulated pair");
+        }
+        regulated = true;
+    }
+
+    /** Refuses a direct command or read while a regulated pair owns the link. */
+    private void requireDirectUse() {
+        if (regulated) {
+            throw new IllegalStateException("the link belongs to a regulated pair; a direct command would race its regulated commands");
+        }
+    }
+
+    /**
+     * Sends a fixed-width request with {@code count} (0..7) argument bytes from {@code arguments}, then waits for the
+     * brick's reply and copies its argument bytes into {@code reply}. Returns the reply's argument count, or {@code -1}
+     * when no valid reply came. The toggle bit marks a repeated opcode as {@link #send} does, so a retry is marked too.
+     */
+    int exchange(int opcode, int[] arguments, int count, int[] reply) {
+        int replyCount;
+        synchronized (this) {
+            transmit(opcode, arguments, count);
+            replyCount = awaitReply(opcode, REPLY_TIMEOUT_MILLIS);
+        }
+        if (replyCount < 0) {
+            return -1;
+        }
+        for (int index = 0; index < replyCount; index++) {
+            reply[index] = FRAME[index + 1];
+        }
+        return replyCount;
+    }
+
+    private void transmit(int opcode, int[] arguments, int count) {
+        int code = opcode;
+        if (code == lastCommand) {
+            code ^= OPCODE_TOGGLE;
+        }
+        lastCommand = code;
+        int sum = code;
+        Infrared.writeByte(0x55);
+        Infrared.writeByte(0xFF);
+        Infrared.writeByte(0x00);
+        sendPair(code);
+        for (int index = 0; index < count; index++) {
+            sum += arguments[index];
+            sendPair(arguments[index]);
+        }
+        sendPair(sum & 0xFF);
+    }
+
     /**
      * Sends a direct command and waits for the brick's reply, whose opcode is the complement of the
      * command's. The receiver module also hears the vehicle's own LED, so frames with other opcodes (the
@@ -224,8 +298,10 @@ public final class RcxLink {
 
     /** Like the two-argument request, for commands with up to three arguments. */
     int request(int command, int first, int second, int third, int arguments) {
-        send(command, first, second, third, arguments);
-        return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+        synchronized (this) {
+            send(command, first, second, third, arguments);
+            return awaitReply(command, REPLY_TIMEOUT_MILLIS);
+        }
     }
 
     /** Sends a request only to {@code channel} and waits for that brick's reply. */
@@ -249,11 +325,13 @@ public final class RcxLink {
      */
     int awaitReply(int command, int timeoutMillis) {
         int replyOpcode = ~command & 0xFF & ~OPCODE_TOGGLE;
-        int started = clock.millis();
-        while (clock.millis() - started < timeoutMillis) {
-            int count = receiveFrame(REPLY_POLL_MICROS);
-            if (count >= 0 && opcode == replyOpcode) {
-                return count;
+        synchronized (this) {
+            int started = clock.millis();
+            while (clock.millis() - started < timeoutMillis) {
+                int count = receiveFrame(REPLY_POLL_MICROS);
+                if (count >= 0 && opcode == replyOpcode) {
+                    return count;
+                }
             }
         }
         return -1;
