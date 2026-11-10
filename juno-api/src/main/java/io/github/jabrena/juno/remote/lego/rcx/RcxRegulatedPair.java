@@ -38,6 +38,12 @@ public final class RcxRegulatedPair implements RegulatedPair {
     private static final int MAX_MOTION_ID = 0xFF;
     private static final int WAIT_MARGIN_MILLIS = 1000;
     private static final int POLL_MILLIS = 20;
+    /**
+     * The brake lead a pair arms with, in the brick's control cycles (333 a second). Measured on the reference build at
+     * power 1 on batteries (about 13 cycles a step): its 500 mm moves stopped on 31 and 32 of 31 steps; on a power bank,
+     * at about 10 cycles a step, on 33, since a faster wheel coasts further than its speed times the lead.
+     */
+    public static final int DEFAULT_BRAKE_LEAD = 16;
 
     private final RcxRegulatedProtocol protocol;
     private final RcxRegulatedScale scale;
@@ -104,6 +110,21 @@ public final class RcxRegulatedPair implements RegulatedPair {
         return (configurationFlags & MAX_POWER_BITS) >> MAX_POWER_SHIFT;
     }
 
+    /**
+     * Sets the brake lead, in the brick's control cycles (333 a second), 0 to 255: each wheel brakes early by the distance
+     * it coasts at its current speed, which is its speed times this lead, so the wheels stop on their targets instead of
+     * past them. 0 brakes only on the target. The brick receives it when the pair is armed, so it applies from the next
+     * {@link #arm()}. Tune it on the floor: raise it while moves overshoot, lower it while they stop short.
+     */
+    public void setBrakeLead(int cycles) {
+        profile.setBrakeLead(cycles);
+    }
+
+    /** The brake lead, in the brick's control cycles, as the next {@link #arm()} sends it. */
+    public int brakeLead() {
+        return profile.brakeLead();
+    }
+
     /** The brick-side diagnostics of this pair: its control-cycle counter and how the wheel sync drives each side. */
     public RcxRegulatedDiagnostics diagnostics() {
         return diagnostics;
@@ -126,13 +147,12 @@ public final class RcxRegulatedPair implements RegulatedPair {
      */
     public void arm() {
         int ack = protocol.arm(session, MAPPING_ID, configurationFlags);
-        if (ack != RcxRegulatedProtocol.ACCEPTED) {
-            lastAcknowledgement = ack;
-            throw new IllegalStateException("REG_ARM was not accepted");
-        }
+        requireAccepted(ack, "REG_ARM was not accepted");
         if (protocol.mapping != MAPPING_ID) {
             throw new IllegalStateException("the brick mapped the pair to another mapping");
         }
+        requireAccepted(profile.sendBrakeLead(protocol, session),
+                "REG_BRAKE_LEAD was not accepted; is the brick's firmware up to date?");
         motion = 0;
         if (!refreshStatus()) {
             throw new IllegalStateException("no status reply after REG_ARM");
@@ -192,10 +212,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
         int rightTarget = positions.target(RIGHT, rightSteps);
         motion = motion + 1;
         int profileAck = profile.send(protocol, session);
-        if (profileAck != RcxRegulatedProtocol.ACCEPTED) {
-            lastAcknowledgement = profileAck;
-            throw new IllegalStateException("REG_PROFILE was not accepted");
-        }
+        requireAccepted(profileAck, "REG_PROFILE was not accepted");
         startMotion(leftTarget, rightTarget);
         if (!immediateReturn) {
             waitComplete();
@@ -330,5 +347,13 @@ public final class RcxRegulatedPair implements RegulatedPair {
     /** The acknowledgement code of the last command the brick refused, as {@link RcxRegulatedProtocol} numbers them. */
     public int lastAcknowledgement() {
         return lastAcknowledgement;
+    }
+
+    /** Records {@code ack} and throws with {@code message} unless the brick accepted the command. */
+    private void requireAccepted(int ack, String message) {
+        if (ack != RcxRegulatedProtocol.ACCEPTED) {
+            lastAcknowledgement = ack;
+            throw new IllegalStateException(message);
+        }
     }
 }

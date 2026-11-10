@@ -27,6 +27,7 @@ class RcxRegulatedPairTest {
     private static final int TARGET_RIGHT = 0x43;
     private static final int START = 0x52;
     private static final int CYCLES = 0x71;
+    private static final int BRAKE_LEAD = 0x92;
     private static final int DRIVE = 0x81;
     private static final int READY = 1;
     private static final int COMPLETE = 3;
@@ -109,6 +110,7 @@ class RcxRegulatedPairTest {
     void shouldArmTheSessionAndReadReady() {
         // Given
         reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
 
         // When
@@ -126,6 +128,7 @@ class RcxRegulatedPairTest {
         // Given
         pair.setMaxPower(2);
         reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
 
         // When
@@ -135,6 +138,51 @@ class RcxRegulatedPairTest {
         assertThat(pair.maxPower()).isEqualTo(2);
         assertThat(sent(ARM).get(0))
                 .containsExactly(ARM, 1, 1, RcxRegulatedPair.INVERT_RIGHT_MOTOR | RcxRegulatedPair.maxPower(2));
+    }
+
+    @Test
+    @DisplayName("Arm sends the default brake lead after the arm, and a new lead with the next arm")
+    void shouldSendTheBrakeLeadWithEachArm() {
+        // Given
+        reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
+        reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
+        pair.arm();
+        pair.setBrakeLead(30);
+        reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
+        reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
+
+        // When
+        pair.arm();
+
+        // Then
+        assertThat(sent(BRAKE_LEAD)).hasSize(2);
+        assertThat(sent(BRAKE_LEAD).get(0)).containsExactly(BRAKE_LEAD, 1, RcxRegulatedPair.DEFAULT_BRAKE_LEAD);
+        assertThat(sent(BRAKE_LEAD).get(1)).containsExactly(BRAKE_LEAD, 1, 30);
+        assertThat(pair.brakeLead()).isEqualTo(30);
+    }
+
+    @Test
+    @DisplayName("A brick that does not answer the brake lead, as older firmware, fails the arm and names it")
+    void shouldFailTheArmWhenTheBrakeLeadIsNotAnswered() {
+        // Given: firmware without the command never replies to it
+        reply(ARM, 0, 1, 1);
+
+        // When / Then
+        assertThatThrownBy(() -> pair.arm())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("REG_BRAKE_LEAD")
+                .hasMessageContaining("firmware");
+    }
+
+    @Test
+    @DisplayName("A brake lead outside 0 to 255 is rejected and the configured one stays")
+    void shouldRejectABrakeLeadOutsideItsRange() {
+        assertThatThrownBy(() -> pair.setBrakeLead(-1)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pair.setBrakeLead(256)).isInstanceOf(IllegalArgumentException.class);
+        pair.setBrakeLead(0);
+        assertThat(pair.brakeLead()).isZero();
     }
 
     @Test
@@ -277,6 +325,7 @@ class RcxRegulatedPairTest {
     void shouldUnwrapTheSixteenBitPositionAcrossTheRing() {
         // Given
         reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
         reply(STATUS, 1, 0, READY, 0, 0xF0, 0xFF, 0, 0);
         reply(STATUS, 1, 0, READY, 0, 0x10, 0, 0, 0);
         pair.arm();
@@ -421,6 +470,7 @@ class RcxRegulatedPairTest {
     @DisplayName("An arm that is never followed by a status reply fails rather than assuming ready")
     void shouldFailTheArmWithoutAStatusReply() {
         reply(ARM, ACCEPTED, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
 
         assertThatThrownBy(() -> pair.arm())
                 .isInstanceOf(IllegalStateException.class)
@@ -568,6 +618,7 @@ class RcxRegulatedPairTest {
     void shouldReadNegativeDegreesWhenThePositionFalls() {
         // Given
         reply(ARM, ACCEPTED, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
         reply(STATUS, 1, 0, READY, 0, 0x10, 0, 0, 0);
         reply(STATUS, 1, 0, READY, 0, 0x00, 0, 0, 0);
         pair.arm();
@@ -720,6 +771,7 @@ class RcxRegulatedPairTest {
     /** Arms the pair: the arm reply, then a status reading the new session as ready. */
     private void armed() {
         reply(ARM, 0, 1, 1);
+        reply(BRAKE_LEAD, ACCEPTED);
         reply(STATUS, 1, 0, READY, 0, 0, 0, 0, 0);
         pair.arm();
     }

@@ -39,6 +39,7 @@ final class RegulatedBrick implements Infrared.Brick {
     private int pendingRight;
     private int positionLeft;
     private int positionRight;
+    private int brakeLead = -1;
 
     /** Injects a sequence of faults, one per request of {@code opcode} from the next one on; then no faults. */
     void inject(int opcode, Fault... faults) {
@@ -53,6 +54,11 @@ final class RegulatedBrick implements Infrared.Brick {
     /** How many starts the brick accepted for a new motion. */
     int accepted(int opcode) {
         return accepted.getOrDefault(opcode, 0);
+    }
+
+    /** The brake lead the brick last accepted, or -1 if none came. */
+    int brakeLead() {
+        return brakeLead;
     }
 
     /** A power loss: the brick forgets its session and its motion. */
@@ -102,6 +108,7 @@ final class RegulatedBrick implements Infrared.Brick {
             case 0x52 -> start(arguments);
             case 0x62 -> stop(arguments);
             case 0x61 -> status();
+            case 0x92 -> brakeLead(arguments);
             default -> new int[] {0};
         };
     }
@@ -116,6 +123,14 @@ final class RegulatedBrick implements Infrared.Brick {
         positionLeft = 0;
         positionRight = 0;
         return new int[] {0, 1, 1};
+    }
+
+    private int[] brakeLead(int[] arguments) {
+        if (arguments[0] != session) {
+            return new int[] {4};
+        }
+        brakeLead = arguments[1];
+        return new int[] {0};
     }
 
     private int[] profile(int[] arguments) {
