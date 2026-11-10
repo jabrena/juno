@@ -34,41 +34,63 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-qemu-system-xtensa -nographic -machine esp32s3 -m 8M \
-    -global driver=ssi_psram,property=is_octal,value=true \
-    -global driver=timer.esp32s3.timg,property=wdt_disable,value=true \
-    -drive file="$sketch/flash.bin",if=mtd,format=raw >"$fifo" 2>&1 &
-qemu_pid=$!
+# Espressif's QEMU occasionally crashes while the guest boots (seen as exit 139 with the boot log and no [juno-begin]).
+# Such a run never reached the program, so it is retried once; a crash after [juno-begin], a guest-triggered crash that
+# repeats, or a hang stopped by the watchdog still fails.
+attempt=1
+while :; do
+    begun=0
+    qemu-system-xtensa -nographic -machine esp32s3 -m 8M \
+        -global driver=ssi_psram,property=is_octal,value=true \
+        -global driver=timer.esp32s3.timg,property=wdt_disable,value=true \
+        -drive file="$sketch/flash.bin",if=mtd,format=raw >"$fifo" 2>&1 &
+    qemu_pid=$!
 
-# Keep a real hang guard without making normal marker-terminated runs wait for it.
-(
-    sleep 60
-    kill "$qemu_pid" 2>/dev/null || true
-) &
-watchdog_pid=$!
+    # Keep a real hang guard without making normal marker-terminated runs wait for it. Its sleep outlives the kill of
+    # the guard, so it must not hold the script's output open, or a caller reading to the end would wait for it.
+    (
+        sleep 60
+        kill "$qemu_pid" 2>/dev/null || true
+    ) </dev/null >/dev/null 2>&1 &
+    watchdog_pid=$!
 
-while IFS= read -r line; do
-    printf '%s\n' "$line"
-    case "$line" in
-        *'[juno-exit]'*)
-            kill "$qemu_pid" 2>/dev/null || true
-            wait "$qemu_pid" 2>/dev/null || true
-            qemu_pid=
-            kill "$watchdog_pid" 2>/dev/null || true
-            wait "$watchdog_pid" 2>/dev/null || true
-            watchdog_pid=
-            exit 0
+    while IFS= read -r line; do
+        printf '%s\n' "$line"
+        case "$line" in
+            *'[juno-begin]'*)
+                begun=1
+                ;;
+            *'[juno-exit]'*)
+                kill "$qemu_pid" 2>/dev/null || true
+                wait "$qemu_pid" 2>/dev/null || true
+                qemu_pid=
+                kill "$watchdog_pid" 2>/dev/null || true
+                wait "$watchdog_pid" 2>/dev/null || true
+                watchdog_pid=
+                exit 0
+                ;;
+        esac
+    done <"$fifo"
+
+    if wait "$qemu_pid"; then
+        qemu_status=0
+    else
+        qemu_status=$?
+    fi
+    qemu_pid=
+    kill "$watchdog_pid" 2>/dev/null || true
+    wait "$watchdog_pid" 2>/dev/null || true
+    watchdog_pid=
+
+    # 134 SIGABRT, 135 SIGBUS, 136 SIGFPE, 139 SIGSEGV: QEMU itself crashed.
+    case "$qemu_status" in
+        134|135|136|139)
+            if [ "$begun" -eq 0 ] && [ "$attempt" -eq 1 ]; then
+                echo "run.sh: QEMU crashed (exit $qemu_status) before [juno-begin]; retrying once" >&2
+                attempt=2
+                continue
+            fi
             ;;
     esac
-done <"$fifo"
-
-if wait "$qemu_pid"; then
-    qemu_status=0
-else
-    qemu_status=$?
-fi
-qemu_pid=
-kill "$watchdog_pid" 2>/dev/null || true
-wait "$watchdog_pid" 2>/dev/null || true
-watchdog_pid=
-exit "$qemu_status"
+    exit "$qemu_status"
+done
