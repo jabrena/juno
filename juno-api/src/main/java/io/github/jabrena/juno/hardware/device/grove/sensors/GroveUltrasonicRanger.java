@@ -10,8 +10,11 @@ import io.github.jabrena.juno.util.Delay;
  * Grove Ultrasonic Ranger (v1 or v2) on one Grove digital socket.
  *
  * <p>The module uses one shared signal pin: it is driven high for at least 10 microseconds to trigger a reading, then
- * it becomes the echo input. {@link #getRange()} returns metres, or {@link Float#NaN} when no echo arrives within
- * 30 ms. It implements {@link RangeFinder} as well as {@link SampleProvider}; both paths allocate nothing.
+ * it becomes the echo input, high for as long as the sound took there and back. {@link #getRange()} times the echo with
+ * {@link Gpio#pulseIn}, which on the board the core times, so another thread taking its turn in the middle, a
+ * gyroscope's or a navigator's, cannot make the obstacle look further away. It returns metres, or {@link Float#NaN}
+ * when no echo arrives within 30 ms. It implements {@link RangeFinder} as well as {@link SampleProvider}; both paths
+ * allocate nothing.
  */
 public final class GroveUltrasonicRanger implements RangeFinder, SampleProvider {
     private static final int TRIGGER_SETTLE_MICROS = 2;
@@ -20,16 +23,17 @@ public final class GroveUltrasonicRanger implements RangeFinder, SampleProvider 
     private static final float METRES_PER_MICROSECOND = 0.00017f;
 
     private final Gpio gpio;
-    private final Clock clock;
     private final int signalPin;
 
-    /** A ranger on {@code signalPin}; {@code gpio} and {@code clock} can be test doubles. */
+    /**
+     * A ranger on {@code signalPin}; {@code gpio} can be a test double. The echo is timed by {@link Gpio#pulseIn}, so
+     * {@code clock} is no longer read: it stays a parameter so programs written for the earlier ranger compile.
+     */
     public GroveUltrasonicRanger(Gpio gpio, Clock clock, int signalPin) {
         if (signalPin < 0) {
             throw new IllegalArgumentException("Grove ultrasonic ranger signal pin must be non-negative");
         }
         this.gpio = gpio;
-        this.clock = clock;
         this.signalPin = signalPin;
     }
 
@@ -43,14 +47,8 @@ public final class GroveUltrasonicRanger implements RangeFinder, SampleProvider 
         Delay.micros(TRIGGER_MICROS);
         gpio.digitalWrite(signalPin, false);
         gpio.pinMode(signalPin, gpio.getInput());
-        if (!waitForLevel(true)) {
-            return Float.NaN;
-        }
-        int started = clock.micros();
-        if (!waitForLevel(false)) {
-            return Float.NaN;
-        }
-        return (clock.micros() - started) * METRES_PER_MICROSECOND;
+        int echoMicros = gpio.pulseIn(signalPin, true, ECHO_TIMEOUT_MICROS);
+        return echoMicros > 0 ? echoMicros * METRES_PER_MICROSECOND : Float.NaN;
     }
 
     /** Returns one range sample. */
@@ -63,15 +61,5 @@ public final class GroveUltrasonicRanger implements RangeFinder, SampleProvider 
     @Override
     public void fetchSample(float[] sample, int offset) {
         sample[offset] = getRange();
-    }
-
-    private boolean waitForLevel(boolean high) {
-        int started = clock.micros();
-        while (gpio.digitalRead(signalPin) != high) {
-            if (clock.micros() - started >= ECHO_TIMEOUT_MICROS) {
-                return false;
-            }
-        }
-        return true;
     }
 }
