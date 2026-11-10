@@ -6,14 +6,18 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
  * The regulated differential drive of {@link RcxRemoteFirmware}: outputs A and C, the left and right wheels, each
  * regulated locally by the firmware from its rotation sensor (inputs 1 and 3), so infrared is a command channel and not
  * a control loop. The commands are 0x61 status, 0x62 stop, 0x63 arm, 0x64 speed, 0x74 acceleration, 0x33 and 0x43
- * the left and right targets, and 0x52 start; the acknowledgements,
+ * the left and right targets, 0x52 start and 0x92 brake lead; the acknowledgements,
  * states and payloads are the ones {@code RcxRegulatedProtocol} expects on the host (OpenSpec change
  * {@code rcx-regulated-differential-drive}).
  *
  * <p>The regulator runs once per fresh analog update, every 3 ms, after the sensors are read. Both sides drive at the
  * configured maximum power toward their targets, and the rotation sensors keep them level: a side one count ahead of the
  * other drops a level, two or more counts ahead brakes until the other catches up. A side brakes and is done once it has
- * covered its whole distance from where the motion started, after slowing a level over the last {@link #SLOW_COUNTS}.
+ * covered its whole distance from where the motion started, after slowing a level over the last {@link #SLOW_COUNTS},
+ * or earlier, by the distance it will coast: each side times its rotation-sensor steps, and brakes once it will reach
+ * its target within the {@link #BRAKE_LEAD}, to the cycle. The lead is the wheel's braking time
+ * constant in control cycles, since a braked RCX motor coasts on roughly its speed times that constant; 0 turns the
+ * early brake off.
  * This suits the RCX: its rotation sensors count 16 steps a turn, too coarse for a position loop to pace a wheel
  * smoothly, and its motors run at nearly the same speed at any power, so a paced trajectory turned into stop-and-go.
  *
@@ -44,6 +48,11 @@ final class RcxRegulator {
      * current motion, so a floor run shows whether the level-keeping acts.
      */
     static final int OPCODE_DRIVE = 0x81;
+    /**
+     * Sets the brake lead, in control cycles (session, lead): a side brakes early by the distance it coasts at its speed.
+     * Arming resets it to {@link #DEFAULT_BRAKE_LEAD}; refused while a movement runs.
+     */
+    static final int OPCODE_BRAKE_LEAD = 0x92;
 
     static final String STATUS = "reg_status";
     static final String STOP = "reg_stop";
@@ -55,6 +64,7 @@ final class RcxRegulator {
     static final String START = "reg_start";
     static final String CYCLES = "reg_cycles";
     static final String DRIVE = "reg_drive";
+    static final String SET_BRAKE_LEAD = "reg_brake_lead";
     /** Subroutine: one control cycle, after a fresh analog update. */
     static final String TICK = "reg_tick";
     /** Subroutine: counts a main-loop pass without a fresh analog update, for the stale check. */
@@ -123,6 +133,13 @@ final class RcxRegulator {
     static final int STALL_TICKS = TICKS_PER_SECOND;
     /** Over the last this many counts of its distance, a side drives one level below the maximum, to limit overshoot. */
     static final int SLOW_COUNTS = 2;
+    /**
+     * The brake lead an arm starts with, in control cycles, as {@code RcxRegulatedPair.DEFAULT_BRAKE_LEAD} sends it: on
+     * the reference build at power 1 on batteries, 500 mm moves stopped on 31 and 32 of 31 counts.
+     */
+    static final int DEFAULT_BRAKE_LEAD = 16;
+    /** Cycles per step above which a side is too slow to coast: the lead's division needs a byte divisor. */
+    private static final int MAX_TIMED_INTERVAL = 0xFF;
     /** The longest timeout whose cycle count, seconds times {@link #TICKS_PER_SECOND}, fits a word. */
     static final int MAX_TIMEOUT_SECONDS = 0xFFFF / TICKS_PER_SECOND;
     /** Placeholder: main-loop passes without a fresh analog update before the sensors count as stale. */
@@ -163,6 +180,8 @@ final class RcxRegulator {
     static final int PENDING_RIGHT = BASE + 24;
     /** Control cycles run since boot, in any state, wrapping at 16 bits: read by {@link #OPCODE_CYCLES}. */
     static final int CYCLES_RUN = BASE + 26;
+    /** The brake lead, in control cycles (a byte): see {@link #OPCODE_BRAKE_LEAD}. */
+    static final int BRAKE_LEAD = BASE + 28;
 
     /** Per side: done, power, direction, stall count, target, trajectory, velocity, position and last position. */
     static final int DONE = 0;
@@ -182,6 +201,15 @@ final class RcxRegulator {
     static final int DISTANCE = 20;
     /** Cycles of the current motion the side was held braked to let the other catch up: a diagnostic. */
     static final int HELD_CYCLES = 22;
+    /**
+     * Control cycles between the side's last two rotation-sensor steps, its speed's inverse: {@code 0xFFFF} until it has
+     * stepped twice in the motion, so the first step, taken from rest, is not read as its speed.
+     */
+    static final int STEP_INTERVAL = 24;
+    /** Control cycles since the side's last rotation-sensor step, or since the motion started. */
+    static final int SINCE_STEP = 26;
+    /** Whether the side has stepped yet in the motion (a byte, 0 or 1): the interval is timed from the second step. */
+    static final int STEPS_TAKEN = 28;
 
     /** The sensor struct's converted value: {@code char type, char mode, short raw, short value, char boolean}. */
     private static final int SENSOR_SIZE = 8;
@@ -236,6 +264,7 @@ final class RcxRegulator {
         start();
         cycles();
         drive();
+        brakeLead();
     }
 
     /** The subroutines the handlers and the main loop call. */
@@ -312,6 +341,8 @@ final class RcxRegulator {
         assembler.moveImmediate(0, H8ByteRegister.R0H);
         assembler.storeByte(H8ByteRegister.R0L, MAX_POWER);
         clearHistory();
+        assembler.moveImmediate(DEFAULT_BRAKE_LEAD, H8ByteRegister.R0L);
+        assembler.storeByte(H8ByteRegister.R0L, BRAKE_LEAD);
         assembler.call(STOP_OUTPUTS);
         configureRotation(0);
         configureRotation(2);
@@ -379,6 +410,16 @@ final class RcxRegulator {
         replyWord(LEFT.base() + HELD_CYCLES, 3);
         replyWord(RIGHT.base() + HELD_CYCLES, 5);
         code.replyWith(7);
+    }
+
+    /** Sets the brake lead (session, lead in control cycles); refused while a movement runs. */
+    private void brakeLead() {
+        assembler.label(SET_BRAKE_LEAD);
+        requireSession(1);
+        rejectWhileRunning();
+        assembler.loadByte(RcxCode.REQUEST + 2, H8ByteRegister.R0L);
+        assembler.storeByte(H8ByteRegister.R0L, BRAKE_LEAD);
+        replyAck(ACCEPTED, 1);
     }
 
     /** Stages one side's target (session, target low byte first) for the next start; a running movement keeps its own. */
@@ -478,8 +519,12 @@ final class RcxRegulator {
             assembler.store(H8Register.R0, side.base() + FRACTION);
             assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
             assembler.store(H8Register.R0, side.base() + STALL);
+            assembler.store(H8Register.R0, side.base() + SINCE_STEP);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + POWER);
+            assembler.storeByte(H8ByteRegister.R0L, side.base() + STEPS_TAKEN);
+            assembler.moveImmediate(0xFFFF, H8Register.R0);
+            assembler.store(H8Register.R0, side.base() + STEP_INTERVAL);
         }
         assembler.moveImmediate(0, H8Register.R0);
         assembler.store(H8Register.R0, ELAPSED);
@@ -613,13 +658,18 @@ final class RcxRegulator {
         assembler.loadByte(side.base() + DONE, H8ByteRegister.R0L);
         assembler.compareImmediate(0, H8ByteRegister.R0L);
         code.jumpIf(H8Condition.NOT_EQUAL, ret);
+        timeSteps(side);
         // Progress from the start toward the target, in counts (r1), and the distance to cover (r2).
         loadProgress(side, H8Register.R1, H8Register.R0);
         assembler.load(side.base() + DISTANCE, H8Register.R2);
-        // Done once the whole distance is covered: the brake (or float) holds the wheel there.
+        // Done once the whole distance is covered, or once what remains is within the distance the wheel coasts at its
+        // speed: the brake (or float) then stops the wheel on the target.
         String notDone = code.newLabel();
+        String finish = code.newLabel();
         assembler.compare(H8Register.R2, H8Register.R1);
-        code.jumpIf(H8Condition.LESS, notDone);
+        assembler.branch(H8Condition.GREATER_OR_EQUAL, finish);
+        brakeEarly(side, notDone);
+        assembler.label(finish);
         assembler.moveImmediate(1, H8Register.R0);
         assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
         assembler.moveImmediate(NO_POWER, H8Register.R0);
@@ -728,6 +778,87 @@ final class RcxRegulator {
                 Argument.register(H8Register.R4), Argument.register(H8Register.R1));
         assembler.label(ret);
         assembler.returnFromSubroutine();
+    }
+
+    /**
+     * Times the side's rotation-sensor steps: a cycle whose position differs from the last one's is a step, and from the
+     * second step on, the cycles since the previous one become the side's step interval. Clobbers r0 and r1.
+     */
+    private void timeSteps(Side side) {
+        String still = code.newLabel();
+        String timed = code.newLabel();
+        assembler.load(side.base() + SINCE_STEP, H8Register.R0);
+        assembler.adds(1, H8Register.R0);
+        assembler.store(H8Register.R0, side.base() + SINCE_STEP);
+        assembler.load(side.base() + POSITION, H8Register.R0);
+        assembler.load(side.base() + LAST, H8Register.R1);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.EQUAL, still);
+        assembler.loadByte(side.base() + STEPS_TAKEN, H8ByteRegister.R0L);
+        assembler.compareImmediate(0, H8ByteRegister.R0L);
+        assembler.branch(H8Condition.EQUAL, timed);
+        assembler.load(side.base() + SINCE_STEP, H8Register.R0);
+        assembler.store(H8Register.R0, side.base() + STEP_INTERVAL);
+        assembler.label(timed);
+        assembler.moveImmediate(1, H8ByteRegister.R0L);
+        assembler.storeByte(H8ByteRegister.R0L, side.base() + STEPS_TAKEN);
+        assembler.moveImmediate(0, H8Register.R0);
+        assembler.store(H8Register.R0, side.base() + SINCE_STEP);
+        assembler.label(still);
+    }
+
+    /**
+     * Falls through to finish the side once it will reach its target within the brake lead: its remaining counts,
+     * distance (r2) minus progress (r1), times its cycles per step, less the cycles since its last step, is at most the
+     * lead. So it brakes to the cycle, not to the step, and two wheels a fraction of a step apart in speed brake a
+     * fraction of a step apart. With the lead as {@code q} steps of the interval plus {@code r} cycles, that is: at most
+     * {@code q} counts remain, or {@code q + 1} remain and at least {@code interval - r} cycles have passed since the
+     * last step.
+     *
+     * <p>The cycles per step are the longer of the last step interval and the cycles since the last step, so a side
+     * slowing down is not taken at its earlier speed; the cycles since the last step refine the time only while within
+     * the last interval. Jumps to {@code notDone} otherwise, or when the side is slower than a step per
+     * {@link #MAX_TIMED_INTERVAL} cycles. Keeps r1 and r2.
+     */
+    private void brakeEarly(Side side, String notDone) {
+        String slowest = code.newLabel();
+        String early = code.newLabel();
+        assembler.load(side.base() + STEP_INTERVAL, H8Register.R5);
+        assembler.load(side.base() + SINCE_STEP, H8Register.R0);
+        assembler.compare(H8Register.R5, H8Register.R0);
+        assembler.branch(H8Condition.LOWER_OR_SAME, slowest);
+        assembler.move(H8Register.R0, H8Register.R5);
+        assembler.label(slowest);
+        assembler.moveImmediate(MAX_TIMED_INTERVAL, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R5);
+        assembler.branch(H8Condition.HIGHER, notDone);
+        // The lead is a byte and the interval at least one cycle, so the quotient fits the divide's byte: q in r0l and
+        // the remainder r in r0h, moved to r6.
+        loadByteWord(BRAKE_LEAD, H8Register.R0);
+        // A lead of 0 turns the early brake off: the time rule would still take an overdue step as due now.
+        assembler.moveImmediate(0, H8Register.R3);
+        assembler.compare(H8Register.R3, H8Register.R0);
+        assembler.branch(H8Condition.EQUAL, notDone);
+        assembler.divideUnsigned(H8ByteRegister.R5L, H8Register.R0);
+        assembler.moveImmediate(0, H8ByteRegister.R6H);
+        assembler.move(H8ByteRegister.R0H, H8ByteRegister.R6L);
+        assembler.moveImmediate(0, H8ByteRegister.R0H);
+        assembler.move(H8Register.R2, H8Register.R4);
+        assembler.subtract(H8Register.R1, H8Register.R4);
+        assembler.compare(H8Register.R0, H8Register.R4);
+        assembler.branch(H8Condition.LOWER_OR_SAME, early);
+        assembler.adds(1, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R4);
+        assembler.branch(H8Condition.NOT_EQUAL, notDone);
+        // One count more than the lead's whole steps: brake once the next step is due within the remainder r.
+        assembler.load(side.base() + STEP_INTERVAL, H8Register.R3);
+        assembler.load(side.base() + SINCE_STEP, H8Register.R0);
+        assembler.compare(H8Register.R3, H8Register.R0);
+        assembler.branch(H8Condition.HIGHER, notDone);
+        assembler.subtract(H8Register.R6, H8Register.R3);
+        assembler.compare(H8Register.R3, H8Register.R0);
+        assembler.branch(H8Condition.CARRY_SET, notDone);
+        assembler.label(early);
     }
 
     /** Runs the snapshot: each side's position, from its sensor's converted value, flipped if the sensor is inverted. */

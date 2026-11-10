@@ -23,7 +23,7 @@ class RcxRegulatorBudgetTest {
     private static final int ACCELERATION_COMMAND = 0x74;
 
     /** The RAM the regulator uses: its state word through the right side's last field. */
-    private static final int REGULATOR_RAM = 0x50;
+    private static final int REGULATOR_RAM = 0x60;
     private static final int RAM_START = 0xC000;
     private static final int RAM_END = 0xD000;
     private static final int STACK_TOP = 0xFF7E;

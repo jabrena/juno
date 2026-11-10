@@ -60,6 +60,15 @@ final class FakeRcx implements H8Simulator.Rom {
     private final int[] commandedMode = new int[3];
     private final int[] commandedPower = new int[3];
     private final int[] highestPower = new int[3];
+    /**
+     * The coasting model, when enabled: a wheel keeps its speed, in power units a cycle, and once it is no longer driven
+     * loses {@code 1/coastCycles} of it each cycle, so it coasts on about its speed times {@code coastCycles}.
+     */
+    private int coastCycles;
+    private final double[] wheelSpeed = new double[3];
+    private final double[] wheelTravel = new double[3];
+    /** A coasting wheel's speed relative to its power's, so two motors can differ by a fraction, as real ones do. */
+    private final double[] speedFactor = {1, 1, 1};
 
     /** Queues a message: the opcode and its arguments; the checksum is added as the ROM would receive it. */
     void receive(int... message) {
@@ -96,6 +105,19 @@ final class FakeRcx implements H8Simulator.Rom {
         wheelStrength[output] = 1;
     }
 
+    /**
+     * Makes a wheel coast after its motor stops being driven, as a real one does after a brake: its speed decays by
+     * {@code 1/cycles} each control cycle, so it runs on about its speed times {@code cycles}.
+     */
+    void coast(int cycles) {
+        coastCycles = cycles;
+    }
+
+    /** Scales a coasting wheel's driven speed by {@code factor}, as a slightly faster or slower motor would. */
+    void speedFactor(int output, double factor) {
+        speedFactor[output] = factor;
+    }
+
     /** Holds an output's wheel still, as if jammed. */
     void jam(int output) {
         jammed[output] = true;
@@ -104,6 +126,11 @@ final class FakeRcx implements H8Simulator.Rom {
     /** The position of the wheel on {@code input} (0 for sensor 1, 2 for sensor 3). */
     int wheelPosition(int input) {
         return wheelPosition[input];
+    }
+
+    /** A coasting wheel's exact travel in counts, before the sensor rounds it down to a step. */
+    double wheelTravel(int input) {
+        return wheelTravel[input];
     }
 
     /** The highest power commanded to drive an output, forward or backward, during the run. */
@@ -405,6 +432,10 @@ final class FakeRcx implements H8Simulator.Rom {
                 continue;
             }
             int direction = commandedMode[output] == 1 ? 1 : commandedMode[output] == 2 ? -1 : 0;
+            if (coastCycles > 0) {
+                coastWheel(output, direction);
+                continue;
+            }
             wheelPowerAccumulated[output] += commandedPower[output] * wheelStrength[output] * direction;
             while (wheelPowerAccumulated[output] >= POWER_PER_COUNT) {
                 wheelPowerAccumulated[output] -= POWER_PER_COUNT;
@@ -415,6 +446,17 @@ final class FakeRcx implements H8Simulator.Rom {
                 wheelPosition[output]--;
             }
         }
+    }
+
+    /** Moves a coasting wheel: driven, at its power's speed; otherwise slowing by a {@link #coastCycles} share a cycle. */
+    private void coastWheel(int output, int direction) {
+        if (direction != 0) {
+            wheelSpeed[output] = commandedPower[output] * wheelStrength[output] * direction * speedFactor[output];
+        } else {
+            wheelSpeed[output] -= wheelSpeed[output] / coastCycles;
+        }
+        wheelTravel[output] += wheelSpeed[output] / POWER_PER_COUNT;
+        wheelPosition[output] = (int) Math.floor(wheelTravel[output]);
     }
 
     private void pollMainLoop(H8Simulator cpu) {

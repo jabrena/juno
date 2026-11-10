@@ -22,6 +22,16 @@ class RcxRegulatorControlTest {
     private static final int START = 0x52;
     private static final int CYCLES = 0x71;
     private static final int DRIVE = 0x81;
+    private static final int BRAKE_LEAD = 0x92;
+    /** Power 1 with the brake on stop, as the reference build drives. */
+    private static final int LOW_POWER_BRAKE_FLAGS = 0x30;
+    /** The coasting wheel's braking time constant, in control cycles, and the 31-count move of 500 mm. */
+    private static final int COAST_CYCLES = 40;
+    private static final int DISTANCE = 31;
+    /** Control cycles left for the wheels to coast to rest once the motion completes. */
+    private static final int SETTLE_CYCLES = 600;
+    /** Each wheel's exact travel, in counts, at the end of the last {@link #coastedStop}. */
+    private static final double[] LAST_TRAVEL = new double[2];
     private static final int COMPLETE_STATE = RcxRegulator.COMPLETE;
     private static final int SESSION = 1;
     private static final int FULL_POWER_FLAGS = 0xE0;
@@ -219,6 +229,8 @@ class RcxRegulatorControlTest {
         rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
         rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
         rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        // The model's wheels stop the instant they are braked, so no early brake is due.
+        rcx.receive(BRAKE_LEAD, SESSION, 0);
         rcx.receive(TARGET_LEFT, SESSION, 31, 0);
         rcx.receive(TARGET_RIGHT, SESSION, 31, 0);
         rcx.receive(START, SESSION, 1);
@@ -293,4 +305,132 @@ class RcxRegulatorControlTest {
         assertThat(cpu.readWord(RcxRegulator.CYCLES_RUN)).isGreaterThanOrEqualTo(second);
     }
 
+    /**
+     * Runs a {@link #DISTANCE}-count move at power 1 on wheels that coast for {@link #COAST_CYCLES}, with the given
+     * brake lead (none sent when negative, leaving the arm's default), and returns both wheels' positions at rest.
+     */
+    private static int[] coastedStop(int lead, boolean slowMotors) {
+        return coastedStop(lead, slowMotors ? 0.5 : 1, slowMotors ? 0.5 : 1);
+    }
+
+    /** As {@link #coastedStop(int, boolean)}, with each wheel's speed scaled by its factor. */
+    private static int[] coastedStop(int lead, double leftFactor, double rightFactor) {
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.coast(COAST_CYCLES);
+        rcx.speedFactor(0, leftFactor);
+        rcx.speedFactor(2, rightFactor);
+        rcx.receive(ARM, SESSION, 1, LOW_POWER_BRAKE_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        if (lead >= 0) {
+            rcx.receive(BRAKE_LEAD, SESSION, lead);
+        }
+        rcx.receive(TARGET_LEFT, SESSION, DISTANCE, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, DISTANCE, 0);
+        rcx.receive(START, SESSION, 1);
+        H8Simulator cpu = boot(rcx);
+        for (int step = 0; step < STEPS && cpu.readByte(RcxRegulator.STATE) != COMPLETE_STATE; step++) {
+            cpu.runFor(1);
+        }
+        assertThat(cpu.readByte(RcxRegulator.STATE)).isEqualTo(COMPLETE_STATE);
+        int completedAt = cpu.readWord(RcxRegulator.CYCLES_RUN);
+        for (int step = 0; step < STEPS && cpu.readWord(RcxRegulator.CYCLES_RUN) - completedAt < SETTLE_CYCLES; step++) {
+            cpu.runFor(1);
+        }
+        LAST_TRAVEL[0] = rcx.wheelTravel(0);
+        LAST_TRAVEL[1] = rcx.wheelTravel(2);
+        return new int[] {rcx.wheelPosition(0), rcx.wheelPosition(2)};
+    }
+
+    @Test
+    @DisplayName("Without a brake lead, wheels that coast after the brake run several counts past the target")
+    void shouldOvershootWithoutABrakeLead() {
+        // When: the early brake is off
+        int[] positions = coastedStop(0, false);
+
+        // Then: about the speed times the coast, 5 counts, past 31
+        assertThat(positions[0]).isGreaterThanOrEqualTo(DISTANCE + 3);
+        assertThat(positions[1]).isGreaterThanOrEqualTo(DISTANCE + 3);
+    }
+
+    @Test
+    @DisplayName("A brake lead that matches the coast stops both wheels within a count of the target")
+    void shouldStopOnTheTargetWithAMatchingBrakeLead() {
+        // When
+        int[] positions = coastedStop(COAST_CYCLES, false);
+
+        // Then
+        assertThat(positions[0]).isBetween(DISTANCE - 1, DISTANCE + 1);
+        assertThat(positions[1]).isBetween(DISTANCE - 1, DISTANCE + 1);
+    }
+
+    @Test
+    @DisplayName("The same brake lead still stops on the target when the motors run at half the speed")
+    void shouldScaleTheEarlyBrakeWithTheWheelSpeed() {
+        // When: slower motors, as on weaker batteries, coast half as far
+        int[] positions = coastedStop(COAST_CYCLES, true);
+
+        // Then
+        assertThat(positions[0]).isBetween(DISTANCE - 1, DISTANCE + 1);
+        assertThat(positions[1]).isBetween(DISTANCE - 1, DISTANCE + 1);
+    }
+
+    @Test
+    @DisplayName("Braking on the predicted time stops within half a step of the target at any motor speed")
+    void shouldBrakeOnThePredictedTimeRatherThanWholeSteps() {
+        // Given: motor speeds from 0.70 to 1.00 of nominal, 8 to 11.4 cycles a step, with the lead matching the coast,
+        // so the ideal stop is the start of step 31 whatever the speed. Braking on whole steps rounds the lead down to
+        // a multiple of the step time, so it brakes late by up to a step (31.73 at 0.76); braking on the predicted time
+        // rounds it to a cycle.
+        double nearest = Double.MAX_VALUE;
+        double farthest = 0;
+        for (int percent = 70; percent <= 100; percent += 3) {
+            // When
+            coastedStop(COAST_CYCLES, percent / 100.0, percent / 100.0);
+
+            // Then: the wheels' exact travel, before the sensor rounds it to a step
+            for (double travel : LAST_TRAVEL) {
+                nearest = Math.min(nearest, travel);
+                farthest = Math.max(farthest, travel);
+            }
+        }
+        assertThat(nearest).isGreaterThan(DISTANCE - 0.5);
+        assertThat(farthest).isLessThan(DISTANCE + 0.5);
+        assertThat(farthest - nearest).as("spread over the speeds, in counts").isLessThan(0.6);
+    }
+
+    @Test
+    @DisplayName("Arming sets the default brake lead, the lead command sets another, and it is refused while running")
+    void shouldSetTheBrakeLeadOnlyWhileIdle() {
+        // Given: a lead of 20 before the start, and one of 30 while the motion runs
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
+        rcx.receiveAfter(5, STATUS, SESSION);
+        H8Simulator cpu = boot(rcx);
+        cpu.runFor(STEPS);
+        int armed = cpu.readByte(RcxRegulator.BRAKE_LEAD);
+
+        rcx.receive(SPEED_COMMAND, SESSION, SPEED & 0xFF, SPEED >> 8, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(BRAKE_LEAD, SESSION, 20);
+        rcx.receive(TARGET_LEFT, SESSION, 0x90, 0x01);
+        rcx.receive(TARGET_RIGHT, SESSION, 0x90, 0x01);
+        rcx.receive(START, SESSION, 1);
+        rcx.receiveAfter(5, BRAKE_LEAD, SESSION, 30);
+
+        // When
+        cpu.runFor(STEPS);
+
+        // Then: 0x92 complemented is 0x6D; accepted (0), then busy (3), and the lead stays 20
+        assertThat(armed).isEqualTo(RcxRegulator.DEFAULT_BRAKE_LEAD);
+        List<int[]> replies = rcx.replies().stream().filter(reply -> reply[0] == 0x6D).toList();
+        assertThat(replies).hasSize(2);
+        assertThat(replies.get(0)[1]).isEqualTo(RcxRegulator.ACCEPTED);
+        assertThat(replies.get(1)[1]).isEqualTo(RcxRegulator.BUSY);
+        assertThat(cpu.readByte(RcxRegulator.BRAKE_LEAD)).isEqualTo(20);
+    }
 }

@@ -56,6 +56,7 @@ import java.util.Objects;
  * <tr><td>0x71</td><td>regulated pair diagnostic: control cycles run since boot (session)</td><td>cycles</td></tr>
  * <tr><td>0x81</td><td>regulated pair diagnostic: drive (session)</td><td>left power, right power, left held cycles,
  * right held cycles</td></tr>
+ * <tr><td>0x92</td><td>regulated pair: brake lead in control cycles, 0 for none (session, lead)</td><td>result</td></tr>
  * </table>
  *
  * <p>Other messages get no reply. The brick's View and Run clicks change nothing on it; Prgm advances the selected
@@ -365,6 +366,7 @@ public final class RcxRemoteFirmware {
         handler(RcxRegulator.OPCODE_START, RcxRegulator.START);
         handler(RcxRegulator.OPCODE_CYCLES, RcxRegulator.CYCLES);
         handler(RcxRegulator.OPCODE_DRIVE, RcxRegulator.DRIVE);
+        handler(RcxRegulator.OPCODE_BRAKE_LEAD, RcxRegulator.SET_BRAKE_LEAD);
         assembler.jump(RcxCode.LOOP);
     }
 

@@ -22,6 +22,7 @@ class RcxRegulatorFirmwareTest {
     private static final int TARGET_LEFT = 0x33;
     private static final int TARGET_RIGHT = 0x43;
     private static final int START = 0x52;
+    private static final int BRAKE_LEAD = 0x92;
     private static final int ON_OFF = 0x21;
     private static final int SET_INPUT_TYPE = 0x32;
     private static final int REMOTE_BUTTONS = 0xD2;
@@ -172,6 +173,8 @@ class RcxRegulatorFirmwareTest {
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
             rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
             rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            // The model's wheels stop the instant they are braked, so nothing coasts and no early brake is due.
+            rcx.receive(BRAKE_LEAD, SESSION, 0);
             rcx.receive(TARGET_LEFT, SESSION, 40, 0);
             rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);
             rcx.receive(START, SESSION, 1);
@@ -199,6 +202,7 @@ class RcxRegulatorFirmwareTest {
             rcx.receive(ARM, SESSION, 1, 0x20);
             rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
             rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
+            rcx.receive(BRAKE_LEAD, SESSION, 0);
             rcx.receive(TARGET_LEFT, SESSION, 20, 0);
             rcx.receive(TARGET_RIGHT, SESSION, 20, 0);
             rcx.receive(START, SESSION, 1);
