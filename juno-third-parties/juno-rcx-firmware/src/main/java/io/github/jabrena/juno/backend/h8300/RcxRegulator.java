@@ -21,7 +21,10 @@ import io.github.jabrena.juno.backend.h8300.RcxRom.Argument;
  * This suits the RCX: its rotation sensors count 16 steps a turn, too coarse for a position loop to pace a wheel
  * smoothly, and its motors run at nearly the same speed at any power, so a paced trajectory turned into stop-and-go.
  *
- * <p>The profile's speed and acceleration are still checked and stored, for the protocol; the pace is the power's.
+ * <p>The pace is the profile's speed: a speed loop compares the wheels' average step interval with the interval the
+ * speed asks for, and a PI law sets a duty, the share of cycles in which the driven sides drive; in the others they
+ * coast, so a motor that runs too fast at its lowest power still keeps the speed, on any supply. A speed beyond the
+ * motors keeps the duty full, as before the loop. The profile's acceleration is still checked and stored only.
  */
 final class RcxRegulator {
     static final int OPCODE_STATUS = 0x61;
@@ -81,6 +84,7 @@ final class RcxRegulator {
     private static final String ACK_THREE = "reg_ack_three";
     private static final String LEFT_SIDE = "reg_side_left";
     private static final String RIGHT_SIDE = "reg_side_right";
+    private static final String SPEED_LOOP = "reg_speed_loop";
 
     /** Acknowledgements, as {@code RcxRegulatedProtocol} numbers them. */
     static final int ACCEPTED = 0;
@@ -138,6 +142,12 @@ final class RcxRegulator {
      * the reference build at power 1 on batteries, 500 mm moves stopped on 31 and 32 of 31 counts.
      */
     static final int DEFAULT_BRAKE_LEAD = 16;
+    /** The speed loop's error bound, in cycles per count, so a wheel at rest does not wind the loop up. */
+    static final int MAX_SPEED_ERROR = 32;
+    /** The integral's bound: divided by {@link #INTEGRAL_DIVISOR}, a full duty of 255. */
+    static final int INTEGRAL_DIVISOR = 64;
+    static final int MAX_INTEGRAL = 255 * INTEGRAL_DIVISOR;
+    private static final int FULL_DUTY = 0xFF;
     /** Cycles per step above which a side is too slow to coast: the lead's division needs a byte divisor. */
     private static final int MAX_TIMED_INTERVAL = 0xFF;
     /** The longest timeout whose cycle count, seconds times {@link #TICKS_PER_SECOND}, fits a word. */
@@ -169,9 +179,10 @@ final class RcxRegulator {
     static final int TIMEOUT_SECONDS = BASE + 7;
     static final int SPEED = BASE + 8;
     static final int ACCELERATION = BASE + 10;
-    /** Speed and acceleration per cycle, in 1/256 counts (Q8): see {@link #storeRate}. */
-    static final int SPEED_TICK = BASE + 12;
-    static final int ACCELERATION_TICK = BASE + 14;
+    /** The step interval the profile's speed asks for, in control cycles per count, 1 to 255: see {@link #storeRate}. */
+    static final int TARGET_INTERVAL = BASE + 12;
+    /** The speed loop's integral of the interval error, 0 to {@link #MAX_INTEGRAL}. */
+    static final int INTEGRAL = BASE + 14;
     static final int ELAPSED = BASE + 16;
     static final int TIMEOUT_TICKS = BASE + 18;
     static final int IDLE = BASE + 20;
@@ -182,20 +193,19 @@ final class RcxRegulator {
     static final int CYCLES_RUN = BASE + 26;
     /** The brake lead, in control cycles (a byte): see {@link #OPCODE_BRAKE_LEAD}. */
     static final int BRAKE_LEAD = BASE + 28;
+    /** Whether the driven sides drive this cycle (1) or coast (0), as the speed loop's duty decides: a byte. */
+    static final int DRIVE_NOW = BASE + 29;
+    /** The duty's phase accumulator: the duty is added each cycle, and the sides drive in the cycles it passes 255. */
+    static final int PHASE = BASE + 30;
 
-    /** Per side: done, power, direction, stall count, target, trajectory, velocity, position and last position. */
+    /** Per side: done, power, direction, stall count, target, position and last position. */
     static final int DONE = 0;
     static final int POWER = 1;
     static final int DIRECTION = 2;
     static final int STALL = 4;
     static final int TARGET = 6;
-    static final int TRAJECTORY = 8;
-    /** The trajectory's velocity, in 1/256 counts per cycle (Q8), so a slow speed is not rounded up to a count. */
-    static final int VELOCITY = 10;
     static final int POSITION = 12;
     static final int LAST = 14;
-    /** The trajectory's fraction of a count, in 1/256 counts, carried from one cycle's step to the next. */
-    static final int FRACTION = 16;
     /** The side's position when the motion started, and the distance to cover from it, in counts (unsigned). */
     static final int START_POSITION = 18;
     static final int DISTANCE = 20;
@@ -272,6 +282,7 @@ final class RcxRegulator {
         snapshot();
         side(LEFT, LEFT_SIDE);
         side(RIGHT, RIGHT_SIDE);
+        speedLoop();
         tick();
         idleTick();
         stopOutputs();
@@ -359,7 +370,7 @@ final class RcxRegulator {
         checkRate(RcxCode.REQUEST + 2);
         assembler.loadByte(RcxCode.REQUEST + 4, H8ByteRegister.R0L);
         assembler.storeByte(H8ByteRegister.R0L, TOLERANCE);
-        storeRate(RcxCode.REQUEST + 2, SPEED, SPEED_TICK);
+        storeRate(RcxCode.REQUEST + 2);
         replyAck(ACCEPTED, 1);
     }
 
@@ -381,7 +392,8 @@ final class RcxRegulator {
         replyAck(OUT_OF_RANGE, 1);
         assembler.label(timeoutFits);
         assembler.storeByte(H8ByteRegister.R0L, TIMEOUT_SECONDS);
-        storeRate(RcxCode.REQUEST + 2, ACCELERATION, ACCELERATION_TICK);
+        loadWordArgument(RcxCode.REQUEST + 2, H8Register.R0);
+        assembler.store(H8Register.R0, ACCELERATION);
         replyAck(ACCEPTED, 1);
     }
 
@@ -512,11 +524,8 @@ final class RcxRegulator {
             assembler.store(H8Register.R0, side.base() + DISTANCE);
             assembler.storeByte(H8ByteRegister.R2L, side.base() + DIRECTION);
             assembler.load(side.base() + POSITION, H8Register.R0);
-            assembler.store(H8Register.R0, side.base() + TRAJECTORY);
             assembler.store(H8Register.R0, side.base() + LAST);
             assembler.moveImmediate(0, H8Register.R0);
-            assembler.store(H8Register.R0, side.base() + VELOCITY);
-            assembler.store(H8Register.R0, side.base() + FRACTION);
             assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.store(H8Register.R0, side.base() + SINCE_STEP);
@@ -529,6 +538,8 @@ final class RcxRegulator {
         assembler.moveImmediate(0, H8Register.R0);
         assembler.store(H8Register.R0, ELAPSED);
         assembler.store(H8Register.R0, IDLE);
+        assembler.store(H8Register.R0, INTEGRAL);
+        assembler.store(H8Register.R0, PHASE);
         assembler.storeByte(H8ByteRegister.R0L, FAULTS);
         storeTimeoutTicks();
         assembler.moveImmediate(RUNNING, H8ByteRegister.R0L);
@@ -549,6 +560,7 @@ final class RcxRegulator {
         assembler.compareImmediate(RUNNING, H8ByteRegister.R0L);
         code.jumpIf(H8Condition.NOT_EQUAL, done);
         assembler.call(SNAPSHOT);
+        assembler.call(SPEED_LOOP);
         assembler.call(LEFT_SIDE);
         assembler.call(RIGHT_SIDE);
         assembler.load(ELAPSED, H8Register.R0);
@@ -767,16 +779,136 @@ final class RcxRegulator {
         assembler.move(H8Register.R6, H8Register.R5);
         assembler.label(notInverted);
         assembler.add(H8Register.R5, H8Register.R4);
+        // A driven side coasts in the cycles the speed loop's duty leaves out.
         assembler.moveImmediate(0, H8Register.R6);
         assembler.compare(H8Register.R6, H8Register.R1);
         String drive = code.newLabel();
+        String braked = code.newLabel();
+        assembler.branch(H8Condition.EQUAL, braked);
+        assembler.loadByte(DRIVE_NOW, H8ByteRegister.R6L);
+        assembler.compareImmediate(0, H8ByteRegister.R6L);
         assembler.branch(H8Condition.NOT_EQUAL, drive);
+        assembler.moveImmediate(RcxRom.MOTOR_FLOAT, H8Register.R4);
+        assembler.branch(H8Condition.ALWAYS, drive);
+        assembler.label(braked);
         assembler.moveImmediate(RcxRom.MOTOR_BRAKE, H8Register.R4);
         assembler.moveImmediate(FULL_POWER, H8Register.R1);
         assembler.label(drive);
         code.rom().call(RcxRom.CONTROL_MOTOR, Argument.constant(side.motor()),
                 Argument.register(H8Register.R4), Argument.register(H8Register.R1));
         assembler.label(ret);
+        assembler.returnFromSubroutine();
+    }
+
+    /**
+     * Runs the speed loop, once a cycle before the sides: the error is the wheels' average step interval, each capped at
+     * {@link #MAX_TIMED_INTERVAL} and taken as the longer of the last interval and the cycles since the last step, less
+     * the {@link #TARGET_INTERVAL}, so positive while too slow, and bounded by {@link #MAX_SPEED_ERROR}. The integral adds
+     * it each cycle within 0 and {@link #MAX_INTEGRAL}; the duty is the integral over {@link #INTEGRAL_DIVISOR} plus the
+     * error, within 0 and 255. The gains were chosen in the simulator: a stronger proportional term, 4 duty levels a
+     * cycle of error, turned the motors' lag into bursts of driving and coasting, 30% off the speed. The duty is added to {@link #PHASE} each cycle, and the sides drive in the cycles
+     * it passes 255, and always at a full duty. A {@link #TARGET_INTERVAL} of 1 or less, a speed beyond the motors or no
+     * speed yet, drives every cycle without the loop, so such a profile starts at full power as before it.
+     */
+    private void speedLoop() {
+        assembler.label(SPEED_LOOP);
+        // A target of one cycle a step is beyond the motors: drive every cycle, as before the loop.
+        String regulated = code.newLabel();
+        String decided = code.newLabel();
+        assembler.moveImmediate(1, H8ByteRegister.R2L);
+        assembler.load(TARGET_INTERVAL, H8Register.R0);
+        assembler.moveImmediate(1, H8Register.R1);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.HIGHER, regulated);
+        assembler.jump(decided);
+        assembler.label(regulated);
+        // r3: the sum of both sides' capped intervals.
+        assembler.moveImmediate(0, H8Register.R3);
+        for (Side side : SIDES) {
+            String longest = code.newLabel();
+            String capped = code.newLabel();
+            assembler.load(side.base() + STEP_INTERVAL, H8Register.R1);
+            assembler.load(side.base() + SINCE_STEP, H8Register.R0);
+            assembler.compare(H8Register.R1, H8Register.R0);
+            assembler.branch(H8Condition.LOWER_OR_SAME, longest);
+            assembler.move(H8Register.R0, H8Register.R1);
+            assembler.label(longest);
+            assembler.moveImmediate(MAX_TIMED_INTERVAL, H8Register.R0);
+            assembler.compare(H8Register.R0, H8Register.R1);
+            assembler.branch(H8Condition.LOWER_OR_SAME, capped);
+            assembler.move(H8Register.R0, H8Register.R1);
+            assembler.label(capped);
+            assembler.add(H8Register.R1, H8Register.R3);
+        }
+        // r3: the average, then the error against the target, bounded.
+        assembler.moveImmediate(2, H8ByteRegister.R0L);
+        assembler.divideUnsigned(H8ByteRegister.R0L, H8Register.R3);
+        assembler.moveImmediate(0, H8ByteRegister.R3H);
+        assembler.load(TARGET_INTERVAL, H8Register.R0);
+        assembler.subtract(H8Register.R0, H8Register.R3);
+        String notFast = code.newLabel();
+        String notSlow = code.newLabel();
+        assembler.moveImmediate(-MAX_SPEED_ERROR & 0xFFFF, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R3);
+        assembler.branch(H8Condition.GREATER_OR_EQUAL, notFast);
+        assembler.move(H8Register.R0, H8Register.R3);
+        assembler.label(notFast);
+        assembler.moveImmediate(MAX_SPEED_ERROR, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R3);
+        assembler.branch(H8Condition.LESS_OR_EQUAL, notSlow);
+        assembler.move(H8Register.R0, H8Register.R3);
+        assembler.label(notSlow);
+        // r1: the integral, within 0 and MAX_INTEGRAL.
+        String integralPositive = code.newLabel();
+        String integralBounded = code.newLabel();
+        assembler.load(INTEGRAL, H8Register.R1);
+        assembler.add(H8Register.R3, H8Register.R1);
+        assembler.moveImmediate(0, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R1);
+        assembler.branch(H8Condition.GREATER_OR_EQUAL, integralPositive);
+        assembler.move(H8Register.R0, H8Register.R1);
+        assembler.label(integralPositive);
+        assembler.moveImmediate(MAX_INTEGRAL, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R1);
+        assembler.branch(H8Condition.LESS_OR_EQUAL, integralBounded);
+        assembler.move(H8Register.R0, H8Register.R1);
+        assembler.label(integralBounded);
+        assembler.store(H8Register.R1, INTEGRAL);
+        // r1: the duty, the integral's share plus the error, within 0 and 255.
+        assembler.moveImmediate(INTEGRAL_DIVISOR, H8ByteRegister.R0L);
+        assembler.divideUnsigned(H8ByteRegister.R0L, H8Register.R1);
+        assembler.moveImmediate(0, H8ByteRegister.R1H);
+        assembler.add(H8Register.R3, H8Register.R1);
+        String dutyPositive = code.newLabel();
+        String dutyBounded = code.newLabel();
+        assembler.moveImmediate(0, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R1);
+        assembler.branch(H8Condition.GREATER_OR_EQUAL, dutyPositive);
+        assembler.move(H8Register.R0, H8Register.R1);
+        assembler.label(dutyPositive);
+        assembler.moveImmediate(FULL_DUTY, H8Register.R0);
+        assembler.compare(H8Register.R0, H8Register.R1);
+        assembler.branch(H8Condition.LESS, dutyBounded);
+        assembler.moveImmediate(FULL_DUTY + 1, H8Register.R1);
+        assembler.label(dutyBounded);
+        // The phase passes 255 in a duty's share of the cycles: those are the cycles the sides drive in.
+        String coast = code.newLabel();
+        String phased = code.newLabel();
+        assembler.load(PHASE, H8Register.R0);
+        assembler.add(H8Register.R1, H8Register.R0);
+        assembler.moveImmediate(1, H8ByteRegister.R2L);
+        assembler.moveImmediate(FULL_DUTY, H8Register.R1);
+        assembler.compare(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.LOWER_OR_SAME, coast);
+        assembler.moveImmediate(FULL_DUTY + 1, H8Register.R1);
+        assembler.subtract(H8Register.R1, H8Register.R0);
+        assembler.branch(H8Condition.ALWAYS, phased);
+        assembler.label(coast);
+        assembler.moveImmediate(0, H8ByteRegister.R2L);
+        assembler.label(phased);
+        assembler.store(H8Register.R0, PHASE);
+        assembler.label(decided);
+        assembler.storeByte(H8ByteRegister.R2L, DRIVE_NOW);
         assembler.returnFromSubroutine();
     }
 
@@ -905,9 +1037,8 @@ final class RcxRegulator {
         assembler.moveImmediate(0, H8Register.R0);
         assembler.store(H8Register.R0, ELAPSED);
         assembler.store(H8Register.R0, IDLE);
+        assembler.store(H8Register.R0, TARGET_INTERVAL);
         for (Side side : SIDES) {
-            assembler.store(H8Register.R0, side.base() + VELOCITY);
-            assembler.store(H8Register.R0, side.base() + FRACTION);
             assembler.store(H8Register.R0, side.base() + HELD_CYCLES);
             assembler.store(H8Register.R0, side.base() + STALL);
             assembler.storeByte(H8ByteRegister.R0L, side.base() + DONE);
@@ -981,29 +1112,39 @@ final class RcxRegulator {
     }
 
     /**
-     * Stores the rate at {@code argument} as given, and per control cycle in 1/256 counts (Q8) in {@code perTick}: the
-     * rate times 256 / {@link #TICKS_PER_SECOND}, 0.769, computed as {@code rate - rate / 4 + rate / 64}, 0.766, since the
-     * H8 here has a divide but no multiply. {@link #perCycleQ8} is the same arithmetic, for the tests.
+     * Stores the speed at {@code argument} (counts per second, low byte first) as given, and as the step interval it asks
+     * for in {@link #TARGET_INTERVAL}: {@link #TICKS_PER_SECOND} divided by the speed, at least 1 cycle and at most 255.
+     * The divide takes a byte divisor, so a speed past 255 counts per second asks for 1, as does any speed beyond the
+     * motors; {@link #targetInterval} is the same arithmetic, for the tests.
      */
-    private void storeRate(int argument, int rate, int perTick) {
+    private void storeRate(int argument) {
         loadWordArgument(argument, H8Register.R0);
-        assembler.store(H8Register.R0, rate);
-        assembler.move(H8Register.R0, H8Register.R2);
-        assembler.moveImmediate(4, H8ByteRegister.R6L);
-        assembler.divideUnsigned(H8ByteRegister.R6L, H8Register.R2);
-        assembler.moveImmediate(0, H8ByteRegister.R2H);
-        assembler.move(H8Register.R0, H8Register.R3);
-        assembler.moveImmediate(64, H8ByteRegister.R6L);
-        assembler.divideUnsigned(H8ByteRegister.R6L, H8Register.R3);
-        assembler.moveImmediate(0, H8ByteRegister.R3H);
-        assembler.subtract(H8Register.R2, H8Register.R0);
-        assembler.add(H8Register.R3, H8Register.R0);
-        assembler.store(H8Register.R0, perTick);
+        assembler.store(H8Register.R0, SPEED);
+        String store = code.newLabel();
+        assembler.moveImmediate(1, H8Register.R1);
+        assembler.moveImmediate(0xFF, H8Register.R2);
+        assembler.compare(H8Register.R2, H8Register.R0);
+        assembler.branch(H8Condition.HIGHER, store);
+        assembler.moveImmediate(FULL_DUTY, H8Register.R1);
+        assembler.moveImmediate(TICKS_PER_SECOND / FULL_DUTY, H8Register.R2);
+        assembler.compare(H8Register.R2, H8Register.R0);
+        assembler.branch(H8Condition.LOWER_OR_SAME, store);
+        assembler.moveImmediate(TICKS_PER_SECOND, H8Register.R1);
+        assembler.divideUnsigned(H8ByteRegister.R0L, H8Register.R1);
+        assembler.moveImmediate(0, H8ByteRegister.R1H);
+        assembler.label(store);
+        assembler.store(H8Register.R1, TARGET_INTERVAL);
     }
 
-    /** A rate in counts per second as the firmware converts it to 1/256 counts per control cycle. */
-    static int perCycleQ8(int ratePerSecond) {
-        return ratePerSecond - ratePerSecond / 4 + ratePerSecond / 64;
+    /** The step interval the firmware asks for at {@code countsPerSecond}, as {@link #storeRate} computes it. */
+    static int targetInterval(int countsPerSecond) {
+        if (countsPerSecond > 0xFF) {
+            return 1;
+        }
+        if (countsPerSecond <= TICKS_PER_SECOND / FULL_DUTY) {
+            return FULL_DUTY;
+        }
+        return TICKS_PER_SECOND / countsPerSecond;
     }
 
     /**

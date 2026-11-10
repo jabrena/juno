@@ -18,8 +18,12 @@ import static org.assertj.core.api.Assertions.within;
 class RcxRemoteFirmwareTest {
     private static final int MAX_STEPS = 200_000;
     private static final String BOOT_BEEP = "sound 1";
-    /** The generated Java image can span two 4 KiB download chunks as the firmware grows. */
+    /**
+     * The generated Java image can span three 4 KiB chunks: the regulator's speed loop took the firmware past two, and
+     * each 64-byte download block past them adds about a second to a download.
+     */
     private static final int GENERATED_IMAGE_CHUNK = 4096;
+    private static final int GENERATED_IMAGE_CHUNKS = 3;
 
     private final FakeRcx rcx = new FakeRcx();
 
@@ -50,7 +54,7 @@ class RcxRemoteFirmwareTest {
             // When & Then
             assertThat(image.entry()).isEqualTo(RcxRom.FIRMWARE_START);
             assertThat(image.containsBefore(RcxRom.UNLOCK_TEXT, RcxRom.UNLOCK_LIMIT)).isTrue();
-            assertThat(image.bytes().length).isLessThanOrEqualTo(2 * GENERATED_IMAGE_CHUNK);
+            assertThat(image.bytes().length).isLessThanOrEqualTo(GENERATED_IMAGE_CHUNKS * GENERATED_IMAGE_CHUNK);
             assertThat(image.bytes()).isEqualTo(new RcxRemoteFirmware().image().bytes());
         }
 

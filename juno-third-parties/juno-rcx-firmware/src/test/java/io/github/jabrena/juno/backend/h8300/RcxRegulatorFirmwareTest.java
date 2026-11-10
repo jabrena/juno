@@ -250,7 +250,7 @@ class RcxRegulatorFirmwareTest {
             rcx.continuousAnalog();
             rcx.wheelPlant();
             rcx.receive(ARM, SESSION, 1, FULL_POWER_FLAGS);
-            rcx.receive(SPEED_COMMAND, SESSION, 100, 0, 1);
+            rcx.receive(SPEED_COMMAND, SESSION, 0xFC, 0x03, 1); // the fastest: the duplicate, not the pace, is under test
             rcx.receive(ACCELERATION_COMMAND, SESSION, 200, 0, 10);
             rcx.receive(TARGET_LEFT, SESSION, 40, 0);
             rcx.receive(TARGET_RIGHT, SESSION, 0xD8, 0xFF);

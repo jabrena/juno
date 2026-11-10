@@ -65,6 +65,8 @@ final class FakeRcx implements H8Simulator.Rom {
      * loses {@code 1/coastCycles} of it each cycle, so it coasts on about its speed times {@code coastCycles}.
      */
     private int coastCycles;
+    /** Cycles a driven coasting wheel takes to reach its power's speed: 1 reaches it at once. */
+    private int riseCycles = 1;
     private final double[] wheelSpeed = new double[3];
     private final double[] wheelTravel = new double[3];
     /** A coasting wheel's speed relative to its power's, so two motors can differ by a fraction, as real ones do. */
@@ -111,6 +113,14 @@ final class FakeRcx implements H8Simulator.Rom {
      */
     void coast(int cycles) {
         coastCycles = cycles;
+    }
+
+    /**
+     * Makes a driven coasting wheel speed up gradually, as a real motor's inertia does: each driven cycle closes
+     * {@code 1/cycles} of the gap to its power's speed.
+     */
+    void spinUp(int cycles) {
+        riseCycles = cycles;
     }
 
     /** Scales a coasting wheel's driven speed by {@code factor}, as a slightly faster or slower motor would. */
@@ -451,7 +461,8 @@ final class FakeRcx implements H8Simulator.Rom {
     /** Moves a coasting wheel: driven, at its power's speed; otherwise slowing by a {@link #coastCycles} share a cycle. */
     private void coastWheel(int output, int direction) {
         if (direction != 0) {
-            wheelSpeed[output] = commandedPower[output] * wheelStrength[output] * direction * speedFactor[output];
+            double driven = commandedPower[output] * wheelStrength[output] * direction * speedFactor[output];
+            wheelSpeed[output] += (driven - wheelSpeed[output]) / riseCycles;
         } else {
             wheelSpeed[output] -= wheelSpeed[output] / coastCycles;
         }

@@ -401,6 +401,71 @@ class RcxRegulatorControlTest {
         assertThat(farthest - nearest).as("spread over the speeds, in counts").isLessThan(0.6);
     }
 
+    /** The example's 150 mm/s: 9 counts a second, a step every 37 cycles; far below the model's motors at power 1. */
+    private static final int REGULATED_SPEED = 9;
+    /** Cycles a driven coasting wheel takes to speed up, so the drive and coast cycles average out as on a motor. */
+    private static final int SPIN_UP_CYCLES = 8;
+
+    /**
+     * Runs a {@link #DISTANCE}-count move at {@link #REGULATED_SPEED} on motors at {@code factor} of their nominal speed,
+     * and returns the cycles until it completed, then each wheel's position at rest.
+     */
+    private static int[] regulatedRun(double factor) {
+        FakeRcx rcx = new FakeRcx();
+        rcx.continuousAnalog();
+        rcx.wheelPlant();
+        rcx.coast(COAST_CYCLES);
+        rcx.spinUp(SPIN_UP_CYCLES);
+        rcx.speedFactor(0, factor);
+        rcx.speedFactor(2, factor);
+        rcx.receive(ARM, SESSION, 1, LOW_POWER_BRAKE_FLAGS);
+        rcx.receive(SPEED_COMMAND, SESSION, REGULATED_SPEED, 0, 1);
+        rcx.receive(ACCELERATION_COMMAND, SESSION, ACCELERATION & 0xFF, ACCELERATION >> 8, 10);
+        rcx.receive(BRAKE_LEAD, SESSION, COAST_CYCLES);
+        rcx.receive(TARGET_LEFT, SESSION, DISTANCE, 0);
+        rcx.receive(TARGET_RIGHT, SESSION, DISTANCE, 0);
+        rcx.receive(START, SESSION, 1);
+        H8Simulator cpu = boot(rcx);
+        for (int step = 0; step < STEPS && cpu.readByte(RcxRegulator.STATE) != COMPLETE_STATE; step++) {
+            cpu.runFor(1);
+        }
+        assertThat(cpu.readByte(RcxRegulator.STATE)).isEqualTo(COMPLETE_STATE);
+        int elapsed = cpu.readWord(RcxRegulator.ELAPSED);
+        int completedAt = cpu.readWord(RcxRegulator.CYCLES_RUN);
+        for (int step = 0; step < STEPS && cpu.readWord(RcxRegulator.CYCLES_RUN) - completedAt < SETTLE_CYCLES; step++) {
+            cpu.runFor(1);
+        }
+        return new int[] {elapsed, rcx.wheelPosition(0), rcx.wheelPosition(2)};
+    }
+
+    @Test
+    @DisplayName("The speed loop keeps the profile's speed on motors that differ in speed, as on batteries and a power bank")
+    void shouldKeepTheProfileSpeedWhateverTheMotorSpeed() {
+        // When: the same move on motors at 60% and at 100% of their speed
+        int[] slow = regulatedRun(0.6);
+        int[] fast = regulatedRun(1.0);
+
+        // Then: both take about 31 steps at 37 cycles, within a tenth of each other, and stop on the target, where
+        // driving every cycle the faster motors would finish in 60% of the slower ones' time
+        int expected = DISTANCE * RcxRegulator.targetInterval(REGULATED_SPEED);
+        assertThat(slow[0]).isBetween(expected * 9 / 10, expected * 13 / 10);
+        assertThat(fast[0]).isBetween(expected * 9 / 10, expected * 13 / 10);
+        assertThat(Math.abs(fast[0] - slow[0])).isLessThan(slow[0] / 10);
+        for (int[] run : new int[][] {slow, fast}) {
+            assertThat(run[1]).isBetween(DISTANCE - 1, DISTANCE + 1);
+            assertThat(run[2]).isBetween(DISTANCE - 1, DISTANCE + 1);
+        }
+    }
+
+    @Test
+    @DisplayName("The speed's step interval is the cycle rate over the speed, at least 1 and at most 255 cycles")
+    void shouldConvertTheSpeedToAStepInterval() {
+        assertThat(RcxRegulator.targetInterval(REGULATED_SPEED)).isEqualTo(37);
+        assertThat(RcxRegulator.targetInterval(1)).isEqualTo(255);
+        assertThat(RcxRegulator.targetInterval(333)).isEqualTo(1);
+        assertThat(RcxRegulator.targetInterval(RcxRegulator.MAX_RATE)).isEqualTo(1);
+    }
+
     @Test
     @DisplayName("Arming sets the default brake lead, the lead command sets another, and it is refused while running")
     void shouldSetTheBrakeLeadOnlyWhileIdle() {
