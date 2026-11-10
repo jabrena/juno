@@ -53,4 +53,15 @@ class DetectedPortTest {
         assertThat(port.hosts("m5stack:esp32:m5stack_cardputer:FlashSize=8M,PartitionScheme=default_8MB")).isTrue();
         assertThat(port.hosts(UNO_R4_WIFI)).isFalse();
     }
+
+    @Test
+    @DisplayName("Recognizes a BOOTSEL UF2 drive as a Raspberry Pi Pico port")
+    void shouldRecognizeABootselUf2DriveAsAPicoPort() {
+        // Given
+        DetectedPort port = new DetectedPort("UF2_Board", "uf2conv", List.of(), List.of(), "");
+
+        // When & Then
+        assertThat(port.hosts("rp2040:rp2040:rpipico2w")).isTrue();
+        assertThat(port.hosts(UNO_R4_WIFI)).isFalse();
+    }
 }
