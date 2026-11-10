@@ -42,8 +42,43 @@ Seeed Studio's [Grove Shield for Pi Pico v1.0](https://www.seeedstudio.com/Grove
 does for the Pico what the [Grove Base Shield](../arduino-shields#grove-base-shield) does for the UNO: it is
 passive, and `GrovePicoShield` names its sockets. The digital sockets carry their GPIO number in the label (`D16` is
 GP16), the analog sockets `A0`–`A2` are the Pico's ADC pins GP26–GP28, and the I2C0 (GP8/GP9) and I2C1 (GP6/GP7)
-socket pins are exposed for drivers that wire their own bus. The UART and SPI sockets are not mapped yet. Set the
+socket pins are exposed. Plug I2C modules into the I2C0 socket and pass `shield.getI2c0()`, the bus on its GP8/GP9, to
+their driver; the I2C1 pins are only for drivers that wire their own bus. The UART and SPI sockets are not mapped yet. Set the
 shield's power switch to 3.3 V for modules that need it.
+
+The shield seen from above, USB at the top, with each socket's pins as printed under it. The first pin is the `SIG`
+wire its getter returns. The analog sockets always take 3.3 V; the others take `VCC` from the power switch.
+
+```text
++----------------------------[ USB ]-----------------------------+
+| SPI0  GND o o SCK                              VCC switch:  5V |
+|       3V3 o o TX                                           3V3 |
+|       CS  o o RX                                               |
+|                                                                |
+| UART0  (not mapped)                     I2C0  SCL=GP9  SDA=GP8 |
+| [RX |TX |VCC|GND]                            [SCL|SDA|VCC|GND] |
+| UART1  (not mapped)                     I2C1  SCL=GP7  SDA=GP6 |
+| [RX |TX |VCC|GND]        Raspberry Pi        [SCL|SDA|VCC|GND] |
+| D16  SIG=GP16              Pico 2 W               A0  SIG=GP26 |
+| [D16|D17|VCC|GND]        (sits here)         [A0 |NC |3V3|GND] |
+| D18  SIG=GP18                                     A1  SIG=GP27 |
+| [D18|D19|VCC|GND]                            [A1 |A0 |3V3|GND] |
+| D20  SIG=GP20                                     A2  SIG=GP28 |
+| [D20|D21|VCC|GND]                            [A2 |A1 |3V3|GND] |
++-------------------[ DEBUG: SWCLK GND SWDIO ]-------------------+
+```
+
+| Socket | `GrovePicoShield` getter | Pico pin |
+|---|---|---|
+| D16 | `getD16()` | GP16 |
+| D18 | `getD18()` | GP18 |
+| D20 | `getD20()` | GP20 |
+| A0 | `getA0()` | GP26 (ADC0) |
+| A1 | `getA1()` | GP27 (ADC1) |
+| A2 | `getA2()` | GP28 (ADC2) |
+| I2C0 | `getI2c0()` (the bus), `getI2c0Sda()`, `getI2c0Scl()` | GP8, GP9 |
+| I2C1 | `getI2c1Sda()`, `getI2c1Scl()` | GP6, GP7 |
+| UART0, UART1, SPI0 | not mapped yet | |
 
 With a Grove LED in socket D16 and an analog module, such as a light sensor, in A0:
 
