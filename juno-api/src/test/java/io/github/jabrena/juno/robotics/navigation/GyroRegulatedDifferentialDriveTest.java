@@ -28,9 +28,18 @@ class GyroRegulatedDifferentialDriveTest {
         final List<int[]> moves = new ArrayList<>();
         double driftPerStraightDegrees;
         double extraTurnDegrees;
+        /** The move that fails as a stalled or unanswered brick would, counted from zero; -1 for none. */
+        int failingMove = -1;
+        /** Called after each move, so a test can act between them. */
+        Runnable afterMove = () -> {
+        };
 
         @Override
         public void rotate(int left, int right, boolean immediateReturn) {
+            if (moves.size() == failingMove) {
+                moves.add(new int[] {left, right});
+                throw new IllegalStateException("stalled");
+            }
             moves.add(new int[] {left, right});
             double millimetresPerDegree = Math.PI * BUILD.wheelDiameterMillimetres() / 360.0;
             double counterClockwise = Math.toDegrees((right - left) * millimetresPerDegree / BUILD.trackWidthMillimetres());
@@ -45,6 +54,7 @@ class GyroRegulatedDifferentialDriveTest {
             clock.millis += 1000;
             heading.sample();
             gyroscope.degreesPerSecond = 0f;
+            afterMove.run();
         }
 
         int pivots() {
@@ -201,5 +211,96 @@ class GyroRegulatedDifferentialDriveTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new GyroRegulatedDifferentialDrive(drive, robot.heading, SEGMENT, CORRECTION, -1))
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("As a pilot, a travel reports the distance its segments covered")
+    void shouldReportTheTravelAsAPilot() {
+        // Given
+        SimulatedRobot robot = new SimulatedRobot();
+        Pilot pilot = drive(robot);
+
+        // When
+        boolean completed = pilot.travel(600);
+
+        // Then: 250 + 250 + 100
+        assertThat(completed).isTrue();
+        assertThat(pilot.travelledMillimetres()).isEqualTo(600);
+    }
+
+    @Test
+    @DisplayName("As a pilot, a stalled segment ends the travel as failed, counting only the segments before it")
+    void shouldReportAFailedSegmentAsAPilot() {
+        // Given: the second straight move stalls
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.failingMove = 1;
+        Pilot pilot = drive(robot);
+
+        // When
+        boolean completed = pilot.travel(1000);
+
+        // Then
+        assertThat(completed).isFalse();
+        assertThat(pilot.travelledMillimetres()).isEqualTo(SEGMENT);
+    }
+
+    @Test
+    @DisplayName("As a pilot, a stop ends the travel after the segment in progress")
+    void shouldStopAfterTheSegmentInProgress() {
+        // Given: stop is asked during the first segment
+        SimulatedRobot robot = new SimulatedRobot();
+        GyroRegulatedDifferentialDrive drive = drive(robot);
+        robot.afterMove = drive::stop;
+
+        // When
+        boolean completed = drive.travel(1000);
+
+        // Then
+        assertThat(completed).isFalse();
+        assertThat(drive.travelledMillimetres()).isEqualTo(SEGMENT);
+    }
+
+    @Test
+    @DisplayName("As a pilot, a turn finer than the wheels can make is not made, and counts as done")
+    void shouldSkipATurnBelowTheCorrectionThreshold() {
+        // Given
+        SimulatedRobot robot = new SimulatedRobot();
+        Pilot pilot = drive(robot);
+
+        // When
+        boolean completed = pilot.rotate(CORRECTION - 1);
+
+        // Then
+        assertThat(completed).isTrue();
+        assertThat(robot.moves).isEmpty();
+    }
+
+    @Test
+    @DisplayName("A navigator drives a square with the RCX pilot, its turns corrected by the gyroscope")
+    void shouldDriveASquareWithTheNavigator() {
+        // Given: straights drift and turns overshoot, as on the floor
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.driftPerStraightDegrees = 2;
+        robot.extraTurnDegrees = 6;
+        GyroRegulatedDifferentialDrive drive = drive(robot);
+        drive.setCorrectTurns(true);
+        Navigator navigator = new Navigator(drive, robot.heading, new Waypoint[4]);
+        navigator.setPositionErrorMillimetres(30);
+        navigator.setPose(0, 0, 0);
+        navigator.addWaypoint(new Waypoint(500, 0));
+        navigator.addWaypoint(new Waypoint(500, -500));
+        navigator.addWaypoint(new Waypoint(0, -500));
+        navigator.addWaypoint(new Waypoint(0, 0, 0));
+
+        // When
+        while (navigator.navigateOnce()) {
+            // Until the path is empty or interrupted.
+        }
+
+        // Then
+        assertThat(navigator.pathCompleted()).isTrue();
+        assertThat(Math.hypot(navigator.getPose().xMillimetres(), navigator.getPose().yMillimetres()))
+                .isLessThanOrEqualTo(30.0);
+        assertThat(Math.abs(Pose.shortestTurn(navigator.getPose().headingMillidegrees()))).isLessThan(CORRECTION * 1000);
     }
 }

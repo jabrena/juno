@@ -20,8 +20,13 @@ import io.github.jabrena.juno.robotics.DirectionFinder;
  * turn, a step is 5.8 degrees, so 3 degrees). Turns, headings and errors are all Cartesian degrees, counter-clockwise
  * positive, as the drive's turns and the direction finder's directions are. Create it once at startup; its moves allocate
  * nothing.
+ *
+ * <p>As a {@link Pilot}, for a {@link Navigator}: {@link #travel} drives the same segments, and a {@link #stop()} from
+ * another thread ends it after the segment in progress, since the regulated pair is not asked to stop from a second
+ * thread; {@link #rotate} turns from the direction the robot has, not from the heading held, since the navigator plans
+ * each turn from the direction it measures. Both report a refused or failed move as {@code false}, not as an exception.
  */
-public final class GyroRegulatedDifferentialDrive {
+public final class GyroRegulatedDifferentialDrive implements Pilot {
     private static final int MILLIDEGREES_PER_DEGREE = 1000;
 
     private final RegulatedDifferentialDrive drive;
@@ -35,6 +40,9 @@ public final class GyroRegulatedDifferentialDrive {
     private int corrections;
     private int lastErrorDegrees;
     private boolean correctTurns;
+    private volatile boolean stopRequested;
+    private int travelled;
+    private MoveOutcome lastOutcome = MoveOutcome.COMPLETED;
 
     /**
      * Creates the drive. {@code segmentMillimetres} is the longest straight move between two heading checks,
@@ -74,14 +82,73 @@ public final class GyroRegulatedDifferentialDrive {
      */
     public void travelMillimetres(int millimetres) {
         holdIfUnset();
+        travelled = 0;
         int remaining = millimetres;
-        while (remaining != 0) {
+        while (remaining != 0 && !stopRequested) {
             int segment = Math.min(Math.abs(remaining), segmentMillimetres);
             int signed = remaining > 0 ? segment : -segment;
             drive.travelMillimetres(signed);
+            travelled += signed;
             remaining -= signed;
             correct();
         }
+    }
+
+    @Override
+    public boolean travel(int millimetres) {
+        stopRequested = false;
+        lastOutcome = MoveOutcome.FAILED;
+        try {
+            travelMillimetres(millimetres);
+        } catch (IllegalStateException failed) {
+            return false;
+        } catch (IllegalArgumentException refused) {
+            return false;
+        }
+        lastOutcome = stopRequested ? MoveOutcome.STOPPED : MoveOutcome.COMPLETED;
+        return !stopRequested;
+    }
+
+    /**
+     * Turns by {@code degrees} from the direction the robot has. A turn below the correction threshold is not made and
+     * counts as completed: it is finer than the wheels can turn, as for a correction.
+     */
+    @Override
+    public boolean rotate(int degrees) {
+        stopRequested = false;
+        lastOutcome = MoveOutcome.COMPLETED;
+        if (Math.abs(degrees) < correctionDegrees) {
+            return true;
+        }
+        lastOutcome = MoveOutcome.FAILED;
+        try {
+            holdCurrentHeading();
+            turnDegrees(degrees);
+        } catch (IllegalStateException failed) {
+            return false;
+        } catch (IllegalArgumentException refused) {
+            return false;
+        }
+        lastOutcome = stopRequested ? MoveOutcome.STOPPED : MoveOutcome.COMPLETED;
+        return !stopRequested;
+    }
+
+    /** Why the last {@link #travel} or {@link #rotate} ended; this pilot reads no obstacle detector. */
+    @Override
+    public MoveOutcome lastOutcome() {
+        return lastOutcome;
+    }
+
+    /** Ends a {@link #travel} after the segment in progress; a turn in progress completes. */
+    @Override
+    public void stop() {
+        stopRequested = true;
+    }
+
+    /** The segments the last travel completed, signed; a segment that failed is not counted. */
+    @Override
+    public int travelledMillimetres() {
+        return travelled;
     }
 
     /**
