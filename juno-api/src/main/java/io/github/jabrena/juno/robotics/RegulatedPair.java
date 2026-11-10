@@ -33,4 +33,16 @@ public interface RegulatedPair {
 
     /** Waits until the current movement completes or reports an error state. */
     void waitComplete();
+
+    /**
+     * Reads the controller's state now, and returns whether the movement is still running: what a caller polls while a
+     * movement started with {@code immediateReturn} runs, to watch something else between the reads.
+     */
+    boolean pollMoving();
+
+    /** The left side's position in encoder-shaft degrees, as the last read of the controller found it. */
+    int leftTachoCount();
+
+    /** The right side's position in encoder-shaft degrees, as the last read of the controller found it. */
+    int rightTachoCount();
 }

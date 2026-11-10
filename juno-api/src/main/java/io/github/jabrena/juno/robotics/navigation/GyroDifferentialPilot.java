@@ -271,21 +271,4 @@ public final class GyroDifferentialPilot implements Pilot {
             throw new IllegalArgumentException("the value must be positive");
         }
     }
-
-    /** The detector until one is set: the way is never blocked, and a program without one links no detector. */
-    private static final class NoObstacles implements ObstacleDetector {
-        @Override
-        public boolean blocked() {
-            return false;
-        }
-
-        @Override
-        public int rangeMillimetres() {
-            return -1;
-        }
-
-        @Override
-        public void reset() {
-        }
-    }
 }

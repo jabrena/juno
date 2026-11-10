@@ -144,6 +144,22 @@ public final class RegulatedDifferentialDrive {
         pair.waitComplete();
     }
 
+    /** Reads the pair's state now, and returns whether the movement started with {@code immediateReturn} still runs. */
+    public boolean pollMoving() {
+        return pair.pollMoving();
+    }
+
+    /**
+     * How far the robot's centre is from the pair's zero, in millimetres: the average of the two wheels, each by its own
+     * encoder ratio, as the pair's last read found them. The difference of two readings is the travel in between.
+     */
+    public int distanceMillimetres() {
+        int leftWheel = sidesSwapped ? pair.rightTachoCount() : pair.leftTachoCount();
+        int rightWheel = sidesSwapped ? pair.leftTachoCount() : pair.rightTachoCount();
+        long sum = (long) geometry.leftDistanceMillimetres(leftWheel) + geometry.rightDistanceMillimetres(rightWheel);
+        return (int) (sum / 2);
+    }
+
     /** Moves the robot's left and right wheels by their degrees, on the pair's sides that drive them. */
     private void rotate(int leftWheel, int rightWheel, boolean immediateReturn) {
         if (sidesSwapped) {

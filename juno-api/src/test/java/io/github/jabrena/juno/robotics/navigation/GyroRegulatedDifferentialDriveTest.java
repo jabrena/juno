@@ -34,12 +34,63 @@ class GyroRegulatedDifferentialDriveTest {
         Runnable afterMove = () -> {
         };
 
+        /** Polls a move started without waiting takes; each moves the wheels a tenth of the way. */
+        static final int POLLS_PER_MOVE = 10;
+        int leftTacho;
+        int rightTacho;
+        int pendingLeft;
+        int pendingRight;
+        int pendingPolls;
+
         @Override
         public void rotate(int left, int right, boolean immediateReturn) {
             if (moves.size() == failingMove) {
                 moves.add(new int[] {left, right});
                 throw new IllegalStateException("stalled");
             }
+            if (immediateReturn) {
+                moves.add(new int[] {left, right});
+                pendingLeft = left;
+                pendingRight = right;
+                pendingPolls = POLLS_PER_MOVE;
+                return;
+            }
+            leftTacho += left;
+            rightTacho += right;
+            turnBy(left, right);
+        }
+
+        @Override
+        public boolean pollMoving() {
+            if (pendingPolls == 0) {
+                return false;
+            }
+            leftTacho += pendingLeft / POLLS_PER_MOVE;
+            rightTacho += pendingRight / POLLS_PER_MOVE;
+            pendingPolls--;
+            if (pendingPolls == 0) {
+                // The last tenth carries what the division left over.
+                leftTacho += pendingLeft % POLLS_PER_MOVE;
+                rightTacho += pendingRight % POLLS_PER_MOVE;
+                turnBy(pendingLeft, pendingRight);
+                moves.remove(moves.size() - 1);
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int leftTachoCount() {
+            return leftTacho;
+        }
+
+        @Override
+        public int rightTachoCount() {
+            return rightTacho;
+        }
+
+        /** What a completed move turns the robot by, as its gyroscope sees it. */
+        private void turnBy(int left, int right) {
             moves.add(new int[] {left, right});
             double millimetresPerDegree = Math.PI * BUILD.wheelDiameterMillimetres() / 360.0;
             double counterClockwise = Math.toDegrees((right - left) * millimetresPerDegree / BUILD.trackWidthMillimetres());
@@ -71,6 +122,7 @@ class GyroRegulatedDifferentialDriveTest {
 
         @Override
         public void stop() {
+            pendingPolls = 0;
         }
 
         @Override
@@ -85,6 +137,9 @@ class GyroRegulatedDifferentialDriveTest {
 
         @Override
         public void waitComplete() {
+            while (pollMoving()) {
+                // Until the move started without waiting ends.
+            }
         }
     }
 
@@ -302,5 +357,64 @@ class GyroRegulatedDifferentialDriveTest {
         assertThat(Math.hypot(navigator.getPose().xMillimetres(), navigator.getPose().yMillimetres()))
                 .isLessThanOrEqualTo(30.0);
         assertThat(Math.abs(Pose.shortestTurn(navigator.getPose().headingMillidegrees()))).isLessThan(CORRECTION * 1000);
+    }
+
+    /** A detector that sees the way blocked from its {@code blockedFrom}-th reading on. */
+    private static ObstacleDetector blockedAfter(int blockedFrom) {
+        return new ObstacleDetector() {
+            private int readings;
+
+            @Override
+            public boolean blocked() {
+                readings++;
+                return readings >= blockedFrom;
+            }
+
+            @Override
+            public int rangeMillimetres() {
+                return 200;
+            }
+
+            @Override
+            public void reset() {
+                readings = 0;
+            }
+        };
+    }
+
+    @Test
+    @DisplayName("With a detector, an obstacle stops the pair mid-segment, and the travel reports the distance measured")
+    void shouldStopMidSegmentForAnObstacle() {
+        // Given: the way is blocked at the detector's fourth reading, four tenths into the first 250 mm segment
+        SimulatedRobot robot = new SimulatedRobot();
+        GyroRegulatedDifferentialDrive drive = drive(robot);
+        drive.setObstacleDetector(blockedAfter(4));
+
+        // When
+        boolean completed = drive.travel(600);
+
+        // Then: about 100 mm, measured by the tachometers, and no second segment
+        assertThat(completed).isFalse();
+        assertThat(drive.lastOutcome()).isEqualTo(MoveOutcome.OBSTACLE);
+        assertThat(drive.travelledMillimetres()).isBetween(95, 105);
+        assertThat(robot.leftTacho).isLessThan(349);
+    }
+
+    @Test
+    @DisplayName("With a detector that never sees anything, the segments complete as without one")
+    void shouldCompleteTheSegmentsWhenTheWayIsClear() {
+        // Given
+        SimulatedRobot robot = new SimulatedRobot();
+        GyroRegulatedDifferentialDrive drive = drive(robot);
+        drive.setObstacleDetector(blockedAfter(Integer.MAX_VALUE));
+
+        // When
+        boolean completed = drive.travel(600);
+
+        // Then: 250 + 250 + 100 mm, the wheels' degrees all run
+        assertThat(completed).isTrue();
+        assertThat(drive.lastOutcome()).isEqualTo(MoveOutcome.COMPLETED);
+        assertThat(drive.travelledMillimetres()).isEqualTo(600);
+        assertThat(robot.leftTacho).isEqualTo(349 + 349 + 140);
     }
 }

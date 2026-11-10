@@ -25,6 +25,11 @@ import io.github.jabrena.juno.robotics.DirectionFinder;
  * another thread ends it after the segment in progress, since the regulated pair is not asked to stop from a second
  * thread; {@link #rotate} turns from the direction the robot has, not from the heading held, since the navigator plans
  * each turn from the direction it measures. Both report a refused or failed move as {@code false}, not as an exception.
+ *
+ * <p>With an {@link ObstacleDetector}, a forward segment starts without waiting, and between the pair's status reads
+ * the pilot reads the detector on the same thread, the only one that talks to the pair: when the way is blocked it stops
+ * the pair mid-segment and the travel ends with {@link MoveOutcome#OBSTACLE}, its distance measured by the pair's
+ * tachometers. Without one, segments run as before.
  */
 public final class GyroRegulatedDifferentialDrive implements Pilot {
     private static final int MILLIDEGREES_PER_DEGREE = 1000;
@@ -43,6 +48,9 @@ public final class GyroRegulatedDifferentialDrive implements Pilot {
     private volatile boolean stopRequested;
     private int travelled;
     private MoveOutcome lastOutcome = MoveOutcome.COMPLETED;
+    private ObstacleDetector obstacles = new NoObstacles();
+    private boolean watching;
+    private boolean blocked;
 
     /**
      * Creates the drive. {@code segmentMillimetres} is the longest straight move between two heading checks,
@@ -83,15 +91,49 @@ public final class GyroRegulatedDifferentialDrive implements Pilot {
     public void travelMillimetres(int millimetres) {
         holdIfUnset();
         travelled = 0;
+        blocked = false;
+        obstacles.reset();
         int remaining = millimetres;
         while (remaining != 0 && !stopRequested) {
             int segment = Math.min(Math.abs(remaining), segmentMillimetres);
             int signed = remaining > 0 ? segment : -segment;
-            drive.travelMillimetres(signed);
-            travelled += signed;
+            if (watching && signed > 0) {
+                travelWatching(signed);
+                if (blocked) {
+                    return;
+                }
+            } else {
+                drive.travelMillimetres(signed);
+                travelled += signed;
+            }
             remaining -= signed;
             correct();
         }
+    }
+
+    /** Reads {@code detector} during forward segments, and stops for what it sees. */
+    public void setObstacleDetector(ObstacleDetector detector) {
+        obstacles = detector;
+        watching = true;
+    }
+
+    /**
+     * Starts a forward segment without waiting, reads the detector between the pair's status reads, and stops the pair
+     * when the way is blocked; the segment's distance is then what the tachometers measured.
+     */
+    private void travelWatching(int millimetres) {
+        drive.pollMoving();
+        int start = drive.distanceMillimetres();
+        drive.travelMillimetres(millimetres, true);
+        while (drive.pollMoving()) {
+            if (obstacles.blocked()) {
+                drive.stop();
+                blocked = true;
+                break;
+            }
+        }
+        drive.waitComplete();
+        travelled += blocked ? drive.distanceMillimetres() - start : millimetres;
     }
 
     @Override
@@ -105,8 +147,8 @@ public final class GyroRegulatedDifferentialDrive implements Pilot {
         } catch (IllegalArgumentException refused) {
             return false;
         }
-        lastOutcome = stopRequested ? MoveOutcome.STOPPED : MoveOutcome.COMPLETED;
-        return !stopRequested;
+        lastOutcome = stopRequested ? MoveOutcome.STOPPED : blocked ? MoveOutcome.OBSTACLE : MoveOutcome.COMPLETED;
+        return lastOutcome == MoveOutcome.COMPLETED;
     }
 
     /**
@@ -133,7 +175,7 @@ public final class GyroRegulatedDifferentialDrive implements Pilot {
         return !stopRequested;
     }
 
-    /** Why the last {@link #travel} or {@link #rotate} ended; this pilot reads no obstacle detector. */
+    /** Why the last {@link #travel} or {@link #rotate} ended. */
     @Override
     public MoveOutcome lastOutcome() {
         return lastOutcome;

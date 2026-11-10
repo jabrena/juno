@@ -56,6 +56,21 @@ class RegulatedDifferentialDriveTest {
         @Override
         public void waitComplete() {
         }
+
+        @Override
+        public boolean pollMoving() {
+            return false;
+        }
+
+        @Override
+        public int leftTachoCount() {
+            return 0;
+        }
+
+        @Override
+        public int rightTachoCount() {
+            return 0;
+        }
     }
 
     /** The calibrated geometry of the reference robot: 81 mm wheels, 140 mm track, 1800 encoder degrees per wheel turn. */
