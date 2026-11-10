@@ -241,7 +241,8 @@ class BoardTest {
         // Then
         assertThat(result.runtimeShim())
                 .contains("juno_gpio_analog_pins[] = {\n26, 27, 28, -1, -1, -1, -1};")
-                .contains("16, 17, 18, 19, 20, 21, 22, 26, 27, 28, -1};");
+                .contains("16, 17, 18, 19, 20, 21, 22, 26, 27, 28, -1};")
+                .contains("} else if (name[1] == 'P') {\n      // The Raspberry Pi Pico's own GPn pin names.\n      offset = 2;");
     }
 
     @Test
@@ -276,6 +277,37 @@ class BoardTest {
         assertThat(result.runtimeShim())
                 .contains("#include <WiFi.h>\n", "WiFi.begin(ssid, password);", "WiFi.beginAP(ssid, password);")
                 .doesNotContain("WiFiS3.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W starts its I2C bus on the Grove shield's I2C0 pins")
+    void shouldStartRaspberryPico2I2cOnGp8AndGp9() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                @Board({RaspberryPico2WifiBoard.class, ArduinoUnoR4WiFiBoard.class})
+                public final class PicoI2c {
+                    public static void main(String[] args) {
+                        RaspberryPico2.getI2c().begin();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoI2c", source);
+        JunoCompiler juno = new JunoCompiler();
+
+        // When
+        CompilationResult pico = juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoI2c", false,
+                Optional.of(Board.PICO_2_W.id()));
+        CompilationResult r4 = juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoI2c", false,
+                Optional.of(Board.UNO_R4_WIFI.id()));
+
+        // Then
+        assertThat(pico.runtimeShim()).contains("  Wire.setSDA(8);\n  Wire.setSCL(9);\n  Wire.begin();");
+        assertThat(r4.runtimeShim()).contains("juno_i2c_begin() {\n  Wire.begin();").doesNotContain("Wire.setSDA");
     }
 
     @Test

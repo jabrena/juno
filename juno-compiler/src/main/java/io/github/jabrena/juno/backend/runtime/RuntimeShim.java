@@ -253,7 +253,7 @@ public final class RuntimeShim {
             shim.append(shimLibraries.infraredHelpers());
         }
         if (uses(ShimFeature.I2C)) {
-            shim.append(shimLibraries.i2cHelpers());
+            shim.append(shimLibraries.i2cHelpers(core.i2cPinSetup()));
         }
         if (uses(ShimFeature.SPI)) {
             shim.append(shimLibraries.spiHelpers());

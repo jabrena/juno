@@ -58,6 +58,15 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         return "26, 27, 28, -1";
     }
 
+    /**
+     * The core's {@code Wire} defaults to GP4/GP5, which no Grove socket reaches; Juno's I2C bus is I2C0 on GP8 (SDA)
+     * and GP9 (SCL) instead, the pins of the Grove Shield for Pi Pico's I2C0 socket.
+     */
+    @Override
+    public String i2cPinSetup() {
+        return "Wire.setSDA(8);\n  Wire.setSCL(9);\n  ";
+    }
+
     @Override
     public String ledMatrixType() {
         throw unsupported("an LED matrix");

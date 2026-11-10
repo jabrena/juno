@@ -1,6 +1,6 @@
 
 extern "C" void juno_i2c_begin() {
-  Wire.begin();
+  ${JUNO_I2C_PIN_SETUP}Wire.begin();
 }
 
 extern "C" void juno_i2c_write_register(int32_t address, int32_t reg, int32_t value) {
