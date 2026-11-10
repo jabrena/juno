@@ -44,10 +44,10 @@ static BLERemoteCharacteristic* juno_ble_notifying = nullptr;
 static JunoBleHandler juno_ble_handler = nullptr;
 
 // Notifications waiting for poll(), oldest first; a full queue drops the newest one.
-static uint8_t juno_ble_queue[JUNO_BLE_QUEUE][JUNO_BLE_BYTES];
-static int32_t juno_ble_queue_length[JUNO_BLE_QUEUE];
-static int32_t juno_ble_queue_head = 0;
-static int32_t juno_ble_queue_count = 0;
+static uint8_t juno_ble_notify_queue[JUNO_BLE_QUEUE][JUNO_BLE_BYTES];
+static int32_t juno_ble_notify_queue_length[JUNO_BLE_QUEUE];
+static int32_t juno_ble_notify_queue_head = 0;
+static int32_t juno_ble_notify_queue_count = 0;
 // The notification the handler is reading.
 static uint8_t juno_ble_value[JUNO_BLE_BYTES];
 static int32_t juno_ble_value_length = 0;
@@ -56,12 +56,12 @@ static void juno_ble_on_notify(BLERemoteCharacteristic* characteristic, uint8_t*
   static_cast<void>(characteristic);
   static_cast<void>(isNotify);
   portENTER_CRITICAL(&juno_ble_mux);
-  if (juno_ble_queue_count < JUNO_BLE_QUEUE) {
-    int32_t slot = (juno_ble_queue_head + juno_ble_queue_count) % JUNO_BLE_QUEUE;
+  if (juno_ble_notify_queue_count < JUNO_BLE_QUEUE) {
+    int32_t slot = (juno_ble_notify_queue_head + juno_ble_notify_queue_count) % JUNO_BLE_QUEUE;
     int32_t stored = length < JUNO_BLE_BYTES ? static_cast<int32_t>(length) : JUNO_BLE_BYTES;
-    memcpy(juno_ble_queue[slot], data, stored);
-    juno_ble_queue_length[slot] = stored;
-    juno_ble_queue_count++;
+    memcpy(juno_ble_notify_queue[slot], data, stored);
+    juno_ble_notify_queue_length[slot] = stored;
+    juno_ble_notify_queue_count++;
   }
   portEXIT_CRITICAL(&juno_ble_mux);
 }
@@ -191,12 +191,12 @@ class JunoBLEBle {
     while (true) {
       bool queued = false;
       portENTER_CRITICAL(&juno_ble_mux);
-      if (juno_ble_queue_count > 0) {
-        int32_t length = juno_ble_queue_length[juno_ble_queue_head];
-        memcpy(juno_ble_value, juno_ble_queue[juno_ble_queue_head], length);
+      if (juno_ble_notify_queue_count > 0) {
+        int32_t length = juno_ble_notify_queue_length[juno_ble_notify_queue_head];
+        memcpy(juno_ble_value, juno_ble_notify_queue[juno_ble_notify_queue_head], length);
         juno_ble_value_length = length;
-        juno_ble_queue_head = (juno_ble_queue_head + 1) % JUNO_BLE_QUEUE;
-        juno_ble_queue_count--;
+        juno_ble_notify_queue_head = (juno_ble_notify_queue_head + 1) % JUNO_BLE_QUEUE;
+        juno_ble_notify_queue_count--;
         queued = true;
       }
       portEXIT_CRITICAL(&juno_ble_mux);
