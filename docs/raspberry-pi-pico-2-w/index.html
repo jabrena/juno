@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Raspberry Pi Pico 2 W - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Raspberry Pi Pico 2 W" />
+  <meta name="twitter:title" content="Raspberry Pi Pico 2 W">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico.">
+  <meta property="og:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico." />
+  <meta name="twitter:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/raspberry-pi-pico-2-w/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/raspberry-pi-pico-2-w/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/raspberry-pi-pico-2-w/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/raspberry-pi-pico-2-w/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+<form class="juno-search juno-search-mobile" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-mobile" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-mobile" role="listbox" hidden></ul>
+</form>
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/create-your-first-project">Create your first project</a>
+        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/java-subset">Java subset</a>
+        <a class="" href="/juno/board-features">Board features</a>
+        <a class="" href="/juno/memory-model">Memory Model</a>
+        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
+        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="active" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
+        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/hardware-apis">Overview</a>
+        <a class="" href="/juno/delay">Delay</a>
+        <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/gpio">Gpio</a>
+        <a class="" href="/juno/sdcard">SD Card</a>
+        <a class="" href="/juno/wifi">Wifi</a>
+        <a class="" href="/juno/time">Time</a>
+        <a class="" href="/juno/httpclient">HTTP client</a>
+        <a class="" href="/juno/httpserver">HTTP server</a>
+        <a class="" href="/juno/email">Email</a>
+        <a class="" href="/juno/mvc">MVC</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/grove-system">Grove system</a>
+        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/showcase" >Showcase</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/showcase">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+<form class="juno-search juno-search-desktop" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-desktop" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-desktop" role="listbox" hidden></ul>
+</form>
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<script>
+(function () {
+  var MAX_RESULTS = 8;
+  var entries = null;
+  var loading = null;
+
+  // Loads search-index.js once: a plain script tag, so it also works when the site is opened from disk.
+  function loadIndex(src) {
+    if (entries) return Promise.resolve(entries);
+    if (!loading) {
+      loading = new Promise(function (resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = function () { resolve(window.JUNO_SEARCH_INDEX || []); };
+        script.onerror = function () { reject(new Error('Search index failed to load')); };
+        document.head.appendChild(script);
+      }).then(function (list) {
+        entries = list;
+        return list;
+      });
+    }
+    return loading;
+  }
+
+  // Score = 0 when some term is missing; otherwise a higher score for matches in the title than in the body.
+  function score(entry, terms) {
+    var title = entry.title.toLowerCase();
+    var description = entry.description.toLowerCase();
+    var text = entry.text.toLowerCase();
+    var total = 0;
+    for (var i = 0; i < terms.length; i++) {
+      if (title.indexOf(terms[i]) !== -1) total += 10;
+      else if (description.indexOf(terms[i]) !== -1) total += 4;
+      else if (text.indexOf(terms[i]) !== -1) total += 1;
+      else return 0;
+    }
+    return total;
+  }
+
+  // The index keeps the page's HTML text, so entities such as &lt; come through escaped.
+  function snippet(entry, term) {
+    var text = entry.text
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ');
+    var at = text.toLowerCase().indexOf(term);
+    if (at === -1) return entry.description;
+    var start = Math.max(0, at - 50);
+    return (start > 0 ? '…' : '') + text.slice(start, at + 90).trim() + '…';
+  }
+
+  function search(query) {
+    var terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) return [];
+    return entries
+      .map(function (entry) { return { entry: entry, score: score(entry, terms), term: terms[0] }; })
+      .filter(function (hit) { return hit.score > 0; })
+      .sort(function (a, b) { return b.score - a.score || a.entry.title.localeCompare(b.entry.title); })
+      .slice(0, MAX_RESULTS);
+  }
+
+  function render(form, query) {
+    var list = form.querySelector('.juno-search-results');
+    list.textContent = '';
+    if (!query.trim()) {
+      list.hidden = true;
+      return;
+    }
+    var hits = search(query);
+    if (!hits.length) {
+      var empty = document.createElement('li');
+      empty.className = 'juno-search-empty';
+      empty.textContent = 'No results for “' + query + '”';
+      list.appendChild(empty);
+    }
+    hits.forEach(function (hit) {
+      var item = document.createElement('li');
+      var link = document.createElement('a');
+      var title = document.createElement('span');
+      var excerpt = document.createElement('span');
+      link.href = hit.entry.url;
+      link.setAttribute('role', 'option');
+      title.className = 'juno-search-title';
+      title.textContent = hit.entry.title;
+      excerpt.className = 'juno-search-excerpt';
+      excerpt.textContent = snippet(hit.entry, hit.term);
+      link.appendChild(title);
+      link.appendChild(excerpt);
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    list.hidden = false;
+  }
+
+  function hide(form) {
+    form.querySelector('.juno-search-results').hidden = true;
+  }
+
+  function attach(form) {
+    var input = form.querySelector('.juno-search-input');
+    var src = input.getAttribute('data-index-src');
+    input.addEventListener('focus', function () { loadIndex(src).catch(function () {}); });
+    input.addEventListener('input', function () {
+      loadIndex(src).then(function () { render(form, input.value); }).catch(function () {});
+    });
+    // Keys are handled on the form so they work from the input and from the result links alike.
+    form.addEventListener('keydown', function (event) {
+      var links = Array.prototype.slice.call(form.querySelectorAll('.juno-search-results a'));
+      var current = links.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (!links.length) return;
+        event.preventDefault();
+        var step = event.key === 'ArrowDown' ? 1 : -1;
+        links[(current + step + links.length) % links.length].focus();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        var target = current !== -1 ? links[current] : links[0];
+        if (target) window.location.href = target.href;
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        input.value = '';
+        hide(form);
+        input.focus();
+      }
+    });
+    // On touch screens a tap on a result moves focus off the input before the click lands, and the list would hide
+    // first. Keeping the press on the input stops that blur; the click still reaches the link.
+    form.querySelector('.juno-search-results').addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+    });
+    form.addEventListener('focusout', function (event) {
+      if (!form.contains(event.relatedTarget)) hide(form);
+    });
+    form.addEventListener('submit', function (event) { event.preventDefault(); });
+  }
+
+  document.querySelectorAll('.juno-search').forEach(attach);
+})();
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
+    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="active" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
+    <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
+    <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Raspberry Pi Pico 2 W</h1>
+</header>
+    <div class="content-prose">
+<p>The Raspberry Pi Pico 2 W pairs the RP2350's Cortex-M33 with an Infineon CYW43439 Wi-Fi radio. The UNO Q is a
+Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, linking against Earle Philhower's
+<a href="https://github.com/earlephilhower/arduino-pico">arduino-pico</a> core (<code>rp2040:rp2040:rpipico2w</code>).</p>
+<img src="../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">
+<p>Juno's support on this board:</p>
+<ul>
+<li><strong>GPIO and serial</strong> through <code>RaspberryPico2.getGpio()</code>. <code>A0</code>–<code>A2</code> are the ADC pins GP26–GP28, and <code>GP*</code>/<code>GPIO*</code>
+names reach the header pins. <code>getBuiltinLed()</code> is the LED wired to the radio chip, which the core drives as pin 64.</li>
+<li><strong>Wi-Fi</strong> through <code>RaspberryPico2.getWifi()</code>: station and access-point modes, with UDP, TCP sockets and SNTP.</li>
+<li><strong><a href="#grove-shield-for-pi-pico">Grove Shield for Pi Pico</a></strong> through <code>GrovePicoShield</code>, a pin map of
+its D16, D18, D20, A0–A2 and I2C sockets.</li>
+<li><strong><code>java.math</code></strong> (<code>BigInteger</code>, <code>BigDecimal</code>).</li>
+</ul>
+<p>HTTP, TLS, Bluetooth LE, <code>@Watchdog</code> and threads are not wired yet; a program that uses them is rejected at compile
+time with the board's name.</p>
+<p>Install the core with <code>juno:install-deps</code>. To flash a new board, hold BOOTSEL while plugging it in; <code>juno:upload</code>
+finds its <code>UF2_Board</code> drive by itself, and later uploads reset the board through its USB serial port.</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.RaspberryPico2Blink \
+  -Djuno.board=raspberry-pi-pico-2-w
+</code></pre>
+<p><code>RaspberryPico2Blink</code> is confirmed on hardware; the Wi-Fi and Grove shield examples are compiled but not yet run on a
+board.</p>
+<h2 id="grove-shield-for-pi-pico">Grove Shield for Pi Pico</h2>
+<img src="../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
+<p>Seeed Studio's <a href="https://www.seeedstudio.com/Grove-Shield-for-Pi-Pico-v1-0-p-4846.html">Grove Shield for Pi Pico v1.0</a>
+does for the Pico what the <a href="../arduino-shields#grove-base-shield">Grove Base Shield</a> does for the UNO: it is
+passive, and <code>GrovePicoShield</code> names its sockets. The digital sockets carry their GPIO number in the label (<code>D16</code> is
+GP16), the analog sockets <code>A0</code>–<code>A2</code> are the Pico's ADC pins GP26–GP28, and the I2C0 (GP8/GP9) and I2C1 (GP6/GP7)
+socket pins are exposed for drivers that wire their own bus. The UART and SPI sockets are not mapped yet. Set the
+shield's power switch to 3.3 V for modules that need it.</p>
+<p>With a Grove LED in socket D16 and an analog module, such as a light sensor, in A0:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.RaspberryPico2;
+import io.github.jabrena.juno.hardware.device.grove.GrovePicoShield;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+import io.github.jabrena.juno.util.Delay;
+
+public final class GrovePicoExample {
+    public static void main(String[] args) {
+        Gpio gpio = RaspberryPico2.getGpio();
+        GrovePicoShield shield = new GrovePicoShield(gpio);
+        DigitalOutput led = DigitalOutput.of(shield.getD16());
+        Serial.begin(BaudRate.BAUD_9600);
+
+        while (true) {
+            led.high();
+            Delay.millis(500);
+            led.low();
+            Serial.println(gpio.analogRead(shield.getA0()));
+            Delay.millis(500);
+        }
+    }
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java"><code>RaspberryPico2GroveShield</code></a>
+is the complete example.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FPC5GLQPGY"></script>
+<script src="/juno/gtag.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

@@ -101,7 +101,12 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">RcxLink</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">The RCX infrared framing: a message is <code>55 FF 00</code> followed by the opcode, its arguments and a checksum, each
-byte followed by its complement. Plain Java on top of <a href="../../../hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir"><code>Infrared</code></a>.</div>
+byte followed by its complement. Plain Java on top of <a href="../../../hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir"><code>Infrared</code></a>.
+
+<p>Every frame the link sends or receives, and every request's wait for its reply, runs while holding this link's
+monitor. The Grove receiver reads each byte by watching the pin, so a thread that took the processor between two bytes
+would make the link miss the next one's start bit; a thread that must not interrupt the air, such as one reading a
+gyroscope for a <code>GyroHeading</code>, synchronizes on the link and waits for the frame to end instead.</div>
 </div>
 </section>
 <section class="summary">

@@ -74,6 +74,7 @@ initTheme();
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry)" tabindex="0">RegulatedDifferentialDrive(RegulatedPair, DriveGeometry)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)" tabindex="0">RegulatedDifferentialDrive(RegulatedPair, DriveGeometry, boolean)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
@@ -83,6 +84,8 @@ initTheme();
 <li><a href="#travelMillimetres(int,boolean)" tabindex="0">travelMillimetres(int, boolean)</a></li>
 <li><a href="#turnDegrees(int)" tabindex="0">turnDegrees(int)</a></li>
 <li><a href="#turnDegrees(int,boolean)" tabindex="0">turnDegrees(int, boolean)</a></li>
+<li><a href="#pivotDegrees(int)" tabindex="0">pivotDegrees(int)</a></li>
+<li><a href="#pivotDegrees(int,boolean)" tabindex="0">pivotDegrees(int, boolean)</a></li>
 <li><a href="#stop()" tabindex="0">stop()</a></li>
 <li><a href="#isMoving()" tabindex="0">isMoving()</a></li>
 <li><a href="#waitComplete()" tabindex="0">waitComplete()</a></li>
@@ -111,7 +114,11 @@ and submitted as one coordinated movement, so the two wheels start together.
 diameter and the effective track width. Positive travel is forward and a positive turn is counter-clockwise, so the
 left wheel turns backwards and the right forwards in a positive turn. Straight travel uses the same millimetres for
 both wheels, but each side's encoder ratio decides its target, so a robot whose sides are calibrated differently
-still covers the same distance on each wheel. Create it once at startup.</div>
+still covers the same distance on each wheel. Create it once at startup.
+
+<p>Left and right are the robot's, seen from behind as it drives forward, and the geometry's encoder ratios are the
+physical left and right wheels'. A build whose pair has its left side on the robot's right wheel is created with
+<code>sidesSwapped</code>, so a counter-clockwise turn still turns counter-clockwise.</div>
 </div>
 </section>
 <section class="summary">
@@ -128,6 +135,13 @@ still covers the same distance on each wheel. Create it once at startup.</div>
  <a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>.</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)" class="member-name-link">RegulatedDifferentialDrive</a><wbr>(<a href="../RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a>&nbsp;pair,
+ <a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ boolean&nbsp;sidesSwapped)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>; with <code>sidesSwapped</code>, the pair's left side drives
+the robot's right wheel and its right side the left wheel.</div>
 </div>
 </div>
 </section>
@@ -147,6 +161,19 @@ still covers the same distance on each wheel. Create it once at startup.</div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns whether a movement is in progress.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Turns about one wheel by <code>degrees</code> (positive is counter-clockwise), and waits until it completes.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int,boolean)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees,
+ boolean&nbsp;immediateReturn)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Turns about one wheel by <code>degrees</code>, positive counter-clockwise, returning at once when
+<code>immediateReturn</code> is set: the outer wheel, the right one for a counter-clockwise pivot, moves forward along
+an arc of the whole track width while the other stays.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLinearSpeedMillimetresPerSecond(int)" class="member-name-link">setLinearSpeedMillimetresPerSecond</a><wbr>(int&nbsp;millimetresPerSecond)</code></div>
@@ -217,6 +244,22 @@ to both sides, so asymmetric gearing changes only the timing of the two sides, n
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)">
+<h3>RegulatedDifferentialDrive</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RegulatedDifferentialDrive</span><wbr><span class="parameters">(<a href="../RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a>&nbsp;pair,
+ <a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ boolean&nbsp;sidesSwapped)</span></div>
+<div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>; with <code>sidesSwapped</code>, the pair's left side drives
+the robot's right wheel and its right side the left wheel.</div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link">IllegalArgumentException</a></code> - if a geometry value is too large for the conversion's arithmetic</dd>
+</dl>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -270,6 +313,32 @@ to both sides, so asymmetric gearing changes only the timing of the two sides, n
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">turnDegrees</span><wbr><span class="parameters">(int&nbsp;degrees,
  boolean&nbsp;immediateReturn)</span></div>
 <div class="block">Turns in place by <code>degrees</code>, returning at once when <code>immediateReturn</code> is set.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pivotDegrees(int)">
+<h3>pivotDegrees</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">pivotDegrees</span><wbr><span class="parameters">(int&nbsp;degrees)</span></div>
+<div class="block">Turns about one wheel by <code>degrees</code> (positive is counter-clockwise), and waits until it completes.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pivotDegrees(int,boolean)">
+<h3>pivotDegrees</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">pivotDegrees</span><wbr><span class="parameters">(int&nbsp;degrees,
+ boolean&nbsp;immediateReturn)</span></div>
+<div class="block">Turns about one wheel by <code>degrees</code>, positive counter-clockwise, returning at once when
+<code>immediateReturn</code> is set: the outer wheel, the right one for a counter-clockwise pivot, moves forward along
+an arc of the whole track width while the other stays. A pivot moves one wheel only, so its finest turn is one
+sensor step of one wheel, half an in-place turn's: a small heading correction.</div>
+<dl class="notes">
+<dt>Throws:</dt>
+<dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalArgumentException.html" title="class in java.lang" class="external-link">IllegalArgumentException</a></code> - if the pivot is outside the supported range or quantizes to zero degrees</dd>
+</dl>
 </div>
 </section>
 </li>

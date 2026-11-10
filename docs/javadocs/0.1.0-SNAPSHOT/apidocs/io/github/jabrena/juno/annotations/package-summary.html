@@ -95,7 +95,8 @@ directly from the class file rather than at runtime.
       (its 8-bit ATmega4809, under Arduino's megaAVR core) and
       <a href="ArduinoNanoEsp32Board.html" title="class in io.github.jabrena.juno.annotations"><code>ArduinoNanoEsp32Board</code></a> (its Xtensa ESP32-S3, under Arduino's ESP32
       core) and <a href="AiThinkerEsp32CamBoard.html" title="class in io.github.jabrena.juno.annotations"><code>AiThinkerEsp32CamBoard</code></a> (its original Xtensa ESP32, under
-      Espressif's Arduino ESP32 core); the linker resolves the selection into a
+      Espressif's Arduino ESP32 core) and <a href="RaspberryPico2WifiBoard.html" title="class in io.github.jabrena.juno.annotations"><code>RaspberryPico2WifiBoard</code></a> (its RP2350
+      Cortex-M33, under Earle Philhower's arduino-pico core); the linker resolves the selection into a
       <code>io.github.jabrena.juno.board.Board</code> compilation target.</li>
   <li><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Watchdog</code></a> enables the hardware watchdog
       on UNO R3, UNO WiFi Rev2 and UNO R4 WiFi, rebooting the board if generated code ever stops
@@ -154,8 +155,12 @@ NINA-W102 module and the <code>WiFiNINA</code> library.</div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Selects the M5Stack Cardputer as <a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab6"><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab6">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RaspberryPico2WifiBoard.html" title="class in io.github.jabrena.juno.annotations">RaspberryPico2WifiBoard</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Selects the Raspberry Pi Pico 2 W as <a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab6"><a href="Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab6">
 <div class="block">Enables the target's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
 </div>
 </div>

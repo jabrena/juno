@@ -91,8 +91,12 @@ the program's flash usage).</div>
 <div class="block">Remote control of LEGO Powered Up hubs over Bluetooth Low Energy, backed by the Arduino
 <code>ArduinoBLE</code> library.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics">io.github.jabrena.juno.robotics</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Board-independent motor and sensor contracts.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-last even-row-color">
 <div class="block">Board-independent motion coordination.</div>
 </div>
 </div>
@@ -170,6 +174,23 @@ top of <a href="../../hardware/spi/Spi.html" title="interface in io.github.jabre
 </section>
 </li>
 <li>
+<section class="detail" id="io.github.jabrena.juno.robotics">
+<h2>Uses of <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> in <a href="../package-summary.html">io.github.jabrena.juno.robotics</a></h2>
+<div class="caption"><span>Subinterfaces of <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> in <a href="../package-summary.html">io.github.jabrena.juno.robotics</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Interface</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>interface&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../BufferedGyroscope.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">A <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a> that keeps sampling its angular velocity at a fixed period in a buffer of its own, such as a FIFO
+on the sensor, so a reader that comes late still gets every sample since its previous read.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="io.github.jabrena.juno.robotics.navigation">
 <h2>Uses of <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> in <a href="../navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></h2>
 <div class="caption"><span>Constructors in <a href="../navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a> with parameters of type <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a></span></div>
@@ -185,6 +206,12 @@ top of <a href="../../hardware/spi/Spi.html" title="interface in io.github.jabre
  <a href="../navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a>&nbsp;pose)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates odometry that updates <code>pose</code> in place.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyroscope,
+ <a href="../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the direction over <code>gyroscope</code>, read once a visit; nothing is read until <a href="../navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
 </div>
 </div>
 </section>

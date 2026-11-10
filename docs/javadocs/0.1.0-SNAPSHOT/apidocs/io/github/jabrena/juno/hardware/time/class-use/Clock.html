@@ -112,8 +112,12 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-last even-row-color">
 <div class="block">LEGO Mindstorms RCX infrared remote control, brick commands, sensors, and firmware transfer.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.util.mvc">io.github.jabrena.juno.util.mvc</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Board-independent motion coordination.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.util.mvc">io.github.jabrena.juno.util.mvc</a></div>
+<div class="col-last even-row-color">
 <div class="block">A small model-view-controller toolkit for multi-screen programs on a TFT touch shield.</div>
 </div>
 </div>
@@ -309,6 +313,29 @@ whole-program emulator in a test, never on the board.</div>
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
 <div class="block">A link configured with its infrared modules and timer; construction completes the link setup.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.robotics.navigation">
+<h2>Uses of <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a> in <a href="../../../robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></h2>
+<div class="caption"><span>Constructors in <a href="../../../robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a> with parameters of type <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.BufferedGyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a>&nbsp;gyroscope,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the direction over <code>gyroscope</code>, read from its buffer; nothing is read until <a href="../../../robotics/navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyroscope,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the direction over <code>gyroscope</code>, read once a visit; nothing is read until <a href="../../../robotics/navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
 </div>
 </div>
 </section>

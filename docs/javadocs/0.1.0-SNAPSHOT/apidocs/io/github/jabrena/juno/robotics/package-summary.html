@@ -126,9 +126,19 @@ and must preserve these primitive, allocation-free contracts.</div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">A motor that runs forward or backward until it is stopped.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">A <a href="Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a> that keeps sampling its angular velocity at a fixed period in a buffer of its own, such as a FIFO
+on the sensor, so a reader that comes late still gets every sample since its previous read.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">A DC motor driven by a power level.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">A source of the robot's direction in Cartesian degrees, which grow counter-clockwise, as a drive's positive turn
+does.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab1">
