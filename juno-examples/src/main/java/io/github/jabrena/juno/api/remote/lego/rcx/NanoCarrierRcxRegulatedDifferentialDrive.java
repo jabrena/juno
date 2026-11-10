@@ -17,12 +17,12 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.remote.lego.rcx.RcxAudio;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
 import io.github.jabrena.juno.remote.lego.rcx.RcxLink;
+import io.github.jabrena.juno.remote.lego.rcx.RcxRegulatedDifferentialDrive;
 import io.github.jabrena.juno.remote.lego.rcx.RcxRegulatedPair;
 import io.github.jabrena.juno.remote.lego.rcx.RcxRegulatedState;
 import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 import io.github.jabrena.juno.robotics.navigation.DriveGeometry;
-import io.github.jabrena.juno.robotics.navigation.RegulatedDifferentialDrive;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
@@ -166,11 +166,15 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         report(syslog, Syslog.NOTICE, "Gyro calibrated");
         countdown(audio, syslog);
 
-        RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL) | SENSOR_DIRECTIONS,
-                STEPS_PER_MOTOR_REVOLUTION);
-        pair.setTolerance(TOLERANCE_STEPS);
-        pair.setBrakeLead(BRAKE_LEAD_CYCLES);
-        pair.setTimeoutSeconds(TIMEOUT_SECONDS);
+        DriveGeometry geometry = new DriveGeometry(WHEEL_DIAMETER_MILLIMETRES, TRACK_WIDTH_MILLIMETRES,
+                LEFT_DEGREES_PER_WHEEL_REVOLUTION, RIGHT_DEGREES_PER_WHEEL_REVOLUTION);
+        RcxRegulatedDifferentialDrive drive = new RcxRegulatedDifferentialDrive(link, SESSION,
+                RcxRegulatedPair.maxPower(MAX_POWER_LEVEL) | SENSOR_DIRECTIONS, STEPS_PER_MOTOR_REVOLUTION, geometry);
+        drive.setTolerance(TOLERANCE_STEPS);
+        drive.setBrakeLead(BRAKE_LEAD_CYCLES);
+        drive.setTimeoutSeconds(TIMEOUT_SECONDS);
+        drive.setLinearSpeedMillimetresPerSecond(LINEAR_SPEED_MILLIMETRES_PER_SECOND);
+        RcxRegulatedPair pair = drive.pair();
 
         while (!armed(pair, syslog)) {
             report(syslog, Syslog.WARNING, "The regulator did not answer: is the RCX on and running its firmware?");
@@ -178,10 +182,6 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         }
         report(syslog, Syslog.NOTICE, "Armed");
         measureCycleRate(pair, imu, clock, syslog);
-        DriveGeometry geometry = new DriveGeometry(WHEEL_DIAMETER_MILLIMETRES, TRACK_WIDTH_MILLIMETRES,
-                LEFT_DEGREES_PER_WHEEL_REVOLUTION, RIGHT_DEGREES_PER_WHEEL_REVOLUTION);
-        RegulatedDifferentialDrive drive = new RegulatedDifferentialDrive(pair, geometry);
-        drive.setLinearSpeedMillimetresPerSecond(LINEAR_SPEED_MILLIMETRES_PER_SECOND);
 
         imu.reset();
         // Each wheel's tachometer just before the move: the trace reports progress from here, as the firmware measures
@@ -325,7 +325,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
      * sent with the exception's message and the brick's last acknowledgement code, since an uncaught exception would
      * stop the program with its report on USB serial only, out of reach on the floor.
      */
-    private static boolean started(RegulatedDifferentialDrive drive, RcxRegulatedPair pair, Syslog syslog) {
+    private static boolean started(RcxRegulatedDifferentialDrive drive, RcxRegulatedPair pair, Syslog syslog) {
         String move = "travel";
         for (int attempt = 1; attempt <= START_ATTEMPTS; attempt++) {
             syslog.begin(Syslog.DEBUG).text(move).text(" attempt ").number(attempt).text(" speed=")
