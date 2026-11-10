@@ -125,6 +125,7 @@ class RcxRegulatedOdometryTest {
         // Then
         assertThat(firstValid).isTrue();
         assertThat(secondValid).isTrue();
-        assertThat(pose.headingMillidegrees()).isBetween(89_000, 91_000);
+        // The gyroscope's 90 degrees are clockwise: 270 in the Cartesian pose.
+        assertThat(pose.headingMillidegrees()).isBetween(269_000, 271_000);
     }
 }
