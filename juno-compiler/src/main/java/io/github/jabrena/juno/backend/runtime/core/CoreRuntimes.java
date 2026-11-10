@@ -15,6 +15,7 @@ public final class CoreRuntimes {
             case ESP32 -> new Esp32CoreRuntime(ArduinoCore.ESP32);
             case ESP32_CAM -> new Esp32CoreRuntime(ArduinoCore.ESP32_CAM);
             case M5STACK_ESP32 -> new Esp32CoreRuntime(ArduinoCore.M5STACK_ESP32);
+            case RP2350 -> new Rp2350CoreRuntime();
         };
     }
 }

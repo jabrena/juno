@@ -3,6 +3,7 @@ package io.github.jabrena.juno.linker;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
+import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
 import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
@@ -154,6 +155,154 @@ class BoardTest {
         assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(33);
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard"))
                 .isEqualTo(board);
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W resolves to its arduino-pico Thumb-2 target")
+    void shouldResolveRaspberryPico2WTarget() {
+        // Given
+        Board board = Board.fromId("Raspberry-Pi-Pico-2-W");
+
+        // When & Then
+        assertThat(board).isEqualTo(Board.PICO_2_W);
+        assertThat(board.annotationArgument()).isEqualTo("RaspberryPico2WifiBoard.class");
+        assertThat(board.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w");
+        assertThat(board.core()).isEqualTo(ArduinoCore.RP2350);
+        assertThat(board.core().architecture()).isEqualTo(Architecture.THUMB2);
+        assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(64);
+        assertThat(board.supports(Capability.WIFI)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_CLIENT)).isFalse();
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard"))
+                .isEqualTo(board);
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W blink drives the CYW43 LED pin with the core's own delay")
+    void shouldLowerRaspberryPico2BlinkToTheCyw43Led() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+                import io.github.jabrena.juno.util.Delay;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoBlink {
+                    public static void main(String[] args) {
+                        DigitalOutput led = DigitalOutput.of(RaspberryPico2.getGpio().getBuiltinLed());
+                        while (true) {
+                            led.high();
+                            Delay.millis(500);
+                            led.low();
+                            Delay.millis(500);
+                        }
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoBlink", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoBlink", false, Optional.empty());
+
+        // Then
+        assertThat(result.report().board()).isEqualTo(Board.PICO_2_W);
+        assertThat(result.assembly()).contains("#64", "bl delay\n");
+        assertThat(result.runtimeShim()).doesNotContain("Arduino_LED_Matrix.h", "WiFi.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W resolves A0..A2 to GP26..GP28 and accepts GP names")
+    void shouldResolveRaspberryPico2PinNames() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
+                import io.github.jabrena.juno.hardware.gpio.Gpio;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoPins {
+                    public static void main(String[] args) {
+                        Gpio gpio = RaspberryPico2.getGpio();
+                        DigitalOutput.of(gpio.digitalPin("GP16")).high();
+                        gpio.analogRead(gpio.analogPin("A0"));
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoPins", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoPins", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("juno_gpio_analog_pins[] = {\n26, 27, 28, -1, -1, -1, -1};")
+                .contains("16, 17, 18, 19, 20, 21, 22, 26, 27, 28, -1};");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W joins Wi-Fi through the core's WiFi library")
+    void shouldLowerRaspberryPico2WifiToTheCoreWifiLibrary() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.net.Wifi;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoWifi {
+                    public static void main(String[] args) {
+                        Wifi wifi = RaspberryPico2.getWifi();
+                        wifi.begin("ssid", "password");
+                        wifi.beginAP("juno", "password");
+                        int[] address = new int[4];
+                        wifi.localIP(address);
+                        wifi.status();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoWifi", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWifi", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFi.h>\n", "WiFi.begin(ssid, password);", "WiFi.beginAP(ssid, password);")
+                .doesNotContain("WiFiS3.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W rejects @Watchdog until its watchdog is wired")
+    void shouldRejectWatchdogOnRaspberryPico2W() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                import io.github.jabrena.juno.util.Delay;
+                @Board(RaspberryPico2WifiBoard.class)
+                @Watchdog
+                public final class PicoWatchdog {
+                    public static void main(String[] args) {
+                        Delay.millis(1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoWatchdog", source);
+
+        // When & Then
+        assertThatThrownBy(() -> new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWatchdog", false, Optional.empty()))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Raspberry Pi Pico 2 W");
     }
 
     @Test

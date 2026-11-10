@@ -36,7 +36,12 @@ public enum ArduinoCore {
      * 2.x line the Nano uses. Its runtime matches the Nano's, except that the task watchdog takes a configuration
      * structure instead of a timeout in seconds.
      */
-    M5STACK_ESP32("M5Stack ESP32", Architecture.XTENSA, 8192, 0, 0, 0);
+    M5STACK_ESP32("M5Stack ESP32", Architecture.XTENSA, 8192, 0, 0, 0),
+    /**
+     * {@code rp2040:rp2040}: Earle Philhower's arduino-pico core, built for the RP2350's Cortex-M33 on the Raspberry Pi
+     * Pico 2 W. Published on its own Boards Manager index, not Arduino's.
+     */
+    RP2350("RP2350", Architecture.THUMB2, 4096, 0, 0, 0);
 
     private final String displayName;
     private final Architecture architecture;

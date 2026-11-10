@@ -75,6 +75,8 @@ public final class Linker {
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
             new MethodRef("io/github/jabrena/juno/hardware/Esp32Cam", "getWifi",
                     "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
+            new MethodRef("io/github/jabrena/juno/hardware/RaspberryPico2", "getWifi",
+                    "()Lio/github/jabrena/juno/hardware/net/Wifi;"), Capability.ONBOARD_WIFI,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getBluetoothLe",
                     "()Lio/github/jabrena/juno/hardware/net/BluetoothLe;"), Capability.BLUETOOTH_LE,
             new MethodRef("io/github/jabrena/juno/hardware/ArduinoNano", "getBluetoothLe",

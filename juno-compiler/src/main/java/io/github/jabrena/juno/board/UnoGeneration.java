@@ -12,6 +12,9 @@ public enum UnoGeneration {
     R4,
     /** The UNO Q. */
     Q,
-    /** The Nano boards, which belong to no UNO generation: every {@code BoardModel} query is false there. */
+    /**
+     * The Nano boards and the other non-UNO boards (ESP32-CAM, Cardputer, Pico 2 W), which belong to no UNO generation:
+     * every {@code BoardModel} query is false there.
+     */
     NANO
 }
