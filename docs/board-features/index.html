@@ -330,11 +330,13 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <th align="center">UNO R4 WiFi</th>
 <th align="center">UNO WiFi Rev2</th>
 <th align="center">UNO R3</th>
+<th align="center">Pico 2 W</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Board-context GPIO pin resolver (<code>digitalPin</code>, <code>analogPin</code>)</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -352,6 +354,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">Shield</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Wi-Fi access point</td>
@@ -362,6 +365,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTP client (plain)</td>
@@ -372,6 +376,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">Shield</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTPS client</td>
@@ -382,6 +387,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTP server</td>
@@ -392,6 +398,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTPS server</td>
@@ -402,6 +409,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Email over TLS</td>
@@ -412,6 +420,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Email STARTTLS</td>
@@ -420,6 +429,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 </tr>
@@ -432,6 +442,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">Shield</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Bluetooth LE</td>
@@ -442,6 +453,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -452,6 +464,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>LED matrix</td>
@@ -462,12 +475,14 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓ (12 × 8)</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Built-in display, keyboard, speaker, battery</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
@@ -482,6 +497,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">Weak</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Watchdog</td>
@@ -491,6 +507,29 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Structured concurrency (threads, scopes, scoped values, locks)</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Double-precision <code>Math</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
 <td align="center">✓</td>
 </tr>
 <tr>
@@ -502,6 +541,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Grove sockets</td>
@@ -509,6 +549,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Carrier</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
@@ -522,6 +563,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Onboard IMU (<code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code>)</td>
@@ -531,6 +573,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 </tr>
 <tr>
@@ -542,6 +585,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>TFT Touch Shield</td>
@@ -552,6 +596,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">–</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Infrared link to LEGO RCX</td>
@@ -560,6 +605,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 </tr>

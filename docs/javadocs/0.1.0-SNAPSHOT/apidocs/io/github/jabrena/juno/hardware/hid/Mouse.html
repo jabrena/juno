@@ -96,8 +96,10 @@ the compiler lowers to the Arduino <code>Mouse</code> library, and
 <a href="../ArduinoNano.html#getMouse()"><code>ArduinoNano.getMouse()</code></a> is the Nano ESP32's, lowered to its core's
 <code>USBHIDMouse</code>; <a href="../M5StackCardputer.html#getMouse()"><code>M5StackCardputer.getMouse()</code></a> uses the same ESP32-S3
 stack; a unit test passes <code>mock(Mouse.class)</code> instead. Requires a board with native USB: the UNO R4 WiFi,
-with the <code>Mouse</code> library installed (<code>arduino-cli lib install Mouse</code>), or an ESP32-S3 board such as the
-Nano ESP32 and M5Stack Cardputer. Get the board's mouse once, at startup, and pass it to the classes that need it.</div>
+with the <code>Mouse</code> library installed (<code>arduino-cli lib install Mouse</code>), Raspberry Pi Pico 2 W, or an
+ESP32-S3 board such as the Nano ESP32 and M5Stack Cardputer. <a href="../RaspberryPico2.html#getMouse()"><code>RaspberryPico2.getMouse()</code></a>
+uses the Pico SDK USB stack. Get the board's mouse once, at startup, and pass it to
+the classes that need it.</div>
 </div>
 </section>
 <section class="summary">
