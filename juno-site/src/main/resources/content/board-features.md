@@ -12,31 +12,33 @@ language itself, see the [Java subset](../java-subset) page.
 
 ✓ supported · – not available · the notes after the table explain the exceptions.
 
-| Feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield |
-| Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – |
-| HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | Shield |
-| HTTPS client | ✓ | ✓ | ✓ | – | ✓ | ✓ | – |
-| HTTP server | ✓ | ✓ | ✓ | – | ✓ | – | – |
-| HTTPS server | ✓ | ✓ | ✓ | – | – | – | – |
-| Email over TLS | ✓ | ✓ | ✓ | – | ✓ | ✓ | – |
-| Email STARTTLS | – | ✓ | – | – | ✓ | – | – |
-| SNTP clock (`LocalDateTime.now()`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield |
-| Bluetooth LE | ✓ | ✓ | ✓ | ✓ | ✓ | – | – |
-| USB HID mouse | – | ✓ | ✓ | – | ✓ | – | – |
-| LED matrix | ✓ (13 × 8) | – | – | – | ✓ (12 × 8) | – | – |
-| Built-in display, keyboard, speaker, battery | – | – | ✓ | – | – | – | – |
-| Hardware random numbers | ✓ | ✓ | ✓ | – | ✓ | ✓ | Weak |
-| Watchdog | – | ✓ | ✓ | – | ✓ | ✓ | ✓ |
-| SD card | Shield | Carrier | Built-in | Built-in | Shield | Shield | Shield |
-| Grove sockets | Shield | Carrier | – | – | Shield | Shield | Shield |
-| 9 Axis Motion Shield | Shield | – | – | – | Shield | Shield | Shield |
-| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | – | – | – | – | – | ✓ | – |
-| LCD Keypad Shield | Shield | – | – | – | Shield | Shield | Shield |
-| TFT Touch Shield | Shield | – | – | – | Shield | Shield | – |
-| Infrared link to LEGO RCX | ✓ | ✓ | – | – | ✓ | – | – |
+| Feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 | Pico 2 W |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield | ✓ |
+| Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
+| HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | Shield | ✓ |
+| HTTPS client | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
+| HTTP server | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
+| HTTPS server | ✓ | ✓ | ✓ | – | – | – | – | ✓ |
+| Email over TLS | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
+| Email STARTTLS | – | ✓ | – | – | ✓ | – | – | – |
+| SNTP clock (`LocalDateTime.now()`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield | ✓ |
+| Bluetooth LE | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ |
+| USB HID mouse | – | ✓ | ✓ | – | ✓ | – | – | ✓ |
+| LED matrix | ✓ (13 × 8) | – | – | – | ✓ (12 × 8) | – | – | – |
+| Built-in display, keyboard, speaker, battery | – | – | ✓ | – | – | – | – | – |
+| Hardware random numbers | ✓ | ✓ | ✓ | – | ✓ | ✓ | Weak | – |
+| Watchdog | – | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ |
+| Structured concurrency (threads, scopes, scoped values, locks) | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
+| Double-precision `Math` | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
+| SD card | Shield | Carrier | Built-in | Built-in | Shield | Shield | Shield | – |
+| Grove sockets | Shield | Carrier | – | – | Shield | Shield | Shield | Shield |
+| 9 Axis Motion Shield | Shield | – | – | – | Shield | Shield | Shield | – |
+| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | – | – | – | – | – | ✓ | – | – |
+| LCD Keypad Shield | Shield | – | – | – | Shield | Shield | Shield | – |
+| TFT Touch Shield | Shield | – | – | – | Shield | Shield | – | – |
+| Infrared link to LEGO RCX | ✓ | ✓ | – | – | ✓ | – | – | – |
 
 Notes:
 
