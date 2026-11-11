@@ -352,7 +352,7 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 thread port is FreeRTOS tasks with an 8 KiB default stack, preempted at safepoints")
+    @DisplayName("The ESP32 thread port runs FreeRTOS tasks on one 8 KiB carrier, preempted at safepoints")
     void shouldPortThreadsToFreeRtosTasksOnTheEsp32() {
         // Given
         CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
@@ -362,8 +362,9 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(esp32.threadIncludes()).contains("#include <freertos/semphr.h>", "#include <freertos/task.h>");
-        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake");
+        assertThat(port).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_esp32_carrier[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake", "juno_freeze")
+                .doesNotContain("JUNO_MAX_THREADS");
         assertThat(esp32.preemptsAsynchronously()).isFalse();
     }
 

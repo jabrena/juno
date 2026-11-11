@@ -5,6 +5,7 @@ import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.conformance.ConformanceWorkspace;
+import io.github.jabrena.juno.conformance.ProgramDirectory;
 import io.github.jabrena.juno.conformance.ProgramSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -24,6 +25,7 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,9 @@ class XtensaRunIT {
             CompilerTestSupport.JUNO_API_CLASSES);
     /** The one ESP32-S3 board/core path this pilot claims. */
     private static final Board BOARD = Board.NANO_ESP32;
+    /** The runtime programs QemuRunIT runs on Thumb-2; the ones that declare the Nano ESP32 run here too. */
+    private static final ProgramDirectory QEMU_PROGRAMS =
+            new ProgramDirectory(BASEDIR.resolve("src/test/qemu/programs"));
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
@@ -82,8 +87,25 @@ class XtensaRunIT {
 
     @BeforeAll
     static void compilePrograms() throws IOException {
-        WORKSPACE.compilePrograms(WORKSPACE.conformancePrograms().allSources());
+        List<Path> sources = new ArrayList<>(QEMU_PROGRAMS.sources());
+        sources.addAll(WORKSPACE.conformancePrograms().allSources());
+        WORKSPACE.compilePrograms(sources);
         WORKSPACE.compileBaseline();
+    }
+
+    /** Runtime programs from src/test/qemu/programs that declare the Nano ESP32 (threads and continuations). */
+    static Stream<Arguments> programs() {
+        return QEMU_PROGRAMS.programs().stream().filter(program -> program.declares(BOARD))
+                .map(program -> Arguments.of(program.mainClass(), BOARD));
+    }
+
+    @ParameterizedTest(name = "{0} ({1})")
+    @MethodSource("programs")
+    void matchesTheJvmUnderQemu(String mainClass, Board board) throws Exception {
+        String expected = WORKSPACE.baseline(mainClass);
+        String actual = runUnderQemu(mainClass, board);
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
+                "%s on %s under QEMU (ESP32-S3)".formatted(mainClass, board.displayName()));
     }
 
     /** Primitive semantic-conformance fixtures from the XML catalog that declare the Nano ESP32. */
