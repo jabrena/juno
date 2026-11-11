@@ -60,7 +60,7 @@ public final class RuntimeShim {
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.core = core;
         this.config = config;
-        this.carrierCount = config.carrierCount(core.carrierCount());
+        this.carrierCount = config.carrierCount(core.carrierCount(), features.contains(ShimFeature.THREADS));
         this.gcLoggingEnabled = gcLoggingEnabled;
         // The UUID helpers raise a Java exception for an invalid value, so a UUID program needs the exception helpers too.
         this.features = features.contains(ShimFeature.UUID) ? withExceptions(features) : features;
@@ -218,7 +218,7 @@ public final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        shim.append(ioRuntime.preludeFor(core, features));
+        shim.append(ioRuntime.preludeFor(core, features, carrierCount));
         if (uses(ShimFeature.M5_DEVICE)) {
             shim.append(runtimeSource.load("common/m5-device.cpp"));
         }
@@ -287,7 +287,7 @@ public final class RuntimeShim {
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses,
-                        uses(ShimFeature.THREADS) ? carrierCount : 1)),
+                        carrierCount)),
                 new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
@@ -357,14 +357,10 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SCOPED_VALUES)) {
             shim.append(scopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),
-                    throwableClasses.indexOf("java/util/NoSuchElementException"),
-                    uses(ShimFeature.THREADS) ? carrierCount : 1));
+                    throwableClasses.indexOf("java/util/NoSuchElementException"), carrierCount));
         }
         if (uses(ShimFeature.THREADS)) {
-            if (carrierCount > 1) {
-                shim.append(core.runtimeLock());
-                shim.append(core.wideAccessHelpers());
-            }
+            shim.append(core.carrierRuntime(carrierCount));
             shim.append(core.threadPort(config, carrierCount));
             shim.append(ioRuntime.workerPortFor(core, features));
             shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(), ioRuntime.usesWorker(core, features),

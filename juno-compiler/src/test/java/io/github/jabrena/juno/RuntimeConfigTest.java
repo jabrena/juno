@@ -106,6 +106,13 @@ class RuntimeConfigTest {
     }
 
     @Test
+    @DisplayName("A program without threads runs on one carrier even on a dual-core board")
+    void shouldRunAThreadFreeProgramOnOneCarrier() {
+        assertThat(RuntimeConfig.DEFAULT.carrierCount(2, false)).isEqualTo(1);
+        assertThat(RuntimeConfig.DEFAULT.carrierCount(2, true)).isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("Rejects a carrier count outside the supported range")
     void shouldRejectAnInvalidCarrierCount() {
         assertThatThrownBy(() -> RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("3")))

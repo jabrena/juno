@@ -127,6 +127,14 @@ public record RuntimeConfig(int arenaBytes, OptionalInt threadStackBytes, Option
         return configured;
     }
 
+    /**
+     * The carriers a program runs on: the configured count when it has threads, else the one carrier, whose
+     * single-core runtime needs no lock or per-carrier state.
+     */
+    public int carrierCount(int coreCarrierCount, boolean threads) {
+        return threads ? carrierCount(coreCarrierCount) : 1;
+    }
+
     /** The carrier (on AVR, task) stack size to use on a board whose own size is {@code boardDefault}. */
     public int threadStackBytes(int boardDefault) {
         return threadStackBytes.orElse(boardDefault);

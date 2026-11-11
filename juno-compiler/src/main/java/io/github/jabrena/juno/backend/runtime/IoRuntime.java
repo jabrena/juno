@@ -26,6 +26,62 @@ import java.util.Set;
  * thread while its caller is parked in the scheduler ({@code juno_io_offload}); elsewhere it still holds every thread.
  */
 public final class IoRuntime {
+    private static final String WAIT = """
+            static void juno_io_wait(uint32_t millisToWait) {
+              if (juno_io_on_worker()) {
+                delay(millisToWait);
+              } else {
+                juno_thread_sleep(static_cast<int64_t>(millisToWait));
+              }
+            }
+            """;
+
+    private static final String LOCKED_WAIT = """
+            static void juno_io_wait(uint32_t millisToWait) {
+              bool runtimeHeld = juno_runtime_owned();
+              if (runtimeHeld) juno_runtime_exit();
+              if (juno_io_on_worker()) {
+                delay(millisToWait);
+              } else {
+                juno_thread_sleep(static_cast<int64_t>(millisToWait));
+              }
+              if (runtimeHeld) juno_runtime_enter();
+            }
+            """;
+
+    private static final String IO_GUARD = """
+
+            struct JunoIoGuard {
+              uint32_t device;
+              JunoIoGuard(uint32_t guarded, void* handle = nullptr, void (*abort)(void*) = nullptr)
+                  : device(guarded) {
+                juno_io_acquire(guarded, handle, abort);
+              }
+              ~JunoIoGuard() {
+                juno_io_release(device);
+              }
+            };
+            """;
+
+    private static final String LOCKED_IO_GUARD = """
+
+            struct JunoIoGuard {
+              uint32_t device;
+              bool runtimeReleased;
+              JunoIoGuard(uint32_t guarded, void* handle = nullptr, void (*abort)(void*) = nullptr)
+                  : device(guarded), runtimeReleased(juno_runtime_owned()) {
+                if (runtimeReleased) juno_runtime_exit();
+                juno_io_acquire(guarded, handle, abort);
+                if (runtimeReleased) juno_runtime_enter();
+              }
+              ~JunoIoGuard() {
+                if (runtimeReleased) juno_runtime_exit();
+                juno_io_release(device);
+                if (runtimeReleased) juno_runtime_enter();
+              }
+            };
+            """;
+
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
 
@@ -45,10 +101,19 @@ public final class IoRuntime {
         return core.ioWorker() && features.contains(ShimFeature.THREADS) && needed(features, true);
     }
 
-    /** {@link #prelude} when the program needs it, else nothing. */
+    /** {@link #prelude} for a single carrier when the program needs it, else nothing. */
     String preludeFor(CoreRuntime core, Set<ShimFeature> features) {
+        return preludeFor(core, features, 1);
+    }
+
+    /**
+     * {@link #prelude} when the program needs it, else nothing. Only with threads on more than one carrier do the
+     * waits and guards release the runtime lock, which single-carrier ports do not define.
+     */
+    String preludeFor(CoreRuntime core, Set<ShimFeature> features, int carrierCount) {
         boolean worker = usesWorker(core, features);
-        return needed(features, core.ioWorker()) ? prelude(features.contains(ShimFeature.THREADS), worker) : "";
+        boolean threads = features.contains(ShimFeature.THREADS);
+        return needed(features, core.ioWorker()) ? prelude(threads, worker, threads && carrierCount > 1) : "";
     }
 
     /** The core's I/O worker when the program uses it, else nothing; goes right after the thread port. */
@@ -63,8 +128,9 @@ public final class IoRuntime {
      * take guards (no-ops on the worker, whose caller already holds them), but never touches the arena.
      *
      * @param worker whether the core's port provides the I/O worker ({@link CoreRuntime#ioWorker()})
+     * @param runtimeLock whether threads run on several carriers, so a wait or guard releases the runtime lock
      */
-    String prelude(boolean threads, boolean worker) {
+    String prelude(boolean threads, boolean worker, boolean runtimeLock) {
         String offload = threads && worker ? runtimeSource.load("common/io-stable-text.cpp").replace("${JUNO_SLOT_BYTES}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
                 : """
                 static void juno_io_offload(void (*job)(void*), void* argument) {
@@ -75,10 +141,12 @@ public final class IoRuntime {
                   return false;
                 }
                 """;
-        String implementation = threads ? """
+        String lockDeclarations = runtimeLock ? """
                 extern "C" bool juno_runtime_owned();
                 extern "C" void juno_runtime_enter();
                 extern "C" void juno_runtime_exit();
+                """ : "";
+        String implementation = threads ? lockDeclarations + """
                 extern "C" void juno_thread_sleep(int64_t millis);
                 extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*));
                 extern "C" void juno_io_release(uint32_t device);
@@ -86,27 +154,7 @@ public final class IoRuntime {
                 extern "C" void juno_http_release(uint32_t device);
                 """ + offload + """
 
-                static void juno_io_wait(uint32_t millisToWait) {
-                  bool runtimeHeld = juno_runtime_owned();
-                  if (runtimeHeld) juno_runtime_exit();
-                  if (juno_io_on_worker()) {
-                    delay(millisToWait);
-                  } else {
-                    juno_thread_sleep(static_cast<int64_t>(millisToWait));
-                  }
-                  if (runtimeHeld) juno_runtime_enter();
-                }
-                """ : offload + """
-                static bool juno_runtime_owned() {
-                  return false;
-                }
-
-                static void juno_runtime_enter() {
-                }
-
-                static void juno_runtime_exit() {
-                }
-
+                """ + (runtimeLock ? LOCKED_WAIT : WAIT) : offload + """
                 static void juno_io_wait(uint32_t millisToWait) {
                   delay(millisToWait);
                 }
@@ -136,23 +184,7 @@ public final class IoRuntime {
                   JUNO_IO_DEVICES
                 };
 
-                """ + implementation + """
-
-                struct JunoIoGuard {
-                  uint32_t device;
-                  bool runtimeReleased;
-                  JunoIoGuard(uint32_t guarded, void* handle = nullptr, void (*abort)(void*) = nullptr)
-                      : device(guarded), runtimeReleased(juno_runtime_owned()) {
-                    if (runtimeReleased) juno_runtime_exit();
-                    juno_io_acquire(guarded, handle, abort);
-                    if (runtimeReleased) juno_runtime_enter();
-                  }
-                  ~JunoIoGuard() {
-                    if (runtimeReleased) juno_runtime_exit();
-                    juno_io_release(device);
-                    if (runtimeReleased) juno_runtime_enter();
-                  }
-                };
+                """ + implementation + (runtimeLock ? LOCKED_IO_GUARD : IO_GUARD) + """
 
                 struct JunoHttpGuard {
                   uint32_t device;

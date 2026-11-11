@@ -38,6 +38,11 @@ public interface CoreRuntime {
         return "";
     }
 
+    /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
+    default String carrierRuntime(int carrierCount) {
+        return carrierCount > 1 ? runtimeLock() + wideAccessHelpers() : "";
+    }
+
     /** The symbol {@code Delay.millis} branches to, taking the delay in r0. */
     String delayMillisFunction();
 
