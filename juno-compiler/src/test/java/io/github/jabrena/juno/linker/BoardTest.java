@@ -174,7 +174,7 @@ class BoardTest {
         // When & Then
         assertThat(board).isEqualTo(Board.PICO_2_W);
         assertThat(board.annotationArgument()).isEqualTo("RaspberryPico2WifiBoard.class");
-        assertThat(board.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w");
+        assertThat(board.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble");
         assertThat(board.core()).isEqualTo(ArduinoCore.RP2350);
         assertThat(board.core().architecture()).isEqualTo(Architecture.THUMB2);
         assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(64);
@@ -319,6 +319,37 @@ class BoardTest {
         assertThat(result.runtimeShim())
                 .contains("#include <WiFi.h>\n", "WiFiServer", "juno_http_server_begin")
                 .doesNotContain("WiFiS3.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W adapts its BTstack BLE library to the Powered Up central")
+    void shouldLowerRaspberryPico2BluetoothLeToTheCoreBleLibrary() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.net.BluetoothLe;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoBluetooth {
+                    public static void main(String[] args) {
+                        BluetoothLe bluetooth = RaspberryPico2.getBluetoothLe();
+                        byte[] advertisement = new byte[8];
+                        bluetooth.connect("00001623-1212-efde-1623-785feabcd123", "00001624-1212-efde-1623-785feabcd123",
+                                1000, advertisement, advertisement.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoBluetooth", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoBluetooth", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <BLE.h>", "BLE.scan", "JunoPicoBleDevice")
+                .doesNotContain("ArduinoBLE.h");
     }
 
     @Test
