@@ -23,7 +23,7 @@ module, slower than the SRAM inside the chip.
 | SRAM | 512 kB | 512 kB | 520 kB | 786 kB | 520 kB | 32 kB | 6 kB | 2 kB |
 | PSRAM | 8 MB | — | 4 MB | — | — | — | — | — |
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V | 5 V |
-| Radio | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE on the Linux side | CYW43439 Wi-Fi (BLE not wired yet) | ESP32-S3 Wi-Fi/BLE | NINA-W102 Wi-Fi/BLE | None (WiFi Shield) |
+| Radio | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE on the Linux side | CYW43439 Wi-Fi/BLE | ESP32-S3 Wi-Fi/BLE | NINA-W102 Wi-Fi/BLE | None (WiFi Shield) |
 | Extras | | Display, keyboard, speaker, battery | OV2640 camera, microSD socket | 13×8 LED matrix, Linux MPU | Built-in LED on the radio chip | 12×8 LED matrix | Secure element, IMU | |
 | Arduino core | `arduino: esp32` | `m5stack: esp32` | `esp32: esp32` | `arduino: zephyr` | `rp2040: rp2040` | `arduino: renesas_uno` | `arduino: megaavr` | `arduino: avr` |
 | Juno board id | `arduino-nano-esp32` | `m5stack-cardputer` | `ai-thinker-esp32-cam` | `arduino-uno-q` | `raspberry-pi-pico-2-w` | `arduino-uno-r4-wifi` | `arduino-uno-r3-wifi-rev2` | `arduino-uno-r3` |
@@ -39,23 +39,23 @@ core identifier (for example, `arduino:zephyr`) in build commands.
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Double-precision `Math` functions | ✓ | ✓ | — | ✓ | — | ✓ | — | — |
-| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
+| Double-precision `Math` functions | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
+| Threads, `StructuredTaskScope`, `ScopedValue`, locks | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | WiFi Shield |
 | Wi-Fi access point | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP client | ✓ | ✓ | — | — | — | ✓ | ✓ | WiFi Shield |
-| HTTPS client | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
-| HTTP server | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
-| HTTPS server | ✓ | ✓ | — | ✓ | — | — | — | — |
+| HTTP client | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | WiFi Shield |
+| HTTPS client | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP server | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| HTTPS server | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
 | HTTP response streaming (`HttpServer.beginStream`) | — | — | ✓ | — | — | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | — | — | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | — | ✓ | — | — |
-| USB HID mouse | ✓ | ✓ | — | — | — | ✓ | — | — |
+| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
+| USB HID mouse | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
 | Onboard LED matrix | — | — | — | ✓ | — | ✓ | — | — |
 | Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | — | — | — | — | — | — | ✓ | — |
 | Camera (`Esp32Cam.getCamera()`) | — | — | ✓ | — | — | — | — | — |
-| `@Watchdog` | ✓ | ✓ | — | — | — | ✓ | ✓ | ✓ |
+| `@Watchdog` | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
 | Cryptographic `UUID.randomUUID()` | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | ✓ | — | — | — | — | — | — |
 
