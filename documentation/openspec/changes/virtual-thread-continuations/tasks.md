@@ -14,10 +14,7 @@
 - [x] 5.1 Port the Zephyr carrier for the UNO Q.
 - [ ] 5.2 Convert the six UNO Q offload call sites (HTTP client, HTTP server accept/respond, SD free space) to worker-owned storage; remove the `DRAINING` state; keep pinning only as a fallback for unconverted sites.
 - [ ] 6.1 Spike on the Nano ESP32: Xtensa register-window spill before freeze, single carrier.
-- [ ] 6.2 Spike on the Pico 2 W: start core 1 as the second carrier and confirm where the collector's stop flag is checked (per-core tick vs added safepoints); update `design.md`.
-- [ ] 6.3 Make the runtime multi-core safe: stop-the-world flag protocol, arena allocation, monitors, atomics with real atomic instructions, run queue, per-carrier globals, barriers for `volatile`/`synchronized` (`dmb`, `memw`).
-- [ ] 6.4 Port the ESP32 carriers (two FreeRTOS tasks, one per core) for the Nano ESP32, M5Stack Cardputer and ESP32-CAM.
-- [ ] 6.5 Port the RP2350 carriers (two, one per core) for the Pico 2 W.
+- [x] 6.2 Second carrier on the dual-core boards: moved to change `dual-core-carriers` (spikes, runtime lock, per-carrier state, stop-the-world collection, barriers, ESP32 and RP2350 dual carriers), stacked on this one.
 - [ ] 7.1 Add `JunoCompilerTest`/`GeneratedAsmToolchainTest` cases for the new runtime pieces; confirm byte-identical output for Blink and other thread-free examples on every board.
 - [ ] 7.2 Add the dedicated example (many virtual threads, parking, `StructuredTaskScope`, a parking `synchronized` section, offloaded I/O on the UNO Q) and revisit MinerGame's `-Djuno.Xss`/`-Djuno.Xmx` flags on the R4.
 - [ ] 7.3 Run `./mvnw test`, `./mvnw -pl juno-compiler -am -Pqemu verify` and `juno:verify` of the affected examples for every in-scope board.
