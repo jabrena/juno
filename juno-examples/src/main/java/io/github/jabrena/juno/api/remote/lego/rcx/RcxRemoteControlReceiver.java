@@ -7,6 +7,7 @@ import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.rcx.RcxRemoteControl;
+import io.github.jabrena.juno.remote.lego.rcx.RcxRemoteControlButton;
 import io.github.jabrena.juno.util.Delay;
 
 /** Prints a message when the UNO R4 receives a button signal from a LEGO Mindstorms 9738 RCX remote. */
@@ -24,16 +25,18 @@ public final class RcxRemoteControlReceiver {
         RcxRemoteControl remote = new RcxRemoteControl(new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
         Delay.millis(START_MILLIS);
         Serial.println("Listening for the LEGO RCX remote");
+        remote.start();
 
-        int previousButtons = 0;
         while (true) {
-            int buttons = remote.buttons();
-            if (buttons != 0 && buttons != previousButtons) {
+            RcxRemoteControlButton button = remote.pollButton();
+            if (button != RcxRemoteControlButton.NONE) {
                 Serial.println("Received signal from LEGO RCX remote");
-                Serial.print("button mask: ");
-                Serial.println(buttons);
+                Serial.print("button: ");
+                Serial.print(button.label());
+                Serial.print(" (mask ");
+                Serial.print(button.mask());
+                Serial.println(")");
             }
-            previousButtons = buttons;
             Delay.millis(POLL_MILLIS);
         }
     }
