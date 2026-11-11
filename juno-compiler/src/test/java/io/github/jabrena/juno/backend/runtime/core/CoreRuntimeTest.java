@@ -294,6 +294,19 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The RP2350 reuses the non-RTOS Thumb-2 thread port")
+    void shouldSizeTheRp2350ThreadPortFromTheDefaults() {
+        // When
+        CoreRuntime rp2350 = coreRuntimes.of(ArduinoCore.RP2350);
+        String port = rp2350.threadPort(RuntimeConfig.DEFAULT);
+
+        // Then
+        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
+                "JUNO_THREAD_STACK_BYTES = 4096u", "juno_preempt_tick");
+        assertThat(rp2350.preemptsAsynchronously()).isTrue();
+    }
+
+    @Test
     @DisplayName("The Zephyr thread port sizes its slots and stack from the defaults")
     void shouldSizeTheZephyrThreadPortFromTheDefaults() {
         // When
