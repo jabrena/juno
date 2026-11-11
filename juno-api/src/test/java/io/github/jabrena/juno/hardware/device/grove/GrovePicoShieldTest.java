@@ -22,8 +22,10 @@ class GrovePicoShieldTest {
         assertThat(new int[] {
                 shield.getA0(), shield.getA1(), shield.getA2(),
                 shield.getD16(), shield.getD18(), shield.getD20(),
-                shield.getI2c0Sda(), shield.getI2c0Scl(), shield.getI2c1Sda(), shield.getI2c1Scl()})
-            .containsExactly(26, 27, 28, 16, 18, 20, 8, 9, 6, 7);
+                shield.getI2c0Sda(), shield.getI2c0Scl(), shield.getI2c1Sda(), shield.getI2c1Scl(),
+                shield.getUart0Rx(), shield.getUart0Tx(), shield.getUart1Rx(), shield.getUart1Tx(),
+                shield.getSpi0Miso(), shield.getSpi0Mosi(), shield.getSpi0Sck(), shield.getSpi0Cs()})
+            .containsExactly(26, 27, 28, 16, 18, 20, 8, 9, 6, 7, 1, 0, 5, 4, 16, 19, 18, 17);
     }
 
     /** The Pico 2 W's resolver: {@code GPn} is GPIO n and {@code A0..A2} are the ADC pins GP26..GP28. */

@@ -13,7 +13,8 @@ import io.github.jabrena.juno.hardware.internal.NativeI2c;
  * <p>The digital sockets carry the GPIO number in their silkscreen label ({@code D16} is GP16), and the analog sockets
  * {@code A0}..{@code A2} are the Pico's ADC pins GP26..GP28, read with {@code Gpio.analogRead}. Plug I2C modules, such
  * as the Grove OLED display, into the I2C0 socket and pass {@link #getI2c0()}, the bus on its GP8/GP9, to their driver.
- * The I2C1 socket pins are exposed for drivers that wire their own bus. The UART and SPI sockets are not mapped yet.
+ * The I2C1 socket pins are exposed for drivers that wire their own bus. UART0, UART1 and SPI0 expose their signal
+ * pins individually, so a serial or SPI driver can select the socket without duplicating the shield's pinout.
  *
  * <p>The shield seen from above, USB at the top, each socket's pins as printed under it. The first pin is the
  * {@code SIG} wire its getter returns. The analog sockets always take 3.3 V; the others take {@code VCC} from the
@@ -25,9 +26,9 @@ import io.github.jabrena.juno.hardware.internal.NativeI2c;
  * |       3V3 o o TX                                           3V3 |
  * |       CS  o o RX                                               |
  * |                                                                |
- * | UART0  (not mapped)                     I2C0  SCL=GP9  SDA=GP8 |
+ * | UART0  RX=GP1 TX=GP0                    I2C0  SCL=GP9  SDA=GP8 |
  * | [RX |TX |VCC|GND]                            [SCL|SDA|VCC|GND] |
- * | UART1  (not mapped)                     I2C1  SCL=GP7  SDA=GP6 |
+ * | UART1  RX=GP5 TX=GP4                    I2C1  SCL=GP7  SDA=GP6 |
  * | [RX |TX |VCC|GND]        Raspberry Pi        [SCL|SDA|VCC|GND] |
  * | D16  SIG=GP16              Pico 2 W               A0  SIG=GP26 |
  * | [D16|D17|VCC|GND]        (sits here)         [A0 |NC |3V3|GND] |
@@ -46,7 +47,10 @@ import io.github.jabrena.juno.hardware.internal.NativeI2c;
  *   A2      getA2()                           GP28 (ADC2)
  *   I2C0    getI2c0() bus, getI2c0Sda/Scl()   GP8, GP9
  *   I2C1    getI2c1Sda(), getI2c1Scl()        GP6, GP7
- *   UART0, UART1, SPI0                        not mapped yet
+ *   UART0    getUart0Rx()/getUart0Tx()        GP1, GP0
+ *   UART1    getUart1Rx()/getUart1Tx()        GP5, GP4
+ *   SPI0     getSpi0Miso()/getSpi0Mosi()      GP16, GP19
+ *            getSpi0Sck()/getSpi0Cs()        GP18, GP17
  * </pre>
  */
 public final class GrovePicoShield {
@@ -60,6 +64,14 @@ public final class GrovePicoShield {
     private final int i2c0Scl;
     private final int i2c1Sda;
     private final int i2c1Scl;
+    private final int uart0Rx;
+    private final int uart0Tx;
+    private final int uart1Rx;
+    private final int uart1Tx;
+    private final int spi0Miso;
+    private final int spi0Mosi;
+    private final int spi0Sck;
+    private final int spi0Cs;
 
     /** Creates the shield handle for the Pico's GPIO context. Create it once, at startup, and reuse it. */
     public GrovePicoShield(Gpio gpio) {
@@ -73,6 +85,14 @@ public final class GrovePicoShield {
         i2c0Scl = gpio.digitalPin("GP9");
         i2c1Sda = gpio.digitalPin("GP6");
         i2c1Scl = gpio.digitalPin("GP7");
+        uart0Rx = gpio.digitalPin("GP1");
+        uart0Tx = gpio.digitalPin("GP0");
+        uart1Rx = gpio.digitalPin("GP5");
+        uart1Tx = gpio.digitalPin("GP4");
+        spi0Miso = gpio.digitalPin("GP16");
+        spi0Mosi = gpio.digitalPin("GP19");
+        spi0Sck = gpio.digitalPin("GP18");
+        spi0Cs = gpio.digitalPin("GP17");
     }
 
     /** The Pico pin behind the A0 socket: GP26, ADC0. */
@@ -132,5 +152,45 @@ public final class GrovePicoShield {
     /** The SCL pin of the I2C1 socket: GP7. */
     public int getI2c1Scl() {
         return i2c1Scl;
+    }
+
+    /** The RX pin of the UART0 socket: GP1. */
+    public int getUart0Rx() {
+        return uart0Rx;
+    }
+
+    /** The TX pin of the UART0 socket: GP0. */
+    public int getUart0Tx() {
+        return uart0Tx;
+    }
+
+    /** The RX pin of the UART1 socket: GP5. */
+    public int getUart1Rx() {
+        return uart1Rx;
+    }
+
+    /** The TX pin of the UART1 socket: GP4. */
+    public int getUart1Tx() {
+        return uart1Tx;
+    }
+
+    /** The MISO/RX pin of the SPI0 socket: GP16. */
+    public int getSpi0Miso() {
+        return spi0Miso;
+    }
+
+    /** The MOSI/TX pin of the SPI0 socket: GP19. */
+    public int getSpi0Mosi() {
+        return spi0Mosi;
+    }
+
+    /** The clock pin of the SPI0 socket: GP18. */
+    public int getSpi0Sck() {
+        return spi0Sck;
+    }
+
+    /** The chip-select pin of the SPI0 socket: GP17. */
+    public int getSpi0Cs() {
+        return spi0Cs;
     }
 }
