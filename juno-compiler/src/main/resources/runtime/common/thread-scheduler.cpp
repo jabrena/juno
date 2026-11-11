@@ -173,8 +173,8 @@ ${JUNO_TASK_BODY}
   }
 }
 
-// Every thread's stack is a root: this thread's from the collector's own frame up, the rest from
-// wherever each one last switched away.
+// Every thread's frames are a root: the running thread's from the collector's own frame up, the rest from
+// wherever each one last switched away (the port says where those frames are now).
 static void juno_thread_gc_scan(const uint8_t* marker) {
   for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
     const JunoSlot& slot = juno_slots[index];
@@ -182,10 +182,11 @@ static void juno_thread_gc_scan(const uint8_t* marker) {
     if (slot.thread != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.thread));
     if (slot.joining != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.joining));
     if (slot.scope != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.scope));
-    uintptr_t top = index == 0u ? juno_gc_stack_top : juno_port_stack_top(index);
-    const uint8_t* from = index == juno_current_slot
-        ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(index));
-    ${JUNO_STACK_SCAN}(from, reinterpret_cast<const uint8_t*>(top));
+    const uint8_t* from;
+    const uint8_t* to;
+    if (juno_port_live_range(index, index == juno_current_slot ? marker : nullptr, &from, &to)) {
+      ${JUNO_STACK_SCAN}(from, to);
+    }
   }
 }
 

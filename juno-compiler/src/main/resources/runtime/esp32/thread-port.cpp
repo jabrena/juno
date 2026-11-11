@@ -75,6 +75,14 @@ static uintptr_t juno_port_saved_sp(uint32_t slot) {
   return juno_esp32_sp[slot];
 }
 
+// The part of one slot's stack the collector scans: from the collector's own frame (`marker`) when the slot is
+// running, else from where it last switched away, up to its top.
+static bool juno_port_live_range(uint32_t slot, const uint8_t* marker, const uint8_t** from, const uint8_t** to) {
+  *from = marker != nullptr ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(slot));
+  *to = reinterpret_cast<const uint8_t*>(slot == 0u ? juno_gc_stack_top : juno_port_stack_top(slot));
+  return true;
+}
+
 // A Juno thread's stack pointer is checked against its buffer from deep inside the runtime (every guarded I/O
 // call), ahead of FreeRTOS's own overflow check at the next context switch.
 static void juno_port_check_stack(uint32_t slot) {

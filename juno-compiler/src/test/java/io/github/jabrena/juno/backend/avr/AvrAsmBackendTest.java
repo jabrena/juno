@@ -1215,7 +1215,7 @@ class AvrAsmBackendTest {
                 .contains("---- Juno threads: AVR port")
                 .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
                 .contains("\"  out 0x3e, r23\\n\"")
-                .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
+                .contains("juno_gc_scan_bytes(from, to);")
                 .contains("juno_thread_gc_scan(&stackMarker);");
     }
 
