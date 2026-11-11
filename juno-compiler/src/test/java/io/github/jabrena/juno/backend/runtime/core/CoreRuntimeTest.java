@@ -283,64 +283,64 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Renesas thread port sizes its slots and stack from the defaults")
+    @DisplayName("The Renesas thread port runs one carrier sized from the defaults")
     void shouldSizeTheRenesasThreadPortFromTheDefaults() {
         // When
         String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
 
         // Then
-        assertThat(renesas).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u");
+        assertThat(renesas).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u").doesNotContain("JUNO_MAX_THREADS");
     }
 
     @Test
-    @DisplayName("The RP2350 reuses the non-RTOS Thumb-2 thread port")
+    @DisplayName("The RP2350 reuses the non-RTOS Thumb-2 carrier port")
     void shouldSizeTheRp2350ThreadPortFromTheDefaults() {
         // When
         CoreRuntime rp2350 = coreRuntimes.of(ArduinoCore.RP2350);
         String port = rp2350.threadPort(RuntimeConfig.DEFAULT);
 
         // Then
-        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
+        assertThat(port).contains("juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
                 "JUNO_THREAD_STACK_BYTES = 4096u", "juno_preempt_tick");
         assertThat(rp2350.preemptsAsynchronously()).isTrue();
     }
 
     @Test
-    @DisplayName("The Zephyr thread port sizes its slots and stack from the defaults")
+    @DisplayName("The Zephyr thread port runs one carrier sized from the defaults")
     void shouldSizeTheZephyrThreadPortFromTheDefaults() {
         // When
         String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
 
         // Then
-        assertThat(zephyr).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = 4096u");
+        assertThat(zephyr).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_zephyr_carrier_stack",
+                "JUNO_THREAD_STACK_BYTES = 4096u").doesNotContain("JUNO_MAX_THREADS");
     }
 
     @Test
-    @DisplayName("The Renesas thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheRenesasThreadPort() {
+    @DisplayName("The Renesas thread port takes the configured carrier stack")
+    void shouldApplyTheConfiguredStackToTheRenesasThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
+        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536));
 
         // When
         String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(config);
 
         // Then
-        assertThat(renesas).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+        assertThat(renesas).contains("JUNO_THREAD_STACK_BYTES = 1536u");
     }
 
     @Test
-    @DisplayName("The Zephyr thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheZephyrThreadPort() {
+    @DisplayName("The Zephyr thread port takes the configured carrier stack")
+    void shouldApplyTheConfiguredStackToTheZephyrThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
+        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536));
 
         // When
         String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(config);
 
         // Then
-        assertThat(zephyr).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+        assertThat(zephyr).contains("JUNO_THREAD_STACK_BYTES = 1536u");
     }
 
     static Stream<Arguments> unsupportedEsp32Features() {
@@ -352,7 +352,7 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 thread port is FreeRTOS tasks with an 8 KiB default stack, preempted at safepoints")
+    @DisplayName("The ESP32 thread port runs FreeRTOS tasks on one 8 KiB carrier, preempted at safepoints")
     void shouldPortThreadsToFreeRtosTasksOnTheEsp32() {
         // Given
         CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
@@ -362,8 +362,9 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(esp32.threadIncludes()).contains("#include <freertos/semphr.h>", "#include <freertos/task.h>");
-        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake");
+        assertThat(port).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_esp32_carrier[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake", "juno_freeze")
+                .doesNotContain("JUNO_MAX_THREADS");
         assertThat(esp32.preemptsAsynchronously()).isFalse();
     }
 
@@ -382,16 +383,16 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheEsp32ThreadPort() {
+    @DisplayName("The ESP32 thread port takes the configured stack")
+    void shouldApplyTheConfiguredStackToTheEsp32ThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(4096));
+        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(4096));
 
         // When
         String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(config);
 
         // Then
-        assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
+        assertThat(port).contains("JUNO_THREAD_STACK_BYTES = 4096u");
     }
 
     @Test

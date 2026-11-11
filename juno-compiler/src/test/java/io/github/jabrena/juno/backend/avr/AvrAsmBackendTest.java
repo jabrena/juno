@@ -485,7 +485,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects an Xmx above the classic UNO R3's one kilobyte")
     void shouldRejectAnXmxAboveTheClassicUnoR3sOneKilobyte() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(2048, 4, OptionalInt.empty()).forBoard(Board.UNO_R3))
+        assertThatThrownBy(() -> new RuntimeConfig(2048, OptionalInt.empty()).forBoard(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
     }
@@ -1101,7 +1101,7 @@ class AvrAsmBackendTest {
     @DisplayName("Keeps an explicit arena that fits the UNO WiFi Rev2")
     void shouldKeepAnExplicitArenaThatFitsTheUnoWifiRev2() {
         // Given
-        RuntimeConfig explicit = new RuntimeConfig(2048, 4, OptionalInt.empty());
+        RuntimeConfig explicit = new RuntimeConfig(2048, OptionalInt.empty());
 
         // When & Then
         assertThat(explicit.forBoard(Board.UNO_R3_WIFI_REV2)).isEqualTo(explicit);
@@ -1111,7 +1111,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects an arena above the AVR limit")
     void shouldRejectAnArenaAboveTheAvrLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_R3_WIFI_REV2))
+        assertThatThrownBy(() -> new RuntimeConfig(4096, OptionalInt.empty()).forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
     }
@@ -1215,7 +1215,7 @@ class AvrAsmBackendTest {
                 .contains("---- Juno threads: AVR port")
                 .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
                 .contains("\"  out 0x3e, r23\\n\"")
-                .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
+                .contains("juno_gc_scan_bytes(from, to);")
                 .contains("juno_thread_gc_scan(&stackMarker);");
     }
 
@@ -1326,7 +1326,7 @@ class AvrAsmBackendTest {
     @DisplayName("An explicit task stack of one kilobyte is kept on the UNO WiFi Rev2")
     void shouldKeepAnExplicitOneKilobyteTaskStackOnTheUnoWifiRev2() {
         // Given
-        RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(1024));
+        RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), OptionalInt.of(1024));
 
         // When & Then
         assertThat(larger.forBoard(Board.UNO_R3_WIFI_REV2).threadStackBytes()).hasValue(1024);
@@ -1336,7 +1336,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a task stack above the AVR limit")
     void shouldRejectATaskStackAboveTheAvrLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(2048))
+        assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), OptionalInt.of(2048))
                 .forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xss can be at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);

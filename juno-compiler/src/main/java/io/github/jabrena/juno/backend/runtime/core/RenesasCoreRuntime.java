@@ -137,7 +137,7 @@ final class RenesasCoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.renesasPort(config.maxThreads(),
+        return threadRuntime.renesasPort(
                 config.threadStackBytes(ArduinoCore.RENESAS_UNO.defaultThreadStackBytes()));
     }
 }

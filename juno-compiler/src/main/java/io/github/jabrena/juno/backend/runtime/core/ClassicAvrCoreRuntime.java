@@ -144,7 +144,7 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.avrPort(config.maxThreads(),
+        return threadRuntime.avrPort(
                 config.threadStackBytes(ArduinoCore.CLASSIC_AVR.defaultThreadStackBytes()));
     }
 

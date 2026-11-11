@@ -1,5 +1,6 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -11,7 +12,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * with live references on their own stacks. Every printed value is fixed by the joins, so the JVM and the board
  * agree whatever the interleaving.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
 public final class VirtualThreads {
     static final Cell LOCK = new Cell(0);
     static int flag;

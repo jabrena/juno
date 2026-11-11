@@ -158,7 +158,6 @@ public final class IoRuntime {
                 // The owner and deferred cancellation state of each I/O worker. A cancelled call keeps its device
                 // lease until its worker finishes, so another request cannot reuse its transport prematurely.
                 static uint32_t juno_io_offloader[JUNO_IO_WORKER_COUNT];
-                static uint32_t juno_io_worker_for_slot[JUNO_MAX_THREADS];
                 static uint32_t juno_io_deferred_owner[JUNO_IO_WORKER_COUNT];
                 static void (*juno_io_deferred_abort[JUNO_IO_WORKER_COUNT])(void*);
                 static void* juno_io_deferred_handle[JUNO_IO_WORKER_COUNT];

@@ -154,13 +154,15 @@ public final class RuntimeRiskAnalyzer {
         }
         if (scan.launchesInLoops() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-008", RiskSeverity.WARNING, method,
-                    scan.launchesInLoops() + " virtual-thread start or fork call(s) sit in a control-flow loop; at most "
-                            + (config.maxThreads() - 1) + " threads can be active beside the caller"));
+                    scan.launchesInLoops() + " virtual-thread start or fork call(s) sit in a control-flow loop; every live"
+                            + " one keeps its frames in the arena while parked (on AVR boards at most "
+                            + (RuntimeLimits.MAX_THREADS - 1) + " can be active beside the caller)"));
         }
-        if (scan.peakUnjoinedLaunches() > config.maxThreads() - 1) {
+        if (scan.peakUnjoinedLaunches() > RuntimeLimits.MAX_THREADS - 1) {
             findings.add(new RuntimeRisk("JUNO-RISK-009", RiskSeverity.WARNING, method,
-                    scan.peakUnjoinedLaunches() + " threads or subtasks are started with no join in between; at most "
-                            + (config.maxThreads() - 1) + " can be active beside the caller"));
+                    scan.peakUnjoinedLaunches() + " threads or subtasks are started with no join in between; each"
+                            + " keeps its frames in the arena while parked (on AVR boards at most "
+                            + (RuntimeLimits.MAX_THREADS - 1) + " can be active beside the caller)"));
         }
         if (scan.oversizedStringBuilders() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-007", RiskSeverity.WARNING, method,
@@ -180,25 +182,25 @@ public final class RuntimeRiskAnalyzer {
             Set<MethodRef> reachable = callGraphMetrics.reachableFrom(entry, calls);
             if (reachable.stream().anyMatch(launchers::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-010", RiskSeverity.WARNING, entry,
-                        "thread body starts a thread or opens a task scope; nested threads share the "
-                                + config.maxThreads() + " scheduler slots with their parent"));
+                        "thread body starts a thread or opens a task scope; nested threads share the arena (on AVR"
+                                + " boards, the " + RuntimeLimits.MAX_THREADS + " scheduler slots) with their parent"));
             }
             if (reachable.stream().anyMatch(recursive::contains)) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "thread body reaches a recursive call cycle; its " + threadStackBytes()
-                                + " byte stack cannot be proven sufficient"));
+                        "thread body reaches a recursive call cycle; the " + threadStackBytes()
+                                + " byte carrier stack cannot be proven sufficient"));
                 continue;
             }
             int stack = callGraphMetrics.maximumStack(entry, calls, frames);
             if (stack > threadStackBytes()) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "estimated thread stack use of " + stack + " bytes exceeds the smallest thread stack ("
+                        "estimated thread stack use of " + stack + " bytes exceeds the smallest carrier stack ("
                                 + threadStackBytes() + " bytes, UNO R4 WiFi)"));
             }
         }
     }
 
-    /** The task stack the analysis judges bodies against: the configured one, else the smallest board's. */
+    /** The carrier stack the analysis judges bodies against: the configured one, else the smallest board's. */
     private int threadStackBytes() {
         return config.threadStackBytes(RuntimeLimits.MIN_THREAD_STACK_BYTES);
     }

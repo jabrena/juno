@@ -168,6 +168,6 @@ final class ZephyrCoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.zephyrPort(config.maxThreads(), config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
+        return threadRuntime.zephyrPort(config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
     }
 }

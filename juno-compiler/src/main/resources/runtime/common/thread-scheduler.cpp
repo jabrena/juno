@@ -1,7 +1,8 @@
 
 // ---- Juno threads: preemptive scheduler (same for every board) ----
 // Slot 0 is the main thread. A Thread handle is a small arena object, so the collector keeps it
-// (and the Runnable it points at) alive for as long as something references it.
+// (and the Runnable it points at) alive for as long as something references it. The slot table starts static and,
+// on ports without a fixed stack per slot, grows in the arena, so the arena is the only limit on live threads.
 struct JunoTaskScope;
 struct JunoTaskConfiguration {
   int32_t timeoutMillis;
@@ -10,7 +11,8 @@ struct JunoThreadObject {
   uint32_t runnable;
   uint32_t flags;
   uint32_t id;
-  uint32_t reserved;
+  // The next subtask of the same scope (a scope keeps its live subtasks as a list).
+  JunoThreadObject* sibling;
   JunoTaskScope* scope;
   int32_t result;
   int32_t failure;
@@ -35,7 +37,7 @@ struct JunoTaskScope {
   uint32_t deadline;
   int32_t firstFailure;
   int32_t result;
-  JunoThreadObject* tasks[JUNO_MAX_THREADS - 1u];
+  JunoThreadObject* tasks;
 };
 
 enum : uint32_t {
@@ -60,14 +62,57 @@ struct JunoSlot {
   uintptr_t waitKey;
   uint32_t notified;
   ${JUNO_SLOT_BINDINGS}
+  // Where a preempted thread resumes in generated code (0 when it was not preempted there).
+  uint32_t preemptResume;
+  // The I/O worker running this thread's offloaded call, plus one (0: none).
+  uint32_t ioWorker;
+  JunoPortSlot port;
 };
 
-static JunoSlot juno_slots[JUNO_MAX_THREADS] = {
+static constexpr uint32_t JUNO_NO_SLOT = 0xFFFFFFFFu;
+static JunoSlot juno_initial_slots[JUNO_INITIAL_SLOTS] = {
     {JUNO_SLOT_READY, 0u, nullptr, nullptr, nullptr, 0}};
+static JunoSlot* juno_slot_table = juno_initial_slots;
+static uint32_t juno_slot_capacity = JUNO_INITIAL_SLOTS;
+// The table and its size are compile-time constants where the table cannot grow (a stack per slot), so the scheduler
+// stays as cheap as it was with a fixed table: an AVR thread's stack has little room to spare.
+#define juno_slots (JUNO_SLOT_LIMIT == JUNO_INITIAL_SLOTS ? juno_initial_slots : juno_slot_table)
+#define juno_slot_count (JUNO_SLOT_LIMIT == JUNO_INITIAL_SLOTS ? JUNO_INITIAL_SLOTS : juno_slot_capacity)
 static uint32_t juno_current_slot = 0u;
 static uint32_t juno_live_threads = 0u;
 static uint32_t juno_threads_created = 0u;
 static uint32_t juno_slice_start = 0u;
+
+static JunoPortSlot& juno_port_state(uint32_t slot) {
+  return juno_slots[slot].port;
+}
+
+// Keeps an arena block through the next sweep without tracing its payload.
+static void juno_gc_keep_block(const void* payload) {
+  uintptr_t base = reinterpret_cast<uintptr_t>(juno_arena);
+  uintptr_t address = reinterpret_cast<uintptr_t>(payload);
+  if (address < base + 4u || address >= base + juno_arena_used) return;
+  reinterpret_cast<uint32_t*>(const_cast<void*>(payload))[-1] |= JUNO_GC_MARK_BIT;
+}
+
+// Thread memory (thread objects, the slot table, continuation chunks) comes from the arena like any object; when it
+// does not fit even after a collection, the program stops with `message`.
+static void* juno_thread_alloc(uint32_t size, const char* message) {
+  uint32_t padded = juno_gc_round_up4(size);
+  void* memory = juno_gc_try_allocate(padded);
+  if (memory == nullptr) {
+    juno_gc_collect();
+    memory = juno_gc_try_allocate(padded);
+  }
+  if (memory == nullptr) {
+    Serial.print("[juno-thread] ");
+    Serial.println(message);
+    juno_panic();
+  }
+  uint8_t* bytes = static_cast<uint8_t*>(memory);
+  for (uint32_t index = 0; index < padded; index++) bytes[index] = 0;
+  return memory;
+}
 
 struct JunoMonitor {
   uintptr_t key;
@@ -86,8 +131,14 @@ static JunoThreadObject* juno_thread_of(int32_t handle) {
   return reinterpret_cast<JunoThreadObject*>(static_cast<intptr_t>(handle));
 }
 
+static bool juno_slot_pinned(uint32_t index) {
+  uint32_t state = juno_slots[index].state;
+  return state == JUNO_SLOT_WAITING_IO || state == JUNO_SLOT_DRAINING;
+}
+
 static bool juno_slot_runnable(uint32_t index, uint32_t now) {
   const JunoSlot& slot = juno_slots[index];
+  if (JUNO_PORT_PINS && slot.state != JUNO_SLOT_FREE && !juno_port_runnable(index)) return false;
   switch (slot.state) {
     case JUNO_SLOT_READY:
       return true;
@@ -96,7 +147,7 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
     case JUNO_SLOT_JOINING:
       return (slot.joining->flags & JUNO_THREAD_FINISHED) != 0u;
     case JUNO_SLOT_JOINING_ALL:
-      for (uint32_t other = 1u; other < JUNO_MAX_THREADS; other++) {
+      for (uint32_t other = 1u; other < juno_slot_count; other++) {
         if (juno_slots[other].state != JUNO_SLOT_FREE && (juno_slots[other].thread == nullptr
             || (juno_slots[other].thread->flags & JUNO_THREAD_DAEMON) == 0u)) {
           return false;
@@ -112,18 +163,20 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
   }
 }
 
-// The next thread after the current one that can run, or JUNO_MAX_THREADS if none can. The
+// The next thread after the current one that can run, or JUNO_NO_SLOT if none can. The
 // current thread comes last, so it is chosen only when nobody else is runnable.
 ${JUNO_IO_REAP_DECLARATION}
 static uint32_t juno_sched_pick(bool includeCurrent) {
   ${JUNO_IO_REAP_CALL}
   uint32_t now = static_cast<uint32_t>(millis());
-  uint32_t last = includeCurrent ? JUNO_MAX_THREADS : JUNO_MAX_THREADS - 1u;
+  uint32_t count = juno_slot_count;
+  uint32_t last = includeCurrent ? count : count - 1u;
+  uint32_t next = juno_current_slot;
   for (uint32_t step = 1u; step <= last; step++) {
-    uint32_t next = (juno_current_slot + step) % JUNO_MAX_THREADS;
+    next = next + 1u == count ? 0u : next + 1u;
     if (juno_slot_runnable(next, now)) return next;
   }
-  return JUNO_MAX_THREADS;
+  return JUNO_NO_SLOT;
 }
 
 static void juno_sched_handoff(uint32_t to, bool finished) {
@@ -144,7 +197,7 @@ static void juno_sched_handoff(uint32_t to, bool finished) {
 static void juno_sched_block() {
   for (;;) {
     uint32_t next = juno_sched_pick(true);
-    if (next != JUNO_MAX_THREADS) {
+    if (next != JUNO_NO_SLOT) {
       if (next != juno_current_slot) juno_sched_handoff(next, false);
       juno_slots[juno_current_slot].state = JUNO_SLOT_READY;
       return;
@@ -165,7 +218,7 @@ ${JUNO_TASK_BODY}
   juno_live_threads--;
   for (;;) {
     uint32_t next = juno_sched_pick(false);
-    if (next != JUNO_MAX_THREADS) {
+    if (next != JUNO_NO_SLOT) {
       juno_sched_handoff(next, true);
       return;
     }
@@ -173,24 +226,27 @@ ${JUNO_TASK_BODY}
   }
 }
 
-// Every thread's stack is a root: this thread's from the collector's own frame up, the rest from
-// wherever each one last switched away.
+// Every thread's frames are a root: the running thread's from the collector's own frame up, the rest from
+// wherever each one last switched away (the port says where those frames are now).
 static void juno_thread_gc_scan(const uint8_t* marker) {
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
+  juno_gc_keep_block(juno_slots);
+  for (uint32_t index = 0u; index < juno_slot_count; index++) {
     const JunoSlot& slot = juno_slots[index];
     if (slot.state == JUNO_SLOT_FREE) continue;
     if (slot.thread != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.thread));
     if (slot.joining != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.joining));
     if (slot.scope != nullptr) juno_gc_mark_candidate(reinterpret_cast<uintptr_t>(slot.scope));
-    uintptr_t top = index == 0u ? juno_gc_stack_top : juno_port_stack_top(index);
-    const uint8_t* from = index == juno_current_slot
-        ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(index));
-    ${JUNO_STACK_SCAN}(from, reinterpret_cast<const uint8_t*>(top));
+    const uint8_t* from;
+    const uint8_t* to;
+    if (juno_port_live_range(index, index == juno_current_slot ? marker : nullptr, &from, &to)) {
+      ${JUNO_STACK_SCAN}(from, to);
+    }
   }
 }
 
 extern "C" int32_t juno_thread_new(int32_t runnable) {
-  auto* thread = static_cast<JunoThreadObject*>(juno_alloc(sizeof(JunoThreadObject), 4));
+  auto* thread = static_cast<JunoThreadObject*>(
+      juno_thread_alloc(sizeof(JunoThreadObject), "cannot start virtual thread: arena full"));
   thread->runnable = static_cast<uint32_t>(runnable);
   thread->id = juno_threads_created++;
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(thread));
@@ -205,6 +261,22 @@ extern "C" void juno_thread_set_daemon(int32_t handle, int32_t daemon) {
   }
 }
 
+// Every slot is taken: double the table in the arena (ports with a stack per slot stop at JUNO_SLOT_LIMIT instead).
+static void juno_slots_grow() {
+  if (juno_slot_count >= JUNO_SLOT_LIMIT) {
+    Serial.print("[juno-thread] too many threads: at most ");
+    Serial.print(JUNO_SLOT_LIMIT);
+    Serial.println(" run at once, the main thread included");
+    juno_panic();
+  }
+  uint32_t count = juno_slot_capacity > JUNO_SLOT_LIMIT / 2u ? JUNO_SLOT_LIMIT : juno_slot_capacity * 2u;
+  auto* grown = static_cast<JunoSlot*>(
+      juno_thread_alloc(count * sizeof(JunoSlot), "cannot start virtual thread: arena full"));
+  __builtin_memcpy(grown, juno_slots, juno_slot_count * sizeof(JunoSlot));
+  juno_slot_table = grown;
+  juno_slot_capacity = count;
+}
+
 extern "C" void juno_thread_start(int32_t handle) {
   JunoThreadObject* thread = juno_thread_of(handle);
   if ((thread->flags & JUNO_THREAD_STARTED) != 0u) {
@@ -212,13 +284,8 @@ extern "C" void juno_thread_start(int32_t handle) {
     juno_panic();
   }
   uint32_t slot = 1u;
-  while (slot < JUNO_MAX_THREADS && juno_slots[slot].state != JUNO_SLOT_FREE) slot++;
-  if (slot == JUNO_MAX_THREADS) {
-    Serial.print("[juno-thread] too many threads: at most ");
-    Serial.print(JUNO_MAX_THREADS);
-    Serial.println(" run at once, the main thread included");
-    juno_panic();
-  }
+  while (slot < juno_slot_count && juno_slots[slot].state != JUNO_SLOT_FREE) slot++;
+  if (slot == juno_slot_count) juno_slots_grow();
   thread->flags |= JUNO_THREAD_STARTED;
   juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, nullptr, 0};
   juno_live_threads++;
@@ -279,7 +346,7 @@ extern "C" void juno_thread_interrupt(int32_t handle) {
   JunoThreadObject* thread = juno_thread_of(handle);
   thread->flags |= JUNO_THREAD_INTERRUPTED;
   // A sleeping thread wakes at once; it sees the flag when its sleep returns.
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
+  for (uint32_t index = 0u; index < juno_slot_count; index++) {
     if (juno_slots[index].thread == thread && juno_slots[index].state == JUNO_SLOT_SLEEPING) {
       juno_slots[index].wake = static_cast<uint32_t>(millis());
     }
@@ -704,7 +771,7 @@ static void juno_wake_waiters(int32_t lockHandle, uintptr_t waitKey, bool all, c
   } else {
     juno_monitor_owned(juno_monitor_key(lockHandle), operation);
   }
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS; index++) {
+  for (uint32_t index = 0u; index < juno_slot_count; index++) {
     JunoSlot& slot = juno_slots[index];
     if (slot.waitKey == waitKey && slot.notified == 0u) {
       slot.notified = 1u;

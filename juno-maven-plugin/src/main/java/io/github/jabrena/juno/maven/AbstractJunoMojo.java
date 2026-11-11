@@ -61,18 +61,12 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private @Nullable String arenaSize;
 
     /**
-     * Stack of each extra task, in the JVM's {@code -Xss} syntax; a multiple of 8. Defaults to the board's own
-     * size (2048 bytes on the UNO R4 WiFi, 4096 on the UNO Q).
+     * Stack of each carrier, the stack virtual threads run on (on AVR boards, of each extra task), in the JVM's
+     * {@code -Xss} syntax; a multiple of 8. It must fit the deepest virtual thread. Defaults to the board's own size
+     * (2048 bytes on the UNO R4 WiFi, 4096 on the UNO Q).
      */
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;
-
-    /**
-     * Number of scheduler slots, including the main task. Set this to one plus the maximum number of simultaneous
-     * structured subtasks when RAM is constrained; it defaults to four.
-     */
-    @Parameter(property = "juno.maxThreads")
-    private @Nullable String maxThreads;
 
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
@@ -85,7 +79,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
-                Optional.ofNullable(threadStackSize), Optional.ofNullable(maxThreads));
+                Optional.ofNullable(threadStackSize));
         CompilationResult result = new JunoCompiler().compileTo(
                 new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
                 layout.assembly(), layout.runtimeShim());

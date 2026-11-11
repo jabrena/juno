@@ -511,7 +511,7 @@ jobs:
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pxtensa
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT
-          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }}
+          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }} -Djuno.Xmx=24k
           -b turbo -T1C
       - name: Publish Xtensa conformance report
         if: always()
