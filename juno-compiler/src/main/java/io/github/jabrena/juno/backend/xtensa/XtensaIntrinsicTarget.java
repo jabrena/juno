@@ -19,7 +19,26 @@ import static io.github.jabrena.juno.backend.xtensa.XtensaEmitter.C;
  * also the windowed ABI's register-pair rule, so word {@code i} goes in {@code a(10+i)}; results come back in
  * {@code a10}/{@code a11}.
  */
-record XtensaIntrinsicTarget(XtensaEmitter xtensa) implements IntrinsicTarget {
+record XtensaIntrinsicTarget(XtensaEmitter xtensa, boolean memoryBarrier) implements IntrinsicTarget {
+    XtensaIntrinsicTarget(XtensaEmitter xtensa) {
+        this(xtensa, false);
+    }
+
+    @Override
+    public void emitRuntimeLockEnter(StringBuilder output) {
+        xtensa.call(output, "juno_runtime_enter");
+    }
+
+    @Override
+    public void emitRuntimeLockExit(StringBuilder output) {
+        xtensa.call(output, "juno_runtime_exit");
+    }
+
+    @Override
+    public void emitMemoryBarrier(StringBuilder output) {
+        if (memoryBarrier) output.append("    memw\n");
+    }
+
     @Override
     public void emitShimCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words) {
         xtensa.emitCall(output, frame, function, words);

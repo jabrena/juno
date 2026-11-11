@@ -23,6 +23,30 @@ class CoreRuntimeTest {
     private final CoreRuntimes coreRuntimes = new CoreRuntimes();
 
     @Test
+    @DisplayName("dual-core ports expose two carriers and all other cores expose one")
+    void shouldReportCarrierCountFromTheCoreRuntime() {
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32_CAM).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.M5STACK_ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).carrierCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Single-carrier core port selection remains byte-identical")
+    void shouldKeepTheOriginalPortForSingleCarrierCores() {
+        for (ArduinoCore core : new ArduinoCore[] {
+                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR, ArduinoCore.MEGAAVR
+        }) {
+            CoreRuntime runtime = coreRuntimes.of(core);
+            assertThat(runtime.threadPort(RuntimeConfig.DEFAULT, 1)).isEqualTo(runtime.threadPort(RuntimeConfig.DEFAULT));
+        }
+    }
+
+    @Test
     @DisplayName("The Renesas core calls delay directly")
     void shouldCallTheRenesasDelayFunctionsDirectly() {
         // Given
@@ -366,6 +390,25 @@ class CoreRuntimeTest {
                 "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake", "juno_freeze")
                 .doesNotContain("JUNO_MAX_THREADS");
         assertThat(esp32.preemptsAsynchronously()).isFalse();
+    }
+
+    @Test
+    @DisplayName("The ESP32 dual-carrier port exposes a carrier id and one task stack per slot")
+    void shouldPortThreadsToBothEsp32Carriers() {
+        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(RuntimeConfig.DEFAULT, 2);
+
+        assertThat(port).contains("juno_port_carrier_id", "juno_dual_stacks", "juno_slot_carrier",
+                "xTaskCreateStaticPinnedToCore");
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).runtimeLock())
+                .contains("juno_runtime_owner", "portENTER_CRITICAL", "juno_runtime_depth");
+    }
+
+    @Test
+    @DisplayName("The RP2350 dual-carrier path exposes the core-id hook")
+    void shouldExposeTheRp2350CarrierId() {
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).threadPort(RuntimeConfig.DEFAULT, 2))
+                .contains("juno_port_carrier_id", "get_core_num");
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).memoryBarrierInstruction()).isEqualTo("dmb ish");
     }
 
     @Test

@@ -46,6 +46,7 @@ public final class RuntimeShim {
     private final List<String> throwableClasses;
     private final Optional<WatchdogRuntime> watchdog;
     private final RuntimeConfig config;
+    private final int carrierCount;
 
     /**
      * @param core {@code board}'s per-core runtime glue (see {@code CoreRuntimes.of})
@@ -59,6 +60,7 @@ public final class RuntimeShim {
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.core = core;
         this.config = config;
+        this.carrierCount = config.carrierCount(core.carrierCount());
         this.gcLoggingEnabled = gcLoggingEnabled;
         // The UUID helpers raise a Java exception for an invalid value, so a UUID program needs the exception helpers too.
         this.features = features.contains(ShimFeature.UUID) ? withExceptions(features) : features;
@@ -284,7 +286,8 @@ public final class RuntimeShim {
             shim.append(mathRuntime.helpers(usedMath));
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
-                new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses)),
+                new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses,
+                        uses(ShimFeature.THREADS) ? carrierCount : 1)),
                 new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
@@ -354,10 +357,15 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SCOPED_VALUES)) {
             shim.append(scopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),
-                    throwableClasses.indexOf("java/util/NoSuchElementException")));
+                    throwableClasses.indexOf("java/util/NoSuchElementException"),
+                    uses(ShimFeature.THREADS) ? carrierCount : 1));
         }
         if (uses(ShimFeature.THREADS)) {
-            shim.append(core.threadPort(config));
+            if (carrierCount > 1) {
+                shim.append(core.runtimeLock());
+                shim.append(core.wideAccessHelpers());
+            }
+            shim.append(core.threadPort(config, carrierCount));
             shim.append(ioRuntime.workerPortFor(core, features));
             shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(), ioRuntime.usesWorker(core, features),
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
@@ -367,7 +375,7 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException"),
                     throwableClasses.indexOf("java/lang/InterruptedException"),
-                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException")));
+                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException"), carrierCount));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }

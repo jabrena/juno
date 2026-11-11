@@ -102,12 +102,30 @@ public final class ThreadRuntime {
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
+    /** The ESP32 port selected for a single or dual carrier runtime. */
+    public String esp32Port(int stackBytes, int carrierCount) {
+        return carrierCount == 1 ? esp32Port(stackBytes) : runtimeSource.load("esp32/thread-port-dual.cpp")
+                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
     /**
      * The UNO Q's I/O worker ({@link CoreRuntime#ioWorker()}), emitted after its thread port when the program makes
      * waiting device calls.
      */
     public String zephyrIoWorker() {
         return runtimeSource.load("zephyr/io-worker.cpp");
+    }
+
+    /** The RP2350 port selected for a single or dual carrier runtime. */
+    public String rp2350Port(int stackBytes, int carrierCount) {
+        if (carrierCount == 1) return renesasPort(stackBytes);
+        // The RP2350 core exposes the core id but not an RTOS task API. Keep the proven Thumb-2 port and publish the
+        // core-id hook used by the common dual-carrier scheduler; the second-core context hand-off is completed by the
+        // RP2350 port follow-up once the arduino-pico multicore spike has established its safe FIFO contract.
+        return renesasPort(stackBytes) + "\nextern \"C\" uint32_t get_core_num();\n"
+                + "extern \"C\" uint32_t juno_port_carrier_id() { return get_core_num() & 1u; }\n"
+                + "static void juno_port_finished() {}\n";
     }
 
     /**
@@ -127,6 +145,22 @@ public final class ThreadRuntime {
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId,
                             int interruptedExceptionClassId, int brokenBarrierExceptionClassId) {
+        return scheduler(asynchronousPreemption, ioWorker, maxHttpRequests, delayFunction, stackScanFunction,
+                exceptions, threadEntry, taskCallableEntry, structuredTasks, scopedValues,
+                failedExceptionClassId, illegalStateExceptionClassId, interruptedExceptionClassId,
+                brokenBarrierExceptionClassId, 1);
+    }
+
+    /**
+     * Generates the common scheduler with the number of physical carriers supplied by the core. Keeping the old
+     * overload above is deliberate: all single-carrier generated text follows the original template exactly.
+     */
+    String scheduler(boolean asynchronousPreemption, boolean ioWorker, int maxHttpRequests, String delayFunction,
+                            String stackScanFunction,
+                            boolean exceptions, boolean threadEntry,
+                            boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
+                            int failedExceptionClassId, int illegalStateExceptionClassId,
+                            int interruptedExceptionClassId, int brokenBarrierExceptionClassId, int carrierCount) {
         String pendingSave = exceptions ? """
                 juno_slots[from].pending = juno_pending_exception;
                   juno_pending_exception = juno_slots[to].pending;""" : "";
@@ -171,14 +205,85 @@ public final class ThreadRuntime {
         String taskRuntime = structuredTasks ? taskRuntime() : "";
         String raiseInterrupted = raiseException(exceptions, interruptedExceptionClassId);
         String raiseBrokenBarrier = raiseException(exceptions, brokenBarrierExceptionClassId);
-        String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
-        String startPreemption = asynchronousPreemption ? """
+        String preemption = asynchronousPreemption ? asynchronousPreemption(carrierCount) : safepointPreemption(carrierCount);
+        String startPreemption = asynchronousPreemption
+                ? carrierCount == 1 ? """
                   static bool juno_preempt_started = false;
                   if (!juno_preempt_started) {
                     juno_preempt_started = true;
                     juno_port_preempt_start();
-                  }""" : "";
-        return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
+                  }""" : """
+                  static bool juno_preempt_started[${JUNO_CARRIER_COUNT}] = {};
+                  if (!juno_preempt_started[juno_port_carrier_id()]) {
+                    juno_preempt_started[juno_port_carrier_id()] = true;
+                    juno_port_preempt_start();
+                  }""".replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount))
+                : "";
+        String currentSlotDeclaration = carrierCount == 1 ? "static uint32_t juno_current_slot = 0u;\n"
+                : """
+                static uint32_t juno_current_slots[${JUNO_CARRIER_COUNT}] = {};
+                #define juno_current_slot juno_current_slots[juno_port_carrier_id()]
+                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
+        String sliceStartDeclaration = carrierCount == 1 ? "static uint32_t juno_slice_start = 0u;\n"
+                : """
+                static uint32_t juno_slice_starts[${JUNO_CARRIER_COUNT}] = {};
+                #define juno_slice_start juno_slice_starts[juno_port_carrier_id()]
+                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
+        String carrierDeclarations = carrierCount == 1 ? "" : """
+                extern "C" uint32_t juno_port_carrier_id();
+                static uint32_t juno_current_carrier() {
+                  return juno_port_carrier_id();
+                }
+                """;
+        String carrierFilter = carrierCount == 1 ? "" : """
+                  if (slot.carrier != juno_current_carrier()) return false;
+                """;
+        String placement = carrierCount == 1 ? "" : """
+                static uint32_t juno_placement_hint = 0u;
+
+                static uint32_t juno_choose_carrier() {
+                  uint32_t loads[${JUNO_CARRIER_COUNT}] = {};
+                  for (uint32_t index = 0u; index < juno_slot_count; index++) {
+                    if (juno_slots[index].state != JUNO_SLOT_FREE) loads[juno_slots[index].carrier]++;
+                  }
+                  uint32_t selected = 0u;
+                  for (uint32_t carrier = 1u; carrier < ${JUNO_CARRIER_COUNT}u; carrier++) {
+                    if (loads[carrier] < loads[selected]) selected = carrier;
+                  }
+                  if (loads[0] == loads[1] && ${JUNO_CARRIER_COUNT}u > 1u) {
+                    selected = juno_placement_hint++ % ${JUNO_CARRIER_COUNT}u;
+                  }
+                  return selected;
+                }
+                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
+        String currentScan = carrierCount == 1 ? "index == juno_current_slot ? marker : nullptr"
+                : "juno_slots[index].carrier == juno_current_carrier() && index == juno_current_slot ? marker : nullptr";
+        String slotCarrierField = carrierCount == 1 ? "" : "  uint32_t carrier;\n";
+        String slotCarrierAccessor = carrierCount == 1 ? ""
+                : "extern \"C\" uint32_t juno_slot_carrier(uint32_t slot) { return juno_slots[slot].carrier; }\n";
+        String setCarrier = carrierCount == 1 ? "" : "  juno_slots[slot].carrier = juno_choose_carrier();\n";
+        String finishedSignal = carrierCount == 1 ? "" : "juno_port_finished();\n";
+        String directRuntimeEnter = carrierCount == 1 ? "" : "juno_runtime_enter();";
+        String directRuntimeExit = carrierCount == 1 ? "" : "juno_runtime_exit();";
+        String mainExit = carrierCount == 1 ? """
+                extern "C" void juno_thread_main_exit() {
+                  if (juno_live_threads == 0u) return;
+                  juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
+                  juno_sched_block();
+                }
+                """ : """
+                extern "C" void juno_thread_main_exit() {
+                  juno_runtime_enter();
+                  if (juno_live_threads == 0u) {
+                    juno_runtime_exit();
+                    return;
+                  }
+                  juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
+                  juno_sched_block();
+                  juno_runtime_exit();
+                }
+                """;
+        String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
                         ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
                 .replace("${JUNO_IO_WAITING_DECLARATION}", ioWorker ? "static bool juno_io_waiting(uint32_t slot);" : "")
@@ -208,7 +313,28 @@ public final class ThreadRuntime {
                 .replace("${JUNO_RAISE_INTERRUPTED}", raiseInterrupted)
                 .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
                 .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
-                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
+                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions))
+                .replace("${JUNO_CURRENT_SLOT_DECLARATION}", currentSlotDeclaration)
+                .replace("${JUNO_SLICE_START_DECLARATION}", sliceStartDeclaration)
+                .replace("${JUNO_CARRIER_DECLARATIONS}", carrierDeclarations)
+                .replace("${JUNO_CARRIER_FILTER}", carrierFilter)
+                .replace("${JUNO_PLACEMENT}", placement)
+                .replace("${JUNO_CURRENT_SCAN}", currentScan)
+                .replace("${JUNO_CHOOSE_CARRIER}", carrierCount == 1 ? "0u" : "juno_choose_carrier()")
+                .replace("${JUNO_SET_CARRIER}", setCarrier)
+                .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount))
+                .replace("${JUNO_SLOT_CARRIER_FIELD}", slotCarrierField)
+                .replace("${JUNO_SLOT_CARRIER_ACCESSOR}", slotCarrierAccessor)
+                .replace("${JUNO_DIRECT_RUNTIME_ENTER}", directRuntimeEnter)
+                .replace("${JUNO_DIRECT_RUNTIME_EXIT}", directRuntimeExit)
+                .replace("${JUNO_RUNTIME_UNLOCK}", carrierCount == 1 ? ""
+                        : "bool juno_scheduler_locked = juno_runtime_owned();\n  if (juno_scheduler_locked) juno_runtime_exit();\n      ")
+                .replace("${JUNO_RUNTIME_RELOCK}", carrierCount == 1 ? ""
+                        : "if (juno_scheduler_locked) juno_runtime_enter();\n      ")
+                .replace("${JUNO_FINISHED_SIGNAL}", finishedSignal)
+                .replace("${JUNO_MAIN_EXIT}", mainExit);
+        return source;
+
     }
 
     /**
@@ -224,8 +350,40 @@ public final class ThreadRuntime {
      * switch on their own), aligns the stack for the call, and ends with a {@code pop {pc}} that leaves {@code sp}
      * exactly where the interrupted code had it.
      */
-    private String asynchronousPreemption() {
-        return runtimeSource.load("thumb2/preemption.cpp");
+    private String asynchronousPreemption(int carrierCount) {
+        String source = runtimeSource.load("thumb2/preemption.cpp");
+        if (carrierCount > 1) {
+            source = source.replace("static volatile uint32_t juno_preempt_due = 0u;", """
+                    extern "C" uint32_t juno_port_carrier_id();
+                    static volatile uint32_t juno_preempt_dues[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_preempt_due juno_preempt_dues[juno_port_carrier_id()]"""
+                    .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+            source = source.replace("static volatile uint32_t juno_preemptions = 0u;", """
+                    static volatile uint32_t juno_preemptions_by_carrier[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_preemptions juno_preemptions_by_carrier[juno_port_carrier_id()]"""
+                    .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+            source = source.replace("""
+                    extern "C" void juno_thread_backedge() {
+                      yield();
+                      if (juno_preempt_due == 0u || juno_live_threads == 0u) return;
+                      juno_preempt_due = 0u;
+                      juno_sched_block();
+                    }
+                    """, """
+                    extern "C" void juno_thread_backedge() {
+                      juno_runtime_enter();
+                      yield();
+                      if (juno_preempt_due == 0u || juno_live_threads == 0u) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      juno_preempt_due = 0u;
+                      juno_sched_block();
+                      juno_runtime_exit();
+                    }
+                    """);
+        }
+        return source;
     }
 
     /**
@@ -233,8 +391,36 @@ public final class ThreadRuntime {
      * {@code juno_thread_safepoint} on every method entry, and either switches once the running thread's time slice
      * is over.
      */
-    private String safepointPreemption() {
-        return runtimeSource.load("avr/preemption.cpp");
+    private String safepointPreemption(int carrierCount) {
+        String source = runtimeSource.load("avr/preemption.cpp");
+        if (carrierCount > 1) {
+            source = source.replace("""
+                    static void juno_thread_slice_over() {
+                      if (juno_live_threads == 0u) return;
+                      uint32_t now = static_cast<uint32_t>(millis());
+                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
+                      juno_slice_start = now;
+                      juno_sched_block();
+                    }
+                    """, """
+                    static void juno_thread_slice_over() {
+                      juno_runtime_enter();
+                      if (juno_live_threads == 0u) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      uint32_t now = static_cast<uint32_t>(millis());
+                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      juno_slice_start = now;
+                      juno_sched_block();
+                      juno_runtime_exit();
+                    }
+                    """);
+        }
+        return source.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
     }
 
     /**

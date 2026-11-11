@@ -13,6 +13,11 @@ final class ScopedValueRuntime {
 
 
     String bindings(boolean runEntry, boolean callEntry, int noSuchElementClassId) {
+        return bindings(runEntry, callEntry, noSuchElementClassId, 1);
+    }
+
+    /** Scoped binding heads are carrier-local when the scheduler has more than one execution carrier. */
+    String bindings(boolean runEntry, boolean callEntry, int noSuchElementClassId, int carrierCount) {
         String runDeclaration = runEntry ? "extern \"C\" void juno_thread_entry(int32_t runnable);" : "";
         String run = runEntry ? """
                 extern "C" void juno_scoped_run(int32_t carrier, int32_t runnable) {
@@ -32,10 +37,18 @@ final class ScopedValueRuntime {
                   return result;
                 }
                 """ : "";
-        return runtimeSource.load("common/scoped-values.cpp").replace("${JUNO_SCOPED_RUN_DECLARATION}", runDeclaration)
+        String source = runtimeSource.load("common/scoped-values.cpp").replace("${JUNO_SCOPED_RUN_DECLARATION}", runDeclaration)
                 .replace("${JUNO_SCOPED_CALL_DECLARATION}", callDeclaration)
                 .replace("${JUNO_SCOPED_RUN}", run)
                 .replace("${JUNO_SCOPED_CALL}", call)
                 .replace("${JUNO_NO_SUCH_ELEMENT_CLASS_ID}", Integer.toString(noSuchElementClassId));
+        if (carrierCount > 1) {
+            source = source.replace("static JunoBindingFrame* juno_scoped_top = nullptr;", """
+                    extern "C" uint32_t juno_port_carrier_id();
+                    static JunoBindingFrame* juno_scoped_tops[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_scoped_top juno_scoped_tops[juno_port_carrier_id()]
+                    """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+        }
+        return source;
     }
 }

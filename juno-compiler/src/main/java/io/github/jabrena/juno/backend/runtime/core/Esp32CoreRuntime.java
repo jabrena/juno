@@ -42,6 +42,72 @@ final class Esp32CoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public int carrierCount() {
+        return core.carrierCount();
+    }
+
+    @Override
+    public String runtimeLock() {
+        return """
+                // Recursive lock shared by both Java carriers. Blocking scheduler/device paths release it before parking.
+                static portMUX_TYPE juno_runtime_mux = portMUX_INITIALIZER_UNLOCKED;
+                static volatile uint32_t juno_runtime_owner = 0u;
+                static volatile uint32_t juno_runtime_depth = 0u;
+
+                extern "C" bool juno_runtime_owned() {
+                  return juno_runtime_owner == static_cast<uint32_t>(xPortGetCoreID() + 1);
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t owner = static_cast<uint32_t>(xPortGetCoreID() + 1);
+                  for (;;) {
+                    portENTER_CRITICAL(&juno_runtime_mux);
+                    if (juno_runtime_owner == 0u || juno_runtime_owner == owner) {
+                      juno_runtime_owner = owner;
+                      juno_runtime_depth++;
+                      portEXIT_CRITICAL(&juno_runtime_mux);
+                      return;
+                    }
+                    portEXIT_CRITICAL(&juno_runtime_mux);
+                    taskYIELD();
+                  }
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  portENTER_CRITICAL(&juno_runtime_mux);
+                  if (juno_runtime_owner == static_cast<uint32_t>(xPortGetCoreID() + 1) && juno_runtime_depth != 0u) {
+                    if (--juno_runtime_depth == 0u) juno_runtime_owner = 0u;
+                  }
+                  portEXIT_CRITICAL(&juno_runtime_mux);
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "memw";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
+    }
+
+    @Override
     public String delayMillisFunction() {
         return "delay";
     }
@@ -355,6 +421,11 @@ final class Esp32CoreRuntime implements CoreRuntime {
     public String threadPort(RuntimeConfig config) {
         return threadRuntime.esp32Port(
                 config.threadStackBytes(core.defaultThreadStackBytes()));
+    }
+
+    @Override
+    public String threadPort(RuntimeConfig config, int carrierCount) {
+        return threadRuntime.esp32Port(config.threadStackBytes(core.defaultThreadStackBytes()), carrierCount);
     }
 
     @Override

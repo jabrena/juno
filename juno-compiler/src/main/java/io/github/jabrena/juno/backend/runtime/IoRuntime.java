@@ -76,6 +76,9 @@ public final class IoRuntime {
                 }
                 """;
         String implementation = threads ? """
+                extern "C" bool juno_runtime_owned();
+                extern "C" void juno_runtime_enter();
+                extern "C" void juno_runtime_exit();
                 extern "C" void juno_thread_sleep(int64_t millis);
                 extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*));
                 extern "C" void juno_io_release(uint32_t device);
@@ -84,13 +87,26 @@ public final class IoRuntime {
                 """ + offload + """
 
                 static void juno_io_wait(uint32_t millisToWait) {
+                  bool runtimeHeld = juno_runtime_owned();
+                  if (runtimeHeld) juno_runtime_exit();
                   if (juno_io_on_worker()) {
                     delay(millisToWait);
                   } else {
                     juno_thread_sleep(static_cast<int64_t>(millisToWait));
                   }
+                  if (runtimeHeld) juno_runtime_enter();
                 }
                 """ : offload + """
+                static bool juno_runtime_owned() {
+                  return false;
+                }
+
+                static void juno_runtime_enter() {
+                }
+
+                static void juno_runtime_exit() {
+                }
+
                 static void juno_io_wait(uint32_t millisToWait) {
                   delay(millisToWait);
                 }
@@ -124,12 +140,17 @@ public final class IoRuntime {
 
                 struct JunoIoGuard {
                   uint32_t device;
+                  bool runtimeReleased;
                   JunoIoGuard(uint32_t guarded, void* handle = nullptr, void (*abort)(void*) = nullptr)
-                      : device(guarded) {
+                      : device(guarded), runtimeReleased(juno_runtime_owned()) {
+                    if (runtimeReleased) juno_runtime_exit();
                     juno_io_acquire(guarded, handle, abort);
+                    if (runtimeReleased) juno_runtime_enter();
                   }
                   ~JunoIoGuard() {
+                    if (runtimeReleased) juno_runtime_exit();
                     juno_io_release(device);
+                    if (runtimeReleased) juno_runtime_enter();
                   }
                 };
 

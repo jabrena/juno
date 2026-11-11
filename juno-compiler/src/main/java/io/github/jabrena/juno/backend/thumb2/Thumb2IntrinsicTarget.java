@@ -11,7 +11,26 @@ import java.util.List;
 import java.util.Optional;
 
 /** {@link IntrinsicTarget} for Thumb-2: AAPCS words in r0-r3 then on the stack, results in r0 (and r1). */
-record Thumb2IntrinsicTarget(AsmEmitter asm) implements IntrinsicTarget {
+record Thumb2IntrinsicTarget(AsmEmitter asm, boolean memoryBarrier) implements IntrinsicTarget {
+    Thumb2IntrinsicTarget(AsmEmitter asm) {
+        this(asm, false);
+    }
+
+    @Override
+    public void emitRuntimeLockEnter(StringBuilder output) {
+        output.append("    bl juno_runtime_enter\n");
+    }
+
+    @Override
+    public void emitRuntimeLockExit(StringBuilder output) {
+        output.append("    bl juno_runtime_exit\n");
+    }
+
+    @Override
+    public void emitMemoryBarrier(StringBuilder output) {
+        if (memoryBarrier) output.append("    dmb ish\n");
+    }
+
     @Override
     public void emitShimCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words) {
         asm.emitShimCall(output, frame, function, words);

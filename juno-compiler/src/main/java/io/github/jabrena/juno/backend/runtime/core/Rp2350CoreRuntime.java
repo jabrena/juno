@@ -23,6 +23,71 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
 
     @Override
+    public int carrierCount() {
+        return ArduinoCore.RP2350.carrierCount();
+    }
+
+    @Override
+    public String runtimeLock() {
+        return """
+                // Recursive lock shared by both Cortex-M33 carriers.
+                extern "C" uint32_t get_core_num();
+                static volatile uint32_t juno_runtime_owner = 0u;
+                static volatile uint32_t juno_runtime_depth = 0u;
+
+                extern "C" bool juno_runtime_owned() {
+                  return juno_runtime_owner == get_core_num() + 1u;
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t owner = get_core_num() + 1u;
+                  for (;;) {
+                    if (juno_runtime_owner == owner) {
+                      juno_runtime_depth++;
+                      return;
+                    }
+                    if (__atomic_exchange_n(&juno_runtime_owner, owner, __ATOMIC_ACQUIRE) == 0u) {
+                      juno_runtime_depth = 1u;
+                      return;
+                    }
+                    yield();
+                  }
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  if (juno_runtime_owner == get_core_num() + 1u && juno_runtime_depth != 0u
+                      && --juno_runtime_depth == 0u) {
+                    __atomic_store_n(&juno_runtime_owner, 0u, __ATOMIC_RELEASE);
+                  }
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "dmb ish";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
+    }
+
+    @Override
     public String delayMillisFunction() {
         return "delay";
     }
@@ -203,6 +268,12 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     public String threadPort(RuntimeConfig config) {
         return threadRuntime.renesasPort(
                 config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()));
+    }
+
+    @Override
+    public String threadPort(RuntimeConfig config, int carrierCount) {
+        return threadRuntime.rp2350Port(
+                config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()), carrierCount);
     }
 
     @Override

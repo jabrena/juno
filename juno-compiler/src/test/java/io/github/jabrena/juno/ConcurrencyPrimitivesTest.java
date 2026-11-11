@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -123,8 +124,13 @@ class ConcurrencyPrimitivesTest {
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
+        return compile(board, body, RuntimeConfig.DEFAULT);
+    }
+
+    private CompilationResult compile(String board, String body, RuntimeConfig runtimeConfig) throws Exception {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Gate", program(board, body));
-        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Gate");
+        return new JunoCompiler().compile(new CompilationRequest(CompilerTestSupport.classpath(temporaryDirectory),
+                "demo.Gate", false, Optional.empty(), runtimeConfig));
     }
 
     @Test
@@ -147,6 +153,50 @@ class ConcurrencyPrimitivesTest {
                 "bl juno_rw_lock_new", "bl juno_rw_read_lock", "bl juno_rw_write_lock", "bl juno_lock_lock",
                 "bl juno_lock_unlock", "bl juno_lock_try_lock",
                 "bl juno_condition_await");
+    }
+
+    @Test
+    @DisplayName("Dual-carrier ESP32 programs emit carrier-local state and runtime locking")
+    void shouldEmitDualCarrierRuntimeState() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        assertThat(result.runtimeShim()).contains("juno_current_slots[2]", "juno_pending_exceptions[2]",
+                "juno_runtime_owner", "juno_port_carrier_id");
+        assertThat(result.assembly()).contains("call8 juno_runtime_enter", "call8 juno_runtime_exit");
+    }
+
+    @Test
+    @DisplayName("The pipeline can force the ESP32 runtime to one carrier")
+    void shouldGenerateTheSingleCarrierRuntimeWhenOverridden() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        assertThat(result.runtimeShim()).contains("static uint32_t juno_current_slot = 0u;")
+                .doesNotContain("juno_current_slots[2]", "juno_runtime_owner", "juno_port_carrier_id");
+        assertThat(result.assembly()).doesNotContain("call8 juno_runtime_enter", "call8 juno_runtime_exit");
+        assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Dual-carrier Xtensa fields emit a barrier and atomic wide helpers")
+    void shouldEmitXtensaMemoryModelInstructions() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", """
+                class Cell {
+                    volatile int flag;
+                    volatile long value;
+                }
+                Cell cell = new Cell();
+                cell.value = -1L;
+                cell.flag = 1;
+                Serial.println(cell.flag);
+                Serial.println(cell.value);
+                Thread.startVirtualThread(new Job()).join();
+                """);
+
+        assertThat(result.assembly()).contains("memw", "call8 juno_wide_store", "call8 juno_wide_load");
+        assertThat(result.runtimeShim()).contains("juno_wide_load", "juno_wide_store");
     }
 
     @Test

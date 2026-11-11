@@ -15,6 +15,29 @@ import io.github.jabrena.juno.board.ArduinoCore;
  */
 public interface CoreRuntime {
 
+    /**
+     * Number of Juno carriers supplied by this core. A carrier is the scheduler context that runs generated Java on
+     * one hardware core. The default keeps every existing single-core port byte-for-byte unchanged.
+     */
+    default int carrierCount() {
+        return 1;
+    }
+
+    /** C++ helpers for the recursive lock around runtime entry points on a dual-carrier core. */
+    default String runtimeLock() {
+        return "";
+    }
+
+    /** Target memory barrier instruction for volatile accesses on a dual-carrier core. */
+    default String memoryBarrierInstruction() {
+        return "";
+    }
+
+    /** Atomic wide-field helpers, emitted only for dual-carrier threaded programs. */
+    default String wideAccessHelpers() {
+        return "";
+    }
+
     /** The symbol {@code Delay.millis} branches to, taking the delay in r0. */
     String delayMillisFunction();
 
@@ -262,6 +285,14 @@ public interface CoreRuntime {
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
     String threadPort(RuntimeConfig config);
+
+    /**
+     * The thread port selected for the core's carrier count. Single-carrier implementations inherit the original
+     * port so their generated shim remains unchanged.
+     */
+    default String threadPort(RuntimeConfig config, int carrierCount) {
+        return threadPort(config);
+    }
 
     /**
      * The BLE central names the LEGO Powered UP runtime is written against: {@code ArduinoBLE}'s device, characteristic
