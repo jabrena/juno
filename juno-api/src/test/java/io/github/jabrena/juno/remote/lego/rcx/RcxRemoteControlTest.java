@@ -116,6 +116,41 @@ class RcxRemoteControlTest {
     }
 
     @Test
+    @DisplayName("Queues the same button again when the handset sends a new transmission")
+    void shouldQueueARepeatedPressOfTheSameButton() {
+        Infrared.receivingFrame = true;
+        queueFrame(0xD2, 0x01);
+        queueFrame(0xDA, 0x01);
+
+        remote.buttons();
+        remote.buttons();
+
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.MESSAGE_1);
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.MESSAGE_1);
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.NONE);
+    }
+
+    @Test
+    @DisplayName("Treats a resent frame with the same toggle bit as the same press")
+    void shouldIgnoreARepeatedFrameOfTheSameTransmission() {
+        Infrared.receivingFrame = true;
+        queueFrame(0xD2, 0x01);
+        queueFrame(0xD2, 0x01);
+
+        remote.buttons();
+        remote.buttons();
+
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.MESSAGE_1);
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.NONE);
+    }
+
+    private static void queueFrame(int opcode, int lowMask) {
+        List<Integer> frame = RcxFrames.frame(opcode, 0x00, lowMask);
+        frame.remove(frame.size() - 1);
+        Infrared.replies.addAll(frame);
+    }
+
+    @Test
     @DisplayName("Expires a held button after the repeat window")
     void shouldExpireHeldButtons() {
         Infrared.receivingFrame = true;

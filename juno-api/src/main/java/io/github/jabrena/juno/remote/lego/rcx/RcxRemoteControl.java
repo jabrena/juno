@@ -4,7 +4,6 @@ import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.util.Delay;
 
 /**
  * A receive-only LEGO Mindstorms RCX remote control, such as the 9738 handset.
@@ -16,8 +15,10 @@ import io.github.jabrena.juno.util.Delay;
  * infrared decoding; the virtual receiver thread then puts button transitions into a fixed-size queue.
  *
  * <p>The last non-zero button mask is retained for 300 milliseconds when a repeat frame is missed, then reported as
- * released. A release frame from the handset reports zero immediately. Calls to {@link #buttons()} block briefly while
- * a frame is decoded; {@link #start()} moves those calls to a virtual receiver thread.
+ * released. A release frame from the handset reports zero immediately. A frame whose opcode toggle bit differs from the
+ * previous frame's is a new transmission, so pressing the same button again queues it again. Calls to
+ * {@link #buttons()} block briefly while a frame is decoded; {@link #start()} moves those calls to a virtual receiver
+ * thread, which waits inside the native byte reader so it sees the start bit of each frame's first byte.
  */
 public final class RcxRemoteControl {
     private static final int BAUD = 2400;
@@ -25,6 +26,7 @@ public final class RcxRemoteControl {
     private static final int OPCODE_TOGGLE = 0x08;
     private static final int GAP_MICROS = 3000;
     private static final int FIRST_BYTE_MICROS = 1000;
+    private static final int LISTEN_MICROS = 5000;
     private static final int HOLD_MILLIS = 300;
     private static final int FRAME_VALUES = 4;
     private static final int EVENT_QUEUE_CAPACITY = 16;
@@ -56,6 +58,7 @@ public final class RcxRemoteControl {
     private final int[] buttonEvents = new int[EVENT_QUEUE_CAPACITY];
     private int buttonState;
     private int buttonStateAt;
+    private int lastToggle = -1;
     private int eventHead;
     private int eventTail;
     private int eventCount;
@@ -84,9 +87,8 @@ public final class RcxRemoteControl {
             }
         }
         synchronized (this) {
-            if (Infrared.receiving() && readFrame()) {
-                updateButtonState((frame[1] << 8) | frame[2]);
-                buttonStateAt = clock.millis();
+            if (Infrared.receiving() && readFrame(FIRST_BYTE_MICROS)) {
+                acceptFrame();
             }
             return currentButtonState();
         }
@@ -135,17 +137,17 @@ public final class RcxRemoteControl {
     }
 
     private void receiveLoop() {
+        // No receiving() gate and no sleep: a frame that starts while this thread is elsewhere is decoded from a data
+        // bit of its 0x55 header and lost. The native wait is not preempted, and the main thread still runs when it
+        // returns.
         while (listening) {
-            if (Infrared.receiving() && readFrame()) {
-                synchronized (this) {
-                    updateButtonState((frame[1] << 8) | frame[2]);
-                    buttonStateAt = clock.millis();
-                }
-            }
+            boolean received = readFrame(LISTEN_MICROS);
             synchronized (this) {
+                if (received) {
+                    acceptFrame();
+                }
                 currentButtonState();
             }
-            Delay.millis(1);
         }
     }
 
@@ -156,11 +158,18 @@ public final class RcxRemoteControl {
         return buttonState;
     }
 
-    private void updateButtonState(int nextState) {
-        if (nextState != 0 && nextState != buttonState) {
+    private void acceptFrame() {
+        updateButtonState((frame[1] << 8) | frame[2], frame[0] & OPCODE_TOGGLE);
+        buttonStateAt = clock.millis();
+    }
+
+    private void updateButtonState(int nextState, int toggle) {
+        boolean newTransmission = toggle != lastToggle;
+        if (nextState != 0 && (nextState != buttonState || newTransmission)) {
             enqueueButton(nextState);
         }
         buttonState = nextState;
+        lastToggle = toggle;
     }
 
     private void enqueueButton(int mask) {
@@ -174,9 +183,9 @@ public final class RcxRemoteControl {
     }
 
     /** Reads and validates one RCX remote-control frame into the fixed frame buffer. */
-    private boolean readFrame() {
+    private boolean readFrame(int firstByteMicros) {
         int[] data = frame;
-        if (Infrared.readByte(FIRST_BYTE_MICROS) != 0x55 || Infrared.readByte(GAP_MICROS) != 0xFF
+        if (Infrared.readByte(firstByteMicros) != 0x55 || Infrared.readByte(GAP_MICROS) != 0xFF
                 || Infrared.readByte(GAP_MICROS) != 0x00) {
             return false;
         }
