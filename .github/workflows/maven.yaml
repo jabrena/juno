@@ -507,11 +507,13 @@ jobs:
       - name: Run Xtensa programs under QEMU (ESP32-S3)
         # About 21 min for 17 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
         # backstop, and as a step timeout (not a job timeout) it still lets the failure-evidence upload below run.
+        # This QEMU setup cannot execute the two carrier cores reliably, so CI selects the compatibility path. Hardware
+        # and future dual-core-capable emulators omit juno.carriers and therefore use both physical cores.
         timeout-minutes: 45
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pxtensa
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT
-          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }} -Djuno.Xmx=24k
+          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }} -Djuno.Xmx=24k -Djuno.carriers=1
           -b turbo -T1C
       - name: Publish Xtensa conformance report
         if: always()
