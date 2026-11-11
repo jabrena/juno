@@ -8,14 +8,16 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * More virtual threads and subtasks alive at once than the old four scheduler slots: every thread parks in
+ * More virtual threads and subtasks alive at once than the old four scheduler slots (six of each, sized so their
+ * frozen frames fit the default 8 KiB arena on every board, the ESP32's larger Xtensa frames and per-task FreeRTOS
+ * objects included): every thread parks in
  * {@code Thread.sleep} with live locals and a deep call chain while the others run, so each one is frozen off the
  * carrier and thawed back several times, and collections run while they are parked. Every printed value is fixed by
  * the joins, so the JVM and the board agree whatever the interleaving.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
 public final class ManyVirtualThreads {
-    static final int THREADS = 10;
+    static final int THREADS = 6;
     static final int[] RESULTS = new int[THREADS];
 
     record Cell(int value) {
@@ -57,7 +59,7 @@ public final class ManyVirtualThreads {
         }
         Serial.println(sum);
 
-        int[] forked = new int[8];
+        int[] forked = new int[6];
         try (var scope = StructuredTaskScope.open()) {
             for (int i = 0; i < forked.length; i++) {
                 int id = i;
