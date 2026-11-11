@@ -9,5 +9,6 @@
 - [x] Add Grove Shield UART0, UART1, and SPI0 mappings, tests, and commit it (`567a7ffa`).
 - [x] Add Pico 2 W double-precision `Math` support, tests, and commit it (`823e16a3`).
 - [x] Add Pico 2 W USB HID mouse support, tests, and commit it (`5555b436`).
-- [ ] Update Pico 2 W documentation, hardware-validation notes, and `RaspberryPico2GroveOled` output; validate the site and commit it.
-- [ ] Run the full relevant verification, review the commit series, and prepare one PR containing all commits.
+- [x] Update Pico 2 W documentation, hardware-validation notes, and `RaspberryPico2GroveOled` output; validate the site and commit it (`0baecacb`).
+- [x] Run the full Maven and site verification (`./mvnw test`, `./mvnw clean verify -Psite -DskipTests`, and `./mvnw -pl juno-site test`); the Docker-backed Arduino CLI test was skipped because Docker is unavailable.
+- [ ] Review the commit series and prepare one PR containing all commits.
