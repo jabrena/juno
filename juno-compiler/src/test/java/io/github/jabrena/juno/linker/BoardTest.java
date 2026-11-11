@@ -353,6 +353,35 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The Raspberry Pi Pico 2 W lowers USB HID mouse calls to Mouse.h")
+    void shouldLowerRaspberryPico2MouseToTheCoreUsbHid() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.hid.Mouse;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoMouse {
+                    public static void main(String[] args) {
+                        Mouse mouse = ArduinoUno.getMouse();
+                        mouse.begin();
+                        mouse.move(1, -1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoMouse", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoMouse", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <Mouse.h>", "juno_mouse_begin", "juno_mouse_move");
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W starts its I2C bus on the Grove shield's I2C0 pins")
     void shouldStartRaspberryPico2I2cOnGp8AndGp9() throws Exception {
         // Given
