@@ -380,12 +380,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
                 import io.github.jabrena.juno.hardware.hid.Mouse;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoMouse {
                     public static void main(String[] args) {
-                        Mouse mouse = ArduinoUno.getMouse();
+                        Mouse mouse = RaspberryPico2.getMouse();
                         mouse.begin();
                         mouse.move(1, -1);
                     }

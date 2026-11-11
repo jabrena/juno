@@ -87,6 +87,8 @@ public final class Linker {
                     "()Lio/github/jabrena/juno/hardware/net/BluetoothLe;"), Capability.BLUETOOTH_LE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/RaspberryPico2", "getBluetoothLe",
                     "()Lio/github/jabrena/juno/hardware/net/BluetoothLe;"), Capability.BLUETOOTH_LE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/RaspberryPico2", "getMouse",
+                    "()Lio/github/jabrena/juno/hardware/hid/Mouse;"), Capability.USB_HID),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getAccelerometer",
                     "()Lio/github/jabrena/juno/robotics/Accelerometer;"), Capability.ONBOARD_IMU),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getGyroscope",

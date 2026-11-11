@@ -1,11 +1,13 @@
 package io.github.jabrena.juno.hardware;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
+import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -41,6 +43,11 @@ public final class RaspberryPico2 {
     /** The Raspberry Pi Pico 2 W's CYW43439 Bluetooth LE radio, used as a central. */
     public static BluetoothLe getBluetoothLe() {
         return NativeBluetoothLe.bluetoothLe();
+    }
+
+    /** The Raspberry Pi Pico 2 W's USB HID mouse. */
+    public static Mouse getMouse() {
+        return NativeMouse.mouse();
     }
 
     /** The board's monotonic clock. */
