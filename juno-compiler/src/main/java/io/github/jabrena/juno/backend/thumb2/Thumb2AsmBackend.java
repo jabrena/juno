@@ -197,7 +197,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout, usesThreads);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm), coreRuntime, board.generation(), features,
+        intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm), coreRuntime, board.unoGeneration(), features,
                 usedMath, usesThreads, socketStreamsOnly);
 
         StringBuilder output = new StringBuilder();

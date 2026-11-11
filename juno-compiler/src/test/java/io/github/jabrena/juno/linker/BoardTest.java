@@ -9,6 +9,11 @@ import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.board.Capability;
+import io.github.jabrena.juno.board.Esp32Family;
+import io.github.jabrena.juno.board.M5StackFamily;
+import io.github.jabrena.juno.board.NanoFamily;
+import io.github.jabrena.juno.board.PicoFamily;
+import io.github.jabrena.juno.board.UnoGeneration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -28,6 +33,21 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class BoardTest {
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    @DisplayName("Keeps UNO generations separate from other board families")
+    void shouldClassifyBoardsByTheirOwnFamily() {
+        assertThat(UnoGeneration.values()).containsExactly(UnoGeneration.R3, UnoGeneration.R4, UnoGeneration.Q);
+        assertThat(Board.UNO_R3.family()).isEqualTo(UnoGeneration.R3);
+        assertThat(Board.UNO_R4_WIFI.family()).isEqualTo(UnoGeneration.R4);
+        assertThat(Board.UNO_Q.family()).isEqualTo(UnoGeneration.Q);
+        assertThat(Board.UNO_R3_WIFI_REV2.family()).isEqualTo(UnoGeneration.R3);
+        assertThat(Board.NANO_ESP32.family()).isEqualTo(NanoFamily.NANO_ESP32);
+        assertThat(Board.AI_THINKER_ESP32_CAM.family()).isEqualTo(Esp32Family.AI_THINKER_ESP32_CAM);
+        assertThat(Board.M5_CARDPUTER.family()).isEqualTo(M5StackFamily.CARDPUTER_ADV);
+        assertThat(Board.PICO_2_W.family()).isEqualTo(PicoFamily.PICO_2);
+        assertThat(Board.PICO_2_W.unoGeneration()).isEmpty();
+    }
 
     static Stream<Arguments> capabilities() {
         return Stream.of(

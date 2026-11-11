@@ -16,6 +16,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -148,11 +149,11 @@ public final class IntrinsicLowering {
     private final boolean socketStreamsOnly;
 
     /**
-     * @param generation the target board's {@link io.github.jabrena.juno.board.Board#generation() UNO generation}
+     * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, UnoGeneration generation,
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
                       Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
                       boolean socketStreamsOnly) {
         this.target = target;
@@ -314,7 +315,7 @@ public final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime, UnoGeneration generation, boolean usesThreads) {
+    private void registerGpio(CoreRuntime coreRuntime, Optional<UnoGeneration> generation, boolean usesThreads) {
         String pinMode = coreRuntime.gpioFunction("pinMode");
         String digitalWrite = coreRuntime.gpioFunction("digitalWrite");
         shim(Intrinsic.DIGITAL_OUTPUT_OF, pinMode, Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
@@ -355,7 +356,7 @@ public final class IntrinsicLowering {
         lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
         GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
-                .ifPresent(value -> target.storeImmediate(output, frame, generation == queried ? 1 : 0, value))));
+                .ifPresent(value -> target.storeImmediate(output, frame, generation.filter(queried::equals).isPresent() ? 1 : 0, value))));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);

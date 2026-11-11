@@ -25,6 +25,7 @@ The Pico 2 W already uses the shared Thumb-2 backend and the arduino-pico `rp204
 - **Use the core's `Mouse` library.** The shared mouse helpers already express the Juno mouse contract; Pico will use the default `Mouse.h` include and object.
 - **Map Grove transport pins through `GrovePicoShield` and core runtime pin setters.** UART0, UART1, and SPI0 will expose caller-visible pin getters backed by the board's printed socket map, while the core adapter will configure the selected hardware peripheral before use.
 - **Enable Pico Bluetooth in the board FQBN.** The Pico 2 W board target will use the arduino-pico `ipbtstack=ipv4btcble` option so BLE sketches link the required BT stack. The generated feature support remains capability-gated at compile time.
+- **Keep board families distinct from UNO generations.** `UnoGeneration` contains only `R3`, `R4`, and `Q`, because it feeds the three `BoardModel` queries. Nano, ESP32-CAM, M5Stack, and Pico targets use dedicated family enums so unrelated boards cannot be classified as a Nano or report a fabricated UNO generation.
 
 ## Risks / Trade-offs
 
