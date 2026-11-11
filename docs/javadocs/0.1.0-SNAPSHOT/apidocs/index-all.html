@@ -1588,6 +1588,10 @@ too short for a typical query string).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/RaspberryPico2.html#getBluetoothLe()" class="member-name-link">getBluetoothLe()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/RaspberryPico2.html" title="class in io.github.jabrena.juno.hardware">RaspberryPico2</a></dt>
+<dd>
+<div class="block">The Raspberry Pi Pico 2 W's CYW43439 Bluetooth LE radio, used as a central.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoNano.html#getBoardMemory()" class="member-name-link">getBoardMemory()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoNano.html" title="class in io.github.jabrena.juno.hardware">ArduinoNano</a></dt>
 <dd>
 <div class="block">Juno's arena usage and the program's flash footprint on the Nano ESP32.</div>
@@ -1641,6 +1645,10 @@ too short for a typical query string).</div>
 <dt><a href="io/github/jabrena/juno/hardware/M5StackCardputer.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/M5StackCardputer.html" title="class in io.github.jabrena.juno.hardware">M5StackCardputer</a></dt>
 <dd>
 <div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/RaspberryPico2.html#getClock()" class="member-name-link">getClock()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/RaspberryPico2.html" title="class in io.github.jabrena.juno.hardware">RaspberryPico2</a></dt>
+<dd>
+<div class="block">The board's monotonic clock.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/SensorModes.html#getCurrentMode()" class="member-name-link">getCurrentMode()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></dt>
 <dd>
@@ -1905,6 +1913,10 @@ console too.</div>
 <dd>
 <div class="block">The Cardputer's ESP32-S3 acting as a USB HID mouse through the core's TinyUSB stack.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/RaspberryPico2.html#getMouse()" class="member-name-link">getMouse()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/RaspberryPico2.html" title="class in io.github.jabrena.juno.hardware">RaspberryPico2</a></dt>
+<dd>
+<div class="block">The Raspberry Pi Pico 2 W's USB HID mouse.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/SensorMode.html#getName()" class="member-name-link">getName()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></dt>
 <dd>
 <div class="block">Returns the name of this mode.</div>
@@ -2012,6 +2024,22 @@ high values are bright.</div>
 <dd>
 <div class="block">The board's primary SPI bus (SCK, MOSI and MISO); a device's chip select is a <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a> pin the program drives.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getSpi0Cs()" class="member-name-link">getSpi0Cs()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The chip-select pin of the SPI0 socket: GP17.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getSpi0Miso()" class="member-name-link">getSpi0Miso()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The MISO/RX pin of the SPI0 socket: GP16.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getSpi0Mosi()" class="member-name-link">getSpi0Mosi()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The MOSI/TX pin of the SPI0 socket: GP19.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getSpi0Sck()" class="member-name-link">getSpi0Sck()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The clock pin of the SPI0 socket: GP18.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getSpiMiso()" class="member-name-link">getSpiMiso()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The microSD slot's SPI MISO pin, D12.</div>
@@ -2070,6 +2098,22 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getTilt()" class="member-name-link">getTilt()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The Technic Hub's tilt sensor, which returns the same object on every call.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getUart0Rx()" class="member-name-link">getUart0Rx()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The RX pin of the UART0 socket: GP1.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getUart0Tx()" class="member-name-link">getUart0Tx()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The TX pin of the UART0 socket: GP0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getUart1Rx()" class="member-name-link">getUart1Rx()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The RX pin of the UART1 socket: GP5.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html#getUart1Tx()" class="member-name-link">getUart1Tx()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GrovePicoShield</a></dt>
+<dd>
+<div class="block">The TX pin of the UART1 socket: GP4.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getUartRx()" class="member-name-link">getUartRx()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>

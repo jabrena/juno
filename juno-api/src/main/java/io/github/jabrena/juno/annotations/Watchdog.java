@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Enables the target's hardware watchdog timer on {@code @Watchdog}'s entry-point class. UNO R3,
- * UNO WiFi Rev2, UNO R4 WiFi and Nano ESP32 are supported. UNO Q is rejected because its current Arduino
+ * UNO WiFi Rev2, UNO R4 WiFi, Nano ESP32 and Raspberry Pi Pico 2 W are supported. UNO Q is rejected because its current Arduino
  * Zephyr firmware does not enable the watchdog subsystem, even though its STM32U585 contains the
  * peripheral.
  *
@@ -21,8 +21,8 @@ import java.lang.annotation.Target;
  *
  * <p>AVR watchdogs provide discrete periods. Juno rounds {@link #timeoutMillis()} up to the nearest
  * available period: at most 8,000 ms on UNO R3 and approximately 8,200 ms on UNO WiFi Rev2.
- * Nano ESP32's task watchdog uses whole seconds, so Juno likewise rounds its timeout up to the
- * nearest second.
+ * Nano ESP32's task watchdog uses whole seconds, so Juno likewise rounds its timeout up to the nearest second. The Pico
+ * 2 W uses the RP2350 hardware watchdog's millisecond timeout directly.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

@@ -9,6 +9,11 @@ import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.board.Capability;
+import io.github.jabrena.juno.board.Esp32Family;
+import io.github.jabrena.juno.board.M5StackFamily;
+import io.github.jabrena.juno.board.NanoFamily;
+import io.github.jabrena.juno.board.PicoFamily;
+import io.github.jabrena.juno.board.UnoGeneration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -28,6 +33,21 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 class BoardTest {
     @TempDir
     Path temporaryDirectory;
+
+    @Test
+    @DisplayName("Keeps UNO generations separate from other board families")
+    void shouldClassifyBoardsByTheirOwnFamily() {
+        assertThat(UnoGeneration.values()).containsExactly(UnoGeneration.R3, UnoGeneration.R4, UnoGeneration.Q);
+        assertThat(Board.UNO_R3.family()).isEqualTo(UnoGeneration.R3);
+        assertThat(Board.UNO_R4_WIFI.family()).isEqualTo(UnoGeneration.R4);
+        assertThat(Board.UNO_Q.family()).isEqualTo(UnoGeneration.Q);
+        assertThat(Board.UNO_R3_WIFI_REV2.family()).isEqualTo(UnoGeneration.R3);
+        assertThat(Board.NANO_ESP32.family()).isEqualTo(NanoFamily.NANO_ESP32);
+        assertThat(Board.AI_THINKER_ESP32_CAM.family()).isEqualTo(Esp32Family.AI_THINKER_ESP32_CAM);
+        assertThat(Board.M5_CARDPUTER.family()).isEqualTo(M5StackFamily.CARDPUTER_ADV);
+        assertThat(Board.PICO_2_W.family()).isEqualTo(PicoFamily.PICO_2);
+        assertThat(Board.PICO_2_W.unoGeneration()).isEmpty();
+    }
 
     static Stream<Arguments> capabilities() {
         return Stream.of(
@@ -109,6 +129,14 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.DOUBLE_MATH, true),
                 arguments(Board.M5_CARDPUTER, Capability.BLUETOOTH_LE, true),
                 arguments(Board.M5_CARDPUTER, Capability.TLS_EMAIL, true),
+                arguments(Board.PICO_2_W, Capability.HTTPS_CLIENT, true),
+                arguments(Board.PICO_2_W, Capability.HTTPS_SERVER, true),
+                arguments(Board.PICO_2_W, Capability.TLS_EMAIL, true),
+                arguments(Board.PICO_2_W, Capability.BLUETOOTH_LE, true),
+                arguments(Board.PICO_2_W, Capability.WATCHDOG, true),
+                arguments(Board.PICO_2_W, Capability.USB_HID, true),
+                arguments(Board.PICO_2_W, Capability.STRUCTURED_CONCURRENCY, true),
+                arguments(Board.PICO_2_W, Capability.DOUBLE_MATH, true),
                 arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false),
                 arguments(Board.NANO_ESP32, Capability.M5_BATTERY, false));
     }
@@ -166,12 +194,16 @@ class BoardTest {
         // When & Then
         assertThat(board).isEqualTo(Board.PICO_2_W);
         assertThat(board.annotationArgument()).isEqualTo("RaspberryPico2WifiBoard.class");
-        assertThat(board.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w");
+        assertThat(board.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble");
         assertThat(board.core()).isEqualTo(ArduinoCore.RP2350);
         assertThat(board.core().architecture()).isEqualTo(Architecture.THUMB2);
         assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(64);
         assertThat(board.supports(Capability.WIFI)).isTrue();
-        assertThat(board.supports(Capability.HTTPS_CLIENT)).isFalse();
+        assertThat(board.supports(Capability.HTTP_CLIENT)).isTrue();
+        assertThat(board.supports(Capability.HTTP_SERVER)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_CLIENT)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_SERVER)).isTrue();
+        assertThat(board.supports(Capability.TLS_EMAIL)).isTrue();
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard"))
                 .isEqualTo(board);
     }
@@ -280,6 +312,96 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The Raspberry Pi Pico 2 W emits the core Wi-Fi HTTP server transport")
+    void shouldLowerRaspberryPico2HttpServerToTheCoreWifiServer() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoHttpServer {
+                    public static void main(String[] args) {
+                        RaspberryPico2.getWifi();
+                        HttpServer.begin(80);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoHttpServer", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoHttpServer", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFi.h>\n", "WiFiServer", "juno_http_server_begin")
+                .doesNotContain("WiFiS3.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W adapts its BTstack BLE library to the Powered Up central")
+    void shouldLowerRaspberryPico2BluetoothLeToTheCoreBleLibrary() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.net.BluetoothLe;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoBluetooth {
+                    public static void main(String[] args) {
+                        BluetoothLe bluetooth = RaspberryPico2.getBluetoothLe();
+                        byte[] advertisement = new byte[8];
+                        bluetooth.connect("00001623-1212-efde-1623-785feabcd123", "00001624-1212-efde-1623-785feabcd123",
+                                1000, advertisement, advertisement.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoBluetooth", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoBluetooth", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <BLE.h>", "BLE.scan", "JunoPicoBleDevice")
+                .doesNotContain("ArduinoBLE.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W lowers USB HID mouse calls to Mouse.h")
+    void shouldLowerRaspberryPico2MouseToTheCoreUsbHid() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.hid.Mouse;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoMouse {
+                    public static void main(String[] args) {
+                        Mouse mouse = RaspberryPico2.getMouse();
+                        mouse.begin();
+                        mouse.move(1, -1);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoMouse", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoMouse", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <Mouse.h>", "juno_mouse_begin", "juno_mouse_move");
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W starts its I2C bus on the Grove shield's I2C0 pins")
     void shouldStartRaspberryPico2I2cOnGp8AndGp9() throws Exception {
         // Given
@@ -311,8 +433,8 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The Raspberry Pi Pico 2 W rejects @Watchdog until its watchdog is wired")
-    void shouldRejectWatchdogOnRaspberryPico2W() throws Exception {
+    @DisplayName("The Raspberry Pi Pico 2 W lowers @Watchdog to the RP2350 hardware watchdog")
+    void shouldLowerWatchdogOnRaspberryPico2W() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -330,11 +452,14 @@ class BoardTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoWatchdog", source);
 
-        // When & Then
-        assertThatThrownBy(() -> new JunoCompiler().compile(
-                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWatchdog", false, Optional.empty()))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Raspberry Pi Pico 2 W");
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWatchdog", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <hardware/watchdog.h>")
+                .contains("watchdog_enable(5000u, true);")
+                .contains("watchdog_update();");
     }
 
     @Test

@@ -5,6 +5,7 @@ import io.github.jabrena.juno.CompileException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,7 @@ public enum Board {
      * USB port with the serial console; the other optional capabilities are not wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board", "arduino-nano-esp32", "Nano ESP32",
-            "arduino:esp32:nano_nora", ArduinoCore.ESP32, UnoGeneration.NANO,
+            "arduino:esp32:nano_nora", ArduinoCore.ESP32, NanoFamily.NANO_ESP32,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
                     Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE,
@@ -71,7 +72,7 @@ public enum Board {
      * OV2640 camera as JPEG frames through {@code Esp32Cam.getCamera()}.
      */
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
-            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, UnoGeneration.NANO,
+            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.HTTP_SERVER, Capability.HTTP_STREAM)),
     /**
@@ -81,7 +82,7 @@ public enum Board {
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.M5STACK_ESP32,
-            UnoGeneration.NANO,
+            M5StackFamily.CARDPUTER_ADV,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
@@ -91,30 +92,35 @@ public enum Board {
      * Raspberry Pi Pico 2 W: the RP2350's Cortex-M33 on Earle Philhower's arduino-pico core, reached through
      * {@code RaspberryPico2}. It runs GPIO, delays, USB serial, {@code java.math} and the onboard CYW43439 Wi-Fi
      * (station and access point, with UDP, TCP sockets and SNTP); its built-in LED sits on that radio chip, which the
-     * core drives as pin 64. HTTP, TLS and Bluetooth LE are not wired to Juno yet.
+     * core drives as pin 64. HTTPS, TLS email and Bluetooth LE use the arduino-pico libraries; the board also exposes
+     * the hardware watchdog, the shared Thumb-2 thread port, double-precision math, USB HID and the Grove Shield's
+     * UART/SPI socket map.
      */
     PICO_2_W("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard", "raspberry-pi-pico-2-w",
-            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w", ArduinoCore.RP2350, UnoGeneration.NANO,
+            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
-                    Capability.WIFI_ACCESS_POINT));
+                    Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
+                    Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
+                    Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH));
 
     private final String apiClassName;
     private final String id;
     private final String displayName;
     private final String fqbn;
     private final ArduinoCore core;
-    private final UnoGeneration generation;
+    @SuppressWarnings("ImmutableEnumChecker") // Every BoardFamily implementation is an enum.
+    private final BoardFamily family;
     @SuppressWarnings("ImmutableEnumChecker") // Set.copyOf in the constructor makes it unmodifiable
     private final Set<Capability> capabilities;
 
     Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
-          UnoGeneration generation, Set<Capability> capabilities) {
+          BoardFamily family, Set<Capability> capabilities) {
         this.apiClassName = apiClassName;
         this.id = id;
         this.displayName = displayName;
         this.fqbn = fqbn;
         this.core = core;
-        this.generation = generation;
+        this.family = family;
         this.capabilities = Set.copyOf(capabilities);
     }
 
@@ -165,9 +171,17 @@ public enum Board {
         return core;
     }
 
-    /** The UNO generation {@code BoardModel.isR3()}/{@code isR4()}/{@code isQ()} report. */
-    public UnoGeneration generation() {
-        return generation;
+    /** The physical family this board belongs to. */
+    public BoardFamily family() {
+        return family;
+    }
+
+    /**
+     * The UNO generation reported by {@code BoardModel.isR3()}/{@code isR4()}/{@code isQ()}, or an empty value for
+     * boards outside the UNO family.
+     */
+    public Optional<UnoGeneration> unoGeneration() {
+        return family instanceof UnoGeneration generation ? Optional.of(generation) : Optional.empty();
     }
 
     public boolean supports(Capability capability) {

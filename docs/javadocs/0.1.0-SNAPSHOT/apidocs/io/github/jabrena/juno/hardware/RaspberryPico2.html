@@ -75,6 +75,9 @@ initTheme();
 <li><a href="#getGpio()" tabindex="0">getGpio()</a></li>
 <li><a href="#getI2c()" tabindex="0">getI2c()</a></li>
 <li><a href="#getWifi()" tabindex="0">getWifi()</a></li>
+<li><a href="#getBluetoothLe()" tabindex="0">getBluetoothLe()</a></li>
+<li><a href="#getMouse()" tabindex="0">getMouse()</a></li>
+<li><a href="#getClock()" tabindex="0">getClock()</a></li>
 </ol>
 </li>
 </ol>
@@ -109,6 +112,16 @@ pin; <a href="gpio/Gpio.html#getBuiltinLed()"><code>Gpio.getBuiltinLed()</code><
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBluetoothLe()" class="member-name-link">getBluetoothLe</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The Raspberry Pi Pico 2 W's CYW43439 Bluetooth LE radio, used as a central.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The board's monotonic clock.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
@@ -120,9 +133,14 @@ pin; <a href="gpio/Gpio.html#getBuiltinLed()"><code>Gpio.getBuiltinLed()</code><
 <div class="block">The Raspberry Pi Pico 2 W's I2C bus: I2C0 on GP8 (SDA) and GP9 (SCL), the pins of the Grove Shield for Pi Pico's
 I2C0 socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The Raspberry Pi Pico 2 W's USB HID mouse.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The Raspberry Pi Pico 2 W's onboard CYW43439 Wi-Fi radio, in station or access-point mode.</div>
 </div>
 </div>
@@ -167,6 +185,33 @@ I2C0 socket.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></span>&nbsp;<span class="element-name">getWifi</span>()</div>
 <div class="block">The Raspberry Pi Pico 2 W's onboard CYW43439 Wi-Fi radio, in station or access-point mode.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getBluetoothLe()">
+<h3>getBluetoothLe</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></span>&nbsp;<span class="element-name">getBluetoothLe</span>()</div>
+<div class="block">The Raspberry Pi Pico 2 W's CYW43439 Bluetooth LE radio, used as a central.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getMouse()">
+<h3>getMouse</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></span>&nbsp;<span class="element-name">getMouse</span>()</div>
+<div class="block">The Raspberry Pi Pico 2 W's USB HID mouse.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getClock()">
+<h3>getClock</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></span>&nbsp;<span class="element-name">getClock</span>()</div>
+<div class="block">The board's monotonic clock.</div>
 </div>
 </section>
 </li>

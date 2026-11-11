@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Raspberry Pi Pico 2 W">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico.">
-  <meta property="og:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico." />
-  <meta name="twitter:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi and the Grove Shield for Pi Pico.">
+  <meta name="description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi, BLE, TLS, concurrency and the Grove Shield for Pi Pico.">
+  <meta property="og:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi, BLE, TLS, concurrency and the Grove Shield for Pi Pico." />
+  <meta name="twitter:description" content="Board notes for the Raspberry Pi Pico 2 W and what Juno supports on it: GPIO, Wi-Fi, BLE, TLS, concurrency and the Grove Shield for Pi Pico.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/raspberry-pi-pico-2-w/" />
@@ -320,27 +320,32 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>The Raspberry Pi Pico 2 W pairs the RP2350's Cortex-M33 with an Infineon CYW43439 Wi-Fi radio. The UNO Q is a
 Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, linking against Earle Philhower's
-<a href="https://github.com/earlephilhower/arduino-pico">arduino-pico</a> core (<code>rp2040:rp2040:rpipico2w</code>).</p>
+<a href="https://github.com/earlephilhower/arduino-pico">arduino-pico</a> core (<code>rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble</code>).</p>
 <img src="../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">
 <p>Juno's support on this board:</p>
 <ul>
 <li><strong>GPIO and serial</strong> through <code>RaspberryPico2.getGpio()</code>. <code>A0</code>–<code>A2</code> are the ADC pins GP26–GP28, and <code>GP*</code>/<code>GPIO*</code>
 names reach the header pins. <code>getBuiltinLed()</code> is the LED wired to the radio chip, which the core drives as pin 64.</li>
 <li><strong>Wi-Fi</strong> through <code>RaspberryPico2.getWifi()</code>: station and access-point modes, with UDP, TCP sockets and SNTP.</li>
+<li><strong>HTTP and HTTPS</strong> clients and servers, plus implicit-TLS email through <code>HttpClient</code>, <code>HttpServer</code>, <code>Smtp</code> and <code>Pop3Client</code>.</li>
+<li><strong>Bluetooth LE</strong> through <code>RaspberryPico2.getBluetoothLe()</code>, using the core's BTstack central adapter.</li>
+<li><strong><code>@Watchdog</code></strong>, structured concurrency (<code>Thread</code>, <code>StructuredTaskScope</code>, <code>ScopedValue</code> and locks), and
+<strong>double-precision <code>Math</code></strong> functions.</li>
+<li><strong>USB HID mouse</strong> through the core's <code>Mouse</code> library.</li>
 <li><strong><a href="#grove-shield-for-pi-pico">Grove Shield for Pi Pico</a></strong> through <code>GrovePicoShield</code>, a pin map of
-its D16, D18, D20, A0–A2 and I2C sockets.</li>
+its D16, D18, D20, A0–A2, I2C, UART0, UART1 and SPI0 sockets.</li>
 <li><strong><code>java.math</code></strong> (<code>BigInteger</code>, <code>BigDecimal</code>).</li>
 </ul>
-<p>HTTP, TLS, Bluetooth LE, <code>@Watchdog</code> and threads are not wired yet; a program that uses them is rejected at compile
-time with the board's name.</p>
+<p>The BLE-enabled board menu is selected automatically by the compiler. BLE uses the core's non-FreeRTOS build because
+the arduino-pico BLE library is not compatible with its FreeRTOS menu.</p>
 <p>Install the core with <code>juno:install-deps</code>. To flash a new board, hold BOOTSEL while plugging it in; <code>juno:upload</code>
 finds its <code>UF2_Board</code> drive by itself, and later uploads reset the board through its USB serial port.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.RaspberryPico2Blink \
   -Djuno.board=raspberry-pi-pico-2-w
 </code></pre>
-<p><code>RaspberryPico2Blink</code> is confirmed on hardware; the Wi-Fi and Grove shield examples are compiled but not yet run on a
-board.</p>
+<p><code>RaspberryPico2Blink</code> and the Grove Shield support are confirmed on hardware. The remaining network, BLE, concurrency,
+watchdog, math and HID paths have compiler/toolchain coverage but have not been uploaded as part of this change.</p>
 <h2 id="grove-shield-for-pi-pico">Grove Shield for Pi Pico</h2>
 <img src="../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
 <p>Seeed Studio's <a href="https://www.seeedstudio.com/Grove-Shield-for-Pi-Pico-v1-0-p-4846.html">Grove Shield for Pi Pico v1.0</a>
@@ -348,8 +353,8 @@ does for the Pico what the <a href="../arduino-shields#grove-base-shield">Grove 
 passive, and <code>GrovePicoShield</code> names its sockets. The digital sockets carry their GPIO number in the label (<code>D16</code> is
 GP16), the analog sockets <code>A0</code>–<code>A2</code> are the Pico's ADC pins GP26–GP28, and the I2C0 (GP8/GP9) and I2C1 (GP6/GP7)
 socket pins are exposed. Plug I2C modules into the I2C0 socket and pass <code>shield.getI2c0()</code>, the bus on its GP8/GP9, to
-their driver; the I2C1 pins are only for drivers that wire their own bus. The UART and SPI sockets are not mapped yet. Set the
-shield's power switch to 3.3 V for modules that need it.</p>
+their driver; the I2C1 pins are only for drivers that wire their own bus. UART0, UART1 and SPI0 expose their signal pins
+through dedicated getters. Set the shield's power switch to 3.3 V for modules that need it.</p>
 <p>The shield seen from above, USB at the top, with each socket's pins as printed under it. The first pin is the <code>SIG</code>
 wire its getter returns. The analog sockets always take 3.3 V; the others take <code>VCC</code> from the power switch.</p>
 <pre><code class="language-text">+----------------------------[ USB ]-----------------------------+
@@ -357,9 +362,9 @@ wire its getter returns. The analog sockets always take 3.3 V; the others take <
 |       3V3 o o TX                                           3V3 |
 |       CS  o o RX                                               |
 |                                                                |
-| UART0  (not mapped)                     I2C0  SCL=GP9  SDA=GP8 |
+| UART0  RX=GP1 TX=GP0                   I2C0  SCL=GP9  SDA=GP8 |
 | [RX |TX |VCC|GND]                            [SCL|SDA|VCC|GND] |
-| UART1  (not mapped)                     I2C1  SCL=GP7  SDA=GP6 |
+| UART1  RX=GP5 TX=GP4                   I2C1  SCL=GP7  SDA=GP6 |
 | [RX |TX |VCC|GND]        Raspberry Pi        [SCL|SDA|VCC|GND] |
 | D16  SIG=GP16              Pico 2 W               A0  SIG=GP26 |
 | [D16|D17|VCC|GND]        (sits here)         [A0 |NC |3V3|GND] |
@@ -419,9 +424,19 @@ wire its getter returns. The analog sockets always take 3.3 V; the others take <
 <td>GP6, GP7</td>
 </tr>
 <tr>
-<td>UART0, UART1, SPI0</td>
-<td>not mapped yet</td>
-<td></td>
+<td>UART0</td>
+<td><code>getUart0Rx()</code>, <code>getUart0Tx()</code></td>
+<td>GP1, GP0</td>
+</tr>
+<tr>
+<td>UART1</td>
+<td><code>getUart1Rx()</code>, <code>getUart1Tx()</code></td>
+<td>GP5, GP4</td>
+</tr>
+<tr>
+<td>SPI0</td>
+<td><code>getSpi0Miso()</code>, <code>getSpi0Mosi()</code>, <code>getSpi0Sck()</code>, <code>getSpi0Cs()</code></td>
+<td>GP16, GP19, GP18, GP17</td>
 </tr>
 </tbody>
 </table>
