@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.xtensa;
 
+import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.conformance.ConformanceWorkspace;
 import io.github.jabrena.juno.conformance.ProgramDirectory;
@@ -45,7 +47,7 @@ import static org.assertj.core.api.Assertions.fail;
  * The sketch wrapper brackets the program with {@code [juno-begin]} and {@code [juno-exit]}, so the boot log before
  * it is not part of the transcript, and the core's {@code \r\n} line ends are compared as {@code \n}. The pilot covers
  * the Nano ESP32 only: Cardputer-specific behavior is out of scope. Opt-in:
- * {@code ./mvnw -pl juno-compiler -am -Pxtensa verify}. Skipped when Docker is not available.
+ * {@code ./mvnw -pl juno-compiler -am -Pxtensa verify -Djuno.Xmx=24k} (the arena size CI uses). Skipped when Docker is not available.
  */
 @Tag("xtensa")
 @Testcontainers(disabledWithoutDocker = true)
@@ -63,6 +65,13 @@ class XtensaRunIT {
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
+    /**
+     * The runtime sizes, read from {@code -Djuno.Xmx}/{@code -Djuno.Xss} exactly as the Maven plugin reads them; absent,
+     * the board defaults apply. CI passes {@code -Djuno.Xmx=24k}: a parked ESP32 virtual thread keeps its frames and its
+     * FreeRTOS task in the arena, and {@code ManyVirtualThreads} parks six of them at once.
+     */
+    private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(
+            Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")));
     /**
      * Bounds one build-and-run, so a stalled arduino-cli or QEMU fails its own program's test with the output so far,
      * instead of silently holding the whole CI step. A CI run takes about 70 s per program.
@@ -133,8 +142,9 @@ class XtensaRunIT {
         Path sketch = directory.resolve(simpleName);
         Files.createDirectories(sketch);
         long start = System.nanoTime();
-        CompilationResult result = new JunoCompiler().compileTo(WORKSPACE.junoClasspath(), mainClass,
-                sketch.resolve("program.S"), sketch.resolve("shim.cpp"), false, Optional.of(board.id()));
+        CompilationResult result = new JunoCompiler().compileTo(new CompilationRequest(WORKSPACE.junoClasspath(),
+                mainClass, false, Optional.of(board.id()), RUNTIME_CONFIG), sketch.resolve("program.S"),
+                sketch.resolve("shim.cpp"));
         Files.writeString(sketch.resolve(simpleName + ".ino"), harnessSketch(result.entryPointSymbol()));
         LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
 

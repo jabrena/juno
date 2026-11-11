@@ -8,9 +8,9 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * More virtual threads and subtasks alive at once than the old four scheduler slots (six of each, sized so their
- * frozen frames fit the default 8 KiB arena on every board, the ESP32's larger Xtensa frames and per-task FreeRTOS
- * objects included): every thread parks in
+ * More virtual threads and subtasks alive at once than the old four scheduler slots (six of each; their frozen frames
+ * fit the default 8 KiB arena on Thumb-2, while the ESP32, whose parked threads also keep larger Xtensa frames and a
+ * FreeRTOS task in the arena, runs it with {@code -Djuno.Xmx=24k}): every thread parks in
  * {@code Thread.sleep} with live locals and a deep call chain while the others run, so each one is frozen off the
  * carrier and thawed back several times, and collections run while they are parked. Every printed value is fixed by
  * the joins, so the JVM and the board agree whatever the interleaving.
