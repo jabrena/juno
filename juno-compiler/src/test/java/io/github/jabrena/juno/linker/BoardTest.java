@@ -171,6 +171,8 @@ class BoardTest {
         assertThat(board.core().architecture()).isEqualTo(Architecture.THUMB2);
         assertThat(new CoreRuntimes().of(board.core()).builtinLedPin()).isEqualTo(64);
         assertThat(board.supports(Capability.WIFI)).isTrue();
+        assertThat(board.supports(Capability.HTTP_CLIENT)).isTrue();
+        assertThat(board.supports(Capability.HTTP_SERVER)).isTrue();
         assertThat(board.supports(Capability.HTTPS_CLIENT)).isFalse();
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard"))
                 .isEqualTo(board);
@@ -276,6 +278,36 @@ class BoardTest {
         // Then
         assertThat(result.runtimeShim())
                 .contains("#include <WiFi.h>\n", "WiFi.begin(ssid, password);", "WiFi.beginAP(ssid, password);")
+                .doesNotContain("WiFiS3.h");
+    }
+
+    @Test
+    @DisplayName("The Raspberry Pi Pico 2 W emits the core Wi-Fi HTTP server transport")
+    void shouldLowerRaspberryPico2HttpServerToTheCoreWifiServer() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class PicoHttpServer {
+                    public static void main(String[] args) {
+                        RaspberryPico2.getWifi();
+                        HttpServer.begin(80);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoHttpServer", source);
+
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoHttpServer", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim())
+                .contains("#include <WiFi.h>\n", "WiFiServer", "juno_http_server_begin")
                 .doesNotContain("WiFiS3.h");
     }
 

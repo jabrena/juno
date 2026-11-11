@@ -2,6 +2,7 @@ package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -16,6 +17,7 @@ import io.github.jabrena.juno.board.Architecture;
  * and the linker rejects them before this runtime is asked.
  */
 final class Rp2350CoreRuntime implements CoreRuntime {
+    private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
 
     @Override
@@ -91,7 +93,7 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String httpServerTransport() {
-        throw unsupported("an HTTP server");
+        return runtimeSource.load("renesas/http-server-transport.cpp");
     }
 
     @Override
