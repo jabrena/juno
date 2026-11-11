@@ -10,19 +10,46 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 
 <img src="../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">
 
-Juno's support on this board:
+## Core specification
 
-- **GPIO and serial** through `RaspberryPico2.getGpio()`. `A0`–`A2` are the ADC pins GP26–GP28, and `GP*`/`GPIO*`
-  names reach the header pins. `getBuiltinLed()` is the LED wired to the radio chip, which the core drives as pin 64.
-- **Wi-Fi** through `RaspberryPico2.getWifi()`: station and access-point modes, with UDP, TCP sockets and SNTP.
-- **HTTP and HTTPS** clients and servers, plus implicit-TLS email through `HttpClient`, `HttpServer`, `Smtp` and `Pop3Client`.
-- **Bluetooth LE** through `RaspberryPico2.getBluetoothLe()`, using the core's BTstack central adapter.
-- **`@Watchdog`**, structured concurrency (`Thread`, `StructuredTaskScope`, `ScopedValue` and locks), and
-  **double-precision `Math`** functions.
-- **USB HID mouse** through the core's `Mouse` library.
-- **[Grove Shield for Pi Pico](#grove-shield-for-pi-pico)** through `GrovePicoShield`, a pin map of
-  its D16, D18, D20, A0–A2, I2C, UART0, UART1 and SPI0 sockets.
-- **`java.math`** (`BigInteger`, `BigDecimal`).
+| Characteristic | Raspberry Pi Pico 2 W |
+|---|---:|
+| Microcontroller | RP2350A |
+| CPU architecture | Dual-core 32-bit Cortex-M33F |
+| CPU clock | 150 MHz |
+| Program flash | 4 MB |
+| SRAM | 520 kB |
+| Logic and operating voltage | 3.3 V |
+| Wi-Fi/Bluetooth radio | Infineon CYW43439 |
+| Built-in LED | CYW43439 radio chip (core pin 64) |
+| Arduino CLI FQBN | `rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble` |
+| Juno board id | `raspberry-pi-pico-2-w` |
+
+## What Juno supports
+
+| Feature | Status | Notes | Example |
+|---|:---:|---|---|
+| `Gpio`, `DigitalOutput` | ✓ | Resolve `A0`–`A2`, `GP*` and `GPIO*` names. `A0`–`A2` map to ADC pins GP26–GP28; the built-in LED is routed by the core through pin 64. | [`RaspberryPico2Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/RaspberryPico2Blink.java) |
+| `Delay`, `Serial` | ✓ | Serial output uses the board's USB serial connection. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
+| `int`, `long`, `float`, `double` | ✓ | Java primitive semantics, including double-precision arithmetic. | |
+| Double-precision `java.lang.Math` | ✓ | Supported by the RP2350 Thumb-2 toolchain. | |
+| Objects, arrays, static and interface calls | ✓ | | |
+| Lambdas and method references | ✓ | | |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the board's fixed arena with the JDK's rounding and text rules. | |
+| Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Uses Juno's non-FreeRTOS Thumb-2 scheduler. The arduino-pico BLE library is not compatible with its FreeRTOS menu. | |
+| `@Watchdog` | ✓ | Uses the RP2350 watchdog runtime. | |
+| `UUID.randomUUID()` | — | No cryptographic random source is exposed for this board. | |
+| Wi-Fi station | ✓ | `RaspberryPico2.getWifi()` provides station mode, status, addresses and TCP/UDP networking. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
+| Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | |
+| `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Uses the CYW43439 Wi-Fi radio and the core's UDP support. | |
+| `HttpClient` (HTTP) | ✓ | Plain HTTP client support through the board's Wi-Fi runtime. | |
+| `HttpClient.requestHttps` | ✓ | HTTPS client support through the Pico TLS transport. | |
+| `HttpServer` | ✓ | HTTP and HTTPS server support through the board's Wi-Fi runtime. | |
+| `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS email support. | |
+| `Smtp.send` (STARTTLS) | — | STARTTLS is not available on this board. | |
+| Bluetooth LE | ✓ | `RaspberryPico2.getBluetoothLe()` uses the arduino-pico BTstack central adapter. | |
+| USB HID mouse | ✓ | `RaspberryPico2.getMouse()` uses the core's `Mouse` library. | |
+| `GrovePicoShield` | ✓ | D16, D18, D20, A0–A2, I2C0/I2C1, UART0/UART1 and SPI0 socket mappings. | [`RaspberryPico2GroveShield`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java), [`RaspberryPico2GroveOled`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveOled.java) |
 
 The BLE-enabled board menu is selected automatically by the compiler. BLE uses the core's non-FreeRTOS build because
 the arduino-pico BLE library is not compatible with its FreeRTOS menu.
