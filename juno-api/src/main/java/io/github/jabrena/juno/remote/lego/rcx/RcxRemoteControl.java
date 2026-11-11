@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
 import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.util.Delay;
 
 /**
  * A receive-only LEGO Mindstorms RCX remote control, such as the 9738 handset.
@@ -11,11 +12,12 @@ import io.github.jabrena.juno.hardware.time.Clock;
  * <p>Create it once at startup with the HX-M121 or Grove infrared receiver that hears the handset. The object configures
  * the receiver at the RCX remote's 2400 baud and allocates its four-byte frame buffer during construction; polling with
  * {@link #buttons()} is allocation-free. The receiver must be pointed at the handset, which sends opcode {@code 0xD2}
- * with a 16-bit button mask.
+ * with a 16-bit button mask. Call {@link #start()} when the main loop also does work that must not be delayed by
+ * infrared decoding; the virtual receiver thread then puts button transitions into a fixed-size queue.
  *
  * <p>The last non-zero button mask is retained for 300 milliseconds when a repeat frame is missed, then reported as
- * released. A release frame from the handset reports zero immediately. Calls block briefly while a frame is decoded, so
- * call {@link #buttons()} regularly from the main loop.
+ * released. A release frame from the handset reports zero immediately. Calls to {@link #buttons()} block briefly while
+ * a frame is decoded; {@link #start()} moves those calls to a virtual receiver thread.
  */
 public final class RcxRemoteControl {
     private static final int BAUD = 2400;
@@ -25,6 +27,7 @@ public final class RcxRemoteControl {
     private static final int FIRST_BYTE_MICROS = 1000;
     private static final int HOLD_MILLIS = 300;
     private static final int FRAME_VALUES = 4;
+    private static final int EVENT_QUEUE_CAPACITY = 16;
 
     /** The three message buttons at the top of the handset. */
     public static final int MESSAGE_1 = 0x0001;
@@ -50,8 +53,15 @@ public final class RcxRemoteControl {
     private final Clock clock;
     private final InfraredDriver driver;
     private final int[] frame = new int[FRAME_VALUES];
+    private final int[] buttonEvents = new int[EVENT_QUEUE_CAPACITY];
     private int buttonState;
     private int buttonStateAt;
+    private int eventHead;
+    private int eventTail;
+    private int eventCount;
+    private int droppedEventCount;
+    private boolean started;
+    private volatile boolean listening;
 
     /** Configures a receive-only RCX infrared link from {@code receiver}. */
     public RcxRemoteControl(InfraredReceiver receiver, Clock clock) {
@@ -68,16 +78,99 @@ public final class RcxRemoteControl {
      * <p>The call is allocation-free after construction.
      */
     public int buttons() {
+        if (listening) {
+            synchronized (this) {
+                return currentButtonState();
+            }
+        }
         synchronized (this) {
             if (Infrared.receiving() && readFrame()) {
-                buttonState = (frame[1] << 8) | frame[2];
+                updateButtonState((frame[1] << 8) | frame[2]);
                 buttonStateAt = clock.millis();
             }
-            if (buttonState != 0 && clock.millis() - buttonStateAt > HOLD_MILLIS) {
-                buttonState = 0;
-            }
-            return buttonState;
+            return currentButtonState();
         }
+    }
+
+    /** Starts a virtual receiver thread that decodes frames and queues button transitions. */
+    public void start() {
+        synchronized (this) {
+            if (started) {
+                return;
+            }
+            started = true;
+            listening = true;
+        }
+        Thread.startVirtualThread(this::receiveLoop);
+    }
+
+    /** Stops the virtual receiver thread after its current decode pass. */
+    public void stop() {
+        listening = false;
+    }
+
+    /** Returns the next queued raw button mask, or zero when the queue is empty. */
+    public int pollButtonMask() {
+        synchronized (this) {
+            if (eventCount == 0) {
+                return 0;
+            }
+            int mask = buttonEvents[eventHead];
+            eventHead = (eventHead + 1) % EVENT_QUEUE_CAPACITY;
+            eventCount--;
+            return mask;
+        }
+    }
+
+    /** Returns the next queued button, or {@link RcxRemoteControlButton#NONE} when the queue is empty. */
+    public RcxRemoteControlButton pollButton() {
+        return RcxRemoteControlButton.fromMask(pollButtonMask());
+    }
+
+    /** Returns how many button transitions were discarded because the fixed event queue was full. */
+    public int droppedButtonCount() {
+        synchronized (this) {
+            return droppedEventCount;
+        }
+    }
+
+    private void receiveLoop() {
+        while (listening) {
+            if (Infrared.receiving() && readFrame()) {
+                synchronized (this) {
+                    updateButtonState((frame[1] << 8) | frame[2]);
+                    buttonStateAt = clock.millis();
+                }
+            }
+            synchronized (this) {
+                currentButtonState();
+            }
+            Delay.millis(1);
+        }
+    }
+
+    private int currentButtonState() {
+        if (buttonState != 0 && clock.millis() - buttonStateAt > HOLD_MILLIS) {
+            buttonState = 0;
+        }
+        return buttonState;
+    }
+
+    private void updateButtonState(int nextState) {
+        if (nextState != 0 && nextState != buttonState) {
+            enqueueButton(nextState);
+        }
+        buttonState = nextState;
+    }
+
+    private void enqueueButton(int mask) {
+        if (eventCount == EVENT_QUEUE_CAPACITY) {
+            droppedEventCount++;
+            return;
+        }
+        buttonEvents[eventTail] = mask;
+        eventTail = (eventTail + 1) % EVENT_QUEUE_CAPACITY;
+        eventCount++;
     }
 
     /** Reads and validates one RCX remote-control frame into the fixed frame buffer. */

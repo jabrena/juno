@@ -56,6 +56,66 @@ class RcxRemoteControlTest {
     }
 
     @Test
+    @DisplayName("Maps handset masks to the button enum")
+    void shouldMapButtonMasks() {
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.MESSAGE_1.mask()))
+                .isEqualTo(RcxRemoteControlButton.MESSAGE_1);
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.A_UP.mask()))
+                .isEqualTo(RcxRemoteControlButton.A_UP);
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.A_DOWN.mask()))
+                .isEqualTo(RcxRemoteControlButton.A_DOWN);
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.PROGRAM_5.mask()))
+                .isEqualTo(RcxRemoteControlButton.PROGRAM_5);
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.STOP.mask()))
+                .isEqualTo(RcxRemoteControlButton.STOP);
+        assertThat(RcxRemoteControlButton.fromMask(RcxRemoteControlButton.SOUND.mask()))
+                .isEqualTo(RcxRemoteControlButton.SOUND);
+        assertThat(RcxRemoteControlButton.fromMask(
+                        RcxRemoteControlButton.MESSAGE_1.mask() | RcxRemoteControlButton.MESSAGE_2.mask()))
+                .isEqualTo(RcxRemoteControlButton.UNKNOWN);
+    }
+
+    @Test
+    @DisplayName("Queues distinct button transitions for later consumption")
+    void shouldQueueButtonTransitions() {
+        Infrared.receivingFrame = true;
+        List<Integer> first = RcxFrames.frame(0xD2, 0x00, 0x01);
+        first.remove(first.size() - 1);
+        List<Integer> second = RcxFrames.frame(0xD2, 0x00, 0x20);
+        second.remove(second.size() - 1);
+        Infrared.replies.addAll(first);
+        Infrared.replies.addAll(second);
+
+        remote.buttons();
+        remote.buttons();
+
+        assertThat(remote.pollButtonMask()).isEqualTo(RcxRemoteControlButton.MESSAGE_1.mask());
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.C_UP);
+        assertThat(remote.pollButton()).isEqualTo(RcxRemoteControlButton.NONE);
+    }
+
+    @Test
+    @DisplayName("Bounds the transition queue and counts discarded events")
+    void shouldCountDroppedButtonTransitions() {
+        Infrared.receivingFrame = true;
+        for (int mask = 1; mask <= 17; mask++) {
+            List<Integer> frame = RcxFrames.frame(0xD2, 0x00, mask);
+            frame.remove(frame.size() - 1);
+            Infrared.replies.addAll(frame);
+        }
+
+        for (int mask = 1; mask <= 17; mask++) {
+            remote.buttons();
+        }
+
+        assertThat(remote.droppedButtonCount()).isEqualTo(1);
+        for (int mask = 1; mask <= 16; mask++) {
+            assertThat(remote.pollButtonMask()).isEqualTo(mask);
+        }
+        assertThat(remote.pollButtonMask()).isZero();
+    }
+
+    @Test
     @DisplayName("Expires a held button after the repeat window")
     void shouldExpireHeldButtons() {
         Infrared.receivingFrame = true;
