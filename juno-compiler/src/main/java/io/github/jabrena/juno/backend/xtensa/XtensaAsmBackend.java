@@ -139,8 +139,8 @@ public final class XtensaAsmBackend implements AsmBackend {
         int carrierCount = runtimeConfig.carrierCount(coreRuntime.carrierCount());
         boolean dualCarrier = usesThreads && carrierCount > 1;
         ints = new XtensaIntArithmeticLowering(xtensa);
-        memory = new XtensaMemoryLowering(xtensa, layout, dualCarrier,
-                coreRuntime.memoryBarrierInstruction());
+        memory = new XtensaMemoryLowering(xtensa, layout,
+                new XtensaCarrierAccess(xtensa, dualCarrier, coreRuntime.memoryBarrierInstruction()));
         wides = new XtensaWideArithmeticLowering(xtensa, features);
         lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa, dualCarrier),

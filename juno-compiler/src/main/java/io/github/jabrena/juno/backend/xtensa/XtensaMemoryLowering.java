@@ -28,18 +28,12 @@ final class XtensaMemoryLowering {
 
     private final XtensaEmitter xtensa;
     private final ProgramLayout layout;
-    private final boolean dualCarrier;
-    private final String memoryBarrier;
+    private final XtensaCarrierAccess carrierAccess;
 
-    XtensaMemoryLowering(XtensaEmitter xtensa, ProgramLayout layout) {
-        this(xtensa, layout, false, "");
-    }
-
-    XtensaMemoryLowering(XtensaEmitter xtensa, ProgramLayout layout, boolean dualCarrier, String memoryBarrier) {
+    XtensaMemoryLowering(XtensaEmitter xtensa, ProgramLayout layout, XtensaCarrierAccess carrierAccess) {
         this.xtensa = xtensa;
         this.layout = layout;
-        this.dualCarrier = dualCarrier;
-        this.memoryBarrier = memoryBarrier.isEmpty() ? "" : "    " + memoryBarrier + "\n";
+        this.carrierAccess = carrierAccess;
     }
 
     void emitNewObject(StringBuilder output, FrameLayout frame, IrInstruction.NewObject object) {
@@ -92,18 +86,13 @@ final class XtensaMemoryLowering {
     /** Loads the field {@code offset} bytes into the object {@code a8} points at. */
     private void loadFrom(StringBuilder output, FrameLayout frame, int offset, Value target, boolean volatileField) {
         int reachable = reach(output, offset, target.type().isWide());
-        if (dualCarrier && target.type().isWide()) {
-            output.append("    mov a10, ").append(A).append('\n');
-            xtensa.call(output, "juno_wide_load");
-            xtensa.store64(output, frame, "a10", "a11", target);
-            return;
-        }
+        if (carrierAccess.loadWide(output, frame, target)) return;
         xtensa.loadWordAt(output, B, A, reachable);
         if (target.type().isWide()) {
             xtensa.loadWordAt(output, C, A, reachable + WORD);
             xtensa.store64(output, frame, B, C, target);
         } else {
-            if (dualCarrier && volatileField) output.append(memoryBarrier);
+            output.append(carrierAccess.barrier(volatileField));
             xtensa.store(output, frame, B, target);
         }
     }
@@ -113,18 +102,12 @@ final class XtensaMemoryLowering {
         int reachable = reach(output, offset, value.type().isWide());
         if (value.type().isWide()) {
             xtensa.load64(output, frame, B, C, value);
-            if (dualCarrier) {
-                output.append("    mov a12, ").append(C).append('\n')
-                        .append("    mov a11, ").append(B).append('\n')
-                        .append("    mov a10, ").append(A).append('\n')
-                        .append("    call8 juno_wide_store\n");
-                return;
-            }
+            if (carrierAccess.storeWide(output)) return;
             xtensa.storeWordAt(output, B, A, reachable);
             xtensa.storeWordAt(output, C, A, reachable + WORD);
         } else {
             xtensa.load(output, frame, B, value);
-            if (dualCarrier && volatileField) output.append(memoryBarrier);
+            output.append(carrierAccess.barrier(volatileField));
             xtensa.storeWordAt(output, B, A, reachable);
         }
     }

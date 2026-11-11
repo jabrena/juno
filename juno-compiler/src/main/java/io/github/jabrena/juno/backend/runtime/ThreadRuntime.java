@@ -206,83 +206,8 @@ public final class ThreadRuntime {
         String raiseInterrupted = raiseException(exceptions, interruptedExceptionClassId);
         String raiseBrokenBarrier = raiseException(exceptions, brokenBarrierExceptionClassId);
         String preemption = asynchronousPreemption ? asynchronousPreemption(carrierCount) : safepointPreemption(carrierCount);
-        String startPreemption = asynchronousPreemption
-                ? carrierCount == 1 ? """
-                  static bool juno_preempt_started = false;
-                  if (!juno_preempt_started) {
-                    juno_preempt_started = true;
-                    juno_port_preempt_start();
-                  }""" : """
-                  static bool juno_preempt_started[${JUNO_CARRIER_COUNT}] = {};
-                  if (!juno_preempt_started[juno_port_carrier_id()]) {
-                    juno_preempt_started[juno_port_carrier_id()] = true;
-                    juno_port_preempt_start();
-                  }""".replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount))
-                : "";
-        String currentSlotDeclaration = carrierCount == 1 ? "static uint32_t juno_current_slot = 0u;\n"
-                : """
-                static uint32_t juno_current_slots[${JUNO_CARRIER_COUNT}] = {};
-                #define juno_current_slot juno_current_slots[juno_port_carrier_id()]
-                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
-        String sliceStartDeclaration = carrierCount == 1 ? "static uint32_t juno_slice_start = 0u;\n"
-                : """
-                static uint32_t juno_slice_starts[${JUNO_CARRIER_COUNT}] = {};
-                #define juno_slice_start juno_slice_starts[juno_port_carrier_id()]
-                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
-        String carrierDeclarations = carrierCount == 1 ? "" : """
-                extern "C" uint32_t juno_port_carrier_id();
-                static uint32_t juno_current_carrier() {
-                  return juno_port_carrier_id();
-                }
-                """;
-        String carrierFilter = carrierCount == 1 ? "" : """
-                  if (slot.carrier != juno_current_carrier()) return false;
-                """;
-        String placement = carrierCount == 1 ? "" : """
-                static uint32_t juno_placement_hint = 0u;
-
-                static uint32_t juno_choose_carrier() {
-                  uint32_t loads[${JUNO_CARRIER_COUNT}] = {};
-                  for (uint32_t index = 0u; index < juno_slot_count; index++) {
-                    if (juno_slots[index].state != JUNO_SLOT_FREE) loads[juno_slots[index].carrier]++;
-                  }
-                  uint32_t selected = 0u;
-                  for (uint32_t carrier = 1u; carrier < ${JUNO_CARRIER_COUNT}u; carrier++) {
-                    if (loads[carrier] < loads[selected]) selected = carrier;
-                  }
-                  if (loads[0] == loads[1] && ${JUNO_CARRIER_COUNT}u > 1u) {
-                    selected = juno_placement_hint++ % ${JUNO_CARRIER_COUNT}u;
-                  }
-                  return selected;
-                }
-                """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
-        String currentScan = carrierCount == 1 ? "index == juno_current_slot ? marker : nullptr"
-                : "juno_slots[index].carrier == juno_current_carrier() && index == juno_current_slot ? marker : nullptr";
-        String slotCarrierField = carrierCount == 1 ? "" : "  uint32_t carrier;\n";
-        String slotCarrierAccessor = carrierCount == 1 ? ""
-                : "extern \"C\" uint32_t juno_slot_carrier(uint32_t slot) { return juno_slots[slot].carrier; }\n";
-        String setCarrier = carrierCount == 1 ? "" : "  juno_slots[slot].carrier = juno_choose_carrier();\n";
-        String finishedSignal = carrierCount == 1 ? "" : "juno_port_finished();\n";
-        String directRuntimeEnter = carrierCount == 1 ? "" : "juno_runtime_enter();";
-        String directRuntimeExit = carrierCount == 1 ? "" : "juno_runtime_exit();";
-        String mainExit = carrierCount == 1 ? """
-                extern "C" void juno_thread_main_exit() {
-                  if (juno_live_threads == 0u) return;
-                  juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
-                  juno_sched_block();
-                }
-                """ : """
-                extern "C" void juno_thread_main_exit() {
-                  juno_runtime_enter();
-                  if (juno_live_threads == 0u) {
-                    juno_runtime_exit();
-                    return;
-                  }
-                  juno_slots[juno_current_slot].state = JUNO_SLOT_JOINING_ALL;
-                  juno_sched_block();
-                  juno_runtime_exit();
-                }
-                """;
+        SchedulerCarriers carriers = SchedulerCarriers.of(carrierCount);
+        String startPreemption = asynchronousPreemption ? carriers.startPreemption() : "";
         String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
                         ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
@@ -313,27 +238,8 @@ public final class ThreadRuntime {
                 .replace("${JUNO_RAISE_INTERRUPTED}", raiseInterrupted)
                 .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
                 .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
-                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions))
-                .replace("${JUNO_CURRENT_SLOT_DECLARATION}", currentSlotDeclaration)
-                .replace("${JUNO_SLICE_START_DECLARATION}", sliceStartDeclaration)
-                .replace("${JUNO_CARRIER_DECLARATIONS}", carrierDeclarations)
-                .replace("${JUNO_CARRIER_FILTER}", carrierFilter)
-                .replace("${JUNO_PLACEMENT}", placement)
-                .replace("${JUNO_CURRENT_SCAN}", currentScan)
-                .replace("${JUNO_CHOOSE_CARRIER}", carrierCount == 1 ? "0u" : "juno_choose_carrier()")
-                .replace("${JUNO_SET_CARRIER}", setCarrier)
-                .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount))
-                .replace("${JUNO_SLOT_CARRIER_FIELD}", slotCarrierField)
-                .replace("${JUNO_SLOT_CARRIER_ACCESSOR}", slotCarrierAccessor)
-                .replace("${JUNO_DIRECT_RUNTIME_ENTER}", directRuntimeEnter)
-                .replace("${JUNO_DIRECT_RUNTIME_EXIT}", directRuntimeExit)
-                .replace("${JUNO_RUNTIME_UNLOCK}", carrierCount == 1 ? ""
-                        : "bool juno_scheduler_locked = juno_runtime_owned();\n  if (juno_scheduler_locked) juno_runtime_exit();\n      ")
-                .replace("${JUNO_RUNTIME_RELOCK}", carrierCount == 1 ? ""
-                        : "if (juno_scheduler_locked) juno_runtime_enter();\n      ")
-                .replace("${JUNO_FINISHED_SIGNAL}", finishedSignal)
-                .replace("${JUNO_MAIN_EXIT}", mainExit);
-        return source;
+                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
+        return carriers.apply(source);
 
     }
 

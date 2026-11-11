@@ -147,8 +147,7 @@ public final class IntrinsicLowering {
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
     private final boolean socketStreamsOnly;
-    private final boolean runtimeLock;
-    private final boolean monitorBarrier;
+    private final RuntimeLockBracket lockBracket;
 
     /**
      * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
@@ -170,8 +169,7 @@ public final class IntrinsicLowering {
         this.features = features;
         this.usedMath = usedMath;
         this.socketStreamsOnly = socketStreamsOnly;
-        this.runtimeLock = usesThreads && carrierCount > 1;
-        this.monitorBarrier = runtimeLock;
+        this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
         registerGpio(coreRuntime, generation, usesThreads);
         registerThreads(usesThreads);
@@ -968,8 +966,7 @@ public final class IntrinsicLowering {
         for (Operand operand : shimCall.operands()) {
             words.add(operand.resolve(call));
         }
-        if (runtimeLock) target.emitRuntimeLockEnter(output);
-        if (monitorBarrier && call.intrinsic() == Intrinsic.MONITOR_EXIT) target.emitMemoryBarrier(output);
+        lockBracket.enter(output, call.intrinsic());
         target.emitShimCall(output, frame, shimCall.function(), words);
         switch (shimCall.result()) {
             case NONE -> { }
@@ -978,8 +975,7 @@ public final class IntrinsicLowering {
             case FIRST_ARGUMENT -> call.target().ifPresent(
                     value -> target.copy(output, frame, call.arguments().get(0), value));
         }
-        if (monitorBarrier && call.intrinsic() == Intrinsic.MONITOR_ENTER) target.emitMemoryBarrier(output);
-        if (runtimeLock) target.emitRuntimeLockExit(output);
+        lockBracket.exit(output, call.intrinsic());
     }
 
     /**
@@ -1001,10 +997,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        if (runtimeLock) target.emitRuntimeLockEnter(output);
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
-        if (runtimeLock) target.emitRuntimeLockExit(output);
+        lockBracket.exit(output);
     }
 
     /**
@@ -1032,10 +1028,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
-        if (runtimeLock) target.emitRuntimeLockEnter(output);
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
-        if (runtimeLock) target.emitRuntimeLockExit(output);
+        lockBracket.exit(output);
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {
