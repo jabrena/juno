@@ -4,21 +4,23 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
+import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * The Raspberry Pi Pico 2 W's {@code rp2040:rp2040} core (Earle Philhower's arduino-pico) on its RP2350 Cortex-M33:
  * {@code delay()}/{@code delayMicroseconds()} are real {@code extern "C"} symbols the assembly calls directly, and the
  * core's own weak {@code yield()} serves the generated loop backedges. GPIO, delays, serial and the CYW43439's Wi-Fi
  * (through the core's {@code WiFi} library, whose {@code WiFiClass} mirrors WiFiS3's station and access-point calls)
- * are wired; HTTP, TLS, the watchdog and the thread port are not yet, so the board does not declare those capabilities
- * and the linker rejects them before this runtime is asked.
+ * are wired; optional facilities reuse the core's BearSSL, watchdog, BLE, USB HID and the shared Thumb-2 thread port.
  */
 final class Rp2350CoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
 
     @Override
     public String delayMillisFunction() {
@@ -97,6 +99,11 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String httpsServerTransport() {
+        return runtimeSource.load("rp2350/https-server-transport.cpp");
+    }
+
+    @Override
     public String udpDeclaration() {
         return "static WiFiUDP juno_udp;";
     }
@@ -108,17 +115,50 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String httpsInclude() {
-        throw unsupported("HTTPS");
+        return "#include <WiFiClientSecure.h>\n";
     }
 
     @Override
     public String httpsHelpers() {
-        throw unsupported("HTTPS");
+        return httpsHelpers(false);
     }
 
     @Override
     public String httpsClientDeclaration() {
-        throw unsupported("HTTPS");
+        return "JunoPicoTlsClient client;";
+    }
+
+    @Override
+    public String httpsHelpers(boolean runtimeTrustAnchor) {
+        String trust = runtimeTrustAnchor
+                ? ""
+                : CertificateBundle.cPem("juno_pico_ca", runtimeSource.load("esp32/ca-certificates.pem"));
+        String defaultTrust = runtimeTrustAnchor ? "" : "setTrustAnchors(&juno_pico_ca);";
+        String runtimeTrust = runtimeTrustAnchor ? "" : "static const char* juno_runtime_trusted_ca = nullptr;\n";
+        return trust + runtimeTrust + """
+                struct JunoPicoTlsClient : BearSSL::WiFiClientSecure {
+                  JunoPicoTlsClient() {
+                    if (juno_runtime_trusted_ca != nullptr) {
+                      setTrustAnchors(new BearSSL::X509List(juno_runtime_trusted_ca));
+                    } else {
+                      ${JUNO_DEFAULT_TRUST}
+                    }
+                  }
+                };
+                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrust);
+    }
+
+    @Override
+    public String httpsTrustHelpers() {
+        return """
+                static const char* juno_runtime_trusted_ca = nullptr;
+
+                extern "C" int32_t juno_http_set_trusted_certificate(const uint8_t* certificate, int32_t length) {
+                  if (certificate == nullptr || length <= 0) return 0;
+                  juno_runtime_trusted_ca = reinterpret_cast<const char*>(certificate);
+                  return 1;
+                }
+                """;
     }
 
     /** The core already defines a weak {@code yield()}; the shim leaves it in place. */
@@ -129,7 +169,8 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
-        throw unsupported("@Watchdog");
+        return new WatchdogRuntime("#include <hardware/watchdog.h>\n", "watchdog_enable(" + timeoutMillis + "u, true);",
+                "watchdog_update();", timeoutMillis);
     }
 
     @Override
@@ -160,7 +201,28 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        throw unsupported("threads");
+        return threadRuntime.renesasPort(config.maxThreads(),
+                config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()));
+    }
+
+    @Override
+    public String bleIncludes() {
+        return "#include <BLE.h>\n";
+    }
+
+    @Override
+    public String bleHelpers() {
+        return runtimeSource.load("rp2350/ble.cpp");
+    }
+
+    @Override
+    public BleNames bleNames() {
+        return new BleNames("JunoPicoBleDevice", "JunoPicoBleCharacteristic", "juno_pico_ble");
+    }
+
+    @Override
+    public String mouseIncludes() {
+        return "#include <Mouse.h>\n";
     }
 
     private CompileException unsupported(String feature) {

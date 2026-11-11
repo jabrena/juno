@@ -109,6 +109,14 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.DOUBLE_MATH, true),
                 arguments(Board.M5_CARDPUTER, Capability.BLUETOOTH_LE, true),
                 arguments(Board.M5_CARDPUTER, Capability.TLS_EMAIL, true),
+                arguments(Board.PICO_2_W, Capability.HTTPS_CLIENT, true),
+                arguments(Board.PICO_2_W, Capability.HTTPS_SERVER, true),
+                arguments(Board.PICO_2_W, Capability.TLS_EMAIL, true),
+                arguments(Board.PICO_2_W, Capability.BLUETOOTH_LE, true),
+                arguments(Board.PICO_2_W, Capability.WATCHDOG, true),
+                arguments(Board.PICO_2_W, Capability.USB_HID, true),
+                arguments(Board.PICO_2_W, Capability.STRUCTURED_CONCURRENCY, true),
+                arguments(Board.PICO_2_W, Capability.DOUBLE_MATH, true),
                 arguments(Board.NANO_ESP32, Capability.M5_AUDIO, false),
                 arguments(Board.NANO_ESP32, Capability.M5_BATTERY, false));
     }
@@ -173,7 +181,9 @@ class BoardTest {
         assertThat(board.supports(Capability.WIFI)).isTrue();
         assertThat(board.supports(Capability.HTTP_CLIENT)).isTrue();
         assertThat(board.supports(Capability.HTTP_SERVER)).isTrue();
-        assertThat(board.supports(Capability.HTTPS_CLIENT)).isFalse();
+        assertThat(board.supports(Capability.HTTPS_CLIENT)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_SERVER)).isTrue();
+        assertThat(board.supports(Capability.TLS_EMAIL)).isTrue();
         assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard"))
                 .isEqualTo(board);
     }
@@ -343,8 +353,8 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The Raspberry Pi Pico 2 W rejects @Watchdog until its watchdog is wired")
-    void shouldRejectWatchdogOnRaspberryPico2W() throws Exception {
+    @DisplayName("The Raspberry Pi Pico 2 W lowers @Watchdog to the RP2350 hardware watchdog")
+    void shouldLowerWatchdogOnRaspberryPico2W() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -362,11 +372,14 @@ class BoardTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoWatchdog", source);
 
-        // When & Then
-        assertThatThrownBy(() -> new JunoCompiler().compile(
-                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWatchdog", false, Optional.empty()))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Raspberry Pi Pico 2 W");
+        // When
+        CompilationResult result = new JunoCompiler().compile(
+                CompilerTestSupport.classpath(temporaryDirectory), "demo.PicoWatchdog", false, Optional.empty());
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <hardware/watchdog.h>")
+                .contains("watchdog_enable(5000u, true);")
+                .contains("watchdog_update();");
     }
 
     @Test
