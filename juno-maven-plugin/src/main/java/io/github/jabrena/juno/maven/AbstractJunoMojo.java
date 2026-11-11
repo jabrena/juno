@@ -68,6 +68,13 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;
 
+    /**
+     * Compatibility override for pipelines whose emulator cannot run both cores. Absent by default, so dual-core
+     * boards use both carriers; set {@code -Djuno.carriers=1} only for such constrained test environments.
+     */
+    @Parameter(property = "juno.carriers")
+    private @Nullable String carrierCount;
+
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
                 "Missing required Juno entry point: choose the program to compile with -Djuno.main=<class> "
@@ -79,7 +86,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
-                Optional.ofNullable(threadStackSize));
+                Optional.ofNullable(threadStackSize), Optional.ofNullable(carrierCount));
         CompilationResult result = new JunoCompiler().compileTo(
                 new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
                 layout.assembly(), layout.runtimeShim());

@@ -86,4 +86,21 @@ class CompileMojoTest extends AbstractMojoTestCase {
         assertThat(sketchDirectory.resolve("TinyProgramAsm.ino")).isRegularFile();
         assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO R4 WiFi"));
     }
+
+    @Test
+    @DisplayName("Rejects an invalid carrier override")
+    void shouldRejectAnInvalidCarrierOverride() throws Exception {
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
+                .set("board", "arduino-uno-r4-wifi")
+                .set("carrierCount", "3")
+                .set("outputDirectory", "target/juno-mojo-test/invalid-carriers")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class).hasMessageContaining("juno.carriers");
+    }
 }
