@@ -1,5 +1,11 @@
 // ---- Juno threads: Nano ESP32 port (FreeRTOS tasks handing a baton, one runs at a time) ----
 static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
+// A stack per slot, so the slot table never grows past the stacks there are.
+static constexpr uint32_t JUNO_SLOT_LIMIT = JUNO_MAX_THREADS;
+static constexpr uint32_t JUNO_INITIAL_SLOTS = JUNO_MAX_THREADS;
+// Whether a slot can be held back from running by the port (see juno_port_runnable).
+static constexpr bool JUNO_PORT_PINS = false;
+struct JunoPortSlot {};
 static constexpr uint32_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
 static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
 
@@ -93,4 +99,10 @@ static void juno_port_check_stack(uint32_t slot) {
     Serial.println("[juno-thread] stack overflow");
     juno_panic();
   }
+}
+
+// Every slot has its own stack, so any runnable slot can run.
+static bool juno_port_runnable(uint32_t slot) {
+  static_cast<void>(slot);
+  return true;
 }

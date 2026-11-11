@@ -137,14 +137,15 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("The UNO Q runs each thread on a Zephyr thread passing a baton")
-    void shouldRunEachThreadOnAZephyrThreadPassingABaton() throws Exception {
+    @DisplayName("The UNO Q runs its virtual threads on one carrier Zephyr thread passing a baton with main")
+    void shouldRunVirtualThreadsOnOneCarrierZephyrThreadPassingABaton() throws Exception {
         // Given
         String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
-        assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give")
-                .doesNotContain("juno_context_switch");
+        assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give",
+                "juno_context_switch", "juno_switcher_run", "juno_freeze", "juno_thaw")
+                .doesNotContain("K_THREAD_STACK_ARRAY_DEFINE");
     }
 
     @Test
@@ -259,7 +260,7 @@ class ThreadsTest {
 
         // When & Then
         assertThat(function(shim, "extern \"C\" void juno_preempt_tick(uint32_t* frame) {")).as(board)
-                .contains("if (inJava && resumable && juno_preempt_resume[slot] == 0u) {");
+                .contains("if (inJava && resumable && juno_slots[slot].preemptResume == 0u) {");
     }
 
     @ParameterizedTest(name = "every method entry is a safepoint on {0}")
@@ -561,14 +562,15 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("A cancelled caller keeps its stack scanned until the worker is done")
+    @DisplayName("A cancelled caller keeps its frames on the carrier, scanned, until the worker is done")
     void shouldKeepACancelledCallersStackScannedUntilTheWorkerIsDone() throws Exception {
         // Given
         String shim = unoQNetworkShim(true);
 
         // When & Then
-        assertThat(shim).as("a caller cancelled during its call keeps its stack scanned until the worker is done")
-                .contains("if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;", "static void juno_io_reap() {");
+        assertThat(shim).as("a caller cancelled during its call keeps its frames until the worker is done")
+                .contains("if (!draining) juno_port_cancel(slot);", "juno_slots[slot].state = JUNO_SLOT_DRAINING;",
+                        "static void juno_io_reap() {", "return state == JUNO_SLOT_WAITING_IO || state == JUNO_SLOT_DRAINING;");
     }
 
     @Test

@@ -353,7 +353,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /** FreeRTOS tasks carry the stacks; the backend preempts at safepoints rather than from a tick. */
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.esp32Port(config.maxThreads(),
+        return threadRuntime.esp32Port(
                 config.threadStackBytes(core.defaultThreadStackBytes()));
     }
 

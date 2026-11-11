@@ -201,7 +201,7 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.renesasPort(config.maxThreads(),
+        return threadRuntime.renesasPort(
                 config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()));
     }
 

@@ -7,18 +7,19 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
- * The capacities of the generated runtime: how much RAM the arena and the task stacks take. They change how much a
- * program can hold, never what it means, like a JVM's {@code -Xmx} and {@code -Xss}. {@link #DEFAULT} reproduces the
- * constants in {@link RuntimeLimits}, so a compilation without an explicit configuration is unchanged.
+ * The capacities of the generated runtime: how much RAM the arena and the carrier stacks take. They change how much
+ * a program can hold, never what it means, like a JVM's {@code -Xmx} and {@code -Xss}. {@link #DEFAULT} reproduces
+ * the constants in {@link RuntimeLimits}, so a compilation without an explicit configuration is unchanged. There is no
+ * thread-count setting: virtual threads keep their frames in the arena while parked, so the arena bounds how many can
+ * be alive (the AVR boards, with a stack per thread, run at most {@link RuntimeLimits#MAX_THREADS}).
  *
  * @param arenaBytes size of the garbage-collected arena, a multiple of 8
- * @param maxThreads scheduler slots, the main thread included; each slot beyond the first owns a stack
- * @param threadStackBytes stack of each extra task, a multiple of 8; empty keeps the board's own size
- *     ({@link RuntimeLimits#MIN_THREAD_STACK_BYTES} on the UNO R4 WiFi, 4096 on the UNO Q)
+ * @param threadStackBytes stack of each carrier (on AVR, of each extra thread), a multiple of 8; empty keeps the
+ *     board's own size
  */
-public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadStackBytes) {
+public record RuntimeConfig(int arenaBytes, OptionalInt threadStackBytes) {
     public static final RuntimeConfig DEFAULT = new RuntimeConfig(RuntimeLimits.ARENA_CAPACITY_BYTES,
-            RuntimeLimits.MAX_THREADS, OptionalInt.empty());
+            OptionalInt.empty());
 
     static final int MIN_ARENA_BYTES = 512;
     static final int MIN_STACK_BYTES = 512;
@@ -27,9 +28,6 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
         if (arenaBytes < MIN_ARENA_BYTES || arenaBytes % 8 != 0) {
             throw new CompileException("The arena size must be at least " + MIN_ARENA_BYTES
                     + " bytes and a multiple of 8, not " + arenaBytes);
-        }
-        if (maxThreads < 2) {
-            throw new CompileException("The runtime needs at least 2 scheduler slots, not " + maxThreads);
         }
         if (threadStackBytes.isPresent()
                 && (threadStackBytes.getAsInt() < MIN_STACK_BYTES || threadStackBytes.getAsInt() % 8 != 0)) {
@@ -43,29 +41,10 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
      * {@link #parseBytes}); an empty or blank size keeps the default.
      */
     public static RuntimeConfig of(Optional<String> arenaSize, Optional<String> threadStackSize) {
-        return of(arenaSize, threadStackSize, Optional.empty());
-    }
-
-    /**
-     * The runtime configuration with optional arena, task-stack, and scheduler-slot overrides supplied by a build
-     * integration. An empty scheduler-slot override keeps the runtime default.
-     */
-    public static RuntimeConfig of(
-            Optional<String> arenaSize, Optional<String> threadStackSize, Optional<String> schedulerSlots) {
         Optional<String> arena = arenaSize.filter(size -> !size.isBlank());
         Optional<String> stack = threadStackSize.filter(size -> !size.isBlank());
-        Optional<String> slots = schedulerSlots.filter(size -> !size.isBlank());
         return new RuntimeConfig(arena.map(size -> parseBytes("juno.Xmx", size)).orElse(DEFAULT.arenaBytes()),
-                slots.map(RuntimeConfig::parseSchedulerSlots).orElse(DEFAULT.maxThreads()),
                 stack.map(size -> OptionalInt.of(parseBytes("juno.Xss", size))).orElse(DEFAULT.threadStackBytes()));
-    }
-
-    private static int parseSchedulerSlots(String slots) {
-        try {
-            return Integer.parseInt(slots);
-        } catch (NumberFormatException invalid) {
-            throw new CompileException("juno.maxThreads must be a whole number, not '" + slots + "'");
-        }
     }
 
     /** A size as the JVM writes {@code -Xmx}/{@code -Xss}: bytes, or a whole number of {@code k}, {@code m} or {@code g}. */
@@ -99,7 +78,7 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
                     + board.core().maxThreadStackBytes() + " bytes there");
         }
         if (arenaBytes == DEFAULT.arenaBytes) {
-            return new RuntimeConfig(board.core().defaultArenaBytes(), maxThreads, threadStackBytes);
+            return new RuntimeConfig(board.core().defaultArenaBytes(), threadStackBytes);
         }
         if (arenaBytes > board.core().maxArenaBytes()) {
             throw new CompileException("The " + board.displayName() + " has too little RAM for a " + arenaBytes
@@ -108,7 +87,7 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
         return this;
     }
 
-    /** The task stack size to use on a board whose own size is {@code boardDefault}. */
+    /** The carrier (on AVR, task) stack size to use on a board whose own size is {@code boardDefault}. */
     public int threadStackBytes(int boardDefault) {
         return threadStackBytes.orElse(boardDefault);
     }

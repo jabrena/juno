@@ -2,7 +2,11 @@
 // ---- Juno threads: UNO R4 port (no RTOS): main keeps its own stack; every other thread is a continuation
 // that runs on one shared carrier stack and, while another thread holds the carrier, keeps its frames in an
 // arena chunk ----
-static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
+// No stack per slot: the slot table grows in the arena for as long as the arena has room.
+static constexpr uint32_t JUNO_SLOT_LIMIT = 0x7FFFFFFFu;
+static constexpr uint32_t JUNO_INITIAL_SLOTS = 4u;
+// Whether a slot can be held back from running by the port (see juno_port_runnable).
+static constexpr bool JUNO_PORT_PINS = false;
 static constexpr uint32_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
 static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
 static constexpr uint32_t JUNO_STACK_CANARY = 0x4A554E4Fu;
@@ -26,10 +30,15 @@ static volatile bool juno_in_switcher = false;
 static uint32_t juno_carrier_owner = 0u;
 // Per slot: the sp it last switched away at (on the carrier, or main's own stack for slot 0), and the arena
 // chunk that holds the bytes from that sp up to the carrier top while the slot is off the carrier.
-static uint32_t juno_saved_sp[JUNO_MAX_THREADS];
-static uint8_t* juno_chunks[JUNO_MAX_THREADS];
-static uint32_t juno_chunk_capacity[JUNO_MAX_THREADS];
-static uint32_t juno_chunk_used[JUNO_MAX_THREADS];
+struct JunoPortSlot {
+  uint32_t savedSp;
+  uint8_t* chunk;
+  uint32_t chunkCapacity;
+  uint32_t chunkUsed;
+};
+static JunoPortSlot& juno_port_state(uint32_t slot);
+static void* juno_thread_alloc(uint32_t size, const char* message);
+static void juno_gc_keep_block(const void* payload);
 // Frames copied in and out of the carrier, for the risk report and the measurements of the switch cost.
 static uint32_t juno_frozen_bytes = 0u;
 static uint32_t juno_frozen_peak = 0u;
@@ -69,37 +78,35 @@ static uint32_t juno_carrier_top() {
   return static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&juno_carrier_stack[JUNO_THREAD_STACK_BYTES]));
 }
 
-// Keeps a chunk allocated through the next sweep without tracing its payload: only its used part holds
-// frames (scanned as a stack range), the rest is stale.
-static void juno_chunk_keep(uint8_t* chunk) {
-  reinterpret_cast<uint32_t*>(chunk)[-1] |= JUNO_GC_MARK_BIT;
-}
-
-// Makes sure the slot's chunk holds `bytes`; may collect, so the caller's frames must already be scannable.
+// Makes sure the slot's chunk holds `bytes`; may collect, so the caller's frames must already be scannable. Only
+// the chunk's used part holds frames (scanned as a stack range); the collector never traces the rest, which is stale.
 static void juno_chunk_reserve(uint32_t slot, uint32_t bytes) {
-  if (juno_chunks[slot] != nullptr && juno_chunk_capacity[slot] >= bytes) return;
+  JunoPortSlot& state = juno_port_state(slot);
+  if (state.chunk != nullptr && state.chunkCapacity >= bytes) return;
   uint32_t capacity = (bytes + JUNO_CHUNK_STEP - 1u) & ~(JUNO_CHUNK_STEP - 1u);
-  juno_chunks[slot] = nullptr;
-  juno_chunk_used[slot] = 0u;
-  juno_chunks[slot] = static_cast<uint8_t*>(juno_alloc(capacity, 4));
-  juno_chunk_capacity[slot] = capacity;
+  state.chunk = nullptr;
+  state.chunkUsed = 0u;
+  auto* chunk = static_cast<uint8_t*>(juno_thread_alloc(capacity, "cannot park virtual thread: arena full"));
+  JunoPortSlot& after = juno_port_state(slot);
+  after.chunk = chunk;
+  after.chunkCapacity = capacity;
 }
 
 // Copies the slot's frames off the carrier into its chunk.
 static void juno_freeze(uint32_t slot) {
-  uint32_t bytes = juno_carrier_top() - juno_saved_sp[slot];
+  uint32_t bytes = juno_carrier_top() - juno_port_state(slot).savedSp;
   juno_chunk_reserve(slot, bytes);
-  __builtin_memcpy(juno_chunks[slot], reinterpret_cast<const void*>(static_cast<uintptr_t>(juno_saved_sp[slot])),
-      bytes);
-  juno_chunk_used[slot] = bytes;
+  JunoPortSlot& state = juno_port_state(slot);
+  __builtin_memcpy(state.chunk, reinterpret_cast<const void*>(static_cast<uintptr_t>(state.savedSp)), bytes);
+  state.chunkUsed = bytes;
   juno_frozen_bytes += bytes;
   if (bytes > juno_frozen_peak) juno_frozen_peak = bytes;
 }
 
 // Copies the slot's frames from its chunk back onto the carrier, at the addresses they were taken from.
 static void juno_thaw(uint32_t slot) {
-  __builtin_memcpy(reinterpret_cast<void*>(static_cast<uintptr_t>(juno_saved_sp[slot])), juno_chunks[slot],
-      juno_chunk_used[slot]);
+  JunoPortSlot& state = juno_port_state(slot);
+  __builtin_memcpy(reinterpret_cast<void*>(static_cast<uintptr_t>(state.savedSp)), state.chunk, state.chunkUsed);
 }
 
 // The switcher's only job: give the carrier to juno_switch_to, then resume it. It runs on its own stack, so
@@ -111,7 +118,7 @@ static void juno_switcher_loop() {
     juno_thaw(to);
     juno_carrier_owner = to;
     juno_in_switcher = false;
-    juno_context_switch(&juno_switcher_sp, juno_saved_sp[to]);
+    juno_context_switch(&juno_switcher_sp, juno_port_state(to).savedSp);
   }
 }
 
@@ -138,23 +145,31 @@ static void juno_port_prepare(uint32_t slot) {
   // A new thread starts frozen: its chunk holds just the initial frame at the top of the carrier.
   uint32_t bytes = (JUNO_SWITCH_FRAME_WORDS + 2u) * 4u;
   if (juno_carrier_owner == slot) juno_carrier_owner = 0u;
-  juno_saved_sp[slot] = juno_carrier_top() - bytes;
+  juno_port_state(slot).savedSp = juno_carrier_top() - bytes;
   juno_chunk_reserve(slot, bytes);
-  juno_initial_frame(reinterpret_cast<uint32_t*>(juno_chunks[slot]), &juno_thread_trampoline);
-  juno_chunk_used[slot] = bytes;
+  JunoPortSlot& state = juno_port_state(slot);
+  juno_initial_frame(reinterpret_cast<uint32_t*>(state.chunk), &juno_thread_trampoline);
+  state.chunkUsed = bytes;
 }
 
 // A finished or cancelled thread will never run again: its chunk goes back to the arena, and the carrier
 // holds nothing worth keeping.
 static void juno_port_release(uint32_t slot) {
   if (juno_carrier_owner == slot) juno_carrier_owner = 0u;
-  juno_chunks[slot] = nullptr;
-  juno_chunk_capacity[slot] = 0u;
-  juno_chunk_used[slot] = 0u;
+  JunoPortSlot& state = juno_port_state(slot);
+  state.chunk = nullptr;
+  state.chunkCapacity = 0u;
+  state.chunkUsed = 0u;
 }
 
 static void juno_port_cancel(uint32_t slot) {
   juno_port_release(slot);
+}
+
+// No I/O worker ever writes into a thread's frames here, so any runnable slot can take the carrier.
+static bool juno_port_runnable(uint32_t slot) {
+  static_cast<void>(slot);
+  return true;
 }
 
 // An overflowed stack may already reach into the runtime's data, and printing (USB serial is deep) from it
@@ -184,7 +199,7 @@ static void juno_port_check_stack(uint32_t slot) {
 // Main, and the thread already on the carrier, are resumed in place; any other thread goes through the switcher.
 static void juno_port_resume(uint32_t* saveSp, uint32_t to) {
   if (to == 0u || to == juno_carrier_owner) {
-    juno_context_switch(saveSp, juno_saved_sp[to]);
+    juno_context_switch(saveSp, juno_port_state(to).savedSp);
     return;
   }
   juno_switch_to = to;
@@ -194,7 +209,7 @@ static void juno_port_resume(uint32_t* saveSp, uint32_t to) {
 
 static void juno_port_switch(uint32_t from, uint32_t to) {
   juno_port_check_stack(from);
-  juno_port_resume(&juno_saved_sp[from], to);
+  juno_port_resume(&juno_port_state(from).savedSp, to);
 }
 
 static void juno_port_exit(uint32_t from, uint32_t to) {
@@ -208,20 +223,22 @@ static void juno_port_exit(uint32_t from, uint32_t to) {
 // collector's own frame when this slot is the one running; inside the switcher no slot is.
 static bool juno_port_live_range(uint32_t slot, const uint8_t* marker, const uint8_t** from, const uint8_t** to) {
   if (juno_in_switcher) marker = nullptr;
+  const JunoPortSlot& state = juno_port_state(slot);
+  const uint8_t* saved = reinterpret_cast<const uint8_t*>(static_cast<uintptr_t>(state.savedSp));
   if (slot == 0u) {
-    *from = marker != nullptr ? marker : reinterpret_cast<const uint8_t*>(static_cast<uintptr_t>(juno_saved_sp[0]));
+    *from = marker != nullptr ? marker : saved;
     *to = reinterpret_cast<const uint8_t*>(juno_gc_stack_top);
     return true;
   }
-  if (juno_chunks[slot] != nullptr) juno_chunk_keep(juno_chunks[slot]);
+  if (state.chunk != nullptr) juno_gc_keep_block(state.chunk);
   if (slot == juno_carrier_owner) {
-    *from = marker != nullptr ? marker : reinterpret_cast<const uint8_t*>(static_cast<uintptr_t>(juno_saved_sp[slot]));
+    *from = marker != nullptr ? marker : saved;
     *to = reinterpret_cast<const uint8_t*>(static_cast<uintptr_t>(juno_carrier_top()));
     return true;
   }
-  if (juno_chunks[slot] == nullptr) return false;
-  *from = juno_chunks[slot];
-  *to = juno_chunks[slot] + juno_chunk_used[slot];
+  if (state.chunk == nullptr) return false;
+  *from = state.chunk;
+  *to = state.chunk + state.chunkUsed;
   return true;
 }
 

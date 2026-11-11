@@ -12,15 +12,15 @@ extern "C" void juno_io_offload(void (*job)(void*), void* argument) {
     if (worker == JUNO_IO_WORKER_COUNT) juno_thread_sleep(1);
   }
   juno_io_offloader[worker] = juno_current_slot + 1u;
-  juno_io_worker_for_slot[juno_current_slot] = worker + 1u;
+  juno_slots[juno_current_slot].ioWorker = worker + 1u;
   juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;
   juno_sched_block();
-  juno_io_worker_for_slot[juno_current_slot] = 0u;
+  juno_slots[juno_current_slot].ioWorker = 0u;
   if (juno_io_offloader[worker] == juno_current_slot + 1u) juno_io_offloader[worker] = 0u;
 }
 
 static bool juno_io_waiting(uint32_t slot) {
-  uint32_t worker = juno_io_worker_for_slot[slot];
+  uint32_t worker = juno_slots[slot].ioWorker;
   return worker != 0u && juno_port_io_busy(worker - 1u);
 }
 
@@ -42,10 +42,11 @@ static void juno_io_reap() {
       juno_io_deferred_owner[worker] = 0u;
     }
   }
-  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+  for (uint32_t slot = 1u; slot < juno_slot_count; slot++) {
     if (juno_slots[slot].state == JUNO_SLOT_DRAINING && !juno_io_waiting(slot)) {
       juno_slots[slot].state = JUNO_SLOT_FREE;
-      juno_io_worker_for_slot[slot] = 0u;
+      juno_slots[slot].ioWorker = 0u;
+      juno_port_cancel(slot);
     }
   }
 }

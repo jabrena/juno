@@ -177,7 +177,7 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(RuntimeConfig config) {
-        return threadRuntime.avrPort(config.maxThreads(),
+        return threadRuntime.avrPort(
                 config.threadStackBytes(ArduinoCore.MEGAAVR.defaultThreadStackBytes()));
     }
 

@@ -50,11 +50,14 @@ public final class ThreadRuntime {
     }
 
     /**
-     * The UNO R4's port: its own stacks and a context switch that saves the AAPCS callee-saved registers
-     * (and, with an FPU, {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}.
+     * The UNO R4's (and Pico 2 W's) port: main keeps its own stack and every other thread is a continuation on one
+     * carrier stack of {@code stackBytes}. A context switch saves the AAPCS callee-saved registers (and, with an FPU,
+     * {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}; a thread that loses the carrier to
+     * another one is frozen (its frames copied into an arena chunk) and thawed back to the same addresses later, by a
+     * switcher running on a small stack of its own.
      */
-    public String renesasPort(int maxThreads, int stackBytes) {
-        return runtimeSource.load("renesas/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String renesasPort(int stackBytes) {
+        return runtimeSource.load("renesas/thread-port.cpp")
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -68,20 +71,23 @@ public final class ThreadRuntime {
      * writes past the stack: every generated function compares its new SP with {@code juno_stack_limit}, which keeps
      * {@code JUNO_STACK_GUARD_BYTES} free for the C calls of the deepest frame and for reporting the overflow.
      */
-    public String avrPort(int maxThreads, int stackBytes) {
+    public String avrPort(int stackBytes) {
         return runtimeSource.load("avr/thread-heap.cpp")
-                + runtimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                + runtimeSource.load("avr/thread-port.cpp")
+                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
-     * The UNO Q's port: every Juno thread is a Zephyr thread, but each parks on its own semaphore and only the
-     * one holding the baton runs Java code, so the runtime needs no other locking. The preemption tick is a Zephyr
+     * The UNO Q's port: main keeps its Zephyr thread and every other Juno thread is a continuation on one carrier, a
+     * second Zephyr thread whose stack holds the continuations' {@code stackBytes} below the switcher. main and the
+     * carrier hand a baton to each other, so only one runs Java code and the runtime needs no other locking; while the
+     * thread on the carrier waits for its I/O worker it stays pinned there. The preemption tick is a Zephyr
      * {@code k_timer}, whose expiry runs in the system clock's interrupt: Zephyr threads run on the process stack, so
      * {@code psp} holds the interrupted thread's exception frame.
      */
-    public String zephyrPort(int maxThreads, int stackBytes) {
-        return runtimeSource.load("zephyr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String zephyrPort(int stackBytes) {
+        return runtimeSource.load("zephyr/thread-port.cpp")
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -90,8 +96,9 @@ public final class ThreadRuntime {
      * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
      * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.
      */
-    public String esp32Port(int maxThreads, int stackBytes) {
-        return runtimeSource.load("esp32/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String esp32Port(int stackBytes) {
+        return runtimeSource.load("esp32/thread-port.cpp").replace("${JUNO_MAX_THREADS}",
+                        Integer.toString(RuntimeLimits.MAX_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 

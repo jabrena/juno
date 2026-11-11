@@ -1,6 +1,12 @@
 
 // ---- Juno threads: AVR port (no RTOS: a stack per thread, switched by swapping SP) ----
 static constexpr uint32_t JUNO_MAX_THREADS = ${JUNO_MAX_THREADS}u;
+// A stack per slot, so the slot table never grows past the stacks there are.
+static constexpr uint32_t JUNO_SLOT_LIMIT = JUNO_MAX_THREADS;
+static constexpr uint32_t JUNO_INITIAL_SLOTS = JUNO_MAX_THREADS;
+// Whether a slot can be held back from running by the port (see juno_port_runnable).
+static constexpr bool JUNO_PORT_PINS = false;
+struct JunoPortSlot {};
 static constexpr uint16_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
 static constexpr uint32_t JUNO_TIME_SLICE_MILLIS = 1u;
 static constexpr uint32_t JUNO_STACK_CANARY = 0x4A554E4Fu;
@@ -146,5 +152,11 @@ static uintptr_t juno_port_saved_sp(uint32_t slot) {
 static bool juno_port_live_range(uint32_t slot, const uint8_t* marker, const uint8_t** from, const uint8_t** to) {
   *from = marker != nullptr ? marker : reinterpret_cast<const uint8_t*>(juno_port_saved_sp(slot));
   *to = reinterpret_cast<const uint8_t*>(slot == 0u ? juno_gc_stack_top : juno_port_stack_top(slot));
+  return true;
+}
+
+// Every slot has its own stack, so any runnable slot can run.
+static bool juno_port_runnable(uint32_t slot) {
+  static_cast<void>(slot);
   return true;
 }

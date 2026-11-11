@@ -33,69 +33,10 @@ class ConfigAnalyzerTest {
     Path temporaryDirectory;
 
     @Test
-    @DisplayName("Suggests fewer slots when the program forks fewer tasks than the runtime reserves")
-    void shouldSuggestFewerSlotsWhenTheProgramForksFewerTasks() throws Exception {
-        // Given
-        List<ConfigSuggestion> suggestions = suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT,
-                Optional.empty());
-
+    @DisplayName("Suggests no thread setting for a program that forks, since the arena bounds its virtual threads")
+    void shouldSuggestNoThreadSettingForAProgramThatForks() throws Exception {
         // When & Then
-        assertThat(suggestions).singleElement().extracting(ConfigSuggestion::code).isEqualTo("JUNO-CONFIG-001");
-    }
-
-    @Test
-    @DisplayName("Suggests lowering the scheduler slots from four to the two forks plus one")
-    void shouldSuggestLoweringTheSchedulerSlotsFromFourToThree() throws Exception {
-        // Given
-        ConfigSuggestion suggestion = suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT,
-                Optional.empty()).get(0);
-
-        // When & Then
-        assertThat(new Object[] {suggestion.parameter(), suggestion.current(), suggestion.suggested()})
-                .containsExactly("maxThreads", 4, 3);
-    }
-
-    @Test
-    @DisplayName("Counts the unused stack of the extra slot as two kilobytes on the UNO R4 WiFi")
-    void shouldCountTheUnusedStackOfTheExtraSlotAsTwoKilobytes() throws Exception {
-        // Given
-        List<ConfigSuggestion> suggestions = suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT,
-                Optional.empty());
-
-        // When & Then
-        assertThat(suggestions).extracting(ConfigSuggestion::bytesDelta).containsExactly(-2048);
-    }
-
-    @Test
-    @DisplayName("Counts the unused stack at the board's own size")
-    void shouldCountTheUnusedStackAtTheBoardsOwnSize() throws Exception {
-        // Given
-        List<ConfigSuggestion> suggestions = suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT,
-                Optional.of(Board.UNO_Q.id()));
-
-        // When & Then
-        assertThat(suggestions).extracting(ConfigSuggestion::bytesDelta).containsExactly(-4096);
-    }
-
-    @Test
-    @DisplayName("Uses the configured stack when one is set")
-    void shouldUseTheConfiguredStackWhenOneIsSet() throws Exception {
-        // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 4, OptionalInt.of(1024));
-
-        // When & Then
-        assertThat(suggestions("demo.TwoForks", TWO_FORKS, config, Optional.empty()))
-                .extracting(ConfigSuggestion::bytesDelta).containsExactly(-1024);
-    }
-
-    @Test
-    @DisplayName("Stays quiet when the slots already match the forks")
-    void shouldStayQuietWhenTheSlotsAlreadyMatchTheForks() throws Exception {
-        // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.empty());
-
-        // When & Then
-        assertThat(suggestions("demo.TwoForks", TWO_FORKS, config, Optional.empty())).isEmpty();
+        assertThat(suggestions("demo.TwoForks", TWO_FORKS, RuntimeConfig.DEFAULT, Optional.empty())).isEmpty();
     }
 
     @Test
@@ -208,7 +149,7 @@ class ConfigAnalyzerTest {
                     }
                 }
                 """;
-        RuntimeConfig config = new RuntimeConfig(16384, 4, OptionalInt.empty());
+        RuntimeConfig config = new RuntimeConfig(16384, OptionalInt.empty());
 
         // When & Then
         assertThat(suggestions("demo.TooLarge", source, config, Optional.empty())).isEmpty();

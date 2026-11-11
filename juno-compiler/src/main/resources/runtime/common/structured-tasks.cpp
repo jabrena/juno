@@ -38,10 +38,20 @@ static void juno_task_raise_failed(int32_t failure) {
   juno_throw_raise(juno_task_exception(${JUNO_FAILED_EXCEPTION_CLASS_ID}u, message));
 }
 
-static void juno_task_remove(JunoTaskScope* scope, JunoThreadObject* task) {
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) {
-    if (scope->tasks[index] == task) scope->tasks[index] = nullptr;
+static void juno_task_unlink(JunoTaskScope* scope, JunoThreadObject* task) {
+  JunoThreadObject** link = &scope->tasks;
+  while (*link != nullptr) {
+    if (*link == task) {
+      *link = task->sibling;
+      task->sibling = nullptr;
+      return;
+    }
+    link = &(*link)->sibling;
   }
+}
+
+static void juno_task_remove(JunoTaskScope* scope, JunoThreadObject* task) {
+  juno_task_unlink(scope, task);
   if (scope->active != 0u) scope->active--;
 }
 
@@ -59,7 +69,7 @@ static void juno_task_release_monitors(uint32_t owner) {
 // Cancelling a task also cancels the subtasks of every scope it owns, so they cannot be orphaned
 // holding scheduler slots. Each child cancel recurses through this same path.
 static void juno_task_cancel_owned(uint32_t owner) {
-  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+  for (uint32_t slot = 1u; slot < juno_slot_count; slot++) {
     JunoThreadObject* child = juno_slots[slot].thread;
     if (child == nullptr || (child->flags & JUNO_THREAD_TASK) == 0u
             || child->scope == nullptr || child->scope->owner != owner) continue;
@@ -72,28 +82,42 @@ static void juno_task_cancel_owned(uint32_t owner) {
 static void juno_task_cancel(JunoThreadObject* task) {
   if (task == nullptr || (task->flags & JUNO_THREAD_FINISHED) != 0u) return;
   task->flags |= JUNO_THREAD_FINISHED | JUNO_TASK_CANCELLED;
-  for (uint32_t slot = 1u; slot < JUNO_MAX_THREADS; slot++) {
+  for (uint32_t slot = 1u; slot < juno_slot_count; slot++) {
     if (juno_slots[slot].thread != task) continue;
     juno_task_cancel_owned(slot + 1u);
     juno_task_release_monitors(slot + 1u);
     juno_io_release_owned(slot + 1u);
     bool draining = juno_slots[slot].state == JUNO_SLOT_WAITING_IO;
-    juno_port_cancel(slot);
+    // A caller cancelled while the I/O worker runs its call: its frames and arrays must outlive the call, so the
+    // port lets go of them only once juno_io_reap frees the slot.
+    if (!draining) juno_port_cancel(slot);
+    JunoPortSlot port = juno_slots[slot].port;
+    uint32_t ioWorker = juno_slots[slot].ioWorker;
     juno_slots[slot] = {JUNO_SLOT_FREE, 0u, nullptr, nullptr, nullptr, 0};
-    // A caller cancelled while the I/O worker runs its call: its arrays must outlive the call.
-    if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;
+    juno_slots[slot].port = port;
+    if (draining) {
+      juno_slots[slot].state = JUNO_SLOT_DRAINING;
+      juno_slots[slot].ioWorker = ioWorker;
+    }
     if (juno_live_threads != 0u) juno_live_threads--;
     return;
   }
 }
 
 static void juno_task_cancel_siblings(JunoTaskScope* scope, JunoThreadObject* completed) {
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) {
-    JunoThreadObject* task = scope->tasks[index];
-    if (task == nullptr || task == completed) continue;
-    juno_task_cancel(task);
-    scope->tasks[index] = nullptr;
-    if (scope->active != 0u) scope->active--;
+  JunoThreadObject* task = scope->tasks;
+  scope->tasks = nullptr;
+  while (task != nullptr) {
+    JunoThreadObject* next = task->sibling;
+    task->sibling = nullptr;
+    if (task == completed) {
+      task->sibling = scope->tasks;
+      scope->tasks = task;
+    } else {
+      juno_task_cancel(task);
+      if (scope->active != 0u) scope->active--;
+    }
+    task = next;
   }
 }
 
@@ -147,7 +171,7 @@ extern "C" int32_t juno_task_scope_open(int32_t policy) {
   scope->deadline = 0u;
   scope->firstFailure = 0;
   scope->result = 0;
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) scope->tasks[index] = nullptr;
+  scope->tasks = nullptr;
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(scope));
 }
 
@@ -201,7 +225,7 @@ static int32_t juno_task_scope_open_configured(int32_t policy, int32_t operatorH
   scope->deadline = static_cast<uint32_t>(millis()) + static_cast<uint32_t>(config->timeoutMillis);
   scope->firstFailure = 0;
   scope->result = 0;
-  for (uint32_t index = 0u; index < JUNO_MAX_THREADS - 1u; index++) scope->tasks[index] = nullptr;
+  scope->tasks = nullptr;
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(scope));
 }
 
@@ -230,19 +254,15 @@ static int32_t juno_task_scope_fork(int32_t scopeHandle, int32_t taskFunction, b
     juno_task_raise_illegal_state("StructuredTaskScope cannot fork after join or cancellation");
     return 0;
   }
-  uint32_t taskIndex = 0u;
-  while (taskIndex < JUNO_MAX_THREADS - 1u && scope->tasks[taskIndex] != nullptr) taskIndex++;
-  if (taskIndex == JUNO_MAX_THREADS - 1u) {
-    juno_task_raise_illegal_state("StructuredTaskScope has too many active subtasks");
-    return 0;
-  }
-  auto* task = static_cast<JunoThreadObject*>(juno_alloc(sizeof(JunoThreadObject), 4u));
+  auto* task = static_cast<JunoThreadObject*>(
+      juno_thread_alloc(sizeof(JunoThreadObject), "cannot start virtual thread: arena full"));
   task->runnable = static_cast<uint32_t>(taskFunction);
   task->flags = JUNO_THREAD_TASK | (runnable ? JUNO_TASK_RUNNABLE : 0u);
   task->id = juno_threads_created++;
   task->scope = scope;
   ${JUNO_FORK_BINDINGS}
-  scope->tasks[taskIndex] = task;
+  task->sibling = scope->tasks;
+  scope->tasks = task;
   scope->active++;
   juno_thread_start(static_cast<int32_t>(reinterpret_cast<intptr_t>(task)));
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(task));

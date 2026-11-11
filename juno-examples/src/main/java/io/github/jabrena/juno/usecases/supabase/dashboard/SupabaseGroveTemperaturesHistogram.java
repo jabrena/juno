@@ -39,8 +39,8 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  * row containing any null sensor reading is counted as missing. Buffers and application objects are allocated once at
  * startup; each gathering step creates one bounded structured scope for two independent HTTPS requests,
  * and subsequent controller iterations allocate nothing. Each response buffer holds one page, so this targets UNO R4
- * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k -Djuno.maxThreads=3} so its two task
- * stacks fit beside the WiFi and TFT runtimes.
+ * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k} so its carrier stack fits beside the
+ * WiFi and TFT runtimes; the two subtasks share that carrier and keep their frames in the arena while parked.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class SupabaseGroveTemperaturesHistogram {

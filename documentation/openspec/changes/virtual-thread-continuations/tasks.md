@@ -4,14 +4,14 @@
 - [x] 1.2 Record the measurements in `design.md` and set the default carrier stack size per core (Decision 1 stays deferred unless the numbers require the JDK-style policy).
 - [ ] 2.1 Add the carrier/continuation capability to the `CoreRuntime` SPI and keep the AVR core runtimes on the slot model; assert byte-identical AVR output in tests.
 - [ ] 2.2 Move per-thread state (pending exception, `ScopedValue` bindings, `waitKey`/`notified`, joining, scope, interrupt, I/O worker index) from `JunoSlot` into `JunoThreadObject`.
-- [ ] 2.3 Replace the slot array with per-carrier state and a run queue of thread objects behind a scheduling-policy abstraction that keeps time slicing.
+- [x] 2.3 Replace the slot array with per-carrier state and a run queue of thread objects behind a scheduling-policy abstraction that keeps time slicing.
 - [ ] 2.4 Implement freeze/thaw (lazy copy, reused growable chunk per virtual thread, carrier affinity, least-loaded placement) and scan carriers, `main` and frozen chunks in the collector.
 - [ ] 2.5 Port the Renesas (R4) carrier, including the Thumb-2 tick requesting the switch; QEMU `VirtualThreads` parity with OpenJDK.
 - [ ] 3.1 Convert `StructuredTaskScope` forks to virtual threads: list of subtasks, `join` parks the owner, cancellation drops continuations; QEMU scope tests match OpenJDK.
 - [ ] 3.2 Make monitors owned by virtual threads and allow parking while holding them; `wait`/`notify` on virtual threads; QEMU tests including a `synchronized` section that parks.
-- [ ] 4.1 Remove `juno.maxThreads` from `AbstractJunoMojo`, `RuntimeConfig` and `ConfigAnalyzer`; make `juno.Xss` the carrier stack size; arena-full panic message; update plugin tests.
+- [x] 4.1 Remove `juno.maxThreads` from `AbstractJunoMojo`, `RuntimeConfig` and `ConfigAnalyzer`; make `juno.Xss` the carrier stack size; arena-full panic message; update plugin tests.
 - [ ] 4.2 Extend the risk report with carrier stack size, frozen-chunk estimates and the deep-thread warning.
-- [ ] 5.1 Port the Zephyr carrier for the UNO Q.
+- [x] 5.1 Port the Zephyr carrier for the UNO Q.
 - [ ] 5.2 Convert the six UNO Q offload call sites (HTTP client, HTTP server accept/respond, SD free space) to worker-owned storage; remove the `DRAINING` state; keep pinning only as a fallback for unconverted sites.
 - [ ] 6.1 Spike on the Nano ESP32: Xtensa register-window spill before freeze, single carrier.
 - [ ] 6.2 Spike on the Pico 2 W: start core 1 as the second carrier and confirm where the collector's stop flag is checked (per-core tick vs added safepoints); update `design.md`.

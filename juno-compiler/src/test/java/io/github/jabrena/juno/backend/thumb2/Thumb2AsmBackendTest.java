@@ -1396,7 +1396,7 @@ class Thumb2AsmBackendTest {
         // When
         String defaultShim = new Thumb2AsmBackend(false, Board.UNO_R4_WIFI).generate(program).runtimeShim();
         String configuredShim = new Thumb2AsmBackend(false, io.github.jabrena.juno.board.Board.UNO_R4_WIFI,
-                new io.github.jabrena.juno.RuntimeConfig(16384, 4, java.util.OptionalInt.empty()))
+                new io.github.jabrena.juno.RuntimeConfig(16384, java.util.OptionalInt.empty()))
                 .generate(program).runtimeShim();
 
         // Then

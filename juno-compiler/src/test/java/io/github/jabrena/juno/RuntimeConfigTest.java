@@ -21,9 +21,8 @@ class RuntimeConfigTest {
 
     static Stream<Arguments> invalidSchedules() {
         return Stream.of(
-                arguments(8192, 1, OptionalInt.empty(), "scheduler slots"),
-                arguments(8192, 4, OptionalInt.of(100), "task stack"),
-                arguments(8192, 4, OptionalInt.of(1001), "multiple of 8"));
+                arguments(8192, OptionalInt.of(100), "task stack"),
+                arguments(8192, OptionalInt.of(1001), "multiple of 8"));
     }
 
     @Test
@@ -31,13 +30,6 @@ class RuntimeConfigTest {
     void shouldUseTheArenaOfTheRuntimeLimits() {
         // When & Then
         assertThat(RuntimeConfig.DEFAULT.arenaBytes()).isEqualTo(RuntimeLimits.ARENA_CAPACITY_BYTES);
-    }
-
-    @Test
-    @DisplayName("The default thread count matches the runtime limits constant")
-    void shouldUseTheMaxThreadsOfTheRuntimeLimits() {
-        // When & Then
-        assertThat(RuntimeConfig.DEFAULT.maxThreads()).isEqualTo(RuntimeLimits.MAX_THREADS);
     }
 
     @Test
@@ -51,7 +43,7 @@ class RuntimeConfigTest {
     @DisplayName("An unset task stack falls back to the board's own size")
     void shouldFallBackToTheBoardsOwnStackSizeWhenUnset() {
         // Given
-        RuntimeConfig configured = new RuntimeConfig(8192, 4, OptionalInt.of(1024));
+        RuntimeConfig configured = new RuntimeConfig(8192, OptionalInt.of(1024));
 
         // When
         int[] stacks = {RuntimeConfig.DEFAULT.threadStackBytes(4096), configured.threadStackBytes(4096)};
@@ -65,7 +57,7 @@ class RuntimeConfigTest {
     @DisplayName("Rejects an arena that is too small or misaligned")
     void shouldRejectAnArenaThatIsTooSmallOrMisaligned(int bytes, String message, String description) {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(bytes, 4, OptionalInt.empty()))
+        assertThatThrownBy(() -> new RuntimeConfig(bytes, OptionalInt.empty()))
                 .isInstanceOf(CompileException.class).hasMessageContaining(message);
     }
 
@@ -73,15 +65,15 @@ class RuntimeConfigTest {
     @DisplayName("Accepts a half-kilobyte arena for memory-constrained programs")
     void shouldAcceptAHalfKilobyteArenaForMemoryConstrainedPrograms() {
         // When & Then
-        assertThat(new RuntimeConfig(512, 4, OptionalInt.empty()).arenaBytes()).isEqualTo(512);
+        assertThat(new RuntimeConfig(512, OptionalInt.empty()).arenaBytes()).isEqualTo(512);
     }
 
-    @ParameterizedTest(name = "rejects {3}")
+    @ParameterizedTest(name = "rejects {2}")
     @MethodSource("invalidSchedules")
-    @DisplayName("Rejects too few scheduler slots or an invalid task stack")
-    void shouldRejectTooFewSlotsAndAnInvalidStack(int bytes, int slots, OptionalInt stack, String message) {
+    @DisplayName("Rejects an invalid carrier stack")
+    void shouldRejectAnInvalidStack(int bytes, OptionalInt stack, String message) {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(bytes, slots, stack))
+        assertThatThrownBy(() -> new RuntimeConfig(bytes, stack))
                 .isInstanceOf(CompileException.class).hasMessageContaining(message);
     }
 
@@ -100,33 +92,10 @@ class RuntimeConfigTest {
     }
 
     @Test
-    @DisplayName("Keeps the default thread count when only the arena and stack are set")
-    void shouldKeepTheDefaultThreadCountWhenOnlyTheArenaAndStackAreSet() {
-        // When & Then
-        assertThat(RuntimeConfig.of(Optional.of("48k"), Optional.of("8192")).maxThreads())
-                .isEqualTo(RuntimeLimits.MAX_THREADS);
-    }
-
-    @Test
     @DisplayName("Reads a megabyte arena from the Xmx syntax")
     void shouldReadAMegabyteArenaFromTheXmxSyntax() {
         // When & Then
         assertThat(RuntimeConfig.of(Optional.of("1M"), Optional.empty()).arenaBytes()).isEqualTo(1024 * 1024);
-    }
-
-    @Test
-    @DisplayName("Reads an explicit scheduler slot limit")
-    void shouldReadAnExplicitSchedulerSlotLimit() {
-        // When & Then
-        assertThat(RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("3")).maxThreads()).isEqualTo(3);
-    }
-
-    @Test
-    @DisplayName("Rejects a scheduler slot limit that is not a number")
-    void shouldRejectANonNumericSchedulerSlotLimit() {
-        // When & Then
-        assertThatThrownBy(() -> RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("many")))
-                .isInstanceOf(CompileException.class).hasMessageContaining("juno.maxThreads");
     }
 
     @Test
@@ -150,7 +119,7 @@ class RuntimeConfigTest {
     @DisplayName("Rejects an arena above the Mega AVR core's limit")
     void shouldRejectAnArenaAboveTheMegaAvrCoresLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(RuntimeLimits.AVR_MAX_ARENA_BYTES + 8, 4, OptionalInt.empty())
+        assertThatThrownBy(() -> new RuntimeConfig(RuntimeLimits.AVR_MAX_ARENA_BYTES + 8, OptionalInt.empty())
                         .forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
@@ -160,7 +129,7 @@ class RuntimeConfigTest {
     @DisplayName("Rejects a task stack above the Mega AVR core's limit")
     void shouldRejectATaskStackAboveTheMegaAvrCoresLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(1024, 4,
+        assertThatThrownBy(() -> new RuntimeConfig(1024,
                         OptionalInt.of(RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES + 8)).forBoard(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
