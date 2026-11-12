@@ -104,8 +104,9 @@ final class FieldAccessLowering {
             if (dualCarrier) {
                 output.append("    mov r3, ").append(base).append("\n");
                 asm.load64(output, frame, "r1", "r2", value);
-                output.append("    mov r0, r3\n")
-                        .append("    bl juno_wide_store\n");
+                output.append("    mov r0, r3\n");
+                if (offset != 0) output.append("    add r0, r0, #").append(offset).append('\n');
+                output.append("    bl juno_wide_store\n");
             } else {
                 asm.load64(output, frame, "r1", "r2", value);
                 output.append(maskInterrupts)

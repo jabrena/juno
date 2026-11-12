@@ -303,6 +303,26 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("Dual-carrier Thumb-2 wide field stores pass the field's own address")
+    void shouldStoreWideFieldsAtTheirOffsetOnTwoThumb2Carriers() throws Exception {
+        CompilationResult result = compile("RaspberryPico2WifiBoard", """
+                class Cell {
+                    volatile int flag;
+                    volatile long value;
+                }
+                Cell cell = new Cell();
+                cell.value = -1L;
+                cell.flag = 1;
+                Serial.println(cell.flag);
+                Serial.println(cell.value);
+                Thread.startVirtualThread(new Job()).join();
+                """);
+
+        assertThat(result.assembly()).contains("    add r0, r0, #4\n    bl juno_wide_store\n",
+                "    add r0, r0, #4\n    bl juno_wide_load\n");
+    }
+
+    @Test
     @DisplayName("The runtime shim declares the primitives' entry points")
     void shouldDeclareThePrimitiveEntryPointsInTheRuntimeShim() throws Exception {
         // Given
