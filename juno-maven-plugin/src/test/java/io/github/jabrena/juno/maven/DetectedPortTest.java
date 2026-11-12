@@ -29,6 +29,21 @@ class DetectedPortTest {
     }
 
     @Test
+    @DisplayName("Hosts an FQBN whose board menu options the port does not report")
+    void shouldHostAnFqbnWithBoardMenuOptions() {
+        // Given
+        DetectedPort port = new DetectedPort("/dev/cu.usbmodem11201", "serial", List.of("Raspberry Pi Pico 2W"),
+                List.of("rp2040:rp2040:rpipico2w"), "0x2E8A");
+
+        // When
+        boolean hosted = port.hosts("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble,os=freertos");
+
+        // Then
+        assertThat(hosted).isTrue();
+        assertThat(port.hosts("rp2040:rp2040:rpipico:os=freertos")).isFalse();
+    }
+
+    @Test
     @DisplayName("Describes an unknown board without a protocol and hosts no FQBN")
     void shouldDescribeAnUnknownBoardWithoutProtocolAndHostNoFqbn() {
         // Given

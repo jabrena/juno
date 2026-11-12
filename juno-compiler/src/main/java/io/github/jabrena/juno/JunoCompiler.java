@@ -28,7 +28,8 @@ public final class JunoCompiler {
         CompilationReport report = CompilationReport.from(program, lowered, optimized, runtimeConfig);
         GeneratedCode code = backendFor(program.board(), request.gcLoggingEnabled(), runtimeConfig)
                 .generate(optimized);
-        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report);
+        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report,
+                program.board().fqbn() + code.fqbnOptions(), code.mainLauncher());
     }
 
     /** Compiles {@code request} and writes the generated assembly and runtime shim. */

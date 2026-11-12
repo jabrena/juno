@@ -1027,7 +1027,7 @@ class XtensaAsmBackendTest {
                 .containsPattern("entry a1, \\d+\n(    s32i a\\d, a1, \\d+\n)*    call8 juno_thread_safepoint\n")
                 .doesNotContain("call8 yield\n", "juno_java_code_start");
         assertThat(result.runtimeShim())
-                .contains("#include <freertos/semphr.h>", "xTaskCreateStaticPinnedToCore", "juno_thread_backedge")
+                .contains("#include <freertos/semphr.h>", "xTaskCreatePinnedToCore(juno_esp32_entry", "juno_thread_backedge")
                 .doesNotContain("juno_preempt_tick");
     }
 

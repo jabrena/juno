@@ -77,7 +77,7 @@ final class FieldLowering implements InstructionLowering {
             case GETSTATIC -> getStatic(instruction, field);
             case PUTSTATIC -> {
                 Value value = stack.pop(staticFieldType(instruction, field));
-                context.emit(new IrInstruction.StoreStatic(field, value));
+                context.emit(new IrInstruction.StoreStatic(declaredField(field), value));
             }
             case GETFIELD -> getField(instruction, field);
             case PUTFIELD -> {
@@ -119,7 +119,7 @@ final class FieldLowering implements InstructionLowering {
         } else {
             enumStatics.requireNoInitializerOnlyStatic(field);
             Value target = values.of(staticFieldType(instruction, field));
-            context.emit(new IrInstruction.LoadStatic(target, field));
+            context.emit(new IrInstruction.LoadStatic(target, declaredField(field)));
             stack.push(target);
         }
     }
@@ -195,8 +195,9 @@ final class FieldLowering implements InstructionLowering {
     private FieldRef declaredField(FieldRef field) {
         JavaClass owner = context.classes().get(field.owner());
         while (owner != null) {
-            if (owner.findField(field.name(), field.descriptor()) != null) {
-                return new FieldRef(owner.name(), field.name(), field.descriptor());
+            FieldInfo declaration = owner.findField(field.name(), field.descriptor());
+            if (declaration != null) {
+                return new FieldRef(owner.name(), field.name(), field.descriptor(), declaration.isVolatile());
             }
             owner = owner.superClassName() == null ? null : context.classes().get(owner.superClassName());
         }

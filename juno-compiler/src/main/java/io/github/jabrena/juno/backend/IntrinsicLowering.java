@@ -147,6 +147,7 @@ public final class IntrinsicLowering {
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
     private final boolean socketStreamsOnly;
+    private final RuntimeLockBracket lockBracket;
 
     /**
      * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
@@ -156,10 +157,19 @@ public final class IntrinsicLowering {
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
                       Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
                       boolean socketStreamsOnly) {
+        this(target, coreRuntime, generation, features, usedMath, usesThreads, socketStreamsOnly,
+                coreRuntime.carrierCount());
+    }
+
+    /** Creates the lowering with the effective carrier count selected by the runtime configuration. */
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
+                      boolean socketStreamsOnly, int carrierCount) {
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         this.socketStreamsOnly = socketStreamsOnly;
+        this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
         registerGpio(coreRuntime, generation, usesThreads);
         registerThreads(usesThreads);
@@ -956,6 +966,7 @@ public final class IntrinsicLowering {
         for (Operand operand : shimCall.operands()) {
             words.add(operand.resolve(call));
         }
+        lockBracket.enter(output, call.intrinsic());
         target.emitShimCall(output, frame, shimCall.function(), words);
         switch (shimCall.result()) {
             case NONE -> { }
@@ -964,6 +975,7 @@ public final class IntrinsicLowering {
             case FIRST_ARGUMENT -> call.target().ifPresent(
                     value -> target.copy(output, frame, call.arguments().get(0), value));
         }
+        lockBracket.exit(output, call.intrinsic());
     }
 
     /**
@@ -985,8 +997,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
+        lockBracket.exit(output);
     }
 
     /**
@@ -1014,8 +1028,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
+        lockBracket.exit(output);
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {

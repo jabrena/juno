@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.SntpServer;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -21,6 +22,85 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();
+
+    @Override
+    public int carrierCount() {
+        return ArduinoCore.RP2350.carrierCount();
+    }
+
+    /** Two carriers run on arduino-pico's FreeRTOS SMP, a board menu option. */
+    @Override
+    public String fqbnOptions(int carrierCount) {
+        return carrierCount > 1 ? ",os=freertos" : "";
+    }
+
+    /** arduino-pico's FreeRTOS CORE0 task has a 4 KiB stack, too small for main: main gets a task of its own. */
+    @Override
+    public String mainLauncher(int carrierCount) {
+        return carrierCount > 1 ? "juno_launch_main" : "";
+    }
+
+    @Override
+    public String runtimeLock() {
+        return """
+                // Recursive lock shared by both Cortex-M33 carriers.
+                static volatile uint32_t juno_runtime_owner = 0u;
+                static volatile uint32_t juno_runtime_depth = 0u;
+
+                extern "C" bool juno_runtime_owned() {
+                  return juno_runtime_owner == get_core_num() + 1u;
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t owner = get_core_num() + 1u;
+                  for (;;) {
+                    if (juno_runtime_owner == owner) {
+                      juno_runtime_depth++;
+                      return;
+                    }
+                    uint32_t expected = 0u;
+                    if (__atomic_compare_exchange_n(&juno_runtime_owner, &expected, owner, false, __ATOMIC_ACQUIRE,
+                                                    __ATOMIC_RELAXED)) {
+                      juno_runtime_depth = 1u;
+                      return;
+                    }
+                    juno_gc_lock_wait();
+                    yield();
+                  }
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  if (juno_runtime_owner == get_core_num() + 1u && juno_runtime_depth != 0u
+                      && --juno_runtime_depth == 0u) {
+                    __atomic_store_n(&juno_runtime_owner, 0u, __ATOMIC_RELEASE);
+                  }
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "dmb ish";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
+    }
 
     @Override
     public String delayMillisFunction() {
@@ -133,9 +213,21 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         String trust = runtimeTrustAnchor
                 ? ""
                 : CertificateBundle.cPem("juno_pico_ca", runtimeSource.load("esp32/ca-certificates.pem"));
-        String defaultTrust = runtimeTrustAnchor ? "" : "setTrustAnchors(&juno_pico_ca);";
+        // BearSSL takes parsed trust anchors, not PEM text: the bundle is parsed once, on the first HTTPS client.
+        String defaultTrust = runtimeTrustAnchor ? "" : """
+                static BearSSL::X509List* juno_pico_anchors = nullptr;
+                      if (juno_pico_anchors == nullptr) juno_pico_anchors = new BearSSL::X509List(juno_pico_ca);
+                      setTrustAnchors(juno_pico_anchors);""";
         String runtimeTrust = runtimeTrustAnchor ? "" : "static const char* juno_runtime_trusted_ca = nullptr;\n";
         return trust + runtimeTrust + """
+                // BearSSL checks a certificate's validity dates against the board's clock, which starts in 1970: the
+                // first HTTPS connection sets it over NTP (JUNO_SNTP_HOST) when nothing has set it yet.
+                static void juno_pico_tls_clock() {
+                  if (time(nullptr) > 1700000000) return;
+                  NTP.begin(${JUNO_SNTP_HOST});
+                  NTP.waitSet(10000);
+                }
+
                 struct JunoPicoTlsClient : BearSSL::WiFiClientSecure {
                   JunoPicoTlsClient() {
                     if (juno_runtime_trusted_ca != nullptr) {
@@ -144,8 +236,14 @@ final class Rp2350CoreRuntime implements CoreRuntime {
                       ${JUNO_DEFAULT_TRUST}
                     }
                   }
+
+                  int connect(const char* host, uint16_t port) override {
+                    juno_pico_tls_clock();
+                    return BearSSL::WiFiClientSecure::connect(host, port);
+                  }
                 };
-                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrust);
+                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrust)
+                .replace("${JUNO_SNTP_HOST}", SntpServer.from(System.getenv()).cppHost());
     }
 
     @Override
@@ -203,6 +301,12 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     public String threadPort(RuntimeConfig config) {
         return threadRuntime.renesasPort(
                 config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()));
+    }
+
+    @Override
+    public String threadPort(RuntimeConfig config, int carrierCount) {
+        return threadRuntime.rp2350Port(
+                config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()), carrierCount);
     }
 
     @Override

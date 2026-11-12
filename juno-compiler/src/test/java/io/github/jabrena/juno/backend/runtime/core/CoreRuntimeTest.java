@@ -23,6 +23,30 @@ class CoreRuntimeTest {
     private final CoreRuntimes coreRuntimes = new CoreRuntimes();
 
     @Test
+    @DisplayName("dual-core ports expose two carriers and all other cores expose one")
+    void shouldReportCarrierCountFromTheCoreRuntime() {
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32_CAM).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.M5STACK_ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).carrierCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Single-carrier core port selection remains byte-identical")
+    void shouldKeepTheOriginalPortForSingleCarrierCores() {
+        for (ArduinoCore core : new ArduinoCore[] {
+                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR, ArduinoCore.MEGAAVR
+        }) {
+            CoreRuntime runtime = coreRuntimes.of(core);
+            assertThat(runtime.threadPort(RuntimeConfig.DEFAULT, 1)).isEqualTo(runtime.threadPort(RuntimeConfig.DEFAULT));
+        }
+    }
+
+    @Test
     @DisplayName("The Renesas core calls delay directly")
     void shouldCallTheRenesasDelayFunctionsDirectly() {
         // Given
@@ -369,6 +393,26 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The ESP32 dual-carrier port exposes a carrier id and gives each slot a heap-allocated task")
+    void shouldPortThreadsToBothEsp32Carriers() {
+        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(RuntimeConfig.DEFAULT, 2);
+
+        assertThat(port).contains("juno_port_carrier_id", "juno_slot_carrier", "xTaskCreatePinnedToCore",
+                        "JUNO_INITIAL_SLOTS = 16u")
+                .doesNotContain("juno_dual_stacks", "xTaskCreateStaticPinnedToCore", "${JUNO_");
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).runtimeLock())
+                .contains("juno_runtime_owner", "portENTER_CRITICAL", "juno_runtime_depth");
+    }
+
+    @Test
+    @DisplayName("The RP2350 dual-carrier path exposes the core-id hook")
+    void shouldExposeTheRp2350CarrierId() {
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).threadPort(RuntimeConfig.DEFAULT, 2))
+                .contains("juno_port_carrier_id", "get_core_num");
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).memoryBarrierInstruction()).isEqualTo("dmb ish");
+    }
+
+    @Test
     @DisplayName("The ESP32 core reuses the shared SdFat helpers on its default SPI pins")
     void shouldShareTheSdHelpersOnTheEsp32() {
         // Given
@@ -477,5 +521,21 @@ class CoreRuntimeTest {
 
         // When & Then
         assertThat(runtime.gpioFunction("digitalWrite")).isEqualTo("digitalWrite");
+    }
+
+    @Test
+    @DisplayName("The Pico 2 W HTTPS client parses its CA bundle once and sets the clock before a TLS handshake")
+    void shouldGiveThePicoHttpsClientParsedAnchorsAndAClock() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.RP2350);
+
+        // When
+        String helpers = runtime.httpsHelpers(false);
+
+        // Then
+        assertThat(helpers).contains("juno_pico_anchors = new BearSSL::X509List(juno_pico_ca);",
+                        "setTrustAnchors(juno_pico_anchors);", "NTP.begin(", "NTP.waitSet(10000);",
+                        "juno_pico_tls_clock();\n    return BearSSL::WiFiClientSecure::connect(host, port);")
+                .doesNotContain("setTrustAnchors(&juno_pico_ca);");
     }
 }

@@ -66,12 +66,13 @@ class XtensaRunIT {
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
     /**
-     * The runtime sizes, read from {@code -Djuno.Xmx}/{@code -Djuno.Xss} exactly as the Maven plugin reads them; absent,
-     * the board defaults apply. CI passes {@code -Djuno.Xmx=24k}: a parked ESP32 virtual thread keeps its frames and its
-     * FreeRTOS task in the arena, and {@code ManyVirtualThreads} parks six of them at once.
+     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and runs the suite
+     * twice, with {@code -Djuno.carriers=1} and {@code 2}; the {@code DualCarrier*} programs only exercise the
+     * cross-core runtime on the second run.
      */
     private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(
-            Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")));
+            Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")),
+            Optional.ofNullable(System.getProperty("juno.carriers")));
     /**
      * Bounds one build-and-run, so a stalled arduino-cli or QEMU fails its own program's test with the output so far,
      * instead of silently holding the whole CI step. A CI run takes about 70 s per program.

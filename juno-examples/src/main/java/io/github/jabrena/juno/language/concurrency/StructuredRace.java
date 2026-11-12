@@ -1,8 +1,12 @@
 package io.github.jabrena.juno.language.concurrency;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -19,7 +23,7 @@ import java.util.concurrent.StructuredTaskScope.Subtask;
  * one subtask fails, the join throws, and the long-running sibling is cancelled. The sleeps are long enough that the
  * outcomes come out the same on every run.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class StructuredRace {
     private static final long FAST_MS = 20;
     private static final long SLOW_MS = 200;

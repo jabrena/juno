@@ -463,7 +463,8 @@ class ThreadsTest {
                 .contains("juno_thread_sleep(static_cast<int64_t>(millisToWait));",
                         "JunoHttpGuard guard(&client,", "juno_io_wait(1);",
                         "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
-                .doesNotContain("delay(1);");
+                // A single carrier has no runtime lock to release, and its port does not define one.
+                .doesNotContain("delay(1);", "juno_runtime_owned", "juno_runtime_enter", "juno_runtime_exit");
     }
 
     @Test

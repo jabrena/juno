@@ -40,6 +40,12 @@ class RuntimeConfigTest {
     }
 
     @Test
+    @DisplayName("The default leaves the carrier count to the board core")
+    void shouldLeaveTheCarrierCountUnsetByDefault() {
+        assertThat(RuntimeConfig.DEFAULT.carrierCountOverride()).isEmpty();
+    }
+
+    @Test
     @DisplayName("An unset task stack falls back to the board's own size")
     void shouldFallBackToTheBoardsOwnStackSizeWhenUnset() {
         // Given
@@ -89,6 +95,37 @@ class RuntimeConfigTest {
     void shouldReadATaskStackFromTheXssSyntax() {
         // When & Then
         assertThat(RuntimeConfig.of(Optional.empty(), Optional.of("8192")).threadStackBytes()).hasValue(8192);
+    }
+
+    @Test
+    @DisplayName("Reads the pipeline carrier override")
+    void shouldReadTheCarrierOverride() {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        assertThat(config.carrierCount(2)).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A program without threads runs on one carrier even on a dual-core board")
+    void shouldRunAThreadFreeProgramOnOneCarrier() {
+        assertThat(RuntimeConfig.DEFAULT.carrierCount(2, false)).isEqualTo(1);
+        assertThat(RuntimeConfig.DEFAULT.carrierCount(2, true)).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Rejects a carrier count outside the supported range")
+    void shouldRejectAnInvalidCarrierCount() {
+        assertThatThrownBy(() -> RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("3")))
+                .isInstanceOf(CompileException.class).hasMessageContaining("juno.carriers");
+    }
+
+    @Test
+    @DisplayName("Rejects more carriers than the board core provides")
+    void shouldRejectMoreCarriersThanTheBoardProvides() {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2"));
+
+        assertThatThrownBy(() -> config.forBoard(Board.UNO_R4_WIFI))
+                .isInstanceOf(CompileException.class).hasMessageContaining("exceeds");
     }
 
     @Test

@@ -1,9 +1,13 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -25,13 +29,15 @@ import java.util.concurrent.StructuredTaskScope;
  * UNO WiFi Rev2 queues their transports because a blocking NINA TLS handshake can starve another response;
  * the structured subtasks remain supported, but this board does not provide wire-level HTTP overlap.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class ParallelHttpsGet {
     private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private final Clock clock = ArduinoUno.getClock();
-    private static final String FIRST_URL = "https://example.com/?request=first";
-    private static final String SECOND_URL = "https://example.com/?request=second";
+    // A host whose chain ends in a root every board trusts (ISRG Root X1). The Nano ESP32's core checks only the
+    // issuer of the topmost certificate the server sends, so a chain cross-signed by a root outside the bundle fails.
+    private static final String FIRST_URL = "https://letsencrypt.org/?request=first";
+    private static final String SECOND_URL = "https://letsencrypt.org/?request=second";
 
     private final FirstRequest first = new FirstRequest();
     private final SecondRequest second = new SecondRequest();

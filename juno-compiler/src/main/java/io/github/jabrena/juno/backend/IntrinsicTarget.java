@@ -14,6 +14,18 @@ import java.util.Optional;
  * AVR backend lays them out in memory for the shim's generated call thunks.
  */
 public interface IntrinsicTarget {
+    /** Acquires the dual-carrier runtime lock before a shim entry point. Single-carrier targets emit nothing. */
+    default void emitRuntimeLockEnter(StringBuilder output) {
+    }
+
+    /** Releases the dual-carrier runtime lock after a shim entry point. Single-carrier targets emit nothing. */
+    default void emitRuntimeLockExit(StringBuilder output) {
+    }
+
+    /** Emits the target barrier used by dual-carrier monitor enter/exit and volatile accesses. */
+    default void emitMemoryBarrier(StringBuilder output) {
+    }
+
     /** Calls the runtime function {@code function} with {@code words}; the result, if any, waits in the result register(s). */
     void emitShimCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words);
 
