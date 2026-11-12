@@ -78,12 +78,12 @@ D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a
 
 The R3 has no radio, so `ArduinoUno.getWifi()` does not compile for it: take the `Wifi` from the retired Arduino WiFi
 Shield instead. The shield runs Arduino's legacy `WiFi` library over SPI; it joins networks only (no access point) and
-speaks plain HTTP, not HTTPS. The credentials are read at build time from the `JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD`
-environment variables (or a `.env` file through `juno:env`):
+speaks plain HTTP, not HTTPS. The UNO R3 has no secret store, so the SSID and password are passed to `begin` as values
+in the source, shown masked here; replace the asterisks with your network's name and password:
 
 ```java
 Wifi wifi = new ArduinoWifiShield().getWifi();
-wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+wifi.begin("**********", "********");
 
 while (wifi.status() != Wifi.STATUS_CONNECTED) {
     Delay.millis(1000);
