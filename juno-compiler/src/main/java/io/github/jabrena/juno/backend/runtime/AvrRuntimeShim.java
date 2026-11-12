@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.board.Architecture;
@@ -59,7 +59,7 @@ public final class AvrRuntimeShim {
             ShimFeature.BLUETOOTH_LE, ShimFeature.SMTP);
 
     private final CoreRuntime core;
-    private final RuntimeConfig config;
+    private final ResolvedRuntimeConfig config;
     private final boolean gcLoggingEnabled;
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
@@ -71,7 +71,7 @@ public final class AvrRuntimeShim {
      * @param thunkFunctions every shim function the assembly calls through a thunk
      * @param argumentWords the size of {@code juno_avr_args}, in words (the assembly defines it)
      */
-    public AvrRuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled, Set<ShimFeature> features,
+    public AvrRuntimeShim(CoreRuntime core, ResolvedRuntimeConfig config, boolean gcLoggingEnabled, Set<ShimFeature> features,
                    Set<Intrinsic> usedMath, List<String> throwableClasses, Set<String> thunkFunctions,
                    int argumentWords, Optional<Integer> watchdogTimeoutMillis) {
         defineFloatingMath();

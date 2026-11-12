@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend.thumb2;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.CompareFusion;
@@ -132,7 +133,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
     private final Set<Intrinsic> usedMath = EnumSet.noneOf(Intrinsic.class);
     private final boolean gcLoggingEnabled;
     private final Board board;
-    private final RuntimeConfig runtimeConfig;
+    private final ResolvedRuntimeConfig runtimeConfig;
     private MethodRef entryPoint;
     private final List<String> clinitLabels = new ArrayList<>();
     private boolean usesWatchdog;
@@ -158,7 +159,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
      *     {@code CoreRuntime} glue, and its capabilities gate optional shim blocks
      */
     public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board) {
-        this(gcLoggingEnabled, board, RuntimeConfig.DEFAULT);
+        this(gcLoggingEnabled, board, RuntimeConfig.DEFAULT.resolveFor(board));
     }
 
     /**
@@ -166,7 +167,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
      */
     // entryPoint, layout and the lowering helpers are per-program state that generate() assigns before any use.
     @SuppressWarnings("NullAway.Init")
-    public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board, RuntimeConfig runtimeConfig) {
+    public Thumb2AsmBackend(boolean gcLoggingEnabled, Board board, ResolvedRuntimeConfig runtimeConfig) {
         this.gcLoggingEnabled = gcLoggingEnabled;
         this.board = board;
         this.runtimeConfig = runtimeConfig;
@@ -191,7 +192,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         layout = new ProgramLayout(program);
         asm = new AsmEmitter(layout.stringLiteralSymbols());
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        int carrierCount = runtimeConfig.carrierCount(coreRuntime.carrierCount());
+        int carrierCount = runtimeConfig.carrierCount();
         boolean dualCarrier = usesThreads && carrierCount > 1;
         ints = new IntArithmeticLowering(asm);
         wides = new WideArithmeticLowering(asm, features);

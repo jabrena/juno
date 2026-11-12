@@ -347,7 +347,7 @@ class XtensaAsmBackendTest {
     @DisplayName("Rejects a non-Xtensa board for the Xtensa backend")
     void shouldRejectANonXtensaBoard() {
         // When & Then
-        assertThatThrownBy(() -> new XtensaAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT))
+        assertThatThrownBy(() -> new XtensaAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R4_WIFI)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is not an Xtensa board");
     }

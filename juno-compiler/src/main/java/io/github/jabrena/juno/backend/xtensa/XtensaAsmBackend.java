@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.xtensa;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.CompareFusion;
 import io.github.jabrena.juno.backend.FrameLayout;
@@ -90,7 +90,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private final List<String> clinitLabels = new ArrayList<>();
     private final boolean gcLoggingEnabled;
     private final Board board;
-    private final RuntimeConfig runtimeConfig;
+    private final ResolvedRuntimeConfig runtimeConfig;
     private boolean usesThreads;
     private boolean socketStreamsOnly;
     private boolean usesWatchdog;
@@ -109,7 +109,7 @@ public final class XtensaAsmBackend implements AsmBackend {
      */
     // entryPoint, layout, xtensa and the lowering helpers are per-program state that generate() assigns before any use.
     @SuppressWarnings("NullAway.Init")
-    public XtensaAsmBackend(boolean gcLoggingEnabled, Board board, RuntimeConfig runtimeConfig) {
+    public XtensaAsmBackend(boolean gcLoggingEnabled, Board board, ResolvedRuntimeConfig runtimeConfig) {
         if (board.core().architecture() != Architecture.XTENSA) {
             throw new IllegalArgumentException(board.displayName() + " is not an Xtensa board");
         }
@@ -136,7 +136,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         layout = new ProgramLayout(program);
         xtensa = new XtensaEmitter(layout.stringLiteralSymbols());
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        int carrierCount = runtimeConfig.carrierCount(coreRuntime.carrierCount());
+        int carrierCount = runtimeConfig.carrierCount();
         boolean dualCarrier = usesThreads && carrierCount > 1;
         ints = new XtensaIntArithmeticLowering(xtensa);
         memory = new XtensaMemoryLowering(xtensa, layout,

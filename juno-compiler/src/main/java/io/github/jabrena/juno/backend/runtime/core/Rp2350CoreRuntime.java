@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.SntpServer;
@@ -298,15 +298,15 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     }
 
     @Override
-    public String threadPort(RuntimeConfig config) {
+    public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.renesasPort(
-                config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()));
+                config.threadStackBytes());
     }
 
     @Override
-    public String threadPort(RuntimeConfig config, int carrierCount) {
+    public String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
         return threadRuntime.rp2350Port(
-                config.threadStackBytes(ArduinoCore.RP2350.defaultThreadStackBytes()), carrierCount);
+                config.threadStackBytes(), carrierCount);
     }
 
     @Override

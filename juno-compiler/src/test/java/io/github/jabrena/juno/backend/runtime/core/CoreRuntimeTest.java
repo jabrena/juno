@@ -1,9 +1,11 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +44,7 @@ class CoreRuntimeTest {
                 ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR, ArduinoCore.MEGAAVR
         }) {
             CoreRuntime runtime = coreRuntimes.of(core);
-            assertThat(runtime.threadPort(RuntimeConfig.DEFAULT, 1)).isEqualTo(runtime.threadPort(RuntimeConfig.DEFAULT));
+            assertThat(runtime.threadPort(resolvedFor(core), 1)).isEqualTo(runtime.threadPort(resolvedFor(core)));
         }
     }
 
@@ -310,7 +312,7 @@ class CoreRuntimeTest {
     @DisplayName("The Renesas thread port runs one carrier sized from the defaults")
     void shouldSizeTheRenesasThreadPortFromTheDefaults() {
         // When
-        String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
+        String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(resolvedFor(ArduinoCore.RENESAS_UNO));
 
         // Then
         assertThat(renesas).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
@@ -322,7 +324,7 @@ class CoreRuntimeTest {
     void shouldSizeTheRp2350ThreadPortFromTheDefaults() {
         // When
         CoreRuntime rp2350 = coreRuntimes.of(ArduinoCore.RP2350);
-        String port = rp2350.threadPort(RuntimeConfig.DEFAULT);
+        String port = rp2350.threadPort(resolvedFor(ArduinoCore.RP2350));
 
         // Then
         assertThat(port).contains("juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
@@ -334,7 +336,7 @@ class CoreRuntimeTest {
     @DisplayName("The Zephyr thread port runs one carrier sized from the defaults")
     void shouldSizeTheZephyrThreadPortFromTheDefaults() {
         // When
-        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
+        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(resolvedFor(ArduinoCore.ZEPHYR));
 
         // Then
         assertThat(zephyr).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_zephyr_carrier_stack",
@@ -345,7 +347,7 @@ class CoreRuntimeTest {
     @DisplayName("The Renesas thread port takes the configured carrier stack")
     void shouldApplyTheConfiguredStackToTheRenesasThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536)).resolveFor(boardOf(ArduinoCore.RENESAS_UNO));
 
         // When
         String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(config);
@@ -358,7 +360,7 @@ class CoreRuntimeTest {
     @DisplayName("The Zephyr thread port takes the configured carrier stack")
     void shouldApplyTheConfiguredStackToTheZephyrThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536)).resolveFor(boardOf(ArduinoCore.ZEPHYR));
 
         // When
         String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(config);
@@ -382,7 +384,7 @@ class CoreRuntimeTest {
         CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
 
         // When
-        String port = esp32.threadPort(RuntimeConfig.DEFAULT);
+        String port = esp32.threadPort(resolvedFor(ArduinoCore.ESP32));
 
         // Then
         assertThat(esp32.threadIncludes()).contains("#include <freertos/semphr.h>", "#include <freertos/task.h>");
@@ -395,7 +397,7 @@ class CoreRuntimeTest {
     @Test
     @DisplayName("The ESP32 dual-carrier port exposes a carrier id and gives each slot a heap-allocated task")
     void shouldPortThreadsToBothEsp32Carriers() {
-        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(RuntimeConfig.DEFAULT, 2);
+        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(resolvedFor(ArduinoCore.ESP32), 2);
 
         assertThat(port).contains("juno_port_carrier_id", "juno_slot_carrier", "xTaskCreatePinnedToCore",
                         "JUNO_INITIAL_SLOTS = 16u")
@@ -407,7 +409,7 @@ class CoreRuntimeTest {
     @Test
     @DisplayName("The RP2350 dual-carrier path exposes the core-id hook")
     void shouldExposeTheRp2350CarrierId() {
-        assertThat(coreRuntimes.of(ArduinoCore.RP2350).threadPort(RuntimeConfig.DEFAULT, 2))
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).threadPort(resolvedFor(ArduinoCore.RP2350), 2))
                 .contains("juno_port_carrier_id", "get_core_num");
         assertThat(coreRuntimes.of(ArduinoCore.RP2350).memoryBarrierInstruction()).isEqualTo("dmb ish");
     }
@@ -430,7 +432,7 @@ class CoreRuntimeTest {
     @DisplayName("The ESP32 thread port takes the configured stack")
     void shouldApplyTheConfiguredStackToTheEsp32ThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(4096));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(4096)).resolveFor(boardOf(ArduinoCore.ESP32));
 
         // When
         String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(config);
@@ -537,5 +539,13 @@ class CoreRuntimeTest {
                         "setTrustAnchors(juno_pico_anchors);", "NTP.begin(", "NTP.waitSet(10000);",
                         "juno_pico_tls_clock();\n    return BearSSL::WiFiClientSecure::connect(host, port);")
                 .doesNotContain("setTrustAnchors(&juno_pico_ca);");
+    }
+
+    private static Board boardOf(ArduinoCore core) {
+        return java.util.Arrays.stream(Board.values()).filter(board -> board.core() == core).findFirst().orElseThrow();
+    }
+
+    private static ResolvedRuntimeConfig resolvedFor(ArduinoCore core) {
+        return RuntimeConfig.DEFAULT.resolveFor(boardOf(core));
     }
 }

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime.spi;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -313,13 +313,13 @@ public interface CoreRuntime {
      * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
-    String threadPort(RuntimeConfig config);
+    String threadPort(ResolvedRuntimeConfig config);
 
     /**
      * The thread port selected for the core's carrier count. Single-carrier implementations inherit the original
      * port so their generated shim remains unchanged.
      */
-    default String threadPort(RuntimeConfig config, int carrierCount) {
+    default String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
         return threadPort(config);
     }
 
