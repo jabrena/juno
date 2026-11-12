@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,18 +25,16 @@ public enum Board {
      * {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code ArduinoUno.getWifi()} is rejected.
      */
     UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3Board", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
-            ArduinoCore.CLASSIC_AVR, UnoGeneration.R3,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.HTTP_CLIENT, Capability.BIG_NUMBERS,
+            ArduinoCore.CLASSIC_AVR, UnoGeneration.R3, new BoardMemoryProfile(2048, 1024, 1024, 512, 512, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.HTTP_CLIENT, Capability.BIG_NUMBERS,
                     Capability.WATCHDOG)),
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard", "arduino-uno-r4-wifi", "UNO R4 WiFi",
-            "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.ONBOARD_WIFI,
+            "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4, new BoardMemoryProfile(32768, 8192, 25736, 2048, 8192, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQBoard", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, UnoGeneration.Q, EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI,
+            ArduinoCore.ZEPHYR, UnoGeneration.Q, new BoardMemoryProfile(262144, 8192, 226928, 4096, 16384, MemoryAuthority.LOADER_POOL, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI,
                     Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT,
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE,
@@ -46,8 +45,7 @@ public enum Board {
      * and LCD keypad shields use.
      */
     UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
-            "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+            "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3, new BoardMemoryProfile(6144, 1024, 3072, 512, 1024, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL, Capability.HTTP_SERVER,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG, Capability.ONBOARD_IMU)),
     /**
@@ -60,8 +58,7 @@ public enum Board {
      * USB port with the serial console; the other optional capabilities are not wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board", "arduino-nano-esp32", "Nano ESP32",
-            "arduino:esp32:nano_nora", ArduinoCore.ESP32, NanoFamily.NANO_ESP32,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
+            "arduino:esp32:nano_nora", ArduinoCore.ESP32, NanoFamily.NANO_ESP32, new BoardMemoryProfile(327680, 8192, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(8 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER,
                     Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE,
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
@@ -72,8 +69,7 @@ public enum Board {
      * OV2640 camera as JPEG frames through {@code Esp32Cam.getCamera()}.
      */
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
-            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM, new BoardMemoryProfile(327680, 8192, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.HTTP_SERVER, Capability.HTTP_STREAM,
                     Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT)),
     /**
@@ -83,8 +79,7 @@ public enum Board {
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.M5STACK_ESP32,
-            M5StackFamily.CARDPUTER_ADV,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+            M5StackFamily.CARDPUTER_ADV, new BoardMemoryProfile(327680, 8192, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
@@ -98,8 +93,7 @@ public enum Board {
      * UART/SPI socket map.
      */
     PICO_2_W("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard", "raspberry-pi-pico-2-w",
-            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2,
-            EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2, new BoardMemoryProfile(524288, 8192, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH));
@@ -111,17 +105,20 @@ public enum Board {
     private final ArduinoCore core;
     @SuppressWarnings("ImmutableEnumChecker") // Every BoardFamily implementation is an enum.
     private final BoardFamily family;
+    @SuppressWarnings("ImmutableEnumChecker") // A record of primitives, an enum and an OptionalInt: immutable.
+    private final BoardMemoryProfile memoryProfile;
     @SuppressWarnings("ImmutableEnumChecker") // Set.copyOf in the constructor makes it unmodifiable
     private final Set<Capability> capabilities;
 
     Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
-          BoardFamily family, Set<Capability> capabilities) {
+          BoardFamily family, BoardMemoryProfile memoryProfile, Set<Capability> capabilities) {
         this.apiClassName = apiClassName;
         this.id = id;
         this.displayName = displayName;
         this.fqbn = fqbn;
         this.core = core;
         this.family = family;
+        this.memoryProfile = memoryProfile;
         this.capabilities = Set.copyOf(capabilities);
     }
 
@@ -170,6 +167,11 @@ public enum Board {
     /** The Arduino core this board's sketches are built with, which decides how generated code calls into it. */
     public ArduinoCore core() {
         return core;
+    }
+
+    /** The memory budget this board's arena and stacks are checked against. */
+    public BoardMemoryProfile memoryProfile() {
+        return memoryProfile;
     }
 
     /** The physical family this board belongs to. */

@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.analysis;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.ArduinoCore;
+import io.github.jabrena.juno.board.BoardMemoryProfile;
+import io.github.jabrena.juno.board.MemoryAuthority;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -30,13 +32,9 @@ public final class RuntimeRiskAnalyzer {
 
     private final CallGraphMetrics callGraphMetrics = new CallGraphMetrics();
 
-    private final RuntimeConfig config;
+    private final ResolvedRuntimeConfig config;
 
-    public RuntimeRiskAnalyzer() {
-        this(RuntimeConfig.DEFAULT);
-    }
-
-    public RuntimeRiskAnalyzer(RuntimeConfig config) {
+    public RuntimeRiskAnalyzer(ResolvedRuntimeConfig config) {
         this.config = config;
     }
 
@@ -94,7 +92,7 @@ public final class RuntimeRiskAnalyzer {
         }
 
         addThreadBodyFindings(findings, threadEntries, launchers, recursive, calls, frames);
-        int carrierCount = config.carrierCount(linked.board().core().carrierCount());
+        int carrierCount = config.carrierCount();
         if (carrierCount > 1) {
             addCarrierFindings(linked, program, threadEntries, calls, findings, pinnedThreadEntries);
         }
@@ -141,6 +139,14 @@ public final class RuntimeRiskAnalyzer {
         int staticFieldBytes = staticFields.stream()
                 .mapToInt(field -> allocationSizeEstimator.descriptorSize(field.descriptor())).sum();
         int estimatedStaticRam = config.arenaBytes() + staticFieldBytes + constantArrayBytes + 4;
+        BoardMemoryProfile profile = config.board().memoryProfile();
+        if (profile.authority() == MemoryAuthority.LOADER_POOL
+                && (long) estimatedStaticRam * 10 > (long) profile.internalSramBytes() * 9) {
+            findings.add(new RuntimeRisk("JUNO-RISK-014", RiskSeverity.WARNING, program.entryPoint(),
+                    "estimated arena and static RAM of " + estimatedStaticRam + " bytes is above 90% of the "
+                            + profile.internalSramBytes() + " byte " + config.board().displayName()
+                            + " loader pool; the sketch's code shares that pool, so it may not load at boot"));
+        }
         int maxDepth = recursive.isEmpty() ? callGraphMetrics.maximumStartupCallDepth(program, calls) : -1;
         int maxStack = recursive.isEmpty() ? callGraphMetrics.maximumStartupStack(program, calls, frames) : -1;
         findings.sort(this::compareFindings);
@@ -232,15 +238,15 @@ public final class RuntimeRiskAnalyzer {
             int stack = callGraphMetrics.maximumStack(entry, calls, frames);
             if (stack > threadStackBytes()) {
                 findings.add(new RuntimeRisk("JUNO-RISK-011", RiskSeverity.WARNING, entry,
-                        "estimated thread stack use of " + stack + " bytes exceeds the smallest carrier stack ("
-                                + threadStackBytes() + " bytes, UNO R4 WiFi)"));
+                        "estimated thread stack use of " + stack + " bytes exceeds the carrier stack of the "
+                                + config.board().displayName() + " (" + threadStackBytes() + " bytes)"));
             }
         }
     }
 
-    /** The carrier stack the analysis judges bodies against: the configured one, else the smallest board's. */
+    /** The carrier stack the analysis judges thread bodies against: the one the build resolved for its board. */
     private int threadStackBytes() {
-        return config.threadStackBytes(RuntimeLimits.MIN_THREAD_STACK_BYTES);
+        return config.threadStackBytes();
     }
 
     private int compareFindings(RuntimeRisk left, RuntimeRisk right) {

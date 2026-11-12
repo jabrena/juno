@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.AvrRuntimeShim;
 import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
@@ -10,7 +10,6 @@ import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
-import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * The UNO WiFi Rev2's {@code arduino:megaavr} core (ATmega4809). Its {@code delay()} and pin functions take 8- and
@@ -176,9 +175,9 @@ final class MegaAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
-    public String threadPort(RuntimeConfig config) {
+    public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.avrPort(
-                config.threadStackBytes(ArduinoCore.MEGAAVR.defaultThreadStackBytes()));
+                config.threadStackBytes());
     }
 
     private CompileException unsupported(String feature) {

@@ -144,18 +144,18 @@ them with `-D`:
 
 | Flag | Default | What it sets |
 |---|---|---|
-| `juno.Xmx` | 8 KB on the 32-bit boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there) | The size of the garbage-collected arena, where every `new`, array, string and object lives. |
-| `juno.Xss` | 2048 bytes on the UNO R4 WiFi; 4096 on the UNO Q | The stack of each extra task. |
-| `juno.maxThreads` | 4 | The number of scheduler slots, including `main`. |
+| `juno.Xmx` | 8 KB on most boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there) | The size of the garbage-collected arena, where every `new`, array, string and object lives. Each board has a maximum; see the [Memory Model](../memory-model#board-memory-profiles). |
+| `juno.Xss` | 512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the UNO Q and Pico 2 W; 8192 on the ESP32 boards | The stack of each carrier (on AVR, of each extra task). Each board has a maximum. |
+| `juno.carriers` | 2 on the ESP32 boards and the Pico 2 W; 1 elsewhere | How many carriers run threads: `1` or `2`, at most the board's carriers. Use `1` only in test environments that cannot run both cores. |
 | `juno.gcLog` | `false` | When `true`, the garbage collector prints one `Serial` line per collection with the arena bytes used before and after. |
 
 Sizes take the JVM's syntax: bytes, or a number followed by `k`, `m` or `g`. The arena size must be at least 512 bytes
-and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. `juno.maxThreads` must be
-at least 2; set it to one plus the number of structured subtasks that run at the same time when RAM is tight.
+and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. Each board also has
+a maximum for both sizes; a larger value fails the build and names the maximum.
 
 ```bash
 ./mvnw compile juno:upload -Djuno.Xmx=11k -Djuno.gcLog=true
-./mvnw compile juno:upload -Djuno.maxThreads=3 -Djuno.Xss=1536
+./mvnw compile juno:upload -Djuno.Xss=1536
 ```
 
 Increase `juno.Xmx` when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size

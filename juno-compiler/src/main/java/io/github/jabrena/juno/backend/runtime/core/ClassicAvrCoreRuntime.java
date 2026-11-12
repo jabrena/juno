@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
@@ -9,7 +9,6 @@ import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
-import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * The classic UNO R3's {@code arduino:avr} core for its ATmega328P. Its only network path is the retired Arduino WiFi
@@ -143,9 +142,9 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
     }
 
     @Override
-    public String threadPort(RuntimeConfig config) {
+    public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.avrPort(
-                config.threadStackBytes(ArduinoCore.CLASSIC_AVR.defaultThreadStackBytes()));
+                config.threadStackBytes());
     }
 
     private CompileException unsupported(String feature) {

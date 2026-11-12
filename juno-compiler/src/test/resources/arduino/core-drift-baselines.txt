@@ -1,0 +1,17 @@
+# Static RAM of CoreDriftBaseline (juno-compiler/src/test/arduino/programs), linked with arduino-cli: the "Global
+# variables use N bytes" figure. CoreDriftIT fails when a board's figure grows by more than its margin.
+#
+# Columns: board id, Arduino core the baseline was measured with, baseline bytes, margin bytes.
+# Margin: 1% of the board's usable RAM (memory-model page), with a floor of 64 bytes.
+# Measured 2026-11-12 with arduino-cli 1.5.1 on macOS, LC_ALL=C, cores as installed there. The first Docker run of
+# CoreDriftIT must confirm these; a host difference larger than the margin is re-recorded here, not hidden.
+#
+# board                        core                          baseline  margin
+arduino-uno-r3                 arduino:avr@1.8.8                  198      64
+arduino-uno-r3-wifi-rev2       arduino:megaavr@1.8.8              189      64
+arduino-uno-r4-wifi            arduino:renesas_uno@1.6.0         6744     327
+arduino-uno-q                  arduino:zephyr@1.0.0             32984    2621
+arduino-nano-esp32             arduino:esp32@2.0.18-arduino.5   30560    3276
+ai-thinker-esp32-cam           esp32:esp32@3.3.12               22172    3276
+m5stack-cardputer              m5stack:esp32@3.3.10             53988    3276
+raspberry-pi-pico-2-w          rp2040:rp2040@6.3.2              87792    5242

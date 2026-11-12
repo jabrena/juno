@@ -160,7 +160,7 @@ class ArduinoCliCompileIT {
         return new GeneratedSketch(directory, result.fqbn());
     }
 
-    private static GenericContainer<?> container() {
+    static GenericContainer<?> container() {
         String prebuilt = System.getProperty("juno.arduinoCliImage", "");
         if (!prebuilt.isBlank()) {
             return new GenericContainer<>(DockerImageName.parse(prebuilt));

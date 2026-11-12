@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -46,7 +46,7 @@ public final class RuntimeShim {
     private final Set<Intrinsic> usedMath;
     private final List<String> throwableClasses;
     private final Optional<WatchdogRuntime> watchdog;
-    private final RuntimeConfig config;
+    private final ResolvedRuntimeConfig config;
     private final int carrierCount;
 
     /**
@@ -56,12 +56,12 @@ public final class RuntimeShim {
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls
      * @param watchdogTimeoutMillis the entry point's {@code @Watchdog} timeout, if it has one
      */
-    public RuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled,
+    public RuntimeShim(CoreRuntime core, ResolvedRuntimeConfig config, boolean gcLoggingEnabled,
                 Set<ShimFeature> features,
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.core = core;
         this.config = config;
-        this.carrierCount = config.carrierCount(core.carrierCount(), features.contains(ShimFeature.THREADS));
+        this.carrierCount = config.carrierCount(features.contains(ShimFeature.THREADS));
         this.gcLoggingEnabled = gcLoggingEnabled;
         // The UUID helpers raise a Java exception for an invalid value, so a UUID program needs the exception helpers too.
         this.features = features.contains(ShimFeature.UUID) ? withExceptions(features) : features;

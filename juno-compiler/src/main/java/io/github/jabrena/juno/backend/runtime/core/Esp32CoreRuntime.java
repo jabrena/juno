@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
@@ -436,14 +436,14 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     /** FreeRTOS tasks carry the stacks; the backend preempts at safepoints rather than from a tick. */
     @Override
-    public String threadPort(RuntimeConfig config) {
+    public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.esp32Port(
-                config.threadStackBytes(core.defaultThreadStackBytes()));
+                config.threadStackBytes());
     }
 
     @Override
-    public String threadPort(RuntimeConfig config, int carrierCount) {
-        return threadRuntime.esp32Port(config.threadStackBytes(core.defaultThreadStackBytes()), carrierCount);
+    public String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
+        return threadRuntime.esp32Port(config.threadStackBytes(), carrierCount);
     }
 
     @Override

@@ -129,7 +129,6 @@ Every plugin option can also be passed on the command line. A `-D` property over
 | `outputDirectory` | `juno.outputDirectory` | Where the generated sketch folders are written. |
 | `arenaSize` | `juno.Xmx` | The memory arena size for the program. |
 | `threadStackSize` | `juno.Xss` | The stack size of each Juno thread. |
-| `maxThreads` | `juno.maxThreads` | The maximum number of threads. |
 
 Juno's compiler needs a few JDK modules opened, so add `.mvn/jvm.config` with these lines:
 
