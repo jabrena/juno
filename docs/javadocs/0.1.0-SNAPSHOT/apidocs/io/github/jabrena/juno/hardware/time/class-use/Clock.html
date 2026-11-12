@@ -196,10 +196,17 @@ object-shaped API over passing a pin number to every call.</div>
 <a href="../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
 </div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveGpsAir530.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveGpsAir530</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
+ int&nbsp;receivePin)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates a reader whose GPIO and clock can be replaced by mocks in a unit test.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
  int&nbsp;signalPin)</code></div>
-<div class="col-last even-row-color">
+<div class="col-last odd-row-color">
 <div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
 </div>
 </div>

@@ -390,6 +390,12 @@ shield socket getter with the corresponding carrier getter and use the Nano boar
 </thead>
 <tbody>
 <tr>
+<td><a href="#gps-air530">GPS (Air530)</a></td>
+<td>Digital UART (RX on D2)</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.java"><code>GroveGpsAir530</code></a></td>
+<td>NMEA GGA latitude, longitude and altitude</td>
+</tr>
+<tr>
 <td><a href="#temperature-and-humidity-sensor-pro-dht22">Temperature and Humidity Sensor Pro (DHT22)</a></td>
 <td>Digital</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.java"><code>GroveDht22</code></a></td>
@@ -451,6 +457,29 @@ shield socket getter with the corresponding carrier getter and use the Nano boar
 </tr>
 </tbody>
 </table>
+<h3 id="gps-air530">GPS Air530</h3>
+<p>The Grove GPS Air530 emits NMEA 0183 at 9,600 baud by default. Plug it into the Base Shield's D2 socket and connect
+the module's TX wire to D2; the module's RX wire is not needed for reading fixes. <code>GroveGpsAir530</code> uses a software UART
+and keeps the USB serial console available for diagnostics. It writes latitude and longitude as signed millionths of a
+degree and altitude as centimetres into caller-owned arrays:</p>
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+Gpio gpio = ArduinoUno.getGpio();
+GroveGpsAir530 gps = new GroveGpsAir530(gpio, ArduinoUno.getClock(), shield.getD2());
+byte[] sentence = new byte[GroveGpsAir530.SENTENCE_CAPACITY];
+int[] position = new int[GroveGpsAir530.POSITION_LENGTH];
+gps.begin();
+
+while (true) {
+    if (gps.readPosition(sentence, sentence.length, position, position.length, 5_000)) {
+        Serial.print(&quot;latitude=&quot;);
+        Serial.println(position[GroveGpsAir530.LATITUDE_MICRODEGREES]);
+        Serial.print(&quot;longitude=&quot;);
+        Serial.println(position[GroveGpsAir530.LONGITUDE_MICRODEGREES]);
+    }
+}
+</code></pre>
+<p>The reader and its parsing path allocate nothing after construction. See <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveGpsAir530Reader.java"><code>GroveGpsAir530Reader</code></a>
+for a complete example.</p>
 <h3 id="temperature-and-humidity-sensor-pro-dht22">Temperature and Humidity Sensor Pro (DHT22)</h3>
 <p>Temperature and humidity in tenths of a degree and of a percent. The caller owns the reading and frame buffers:</p>
 <img src="../images/grove/grove-dht22.jpg" alt="Grove Temperature and Humidity Sensor Pro (DHT22)" width="240">

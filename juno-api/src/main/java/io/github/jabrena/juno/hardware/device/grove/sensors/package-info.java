@@ -5,7 +5,8 @@
  * <a href="https://wiki.seeedstudio.com/Grove-Temperature_and_Humidity_Sensor_Pro/">Grove
  * Temperature and Humidity Sensor Pro</a> and
  * <a href="https://www.seeedstudio.com/Grove-Temperature-Humidity-Sensor-DHT11.html">Grove
- * Temperature &amp; Humidity Sensor (DHT11)</a>.
+ * Temperature &amp; Humidity Sensor (DHT11)</a>, and the UART NMEA output of Seeed's
+ * <a href="https://wiki.seeedstudio.com/Grove-GPS-Air530/">Grove GPS Air530</a>.
  */
 @NullMarked
 package io.github.jabrena.juno.hardware.device.grove.sensors;

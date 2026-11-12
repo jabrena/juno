@@ -1491,6 +1491,40 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("The Grove GPS Air530 driver lowers through GPIO and timing intrinsics")
+        void shouldLowerTheGroveGpsAir530DriverToGpioAndTimingIntrinsics() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
+                    import io.github.jabrena.juno.hardware.device.grove.sensors.GroveGpsAir530;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class GroveGpsAir530Demo {
+                        public static void main(String[] args) {
+                            GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+                            GroveGpsAir530 gps = new GroveGpsAir530(ArduinoUno.getGpio(), ArduinoUno.getClock(),
+                                    shield.getD2());
+                            byte[] sentence = new byte[GroveGpsAir530.SENTENCE_CAPACITY];
+                            int[] position = new int[GroveGpsAir530.POSITION_LENGTH];
+                            gps.begin();
+                            if (gps.readPosition(sentence, sentence.length, position, position.length, 1000)) {
+                                Serial.println(position[GroveGpsAir530.LATITUDE_MICRODEGREES]);
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.GroveGpsAir530Demo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveGpsAir530Demo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl pinMode", "bl digitalRead", "bl micros", "bl delayMicroseconds");
+            assertThat(result.runtimeShim()).doesNotContain("#include <SoftwareSerial.h>");
+        }
+
+        @Test
         @DisplayName("The Grove PIR and analog gas drivers lower to GPIO, analog and I2C calls")
         void shouldLowerTheGrovePirAndAnalogGasDrivers() throws Exception {
             // Given
