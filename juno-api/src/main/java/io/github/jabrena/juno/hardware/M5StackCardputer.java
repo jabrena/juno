@@ -5,12 +5,14 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
+import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
+import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -51,6 +53,15 @@ public final class M5StackCardputer {
             sdCard = card;
         }
         return card;
+    }
+
+    /**
+     * The Cardputer's I2C bus on the Grove port (SDA GPIO2, SCL GPIO1), where a breakout such as an ATECC608 plugs in
+     * through a Grove-to-Qwiic cable. GPIO1 and GPIO2 are then unavailable as GPIO or analog pins in the program. The
+     * same instance is returned every call.
+     */
+    public static I2c getI2c() {
+        return NativeI2c.i2c();
     }
 
     /** The Cardputer's built-in ESP32-S3 Wi-Fi radio. */
