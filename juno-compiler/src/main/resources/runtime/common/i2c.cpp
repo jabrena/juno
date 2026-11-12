@@ -27,6 +27,27 @@ static int32_t juno_i2c_read(int32_t address, int32_t reg, uint8_t count) {
   return value;
 }
 
+// Raw transfer: sends length bytes with no register address; length 0 only probes the address. Returns length, or -1
+// when the device did not acknowledge.
+extern "C" int32_t juno_i2c_write(int32_t address, int8_t* data, int32_t length) {
+  Wire.beginTransmission(static_cast<uint8_t>(address));
+  for (int32_t i = 0; i < length; i++) {
+    Wire.write(static_cast<uint8_t>(data[i]));
+  }
+  return Wire.endTransmission() == 0 ? length : -1;
+}
+
+// Raw read: fills length bytes of buffer from the device; -1 if it did not answer, leaving buffer untouched.
+extern "C" int32_t juno_i2c_read(int32_t address, int8_t* buffer, int32_t length) {
+  if (Wire.requestFrom(static_cast<uint8_t>(address), static_cast<uint8_t>(length)) != length) {
+    return -1;
+  }
+  for (int32_t i = 0; i < length; i++) {
+    buffer[i] = static_cast<int8_t>(Wire.read());
+  }
+  return length;
+}
+
 extern "C" int32_t juno_i2c_read_register(int32_t address, int32_t reg) {
   return juno_i2c_read(address, reg, 1);
 }

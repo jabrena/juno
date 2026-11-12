@@ -48,4 +48,10 @@ public final class NativeI2c implements I2c {
 
     @Override
     public native int readRegister16(int address, int register);
+
+    @Override
+    public native int write(int address, byte[] data, int length);
+
+    @Override
+    public native int read(int address, byte[] buffer, int length);
 }

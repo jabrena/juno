@@ -838,6 +838,8 @@ public final class IntrinsicLowering {
                 ShimFeature.I2C);
         shim(Intrinsic.I2C_READ_REGISTER16, "juno_i2c_read_register16", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.I2C);
+        shim(Intrinsic.I2C_WRITE, "juno_i2c_write", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
+        shim(Intrinsic.I2C_READ, "juno_i2c_read", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);

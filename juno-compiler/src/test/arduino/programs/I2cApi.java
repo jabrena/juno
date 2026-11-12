@@ -16,5 +16,11 @@ public final class I2cApi {
         i2c.writeRegister(0x28, 0x3D, 0x0C);
         Serial.println(i2c.readRegister(0x28, 0x00));
         Serial.println(i2c.readRegister16(0x28, 0x1A));
+
+        byte[] frame = new byte[2];
+        frame[0] = 0x01;
+        frame[1] = 0x02;
+        Serial.println(i2c.write(0x28, frame, frame.length));
+        Serial.println(i2c.read(0x28, frame, frame.length));
     }
 }
