@@ -45,6 +45,8 @@ inline long random(long origin, long bound) { return bound > origin ? bound - 1 
 
 struct HarnessSerial {
   void begin(unsigned long) {}
+  int available() { return 0; }
+  int read() { return -1; }
   void print(const char* text) { juno_harness_write(text); }
   void print(unsigned long long value) {
     char digits[24];
