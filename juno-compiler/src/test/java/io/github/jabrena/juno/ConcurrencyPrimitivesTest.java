@@ -205,7 +205,9 @@ class ConcurrencyPrimitivesTest {
                         "juno_current_slot = JUNO_NO_SLOT;",
                         "static void juno_carrier_vacate(uint32_t slot) {",
                         "static constexpr uint32_t JUNO_SLOT_LIMIT = JUNO_INITIAL_SLOTS;",
-                        "static StaticTask_t juno_dual_tcbs[JUNO_INITIAL_SLOTS];")
+                        "static constexpr uint32_t JUNO_INITIAL_SLOTS = 16u;",
+                        "xTaskCreatePinnedToCore(juno_esp32_entry, \"juno\", JUNO_THREAD_STACK_BYTES,",
+                        "pxTaskGetStackStart(juno_dual_tasks[slot])")
                 .doesNotContain("juno_port_finished", "juno_thread_alloc(sizeof(JunoEsp32Task)");
     }
 
@@ -245,7 +247,7 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.sketchWrapper().source()).contains("juno_launch_main(" + result.entryPointSymbol() + ");");
         assertThat(result.runtimeShim()).contains(
                         "#include <FreeRTOS.h>",
-                        "xTaskCreateStaticAffinitySet(juno_rp2350_entry",
+                        "xTaskCreateAffinitySet(juno_rp2350_entry",
                         "hardware_alarm_set_callback(",
                         "__atomic_compare_exchange_n(&juno_runtime_owner",
                         "juno_carrier_vacate(uint32_t slot) {")

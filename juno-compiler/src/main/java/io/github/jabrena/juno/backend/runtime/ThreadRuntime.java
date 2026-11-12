@@ -105,7 +105,7 @@ public final class ThreadRuntime {
     /** The ESP32 port selected for a single or dual carrier runtime. */
     public String esp32Port(int stackBytes, int carrierCount) {
         return carrierCount == 1 ? esp32Port(stackBytes) : runtimeSource.load("esp32/thread-port-dual.cpp")
-                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
+                .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -124,7 +124,7 @@ public final class ThreadRuntime {
     public String rp2350Port(int stackBytes, int carrierCount) {
         if (carrierCount == 1) return renesasPort(stackBytes);
         return runtimeSource.load("rp2350/thread-port-dual.cpp")
-                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
+                .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 

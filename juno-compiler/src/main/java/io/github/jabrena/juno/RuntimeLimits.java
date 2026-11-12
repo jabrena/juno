@@ -29,6 +29,13 @@ public final class RuntimeLimits {
     public static final int MAX_THREADS = 4;
 
     /**
+     * Most threads that can run at once, the main thread included, when threads run on two carriers (one FreeRTOS
+     * task per slot). A fixed slot table, since the other carrier reads it without the runtime lock; each slot's task
+     * stack comes from the FreeRTOS heap only once a thread uses the slot.
+     */
+    public static final int MAX_DUAL_CARRIER_THREADS = 16;
+
+    /**
      * Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
      * {@code juno.Xss} may ask for there.
      */

@@ -1,12 +1,13 @@
 // ---- Juno threads: ESP32 dual-carrier port. ----
 // Each slot owns one FreeRTOS task pinned to a core, created the first time the slot is used and kept for every later
-// thread in that slot: its stack, TCB and baton are static, so no kernel object ever lives in the arena. A task parks
-// on its baton between threads, and both carriers execute generated Java at the same time. Runtime entry points are
-// serialized by the dual-core runtime lock.
+// thread in that slot: its stack and TCB come from the FreeRTOS heap and its baton is static, so no kernel object ever
+// lives in the arena. A task parks on its baton between threads, and both carriers execute generated Java at the same
+// time. Runtime entry points are serialized by the dual-core runtime lock.
 #include <setjmp.h>
 
-static constexpr uint32_t JUNO_INITIAL_SLOTS = ${JUNO_MAX_THREADS}u;
-// One stack per slot, so the table cannot grow past it.
+// A fixed table: the other carrier reads it without the runtime lock, so it must never move. A slot's task stack is
+// only allocated once a thread uses the slot.
+static constexpr uint32_t JUNO_INITIAL_SLOTS = ${JUNO_DUAL_CARRIER_SLOTS}u;
 static constexpr uint32_t JUNO_SLOT_LIMIT = JUNO_INITIAL_SLOTS;
 static constexpr bool JUNO_PORT_PINS = false;
 static constexpr uint32_t JUNO_THREAD_STACK_BYTES = ${JUNO_THREAD_STACK_BYTES}u;
@@ -27,8 +28,6 @@ struct JunoPortSlot {
 static void juno_thread_body();
 static void juno_carrier_vacate(uint32_t slot);
 
-static StackType_t juno_dual_stacks[JUNO_INITIAL_SLOTS][JUNO_THREAD_STACK_BYTES] __attribute__((aligned(16)));
-static StaticTask_t juno_dual_tcbs[JUNO_INITIAL_SLOTS];
 static StaticSemaphore_t juno_dual_baton_storage[JUNO_INITIAL_SLOTS];
 static TaskHandle_t juno_dual_tasks[JUNO_INITIAL_SLOTS];
 static SemaphoreHandle_t juno_dual_batons[JUNO_INITIAL_SLOTS];
@@ -111,9 +110,14 @@ static void juno_port_prepare(uint32_t slot) {
   if (juno_dual_tasks[slot] != nullptr) return;
   juno_dual_cores[slot] = juno_slot_carrier(slot);
   juno_dual_batons[slot] = xSemaphoreCreateBinaryStatic(&juno_dual_baton_storage[slot]);
-  juno_dual_tasks[slot] = xTaskCreateStaticPinnedToCore(juno_esp32_entry, "juno", JUNO_THREAD_STACK_BYTES,
-      reinterpret_cast<void*>(static_cast<uintptr_t>(slot)), uxTaskPriorityGet(juno_main_task),
-      juno_dual_stacks[slot], &juno_dual_tcbs[slot], static_cast<BaseType_t>(juno_dual_cores[slot]));
+  TaskHandle_t task = nullptr;
+  if (xTaskCreatePinnedToCore(juno_esp32_entry, "juno", JUNO_THREAD_STACK_BYTES,
+          reinterpret_cast<void*>(static_cast<uintptr_t>(slot)), uxTaskPriorityGet(juno_main_task), &task,
+          static_cast<BaseType_t>(juno_dual_cores[slot])) != pdPASS) {
+    Serial.println("[juno-thread] cannot start virtual thread: no heap left for its task stack");
+    juno_panic();
+  }
+  juno_dual_tasks[slot] = task;
 }
 
 // The thread may be running on the other core right now, so its task is never deleted: it stops itself.
@@ -154,13 +158,12 @@ static bool juno_port_live_range(uint32_t slot, const uint8_t* marker, const uin
     *to = reinterpret_cast<const uint8_t*>(juno_gc_stack_top);
     return true;
   }
-  if (marker != nullptr) {
-    *from = marker;
-  } else {
-    *from = reinterpret_cast<const uint8_t*>(juno_dual_stacks[slot]);
-  }
-  *to = reinterpret_cast<const uint8_t*>(&juno_dual_stacks[slot][JUNO_THREAD_STACK_BYTES]);
-  return juno_dual_tasks[slot] != nullptr;
+  if (juno_dual_tasks[slot] == nullptr) return false;
+  // ESP-IDF counts stack depth in bytes, from its lowest address.
+  const uint8_t* base = reinterpret_cast<const uint8_t*>(pxTaskGetStackStart(juno_dual_tasks[slot]));
+  *from = marker != nullptr ? marker : base;
+  *to = base + JUNO_THREAD_STACK_BYTES;
+  return true;
 }
 
 static void juno_port_check_stack(uint32_t slot) {

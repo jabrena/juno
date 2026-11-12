@@ -393,12 +393,13 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 dual-carrier port exposes a carrier id and one task stack per slot")
+    @DisplayName("The ESP32 dual-carrier port exposes a carrier id and gives each slot a heap-allocated task")
     void shouldPortThreadsToBothEsp32Carriers() {
         String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(RuntimeConfig.DEFAULT, 2);
 
-        assertThat(port).contains("juno_port_carrier_id", "juno_dual_stacks", "juno_slot_carrier",
-                "xTaskCreateStaticPinnedToCore");
+        assertThat(port).contains("juno_port_carrier_id", "juno_slot_carrier", "xTaskCreatePinnedToCore",
+                        "JUNO_INITIAL_SLOTS = 16u")
+                .doesNotContain("juno_dual_stacks", "xTaskCreateStaticPinnedToCore", "${JUNO_");
         assertThat(coreRuntimes.of(ArduinoCore.ESP32).runtimeLock())
                 .contains("juno_runtime_owner", "portENTER_CRITICAL", "juno_runtime_depth");
     }
