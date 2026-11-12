@@ -6,7 +6,6 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.BinaryOp;
 import io.github.jabrena.juno.ir.Condition;
-import io.github.jabrena.juno.ir.IrBasicBlock;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrTerminator;
 import io.github.jabrena.juno.ir.JunoType;
@@ -80,7 +79,7 @@ final class ObjectMethodsLowering {
 
     private Value hashCode(ObjectMethodsSite site, Value receiver) {
         Value result = context.values().int32();
-        context.emit(new IrInstruction.Const(result, 1));
+        context.emit(new IrInstruction.Const(result, 0));
         for (Component component : site.components()) {
             Value componentValue = load(component, receiver);
             Value componentHash = hash(component.descriptor(), componentValue);
@@ -102,15 +101,21 @@ final class ObjectMethodsLowering {
         int nonMatching = continuation + 2;
         context.code().split(new IrTerminator.Branch(isRecord, matching, nonMatching), continuation);
 
+        context.code().startBlock(matching);
         Value result = compareComponents(site, receiver, other);
-        context.code().add(new IrBasicBlock(matching,
-                List.of(new IrInstruction.StoreLocal(context.stack().bottomSlot(), result)),
-                new IrTerminator.Jump(continuation)));
+        context.emit(new IrInstruction.StoreLocal(context.stack().bottomSlot(), result));
+        context.code().finishBlock(() -> new IrTerminator.Jump(continuation));
+
+        context.code().startBlock(nonMatching);
         Value falseValue = context.values().int32();
-        context.code().add(new IrBasicBlock(nonMatching,
-                List.of(new IrInstruction.Const(falseValue, 0),
-                        new IrInstruction.StoreLocal(context.stack().bottomSlot(), falseValue)),
-                new IrTerminator.Jump(continuation)));
+        context.emit(new IrInstruction.Const(falseValue, 0));
+        context.emit(new IrInstruction.StoreLocal(context.stack().bottomSlot(), falseValue));
+        context.code().finishBlock(() -> new IrTerminator.Jump(continuation));
+
+        context.code().startBlock(continuation);
+        Value resultOnStack = context.values().int32();
+        context.emit(new IrInstruction.LoadLocal(resultOnStack, context.stack().bottomSlot()));
+        context.stack().push(resultOnStack);
     }
 
     private Value compareComponents(ObjectMethodsSite site, Value receiver, Value other) {
