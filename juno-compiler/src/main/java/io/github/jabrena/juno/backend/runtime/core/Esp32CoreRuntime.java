@@ -129,6 +129,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return PIN_REMAP_WRAPPERS.getOrDefault(arduinoFunction, arduinoFunction);
     }
 
+    /** The Cardputer's Grove port (SDA GPIO2, SCL GPIO1) and the ESP32-CAM's SCCB pins (SDA GPIO26, SCL GPIO27). */
+    @Override
+    public String i2cPinSetup() {
+        return switch (core) {
+            case M5STACK_ESP32 -> "Wire.setPins(2, 1);\n  ";
+            case ESP32_CAM -> "Wire.setPins(26, 27);\n  ";
+            default -> "";
+        };
+    }
+
     @Override
     public String gpioAdditionalDigitalPins() {
         return core == ArduinoCore.M5STACK_ESP32

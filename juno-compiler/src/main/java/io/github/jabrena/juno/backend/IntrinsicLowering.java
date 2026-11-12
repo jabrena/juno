@@ -599,6 +599,8 @@ public final class IntrinsicLowering {
 
     private void registerSerial() {
         shim(Intrinsic.SERIAL_BEGIN, "juno_serial_begin", Result.NONE, List.of(arg(0)));
+        shim(Intrinsic.SERIAL_AVAILABLE, "juno_serial_available", Result.WORD, List.of());
+        shim(Intrinsic.SERIAL_READ, "juno_serial_read", Result.WORD, List.of());
         shim(Intrinsic.SERIAL_PRINT, "juno_serial_print", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINTLN, "juno_serial_println", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINT_LONG, "juno_serial_print_long", Result.NONE, wide(0));
@@ -836,6 +838,8 @@ public final class IntrinsicLowering {
                 ShimFeature.I2C);
         shim(Intrinsic.I2C_READ_REGISTER16, "juno_i2c_read_register16", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.I2C);
+        shim(Intrinsic.I2C_WRITE, "juno_i2c_write", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
+        shim(Intrinsic.I2C_READ, "juno_i2c_read", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);

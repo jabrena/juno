@@ -44,6 +44,11 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
         return new ArduinoCli(arduinoCli, commandExecutor, message -> getLog().info(message));
     }
 
+    /** The executor this goal runs external commands with, shared with {@link ArduinoCli}. */
+    final CommandExecutor executor() {
+        return commandExecutor;
+    }
+
     /** Test seam: substitutes the executor {@link #arduinoCli()} builds its {@link ArduinoCli} with. */
     void useExecutor(CommandExecutor executor) {
         this.commandExecutor = executor;

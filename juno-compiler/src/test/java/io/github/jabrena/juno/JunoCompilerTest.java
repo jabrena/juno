@@ -1675,6 +1675,38 @@ class JunoCompilerTest {
                     "bl micros", "bl juno_i2c_begin", "bl juno_i2c_write_register", "bl juno_i2c_read_register");
             assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
         }
+
+        @Test
+        @DisplayName("Raw I2C write and read lower to the Wire shims with a caller-owned byte buffer")
+        void shouldLowerRawI2cTransfers() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.ArduinoUno;
+                    import io.github.jabrena.juno.hardware.i2c.I2c;
+                    public final class RawI2cDemo {
+                        public static void main(String[] args) {
+                            I2c i2c = ArduinoUno.getI2c();
+                            i2c.begin();
+                            byte[] frame = new byte[8];
+                            int sent = i2c.write(0x60, frame, frame.length);
+                            int received = i2c.read(0x60, frame, 4);
+                            if (sent < 0 || received < 0) {
+                                return;
+                            }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.RawI2cDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RawI2cDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_i2c_write", "bl juno_i2c_read");
+            assertThat(result.runtimeShim()).contains("int32_t juno_i2c_write(int32_t address, int8_t* data, int32_t length)",
+                    "int32_t juno_i2c_read(int32_t address, int8_t* buffer, int32_t length)");
+        }
     }
 
     @Nested

@@ -23,4 +23,18 @@ public interface I2c {
      * {@code -1} if the device did not answer.
      */
     int readRegister16(int address, int register);
+
+    /**
+     * Sends the first {@code length} bytes of {@code data} to the device at {@code address}, with no register address,
+     * for raw protocols such as the ATECC608 command frames. Returns {@code length} on success, or {@code -1} if the
+     * device did not acknowledge. A zero-length write is a wake-up probe: it addresses the device and sends nothing.
+     */
+    int write(int address, byte[] data, int length);
+
+    /**
+     * Reads the first {@code length} bytes from the device at {@code address} into {@code buffer}, with no register
+     * address. Returns {@code length} on success, or {@code -1} if the device did not answer; {@code buffer} is left
+     * unchanged in that case.
+     */
+    int read(int address, byte[] buffer, int length);
 }

@@ -450,6 +450,77 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The Cardputer and ESP32-CAM start their I2C buses on their Grove and SCCB pins")
+    void shouldStartCardputerAndEsp32CamI2cOnTheirBoardPins() throws Exception {
+        // Given
+        String cardputerSource = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                import io.github.jabrena.juno.hardware.M5StackCardputer;
+                @Board(M5StackCardputerBoard.class)
+                public final class CardputerI2c {
+                    public static void main(String[] args) {
+                        M5StackCardputer.getI2c().begin();
+                    }
+                }
+                """;
+        String camSource = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.Esp32Cam;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class CamI2c {
+                    public static void main(String[] args) {
+                        Esp32Cam.getI2c().begin();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerI2c", cardputerSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CamI2c", camSource);
+        JunoCompiler juno = new JunoCompiler();
+
+        // When
+        CompilationResult cardputer = juno.compile(CompilerTestSupport.classpath(temporaryDirectory),
+                "demo.CardputerI2c", false, Optional.of(Board.M5_CARDPUTER.id()));
+        CompilationResult cam = juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.CamI2c", false,
+                Optional.of(Board.AI_THINKER_ESP32_CAM.id()));
+
+        // Then
+        assertThat(cardputer.runtimeShim()).contains("Wire.setPins(2, 1);\n  Wire.begin();");
+        assertThat(cam.runtimeShim()).contains("Wire.setPins(26, 27);\n  Wire.begin();");
+    }
+
+    @Test
+    @DisplayName("The ESP32-CAM rejects one program that uses both its camera and its I2C bus")
+    void shouldRejectEsp32CamCameraAndI2cTogether() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.Esp32Cam;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class CamAndI2c {
+                    public static void main(String[] args) {
+                        Esp32Cam.getCamera();
+                        Esp32Cam.getI2c().begin();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.CamAndI2c", source);
+        JunoCompiler juno = new JunoCompiler();
+
+        // When & Then
+        assertThatThrownBy(() -> juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.CamAndI2c",
+                false, Optional.of(Board.AI_THINKER_ESP32_CAM.id())))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Esp32Cam.getCamera() and Esp32Cam.getI2c()")
+                .hasMessageContaining("GPIO26 and GPIO27");
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W lowers @Watchdog to the RP2350 hardware watchdog")
     void shouldLowerWatchdogOnRaspberryPico2W() throws Exception {
         // Given
