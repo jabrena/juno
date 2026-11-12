@@ -66,8 +66,9 @@ class XtensaRunIT {
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
     /**
-     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and forces one
-     * carrier because its ESP32-S3 QEMU setup does not execute the dual-core runtime reliably.
+     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and runs the suite
+     * twice, with {@code -Djuno.carriers=1} and {@code 2}; the {@code DualCarrier*} programs only exercise the
+     * cross-core runtime on the second run.
      */
     private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(
             Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")),
