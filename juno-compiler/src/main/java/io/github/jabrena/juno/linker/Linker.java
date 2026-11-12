@@ -403,6 +403,10 @@ public final class Linker {
                 Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
         require(required, Capability.HTTPS_SERVER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
         require(required, Capability.CAMERA, Intrinsic.CAMERA_BEGIN, Intrinsic.CAMERA_CAPTURE);
+        require(required, Capability.PSRAM, Intrinsic.PSRAM_AVAILABLE, Intrinsic.PSRAM_NOMINAL_CAPACITY,
+                Intrinsic.PSRAM_TOTAL_BYTES, Intrinsic.PSRAM_FREE_BYTES, Intrinsic.PSRAM_LARGEST_FREE_BLOCK,
+                Intrinsic.PSRAM_ALLOCATE, Intrinsic.PSRAM_CAPACITY, Intrinsic.PSRAM_READ_BYTE,
+                Intrinsic.PSRAM_WRITE_BYTE, Intrinsic.PSRAM_READ, Intrinsic.PSRAM_WRITE, Intrinsic.PSRAM_RELEASE);
         require(required, Capability.HTTP_STREAM, Intrinsic.HTTP_SERVER_BEGIN_STREAM,
                 Intrinsic.HTTP_SERVER_STREAM_BYTES, Intrinsic.HTTP_SERVER_STREAM_TEXT, Intrinsic.HTTP_SERVER_END_STREAM);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.BLE_CONNECT, Intrinsic.BLE_IS_CONNECTED,

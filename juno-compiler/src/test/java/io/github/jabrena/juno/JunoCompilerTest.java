@@ -76,6 +76,55 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles the static PSRAM API only on an ESP32 target and emits helpers once")
+        void shouldCompileStaticPsramApiOnNanoEsp32() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.Psram;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoPsram {
+                        public static void main(String[] args) {
+                            int handle = Psram.allocate(32);
+                            byte[] bytes = new byte[4];
+                            Psram.write(handle, 0, bytes, 0, bytes.length);
+                            Psram.read(handle, 0, bytes, 0, bytes.length);
+                            Psram.release(handle);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoPsram", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoPsram");
+
+            assertThat(result.runtimeShim()).contains("juno_psram_allocate", "juno_psram_read", "juno_psram_write")
+                    .doesNotContain("NativePsram");
+            assertThat(result.runtimeShim().split("juno_psram_allocate", -1)).hasSize(2);
+        }
+
+        @Test
+        @DisplayName("Rejects the static PSRAM API on a board without PSRAM")
+        void shouldRejectStaticPsramApiOnCardputer() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                    import io.github.jabrena.juno.hardware.Psram;
+                    @Board(M5StackCardputerBoard.class)
+                    public final class CardputerPsram {
+                        public static void main(String[] args) {
+                            Psram.allocate(32);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.CardputerPsram", source);
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.CardputerPsram"))
+                    .hasMessageContaining("Psram");
+        }
+
+        @Test
         @DisplayName("Compiles symbolic GPIO lookup for the Cardputer")
         void shouldCompileSymbolicGpioLookupForCardputer() throws Exception {
             // Given

@@ -352,6 +352,11 @@ public interface CoreRuntime {
         throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
     }
 
+    /** Core-specific explicit PSRAM buffer helpers; only ESP32-family cores provide them. */
+    default String psramHelpers() {
+        throw new IllegalStateException("This core has no supported PSRAM service; the linker should have rejected it");
+    }
+
     /** Core-specific headers of the BLE central. */
     default String bleIncludes() {
         return "#include <ArduinoBLE.h>\n";

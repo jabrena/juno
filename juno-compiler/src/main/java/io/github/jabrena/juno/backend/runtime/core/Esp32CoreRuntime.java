@@ -23,6 +23,7 @@ import java.util.Map;
  * the core's {@code USBHIDMouse} rather than the {@code Mouse} library. A capability the board does not declare is
  * not wired to this core and fails at compile time.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
             "pinMode", "juno_pin_mode",
@@ -387,6 +388,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
     public String cameraHelpers() {
         requireCamera();
         return runtimeSource.load("esp32/camera.cpp");
+    }
+
+    /** The ESP32 capability allocator-backed generic PSRAM service. */
+    @Override
+    public String psramHelpers() {
+        return runtimeSource.load("esp32/psram.cpp");
     }
 
     private void requireCamera() {

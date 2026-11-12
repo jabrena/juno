@@ -243,6 +243,18 @@ public enum Intrinsic {
     MEMORY_ARENA_CAPACITY,
     MEMORY_FLASH_USED,
     MEMORY_FLASH_CAPACITY,
+    PSRAM_AVAILABLE,
+    PSRAM_NOMINAL_CAPACITY,
+    PSRAM_TOTAL_BYTES,
+    PSRAM_FREE_BYTES,
+    PSRAM_LARGEST_FREE_BLOCK,
+    PSRAM_ALLOCATE,
+    PSRAM_CAPACITY,
+    PSRAM_READ_BYTE,
+    PSRAM_WRITE_BYTE,
+    PSRAM_READ,
+    PSRAM_WRITE,
+    PSRAM_RELEASE,
     SMTP_SEND,
     SMTP_SEND_TLS,
     POP3_MESSAGE_COUNT,
@@ -546,9 +558,14 @@ public enum Intrinsic {
     /** The camera calls behind {@code NativeCamera}: the one sensor is the only state, so they ignore their receiver. */
     private static final Set<Intrinsic> CAMERA_OPERATIONS = EnumSet.of(CAMERA_BEGIN, CAMERA_CAPTURE);
 
+    /** The explicit PSRAM operations behind the static {@code Psram} API; they have no Java receiver. */
+    private static final Set<Intrinsic> PSRAM_OPERATIONS = EnumSet.of(PSRAM_AVAILABLE, PSRAM_NOMINAL_CAPACITY,
+            PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
+            PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
+
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
-                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this);
+                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this);
     }
 }

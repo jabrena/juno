@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
  * lowered program's {@link ShimFeature}s call for. Optional parts are decided here, at
  * Java-string-generation time, so an unused feature costs no flash, RAM or build dependency.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public final class RuntimeShim {
     private final ScopedValueRuntime scopedValueRuntime = new ScopedValueRuntime();
     private final AtomicRuntime atomicRuntime = new AtomicRuntime();
@@ -109,6 +110,9 @@ public final class RuntimeShim {
         }
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraIncludes());
+        }
+        if (uses(ShimFeature.PSRAM)) {
+            shim.append("#include <esp_heap_caps.h>\n");
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.BLUETOOTH_LE)) {
@@ -249,6 +253,9 @@ public final class RuntimeShim {
         }
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraHelpers());
+        }
+        if (uses(ShimFeature.PSRAM)) {
+            shim.append(core.psramHelpers());
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());

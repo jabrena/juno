@@ -10,7 +10,7 @@ import java.util.OptionalInt;
 
 /**
  * One board's memory budget: its internal SRAM, the arena and carrier-stack sizes it defaults to and the largest it
- * accepts, which component decides fit below that largest size, and the PSRAM it carries (report-only: the arena
+ * accepts, which component decides fit below that largest size, and the PSRAM it carries (metadata only: the arena
  * never uses PSRAM).
  *
  * <p>The maximums are hard ceilings for a minimal program on that board, not budgets for every program. Sizes are
