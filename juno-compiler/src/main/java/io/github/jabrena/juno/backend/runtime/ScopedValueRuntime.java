@@ -48,6 +48,9 @@ final class ScopedValueRuntime {
                     static JunoBindingFrame* juno_scoped_tops[${JUNO_CARRIER_COUNT}] = {};
                     #define juno_scoped_top juno_scoped_tops[juno_port_carrier_id()]
                     """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+            JavaCallbacks callbacks = new JavaCallbacks(carrierCount);
+            source = callbacks.declarations() + callbacks.around(callbacks.around(source,
+                    "juno_thread_entry(runnable);"), "int32_t result = juno_scoped_call_entry(operation);");
         }
         return source;
     }

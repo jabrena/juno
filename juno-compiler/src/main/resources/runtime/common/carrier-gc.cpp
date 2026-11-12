@@ -10,6 +10,7 @@
 extern "C" uint32_t juno_port_carrier_id();
 extern "C" void juno_runtime_enter();
 extern "C" void juno_runtime_exit();
+extern "C" bool juno_runtime_owned();
 
 static volatile uint32_t juno_carrier_in_java[${JUNO_CARRIER_COUNT}];
 static volatile uint32_t juno_carrier_parked[${JUNO_CARRIER_COUNT}];
@@ -55,6 +56,23 @@ extern "C" void juno_java_leave() {
 extern "C" void juno_java_return() {
   juno_runtime_exit();
   juno_java_resume();
+}
+
+// The runtime calls back into Java from inside a runtime call: the Java runs without the runtime lock and marked in
+// Java, as anywhere else, and the lock comes back at the depth the runtime held it.
+extern "C" uint32_t juno_java_callback_begin() {
+  uint32_t depth = 0u;
+  while (juno_runtime_owned()) {
+    juno_runtime_exit();
+    depth++;
+  }
+  juno_java_resume();
+  return depth;
+}
+
+extern "C" void juno_java_callback_end(uint32_t depth) {
+  juno_java_pause();
+  while (depth-- > 0u) juno_runtime_enter();
 }
 
 // A safepoint in generated code: park while another carrier collects.

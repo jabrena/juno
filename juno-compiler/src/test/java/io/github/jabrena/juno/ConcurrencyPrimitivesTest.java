@@ -222,6 +222,21 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("Dual-carrier ScopedValue.run gives up the runtime lock while its Java body runs")
+    void shouldReleaseTheRuntimeLockAroundJavaCallbacks() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", """
+                ScopedValue<String> name = ScopedValue.newInstance();
+                ScopedValue.where(name, "juno").run(new Job());
+                Thread.startVirtualThread(new Job()).join();
+                """);
+
+        assertThat(result.runtimeShim()).contains(
+                "uint32_t juno_callback_depth = juno_java_callback_begin();\n  juno_thread_entry(runnable);\n"
+                        + "  juno_java_callback_end(juno_callback_depth);",
+                "extern \"C\" uint32_t juno_java_callback_begin() {");
+    }
+
+    @Test
     @DisplayName("Dual-carrier Pico 2 W programs build on FreeRTOS SMP with main on a task of its own")
     void shouldBuildDualCarrierPicoProgramsOnFreeRtos() throws Exception {
         CompilationResult result = compile("RaspberryPico2WifiBoard", "Thread.startVirtualThread(new Job()).join();");

@@ -78,7 +78,11 @@ sealed interface SchedulerCarriers {
         public String apply(String template, String carrierLoad, String delayFunction) {
             // A finishing task's completion touches its scope, which a thread on the other carrier may read or change
             // at the same time, so it runs under the runtime lock.
-            return lockTaskCompletion(template).replace("${JUNO_CURRENT_SLOT_DECLARATION}", counted("""
+            JavaCallbacks callbacks = new JavaCallbacks(carrierCount);
+            String withCallbacks = callbacks.declarations() + callbacks.around(callbacks.around(
+                    lockTaskCompletion(template), "juno_thread_entry(barrier[4]);"),
+                    "int32_t configured = juno_task_configuration_entry(operatorHandle, configuration);");
+            return withCallbacks.replace("${JUNO_CURRENT_SLOT_DECLARATION}", counted("""
                             static uint32_t juno_current_slots[${JUNO_CARRIER_COUNT}] = {};
                             #define juno_current_slot juno_current_slots[juno_port_carrier_id()]
                             """))
