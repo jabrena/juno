@@ -11,18 +11,31 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-/** Validates reachable invokedynamic sites and registers the dependencies of lambda sites. */
+/** Validates reachable invokedynamic sites and registers their generated-method dependencies. */
 final class InvokeDynamicSupport {
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
 
     private final LambdaResolver lambdaResolver = new LambdaResolver();
     private final StringConcatResolver stringConcatResolver = new StringConcatResolver();
+    private final ObjectMethodsResolver objectMethodsResolver = new ObjectMethodsResolver();
 
     void register(LinkedMethod linked, Instruction instruction, Map<String, JavaClass> classes,
                   Set<String> instantiatedClasses, Map<LambdaCallSite, LambdaSite> lambdaSites,
                   Consumer<MethodRef> implementationEnqueuer) {
         if (stringConcatResolver.supports(linked, instruction)) {
             stringConcatResolver.resolve(linked, instruction);
+            return;
+        }
+        if (objectMethodsResolver.supports(linked, instruction)) {
+            ObjectMethodsSite site = objectMethodsResolver.resolve(linked, instruction, classes);
+            implementationEnqueuer.accept(new MethodRef(site.className(), site.operation().methodName(),
+                    site.operation().descriptor()));
+            for (ObjectMethodsSite.Component component : site.components()) {
+                if (isRecord(component.descriptor(), classes)) {
+                    implementationEnqueuer.accept(new MethodRef(referenceName(component.descriptor()),
+                            site.operation().methodName(), site.operation().descriptor()));
+                }
+            }
             return;
         }
         MethodRef caller = linked.method().reference();
@@ -43,5 +56,17 @@ final class InvokeDynamicSupport {
                     + implementation.displayName());
         }
         implementationEnqueuer.accept(implementation);
+    }
+
+    private boolean isRecord(String descriptor, Map<String, JavaClass> classes) {
+        if (!descriptor.startsWith("L") || !descriptor.endsWith(";")) {
+            return false;
+        }
+        JavaClass type = classes.get(referenceName(descriptor));
+        return type != null && type.isRecord();
+    }
+
+    private String referenceName(String descriptor) {
+        return descriptor.substring(1, descriptor.length() - 1);
     }
 }

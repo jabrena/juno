@@ -397,6 +397,7 @@ public final class AvrAsmBackend implements AsmBackend {
                         .append("    call juno_panic\n")
                         .append(nonNull).append(":\n");
             }
+            case IrInstruction.InstanceOf check -> memory.emitInstanceOf(output, frame, check);
             case IrInstruction.NewObject object -> memory.emitNewObject(output, frame, object.className(), object.target());
             case IrInstruction.LoadField load -> memory.emitLoadField(output, frame, load);
             case IrInstruction.StoreField store -> memory.emitStoreField(output, frame, store);

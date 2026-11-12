@@ -158,12 +158,6 @@ class XtensaRunIT {
                 RUN_TIMEOUT_SECONDS);
         start = System.nanoTime();
         ExecResult run = runOnce(work);
-        // QEMU occasionally dies on the host before the guest prints anything (the timeout wrapper reports a core
-        // dump). That is an emulator crash, not a program fault, so the run is repeated once.
-        if (!run.getStdout().contains(BEGIN_MARKER.strip()) && (run.getStderr() + run.getStdout()).contains("dumped core")) {
-            LOG.warn("[{} / {}] QEMU died before the program started; retrying once", mainClass, board.id());
-            run = runOnce(work);
-        }
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         if (run.getExitCode() == TIMED_OUT || run.getExitCode() == KILLED) {

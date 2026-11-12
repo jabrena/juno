@@ -12,6 +12,8 @@ import io.github.jabrena.juno.linker.ConstantTables;
 import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.LinkedMethod;
+import io.github.jabrena.juno.linker.ObjectMethodsResolver;
+import io.github.jabrena.juno.linker.ObjectMethodsSite;
 import io.github.jabrena.juno.linker.Program;
 import io.github.jabrena.juno.linker.ScopedValueSupport;
 import io.github.jabrena.juno.linker.StringConcatResolver;
@@ -58,6 +60,7 @@ public final class BytecodeToIr {
 
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final StringConcatResolver stringConcatResolver = new StringConcatResolver();
+    private final ObjectMethodsResolver objectMethodsResolver = new ObjectMethodsResolver();
     private final RuntimeRaisedExceptions runtimeRaised = new RuntimeRaisedExceptions();
 
     public IrProgram lower(Program program) {
@@ -65,10 +68,11 @@ public final class BytecodeToIr {
         ConstantTables constantTables = ConstantTables.of(program);
         List<String> throwableClasses = throwableClasses(program.methods(), program.classes(), divisionByZeroUnwinds);
         Map<String, Integer> objectTypeIds = objectTypeIds(program.interfaceDispatches(), throwableClasses,
-                program.classes());
+                program.classes(), program.methods());
         ProgramContext context = new ProgramContext(program.classes(), throwableClasses,
                 program.interfaceDispatches(), objectTypeIds, program.lambdaSites(), new ThrowingMethods(),
-                constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, program.board(),
+                constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, objectMethodsResolver,
+                program.board(),
                 program.clojureFunctions());
         List<IrMethod> methods = lowerMethods(program.methods(), context);
         // A first pass without call guards shows which methods can unwind with an exception; only calls to
@@ -86,7 +90,7 @@ public final class BytecodeToIr {
     public IrMethod lower(LinkedMethod linked, Map<String, JavaClass> classes, Board board) {
         ProgramContext context = new ProgramContext(classes, throwableClasses(List.of(linked), classes, false),
                 Map.of(), Map.of(), Map.of(), new ThrowingMethods(), ConstantTables.none(), false, decoder,
-                stringConcatResolver, board, List.of());
+                stringConcatResolver, objectMethodsResolver, board, List.of());
         return new MethodLowering(context, linked).lower();
     }
 
@@ -133,7 +137,8 @@ public final class BytecodeToIr {
 
     /** The runtime type id of every class that takes part in polymorphic dispatch. */
     private Map<String, Integer> objectTypeIds(Map<InterfaceCallSite, InterfaceDispatch> dispatches,
-                                               List<String> throwableClasses, Map<String, JavaClass> classes) {
+                                               List<String> throwableClasses, Map<String, JavaClass> classes,
+                                               List<LinkedMethod> methods) {
         Set<String> polymorphicClasses = dispatches.values().stream()
                 .filter(dispatch -> dispatch.targets().size() > 1)
                 .flatMap(dispatch -> dispatch.targets().stream())
@@ -144,6 +149,7 @@ public final class BytecodeToIr {
                     + className.replace('/', '.'));
         });
         Set<String> classesWithHeaders = new TreeSet<>(polymorphicClasses);
+        classesWithHeaders.addAll(instanceOfClasses(methods, classes));
         for (String className : polymorphicClasses) {
             JavaClass type = classes.get(className);
             while (type != null && type.superClassName() != null) {
@@ -156,6 +162,24 @@ public final class BytecodeToIr {
             typeIds.put(className, typeIds.size() + 1);
         }
         return Map.copyOf(typeIds);
+    }
+
+    private Set<String> instanceOfClasses(List<LinkedMethod> methods, Map<String, JavaClass> classes) {
+        Set<String> result = new TreeSet<>();
+        for (LinkedMethod method : methods) {
+            for (Instruction instruction : method.instructions()) {
+                if (instruction.opcode() == io.github.jabrena.juno.bytecode.Opcodes.INSTANCEOF) {
+                    result.add(method.owner().constantPool().className(instruction.operandA()));
+                } else if (instruction.opcode() == io.github.jabrena.juno.bytecode.Opcodes.INVOKEDYNAMIC
+                        && objectMethodsResolver.supports(method, instruction)) {
+                    ObjectMethodsSite site = objectMethodsResolver.resolve(method, instruction, classes);
+                    if (site.requiresTypeId()) {
+                        result.add(site.className());
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private Map<String, String> superClasses(Map<String, JavaClass> classes) {

@@ -386,6 +386,35 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    @DisplayName("A record's generated identity methods assemble with the ARM toolchain")
+    void shouldAssembleGeneratedRecordIdentityMethods() throws Exception {
+        // Given
+        String armGcc = availableArmGcc();
+        Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
+        String recordSource = """
+                package demo;
+                public record AsmIdentityPoint(int x, String label) {
+                }
+                """;
+        String source = """
+                package demo;
+                public final class AsmIdentityMethods {
+                    public static void main(String[] args) {
+                        AsmIdentityPoint first = new AsmIdentityPoint(3, "east");
+                        AsmIdentityPoint second = new AsmIdentityPoint(3, "east");
+                        String text = first.toString();
+                        int hash = first.hashCode();
+                        boolean equal = first.equals(second);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmIdentityPoint", recordSource);
+
+        // When & Then
+        assembleAndCompile(armGcc, "demo.AsmIdentityMethods", source);
+    }
+
+    @Test
     @DisplayName("A flash-resident constant table of every element type assembles with the ARM toolchain")
     void shouldAssembleFlashResidentConstantTablesOfEveryElementType() throws Exception {
         // Given

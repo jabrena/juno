@@ -13,6 +13,19 @@ extern "C" int32_t juno_string_equals(int32_t a, int32_t b) {
   return strcmp(juno_string_pointer(a), juno_string_pointer(b)) == 0 ? 1 : 0;
 }
 
+extern "C" int32_t juno_string_equals_null_safe(int32_t a, int32_t b) {
+  if (a == 0 || b == 0) return a == b ? 1 : 0;
+  return strcmp(juno_string_pointer(a), juno_string_pointer(b)) == 0 ? 1 : 0;
+}
+
+extern "C" int32_t juno_string_hash_code(int32_t value) {
+  if (value == 0) return 0;
+  const unsigned char* text = reinterpret_cast<const unsigned char*>(juno_string_pointer(value));
+  int32_t hash = 0;
+  while (*text != '\0') hash = hash * 31 + *text++;
+  return hash;
+}
+
 extern "C" int32_t juno_string_concat_new() {
   char* buffer = juno_string_slots[juno_string_slot_cursor];
   juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;

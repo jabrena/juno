@@ -622,6 +622,10 @@ public final class IntrinsicLowering {
                 ShimFeature.RUNTIME_STRINGS);
         shim(Intrinsic.STRING_EQUALS, "juno_string_equals", Result.WORD, List.of(RECEIVER, arg(0)),
                 ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_EQUALS_NULL_SAFE, "juno_string_equals_null_safe", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_HASH_CODE, "juno_string_hash_code", Result.WORD, List.of(arg(0)),
+                ShimFeature.RUNTIME_STRINGS);
         shim(Intrinsic.STRING_BUILDER_NEW, "juno_string_builder_new", Result.WORD, List.of(arg(0)),
                 ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_APPEND_CHAR, "juno_string_builder_append_char", Result.WORD,
@@ -648,6 +652,13 @@ public final class IntrinsicLowering {
         shim(Intrinsic.STRING_CONCAT_APPEND_DOUBLE, "juno_string_concat_append_double", Result.NONE,
                 List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
                 ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.FLOAT_COMPARE, "juno_float_compare", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.FLOAT);
+        shim(Intrinsic.DOUBLE_COMPARE, "juno_double_compare", Result.WORD,
+                List.of(new ArgumentLow(0), new ArgumentHigh(0), new ArgumentLow(1), new ArgumentHigh(1)),
+                ShimFeature.DOUBLE);
+        shim(Intrinsic.FLOAT_HASH_CODE, "juno_float_hash_code", Result.WORD, List.of(arg(0)), ShimFeature.FLOAT);
+        shim(Intrinsic.DOUBLE_HASH_CODE, "juno_double_hash_code", Result.WORD, wide(0), ShimFeature.DOUBLE);
     }
 
     /** SD card files and {@code Properties} parsed from them. */

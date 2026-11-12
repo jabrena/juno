@@ -65,6 +65,8 @@ public final class IrRewriting {
                     new IrInstruction.ArrayBoundsCheck(values.apply(node.index()), values.apply(node.array()));
             case IrInstruction.ArrayLength node ->
                     new IrInstruction.ArrayLength(values.apply(node.target()), values.apply(node.array()));
+            case IrInstruction.InstanceOf node ->
+                    new IrInstruction.InstanceOf(values.apply(node.target()), values.apply(node.value()), node.typeId());
             default -> mapWide(instruction, values);
         };
     }

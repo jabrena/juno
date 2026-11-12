@@ -377,6 +377,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
                         .append("    bl juno_panic\n")
                         .append(nonNull).append(":\n");
             }
+            case IrInstruction.InstanceOf check -> emitInstanceOf(output, frame, check);
             case IrInstruction.NewObject object -> emitNewObject(output, frame, object);
             case IrInstruction.LoadField load -> fields.emitLoadField(output, frame, load);
             case IrInstruction.StoreField store -> fields.emitStoreField(output, frame, store);
@@ -392,6 +393,25 @@ public final class Thumb2AsmBackend implements AsmBackend {
             }
             default -> wides.emit(output, frame, instruction);
         }
+    }
+
+    private void emitInstanceOf(StringBuilder output, FrameLayout frame, IrInstruction.InstanceOf check) {
+        asm.load(output, frame, "r0", check.value());
+        String nonNull = asm.newLabel(".LinstanceofNonNull");
+        String done = asm.newLabel(".LinstanceofDone");
+        output.append("    cmp r0, #0\n")
+                .append("    bne ").append(nonNull).append('\n')
+                .append("    movs r0, #0\n")
+                .append("    b ").append(done).append('\n')
+                .append(nonNull).append(":\n")
+                .append("    ldr r0, [r0, #0]\n");
+        asm.emitLoadImmediate(output, "r1", check.typeId());
+        output.append("    cmp r0, r1\n")
+                .append("    ite eq\n")
+                .append("    moveq r0, #1\n")
+                .append("    movne r0, #0\n")
+                .append(done).append(":\n");
+        asm.store(output, frame, "r0", check.target());
     }
 
     private void emitLoadLocal(StringBuilder output, FrameLayout frame, IrInstruction.LoadLocal load) {
