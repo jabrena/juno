@@ -377,6 +377,8 @@ own backend instead of the Thumb-2 or AVR one.</p>
 </tr>
 </tbody>
 </table>
+<p>The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and garbage collector; use the static
+<code>Psram</code> API for caller-owned byte buffers when the fixed internal arena is too small.</p>
 <h2 id="what-juno-supports">What Juno supports</h2>
 <table>
 <thead>
@@ -433,7 +435,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td>Threads, <code>synchronized</code>, <code>ReentrantLock</code>, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
 <td align="center">✓</td>
-<td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. At most four threads including <code>main</code> (<code>-Djuno.maxThreads</code>).</td>
+<td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including <code>main</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
 </tr>
 <tr>

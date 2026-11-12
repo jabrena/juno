@@ -84,6 +84,8 @@ initTheme();
 <li><a href="#writeRegister(int,int,int)" tabindex="0">writeRegister(int, int, int)</a></li>
 <li><a href="#readRegister(int,int)" tabindex="0">readRegister(int, int)</a></li>
 <li><a href="#readRegister16(int,int)" tabindex="0">readRegister16(int, int)</a></li>
+<li><a href="#write(int,byte%5B%5D,int)" tabindex="0">write(int, byte[], int)</a></li>
+<li><a href="#read(int,byte%5B%5D,int)" tabindex="0">read(int, byte[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -151,23 +153,39 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM. 
 <div class="block">The bus <a href="../ArduinoUno.html#getI2c()"><code>ArduinoUno.getI2c()</code></a> hands out.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readRegister(int,int)" class="member-name-link">readRegister</a><wbr>(int&nbsp;address,
- int&nbsp;register)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(int,byte%5B%5D,int)" class="member-name-link">read</a><wbr>(int&nbsp;address,
+ byte[]&nbsp;buffer,
+ int&nbsp;length)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Reads one byte, <code>0..255</code>, from <code>register</code>, or <code>-1</code> if the device did not answer.</div>
+<div class="block">Reads the first <code>length</code> bytes from the device at <code>address</code> into <code>buffer</code>, with no register
+address.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readRegister16(int,int)" class="member-name-link">readRegister16</a><wbr>(int&nbsp;address,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readRegister(int,int)" class="member-name-link">readRegister</a><wbr>(int&nbsp;address,
  int&nbsp;register)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Reads one byte, <code>0..255</code>, from <code>register</code>, or <code>-1</code> if the device did not answer.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readRegister16(int,int)" class="member-name-link">readRegister16</a><wbr>(int&nbsp;address,
+ int&nbsp;register)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Reads two bytes starting at <code>register</code> as a little-endian value, <code>0..65535</code>, or
 <code>-1</code> if the device did not answer.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setI2c(io.github.jabrena.juno.hardware.i2c.I2c)" class="member-name-link">setI2c</a><wbr>(<a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;replacement)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setI2c(io.github.jabrena.juno.hardware.i2c.I2c)" class="member-name-link">setI2c</a><wbr>(<a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;replacement)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Makes <a href="../ArduinoUno.html#getI2c()"><code>ArduinoUno.getI2c()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#write(int,byte%5B%5D,int)" class="member-name-link">write</a><wbr>(int&nbsp;address,
+ byte[]&nbsp;data,
+ int&nbsp;length)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sends the first <code>length</code> bytes of <code>data</code> to the device at <code>address</code>, with no register address,
+for raw protocols such as the ATECC608 command frames.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#writeRegister(int,int,int)" class="member-name-link">writeRegister</a><wbr>(int&nbsp;address,
@@ -286,6 +304,42 @@ whole-program emulator in a test, never on the board.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../i2c/I2c.html#readRegister16(int,int)">readRegister16</a></code>&nbsp;in interface&nbsp;<code><a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="write(int,byte[],int)">
+<h3>write</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">write</span><wbr><span class="parameters">(int&nbsp;address,
+ byte[]&nbsp;data,
+ int&nbsp;length)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../i2c/I2c.html#write(int,byte%5B%5D,int)">I2c</a></code></span></div>
+<div class="block">Sends the first <code>length</code> bytes of <code>data</code> to the device at <code>address</code>, with no register address,
+for raw protocols such as the ATECC608 command frames. Returns <code>length</code> on success, or <code>-1</code> if the
+device did not acknowledge. A zero-length write is a wake-up probe: it addresses the device and sends nothing.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../i2c/I2c.html#write(int,byte%5B%5D,int)">write</a></code>&nbsp;in interface&nbsp;<code><a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="read(int,byte[],int)">
+<h3>read</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">read</span><wbr><span class="parameters">(int&nbsp;address,
+ byte[]&nbsp;buffer,
+ int&nbsp;length)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../i2c/I2c.html#read(int,byte%5B%5D,int)">I2c</a></code></span></div>
+<div class="block">Reads the first <code>length</code> bytes from the device at <code>address</code> into <code>buffer</code>, with no register
+address. Returns <code>length</code> on success, or <code>-1</code> if the device did not answer; <code>buffer</code> is left
+unchanged in that case.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../i2c/I2c.html#read(int,byte%5B%5D,int)">read</a></code>&nbsp;in interface&nbsp;<code><a href="../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></dd>
 </dl>
 </div>
 </section>

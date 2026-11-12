@@ -325,6 +325,8 @@ UNO R3 and UNO WiFi Rev2, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 W
 <h2 id="hardware-at-a-glance">Hardware at a glance</h2>
 <p>Boards are ordered by clock speed, then flash, SRAM and PSRAM, highest first. PSRAM is external RAM on the
 module, slower than the SRAM inside the chip.</p>
+<p>Juno never places ordinary Java objects, arrays or stacks in PSRAM. The Nano ESP32 and AI Thinker ESP32-CAM expose the
+static <code>Psram</code> byte-buffer API; the camera board also keeps its driver-owned frame buffers there behind <code>Camera</code>.</p>
 <table>
 <thead>
 <tr>

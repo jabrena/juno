@@ -85,6 +85,38 @@ Practical effects for your programs:
 When the arena is full even after a collection, the program stops with a diagnostic on the serial port. There is no
 `OutOfMemoryError` to catch.
 
+## PSRAM and runtime-owned buffers
+
+PSRAM is a separate byte store. It is never part of the Java arena, so the garbage collector does not scan, move or
+reclaim it. Ordinary Java objects, arrays, strings and thread stacks therefore remain in internal SRAM. The runtime may
+use PSRAM internally when a subsystem owns a large native buffer: on the AI Thinker ESP32-CAM, `Camera.begin()` asks the
+camera driver to place its frame buffers in PSRAM and `Camera.capture()` copies a frame into the caller's Java array.
+Those driver-owned buffers are not handles and are not visible to application code.
+
+For caller-owned bulk data on the Nano ESP32 and AI Thinker ESP32-CAM, the static `Psram` API provides an explicit,
+primitive-only handle. `Psram.allocate(bytes)` returns a positive opaque handle; `Psram.write` and `Psram.read` move
+bytes through a normal caller-owned Java array; `Psram.release` returns the storage. A handle is not a pointer and does
+not keep a Java object alive. Allocation is zero-initialized, at least four-byte aligned, byte-addressable and never
+falls back to internal SRAM. The implementation has a fixed 16-live-handle registry, so release each handle exactly once.
+
+The API reports availability, nominal capacity, current free bytes and the largest contiguous free block. Treat these as
+runtime observations: fragmentation can make a request fail even when total free bytes appear sufficient. Negative result
+constants distinguish invalid arguments, unavailable or exhausted PSRAM, invalid handles, out-of-bounds ranges and the
+handle limit. Generic buffers are CPU-accessible only; they are not implicitly DMA-safe or interrupt-safe, and callers
+must coordinate higher-level ownership when several calls share a handle or race with release. On dual-core ESP32
+boards each individual Juno intrinsic call is serialized by the shared runtime lock, but a sequence of calls is not one
+atomic transaction. Use fixed-size buffers and numeric/ASCII encodings for
+large payloads; creating a `String` still allocates in the Java arena and does not move its characters to PSRAM.
+
+### Choosing storage for large text or binary data
+
+Keep short messages as normal `String` values. For a bounded payload that fits internal memory, use one reusable
+caller-owned `byte[]`. For a larger bounded payload, allocate a PSRAM handle and stage UTF-8 or binary chunks through a
+small reusable `byte[]`; consume each chunk before overwriting it, then release the handle. For an unbounded or
+network-sized payload, stream it through the subsystem's existing `InputStream`/HTTP/SD operations instead of promising
+direct subsystem integration with a PSRAM handle. This keeps Java strings, internal arrays and generic PSRAM storage
+distinct and makes ownership and failure handling explicit.
+
 ## Arrays and constants
 
 Arrays are fixed-size and allocated from the arena. A `static final` array whose initializer is all constants is placed
@@ -121,8 +153,8 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 | UNO WiFi Rev2 | 6 KB | 1024 / 3072 bytes | 512 / 1024 bytes | 1 | The linker | None |
 | UNO R4 WiFi | 32 KB | 8192 / 25736 bytes | 2048 / 8192 bytes | 1 | The linker | None |
 | UNO Q | 256 KB | 8192 / 226928 bytes | 4096 / 16384 bytes | 1 | The loader pool: the sketch's code shares it | None |
-| Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, not used by the arena |
-| AI Thinker ESP32-CAM | 320 KB | 8192 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Used by the camera frame buffers; no size recorded |
+| Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
+| AI Thinker ESP32-CAM | 320 KB | 8192 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
 | M5Stack Cardputer | 320 KB | 8192 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | No size recorded |
 | Raspberry Pi Pico 2 W | 512 KB | 8192 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
 
@@ -139,8 +171,8 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
   board, not the largest a real program can use. On the boards whose limit is not the linker, the real limit is lower,
   and it depends on the program's own memory use. The measured limits will replace these values. Until then, treat the
   maximums as a guard against sizes that cannot work, not as a safe budget.
-- **PSRAM is never used for the arena, objects or stacks.** It is external RAM, slower than the internal SRAM, and the
-  build does not size anything from it.
+- **PSRAM is never used for the arena, objects or stacks.** It is external RAM, slower than the internal SRAM. The
+  runtime reports its capacity, but the build does not size anything from it.
 
 ## Build-time checks
 

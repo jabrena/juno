@@ -8,6 +8,10 @@ The AI Thinker ESP32-CAM is an original ESP32 module with an OV2640 camera, a mi
 status LED on a small board. Its CPU is an Xtensa LX6, so Juno compiles for it with the same Xtensa
 backend as the Nano ESP32.
 
+The board has 4 MB of PSRAM. `Camera.begin()` leaves frame-buffer ownership inside the camera driver; application code
+receives copied bytes through `Camera.capture()`. For other large, caller-owned byte payloads use the static `Psram` API.
+PSRAM is not part of the Java arena and is not managed by the garbage collector.
+
 <img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
 
 Juno's support on this board:

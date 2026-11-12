@@ -540,18 +540,18 @@ them with <code>-D</code>:</p>
 <tbody>
 <tr>
 <td><code>juno.Xmx</code></td>
-<td>8 KB on the 32-bit boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there)</td>
-<td>The size of the garbage-collected arena, where every <code>new</code>, array, string and object lives.</td>
+<td>8 KB on most boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there)</td>
+<td>The size of the garbage-collected arena, where every <code>new</code>, array, string and object lives. Each board has a maximum; see the <a href="../memory-model#board-memory-profiles">Memory Model</a>.</td>
 </tr>
 <tr>
 <td><code>juno.Xss</code></td>
-<td>2048 bytes on the UNO R4 WiFi; 4096 on the UNO Q</td>
-<td>The stack of each extra task.</td>
+<td>512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the UNO Q and Pico 2 W; 8192 on the ESP32 boards</td>
+<td>The stack of each carrier (on AVR, of each extra task). Each board has a maximum.</td>
 </tr>
 <tr>
-<td><code>juno.maxThreads</code></td>
-<td>4</td>
-<td>The number of scheduler slots, including <code>main</code>.</td>
+<td><code>juno.carriers</code></td>
+<td>2 on the ESP32 boards and the Pico 2 W; 1 elsewhere</td>
+<td>How many carriers run threads: <code>1</code> or <code>2</code>, at most the board's carriers. Use <code>1</code> only in test environments that cannot run both cores.</td>
 </tr>
 <tr>
 <td><code>juno.gcLog</code></td>
@@ -561,15 +561,20 @@ them with <code>-D</code>:</p>
 </tbody>
 </table>
 <p>Sizes take the JVM's syntax: bytes, or a number followed by <code>k</code>, <code>m</code> or <code>g</code>. The arena size must be at least 512 bytes
-and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. <code>juno.maxThreads</code> must be
-at least 2; set it to one plus the number of structured subtasks that run at the same time when RAM is tight.</p>
+and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. Each board also has
+a maximum for both sizes; a larger value fails the build and names the maximum.</p>
 <pre><code class="language-bash">./mvnw compile juno:upload -Djuno.Xmx=11k -Djuno.gcLog=true
-./mvnw compile juno:upload -Djuno.maxThreads=3 -Djuno.Xss=1536
+./mvnw compile juno:upload -Djuno.Xss=1536
 </code></pre>
 <p>Increase <code>juno.Xmx</code> when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
 when the default is too small (<code>JUNO-RISK-002</code>). Use <code>juno.gcLog</code> with <code>juno:monitor</code> to see how full the arena gets.
 The values that the examples need are noted in their Javadoc; for example, a few Wi-Fi examples on the UNO R3 build with
 <code>-Djuno.Xmx=512</code>.</p>
+<p><code>juno.Xmx</code> never sizes PSRAM. On the Nano ESP32 and AI Thinker ESP32-CAM, caller-owned bulk bytes can use the static
+<code>Psram</code> API, which reports negative results instead of triggering the Java garbage collector. Release each positive handle
+exactly once; the collector only manages ordinary Java objects and arrays in the internal arena. Camera users should call
+<code>Camera.begin()</code> before networking or capture; the ESP32-CAM driver owns its PSRAM frame buffers and copies frames into a
+caller-owned Java array.</p>
 <h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
 <p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals)
 analyzes the optimized, closed-world IR and prints the findings automatically, before running or
