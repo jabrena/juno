@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.language.concurrency;
 
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -19,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * <p>The three forks are fields rather than an array, which keeps the lock lookup to a simple switch.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class})
 public final class DiningPhilosophers {
     private static final int PHILOSOPHERS = 3;
     private static final int MEALS = 20;

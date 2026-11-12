@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.serial;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -21,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * allocation it makes, happens before the reporting loop, which allocates nothing. The board's USB port
  * re-enumerates when the program starts, so it waits two seconds before starting.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class})
 public final class SerialThreads {
     private static final int LIMIT = 300;
     private static final int SLICE = LIMIT / 3;
