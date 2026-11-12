@@ -32,8 +32,10 @@ public final class ParallelHttpsGet {
     private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private final Clock clock = ArduinoUno.getClock();
-    private static final String FIRST_URL = "https://example.com/?request=first";
-    private static final String SECOND_URL = "https://example.com/?request=second";
+    // A host whose chain ends in a root every board trusts (ISRG Root X1). The Nano ESP32's core checks only the
+    // issuer of the topmost certificate the server sends, so a chain cross-signed by a root outside the bundle fails.
+    private static final String FIRST_URL = "https://letsencrypt.org/?request=first";
+    private static final String SECOND_URL = "https://letsencrypt.org/?request=second";
 
     private final FirstRequest first = new FirstRequest();
     private final SecondRequest second = new SecondRequest();
