@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
@@ -27,7 +28,7 @@ import java.util.concurrent.StructuredTaskScope;
  * UNO WiFi Rev2 queues their transports because a blocking NINA TLS handshake can starve another response;
  * the structured subtasks remain supported, but this board does not provide wire-level HTTP overlap.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class})
 public final class ParallelHttpsGet {
     private static final Wifi WIFI = ArduinoUno.getWifi();
 

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.language.concurrency;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
@@ -22,7 +23,7 @@ import java.util.concurrent.StructuredTaskScope;
  * {@code recursion: shared}; a scheduler that only switched subtasks at loops would print {@code recursion: starved}.
  * The second round lets a failing subtask cancel a sibling that is busy spinning, and prints {@code fail-fast: ok}.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class})
 public final class StructuredPreemption {
     private static final int DEPTH = 24;
     private static final int ROUNDS = 5;
