@@ -130,17 +130,16 @@ never what the program means. The [Maven Plugin](../juno-maven-plugin#juno-flags
 |---|---|---|
 | `juno.Xmx` | The arena | A larger arena holds more objects, arrays and strings at once, and takes that much more RAM from the static data and the stacks. |
 | `juno.Xss` | The stack of each extra task | Each extra task reserves this much RAM, so the total grows with the number of tasks. |
-| `juno.maxThreads` | The number of scheduler slots, including `main` | Each slot beyond the first has its own task stack, so fewer slots save RAM. |
 | `juno.gcLog` | Garbage-collector output | Prints the arena's use before and after each collection, to help size `juno.Xmx`. |
 
 Set `juno.Xmx` to the largest live set the program needs, plus some margin, and check the result with `juno.gcLog`. Lower
-`juno.maxThreads` or `juno.Xss` when the RAM budget below is close to the limit.
+`juno.Xss` when the RAM budget below is close to the limit.
 
 ## Concurrency by board
 
 How many virtual threads a program can run depends on the board's scheduler slots and on the RAM each extra task's stack
-takes. The default is four slots, including `main`, so a program can have three extra virtual threads running beside
-`main`. The `juno.maxThreads` flag changes the number of slots; the Maven Plugin page explains the flags.
+takes. On the AVR boards the default is four slots, including `main`, so a program can have three extra threads beside
+`main`. On the other boards the arena, not a slot count, bounds how many threads can be alive at once.
 
 | Board | SRAM (total RAM) | Virtual threads | At once, including `main` | Extra threads beside `main` | Stack per extra thread | Structured concurrency and locks |
 |---|---|---|---|---|---|---|
@@ -153,8 +152,8 @@ takes. The default is four slots, including `main`, so a program can have three 
 
 - The stacks of the three extra threads take their share of the SRAM. On the UNO R3 they take 1.5 kB of its 2 kB, which
   leaves little for the arena and the statics, so the R3 is the board where threads cost the most RAM.
-- Starting a thread beyond the number of slots stops the program. Raise the slots with `-Djuno.maxThreads=<n>` if the
-  program needs more threads at once; the RAM each extra slot takes comes from the same budget as the arena.
+- On the AVR boards, starting a thread beyond the four slots stops the program. Each extra slot takes RAM from the
+  same budget as the arena, and no flag raises the slot count.
 - Structured concurrency (`StructuredTaskScope`, `ScopedValue`) and `ReentrantLock` need the structured concurrency
   capability. On the UNO R3 and the M5Stack Cardputer, use `synchronized` and atomics instead.
 - The stack sizes are the defaults. `-Djuno.Xss` changes them, within the limits the Maven Plugin page describes.

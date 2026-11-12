@@ -26,7 +26,7 @@ Use this skill only for an explicitly authorized physical deployment of the Mail
 3. Build the Cardputer with `JUNO_TLS_CA="$(<ca.crt)"`, `-Djuno.Xmx=10240`, `-Djuno.gcLog=true`, and its 8 MB/3 MB-app FQBN when the Mozilla bundle exceeds the default 4 MB application partition. The generated serial output contains `juno-gc` collection lines and `juno-gc OOM` if an allocation fails:
    `m5stack:esp32:m5stack_cardputer:FlashSize=8M,PartitionScheme=default_8MB`.
 4. Upload the Cardputer on its recognized serial port, then run `juno:monitor` at 115200 baud. A healthy startup prints Wi-Fi connection and IP without `juno-gc OOM` or a panic.
-5. Build and upload Q with `JUNO_Q_IP` (the cover's IP row; the build fails without it), `JUNO_TLS_CERT` and `JUNO_TLS_KEY`, `-Djuno.Xmx=12288`, `-Djuno.maxThreads=2`, `-Djuno.gcLog=true`, board `arduino-uno-q`, and its serial port. Monitor it at 115200 baud; healthy startup prints `IP: <JUNO_Q_IP>` and `Mailbox listening on HTTPS port 443`, and the cover's second row shows the address.
+5. Build and upload Q with `JUNO_Q_IP` (the cover's IP row; the build fails without it), `JUNO_TLS_CERT` and `JUNO_TLS_KEY`, `-Djuno.Xmx=12288`, `-Djuno.gcLog=true`, board `arduino-uno-q`, and its serial port. Monitor it at 115200 baud; healthy startup prints `IP: <JUNO_Q_IP>` and `Mailbox listening on HTTPS port 443`, and the cover's second row shows the address.
 6. Rebuild the M5 after any CA or Q certificate change. The M5 must be monitored after upload because `juno:upload` resets it and its settings screen requires the mailbox API key and server IP again.
 
 ## Safety and evidence
