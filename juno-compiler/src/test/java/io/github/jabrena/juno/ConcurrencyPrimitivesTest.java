@@ -36,6 +36,7 @@ class ConcurrencyPrimitivesTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.Psram;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import java.util.concurrent.CountDownLatch;
                 import java.util.concurrent.CyclicBarrier;
@@ -163,6 +164,16 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.runtimeShim()).contains("juno_current_slots[2]", "juno_pending_exceptions[2]",
                 "juno_runtime_owner", "juno_port_carrier_id");
         assertThat(result.assembly()).contains("call8 juno_java_leave", "call8 juno_java_return");
+    }
+
+    @Test
+    @DisplayName("Dual-carrier PSRAM calls take and release the shared runtime lock")
+    void shouldSerializePsramCallsAcrossEsp32Carriers() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(() -> Psram.allocate(32)).join();");
+
+        assertThat(result.assembly()).contains("call8 juno_java_leave", "call8 juno_psram_allocate",
+                "call8 juno_java_return");
     }
 
     @Test

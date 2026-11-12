@@ -100,14 +100,17 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.BLUETOOTH_LE, true),
                 arguments(Board.NANO_ESP32, Capability.WATCHDOG, true),
                 arguments(Board.NANO_ESP32, Capability.USB_HID, true),
+                arguments(Board.NANO_ESP32, Capability.PSRAM, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.BIG_NUMBERS, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.BLUETOOTH_LE, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.CAMERA, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.PSRAM, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_STREAM, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_SERVER, true),
                 arguments(Board.NANO_ESP32, Capability.HTTP_STREAM, false),
                 arguments(Board.NANO_ESP32, Capability.CAMERA, false),
                 arguments(Board.M5_CARDPUTER, Capability.BIG_NUMBERS, true),
+                arguments(Board.M5_CARDPUTER, Capability.PSRAM, false),
                 arguments(Board.M5_CARDPUTER, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.M5_CARDPUTER, Capability.USB_HID, true),
                 arguments(Board.M5_CARDPUTER, Capability.WIFI, true),
@@ -1062,14 +1065,14 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO R4 WiFi supports every capability except Cardputer hardware, its IMU and the TLS server")
+    @DisplayName("The UNO R4 WiFi supports every general capability except Cardputer hardware, its IMU, PSRAM and the TLS server")
     void shouldSupportEveryGeneralCapabilityOnTheUnoR4WiFi() {
         // When & Then
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
                         && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
                         && capability != Capability.ONBOARD_IMU && capability != Capability.CAMERA
-                        && capability != Capability.HTTP_STREAM)
+                        && capability != Capability.HTTP_STREAM && capability != Capability.PSRAM)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 

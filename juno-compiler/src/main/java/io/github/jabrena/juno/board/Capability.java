@@ -143,6 +143,13 @@ public enum Capability {
             return board.displayName() + " has no onboard camera; only the AI Thinker ESP32-CAM has one";
         }
     },
+    PSRAM("explicit PSRAM buffers") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " is outside Juno's explicit PSRAM-buffer support; only the Nano ESP32 and AI "
+                    + "Thinker ESP32-CAM are supported";
+        }
+    },
     WATCHDOG("@Watchdog") {
         @Override
         public String unsupportedReason(Board board) {

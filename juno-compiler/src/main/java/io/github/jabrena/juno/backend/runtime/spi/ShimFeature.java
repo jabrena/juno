@@ -26,6 +26,8 @@ public enum ShimFeature {
     HTTP_STREAM,
     /** {@code Esp32Cam.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
     CAMERA,
+    /** Explicit external PSRAM byte buffers on the Nano ESP32 and AI Thinker ESP32-CAM. */
+    PSRAM,
     /** {@code ParallelBus}: eight data pins and a strobe, written through the core's GPIO port registers. */
     PARALLEL_BUS,
     /** {@code Infrared}: bit-banged framed bytes over a 38 kHz IR receiver and LED, no library. */

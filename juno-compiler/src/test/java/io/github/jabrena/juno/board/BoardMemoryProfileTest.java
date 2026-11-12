@@ -30,7 +30,7 @@ class BoardMemoryProfileTest {
     @EnumSource(Board.class)
     @DisplayName("No profile reads its arena size from PSRAM")
     void shouldNotDeriveTheArenaFromPsram(Board board) {
-        // The PSRAM figure is report-only: the arena bounds never move with it.
+        // The PSRAM figure is external metadata: the arena bounds never move with it.
         BoardMemoryProfile profile = board.memoryProfile();
         assertThat(profile.maxArenaBytes()).isLessThan(profile.internalSramBytes());
     }

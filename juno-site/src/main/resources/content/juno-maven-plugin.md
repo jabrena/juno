@@ -163,6 +163,12 @@ when the default is too small (`JUNO-RISK-002`). Use `juno.gcLog` with `juno:mon
 The values that the examples need are noted in their Javadoc; for example, a few Wi-Fi examples on the UNO R3 build with
 `-Djuno.Xmx=512`.
 
+`juno.Xmx` never sizes PSRAM. On the Nano ESP32 and AI Thinker ESP32-CAM, caller-owned bulk bytes can use the static
+`Psram` API, which reports negative results instead of triggering the Java garbage collector. Release each positive handle
+exactly once; the collector only manages ordinary Java objects and arrays in the internal arena. Camera users should call
+`Camera.begin()` before networking or capture; the ESP32-CAM driver owns its PSRAM frame buffers and copies frames into a
+caller-owned Java array.
+
 ## Runtime-risk inspection
 
 Every `compile` (standalone CLI or `juno-maven-plugin`'s `compile`/`verify`/`upload` goals)

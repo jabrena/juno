@@ -52,6 +52,10 @@ public final class AiThinkerEsp32CamStream {
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
+        if (!CAMERA.begin()) {
+            Serial.println("Camera initialization failed");
+            return;
+        }
         if (!connectWifi()) {
             return;
         }

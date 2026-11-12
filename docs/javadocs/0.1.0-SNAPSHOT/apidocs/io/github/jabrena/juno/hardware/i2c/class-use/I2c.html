@@ -104,6 +104,11 @@ them from a PCA9685 servo shield over I2C.</div>
 <div class="col-last odd-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.security">io.github.jabrena.juno.hardware.security</a></div>
+<div class="col-last even-row-color">
+<div class="block">Secrets kept in a secure element: <a href="../../security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
+<a href="../../security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> is the Microchip ATECC608 provider over an I2C bus.</div>
+</div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
@@ -124,6 +129,17 @@ them from a PCA9685 servo shield over I2C.</div>
 <div class="col-second odd-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getI2c()" class="member-name-link">getI2c</a>()</code></div>
 <div class="col-last odd-row-color">
 <div class="block">The board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
+</div>
+<div class="col-first even-row-color"><code>static <a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">Esp32Cam.</span><code><a href="../../Esp32Cam.html#getI2c()" class="member-name-link">getI2c</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The AI Thinker ESP32-CAM's I2C bus on GPIO26 (SDA) and GPIO27 (SCL), the camera's SCCB pins.</div>
+</div>
+<div class="col-first odd-row-color"><code>static <a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getI2c()" class="member-name-link">getI2c</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">The Cardputer's I2C bus on the Grove port (SDA GPIO2, SCL GPIO1), where a breakout such as an ATECC608 plugs in
+through a Grove-to-Qwiic cable.</div>
 </div>
 <div class="col-first even-row-color"><code>static <a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">RaspberryPico2.</span><code><a href="../../RaspberryPico2.html#getI2c()" class="member-name-link">getI2c</a>()</code></div>
@@ -245,6 +261,23 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="col-last even-row-color">
 <div class="block">Makes <a href="../../ArduinoUno.html#getI2c()"><code>ArduinoUno.getI2c()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.security">
+<h2>Uses of <a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a> in <a href="../../security/package-summary.html">io.github.jabrena.juno.hardware.security</a></h2>
+<div class="caption"><span>Constructors in <a href="../../security/package-summary.html">io.github.jabrena.juno.hardware.security</a> with parameters of type <a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../security/Atecc608.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,io.github.jabrena.juno.hardware.security.SecretSlots)" class="member-name-link">Atecc608</a><wbr>(<a href="../I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;i2c,
+ <a href="../../security/SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a>&nbsp;slots)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A driver over <code>i2c</code>, the bus the chip is wired to, reading the names in <code>slots</code>.</div>
 </div>
 </div>
 </section>

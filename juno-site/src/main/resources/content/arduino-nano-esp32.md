@@ -26,6 +26,9 @@ own backend instead of the Thumb-2 or AVR one.
 | Arduino CLI FQBN | `arduino:esp32:nano_nora` |
 | Juno board id | `arduino-nano-esp32` |
 
+The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and garbage collector; use the static
+`Psram` API for caller-owned byte buffers when the fixed internal arena is too small.
+
 ## What Juno supports
 
 | Feature | Status | Notes | Example |

@@ -377,6 +377,21 @@ public final class IntrinsicLowering {
         shim(Intrinsic.MEMORY_FLASH_USED, "juno_memory_flash_used", Result.WORD, List.of(), ShimFeature.FLASH);
         shim(Intrinsic.MEMORY_FLASH_CAPACITY, "juno_memory_flash_capacity", Result.WORD, List.of(),
                 ShimFeature.FLASH);
+        shim(Intrinsic.PSRAM_AVAILABLE, "juno_psram_is_available", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_NOMINAL_CAPACITY, "juno_psram_nominal_capacity", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_TOTAL_BYTES, "juno_psram_total_bytes", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_FREE_BYTES, "juno_psram_free_bytes", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_LARGEST_FREE_BLOCK, "juno_psram_largest_free_block", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_ALLOCATE, "juno_psram_allocate", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_CAPACITY, "juno_psram_capacity", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_READ_BYTE, "juno_psram_read_byte", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_WRITE_BYTE, "juno_psram_write_byte", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_READ, "juno_psram_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_WRITE, "juno_psram_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_RELEASE, "juno_psram_release", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
     }
 
     /**

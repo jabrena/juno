@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Memory Model">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="How a Juno program runs on the microcontroller: its flash and RAM, startup, the stack, the fixed arena and its garbage collector.">
-  <meta property="og:description" content="How a Juno program runs on the microcontroller: its flash and RAM, startup, the stack, the fixed arena and its garbage collector." />
-  <meta name="twitter:description" content="How a Juno program runs on the microcontroller: its flash and RAM, startup, the stack, the fixed arena and its garbage collector.">
+  <meta name="description" content="How a Juno program uses the microcontroller&#39;s RAM: internal SRAM, the arena, stacks, the runtime reserve, PSRAM, and the limits each board enforces.">
+  <meta property="og:description" content="How a Juno program uses the microcontroller&#39;s RAM: internal SRAM, the arena, stacks, the runtime reserve, PSRAM, and the limits each board enforces." />
+  <meta name="twitter:description" content="How a Juno program uses the microcontroller&#39;s RAM: internal SRAM, the arena, stacks, the runtime reserve, PSRAM, and the limits each board enforces.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/memory-model/" />
@@ -316,8 +316,8 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>A Juno program is compiled ahead of time into machine code for the board's microcontroller. The board runs that code
 directly: there is no JVM, no operating system and no heap that grows. Everything the program needs is laid out in the
-chip's two memories when the firmware is built, and only a few regions are used at run time. This page explains that
-layout and how the program uses it.</p>
+chip's memories when the firmware is built, and only a few regions are used at run time. This page explains that
+layout, what each board allows, and how to size a program.</p>
 <h2 id="where-the-program-lives">Where the program lives</h2>
 <p>The microcontroller has two kinds of memory:</p>
 <ul>
@@ -354,9 +354,9 @@ costs no RAM.</li>
 <td>The whole program</td>
 </tr>
 <tr>
-<td>Arena (fixed 8 KiB)</td>
+<td>Arena</td>
 <td>RAM</td>
-<td>Objects, records, arrays, capturing closures, <code>UUID</code>, <code>BigInteger</code> and <code>BigDecimal</code> values, atomic cells</td>
+<td>Objects, records, arrays, capturing closures, <code>UUID</code>, <code>BigInteger</code> and <code>BigDecimal</code> values, atomic cells. Its size depends on the board, see the <a href="#board-memory-profiles">board profiles</a></td>
 <td>Until the garbage collector reclaims it</td>
 </tr>
 <tr>
@@ -372,10 +372,10 @@ costs no RAM.</li>
 <td>Until the slot is reused</td>
 </tr>
 <tr>
-<td>Task stacks</td>
+<td>Carrier and task stacks</td>
 <td>RAM</td>
-<td>One small stack for each extra task (2 KiB on the UNO R4 WiFi, 4 KiB on the UNO Q)</td>
-<td>One task</td>
+<td>The stack each carrier runs on, and one stack for each extra thread where the board needs one. See <a href="#concurrency-by-board">concurrency by board</a></td>
+<td>The program</td>
 </tr>
 </tbody>
 </table>
@@ -383,8 +383,8 @@ costs no RAM.</li>
 the program is built, and no allocation can make it larger.</p>
 <h2 id="startup">Startup</h2>
 <p>When the board starts, the runtime sets up the stack and the static data, and then runs the static initializers
-(<code>&lt;clinit&gt;</code>) of the classes the program uses. The initializers run before <code>main</code>, and they can only use the supported subset. After that the runtime calls <code>main</code>, and the program keeps
-running until it returns or the board is reset.</p>
+(<code>&lt;clinit&gt;</code>) of the classes the program uses. The initializers run before <code>main</code>, and they can only use the supported
+subset. After that the runtime calls <code>main</code>, and the program keeps running until it returns or the board is reset.</p>
 <h2 id="the-stack">The stack</h2>
 <p>Each method call takes a frame on the stack, which holds the method's local variables and its working values. A frame is
 released when the method returns. The stack has a fixed size, so a recursion that goes too deep runs out of it. The
@@ -426,6 +426,32 @@ runs. Allocate what you need at startup, so the arena is not under pressure duri
 </ul>
 <p>When the arena is full even after a collection, the program stops with a diagnostic on the serial port. There is no
 <code>OutOfMemoryError</code> to catch.</p>
+<h2 id="psram-and-runtime-owned-buffers">PSRAM and runtime-owned buffers</h2>
+<p>PSRAM is a separate byte store. It is never part of the Java arena, so the garbage collector does not scan, move or
+reclaim it. Ordinary Java objects, arrays, strings and thread stacks therefore remain in internal SRAM. The runtime may
+use PSRAM internally when a subsystem owns a large native buffer: on the AI Thinker ESP32-CAM, <code>Camera.begin()</code> asks the
+camera driver to place its frame buffers in PSRAM and <code>Camera.capture()</code> copies a frame into the caller's Java array.
+Those driver-owned buffers are not handles and are not visible to application code.</p>
+<p>For caller-owned bulk data on the Nano ESP32 and AI Thinker ESP32-CAM, the static <code>Psram</code> API provides an explicit,
+primitive-only handle. <code>Psram.allocate(bytes)</code> returns a positive opaque handle; <code>Psram.write</code> and <code>Psram.read</code> move
+bytes through a normal caller-owned Java array; <code>Psram.release</code> returns the storage. A handle is not a pointer and does
+not keep a Java object alive. Allocation is zero-initialized, at least four-byte aligned, byte-addressable and never
+falls back to internal SRAM. The implementation has a fixed 16-live-handle registry, so release each handle exactly once.</p>
+<p>The API reports availability, nominal capacity, current free bytes and the largest contiguous free block. Treat these as
+runtime observations: fragmentation can make a request fail even when total free bytes appear sufficient. Negative result
+constants distinguish invalid arguments, unavailable or exhausted PSRAM, invalid handles, out-of-bounds ranges and the
+handle limit. Generic buffers are CPU-accessible only; they are not implicitly DMA-safe or interrupt-safe, and callers
+must coordinate higher-level ownership when several calls share a handle or race with release. On dual-core ESP32
+boards each individual Juno intrinsic call is serialized by the shared runtime lock, but a sequence of calls is not one
+atomic transaction. Use fixed-size buffers and numeric/ASCII encodings for
+large payloads; creating a <code>String</code> still allocates in the Java arena and does not move its characters to PSRAM.</p>
+<h3 id="choosing-storage-for-large-text-or-binary-data">Choosing storage for large text or binary data</h3>
+<p>Keep short messages as normal <code>String</code> values. For a bounded payload that fits internal memory, use one reusable
+caller-owned <code>byte[]</code>. For a larger bounded payload, allocate a PSRAM handle and stage UTF-8 or binary chunks through a
+small reusable <code>byte[]</code>; consume each chunk before overwriting it, then release the handle. For an unbounded or
+network-sized payload, stream it through the subsystem's existing <code>InputStream</code>/HTTP/SD operations instead of promising
+direct subsystem integration with a PSRAM handle. This keeps Java strings, internal arrays and generic PSRAM storage
+distinct and makes ownership and failure handling explicit.</p>
 <h2 id="arrays-and-constants">Arrays and constants</h2>
 <p>Arrays are fixed-size and allocated from the arena. A <code>static final</code> array whose initializer is all constants is placed
 in flash instead, which keeps large lookup tables out of RAM. A table that cannot be placed in flash falls back to the
@@ -433,13 +459,11 @@ arena, and the build reports why (<code>JUNO-RISK-012</code>).</p>
 <p>This table estimates how many arrays fit in the arena on each board. An array costs its element size times its length,
 plus the 4-byte header of its block, so the number that fit is the arena size divided by that cost. The arena is shared
 with the program's objects and strings, and the static data and stacks take their own share of the RAM, so these are
-upper limits.</p>
+upper limits. Every board uses its default arena unless <code>juno.Xmx</code> says otherwise.</p>
 <table>
 <thead>
 <tr>
 <th>Board</th>
-<th>Flash (total)</th>
-<th>SRAM (total RAM)</th>
 <th>Arena (default)</th>
 <th><code>int[100]</code> arrays that fit (404 bytes each)</th>
 <th><code>byte[1000]</code> arrays that fit (1004 bytes each)</th>
@@ -448,75 +472,191 @@ upper limits.</p>
 <tbody>
 <tr>
 <td>UNO R3</td>
-<td>32 kB (0.5 kB for the bootloader)</td>
-<td>2 kB</td>
 <td>1 KB</td>
 <td>2</td>
 <td>1</td>
 </tr>
 <tr>
 <td>UNO WiFi Rev2</td>
-<td>48 kB</td>
-<td>6 kB</td>
 <td>1 KB (up to 3 KB with <code>juno.Xmx=3k</code>: 7 and 3)</td>
 <td>2</td>
 <td>1</td>
 </tr>
 <tr>
 <td>UNO R4 WiFi</td>
-<td>256 kB</td>
-<td>32 kB</td>
 <td>8 KB</td>
 <td>20</td>
 <td>8</td>
 </tr>
 <tr>
 <td>UNO Q</td>
-<td>2 MB</td>
-<td>786 kB</td>
 <td>8 KB</td>
 <td>20</td>
 <td>8</td>
 </tr>
 <tr>
 <td>Nano ESP32</td>
-<td>16 MB (external)</td>
-<td>512 kB (plus 8 MB PSRAM)</td>
+<td>8 KB</td>
+<td>20</td>
+<td>8</td>
+</tr>
+<tr>
+<td>AI Thinker ESP32-CAM</td>
 <td>8 KB</td>
 <td>20</td>
 <td>8</td>
 </tr>
 <tr>
 <td>M5Stack Cardputer</td>
-<td>8 MB</td>
-<td>512 kB</td>
+<td>8 KB</td>
+<td>20</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Raspberry Pi Pico 2 W</td>
 <td>8 KB</td>
 <td>20</td>
 <td>8</td>
 </tr>
 </tbody>
 </table>
-<p>Flash holds the program's code as well as its constant tables, so the room left for <code>static final</code> tables is smaller
-than the total. The linker report shows what each build uses. On the UNO Q the sketch partition is also smaller than the
-full flash, as the board pages describe.</p>
+<p>Flash holds the program's code as well as its constant tables, so the room left for <code>static final</code> tables is smaller than
+the board's flash. The board pages describe each board's flash, and the linker report shows what a build uses.</p>
+<h2 id="board-memory-profiles">Board memory profiles</h2>
+<p>Each board has a memory profile in the compiler. It gives the RAM the build may use, the arena and stack sizes it starts
+with, and the largest sizes it accepts. The build checks every explicit <code>juno.Xmx</code> and <code>juno.Xss</code> against these maximums.</p>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Usable RAM</th>
+<th>Arena: default / max</th>
+<th>Stack per carrier: default / max</th>
+<th>Carriers</th>
+<th>What decides whether a larger arena fits</th>
+<th>PSRAM</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>UNO R3</td>
+<td>2 KB</td>
+<td>1024 / 1024 bytes</td>
+<td>512 / 512 bytes</td>
+<td>1</td>
+<td>The linker</td>
+<td>None</td>
+</tr>
+<tr>
+<td>UNO WiFi Rev2</td>
+<td>6 KB</td>
+<td>1024 / 3072 bytes</td>
+<td>512 / 1024 bytes</td>
+<td>1</td>
+<td>The linker</td>
+<td>None</td>
+</tr>
+<tr>
+<td>UNO R4 WiFi</td>
+<td>32 KB</td>
+<td>8192 / 25736 bytes</td>
+<td>2048 / 8192 bytes</td>
+<td>1</td>
+<td>The linker</td>
+<td>None</td>
+</tr>
+<tr>
+<td>UNO Q</td>
+<td>256 KB</td>
+<td>8192 / 226928 bytes</td>
+<td>4096 / 16384 bytes</td>
+<td>1</td>
+<td>The loader pool: the sketch's code shares it</td>
+<td>None</td>
+</tr>
+<tr>
+<td>Nano ESP32</td>
+<td>320 KB</td>
+<td>8192 / 296840 bytes</td>
+<td>8192 / 32768 bytes</td>
+<td>2</td>
+<td>The run-time heap</td>
+<td>8 MB, explicit <code>Psram</code> buffers only</td>
+</tr>
+<tr>
+<td>AI Thinker ESP32-CAM</td>
+<td>320 KB</td>
+<td>8192 / 305216 bytes</td>
+<td>8192 / 32768 bytes</td>
+<td>2</td>
+<td>The run-time heap</td>
+<td>4 MB; camera driver buffers plus explicit <code>Psram</code> buffers</td>
+</tr>
+<tr>
+<td>M5Stack Cardputer</td>
+<td>320 KB</td>
+<td>8192 / 273408 bytes</td>
+<td>8192 / 32768 bytes</td>
+<td>2</td>
+<td>The run-time heap</td>
+<td>No size recorded</td>
+</tr>
+<tr>
+<td>Raspberry Pi Pico 2 W</td>
+<td>512 KB</td>
+<td>8192 / 436176 bytes</td>
+<td>4096 / 16384 bytes</td>
+<td>2</td>
+<td>The run-time heap</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Usable RAM</strong> is the limit the Arduino toolchain reports for a sketch's static data and arena. It is smaller than the
+chip's total RAM: the core, its radio and networking libraries, and the runtime keep the rest. The UNO Q, for example,
+has 786 KB of RAM in total but offers 256 KB to a sketch.</li>
+<li><strong>What decides whether a larger arena fits</strong> explains how a too-large arena fails:
+<ul>
+<li><strong>The linker</strong> places every section, so a successful link is the final word.</li>
+<li><strong>The run-time heap</strong> supplies the memory for Wi-Fi, TLS, Bluetooth, the camera and the extra thread stacks. A
+larger arena can link and then fail at boot or when a network connection starts.</li>
+<li><strong>The loader pool</strong> is filled when the sketch loads on the UNO Q, and the sketch's code and its arena share it. The
+usable arena shrinks as the program grows.</li>
+</ul>
+</li>
+<li><strong>The maximums are provisional.</strong> Each maximum is the largest arena the linker accepts for a minimal program on that
+board, not the largest a real program can use. On the boards whose limit is not the linker, the real limit is lower,
+and it depends on the program's own memory use. The measured limits will replace these values. Until then, treat the
+maximums as a guard against sizes that cannot work, not as a safe budget.</li>
+<li><strong>PSRAM is never used for the arena, objects or stacks.</strong> It is external RAM, slower than the internal SRAM. The
+runtime reports its capacity, but the build does not size anything from it.</li>
+</ul>
 <h2 id="build-time-checks">Build-time checks</h2>
 <p>The compiler looks at the program's memory use before it is built, and reports what it finds as <code>JUNO-RISK-*</code>:</p>
 <ul>
 <li><code>JUNO-RISK-001</code>: allocation inside a loop.</li>
 <li><code>JUNO-RISK-002</code>: a startup allocation estimate larger than the arena.</li>
 <li><code>JUNO-RISK-003</code>: a recursion cycle with unbounded depth.</li>
+<li><code>JUNO-RISK-011</code>: a thread body that may use more stack than its board's carrier stack.</li>
 <li><code>JUNO-RISK-012</code>: a constant table kept in the arena instead of flash.</li>
+<li><code>JUNO-RISK-014</code>: on the UNO Q, the arena and static data pass 90% of the loader pool.</li>
 </ul>
+<p>When the startup estimate is larger than the arena, the compiler also suggests a larger <code>juno.Xmx</code>, capped at the board's
+maximum. If the program cannot fit even at that maximum, the suggestion says so.</p>
+<p>Every build prints a &quot;Runtime configuration&quot; block before these findings: the board, the arena and whether it is the
+board default or a <code>juno.Xmx</code> override, the carrier stack, the carrier count, and the PSRAM the board carries.</p>
 <p>These are estimates, so treat them as warnings rather than proof. The <a href="../juno-maven-plugin#runtime-risk-inspection">Maven Plugin</a>
 page explains how they are reported.</p>
 <h2 id="juno-flags">Juno flags</h2>
-<p>Four <code>juno.*</code> properties set the memory that a program is built with. Each one changes how much RAM the program can use,
-never what the program means. The <a href="../juno-maven-plugin#juno-flags">Maven Plugin</a> page gives their syntax and limits.</p>
+<p>Four <code>juno.*</code> properties set the memory and carriers a program is built with. Each one changes how much RAM the program
+can use, never what the program means. The <a href="../juno-maven-plugin#juno-flags">Maven Plugin</a> page gives their syntax.</p>
 <table>
 <thead>
 <tr>
 <th>Flag</th>
 <th>Sets</th>
+<th>Accepted values</th>
 <th>Memory effect</th>
 </tr>
 </thead>
@@ -524,114 +664,128 @@ never what the program means. The <a href="../juno-maven-plugin#juno-flags">Mave
 <tr>
 <td><code>juno.Xmx</code></td>
 <td>The arena</td>
+<td>A size of at least 512 bytes, a multiple of 8, at most the board's maximum arena</td>
 <td>A larger arena holds more objects, arrays and strings at once, and takes that much more RAM from the static data and the stacks.</td>
 </tr>
 <tr>
 <td><code>juno.Xss</code></td>
-<td>The stack of each extra task</td>
-<td>Each extra task reserves this much RAM, so the total grows with the number of tasks.</td>
+<td>The stack of each carrier (on AVR, of each extra task)</td>
+<td>A size of at least 512 bytes, a multiple of 8, at most the board's maximum stack</td>
+<td>Each carrier reserves this much RAM. On the ESP32 boards and the Pico 2 W, each thread slot takes it from the run-time heap.</td>
 </tr>
 <tr>
-<td><code>juno.maxThreads</code></td>
-<td>The number of scheduler slots, including <code>main</code></td>
-<td>Each slot beyond the first has its own task stack, so fewer slots save RAM.</td>
+<td><code>juno.carriers</code></td>
+<td>How many carriers run threads</td>
+<td><code>1</code> or <code>2</code>, at most the board's carriers</td>
+<td><code>1</code> runs every thread on one carrier. Use it only in test environments that cannot run both cores.</td>
 </tr>
 <tr>
 <td><code>juno.gcLog</code></td>
 <td>Garbage-collector output</td>
-<td>Prints the arena's use before and after each collection, to help size <code>juno.Xmx</code>.</td>
+<td><code>true</code> or <code>false</code></td>
+<td>Prints one <code>Serial</code> line per collection, with the arena's use before and after.</td>
 </tr>
 </tbody>
 </table>
-<p>Set <code>juno.Xmx</code> to the largest live set the program needs, plus some margin, and check the result with <code>juno.gcLog</code>. Lower
-<code>juno.maxThreads</code> or <code>juno.Xss</code> when the RAM budget below is close to the limit.</p>
+<p>A size is written as the JVM writes <code>-Xmx</code>: bytes, or a number followed by <code>k</code>, <code>m</code> or <code>g</code>. An explicit value is an override
+even when it equals the board default, and the build's configuration block says which one was used. A value above the
+board's maximum fails the build with a message that names the board, the requested size, the maximum, the board's
+internal RAM and the default. For example, <code>-Djuno.Xmx=1g</code> on the UNO R4 WiFi fails with a message that starts:</p>
+<blockquote>
+<p>The UNO R4 WiFi has too little RAM for a 1073741824-byte arena; juno.Xmx can be at most 25736 bytes there (32768 bytes internal SRAM, ... default 8192).</p>
+</blockquote>
+<h2 id="sizing-a-program">Sizing a program</h2>
+<ol>
+<li><strong>Read the configuration block</strong> at the start of the build, and confirm the arena is the size you expect.</li>
+<li><strong>Read the arena figure</strong> in the risk report: <code>Arena: estimated / capacity</code>. If the startup estimate exceeds the
+capacity, the compiler's suggestion gives a size to try.</li>
+<li><strong>Check the live set at run time.</strong> Build with <code>-Djuno.gcLog=true</code>, watch the collections on the serial port, and
+raise <code>juno.Xmx</code> in steps while the arena stays nearly full after each collection. The program can also read
+<code>ArduinoUno.getBoardMemory()</code> (or <code>ArduinoNano.getBoardMemory()</code> on the Nano ESP32): <code>arenaUsedBytes()</code> and <code>arenaCapacityBytes()</code> give the same figures from inside the
+program.</li>
+<li><strong>Confirm the build runs.</strong> On the UNO R3 and UNO R4, a link that succeeds is a reliable sign the sizes fit. On the
+Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W and UNO Q, the run-time heap or the loader pool decides, so upload the
+program and watch its output with <code>juno:monitor</code> before relying on the size.</li>
+</ol>
 <h2 id="concurrency-by-board">Concurrency by board</h2>
-<p>How many virtual threads a program can run depends on the board's scheduler slots and on the RAM each extra task's stack
-takes. The default is four slots, including <code>main</code>, so a program can have three extra virtual threads running beside
-<code>main</code>. The <code>juno.maxThreads</code> flag changes the number of slots; the Maven Plugin page explains the flags.</p>
+<p>How many threads a program can run depends on the board's carriers and on the RAM each thread's stack takes. The table
+gives the limit each board applies.</p>
 <table>
 <thead>
 <tr>
 <th>Board</th>
-<th>SRAM (total RAM)</th>
-<th>Virtual threads</th>
-<th>At once, including <code>main</code></th>
-<th>Extra threads beside <code>main</code></th>
-<th>Stack per extra thread</th>
+<th>Limit on threads alive at once</th>
+<th>Stack per extra thread (default / max)</th>
 <th>Structured concurrency and locks</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>UNO R3</td>
-<td>2 kB</td>
-<td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>512 bytes</td>
-<td>No</td>
+<td>Four slots, including <code>main</code></td>
+<td>512 / 512 bytes</td>
+<td>No: use <code>synchronized</code> and atomics</td>
 </tr>
 <tr>
 <td>UNO WiFi Rev2</td>
-<td>6 kB</td>
-<td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>512 bytes (up to 1 KB)</td>
+<td>Four slots, including <code>main</code></td>
+<td>512 / 1024 bytes</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>UNO R4 WiFi</td>
-<td>32 kB</td>
-<td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>2048 bytes</td>
+<td>No slot count: the arena bounds the threads</td>
+<td>2048 / 8192 bytes</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>UNO Q</td>
-<td>786 kB</td>
-<td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>4096 bytes</td>
+<td>No slot count: the arena bounds the threads</td>
+<td>4096 / 16384 bytes</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>Nano ESP32</td>
-<td>512 kB (plus 8 MB PSRAM)</td>
+<td>16 slots on two carriers (the default); four with <code>juno.carriers=1</code></td>
+<td>8192 / 32768 bytes</td>
 <td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>8192 bytes</td>
+</tr>
+<tr>
+<td>AI Thinker ESP32-CAM</td>
+<td>16 slots on two carriers (the default); four with <code>juno.carriers=1</code></td>
+<td>8192 / 32768 bytes</td>
 <td>Yes</td>
 </tr>
 <tr>
 <td>M5Stack Cardputer</td>
-<td>512 kB</td>
+<td>16 slots on two carriers (the default); four with <code>juno.carriers=1</code></td>
+<td>8192 / 32768 bytes</td>
 <td>Yes</td>
-<td>4</td>
-<td>3</td>
-<td>8192 bytes</td>
-<td>No</td>
+</tr>
+<tr>
+<td>Raspberry Pi Pico 2 W</td>
+<td>16 slots on two carriers (the default); no slot count with <code>juno.carriers=1</code></td>
+<td>4096 / 16384 bytes</td>
+<td>Yes</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li>The stacks of the three extra threads take their share of the SRAM. On the UNO R3 they take 1.5 kB of its 2 kB, which
-leaves little for the arena and the statics, so the R3 is the board where threads cost the most RAM.</li>
-<li>Starting a thread beyond the number of slots stops the program. Raise the slots with <code>-Djuno.maxThreads=&lt;n&gt;</code> if the
-program needs more threads at once; the RAM each extra slot takes comes from the same budget as the arena.</li>
+<li>On the UNO R3 the three extra threads take 1.5 KB of its 2 KB, which leaves little for the arena and the statics. The
+R3 is the board where threads cost the most RAM.</li>
+<li>On the four-slot boards, starting a thread beyond the slots stops the program. No flag raises the slot count.</li>
+<li>On the two-carrier boards each slot's stack comes from the run-time heap only once a thread uses that slot, so a
+program that starts many threads can exhaust the heap at run time even when it links.</li>
 <li>Structured concurrency (<code>StructuredTaskScope</code>, <code>ScopedValue</code>) and <code>ReentrantLock</code> need the structured concurrency
-capability. On the UNO R3 and the M5Stack Cardputer, use <code>synchronized</code> and atomics instead.</li>
-<li>The stack sizes are the defaults. <code>-Djuno.Xss</code> changes them, within the limits the Maven Plugin page describes.</li>
+capability, which every board except the UNO R3 has.</li>
 </ul>
 <h2 id="ram-budget">RAM budget</h2>
 <p>The arena is only one share of the board's RAM. The static data, the task stacks, the core's USB and networking runtime,
 and optional libraries such as <code>ArduinoBLE</code> and <code>WiFiS3</code> take the rest. On the UNO R4 WiFi, with 32 KB in total,
 combining Bluetooth, Wi-Fi and several task stacks can run out of room at link time. When it does, the linker reports
-that <code>.heap</code> does not fit in <code>RAM</code>. Reduce the number of forks, or drop an optional shield or library, and build again.</p>
+that <code>.heap</code> does not fit in <code>RAM</code>. Reduce the number of threads, or drop an optional shield or library, and build again.</p>
+<p>On the boards whose limit is the run-time heap, the same budget is spent at run time instead, and the failure appears as a
+boot loop or a stopped program rather than a link error. Watch the serial output after upload.</p>
     </div>
   </section>
 </article>
