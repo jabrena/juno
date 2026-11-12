@@ -358,8 +358,9 @@ String password = properties.getProperty(&quot;smtp.password&quot;);
 <p>Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
 Values loaded this way are runtime <code>String</code>s, and a runtime <code>String</code> holds 31 bytes, so keep the password, the subject
 and the body within that length.</p>
-<p>The <code>InboxCount</code> and <code>EmailClient</code> examples read the same values from environment variables at compile time instead,
-with <code>host</code> and similar calls. Use that approach only on a board without an SD card.</p>
+<p>The <code>InboxCount</code> and <code>EmailClient</code> examples read the SMTP values from the ATECC608 <code>SecretStore</code> through
+<code>SecretStore</code>. SD-card properties remain supported for applications that intentionally use removable configuration;
+they are not a substitute for provisioning credentials into the secure element.</p>
 <h2 id="smtp">SMTP</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java"><code>Smtp</code></a>
 sends one plain-text message to one recipient. It offers two ways to start the encrypted connection:</p>

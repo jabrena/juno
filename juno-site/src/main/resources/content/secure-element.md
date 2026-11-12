@@ -25,10 +25,17 @@ chip. Treat this page as a preview until the hardware steps are done.
 | `wifi.ssid` | Wi-Fi network name | 31 characters |
 | `wifi.password` | Wi-Fi password | 31 characters |
 | `mailbox.apikey` | Mailbox API key | 63 bytes |
+| `mailbox.q.ip` | UNO Q mailbox address | 31 characters |
+| `smtp.host` | SMTP server | 31 characters |
+| `smtp.username` | SMTP username | 31 characters |
+| `smtp.password` | SMTP password | 31 characters |
+| `supabase.api.host` | Supabase REST host | 31 characters |
+| `supabase.api.key` | Supabase publishable key | 63 bytes |
+| `supabase.api.url` | Supabase table endpoint | 63 bytes |
 
 Values must be printable ASCII. The Wi-Fi limit is 31 characters because the example builds the SSID and password as runtime
-`String`s, and a longer one stops the board without a message. `juno:secret` checks these limits before it uploads
-anything.
+`String`s. The plugin only enforces the 63-byte secure-element slot capacity; the board-side `SecretSlots` table is the
+source of truth for valid names.
 
 ## Provisioning
 
@@ -44,7 +51,8 @@ serial as hex, and never puts it on the command line or in the log:
 ```
 
 - `-Djuno.secret.list=true` prints `STATE <name> written|missing` for every name, without values.
-- `-Djuno.secret.clear=true` asks you to type `CLEAR` before uploading anything, then empties every name.
+- `-Djuno.secret.clear=true` asks you to type `CLEAR` before uploading anything, then asks the board to empty every name
+  in its own `SecretSlots` table.
 - Only one of `-Djuno.secret.key`, `-Djuno.secret.list` and `-Djuno.secret.clear` may be used at a time.
 
 Once provisioning is done, upload your own program again with `juno:upload`: the provisioning program replaces it on the

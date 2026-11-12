@@ -13,7 +13,6 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 
 | Goal | Default phase | What it does |
 |---|---|---|
-| `juno:env` | `generate-sources` | Reads a git-ignored `.env` file and exports its entries into the Maven JVM's real process environment. |
 | `juno:install-deps` | (none — run explicitly) | Installs the supported Arduino cores (including M5Stack ESP32) and every optional library any current example needs, once per machine. |
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
@@ -34,15 +33,12 @@ invocation with `-Djuno.main=...`, or, in a module with a single program, fix it
     <groupId>io.github.jabrena</groupId>
     <artifactId>juno-maven-plugin</artifactId>
     <version>${project.version}</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>env</goal>
-            </goals>
-        </execution>
-    </executions>
 </plugin>
 ```
+
+Board programs cannot read build-machine environment variables: `System.getenv(...)` is rejected by the compiler so a
+credential cannot be embedded in firmware. Provision board credentials with `juno:secret` and read them through
+`SecretStore` instead.
 
 This is how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up: it holds
 many programs, so every `compile`, `verify` or `upload` names one, for example
