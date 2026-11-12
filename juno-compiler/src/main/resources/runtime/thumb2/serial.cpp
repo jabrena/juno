@@ -2,6 +2,14 @@ ${JUNO_LED_MATRIX_FUNCTIONS}extern "C" void juno_serial_begin(int32_t baud) {
   Serial.begin(static_cast<unsigned long>(baud));
 }
 
+extern "C" int32_t juno_serial_available() {
+  return Serial.available();
+}
+
+extern "C" int32_t juno_serial_read() {
+  return Serial.read();
+}
+
 extern "C" void juno_serial_print(int32_t value) {
   Serial.print(value);
 }

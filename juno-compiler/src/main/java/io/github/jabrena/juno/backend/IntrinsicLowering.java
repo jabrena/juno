@@ -599,6 +599,8 @@ public final class IntrinsicLowering {
 
     private void registerSerial() {
         shim(Intrinsic.SERIAL_BEGIN, "juno_serial_begin", Result.NONE, List.of(arg(0)));
+        shim(Intrinsic.SERIAL_AVAILABLE, "juno_serial_available", Result.WORD, List.of());
+        shim(Intrinsic.SERIAL_READ, "juno_serial_read", Result.WORD, List.of());
         shim(Intrinsic.SERIAL_PRINT, "juno_serial_print", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINTLN, "juno_serial_println", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINT_LONG, "juno_serial_print_long", Result.NONE, wide(0));

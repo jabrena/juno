@@ -24,6 +24,8 @@ inline long random(long origin, long bound) { return bound > origin ? bound - 1 
 
 struct JunoSerial {
   void begin(unsigned long) {}
+  int available() { return 0; }
+  int read() { return -1; }
   void println() {}
   void print(int32_t) {}
   void println(int32_t) {}
