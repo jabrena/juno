@@ -186,6 +186,23 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The AI Thinker ESP32-CAM runs threads on both cores and has HTTP and HTTPS clients")
+    void shouldGiveTheEsp32CamThreadsAndHttpClients() {
+        // Given
+        Board board = Board.AI_THINKER_ESP32_CAM;
+
+        // When & Then
+        assertThat(new boolean[] {board.supports(Capability.STRUCTURED_CONCURRENCY),
+                board.supports(Capability.HTTP_CLIENT), board.supports(Capability.HTTPS_CLIENT)})
+                .containsOnly(true);
+        assertThat(new CoreRuntimes().of(board.core()).carrierCount()).isEqualTo(2);
+        assertThat(new CoreRuntimes().of(board.core()).httpsHelpers(false))
+                .contains("setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));");
+        assertThat(new CoreRuntimes().of(ArduinoCore.ESP32).httpsHelpers(false))
+                .contains("setCACertBundle(juno_ca_bundle);");
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W resolves to its arduino-pico Thumb-2 target")
     void shouldResolveRaspberryPico2WTarget() {
         // Given

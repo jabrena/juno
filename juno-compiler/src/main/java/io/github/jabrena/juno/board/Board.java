@@ -74,7 +74,8 @@ public enum Board {
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
             "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM,
             EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
-                    Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.HTTP_SERVER, Capability.HTTP_STREAM)),
+                    Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.HTTP_SERVER, Capability.HTTP_STREAM,
+                    Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT)),
     /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial and HID, GPIO, SD storage, onboard Wi-Fi, plain HTTP and
      * HTTPS clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and
