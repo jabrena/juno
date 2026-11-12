@@ -726,6 +726,8 @@ jobs:
             board_id: arduino-nano-esp32
           - board: UNO Q
             board_id: arduino-uno-q
+          - board: AI Thinker ESP32-CAM
+            board_id: ai-thinker-esp32-cam
           - board: M5Stack Cardputer
             board_id: m5stack-cardputer
           - board: Raspberry Pi Pico 2 W
