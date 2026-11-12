@@ -1,7 +1,15 @@
 package io.github.jabrena.juno.api.hardware.net.udp;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,11 +20,19 @@ import java.time.LocalDateTime;
 /**
  * Prints UTC from {@link LocalDateTime#now()} every ten seconds at 115200 baud. Joins Wi-Fi with
  * credentials from the ATECC608 {@code SecretStore}; the clock synchronizes over SNTP with the default
- * {@code pool.ntp.org} host and port 123. Small enough for a UNO R3 with the Arduino
- * WiFi Shield (build it with {@code -Djuno.Xmx=512}).
+ * {@code pool.ntp.org} host and port 123.
  */
+@Board({
+    ArduinoUnoR4WiFiBoard.class,
+    ArduinoUnoQBoard.class,
+    ArduinoUnoR3WiFiRev2Board.class,
+    ArduinoNanoEsp32Board.class,
+    AiThinkerEsp32CamBoard.class,
+    M5StackCardputerBoard.class,
+    RaspberryPico2WifiBoard.class
+})
 public final class SntpTime {
-    private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
