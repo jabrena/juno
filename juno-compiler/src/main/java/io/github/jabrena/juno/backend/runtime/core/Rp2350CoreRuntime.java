@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.SntpServer;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -212,9 +213,21 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         String trust = runtimeTrustAnchor
                 ? ""
                 : CertificateBundle.cPem("juno_pico_ca", runtimeSource.load("esp32/ca-certificates.pem"));
-        String defaultTrust = runtimeTrustAnchor ? "" : "setTrustAnchors(&juno_pico_ca);";
+        // BearSSL takes parsed trust anchors, not PEM text: the bundle is parsed once, on the first HTTPS client.
+        String defaultTrust = runtimeTrustAnchor ? "" : """
+                static BearSSL::X509List* juno_pico_anchors = nullptr;
+                      if (juno_pico_anchors == nullptr) juno_pico_anchors = new BearSSL::X509List(juno_pico_ca);
+                      setTrustAnchors(juno_pico_anchors);""";
         String runtimeTrust = runtimeTrustAnchor ? "" : "static const char* juno_runtime_trusted_ca = nullptr;\n";
         return trust + runtimeTrust + """
+                // BearSSL checks a certificate's validity dates against the board's clock, which starts in 1970: the
+                // first HTTPS connection sets it over NTP (JUNO_SNTP_HOST) when nothing has set it yet.
+                static void juno_pico_tls_clock() {
+                  if (time(nullptr) > 1700000000) return;
+                  NTP.begin(${JUNO_SNTP_HOST});
+                  NTP.waitSet(10000);
+                }
+
                 struct JunoPicoTlsClient : BearSSL::WiFiClientSecure {
                   JunoPicoTlsClient() {
                     if (juno_runtime_trusted_ca != nullptr) {
@@ -223,8 +236,14 @@ final class Rp2350CoreRuntime implements CoreRuntime {
                       ${JUNO_DEFAULT_TRUST}
                     }
                   }
+
+                  int connect(const char* host, uint16_t port) override {
+                    juno_pico_tls_clock();
+                    return BearSSL::WiFiClientSecure::connect(host, port);
+                  }
                 };
-                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrust);
+                """.replace("${JUNO_DEFAULT_TRUST}", defaultTrust)
+                .replace("${JUNO_SNTP_HOST}", SntpServer.from(System.getenv()).cppHost());
     }
 
     @Override

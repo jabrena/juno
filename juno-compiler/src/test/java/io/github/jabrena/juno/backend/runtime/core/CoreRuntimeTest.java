@@ -521,4 +521,20 @@ class CoreRuntimeTest {
         // When & Then
         assertThat(runtime.gpioFunction("digitalWrite")).isEqualTo("digitalWrite");
     }
+
+    @Test
+    @DisplayName("The Pico 2 W HTTPS client parses its CA bundle once and sets the clock before a TLS handshake")
+    void shouldGiveThePicoHttpsClientParsedAnchorsAndAClock() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.RP2350);
+
+        // When
+        String helpers = runtime.httpsHelpers(false);
+
+        // Then
+        assertThat(helpers).contains("juno_pico_anchors = new BearSSL::X509List(juno_pico_ca);",
+                        "setTrustAnchors(juno_pico_anchors);", "NTP.begin(", "NTP.waitSet(10000);",
+                        "juno_pico_tls_clock();\n    return BearSSL::WiFiClientSecure::connect(host, port);")
+                .doesNotContain("setTrustAnchors(&juno_pico_ca);");
+    }
 }
