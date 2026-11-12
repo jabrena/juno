@@ -117,19 +117,15 @@ public final class ThreadRuntime {
         return runtimeSource.load("zephyr/io-worker.cpp");
     }
 
-    /** The RP2350 port selected for a single or dual carrier runtime. */
+    /**
+     * The RP2350 port selected for a single or dual carrier runtime. With two carriers the sketch is built with
+     * arduino-pico's FreeRTOS SMP, and every Juno thread is a FreeRTOS task pinned to one core, as on the ESP32.
+     */
     public String rp2350Port(int stackBytes, int carrierCount) {
         if (carrierCount == 1) return renesasPort(stackBytes);
-        // The RP2350 core exposes the core id but not an RTOS task API. Keep the proven Thumb-2 port and publish the
-        // core-id hook used by the common dual-carrier scheduler; the second-core context hand-off is completed by the
-        // RP2350 port follow-up once the arduino-pico multicore spike has established its safe FIFO contract.
-        return renesasPort(stackBytes) + "\nextern \"C\" uint32_t get_core_num();\n"
-                + "extern \"C\" uint32_t juno_port_carrier_id() { return get_core_num() & 1u; }\n"
-                + "static void juno_port_start(uint32_t slot) { static_cast<void>(slot); }\n"
-                + "static uint32_t juno_port_fixed_carrier(uint32_t slot) { static_cast<void>(slot); "
-                + "return 0xFFFFFFFFu; }\n"
-                + "static bool juno_port_reusable(uint32_t slot) { static_cast<void>(slot); return true; }\n"
-                + "static void juno_port_check_killed() {}\n";
+        return runtimeSource.load("rp2350/thread-port-dual.cpp")
+                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
@@ -292,6 +288,8 @@ public final class ThreadRuntime {
                     }
                     """, """
                     extern "C" void juno_thread_backedge() {
+                      juno_gc_safepoint();
+                      juno_port_check_killed();
                       juno_runtime_enter();
                       yield();
                       if (juno_preempt_due == 0u || juno_live_threads == 0u) {
@@ -302,6 +300,14 @@ public final class ThreadRuntime {
                       juno_sched_block();
                       juno_runtime_exit();
                     }
+                    """);
+            // A carrier preempted in Java parks there while the other carrier collects, and a cancelled thread stops.
+            source = source.replace("""
+                    extern "C" uint32_t juno_thread_preempted() {
+                    """, """
+                    extern "C" uint32_t juno_thread_preempted() {
+                      juno_gc_safepoint();
+                      juno_port_check_killed();
                     """);
         }
         return source;

@@ -222,6 +222,38 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("Dual-carrier Pico 2 W programs build on FreeRTOS SMP with main on a task of its own")
+    void shouldBuildDualCarrierPicoProgramsOnFreeRtos() throws Exception {
+        CompilationResult result = compile("RaspberryPico2WifiBoard", "Thread.startVirtualThread(new Job()).join();");
+
+        assertThat(result.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble,os=freertos");
+        assertThat(result.sketchWrapper().source()).contains("juno_launch_main(" + result.entryPointSymbol() + ");");
+        assertThat(result.runtimeShim()).contains(
+                        "#include <FreeRTOS.h>",
+                        "xTaskCreateStaticAffinitySet(juno_rp2350_entry",
+                        "hardware_alarm_set_callback(",
+                        "__atomic_compare_exchange_n(&juno_runtime_owner",
+                        "juno_carrier_vacate(uint32_t slot) {")
+                .doesNotContain("SysTick_Handler", "__atomic_exchange_n(&juno_runtime_owner",
+                        "extern \"C\" uint32_t get_core_num();");
+        assertThat(result.assembly()).contains("bl juno_java_leave", "bl juno_java_return");
+    }
+
+    @Test
+    @DisplayName("Single-carrier Pico 2 W programs keep the board's FQBN and a direct entry call")
+    void shouldKeepSingleCarrierPicoProgramsOffFreeRtos() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("RaspberryPico2WifiBoard",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        assertThat(result.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble");
+        assertThat(result.sketchWrapper().source()).contains("  " + result.entryPointSymbol() + "();")
+                .doesNotContain("juno_launch_main");
+        assertThat(result.runtimeShim()).doesNotContain("FreeRTOS.h");
+    }
+
+    @Test
     @DisplayName("The pipeline can force the ESP32 runtime to one carrier")
     void shouldGenerateTheSingleCarrierRuntimeWhenOverridden() throws Exception {
         RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));

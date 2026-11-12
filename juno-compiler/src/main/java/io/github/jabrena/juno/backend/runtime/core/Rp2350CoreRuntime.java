@@ -27,11 +27,22 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         return ArduinoCore.RP2350.carrierCount();
     }
 
+    /** Two carriers run on arduino-pico's FreeRTOS SMP, a board menu option. */
+    @Override
+    public String fqbnOptions(int carrierCount) {
+        return carrierCount > 1 ? ",os=freertos" : "";
+    }
+
+    /** arduino-pico's FreeRTOS CORE0 task has a 4 KiB stack, too small for main: main gets a task of its own. */
+    @Override
+    public String mainLauncher(int carrierCount) {
+        return carrierCount > 1 ? "juno_launch_main" : "";
+    }
+
     @Override
     public String runtimeLock() {
         return """
                 // Recursive lock shared by both Cortex-M33 carriers.
-                extern "C" uint32_t get_core_num();
                 static volatile uint32_t juno_runtime_owner = 0u;
                 static volatile uint32_t juno_runtime_depth = 0u;
 
@@ -46,7 +57,9 @@ final class Rp2350CoreRuntime implements CoreRuntime {
                       juno_runtime_depth++;
                       return;
                     }
-                    if (__atomic_exchange_n(&juno_runtime_owner, owner, __ATOMIC_ACQUIRE) == 0u) {
+                    uint32_t expected = 0u;
+                    if (__atomic_compare_exchange_n(&juno_runtime_owner, &expected, owner, false, __ATOMIC_ACQUIRE,
+                                                    __ATOMIC_RELAXED)) {
                       juno_runtime_depth = 1u;
                       return;
                     }

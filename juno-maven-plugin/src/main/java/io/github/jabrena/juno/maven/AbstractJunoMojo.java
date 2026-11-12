@@ -93,9 +93,9 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         result.sketchWrapper().writeTo(layout.wrapper());
 
         CompilationReport report = result.report();
-        String targetFqbn = targetFqbn(report.board().fqbn());
-        if (!targetFqbn.equals(report.board().fqbn())) {
-            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + report.board().fqbn());
+        String targetFqbn = targetFqbn(result.fqbn());
+        if (!targetFqbn.equals(result.fqbn())) {
+            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + result.fqbn());
         }
         getLog().info("Generated " + layout.assembly() + ", " + layout.runtimeShim() + ", and " + layout.wrapper()
                 + " for " + report.board().displayName() + " with the ASM backend (fqbn " + targetFqbn + ")");

@@ -47,7 +47,7 @@ record CompileCommand(ProgramSelection program, Path assemblyOutput, boolean gcL
 
         Board board = result.report().board();
         out.println("Generated " + files.assembly() + ", " + files.runtimeShim() + ", and " + files.wrapper()
-                + " for " + board.displayName() + " (fqbn " + board.fqbn() + ")");
+                + " for " + board.displayName() + " (fqbn " + result.fqbn() + ")");
         out.println();
         new RuntimeRiskReportFormatter().format(result.report().runtimeRisks()).forEach(out::println);
         new ConfigSuggestionFormatter().format(result.report().configSuggestions()).forEach(out::println);

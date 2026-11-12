@@ -46,6 +46,22 @@ public interface CoreRuntime {
         return "__builtin_unwind_init();";
     }
 
+    /**
+     * Board menu options the sketch needs on top of the board's FQBN when its threads run on {@code carrierCount}
+     * carriers, each starting with a comma; none by default.
+     */
+    default String fqbnOptions(int carrierCount) {
+        return "";
+    }
+
+    /**
+     * The shim function the sketch's {@code setup()} hands the entry point to when threads run on
+     * {@code carrierCount} carriers, or {@code ""} when {@code setup()} calls the entry point itself.
+     */
+    default String mainLauncher(int carrierCount) {
+        return "";
+    }
+
     /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
     default String carrierRuntime(int carrierCount) {
         return carrierCount > 1 ? runtimeLock() + wideAccessHelpers() : "";

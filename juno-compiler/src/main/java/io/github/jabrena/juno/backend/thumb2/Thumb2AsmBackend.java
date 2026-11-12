@@ -223,7 +223,9 @@ public final class Thumb2AsmBackend implements AsmBackend {
         String runtimeShim = new RuntimeShim(coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new GeneratedCode(assemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
-                java.util.Objects.requireNonNull(functionLabels.get(entryPoint)));
+                java.util.Objects.requireNonNull(functionLabels.get(entryPoint)),
+                coreRuntime.fqbnOptions(dualCarrier ? carrierCount : 1),
+                coreRuntime.mainLauncher(dualCarrier ? carrierCount : 1));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {
