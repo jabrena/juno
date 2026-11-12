@@ -25,6 +25,10 @@ public final class AiThinkerEsp32CamCapture {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("AiThinkerEsp32CamCapture started");
+        if (!CAMERA.begin()) {
+            Serial.println("Camera initialization failed");
+            return;
+        }
         byte[] frame = new byte[FRAME_CAPACITY];
         while (true) {
             int length = CAMERA.capture(frame);
