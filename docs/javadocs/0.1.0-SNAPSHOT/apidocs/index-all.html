@@ -113,6 +113,8 @@ initTheme();
 <dd>
 <div class="block">Action must be taken immediately.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#ALTITUDE_CENTIMETRES" class="member-name-link">ALTITUDE_CENTIMETRES</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#analogPin(java.lang.String)" class="member-name-link">analogPin(String)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
 <div class="block">Resolves a logical analog pin name for this board.</div>
@@ -369,6 +371,10 @@ reported it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
 <dd>
 <div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Configures the GPS TX pin as an idle-high software-UART input.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -891,6 +897,8 @@ not answer.</div>
 <dd>
 <div class="block">Default name for Juno's open, local-development access point.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#DEFAULT_BAUD" class="member-name-link">DEFAULT_BAUD</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html#DEFAULT_BODY_BUFFER_SIZE" class="member-name-link">DEFAULT_BODY_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.net.email.<a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a></dt>
 <dd>
 <div class="block">A reasonable default size for a caller's body buffer, in bytes.</div>
@@ -1376,6 +1384,8 @@ failed is written as 0.</div>
 <div class="block">The hub's firmware version as the protocol's packed number, or <code>-1</code> if unknown; take it apart
 with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#versionMajor(int)"><code>RemotePoweredUpHub.versionMajor(int)</code></a>, <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#versionMinor(int)"><code>RemotePoweredUpHub.versionMinor(int)</code></a>, <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#versionBugfix(int)"><code>RemotePoweredUpHub.versionBugfix(int)</code></a> and <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#versionBuild(int)"><code>RemotePoweredUpHub.versionBuild(int)</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#FIX_QUALITY" class="member-name-link">FIX_QUALITY</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardMemory.html#flashCapacityBytes()" class="member-name-link">flashCapacityBytes()</a> - Method in interface io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardMemory.html" title="interface in io.github.jabrena.juno.hardware">BoardMemory</a></dt>
 <dd>
 <div class="block">Bytes of program flash available to a program on this board, the limit <a href="io/github/jabrena/juno/hardware/BoardMemory.html#flashUsedBytes()"><code>BoardMemory.flashUsedBytes()</code></a> counts toward.</div>
@@ -2351,6 +2361,19 @@ Grove Temperature and Humidity Sensor Pro</a> using its DHT22 (AM2302) frame for
 <div class="block">A sensor on <code>signalPin</code> of <code>gpio</code> and <code>clock</code>: the form that works as a
 <a href="io/github/jabrena/juno/robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
+<dd>
+<div class="block">Reads the Seeed <a href="https://wiki.seeedstudio.com/Grove-GPS-Air530/">Grove GPS Air530</a>
+over its one-way UART output.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#%3Cinit%3E(int)" class="member-name-link">GroveGpsAir530(int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Creates a reader on the UNO's own GPIO and clock.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveGpsAir530(Gpio, Clock, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Creates a reader whose GPIO and clock can be replaced by mocks in a unit test.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveInfraredEmitter</a> - Class in <a href="io/github/jabrena/juno/hardware/device/grove/sensors/package-summary.html">io.github.jabrena.juno.hardware.device.grove.sensors</a></dt>
 <dd>
 <div class="block">A Grove infrared emitter module's signal connection.</div>
@@ -3238,6 +3261,8 @@ boards.</div>
 <dd>
 <div class="block">The heading error measured after the last move, before its correction, in degrees, counter-clockwise positive.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#LATITUDE_MICRODEGREES" class="member-name-link">LATITUDE_MICRODEGREES</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/lcd/package-summary.html">io.github.jabrena.juno.hardware.device.lcd</a></dt>
 <dd>
 <div class="block">Driver for the common "LCD Keypad Shield" (a 16x2 HD44780-compatible character LCD in 4-bit
@@ -3367,6 +3392,8 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dd>
 <div class="block">Sends <code>message</code> at <code>severity</code>, <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#EMERGENCY"><code>Syslog.EMERGENCY</code></a> to <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEBUG"><code>Syslog.DEBUG</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#LONGITUDE_MICRODEGREES" class="member-name-link">LONGITUDE_MICRODEGREES</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html#low()" class="member-name-link">low()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></dt>
 <dd>
 <div class="block">Drives the pin low.</div>
@@ -3850,6 +3877,10 @@ left-to-right/top-to-bottom, exactly as <a href="io/github/jabrena/juno/hardware
 <div class="block">An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write
 strobe pulsed low then high.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#parseGga(byte%5B%5D,int,int%5B%5D,int)" class="member-name-link">parseGga(byte[], int, int[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Decodes one checksum-valid GGA sentence into a caller-owned five-int position array.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html#patch(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">patch(String, String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpClient</a></dt>
 <dd>
 <div class="block">Sends a PATCH request to <code>url</code> with a compile-time JSON body.</div>
@@ -4010,6 +4041,8 @@ board-specific implicit-TLS transport as
 <dd>
 <div class="block">Creates a pose with the supplied position and heading.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#POSITION_LENGTH" class="member-name-link">POSITION_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html#post(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">post(String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpClient</a></dt>
 <dd>
 <div class="block">Sends a POST request to <code>url</code> with caller-owned request headers and a caller-owned JSON body.</div>
@@ -4447,6 +4480,11 @@ STAT</code>), writing <code>"From: ...\n"</code> and <code>"Subject: ...\n"</cod
 each bounded to <code>headersBuffer</code>) into <code>headersBuffer</code> and the plain-text body
 (dot-unstuffed, bounded to <code>bodyBuffer</code>) into <code>bodyBuffer</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#readPosition(byte%5B%5D,int,int%5B%5D,int,int)" class="member-name-link">readPosition(byte[], int, int[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Reads sentences until a checksum-valid GGA fix is received and writes its values to
+<code>position</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/i2c/I2c.html#readRegister(int,int)" class="member-name-link">readRegister(int, int)</a> - Method in interface io.github.jabrena.juno.hardware.i2c.<a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></dt>
 <dd>
 <div class="block">Reads one byte, <code>0..255</code>, from <code>register</code>, or <code>-1</code> if the device did not answer.</div>
@@ -4473,6 +4511,10 @@ before the first report.</div>
 <dd>
 <div class="block">The <code>index</code>-th value of the latest report of the port <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to,
 as a signed integer of <code>bytesPerValue</code> bytes (1, 2 or 4, little endian).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#readSentence(byte%5B%5D,int,int)" class="member-name-link">readSentence(byte[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>
+<div class="block">Reads the next complete NMEA sentence, without its line ending, into <code>sentence</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html#readSubject(java.lang.String,int,java.lang.String,java.lang.String,int,byte%5B%5D,int)" class="member-name-link">readSubject(String, int, String, String, int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.email.<a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a></dt>
 <dd>
@@ -4887,6 +4929,8 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dd>
 <div class="block">Returns the number of elements in a sample; it does not change while the program runs.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#SATELLITES" class="member-name-link">SATELLITES</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#sdCard(int)" class="member-name-link">sdCard(int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>
 <div class="block">The card behind a socket whose chip select is <code>chipSelectPin</code>, for a shield's <code>getSdCard()</code>: the
@@ -4961,6 +5005,8 @@ counting repeats of an unchanged value, so a program can measure how often the h
 <dd>
 <div class="block">How many value bytes the latest report of <code>port</code> carried (at most 16), <code>0</code> before the first.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#SENTENCE_CAPACITY" class="member-name-link">SENTENCE_CAPACITY</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.serial">Serial</a> - Class in <a href="io/github/jabrena/juno/hardware/serial/package-summary.html">io.github.jabrena.juno.hardware.serial</a></dt>
 <dd>
 <div class="block">USB serial output recognized as compiler intrinsics by Juno.</div>
