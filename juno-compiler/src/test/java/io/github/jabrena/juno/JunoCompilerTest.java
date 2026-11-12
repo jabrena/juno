@@ -23,6 +23,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 /**
  * End-to-end (Java source -&gt; javac -&gt; classfile -&gt; link -&gt; IR -&gt; {@link Thumb2AsmBackend})
@@ -2309,11 +2310,9 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Resolves Wi-Fi credentials from a compile-time environment variable")
-        void shouldResolveWifiCredentialsFromACompileTimeEnvironmentVariable() throws Exception {
+        @DisplayName("Rejects board credentials from a compile-time environment variable")
+        void shouldRejectWifiCredentialsFromACompileTimeEnvironmentVariable() throws Exception {
             // Given
-            String pathValue = System.getenv("PATH");
-            assertThat(pathValue != null && !pathValue.isEmpty()).as("test environment must define PATH").isTrue();
             String source = """
                     package demo;
                     import io.github.jabrena.juno.hardware.ArduinoUno;
@@ -2327,10 +2326,15 @@ class JunoCompilerTest {
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiConnectFromEnv", source);
 
             // When
-            String generated = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromEnv").assembly();
+            Throwable failure = catchThrowable(
+                    () -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiConnectFromEnv"));
 
             // Then
-            assertThat(generated).contains(".asciz \"" + pathValue + "\"");
+            assertThat(failure)
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("System.getenv")
+                    .hasMessageContaining("SecretStore")
+                    .hasMessageContaining("firmware");
         }
     }
 

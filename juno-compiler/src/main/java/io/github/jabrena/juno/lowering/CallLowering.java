@@ -63,7 +63,7 @@ final class CallLowering {
             // A port operation never reads its stateless port, so the loads that produced it can become dead.
             Optional<Value> used = intrinsic.get().ignoresReceiver() ? Optional.empty() : receiver;
             context.emit(new IrInstruction.IntrinsicCall(result, intrinsic.get(), used, arguments.values(),
-                    arguments.literals()));
+                    arguments.literals(), arguments.literalIndexes()));
         } else {
             List<Value> callArguments = new ArrayList<>();
             receiver.ifPresent(callArguments::add);
