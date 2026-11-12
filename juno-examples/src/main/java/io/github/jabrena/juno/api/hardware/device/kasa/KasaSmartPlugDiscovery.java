@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.device.kasa;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -20,8 +21,8 @@ import java.net.InetAddress;
 /**
  * Finds legacy TP-Link Kasa HS100/HS110 plugs on the local network and controls them from an ELEGOO TFT shield.
  *
- * <p>Set {@code JUNO_WIFI_SSID} and {@code JUNO_WIFI_PASSWORD} in the build environment. The display stays live
- * while the board joins Wi-Fi or reopens discovery, and its three fixed buttons toggle the first three plugs found.
+ * <p>Provision {@code wifi.ssid} and {@code wifi.password} with {@code juno:secret}. The display stays live while the
+ * board joins Wi-Fi or reopens discovery, and its three fixed buttons toggle the first three plugs found.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class KasaSmartPlugDiscovery {
@@ -95,7 +96,7 @@ public final class KasaSmartPlugDiscovery {
             closeDiscovery();
             showStatus(tft, "Connecting WiFi...");
             Serial.println("Kasa: connecting WiFi");
-            WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+            WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
             state = JOINING;
             nextPoll = now;
         }

@@ -27,7 +27,7 @@ public final class MailboxView {
     private static final int HTTPS_Y = 272;
     private static final String HTTPS_LABEL = "HTTPS: ";
     private static final String MESSAGES_LABEL = "MESSAGES: ";
-    private static final String IP_HINT = "SET JUNO_Q_IP AT BUILD TIME";
+    private static final String IP_HINT = "PROVISION MAILBOX IP";
     private static final int IP_CAPACITY = 16;
 
     /** The settings gear in the bottom-right corner; a tap near it opens the status screen. */
@@ -123,7 +123,7 @@ public final class MailboxView {
         redrawIp(tft);
     }
 
-    /** The UNO Q's address from {@code JUNO_Q_IP}, or {@code null} when it is not configured. */
+    /** The UNO Q's provisioned address, or {@code null} when it is not configured. */
     public void drawIp(TftTouchShield tft, String address) {
         ipMissing = address == null || address.length() > IP_CAPACITY;
         ipLength = ipMissing ? 0 : copy(address);
@@ -211,7 +211,7 @@ public final class MailboxView {
         tft.print(messageCount);
     }
 
-    /** The hint for a missing {@code JUNO_Q_IP} is too long for the row, so it falls back to the small font. */
+    /** The hint for a missing provisioned IP is too long for the row, so it falls back to the small font. */
     private void drawIpRow(TftTouchShield tft) {
         if (ipMissing) {
             tft.fillRect(0, IP_Y, SCREEN_WIDTH, STATUS_ROW_HEIGHT, TftTouchShield.WHITE);
@@ -248,7 +248,7 @@ public final class MailboxView {
         statusLabel(tft, "IP", 2);
         tft.setTextColor(BLUE, TftTouchShield.WHITE);
         if (ipMissing) {
-            tft.print("SET JUNO_Q_IP");
+            tft.print("PROVISION IP");
         } else {
             tft.print(ip, ipLength);
         }

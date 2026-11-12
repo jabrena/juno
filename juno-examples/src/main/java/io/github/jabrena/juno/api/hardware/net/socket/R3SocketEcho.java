@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -13,8 +14,8 @@ import java.net.InetAddress;
 import java.net.Socket;
 
 /**
- * Small TCP socket probe for the UNO R3 with the Arduino WiFi Shield. It joins Wi-Fi with the build-time
- * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, then keeps one TCP connection open to the echo server at
+ * Small TCP socket probe for the UNO R3 with the Arduino WiFi Shield. It joins Wi-Fi with credentials from the ATECC608
+ * {@code SecretStore}, then keeps one TCP connection open to the echo server at
  * {@link #PEER_ADDRESS} on port 7007 and every five seconds writes a line and reads the same number of bytes back,
  * reporting each exchange at 115200 baud. The peer's address is a constant, not discovered over UDP, because the
  * board's RAM cannot hold the discovery code. Change {@link #PEER_ADDRESS} to the echo server's address before building.
@@ -77,7 +78,7 @@ public final class R3SocketEcho {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);

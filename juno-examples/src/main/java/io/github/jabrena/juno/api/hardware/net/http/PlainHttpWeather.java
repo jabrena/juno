@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -9,8 +11,8 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * The Open-Meteo request from {@code MadridWeather}'s {@code WeatherClient}, sent over plain HTTP so a board without
- * TLS, such as the UNO R3 with the retired Arduino WiFi Shield, can make it. Credentials come from
- * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}; the buffers are sized for this one response to fit 2 KB of RAM
+ * TLS, such as the UNO R3 with the retired Arduino WiFi Shield, can make it. Credentials come from the ATECC608
+ * {@code SecretStore}; the buffers are sized for this one response to fit 2 KB of RAM
  * (build with {@code -Djuno.Xmx=512} there). Prints the HTTP status, the body length and Madrid's current temperature
  * every ten seconds, at 115200 baud. The temperature is read straight from the bytes, since {@code Json} does not fit
  * the R3's 32 KB of flash next to the WiFi library.
@@ -88,7 +90,7 @@ public final class PlainHttpWeather {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);

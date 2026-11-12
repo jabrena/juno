@@ -8,6 +8,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -179,7 +180,7 @@ public final class ParallelHttpsGet {
     }
 
     private boolean connectWifi() {
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);

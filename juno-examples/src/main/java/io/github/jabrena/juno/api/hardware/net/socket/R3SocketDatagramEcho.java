@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -79,7 +80,7 @@ public final class R3SocketDatagramEcho {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
