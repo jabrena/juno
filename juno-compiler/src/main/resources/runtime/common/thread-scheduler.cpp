@@ -202,21 +202,21 @@ static void juno_sched_block() {
       juno_slots[juno_current_slot].state = JUNO_SLOT_READY;
       ${JUNO_RUNTIME_RELOCK}return;
     }
-    ${JUNO_CORE_DELAY}(1u);
+    ${JUNO_BLOCK_IDLE}${JUNO_CORE_DELAY}(1u);
   }
 }
 
-static void juno_thread_body() {
-  uint32_t slot = juno_current_slot;
+${JUNO_CARRIER_FUNCTIONS}static void juno_thread_body() {
+  uint32_t slot = juno_current_slot;${JUNO_CARRIER_ADOPT}
   JunoThreadObject* thread = juno_slots[slot].thread;
 ${JUNO_TASK_BODY}
-  thread->flags |= JUNO_THREAD_FINISHED;
+${JUNO_FINISH_ENTER}  thread->flags |= JUNO_THREAD_FINISHED;
   juno_slots[slot].state = JUNO_SLOT_FREE;
   juno_slots[slot].thread = nullptr;
   juno_slots[slot].joining = nullptr;
   juno_slots[slot].scope = nullptr;
   juno_live_threads--;
-  for (;;) {
+${JUNO_FINISH_EXIT}  for (;;) {
     uint32_t next = juno_sched_pick(false);
     if (next != JUNO_NO_SLOT) {
       juno_sched_handoff(next, true);
@@ -284,14 +284,14 @@ extern "C" void juno_thread_start(int32_t handle) {
     juno_panic();
   }
   uint32_t slot = 1u;
-  while (slot < juno_slot_count && juno_slots[slot].state != JUNO_SLOT_FREE) slot++;
+  while (slot < juno_slot_count && juno_slots[slot].state != JUNO_SLOT_FREE${JUNO_SLOT_REUSABLE}) slot++;
   if (slot == juno_slot_count) juno_slots_grow();
   thread->flags |= JUNO_THREAD_STARTED;
   juno_slots[slot] = {JUNO_SLOT_READY, 0u, thread, nullptr, nullptr, 0};
 ${JUNO_SET_CARRIER}  juno_live_threads++;
   juno_port_prepare(slot);
   ${JUNO_START_PREEMPTION}
-  ${JUNO_START_BINDINGS}
+  ${JUNO_START_BINDINGS}${JUNO_START_IDLE_CARRIER}
 }
 
 // Thread.startVirtualThread: a virtual thread is a daemon, so main() does not wait for it at exit.

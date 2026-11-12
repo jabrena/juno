@@ -125,7 +125,11 @@ public final class ThreadRuntime {
         // RP2350 port follow-up once the arduino-pico multicore spike has established its safe FIFO contract.
         return renesasPort(stackBytes) + "\nextern \"C\" uint32_t get_core_num();\n"
                 + "extern \"C\" uint32_t juno_port_carrier_id() { return get_core_num() & 1u; }\n"
-                + "static void juno_port_finished() {}\n";
+                + "static void juno_port_start(uint32_t slot) { static_cast<void>(slot); }\n"
+                + "static uint32_t juno_port_fixed_carrier(uint32_t slot) { static_cast<void>(slot); "
+                + "return 0xFFFFFFFFu; }\n"
+                + "static bool juno_port_reusable(uint32_t slot) { static_cast<void>(slot); return true; }\n"
+                + "static void juno_port_check_killed() {}\n";
     }
 
     /**
@@ -239,8 +243,19 @@ public final class ThreadRuntime {
                 .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
                 .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
                 .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
-        return carriers.apply(source);
+        return carriers.apply(source, carrierLoad(exceptions, scopedValues), delayFunction);
 
+    }
+
+    /**
+     * What a thread loads into its carrier's per-carrier state when it takes the carrier without a handoff: a new
+     * thread starting on an idle carrier, or the thread that inherits a carrier from a cancelled one. After a handoff
+     * the values are the ones the handoff already stored.
+     */
+    private static String carrierLoad(boolean exceptions, boolean scopedValues) {
+        return (exceptions ? "\n  juno_pending_exception = juno_slots[slot].pending;" : "")
+                + (scopedValues ? "\n  juno_scoped_top = juno_slots[slot].bindings;" : "")
+                + "\n  juno_slice_start = static_cast<uint32_t>(millis());";
     }
 
     /**
@@ -310,6 +325,7 @@ public final class ThreadRuntime {
                     }
                     """, """
                     static void juno_thread_slice_over() {
+                      juno_port_check_killed();
                       juno_runtime_enter();
                       if (juno_live_threads == 0u) {
                         juno_runtime_exit();

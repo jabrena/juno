@@ -166,6 +166,34 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("Dual-carrier ESP32 programs place main on its real core and start threads on an idle carrier")
+    void shouldStartThreadsOnAnIdleCarrier() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        assertThat(result.runtimeShim()).contains(
+                        "juno_slots[0].carrier = mainCarrier;",
+                        "juno_current_slots[carrier] = carrier == mainCarrier ? 0u : JUNO_NO_SLOT;",
+                        "if (juno_current_slots[juno_slots[slot].carrier] == JUNO_NO_SLOT) {",
+                        "juno_current_slot = JUNO_NO_SLOT;",
+                        "static void juno_carrier_vacate(uint32_t slot) {",
+                        "static constexpr uint32_t JUNO_SLOT_LIMIT = JUNO_INITIAL_SLOTS;",
+                        "static StaticTask_t juno_dual_tcbs[JUNO_INITIAL_SLOTS];")
+                .doesNotContain("juno_port_finished", "juno_thread_alloc(sizeof(JunoEsp32Task)");
+    }
+
+    @Test
+    @DisplayName("Single-carrier programs keep the scheduler free of carrier hand-over code")
+    void shouldKeepCarrierHandOverOutOfTheSingleCarrierScheduler() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        assertThat(result.runtimeShim()).doesNotContain("juno_carriers_init", "juno_carrier_vacate",
+                "juno_carrier_load", "juno_port_reusable", "juno_port_check_killed", "${JUNO_");
+    }
+
+    @Test
     @DisplayName("The pipeline can force the ESP32 runtime to one carrier")
     void shouldGenerateTheSingleCarrierRuntimeWhenOverridden() throws Exception {
         RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
