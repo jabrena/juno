@@ -20,6 +20,5 @@ public final class RecordObjectMethods {
         Serial.println(first.equals(same));
         Serial.println(first.equals(different));
         Serial.println(first.equals(null));
-        Serial.println(first.equals("east"));
     }
 }
