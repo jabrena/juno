@@ -5228,6 +5228,59 @@ class JunoCompilerTest {
                     "str r1, [r0, #0]", "str r1, [r0, #4]",
                     "ldr r1, [r0, #0]", "ldr r1, [r0, #4]", "bl juno_wifi_begin");
         }
+
+        @Test
+        @DisplayName("Supports generated record toString hashCode and equals")
+        void shouldSupportGeneratedRecordObjectMethods() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public record Point(int x, String label) {
+                    }
+                    """;
+            String usingSource = """
+                    package demo;
+                    public final class UsesGeneratedObjectMethods {
+                        public static void main(String[] args) {
+                            Point first = new Point(3, "east");
+                            Point second = new Point(3, "east");
+                            String text = first.toString();
+                            int hash = first.hashCode();
+                            boolean equal = first.equals(second);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", source);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UsesGeneratedObjectMethods", usingSource);
+
+            // When
+            String generated = CompilerTestSupport.compileJuno(temporaryDirectory,
+                    "demo.UsesGeneratedObjectMethods").assembly();
+
+            // Then
+            assertThat(generated).contains(".global juno_UsesGeneratedObjectMethods_asm");
+        }
+
+        @Test
+        @DisplayName("Rejects record identity calls through Object-typed references")
+        void shouldRejectGeneratedRecordObjectMethodsThroughObjectReferences() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    public record Point(int x) {
+                        public static void main(String[] args) {
+                            Object value = new Point(3);
+                            String text = value.toString();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Point", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Point"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("Reachable class not found: java.lang.Object");
+        }
     }
 
     @Nested
@@ -5447,14 +5500,14 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Rejects unsupported invokedynamic bootstrap methods explicitly")
-        void shouldRejectUnsupportedInvokeDynamicBootstrapMethodsExplicitly() throws Exception {
+        @DisplayName("Rejects unsupported generated record component types explicitly")
+        void shouldRejectUnsupportedGeneratedRecordComponentTypesExplicitly() throws Exception {
             // Given
             String source = """
                     package demo;
-                    public record StringConcatDynamic(int value) {
+                    public record StringConcatDynamic(int[] value) {
                         public static void main(String[] args) {
-                            StringConcatDynamic value = new StringConcatDynamic(3);
+                            StringConcatDynamic value = new StringConcatDynamic(new int[] {3});
                             String text = value.toString();
                         }
                     }
@@ -5465,7 +5518,9 @@ class JunoCompilerTest {
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.StringConcatDynamic"))
                     .isInstanceOf(CompileException.class)
                     .hasMessageContaining("demo.StringConcatDynamic.toString")
-                    .hasMessageContaining("StringConcatFactory.makeConcatWithConstants");
+                    .hasMessageContaining("component value")
+                    .hasMessageContaining("[I")
+                    .hasMessageContaining("toString");
         }
 
         @Test
