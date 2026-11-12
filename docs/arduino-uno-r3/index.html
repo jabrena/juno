@@ -492,22 +492,6 @@ while (true) {
 <p>Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the WiFi Shield reserves
 D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a program that combines them, and the
 9 Axis Motion Shield's sensor reset is also D7.</p>
-<h3 id="arduino-wifi-shield">Arduino WiFi Shield</h3>
-<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="280">
-<p>The R3 has no radio, so <code>ArduinoUno.getWifi()</code> does not compile for it: take the <code>Wifi</code> from the retired Arduino WiFi
-Shield instead. The shield runs Arduino's legacy <code>WiFi</code> library over SPI; it joins networks only (no access point) and
-speaks plain HTTP, not HTTPS. The UNO R3 has no secret store, so the SSID and password are passed to <code>begin</code> as values
-in the source, shown masked here; replace the asterisks with your network's name and password:</p>
-<pre><code class="language-java">Wifi wifi = new ArduinoWifiShield().getWifi();
-wifi.begin(&quot;**********&quot;, &quot;********&quot;);
-
-while (wifi.status() != Wifi.STATUS_CONNECTED) {
-    Delay.millis(1000);
-}
-</code></pre>
-<p>Only small network programs fit next to the library: build them with <code>-Djuno.Xmx=512</code>, as
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java"><code>SocketDatagramEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketEcho.java"><code>SocketEcho</code></a>,
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java"><code>SntpTime</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a> do.</p>
 <h3 id="grove-base-shield">Grove Base Shield</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs

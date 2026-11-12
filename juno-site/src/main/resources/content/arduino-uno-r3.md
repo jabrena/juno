@@ -72,28 +72,6 @@ Seat each shield directly on the UNO R3. Check which pins a shield uses before s
 D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a program that combines them, and the
 9 Axis Motion Shield's sensor reset is also D7.
 
-### Arduino WiFi Shield
-
-<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="280">
-
-The R3 has no radio, so `ArduinoUno.getWifi()` does not compile for it: take the `Wifi` from the retired Arduino WiFi
-Shield instead. The shield runs Arduino's legacy `WiFi` library over SPI; it joins networks only (no access point) and
-speaks plain HTTP, not HTTPS. The UNO R3 has no secret store, so the SSID and password are passed to `begin` as values
-in the source, shown masked here; replace the asterisks with your network's name and password:
-
-```java
-Wifi wifi = new ArduinoWifiShield().getWifi();
-wifi.begin("**********", "********");
-
-while (wifi.status() != Wifi.STATUS_CONNECTED) {
-    Delay.millis(1000);
-}
-```
-
-Only small network programs fit next to the library: build them with `-Djuno.Xmx=512`, as
-[`SocketDatagramEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java), [`SocketEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketEcho.java),
-[`SntpTime`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java) and [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) do.
-
 ### Grove Base Shield
 
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
