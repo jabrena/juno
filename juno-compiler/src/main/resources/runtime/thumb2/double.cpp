@@ -8,6 +8,20 @@ extern "C" JUNO_ASM_ABI int32_t juno_dcmp(double a, double b, int32_t nanResult)
   if (isnan(a) || isnan(b)) return nanResult;
   return (a > b) - (a < b);
 }
+extern "C" JUNO_ASM_ABI int32_t juno_double_compare(double a, double b) {
+  if (isnan(a)) return isnan(b) ? 0 : 1;
+  if (isnan(b)) return -1;
+  if (a == b) {
+    if (a == 0.0 && signbit(a) != signbit(b)) return signbit(a) ? -1 : 1;
+    return 0;
+  }
+  return a < b ? -1 : 1;
+}
+extern "C" JUNO_ASM_ABI int32_t juno_double_hash_code(double value) {
+  uint64_t bits;
+  if (isnan(value)) bits = 0x7FF8000000000000ull; else memcpy(&bits, &value, sizeof(bits));
+  return static_cast<int32_t>(bits ^ (bits >> 32));
+}
 extern "C" JUNO_ASM_ABI double juno_i2d(int32_t value) { return static_cast<double>(value); }
 extern "C" JUNO_ASM_ABI int32_t juno_d2i(double value) {
   if (isnan(value)) return 0;

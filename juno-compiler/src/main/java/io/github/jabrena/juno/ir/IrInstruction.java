@@ -37,6 +37,7 @@ public sealed interface IrInstruction {
             case IrInstruction.NewMultiArray array -> List.of(array.target());
             case IrInstruction.Panic ignored -> List.of();
             case IrInstruction.NullCheck check -> List.of(check.value());
+            case IrInstruction.InstanceOf check -> List.of(check.target(), check.value());
             case IrInstruction.Binary binary -> List.of(binary.target(), binary.left(), binary.right());
             case IrInstruction.Unary unary -> List.of(unary.target(), unary.value());
             case IrInstruction.Compare compare -> List.of(compare.target(), compare.left(), compare.right());
@@ -167,6 +168,10 @@ public sealed interface IrInstruction {
 
     /** Runtime null guard used by javac for bound method references. */
     record NullCheck(Value value) implements IrInstruction {
+    }
+
+    /** {@code target = value instanceof finalType}; references are null-safe, tagged words at runtime. */
+    record InstanceOf(Value target, Value value, int typeId) implements IrInstruction {
     }
 
     record Binary(Value target, BinaryOp operation, Value left, Value right) implements IrInstruction {

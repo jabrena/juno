@@ -9,6 +9,7 @@ import io.github.jabrena.juno.linker.InterfaceCallSite;
 import io.github.jabrena.juno.linker.InterfaceDispatch;
 import io.github.jabrena.juno.linker.LambdaCallSite;
 import io.github.jabrena.juno.linker.LambdaSite;
+import io.github.jabrena.juno.linker.ObjectMethodsResolver;
 import io.github.jabrena.juno.linker.StringConcatResolver;
 
 import java.util.List;
@@ -32,12 +33,14 @@ record ProgramContext(Map<String, JavaClass> classes, List<String> throwableClas
                       Map<InterfaceCallSite, InterfaceDispatch> interfaceDispatches,
                       Map<String, Integer> objectTypeIds, Map<LambdaCallSite, LambdaSite> lambdaSites,
                       ThrowingMethods throwing, ConstantTables constantTables, boolean divisionByZeroUnwinds,
-                      BytecodeDecoder decoder, StringConcatResolver stringConcatResolver, Board board,
+                      BytecodeDecoder decoder, StringConcatResolver stringConcatResolver,
+                      ObjectMethodsResolver objectMethodsResolver, Board board,
                       List<MethodRef> clojureFunctions) {
 
     /** This context once {@code throwing} is known. */
     ProgramContext withThrowing(ThrowingMethods throwing) {
         return new ProgramContext(classes, throwableClasses, interfaceDispatches, objectTypeIds, lambdaSites,
-                throwing, constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, board, clojureFunctions);
+                throwing, constantTables, divisionByZeroUnwinds, decoder, stringConcatResolver, objectMethodsResolver,
+                board, clojureFunctions);
     }
 }

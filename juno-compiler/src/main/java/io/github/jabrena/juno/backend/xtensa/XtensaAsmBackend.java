@@ -372,6 +372,7 @@ public final class XtensaAsmBackend implements AsmBackend {
                 xtensa.call(output, "juno_panic");
                 output.append(nonNull).append(":\n");
             }
+            case IrInstruction.InstanceOf check -> memory.emitInstanceOf(output, frame, check);
             default -> wides.emit(output, frame, instruction);
         }
     }

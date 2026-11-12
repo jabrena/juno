@@ -8,6 +8,17 @@ extern "C" int32_t juno_dcmp(juno_f64 a, juno_f64 b, int32_t nanResult) {
   int8_t order = juno_f64_compare(a, b);
   return order == 2 ? nanResult : order;
 }
+extern "C" int32_t juno_double_compare(juno_f64 a, juno_f64 b) {
+  int8_t order = juno_f64_compare(a, b);
+  if (order == 2) return juno_f64_is_nan(a) ? (juno_f64_is_nan(b) ? 0 : 1) : -1;
+  if (order == 0 && ((a | b) << 1) == 0 && ((a ^ b) & 0x8000000000000000ull) != 0) {
+    return a & 0x8000000000000000ull ? -1 : 1;
+  }
+  return order;
+}
+extern "C" int32_t juno_double_hash_code(juno_f64 value) {
+  return juno_f64_is_nan(value) ? 0x7FF80000 : static_cast<int32_t>(value ^ (value >> 32));
+}
 extern "C" juno_f64 juno_i2d(int32_t value) { return juno_f64_from_i32(value); }
 extern "C" int32_t juno_d2i(juno_f64 value) { return juno_f64_to_i32(value); }
 extern "C" juno_f64 juno_l2d(int64_t value) { return juno_f64_from_i64(value); }

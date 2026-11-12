@@ -28,10 +28,14 @@ final class StringConcatLowering {
     void concat(Instruction instruction, StringConcatSite site) {
         CallArguments arguments = calls.popArguments(instruction, CONCAT,
                 new Descriptor(site.argumentTypes(), STRING), Optional.empty());
+        context.stack().push(emitConcat(site.parts(), arguments.values()));
+    }
+
+    Value emitConcat(List<StringConcatSite.Part> parts, List<Value> arguments) {
         Value builder = context.values().int32();
         context.emit(new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_CONCAT_NEW,
                 Optional.empty(), List.of(), List.of()));
-        for (StringConcatSite.Part part : site.parts()) {
+        for (StringConcatSite.Part part : parts) {
             switch (part) {
                 case StringConcatSite.LiteralPart literal -> {
                     Value text = context.values().int32();
@@ -39,10 +43,10 @@ final class StringConcatLowering {
                     append(builder, Intrinsic.STRING_CONCAT_APPEND_STRING, text);
                 }
                 case StringConcatSite.ArgumentPart argument ->
-                        append(builder, appendIntrinsic(argument.type()), arguments.value(argument.index()));
+                        append(builder, appendIntrinsic(argument.type()), arguments.get(argument.index()));
             }
         }
-        context.stack().push(builder);
+        return builder;
     }
 
     private Intrinsic appendIntrinsic(String type) {

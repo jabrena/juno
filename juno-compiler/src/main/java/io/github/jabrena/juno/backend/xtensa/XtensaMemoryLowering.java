@@ -73,6 +73,26 @@ final class XtensaMemoryLowering {
         storeTo(output, frame, layout.fieldOffset(store.field()), store.value(), store.field().volatileField());
     }
 
+    void emitInstanceOf(StringBuilder output, FrameLayout frame, IrInstruction.InstanceOf check) {
+        xtensa.load(output, frame, A, check.value());
+        String nonNull = xtensa.newLabel(".LinstanceofNonNull");
+        String equal = xtensa.newLabel(".LinstanceofEqual");
+        String done = xtensa.newLabel(".LinstanceofDone");
+        output.append("    bnez a8, ").append(nonNull).append('\n');
+        xtensa.loadImmediate(output, A, 0);
+        output.append("    j ").append(done).append('\n');
+        output.append(nonNull).append(":\n");
+        xtensa.loadWordAt(output, B, A, 0);
+        xtensa.loadImmediate(output, C, check.typeId());
+        output.append("    beq a9, a10, ").append(equal).append('\n');
+        xtensa.loadImmediate(output, A, 0);
+        output.append("    j ").append(done).append('\n');
+        output.append(equal).append(":\n");
+        xtensa.loadImmediate(output, A, 1);
+        output.append(done).append(":\n");
+        xtensa.store(output, frame, A, check.target());
+    }
+
     void emitLoadStatic(StringBuilder output, FrameLayout frame, IrInstruction.LoadStatic load) {
         xtensa.loadAddress(output, A, layout.staticSymbol(load.field()));
         loadFrom(output, frame, 0, load.target(), load.field().volatileField());

@@ -9,11 +9,14 @@ final class InvokeDynamicLowering implements InstructionLowering {
     private final MethodContext context;
     private final LambdaLowering lambdas;
     private final StringConcatLowering concatenations;
+    private final ObjectMethodsLowering objectMethods;
 
-    InvokeDynamicLowering(MethodContext context, LambdaLowering lambdas, StringConcatLowering concatenations) {
+    InvokeDynamicLowering(MethodContext context, LambdaLowering lambdas, StringConcatLowering concatenations,
+                          ObjectMethodsLowering objectMethods) {
         this.context = context;
         this.lambdas = lambdas;
         this.concatenations = concatenations;
+        this.objectMethods = objectMethods;
     }
 
     @Override
@@ -22,6 +25,8 @@ final class InvokeDynamicLowering implements InstructionLowering {
         LambdaSite lambda = context.program().lambdaSites().get(callSite);
         if (lambda != null) {
             lambdas.create(lambda);
+        } else if (context.program().objectMethodsResolver().supports(context.method(), instruction)) {
+            objectMethods.lower(instruction);
         } else {
             concatenations.concat(instruction,
                     context.program().stringConcatResolver().resolve(context.method(), instruction));

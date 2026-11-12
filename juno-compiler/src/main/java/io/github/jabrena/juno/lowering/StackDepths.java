@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import static io.github.jabrena.juno.bytecode.Opcodes.CHECKCAST;
 import static io.github.jabrena.juno.bytecode.Opcodes.GETFIELD;
 import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INSTANCEOF;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEDYNAMIC;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEINTERFACE;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESPECIAL;
@@ -146,7 +147,7 @@ final class StackDepths {
                 int slots = fieldSlots(instruction);
                 yield opcode == GETFIELD ? slots - 1 : -slots - 1;
             }
-            case CHECKCAST -> 0;
+            case CHECKCAST, INSTANCEOF -> 0;
             case MULTIANEWARRAY -> 1 - instruction.operandB();
             case INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC, INVOKEINTERFACE -> {
                 MethodRef called = method.owner().constantPool().methodRef(instruction.operandA());
