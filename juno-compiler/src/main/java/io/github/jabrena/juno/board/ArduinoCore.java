@@ -88,4 +88,12 @@ public enum ArduinoCore {
     public String displayName() {
         return displayName;
     }
+
+    /** Number of physical carriers available to a runtime built for this core. */
+    public int carrierCount() {
+        return switch (this) {
+            case ESP32, ESP32_CAM, M5STACK_ESP32, RP2350 -> 2;
+            default -> 1;
+        };
+    }
 }

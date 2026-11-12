@@ -65,8 +65,8 @@ class ArduinoCliCompileIT {
     private static final Path PROGRAMS = BASEDIR.resolve("src/test/arduino/programs");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/arduino-cli/program-classes");
 
-    private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
-    private static final Set<Board> CORE_CACHED = ConcurrentHashMap.newKeySet();
+    private static final Map<String, Object> CORE_LOCKS = new ConcurrentHashMap<>();
+    private static final Set<String> CORE_CACHED = ConcurrentHashMap.newKeySet();
 
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
@@ -112,29 +112,29 @@ class ArduinoCliCompileIT {
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("programs")
     void compilesAndLinksWithArduinoCli(String program, Board board) throws Exception {
-        Path sketch = generateSketch(program, board);
-        String target = "/sketches/" + board.id() + "/" + sketch.getFileName();
-        ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch), target);
+        GeneratedSketch sketch = generateSketch(program, board);
+        String target = "/sketches/" + board.id() + "/" + sketch.directory().getFileName();
+        ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch.directory()), target);
 
-        List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", board.fqbn()));
+        List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", sketch.fqbn()));
         if (board == Board.UNO_R3_WIFI_REV2) {
             command.add("--build-property");
             command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
         }
         command.add(target);
-        ExecResult result = compile(board, command.toArray(String[]::new));
+        ExecResult result = compile(sketch.fqbn(), command.toArray(String[]::new));
 
         assertThat(result.getExitCode()).as("arduino-cli compile %s (%s):%n%s%s", program, board.displayName(),
                 result.getStdout(), result.getStderr()).isZero();
     }
 
     /** Compiles alone while {@code board}'s cached core is first built, then concurrently with the others. */
-    private static ExecResult compile(Board board, String[] command) throws IOException, InterruptedException {
-        synchronized (CORE_LOCKS.computeIfAbsent(board, key -> new Object())) {
-            if (!CORE_CACHED.contains(board)) {
+    private static ExecResult compile(String fqbn, String[] command) throws IOException, InterruptedException {
+        synchronized (CORE_LOCKS.computeIfAbsent(fqbn, key -> new Object())) {
+            if (!CORE_CACHED.contains(fqbn)) {
                 ExecResult result = ARDUINO_CLI.execInContainer(command);
                 if (result.getExitCode() == 0) {
-                    CORE_CACHED.add(board);
+                    CORE_CACHED.add(fqbn);
                 }
                 return result;
             }
@@ -142,8 +142,12 @@ class ArduinoCliCompileIT {
         return ARDUINO_CLI.execInContainer(command);
     }
 
+    /** A generated sketch directory and the FQBN the compiler says it builds with (board menu options included). */
+    private record GeneratedSketch(Path directory, String fqbn) {
+    }
+
     /** Runs Juno on the program, writing the same sketch directory {@code juno:compile} does. */
-    private static Path generateSketch(String program, Board board) throws IOException {
+    private static GeneratedSketch generateSketch(String program, Board board) throws IOException {
         String sketchName = program + "Asm";
         Path directory = BASEDIR.resolve("target/arduino-cli/sketches").resolve(board.id()).resolve(sketchName);
         Files.createDirectories(directory);
@@ -153,7 +157,7 @@ class ArduinoCliCompileIT {
                 Optional.of(board.id()));
         // The same .ino wrapper juno-maven-plugin writes.
         result.sketchWrapper().writeTo(directory.resolve(sketchName + ".ino"));
-        return directory;
+        return new GeneratedSketch(directory, result.fqbn());
     }
 
     private static GenericContainer<?> container() {

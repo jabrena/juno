@@ -90,6 +90,7 @@ Create each adapter with the board's `Gpio`, so its socket names are resolved fo
 
 | Sensor | Socket | Driver | Reads |
 |---|---|---|---|
+| [GPS (Air530)](#gps-air530) | Digital UART (RX on D2) | [`GroveGpsAir530`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.java) | NMEA GGA latitude, longitude and altitude |
 | [Temperature and Humidity Sensor Pro (DHT22)](#temperature-and-humidity-sensor-pro-dht22) | Digital | [`GroveDht22`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht22.java) | Temperature and humidity, in tenths |
 | [Temperature and Humidity Sensor (DHT11)](#temperature-and-humidity-sensor-dht11) | Digital | [`GroveDht11`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.java) | Whole-degree temperature and humidity |
 | [Temperature Sensor v1.2](#temperature-sensor-v12) | Analog | [`GroveTemperatureV12`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveTemperatureV12.java) | Degrees Celsius from a thermistor |
@@ -100,6 +101,34 @@ Create each adapter with the board's `Gpio`, so its socket names are resolved fo
 | [BMI088 accelerometer and gyroscope](#bmi088-accelerometer-and-gyroscope) | I2C | [`Bmi088`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/imu/Bmi088.java) | Acceleration, angular velocity and integrated heading |
 | [Ultrasonic Ranger](#ultrasonic-ranger) | Digital | [`GroveUltrasonicRanger`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.java) | Distance in metres |
 | [Infrared emitter and receiver](#infrared-emitter-and-receiver) | Digital | [`GroveInfraredEmitter`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredEmitter.java), [`GroveInfraredReceiver`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveInfraredReceiver.java) | Infrared link to a LEGO RCX |
+
+### GPS Air530
+
+The Grove GPS Air530 emits NMEA 0183 at 9,600 baud by default. Plug it into the Base Shield's D2 socket and connect
+the module's TX wire to D2; the module's RX wire is not needed for reading fixes. `GroveGpsAir530` uses a software UART
+and keeps the USB serial console available for diagnostics. It writes latitude and longitude as signed millionths of a
+degree and altitude as centimetres into caller-owned arrays:
+
+```java
+GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+Gpio gpio = ArduinoUno.getGpio();
+GroveGpsAir530 gps = new GroveGpsAir530(gpio, ArduinoUno.getClock(), shield.getD2());
+byte[] sentence = new byte[GroveGpsAir530.SENTENCE_CAPACITY];
+int[] position = new int[GroveGpsAir530.POSITION_LENGTH];
+gps.begin();
+
+while (true) {
+    if (gps.readPosition(sentence, sentence.length, position, position.length, 5_000)) {
+        Serial.print("latitude=");
+        Serial.println(position[GroveGpsAir530.LATITUDE_MICRODEGREES]);
+        Serial.print("longitude=");
+        Serial.println(position[GroveGpsAir530.LONGITUDE_MICRODEGREES]);
+    }
+}
+```
+
+The reader and its parsing path allocate nothing after construction. See [`GroveGpsAir530Reader`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveGpsAir530Reader.java)
+for a complete example.
 
 ### Temperature and Humidity Sensor Pro (DHT22)
 

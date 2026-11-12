@@ -2,8 +2,10 @@ package io.github.jabrena.juno.analysis;
 
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
+import io.github.jabrena.juno.board.ArduinoCore;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrProgram;
@@ -57,6 +59,7 @@ public final class RuntimeRiskAnalyzer {
         Set<MethodRef> threadEntries = new LinkedHashSet<>();
         Set<MethodRef> launchers = new HashSet<>();
         List<RuntimeRisk> findings = new ArrayList<>();
+        List<MethodRef> pinnedThreadEntries = new ArrayList<>();
         int boundsChecks = 0;
         int arrayAccesses = 0;
         int constantArrayBytes = 0;
@@ -91,6 +94,10 @@ public final class RuntimeRiskAnalyzer {
         }
 
         addThreadBodyFindings(findings, threadEntries, launchers, recursive, calls, frames);
+        int carrierCount = config.carrierCount(linked.board().core().carrierCount());
+        if (carrierCount > 1) {
+            addCarrierFindings(linked, program, threadEntries, calls, findings, pinnedThreadEntries);
+        }
 
         Set<MethodRef> transitiveAllocators = callGraphMetrics.transitiveAllocators(calls, directAllocation);
         loopAllocators.addAll(callGraphMetrics.loopAllocatorsCallingAllocator(program, transitiveAllocators));
@@ -139,7 +146,38 @@ public final class RuntimeRiskAnalyzer {
         findings.sort(this::compareFindings);
 
         return new RuntimeRiskReport(config.arenaBytes(), arenaBytes, unboundedArena,
-                estimatedStaticRam, maxStack, maxDepth, boundsChecks, uncheckedArrayAccesses, findings);
+                estimatedStaticRam, maxStack, maxDepth, boundsChecks, uncheckedArrayAccesses, findings,
+                carrierCount, pinnedThreadEntries);
+    }
+
+    private void addCarrierFindings(Program linked, IrProgram program, Set<MethodRef> threadEntries,
+                                    Map<MethodRef, Set<MethodRef>> calls, List<RuntimeRisk> findings,
+                                    List<MethodRef> pinnedThreadEntries) {
+        if (linked.board().core() != ArduinoCore.RP2350) return;
+        for (MethodRef entry : threadEntries.stream().filter(calls::containsKey)
+                .sorted((left, right) -> left.displayName().compareTo(right.displayName())).toList()) {
+            Set<MethodRef> reachable = callGraphMetrics.reachableFrom(entry, calls);
+            boolean reachesDevice = program.methods().stream()
+                    .filter(method -> reachable.contains(method.reference()) || method.reference().equals(entry))
+                    .flatMap(method -> method.blocks().stream())
+                    .flatMap(block -> block.instructions().stream())
+                    .filter(IrInstruction.IntrinsicCall.class::isInstance)
+                    .map(IrInstruction.IntrinsicCall.class::cast)
+                    .map(IrInstruction.IntrinsicCall::intrinsic)
+                    .anyMatch(this::requiresCoreZero);
+            if (reachesDevice) {
+                pinnedThreadEntries.add(entry);
+                findings.add(new RuntimeRisk("JUNO-RISK-013", RiskSeverity.INFO, entry,
+                        "thread entry reaches a device intrinsic that is not confirmed safe on RP2350 core 1; "
+                                + "pinned to carrier 0"));
+            }
+        }
+    }
+
+    private boolean requiresCoreZero(Intrinsic intrinsic) {
+        String name = intrinsic.name();
+        return name.startsWith("WIFI_") || name.startsWith("HTTP_") || name.startsWith("HTTPS_")
+                || name.startsWith("TCP_") || name.startsWith("UDP_") || name.startsWith("BLUETOOTH_");
     }
 
     private void addScanFindings(List<RuntimeRisk> findings, MethodRef method,

@@ -68,6 +68,13 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;
 
+    /**
+     * Compatibility override for pipelines whose emulator cannot run both cores. Absent by default, so dual-core
+     * boards use both carriers; set {@code -Djuno.carriers=1} only for such constrained test environments.
+     */
+    @Parameter(property = "juno.carriers")
+    private @Nullable String carrierCount;
+
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
                 "Missing required Juno entry point: choose the program to compile with -Djuno.main=<class> "
@@ -79,16 +86,16 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
-                Optional.ofNullable(threadStackSize));
+                Optional.ofNullable(threadStackSize), Optional.ofNullable(carrierCount));
         CompilationResult result = new JunoCompiler().compileTo(
                 new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
                 layout.assembly(), layout.runtimeShim());
         result.sketchWrapper().writeTo(layout.wrapper());
 
         CompilationReport report = result.report();
-        String targetFqbn = targetFqbn(report.board().fqbn());
-        if (!targetFqbn.equals(report.board().fqbn())) {
-            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + report.board().fqbn());
+        String targetFqbn = targetFqbn(result.fqbn());
+        if (!targetFqbn.equals(result.fqbn())) {
+            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + result.fqbn());
         }
         getLog().info("Generated " + layout.assembly() + ", " + layout.runtimeShim() + ", and " + layout.wrapper()
                 + " for " + report.board().displayName() + " with the ASM backend (fqbn " + targetFqbn + ")");

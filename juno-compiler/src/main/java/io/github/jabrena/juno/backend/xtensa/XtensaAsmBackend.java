@@ -135,13 +135,17 @@ public final class XtensaAsmBackend implements AsmBackend {
         }
         layout = new ProgramLayout(program);
         xtensa = new XtensaEmitter(layout.stringLiteralSymbols());
+        CoreRuntime coreRuntime = coreRuntimes.of(board.core());
+        int carrierCount = runtimeConfig.carrierCount(coreRuntime.carrierCount());
+        boolean dualCarrier = usesThreads && carrierCount > 1;
         ints = new XtensaIntArithmeticLowering(xtensa);
-        memory = new XtensaMemoryLowering(xtensa, layout);
+        memory = new XtensaMemoryLowering(xtensa, layout,
+                new XtensaCarrierAccess(xtensa, dualCarrier, coreRuntime.memoryBarrierInstruction()));
         wides = new XtensaWideArithmeticLowering(xtensa, features);
         lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
-        CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa), coreRuntime, board.unoGeneration(),
-                features, usedMath, usesThreads, socketStreamsOnly);
+        intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa, dualCarrier),
+                coreRuntime, board.unoGeneration(),
+                features, usedMath, usesThreads, socketStreamsOnly, carrierCount);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {

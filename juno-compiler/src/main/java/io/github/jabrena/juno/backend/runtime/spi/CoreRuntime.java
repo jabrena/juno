@@ -15,6 +15,58 @@ import io.github.jabrena.juno.board.ArduinoCore;
  */
 public interface CoreRuntime {
 
+    /**
+     * Number of Juno carriers supplied by this core. A carrier is the scheduler context that runs generated Java on
+     * one hardware core. The default keeps every existing single-core port byte-for-byte unchanged.
+     */
+    default int carrierCount() {
+        return 1;
+    }
+
+    /** C++ helpers for the recursive lock around runtime entry points on a dual-carrier core. */
+    default String runtimeLock() {
+        return "";
+    }
+
+    /** Target memory barrier instruction for volatile accesses on a dual-carrier core. */
+    default String memoryBarrierInstruction() {
+        return "";
+    }
+
+    /** Atomic wide-field helpers, emitted only for dual-carrier threaded programs. */
+    default String wideAccessHelpers() {
+        return "";
+    }
+
+    /**
+     * The statement that moves every register a parked carrier's frames may hold onto its stack, so a collector on
+     * another carrier finds the references in them. The default makes GCC save the callee-saved registers.
+     */
+    default String registerSpill() {
+        return "__builtin_unwind_init();";
+    }
+
+    /**
+     * Board menu options the sketch needs on top of the board's FQBN when its threads run on {@code carrierCount}
+     * carriers, each starting with a comma; none by default.
+     */
+    default String fqbnOptions(int carrierCount) {
+        return "";
+    }
+
+    /**
+     * The shim function the sketch's {@code setup()} hands the entry point to when threads run on
+     * {@code carrierCount} carriers, or {@code ""} when {@code setup()} calls the entry point itself.
+     */
+    default String mainLauncher(int carrierCount) {
+        return "";
+    }
+
+    /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
+    default String carrierRuntime(int carrierCount) {
+        return carrierCount > 1 ? runtimeLock() + wideAccessHelpers() : "";
+    }
+
     /** The symbol {@code Delay.millis} branches to, taking the delay in r0. */
     String delayMillisFunction();
 
@@ -262,6 +314,14 @@ public interface CoreRuntime {
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
     String threadPort(RuntimeConfig config);
+
+    /**
+     * The thread port selected for the core's carrier count. Single-carrier implementations inherit the original
+     * port so their generated shim remains unchanged.
+     */
+    default String threadPort(RuntimeConfig config, int carrierCount) {
+        return threadPort(config);
+    }
 
     /**
      * The BLE central names the LEGO Powered UP runtime is written against: {@code ArduinoBLE}'s device, characteristic
