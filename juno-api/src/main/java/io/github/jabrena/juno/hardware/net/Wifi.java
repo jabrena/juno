@@ -8,10 +8,8 @@ package io.github.jabrena.juno.hardware.net;
  * legacy {@code WiFi} library) instead. A unit test passes {@code mock(Wifi.class)}. Get it once, at startup, and pass
  * it to the classes that need it.
  *
- * <p>{@code ssid}/{@code password} may be string literals, compile-time values resolved from
- * {@code System.getenv("NAME")}, or stable runtime strings returned by APIs such as
- * {@link java.util.Properties#getProperty(String)}. This allows a
- * deployed board to keep credentials on removable storage instead of baking them into firmware.
+ * <p>{@code ssid}/{@code password} may be string literals or stable runtime strings returned by a
+ * {@code SecretStore} or another board-side configuration source. This keeps credentials out of firmware.
  */
 public interface Wifi {
 

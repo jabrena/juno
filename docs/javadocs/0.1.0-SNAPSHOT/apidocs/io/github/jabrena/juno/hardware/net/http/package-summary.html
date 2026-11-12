@@ -87,9 +87,8 @@ requests into a caller-owned <code>byte[]</code> response buffer, <a href="Json.
 values directly out of a response buffer without building a parsed document, and <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
 <a href="HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.
 
-<p>The convenience client's URL/body and every JSON path must normally be a compile-time constant — a string
-literal, or a direct <code>System.getenv("NAME")</code> call with a literal name — because Juno has no heap to build a
-runtime <code>String</code>. <a href="HttpClient.html#requestHttps(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>HttpClient.requestHttps(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a> is the lower-level
+<p>The convenience client's URL/body and every JSON path may be literals or runtime strings loaded from a board-side
+<code>SecretStore</code>. <a href="HttpClient.html#requestHttps(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>HttpClient.requestHttps(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a> is the lower-level
 exception for protocol drivers: it accepts runtime paths, multiple request-header lines, and bodies in bounded,
 caller-owned byte buffers. <a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a> also
 accepts a runtime response body.</div>

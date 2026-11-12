@@ -6,9 +6,8 @@ package io.github.jabrena.juno.hardware.net.email;
  * {@link io.github.jabrena.juno.hardware.net.http.HttpClient}'s {@code https://} requests. It supports UNO R4 WiFi and UNO Q
  * and requires an active {@link io.github.jabrena.juno.hardware.net.Wifi#begin} connection.
  *
- * <p>{@code host}, {@code username}, and {@code password} must be compile-time strings (a
- * literal, or {@code System.getenv("NAME")} of a literal name). Responses use caller-owned
- * buffers; there is no heap allocation.
+ * <p>{@code host}, {@code username}, and {@code password} accept literals or runtime strings read from a board-side
+ * {@code SecretStore}. Responses use caller-owned buffers; there is no heap allocation.
  */
 public final class Pop3Client {
     /** A reasonable default size for a caller's headers buffer, in bytes. */
