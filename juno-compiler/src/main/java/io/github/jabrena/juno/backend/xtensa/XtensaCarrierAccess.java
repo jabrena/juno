@@ -25,23 +25,41 @@ final class XtensaCarrierAccess {
                 ? "    " + memoryBarrierInstruction + "\n" : "";
     }
 
-    /** Loads the wide field {@code a8} points at into {@code target}; false when the plain two-word load applies. */
-    boolean loadWide(StringBuilder output, FrameLayout frame, Value target) {
+    /**
+     * Loads the wide field {@code offset} bytes into the object {@code a8} points at into {@code target}; false when
+     * the plain two-word load applies.
+     */
+    boolean loadWide(StringBuilder output, FrameLayout frame, int offset, Value target) {
         if (!dualCarrier || !target.type().isWide()) return false;
-        output.append("    mov a10, ").append(A).append('\n');
+        fieldAddress(output, offset);
         xtensa.call(output, "juno_wide_load");
         xtensa.store64(output, frame, "a10", "a11", target);
         return true;
     }
 
-    /** Stores the wide value held in {@code a9}/{@code a10} into the field {@code a8} points at; false when plain. */
-    boolean storeWide(StringBuilder output) {
+    /**
+     * Stores the wide value held in {@code a9}/{@code a10} into the field {@code offset} bytes into the object
+     * {@code a8} points at; false when plain.
+     */
+    boolean storeWide(StringBuilder output, int offset) {
         if (!dualCarrier) return false;
         output.append("    mov a12, ").append(C).append('\n')
-                .append("    mov a11, ").append(B).append('\n')
-                .append("    mov a10, ").append(A).append('\n')
-                .append("    call8 juno_wide_store\n");
+                .append("    mov a11, ").append(B).append('\n');
+        fieldAddress(output, offset);
+        output.append("    call8 juno_wide_store\n");
         return true;
+    }
+
+    /** {@code a10} = the field's address: {@code a8} plus {@code offset}, which is at most an {@code l32i} reach. */
+    private void fieldAddress(StringBuilder output, int offset) {
+        if (offset == 0) {
+            output.append("    mov a10, ").append(A).append('\n');
+        } else if (offset >= -128 && offset <= 127) {
+            output.append("    addi a10, ").append(A).append(", ").append(offset).append('\n');
+        } else {
+            output.append("    movi a10, ").append(offset).append('\n')
+                    .append("    add a10, ").append(A).append(", a10\n");
+        }
     }
 
     /** The barrier ahead of a word access to a {@code volatile} field, else nothing. */

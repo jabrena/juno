@@ -299,6 +299,9 @@ class ConcurrencyPrimitivesTest {
                 """);
 
         assertThat(result.assembly()).contains("memw", "call8 juno_wide_store", "call8 juno_wide_load");
+        // The long sits after the int: both helpers get the field's own address, not the object's.
+        assertThat(result.assembly()).contains("    addi a10, a8, 4\n    call8 juno_wide_store\n",
+                "    addi a10, a8, 4\n    call8 juno_wide_load\n");
         assertThat(result.runtimeShim()).contains("juno_wide_load", "juno_wide_store");
     }
 

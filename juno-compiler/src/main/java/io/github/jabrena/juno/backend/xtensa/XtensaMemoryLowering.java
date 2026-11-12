@@ -86,7 +86,7 @@ final class XtensaMemoryLowering {
     /** Loads the field {@code offset} bytes into the object {@code a8} points at. */
     private void loadFrom(StringBuilder output, FrameLayout frame, int offset, Value target, boolean volatileField) {
         int reachable = reach(output, offset, target.type().isWide());
-        if (carrierAccess.loadWide(output, frame, target)) return;
+        if (carrierAccess.loadWide(output, frame, reachable, target)) return;
         xtensa.loadWordAt(output, B, A, reachable);
         if (target.type().isWide()) {
             xtensa.loadWordAt(output, C, A, reachable + WORD);
@@ -102,7 +102,7 @@ final class XtensaMemoryLowering {
         int reachable = reach(output, offset, value.type().isWide());
         if (value.type().isWide()) {
             xtensa.load64(output, frame, B, C, value);
-            if (carrierAccess.storeWide(output)) return;
+            if (carrierAccess.storeWide(output, reachable)) return;
             xtensa.storeWordAt(output, B, A, reachable);
             xtensa.storeWordAt(output, C, A, reachable + WORD);
         } else {
