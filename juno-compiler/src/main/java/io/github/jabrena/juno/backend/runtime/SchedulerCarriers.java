@@ -203,8 +203,8 @@ sealed interface SchedulerCarriers {
                             }
 
                             """)
-                    .replace("${JUNO_CARRIER_ADOPT}", "\n  juno_carrier_load(slot);")
-                    .replace("${JUNO_FINISH_ENTER}", "  juno_runtime_enter();\n")
+                    .replace("${JUNO_CARRIER_ADOPT}", "\n  juno_carrier_load(slot);\n  juno_java_resume();")
+                    .replace("${JUNO_FINISH_ENTER}", "  juno_java_pause();\n  juno_runtime_enter();\n")
                     .replace("${JUNO_FINISH_EXIT}", "  juno_runtime_exit();\n")
                     .replace("${JUNO_START_IDLE_CARRIER}", "\n" + """
                             // An idle carrier has no thread to hand it over: the new thread starts there at once.

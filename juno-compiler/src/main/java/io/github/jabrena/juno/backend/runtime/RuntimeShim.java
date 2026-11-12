@@ -37,6 +37,7 @@ public final class RuntimeShim {
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+    private final CarrierGcRuntime carrierGcRuntime = new CarrierGcRuntime();
     private final GpioPinRuntime gpioPinRuntime = new GpioPinRuntime();
 
     private final CoreRuntime core;
@@ -191,7 +192,8 @@ public final class RuntimeShim {
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
                 .replace("${JUNO_PANIC_HALT}", core.panicHalt())
                 .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogFunctions)
-                + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
+                + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration,
+                        carrierCount)
                 + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
     }
 
@@ -360,6 +362,7 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/util/NoSuchElementException"), carrierCount));
         }
         if (uses(ShimFeature.THREADS)) {
+            shim.append(carrierGcRuntime.source(core, carrierCount));
             shim.append(core.carrierRuntime(carrierCount));
             shim.append(core.threadPort(config, carrierCount));
             shim.append(ioRuntime.workerPortFor(core, features));

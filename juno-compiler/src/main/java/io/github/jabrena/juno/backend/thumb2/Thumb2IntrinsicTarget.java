@@ -18,12 +18,12 @@ record Thumb2IntrinsicTarget(AsmEmitter asm, boolean memoryBarrier) implements I
 
     @Override
     public void emitRuntimeLockEnter(StringBuilder output) {
-        output.append("    bl juno_runtime_enter\n");
+        output.append("    bl juno_java_leave\n");
     }
 
     @Override
     public void emitRuntimeLockExit(StringBuilder output) {
-        output.append("    bl juno_runtime_exit\n");
+        output.append("    bl juno_java_return\n");
     }
 
     @Override

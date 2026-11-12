@@ -46,6 +46,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return core.carrierCount();
     }
 
+    /** Xtensa keeps a caller's registers in the windowed register file: spill every window onto the stack. */
+    @Override
+    public String registerSpill() {
+        return "xthal_window_spill();";
+    }
+
     @Override
     public String runtimeLock() {
         return """
@@ -69,6 +75,7 @@ final class Esp32CoreRuntime implements CoreRuntime {
                       return;
                     }
                     portEXIT_CRITICAL(&juno_runtime_mux);
+                    juno_gc_lock_wait();
                     taskYIELD();
                   }
                 }

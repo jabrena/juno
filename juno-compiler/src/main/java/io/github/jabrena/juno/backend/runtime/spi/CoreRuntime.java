@@ -38,6 +38,14 @@ public interface CoreRuntime {
         return "";
     }
 
+    /**
+     * The statement that moves every register a parked carrier's frames may hold onto its stack, so a collector on
+     * another carrier finds the references in them. The default makes GCC save the callee-saved registers.
+     */
+    default String registerSpill() {
+        return "__builtin_unwind_init();";
+    }
+
     /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
     default String carrierRuntime(int carrierCount) {
         return carrierCount > 1 ? runtimeLock() + wideAccessHelpers() : "";

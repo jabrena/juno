@@ -325,6 +325,7 @@ public final class ThreadRuntime {
                     }
                     """, """
                     static void juno_thread_slice_over() {
+                      juno_gc_safepoint();
                       juno_port_check_killed();
                       juno_runtime_enter();
                       if (juno_live_threads == 0u) {

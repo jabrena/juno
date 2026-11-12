@@ -50,6 +50,7 @@ final class Rp2350CoreRuntime implements CoreRuntime {
                       juno_runtime_depth = 1u;
                       return;
                     }
+                    juno_gc_lock_wait();
                     yield();
                   }
                 }

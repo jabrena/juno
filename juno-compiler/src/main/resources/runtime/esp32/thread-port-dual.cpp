@@ -18,6 +18,7 @@ extern "C" uint32_t juno_slot_carrier(uint32_t slot);
 extern "C" bool juno_runtime_owned();
 extern "C" void juno_runtime_enter();
 extern "C" void juno_runtime_exit();
+extern "C" void juno_java_pause();
 
 struct JunoPortSlot {
   uint32_t unused;
@@ -64,6 +65,7 @@ static void juno_port_start(uint32_t slot) {
 }
 
 [[noreturn]] static void juno_port_die(uint32_t slot) {
+  juno_java_pause();
   while (juno_runtime_owned()) juno_runtime_exit();
   longjmp(juno_dual_restart[slot], 1);
 }

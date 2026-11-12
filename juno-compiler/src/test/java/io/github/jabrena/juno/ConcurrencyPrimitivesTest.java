@@ -162,7 +162,35 @@ class ConcurrencyPrimitivesTest {
 
         assertThat(result.runtimeShim()).contains("juno_current_slots[2]", "juno_pending_exceptions[2]",
                 "juno_runtime_owner", "juno_port_carrier_id");
-        assertThat(result.assembly()).contains("call8 juno_runtime_enter", "call8 juno_runtime_exit");
+        assertThat(result.assembly()).contains("call8 juno_java_leave", "call8 juno_java_return");
+    }
+
+    @Test
+    @DisplayName("Dual-carrier ESP32 collections stop the other carrier and allocation takes the runtime lock")
+    void shouldStopTheOtherCarrierWhileCollecting() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        assertThat(result.runtimeShim()).contains(
+                "static void juno_gc_collect() {\n  juno_gc_stop_world();",
+                "juno_gc_sweep();\n  juno_gc_resume_world();",
+                "juno_runtime_enter();\n  void* memory = juno_alloc_unlocked(size, alignment);",
+                "xthal_window_spill();",
+                "juno_gc_lock_wait();",
+                "juno_gc_safepoint();",
+                "juno_carrier_load(slot);\n  juno_java_resume();",
+                "juno_java_pause();\n  juno_runtime_enter();");
+    }
+
+    @Test
+    @DisplayName("Single-carrier collections keep the original allocator")
+    void shouldKeepTheSingleCarrierAllocator() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        assertThat(result.runtimeShim()).doesNotContain("juno_gc_stop_world", "juno_alloc_unlocked",
+                "juno_java_resume", "juno_carrier_in_java");
     }
 
     @Test
@@ -203,7 +231,7 @@ class ConcurrencyPrimitivesTest {
 
         assertThat(result.runtimeShim()).contains("static uint32_t juno_current_slot = 0u;")
                 .doesNotContain("juno_current_slots[2]", "juno_runtime_owner", "juno_port_carrier_id");
-        assertThat(result.assembly()).doesNotContain("call8 juno_runtime_enter", "call8 juno_runtime_exit");
+        assertThat(result.assembly()).doesNotContain("call8 juno_java_leave", "call8 juno_java_return");
         assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(1);
     }
 

@@ -26,12 +26,12 @@ record XtensaIntrinsicTarget(XtensaEmitter xtensa, boolean memoryBarrier) implem
 
     @Override
     public void emitRuntimeLockEnter(StringBuilder output) {
-        xtensa.call(output, "juno_runtime_enter");
+        xtensa.call(output, "juno_java_leave");
     }
 
     @Override
     public void emitRuntimeLockExit(StringBuilder output) {
-        xtensa.call(output, "juno_runtime_exit");
+        xtensa.call(output, "juno_java_return");
     }
 
     @Override
