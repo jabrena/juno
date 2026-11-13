@@ -39,6 +39,8 @@ public final class Navigator implements WaypointListener {
     /** A turn smaller than this is not made: a pilot's finest turn is about a degree. */
     private static final int MIN_TURN_MILLIDEGREES = 1000;
     private static final int MILLIDEGREES_PER_DEGREE = 1000;
+    /** A quarter turn counter-clockwise: the left of a heading. */
+    private static final int QUARTER_TURN_MILLIDEGREES = 90_000;
     /** How often the idle thread looks for a path to follow, and {@link #waitForStop()} for the end. */
     private static final int POLL_MILLIS = 20;
     private static final NavigationListener NO_LISTENER = new SilentListener();
@@ -334,12 +336,23 @@ public final class Navigator implements WaypointListener {
         return turned && !stopRequested;
     }
 
-    /** Travels {@code millimetres} and advances the pose by the distance covered, along the heading on the way. */
+    /**
+     * Travels {@code millimetres} and advances the pose by what the pilot measured: along the heading the leg started on
+     * and to its left when the pilot measures the sideways offset; otherwise the distance covered along the heading
+     * halfway between the start's and the stop's.
+     */
     private boolean travel(int millimetres) {
         int before = pose.headingMillidegrees();
         boolean travelled = pilot.travel(millimetres);
         int after = headingMillidegrees();
-        pose.advance(pilot.travelledMillimetres(), before + Pose.shortestTurn(after - before) / 2);
+        int left = pilot.travelledLeftMillimetres();
+        if (left == Pilot.UNMEASURED) {
+            pose.advance(pilot.travelledMillimetres(), before + Pose.shortestTurn(after - before) / 2);
+        } else {
+            // A pilot that steers can weave: the heading at the stop is one moment of the weave, not the leg's direction.
+            pose.advance(pilot.travelledMillimetres(), before);
+            pose.advance(left, before + QUARTER_TURN_MILLIDEGREES);
+        }
         pose.advance(0, after);
         lastOutcome = pilot.lastOutcome();
         return travelled && !stopRequested;

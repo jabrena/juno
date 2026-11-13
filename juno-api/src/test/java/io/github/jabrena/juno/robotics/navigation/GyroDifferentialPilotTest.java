@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.within;
 
 @DisplayName("GyroDifferentialPilot: encoder motors steered by a gyroscope")
@@ -16,12 +17,16 @@ class GyroDifferentialPilotTest {
 
     /**
      * A two-wheel robot moving in real time: each wheel's speed is its power times {@link #MM_PER_SECOND_PER_POWER}
-     * times its gain, and it stops dead when braked. Reading any sensor advances it to now.
+     * times its gain, and it stops dead when braked, or {@link #stopLagMillis} later, as a robot behind a radio link does.
+     * Reading any sensor advances it to now.
      */
     private static final class SimulatedRobot implements Clock, DirectionFinder {
         static final double MM_PER_SECOND_PER_POWER = 20.0;
         final long startNanos = System.nanoTime();
         long lastNanos = startNanos;
+        long stopLagMillis;
+        /** When the pending stop takes effect, or {@code -1} with none pending. */
+        long brakeAtNanos = -1;
         double x;
         double y;
         double headingRadians;
@@ -34,8 +39,18 @@ class GyroDifferentialPilotTest {
 
         synchronized void advance() {
             long now = System.nanoTime();
-            double seconds = (now - lastNanos) / 1e9;
-            lastNanos = now;
+            if (brakeAtNanos >= 0 && now >= brakeAtNanos) {
+                integrate(brakeAtNanos);
+                left.landStop();
+                right.landStop();
+                brakeAtNanos = -1;
+            }
+            integrate(now);
+        }
+
+        private void integrate(long until) {
+            double seconds = (until - lastNanos) / 1e9;
+            lastNanos = until;
             double vl = left.signedPower * MM_PER_SECOND_PER_POWER * leftGain;
             double vr = right.signedPower * MM_PER_SECOND_PER_POWER * rightGain;
             leftMillimetres += vl * seconds;
@@ -80,6 +95,7 @@ class GyroDifferentialPilotTest {
             private int power;
             int signedPower;
             private double zero;
+            private boolean stopping;
 
             Wheel(boolean isLeft) {
                 this.isLeft = isLeft;
@@ -103,19 +119,34 @@ class GyroDifferentialPilotTest {
             @Override
             public void forward() {
                 advance();
+                stopping = false;
                 signedPower = power;
             }
 
             @Override
             public void backward() {
                 advance();
+                stopping = false;
                 signedPower = -power;
             }
 
             @Override
             public void stop() {
                 advance();
-                signedPower = 0;
+                if (stopLagMillis == 0) {
+                    signedPower = 0;
+                } else {
+                    stopping = true;
+                    brakeAtNanos = System.nanoTime() + stopLagMillis * 1_000_000;
+                }
+            }
+
+            /** A stop sent {@link #stopLagMillis} ago reaches the wheel, unless a newer command came first. */
+            void landStop() {
+                if (stopping) {
+                    signedPower = 0;
+                    stopping = false;
+                }
             }
 
             @Override
@@ -164,6 +195,60 @@ class GyroDifferentialPilotTest {
         assertThat(robot.x).isCloseTo(400, within(15.0));
         assertThat(robot.y).isCloseTo(0, within(15.0));
         assertThat(pilot.travelledMillimetres()).isCloseTo(400, within(15));
+    }
+
+    @Test
+    @DisplayName("A travel reports how far left of its line it ended, as its odometry measured it")
+    void shouldReportTheMeasuredOffsetFromTheLine() {
+        // Given: a weaker left motor, steered gently, so the robot ends a little off its line
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.leftGain = 0.85;
+        GyroDifferentialPilot pilot = pilot(robot);
+        pilot.setSteering(135, 8);
+        pilot.setLineCorrection(200, 5000);
+        pilot.setTurnSlowdownDegrees(45);
+
+        // When
+        boolean completed = pilot.travel(400);
+
+        // Then: the offset is the odometry's, and matches where the robot is
+        assertThat(completed).isTrue();
+        assertThat(pilot.travelledLeftMillimetres()).isEqualTo(pilot.lastTravelPose().yMillimetres());
+        assertThat(pilot.travelledLeftMillimetres()).isCloseTo((int) Math.round(robot.y), within(3));
+    }
+
+    @Test
+    @DisplayName("A turn whose stop arrives late brakes ahead of the target with the brake lead, and settles")
+    void shouldBrakeAheadOfTheTargetWhenTheStopArrivesLate() {
+        // Given: the stop reaches the wheels 80 ms after it is sent, as over the hub's radio
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.stopLagMillis = 80;
+        GyroDifferentialPilot pilot = pilot(robot);
+        pilot.setTurnPowers(20, 10);
+        pilot.setTurnSlowdownDegrees(60);
+        pilot.setTurnToleranceDegrees(3f);
+        pilot.setTurnBrakeLeadMillis(80);
+
+        // When
+        boolean completed = pilot.rotate(-90);
+
+        // Then
+        assertThat(completed).isTrue();
+        assertThat(Math.toDegrees(robot.headingRadians)).isCloseTo(-90, within(3.0));
+    }
+
+    @Test
+    @DisplayName("Steering, line correction and slow-down settings reject values that cannot work")
+    void shouldRejectImpossibleSteeringSettings() {
+        // Given
+        GyroDifferentialPilot pilot = pilot(new SimulatedRobot());
+
+        // Then
+        assertThatThrownBy(() -> pilot.setSteering(-1, 8)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pilot.setSteering(135, 101)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pilot.setLineCorrection(-1, 5000)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pilot.setTurnSlowdownDegrees(0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> pilot.setTurnBrakeLeadMillis(-1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

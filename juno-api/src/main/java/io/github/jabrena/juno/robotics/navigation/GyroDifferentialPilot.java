@@ -36,7 +36,7 @@ public final class GyroDifferentialPilot implements Pilot {
     private final DifferentialDrive drive;
     private final DirectionFinder direction;
     private final DifferentialDriveOdometry odometry;
-    private final HeadingHoldController hold;
+    private HeadingHoldController hold;
     private final Clock clock;
 
     private int cruisePower = 50;
@@ -52,12 +52,15 @@ public final class GyroDifferentialPilot implements Pilot {
     private int maxLineMillidegrees = 10_000;
     private int controlPeriodMillis = 20;
     private int settleMillis = 400;
+    /** How long the robot keeps turning after a stop is sent; zero brakes at the target itself. */
+    private int turnBrakeLeadMillis;
     private int timeoutMillis = 10_000;
     private int obstacleCheckMillis = 60;
     private ObstacleDetector obstacles = new NoObstacles();
 
     private volatile boolean stopRequested;
     private int travelled;
+    private int travelledLeft;
     private MoveOutcome lastOutcome = MoveOutcome.COMPLETED;
 
     /**
@@ -95,6 +98,27 @@ public final class GyroDifferentialPilot implements Pilot {
         turnMinPower = minimum;
     }
 
+    /**
+     * How far before the target a rotation starts slowing from its maximum power toward its minimum, in degrees. A robot
+     * that overshoots the target and swings back and forth needs it to start slowing earlier.
+     */
+    public void setTurnSlowdownDegrees(int degrees) {
+        requirePositive(degrees);
+        turnSlowdownDegrees = degrees;
+    }
+
+    /**
+     * How long the robot keeps turning after the pilot sends a stop, in milliseconds: the radio's delay and the robot's
+     * momentum. A rotation then brakes that far ahead of the target, at the rate it turns, instead of overshooting it and
+     * nudging back and forth. Zero, the default, brakes at the target.
+     */
+    public void setTurnBrakeLeadMillis(int millis) {
+        if (millis < 0) {
+            throw new IllegalArgumentException("the brake lead must not be negative");
+        }
+        turnBrakeLeadMillis = millis;
+    }
+
     /** How close to the target direction a rotation must settle, in degrees. */
     public void setTurnToleranceDegrees(float degrees) {
         if (!(degrees > 0f)) {
@@ -124,6 +148,28 @@ public final class GyroDifferentialPilot implements Pilot {
     public void setObstacleCheckMillis(int millis) {
         requirePositive(millis);
         obstacleCheckMillis = millis;
+    }
+
+    /**
+     * How hard a travel steers to its heading: {@code correctionAtQuarterTurn} is the power correction a 90 degree error
+     * would get, so 270 is 3 power per degree, and {@code maximumCorrection} bounds it. A gain too high for how late the
+     * heading arrives makes the robot weave about its line; halve it if it does. Set it before the first travel.
+     */
+    public void setSteering(int correctionAtQuarterTurn, int maximumCorrection) {
+        hold = new HeadingHoldController(drive, odometry.pose(), correctionAtQuarterTurn, maximumCorrection);
+    }
+
+    /**
+     * How far a travel leans its heading back toward its line: {@code millidegreesPerMillimetre} per millimetre off it,
+     * at most {@code maxMillidegrees}. A steep lean turns a small offset into a large heading change, another cause of
+     * weaving.
+     */
+    public void setLineCorrection(int millidegreesPerMillimetre, int maxMillidegrees) {
+        if (millidegreesPerMillimetre < 0 || maxMillidegrees < 0) {
+            throw new IllegalArgumentException("the line correction must not be negative");
+        }
+        lineMillidegreesPerMillimetre = millidegreesPerMillimetre;
+        maxLineMillidegrees = maxMillidegrees;
     }
 
     /** The odometry's pose of the last travel: x along the line it started on, y to the left of it. */
@@ -174,6 +220,7 @@ public final class GyroDifferentialPilot implements Pilot {
         pause(settleMillis);
         odometry.update();
         travelled = pose.xMillimetres();
+        travelledLeft = pose.yMillimetres();
         lastOutcome = stopRequested ? MoveOutcome.STOPPED
                 : arrived ? MoveOutcome.COMPLETED : blocked ? MoveOutcome.OBSTACLE : MoveOutcome.FAILED;
         return lastOutcome == MoveOutcome.COMPLETED;
@@ -209,19 +256,39 @@ public final class GyroDifferentialPilot implements Pilot {
         return travelled;
     }
 
+    /** The odometry's offset to the left of the last travel's line at its end, which it measures from the encoders. */
+    @Override
+    public int travelledLeftMillimetres() {
+        return travelledLeft;
+    }
+
     @Override
     public MoveOutcome lastOutcome() {
         return lastOutcome;
     }
 
-    /** Spins toward {@code target} until the direction is inside the tolerance, then brakes; false otherwise. */
+    /**
+     * Spins toward {@code target} until the direction is inside the tolerance, or will be once it coasts for the brake
+     * lead at the rate it turns now, then brakes; false otherwise.
+     */
     private boolean spinTo(float target) {
         int started = clock.millis();
+        float previous = direction.getDegreesCartesian();
+        int previousMillis = started;
         while (!stopRequested && clock.millis() - started < timeoutMillis) {
             // Positive: still counter-clockwise of the target, so spin clockwise (left forward, right backward).
-            float error = direction.getDegreesCartesian() - target;
+            float now = direction.getDegreesCartesian();
+            int nowMillis = clock.millis();
+            float error = now - target;
             float size = Math.abs(error);
-            if (size <= turnToleranceDegrees) {
+            // Where the direction ends after a stop now: it keeps turning at this rate for the brake lead.
+            int elapsed = nowMillis - previousMillis;
+            float coast = elapsed > 0 ? (now - previous) * turnBrakeLeadMillis / elapsed : 0f;
+            float coasted = error + coast;
+            previous = now;
+            previousMillis = nowMillis;
+            if (size <= turnToleranceDegrees || Math.abs(coasted) <= turnToleranceDegrees
+                    || (coasted > 0) != (error > 0)) {
                 drive.stop();
                 return true;
             }

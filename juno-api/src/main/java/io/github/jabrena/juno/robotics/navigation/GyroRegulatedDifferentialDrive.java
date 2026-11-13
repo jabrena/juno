@@ -193,6 +193,12 @@ public final class GyroRegulatedDifferentialDrive implements Pilot {
         return travelled;
     }
 
+    /** Not measured: the brick regulates the wheels and the heading is corrected between segments. */
+    @Override
+    public int travelledLeftMillimetres() {
+        return UNMEASURED;
+    }
+
     /**
      * Turns in place by {@code degrees}, positive counter-clockwise, by the wheel encoders. With turns corrected, a pivot
      * then takes out the error from the heading asked, which later moves hold. Otherwise the heading the robot has after

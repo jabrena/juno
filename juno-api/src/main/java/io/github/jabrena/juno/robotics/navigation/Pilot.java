@@ -11,6 +11,8 @@ package io.github.jabrena.juno.robotics.navigation;
  * of its own and steers with the heading while it moves.
  */
 public interface Pilot {
+    /** What {@link #travelledLeftMillimetres()} returns when the pilot does not measure the sideways offset. */
+    int UNMEASURED = Integer.MIN_VALUE;
 
     /**
      * Drives straight by {@code millimetres}, forward when positive, and waits until it ends. Returns {@code true} when
@@ -30,6 +32,14 @@ public interface Pilot {
 
     /** The distance the last {@link #travel} covered, in millimetres, signed as it was asked, also when it ended early. */
     int travelledMillimetres();
+
+    /**
+     * How far to the left of the line the last {@link #travel} started on it ended, in millimetres, as the pilot measured
+     * it, or {@link #UNMEASURED}. {@link #travelledMillimetres()} is then the distance along that line. A pilot that
+     * steers while it travels can weave, so its heading at the stop is one moment of the weave, not the leg's direction:
+     * a {@link Navigator} places the robot by this offset when the pilot measures it.
+     */
+    int travelledLeftMillimetres();
 
     /** Why the last {@link #travel} or {@link #rotate} ended. */
     MoveOutcome lastOutcome();

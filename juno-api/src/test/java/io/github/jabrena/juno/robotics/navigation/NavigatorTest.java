@@ -25,6 +25,10 @@ class NavigatorTest {
         double travelScale = 1.0;
         boolean failTravel;
         int travelled;
+        /** The heading a travel ends with beyond the one it drove along: a pilot that weaves stops mid-swing. */
+        double stopSwingDegrees;
+        /** Whether the pilot measures the sideways offset; this robot drives straight, so it measures none. */
+        boolean measuresLeft;
         final List<Integer> rotations = new ArrayList<>();
         final List<Integer> travels = new ArrayList<>();
 
@@ -40,6 +44,7 @@ class NavigatorTest {
             x += driven * Math.cos(radians);
             y += driven * Math.sin(radians);
             travelled = (int) Math.round(driven);
+            headingDegrees += stopSwingDegrees;
             return true;
         }
 
@@ -57,6 +62,11 @@ class NavigatorTest {
         @Override
         public int travelledMillimetres() {
             return travelled;
+        }
+
+        @Override
+        public int travelledLeftMillimetres() {
+            return measuresLeft ? 0 : Pilot.UNMEASURED;
         }
 
         @Override
@@ -126,6 +136,43 @@ class NavigatorTest {
         assertThat(navigator.pathCompleted()).isTrue();
         assertThat(robot.x).isCloseTo(0, within(1.0));
         assertThat(robot.y).isCloseTo(0, within(1.0));
+    }
+
+    @Test
+    @DisplayName("A pilot's measured line offset places the robot, not the heading it stopped mid-swing with")
+    void shouldPlaceTheRobotByTheMeasuredOffsetWhenTheTravelStopsMidSwing() {
+        // Given: a 1 m leg driven straight, whose heading reads 13 degrees off at the stop, as a weaving pilot's does
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.stopSwingDegrees = -13;
+        robot.measuresLeft = true;
+        Navigator navigator = new Navigator(robot, robot, new Waypoint[1]);
+        navigator.setPose(0, 0, 0);
+        navigator.addWaypoint(new Waypoint(1000, 0));
+
+        // When
+        drive(navigator);
+
+        // Then: one leg reaches the point; the pose is on the line, not 113 mm to the right of it
+        assertThat(robot.travels).containsExactly(1000);
+        assertThat(navigator.pathCompleted()).isTrue();
+        assertThat(navigator.getPose().yMillimetres()).isCloseTo(0, within(1));
+    }
+
+    @Test
+    @DisplayName("Without a measured offset, a heading caught mid-swing places the robot off its line")
+    void shouldPlaceTheRobotOffItsLineWithoutAMeasuredOffset() {
+        // Given: the same leg, from a pilot that does not measure the sideways offset
+        SimulatedRobot robot = new SimulatedRobot();
+        robot.stopSwingDegrees = -13;
+        Navigator navigator = new Navigator(robot, robot, new Waypoint[1]);
+        navigator.setPose(0, 0, 0);
+        navigator.addWaypoint(new Waypoint(1000, 0));
+
+        // When
+        drive(navigator);
+
+        // Then: the halfway heading, -6.5 degrees, puts the robot about 113 mm right of the line, so it drives more legs
+        assertThat(robot.travels.size()).isGreaterThan(1);
     }
 
     @Test

@@ -99,6 +99,11 @@ class DetourPlannerTest {
         }
 
         @Override
+        public int travelledLeftMillimetres() {
+            return Pilot.UNMEASURED;
+        }
+
+        @Override
         public MoveOutcome lastOutcome() {
             return outcome;
         }
