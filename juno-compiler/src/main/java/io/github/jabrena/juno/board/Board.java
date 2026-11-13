@@ -19,13 +19,12 @@ import java.util.stream.Collectors;
  */
 public enum Board {
     /**
-     * The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM, bounded
-     * {@code java.math} support within its 1 KiB arena, and Wi-Fi, UDP, TCP and plain HTTP through the retired Arduino
-     * WiFi Shield's legacy {@code WiFi} library (no access point or HTTPS), reached through
-     * {@code ArduinoWifiShield.getWifi()}: the board has no onboard radio, so {@code ArduinoUno.getWifi()} is rejected.
+     * The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM, and bounded {@code java.math}
+     * support within its 1 KiB arena. It has no onboard radio and no network support, so {@code ArduinoUno.getWifi()},
+     * {@code Udp}, {@code Tcp}, plain-HTTP {@code HttpClient} and the SNTP clock are rejected.
      */
     UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3Board", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
-            ArduinoCore.CLASSIC_AVR, UnoGeneration.R3, new BoardMemoryProfile(2048, 1024, 1024, 512, 512, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.WIFI, Capability.HTTP_CLIENT, Capability.BIG_NUMBERS,
+            ArduinoCore.CLASSIC_AVR, UnoGeneration.R3, new BoardMemoryProfile(2048, 1024, 1024, 512, 512, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.BIG_NUMBERS,
                     Capability.WATCHDOG)),
     UNO_R4_WIFI("io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard", "arduino-uno-r4-wifi", "UNO R4 WiFi",
             "arduino:renesas_uno:unor4wifi", ArduinoCore.RENESAS_UNO, UnoGeneration.R4, new BoardMemoryProfile(32768, 8192, 25736, 2048, 8192, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.WIFI, Capability.ONBOARD_WIFI,

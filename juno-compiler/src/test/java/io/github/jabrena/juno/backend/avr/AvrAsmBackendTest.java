@@ -265,54 +265,7 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    @DisplayName("The UNO R3 joins a network through the WiFi Shield's legacy WiFi library")
-    void shouldJoinANetworkThroughTheLegacyWifiShieldLibrary() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldWifi", """
-                        int[] ip = new int[4];
-                        Wifi wifi = new ArduinoWifiShield().getWifi();
-                        wifi.begin("ssid", "password");
-                        Serial.println(wifi.status());
-                        wifi.localIP(ip);
-                """, """
-                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
-                import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFi.h>")
-                .contains("WiFi.begin(const_cast<char*>(ssid), password);")
-                .contains("extern \"C\" int32_t juno_wifi_status() {")
-                .doesNotContain("WiFiNINA", "beginAP");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 sends plain HTTP in pieces the WiFi Shield firmware's SPI buffer holds")
-    void shouldSendPlainHttpInPiecesTheShieldFirmwareHolds() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldHttp", """
-                        byte[] body = new byte[16];
-                        byte[] headers = new byte[16];
-                        int[] status = new int[2];
-                        Serial.println(HttpClient.get("http://example.com/", body, 16, headers, 16, status));
-                """, """
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFi.h>")
-                .contains("class JunoShieldClient : public WiFiClient {")
-                .contains("size_t piece = size - sent < 64 ? size - sent : 64;")
-                .contains("return juno_http_run<JunoShieldClient>(\"GET\"")
-                .doesNotContain("WiFiSSLClient", "JunoHttpsClient");
-    }
-
-    @Test
-    @DisplayName("Rejects HTTPS on the UNO R3")
+    @DisplayName("Rejects HTTPS on the UNO R3, which has no network support")
     void shouldRejectHttpsOnTheUnoR3() {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3ShieldHttps", """
@@ -322,36 +275,83 @@ class AvrAsmBackendTest {
                         HttpClient.get("https://example.com/", body, 16, headers, 16, status);
                 """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3 does not provide a supported TLS client");
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
-    @DisplayName("Rejects the LCD Keypad Shield together with the WiFi Shield on the UNO R3: they share D4, D7 and D10")
-    void shouldRejectTheLcdKeypadShieldWithTheWifiShieldOnTheUnoR3() {
+    @DisplayName("Rejects plain HTTP on the UNO R3, which has no network support")
+    void shouldRejectPlainHttpOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3LcdWifi", """
-                        LcdKeypadShield lcd = new LcdKeypadShield();
-                        new ArduinoWifiShield().getWifi().begin("ssid", "password");
+        assertThatThrownBy(() -> compileR3("demo.R3PlainHttp", """
+                        byte[] body = new byte[16];
+                        byte[] headers = new byte[16];
+                        int[] status = new int[2];
+                        HttpClient.get("http://example.com/", body, 16, headers, 16, status);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects UDP on the UNO R3, which has no network support")
+    void shouldRejectUdpOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3Udp", """
+                        try {
+                            DatagramSocket socket = new DatagramSocket(4210);
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
-                import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
-                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.DatagramSocket;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("LcdKeypadShield cannot be used with the Arduino WiFi Shield on UNO R3")
-                .hasMessageContaining("D4, D7 and D10");
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
-    @DisplayName("Rejects the LCD Keypad Shield with the SNTP clock on the UNO R3, which needs the WiFi Shield too")
-    void shouldRejectTheLcdKeypadShieldWithTheSntpClockOnTheUnoR3() {
+    @DisplayName("Rejects TCP on the UNO R3, which has no network support")
+    void shouldRejectTcpOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3LcdClock", """
-                        LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.print(java.time.LocalDateTime.now().getSecond(), 2);
-                """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;"))
+        assertThatThrownBy(() -> compileR3("demo.R3Tcp", """
+                        try {
+                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
+                            Socket socket = new Socket(peer, 80);
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
+                """, """
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.InetAddress;
+                import java.net.Socket;
+                """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("cannot be stacked");
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects the SNTP clock on the UNO R3, which has no network support")
+    void shouldRejectTheSntpClockOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3Sntp", "Serial.println(java.time.LocalDateTime.now().getSecond());",
+                "import io.github.jabrena.juno.hardware.serial.Serial;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects an HTTP server on the UNO R3, which has no network support")
+    void shouldRejectAnHttpServerOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3HttpServer", "HttpServer.begin(80);",
+                "import io.github.jabrena.juno.hardware.net.http.HttpServer;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
@@ -385,90 +385,14 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and goes through the WiFi Shield")
+    @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and no network support")
     void shouldRejectOnboardWifiOnTheUnoR3() {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "ArduinoUno.getWifi().begin(\"ssid\", \"password\");",
                 "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("ArduinoUno.getWifi requires @Board(")
-                .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio")
-                .hasMessageContaining("new ArduinoWifiShield().getWifi()");
-    }
-
-    @Test
-    @DisplayName("Rejects an access point on the UNO R3")
-    void shouldRejectAnAccessPointOnTheUnoR3() {
-        // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3ShieldAp",
-                "new ArduinoWifiShield().getWifi().beginAP(\"juno\", \"password\");",
-                "import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3's WiFi library cannot start an access point");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 sends UDP through the WiFi Shield's WiFiUDP, without multicast and in SPI-sized pieces")
-    void shouldSendUdpThroughTheWifiShieldsWifiUdp() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldUdp", """
-                        byte[] payload = new byte[8];
-                        try {
-                            DatagramSocket socket = new DatagramSocket(4210);
-                            InetAddress broadcast = InetAddress.getByAddress(
-                                    new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
-                            socket.send(new DatagramPacket(payload, payload.length, broadcast, 4210));
-                            socket.setSoTimeout(10);
-                            socket.receive(new DatagramPacket(payload, payload.length));
-                            Serial.println(payload.length);
-                        } catch (IOException e) {
-                            Serial.println(0);
-                        }
-                """, """
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import java.io.IOException;
-                import java.net.DatagramPacket;
-                import java.net.DatagramSocket;
-                import java.net.InetAddress;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFiUdp.h>")
-                .contains("class JunoShieldUdp : public WiFiUDP {")
-                .contains("uint8_t beginMulticast(IPAddress, uint16_t) {")
-                .contains("static JunoShieldUdp juno_udp;")
-                .doesNotContain("WiFiNINA");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 opens TCP connections through the WiFi Shield's client, in SPI-sized pieces")
-    void shouldOpenTcpThroughTheWifiShieldsClient() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldTcp", """
-                        byte[] payload = new byte[8];
-                        try {
-                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
-                            Socket socket = new Socket(peer, 80);
-                            socket.setSoTimeout(1000);
-                            socket.getOutputStream().write(payload, 0, payload.length);
-                            Serial.println(socket.getInputStream().read(payload, 0, payload.length));
-                            socket.close();
-                        } catch (IOException e) {
-                            Serial.println(0);
-                        }
-                """, """
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import java.io.IOException;
-                import java.net.InetAddress;
-                import java.net.Socket;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("class JunoShieldClient : public WiFiClient {")
-                .contains("using JunoTcpClient = JunoShieldClient;")
-                .contains("static JunoTcpClient juno_tcp_client;");
+                .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio");
     }
 
     @Test

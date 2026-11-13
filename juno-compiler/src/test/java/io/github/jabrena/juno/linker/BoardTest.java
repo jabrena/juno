@@ -53,11 +53,11 @@ class BoardTest {
         return Stream.of(
                 arguments(Board.UNO_R3, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
-                arguments(Board.UNO_R3, Capability.WIFI, true),
+                arguments(Board.UNO_R3, Capability.WIFI, false),
                 arguments(Board.UNO_R3, Capability.UUID_RANDOM, true),
                 arguments(Board.UNO_R3, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
-                arguments(Board.UNO_R3, Capability.HTTP_CLIENT, true),
+                arguments(Board.UNO_R3, Capability.HTTP_CLIENT, false),
                 arguments(Board.UNO_R3, Capability.HTTPS_CLIENT, false),
                 arguments(Board.UNO_R4_WIFI, Capability.WIFI_ACCESS_POINT, true),
                 arguments(Board.UNO_R4_WIFI, Capability.CLASS_INHERITANCE, true),
