@@ -6,7 +6,7 @@ package io.github.jabrena.juno.hardware.net;
  * {@link io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub}, frames its own messages.
  *
  * <p>It exists only on the boards with a BLE adapter: UNO R4 WiFi and UNO Q
- * ({@link io.github.jabrena.juno.hardware.ArduinoUno#getBluetoothLe()}), Nano ESP32, AI Thinker ESP32-CAM, M5Stack
+ * ({@link io.github.jabrena.juno.hardware.MCU#getBluetoothLe()}), Nano ESP32, AI Thinker ESP32-CAM, M5Stack
  * Cardputer and Raspberry Pi Pico 2 W. The UNO R3 and UNO WiFi Rev2 have none, so the compiler rejects those accessor
  * calls. Get it once, at startup, and pass it to the protocols built on it.
  *

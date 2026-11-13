@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -39,9 +40,15 @@ public final class RemotePoweredUpHub {
     private final PoweredUpAccelerometer accelerometer;
     private final PoweredUpBattery battery;
 
+    /** A hub controller over the board's own Bluetooth LE radio and clock ({@link MCU#getBluetoothLe()}, {@link MCU#getClock()}).
+     * Create it once, at startup. Only the boards with a BLE radio can be given one. */
+    public RemotePoweredUpHub() {
+        this(MCU.getBluetoothLe(), MCU.getClock());
+    }
+
     /**
      * A hub controller that links to hubs over the board's Bluetooth LE radio {@code bluetooth}, such as
-     * {@code ArduinoUno.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code ArduinoUno.getClock()}.
+     * {@code MCU.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code MCU.getClock()}.
      * Create it once, at startup. Only the boards with a BLE radio can be given one.
      */
     public RemotePoweredUpHub(BluetoothLe bluetooth, Clock clock) {

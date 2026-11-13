@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.device.camera;
 /**
  * A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.
  *
- * <p>Take the camera from its board once, at startup: {@link io.github.jabrena.juno.hardware.Esp32Cam#getCamera()} for
+ * <p>Take the camera from its board once, at startup: {@link io.github.jabrena.juno.hardware.MCU#getCamera()} for
  * the AI Thinker ESP32-CAM's OV2640. Call {@link #begin()} once before capturing and check its result before starting
  * networking or a capture loop. On the ESP32-CAM the native camera driver owns its PSRAM frame buffers; each
  * {@link #capture(byte[])} waits for the next frame, copies it into the caller-owned buffer and returns the driver frame

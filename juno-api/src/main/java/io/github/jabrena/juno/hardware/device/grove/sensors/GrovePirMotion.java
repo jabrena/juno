@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.robotics.MotionDetector;
 import io.github.jabrena.juno.robotics.SampleProvider;
@@ -13,6 +14,11 @@ public final class GrovePirMotion implements MotionDetector, SampleProvider {
 
     private final Gpio gpio;
     private final int signalPin;
+
+    /** A sensor read through the board's own GPIO pins ({@link MCU#getGpio()}): a mocked one in a unit test passes its own {@link Gpio}. */
+    public GrovePirMotion() {
+        this(MCU.getGpio());
+    }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */
     public GrovePirMotion(Gpio gpio) {

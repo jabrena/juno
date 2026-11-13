@@ -15,8 +15,8 @@ import io.github.jabrena.juno.util.Delay;
  * construction, clockwise positive, and it drifts a little with every minute of use.
  *
  * <pre>{@code
- * Gyroscope gyroscope = ArduinoUno.getGyroscope();       // once, at startup: starts the sensor, keep the board still
- * Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+ * Gyroscope gyroscope = MCU.getGyroscope();       // once, at startup: starts the sensor, keep the board still
+ * Accelerometer accelerometer = MCU.getAccelerometer();
  * Serial.println(gyroscope.getAngle());                  // heading in whole degrees, clockwise
  * Serial.println(accelerometer.getXAccel());             // whole m/s^2 along the board's X axis
  * }</pre>

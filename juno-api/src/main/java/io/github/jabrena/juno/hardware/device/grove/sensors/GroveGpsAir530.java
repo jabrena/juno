@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -36,7 +36,7 @@ public final class GroveGpsAir530 {
 
     /** Creates a reader on the UNO's own GPIO and clock. */
     public GroveGpsAir530(int receivePin) {
-        this(ArduinoUno.getGpio(), ArduinoUno.getClock(), receivePin);
+        this(MCU.getGpio(), MCU.getClock(), receivePin);
     }
 
     /** Creates a reader whose GPIO and clock can be replaced by mocks in a unit test. */
