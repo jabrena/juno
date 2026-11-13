@@ -51,6 +51,10 @@ class BoardTest {
 
     static Stream<Arguments> capabilities() {
         return Stream.of(
+                arguments(Board.M5_CARDPUTER, Capability.ONBOARD_SD_CARD, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.ONBOARD_SD_CARD, true),
+                arguments(Board.UNO_R4_WIFI, Capability.ONBOARD_SD_CARD, false),
+                arguments(Board.NANO_ESP32, Capability.ONBOARD_SD_CARD, false),
                 arguments(Board.UNO_R3, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3, Capability.WIFI, false),
@@ -236,13 +240,13 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
                 import io.github.jabrena.juno.util.Delay;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoBlink {
                     public static void main(String[] args) {
-                        DigitalOutput led = DigitalOutput.of(RaspberryPico2.getGpio().getBuiltinLed());
+                        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
                         while (true) {
                             led.high();
                             Delay.millis(500);
@@ -272,13 +276,13 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoPins {
                     public static void main(String[] args) {
-                        Gpio gpio = RaspberryPico2.getGpio();
+                        Gpio gpio = MCU.getGpio();
                         DigitalOutput.of(gpio.digitalPin("GP16")).high();
                         gpio.analogRead(gpio.analogPin("A0"));
                     }
@@ -305,12 +309,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoWifi {
                     public static void main(String[] args) {
-                        Wifi wifi = RaspberryPico2.getWifi();
+                        Wifi wifi = MCU.getWifi();
                         wifi.begin("ssid", "password");
                         wifi.beginAP("juno", "password");
                         int[] address = new int[4];
@@ -339,12 +343,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoHttpServer {
                     public static void main(String[] args) {
-                        RaspberryPico2.getWifi();
+                        MCU.getWifi();
                         HttpServer.begin(80);
                     }
                 }
@@ -369,12 +373,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.BluetoothLe;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoBluetooth {
                     public static void main(String[] args) {
-                        BluetoothLe bluetooth = RaspberryPico2.getBluetoothLe();
+                        BluetoothLe bluetooth = MCU.getBluetoothLe();
                         byte[] advertisement = new byte[8];
                         bluetooth.connect("00001623-1212-efde-1623-785feabcd123", "00001624-1212-efde-1623-785feabcd123",
                                 1000, advertisement, advertisement.length);
@@ -400,12 +404,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.hid.Mouse;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoMouse {
                     public static void main(String[] args) {
-                        Mouse mouse = RaspberryPico2.getMouse();
+                        Mouse mouse = MCU.getMouse();
                         mouse.begin();
                         mouse.move(1, -1);
                     }
@@ -430,11 +434,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-                import io.github.jabrena.juno.hardware.RaspberryPico2;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board({RaspberryPico2WifiBoard.class, ArduinoUnoR4WiFiBoard.class})
                 public final class PicoI2c {
                     public static void main(String[] args) {
-                        RaspberryPico2.getI2c().begin();
+                        MCU.getI2c().begin();
                     }
                 }
                 """;
@@ -460,11 +464,11 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-                import io.github.jabrena.juno.hardware.M5StackCardputer;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(M5StackCardputerBoard.class)
                 public final class CardputerI2c {
                     public static void main(String[] args) {
-                        M5StackCardputer.getI2c().begin();
+                        MCU.getI2c().begin();
                     }
                 }
                 """;
@@ -472,11 +476,11 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(AiThinkerEsp32CamBoard.class)
                 public final class CamI2c {
                     public static void main(String[] args) {
-                        Esp32Cam.getI2c().begin();
+                        MCU.getI2c().begin();
                     }
                 }
                 """;
@@ -503,12 +507,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(AiThinkerEsp32CamBoard.class)
                 public final class CamAndI2c {
                     public static void main(String[] args) {
-                        Esp32Cam.getCamera();
-                        Esp32Cam.getI2c().begin();
+                        MCU.getCamera();
+                        MCU.getI2c().begin();
                     }
                 }
                 """;
@@ -519,7 +523,7 @@ class BoardTest {
         assertThatThrownBy(() -> juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.CamAndI2c",
                 false, Optional.of(Board.AI_THINKER_ESP32_CAM.id())))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("Esp32Cam.getCamera() and Esp32Cam.getI2c()")
+                .hasMessageContaining("MCU.getCamera() and MCU.getI2c()")
                 .hasMessageContaining("GPIO26 and GPIO27");
     }
 
@@ -633,14 +637,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        ArduinoUno.getLedMatrix().begin();
-                        ArduinoUno.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = ArduinoUno.getLedMatrix().columns();
-                        ArduinoUno.getLedMatrix().clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = MCU.getLedMatrix().columns();
+                        MCU.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -662,14 +666,14 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        ArduinoUno.getLedMatrix().begin();
-                        ArduinoUno.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = ArduinoUno.getLedMatrix().columns();
-                        ArduinoUno.getLedMatrix().clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
+                        int columns = MCU.getLedMatrix().columns();
+                        MCU.getLedMatrix().clear();
                     }
                 }
                 """;
@@ -889,11 +893,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        ArduinoUno.getLedMatrix().begin();
+                        MCU.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -914,11 +918,11 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        ArduinoUno.getLedMatrix().begin();
+                        MCU.getLedMatrix().begin();
                     }
                 }
                 """;
@@ -937,12 +941,12 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 @Board(ArduinoUnoR3Board.class)
                 public final class NoRadio {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         hub.connect(1000);
                     }
                 }
@@ -964,13 +968,13 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (hub.connect(1000)) {
                             hub.getMotor(PoweredUpPort.A).drive(50);
                         }
@@ -996,12 +1000,12 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (hub.connect(1000)) {
                             hub.getMotor(PoweredUpPort.A).drive(50);
                         }
@@ -1023,7 +1027,7 @@ class BoardTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.io.IOException;
                 import java.net.DatagramSocket;
@@ -1033,7 +1037,7 @@ class BoardTest {
                 @Board(ArduinoUnoQBoard.class)
                 public final class WifiOnUnoQ {
                     public static void main(String[] args) {
-                        ArduinoUno.getWifi().status();
+                        MCU.getWifi().status();
                         try {
                             new DatagramSocket(5000).close();
                         } catch (IOException e) {
@@ -1072,7 +1076,8 @@ class BoardTest {
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
                         && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
                         && capability != Capability.ONBOARD_IMU && capability != Capability.CAMERA
-                        && capability != Capability.HTTP_STREAM && capability != Capability.PSRAM)
+                        && capability != Capability.HTTP_STREAM && capability != Capability.PSRAM
+                        && capability != Capability.ONBOARD_SD_CARD)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }
 
@@ -1106,13 +1111,13 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
-                        ArduinoUno.getLedMatrix().begin();
-                        int columns = ArduinoUno.getLedMatrix().columns();
+                        MCU.getLedMatrix().begin();
+                        int columns = MCU.getLedMatrix().columns();
                     }
                 }
                 """;

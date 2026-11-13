@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
@@ -12,8 +12,8 @@ public final class NineAxisMotionShieldApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Gpio gpio = ArduinoUno.getGpio();
-        I2c i2c = ArduinoUno.getI2c();
+        Gpio gpio = MCU.getGpio();
+        I2c i2c = MCU.getI2c();
         NineAxisMotionShield imu = new NineAxisMotionShield(gpio, i2c);
         imu.reset();
 

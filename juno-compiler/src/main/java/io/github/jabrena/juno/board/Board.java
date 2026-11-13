@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public enum Board {
     /**
      * The classic ATmega328P UNO: basic GPIO, serial and shield APIs within its 2 KB of SRAM, and bounded {@code java.math}
-     * support within its 1 KiB arena. It has no onboard radio and no network support, so {@code ArduinoUno.getWifi()},
+     * support within its 1 KiB arena. It has no onboard radio and no network support, so {@code MCU.getWifi()},
      * {@code Udp}, {@code Tcp}, plain-HTTP {@code HttpClient} and the SNTP clock are rejected.
      */
     UNO_R3("io/github/jabrena/juno/annotations/ArduinoUnoR3Board", "arduino-uno-r3", "UNO R3", "arduino:avr:uno",
@@ -65,12 +65,13 @@ public enum Board {
     /**
      * AI Thinker ESP32-CAM: the original ESP32 with the OV2640 camera, GPIO33 status LED and GPIO4 flash LED. The
      * Juno exposes its GPIO, serial, onboard Wi-Fi, Bluetooth LE for {@code RemotePoweredUpHub}, microSD socket and
-     * OV2640 camera as JPEG frames through {@code Esp32Cam.getCamera()}.
+     * OV2640 camera as JPEG frames through {@code MCU.getCamera()}.
      */
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
             "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM, new BoardMemoryProfile(327680, 8192, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(4 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.PSRAM, Capability.HTTP_SERVER, Capability.HTTP_STREAM,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT)),
+                    Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
+                    Capability.ONBOARD_SD_CARD), OptionalInt.of(13)),
     /**
      * M5Stack Cardputer: ESP32-S3 support for USB serial and HID, GPIO, SD storage, onboard Wi-Fi, plain HTTP and
      * HTTPS clients, an HTTP and HTTPS server, arbitrary-precision numbers, color display, keyboard, speaker, and
@@ -82,10 +83,10 @@ public enum Board {
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
-                    Capability.TLS_EMAIL, Capability.USB_HID)),
+                    Capability.TLS_EMAIL, Capability.USB_HID, Capability.ONBOARD_SD_CARD), OptionalInt.of(12)),
     /**
      * Raspberry Pi Pico 2 W: the RP2350's Cortex-M33 on Earle Philhower's arduino-pico core, reached through
-     * {@code RaspberryPico2}. It runs GPIO, delays, USB serial, {@code java.math} and the onboard CYW43439 Wi-Fi
+     * {@code MCU} on the Pico 2 W. It runs GPIO, delays, USB serial, {@code java.math} and the onboard CYW43439 Wi-Fi
      * (station and access point, with UDP, TCP sockets and SNTP); its built-in LED sits on that radio chip, which the
      * core drives as pin 64. HTTPS, TLS email and Bluetooth LE use the arduino-pico libraries; the board also exposes
      * the hardware watchdog, the shared Thumb-2 thread port, double-precision math, USB HID and the Grove Shield's
@@ -108,9 +109,16 @@ public enum Board {
     private final BoardMemoryProfile memoryProfile;
     @SuppressWarnings("ImmutableEnumChecker") // Set.copyOf in the constructor makes it unmodifiable
     private final Set<Capability> capabilities;
+    private final OptionalInt onboardSdChipSelect;
 
     Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
           BoardFamily family, BoardMemoryProfile memoryProfile, Set<Capability> capabilities) {
+        this(apiClassName, id, displayName, fqbn, core, family, memoryProfile, capabilities, OptionalInt.empty());
+    }
+
+    Board(String apiClassName, String id, String displayName, String fqbn, ArduinoCore core,
+          BoardFamily family, BoardMemoryProfile memoryProfile, Set<Capability> capabilities,
+          OptionalInt onboardSdChipSelect) {
         this.apiClassName = apiClassName;
         this.id = id;
         this.displayName = displayName;
@@ -119,6 +127,7 @@ public enum Board {
         this.family = family;
         this.memoryProfile = memoryProfile;
         this.capabilities = Set.copyOf(capabilities);
+        this.onboardSdChipSelect = onboardSdChipSelect;
     }
 
     /** {@code apiClassName} is a JVM-internal name, e.g. {@code io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard}. */
@@ -188,6 +197,11 @@ public enum Board {
 
     public boolean supports(Capability capability) {
         return capabilities.contains(capability);
+    }
+
+    /** The GPIO the onboard microSD socket's chip select is wired to, or empty for a board without that socket. */
+    public OptionalInt onboardSdChipSelect() {
+        return onboardSdChipSelect;
     }
 
     /** The {@code @Board} annotation argument selecting this board, e.g. {@code ArduinoUnoR4WiFiBoard.class}. */

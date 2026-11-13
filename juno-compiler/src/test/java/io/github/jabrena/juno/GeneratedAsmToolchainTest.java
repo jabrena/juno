@@ -146,14 +146,14 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.net.udp.SntpClock;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.time.LocalDateTime;
                 import java.util.Properties;
                 @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class AsmLocalDateTime {
                     public static void main(String[] args) {
-                        ArduinoUno.getWifi().begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         Properties properties = new Properties();
                         SntpClock.configure(properties);
                         LocalDateTime value = LocalDateTime.now();
@@ -264,7 +264,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.util.Random;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -273,16 +273,16 @@ class GeneratedAsmToolchainTest {
                 public final class AsmSmoke {
                     static int mix(int value) { return (value << 2) ^ 7; }
                     public static void main(String[] args) {
-                        Gpio gpio = ArduinoUno.getGpio();
-                        gpio.pinMode(13, ArduinoUno.getGpio().getOutput());
+                        Gpio gpio = MCU.getGpio();
+                        gpio.pinMode(13, MCU.getGpio().getOutput());
                         gpio.digitalWrite(13, mix(4) != 0);
                         Delay.millis(10);
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
                         gpio.digitalWrite(12, randomValue > 0);
-                        ArduinoUno.getLedMatrix().begin();
-                        ArduinoUno.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                        ArduinoUno.getLedMatrix().clear();
+                        MCU.getLedMatrix().begin();
+                        MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
+                        MCU.getLedMatrix().clear();
                         Serial.begin(BaudRate.BAUD_9600);
                         Serial.print(randomValue > 0);
                         Serial.println(randomValue <= 0);
@@ -450,7 +450,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null, "No arm-none-eabi-gcc toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.util.Delay;
                 import io.github.jabrena.juno.hardware.gpio.Gpio;
                 public final class AsmInterfaces {
@@ -466,7 +466,7 @@ class GeneratedAsmToolchainTest {
                     }
                     public static void main(String[] args) {
                         Operation operation = choose(
-                                ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")) > 0);
+                                MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0")) > 0);
                         Delay.millis(operation.apply(5));
                     }
                 }
@@ -733,11 +733,11 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.http.Json;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 public final class AsmNetworking {
                     public static void main(String[] args) {
-                        ArduinoUno.getWifi().begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -779,13 +779,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
-                        ArduinoUno.getWifi().begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
@@ -989,7 +989,7 @@ class GeneratedAsmToolchainTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
                 import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
@@ -997,7 +997,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.BLUE);
                         hub.getMotor(PoweredUpPort.A).drive(40);
@@ -1030,7 +1030,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
                         import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -1038,7 +1038,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRemoteRcx {
                     public static void main(String[] args) {
-                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
                         RemoteRcx remote = new RemoteRcx(link, RcxChannel.BROADCAST);
                         while (true) {
                             int buttons = remote.buttons();
@@ -1210,7 +1210,7 @@ class GeneratedAsmToolchainTest {
         assembleAndCompile(armGcc, "demo.AsmRcxFirmware", """
                 package demo;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxFirmware;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
                         import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -1218,7 +1218,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxFirmware {
                     public static void main(String[] args) {
-                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
                         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.BROADCAST);
                         RcxFirmware firmware = rcx.getFirmware();
                         byte[] block = new byte[64];
@@ -1247,7 +1247,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.rcx.RcxRotationSensor;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxTemperatureSensor;
                 import io.github.jabrena.juno.remote.lego.rcx.RcxTouchSensor;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
                 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
                         import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -1255,7 +1255,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
                 public final class AsmRcxSensor {
                     public static void main(String[] args) {
-                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+                        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
                         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.BROADCAST);
                         RcxTouchSensor touch = new RcxTouchSensor(rcx.getSensor1());
                         RcxTemperatureSensor temperature = new RcxTemperatureSensor(rcx.getSensor1());
@@ -1404,11 +1404,11 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                 import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         hub.enableSensor(BuiltInSensor.TECHNIC_GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
                         hub.setLedRgb(255, 128, 0);
@@ -1446,11 +1446,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubProperties {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         byte[] name = new byte[20];
                         int length = hub.hubName(name, name.length);
@@ -1486,11 +1486,11 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                 import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         if (hub.portDevice(PoweredUpPort.B)
                                 == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR) {
@@ -1526,12 +1526,12 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLegoTrain {
                     public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.GREEN);
                         hub.getMotor(PoweredUpPort.A).drive(-40);
@@ -1560,7 +1560,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -1578,7 +1578,7 @@ class GeneratedAsmToolchainTest {
                         file.close();
                         String ssid = properties.getProperty("wifi.ssid");
                         String password = properties.getProperty("wifi.password");
-                        if (ssid != null && password != null) ArduinoUno.getWifi().begin(ssid, password);
+                        if (ssid != null && password != null) MCU.getWifi().begin(ssid, password);
                     }
                 }
                 """;
@@ -1601,15 +1601,15 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStorageOccupancy {
                     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
                     public static void main(String[] args) {
-                        Serial.println(ArduinoUno.getBoardMemory().flashUsedBytes());
-                        Serial.println(ArduinoUno.getBoardMemory().flashCapacityBytes());
+                        Serial.println(MCU.getBoardMemory().flashUsedBytes());
+                        Serial.println(MCU.getBoardMemory().flashCapacityBytes());
                         if (!SD_CARD.begin()) return;
                         Serial.println(SD_CARD.totalKiB());
                         Serial.println(SD_CARD.freeKiB());
@@ -1724,13 +1724,13 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
-                        ArduinoUno.getWifi().beginAP("juno-setup", "junosetup");
+                        MCU.getWifi().beginAP("juno-setup", "junosetup");
                         HttpServer.begin(80);
                         byte[] body = new byte[64];
                         if (HttpServer.accept(body, body.length) >= 0) {
@@ -1790,7 +1790,7 @@ class GeneratedAsmToolchainTest {
 
     private static final String EXCEPTIONS = """
             package demo;
-            import io.github.jabrena.juno.hardware.ArduinoUno;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.time.Clock;
             import io.github.jabrena.juno.hardware.serial.Serial;
             public final class AsmExceptions {
@@ -1802,7 +1802,7 @@ class GeneratedAsmToolchainTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int reading = ArduinoUno.getClock().millis();
+                    int reading = MCU.getClock().millis();
                     try {
                         if (reading < 0) throw new SensorException("offline", 7);
                         if (reading > 1000) throw new IllegalStateException();
@@ -1879,14 +1879,14 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(armGcc != null || compiler != null, "No toolchain available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.time.Clock;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 public final class AsmStringConcat {
                     public static void main(String[] args) {
-                        String state = ArduinoUno.getClock().millis() > 0 ? "on" : null;
-                        boolean active = ArduinoUno.getClock().millis() > 0;
-                        int count = ArduinoUno.getClock().millis();
+                        String state = MCU.getClock().millis() > 0 ? "on" : null;
+                        boolean active = MCU.getClock().millis() > 0;
+                        int count = MCU.getClock().millis();
                         long total = 7L;
                         float ratio = 1.5f;
                         double precise = 2.5;
@@ -2181,11 +2181,11 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.BluetoothLe;
                 public final class BleRuntime {
                     public static void main(String[] args) {
-                        BluetoothLe radio = ArduinoUno.getBluetoothLe();
+                        BluetoothLe radio = MCU.getBluetoothLe();
                         radio.disconnect();
                     }
                 }
@@ -2262,12 +2262,12 @@ class GeneratedAsmToolchainTest {
     /** Reaches every supported {@code java.lang.Math} overload, so the shim carries all of their helpers. */
     private static final String MATH_EVERYTHING = """
             package demo;
-            import io.github.jabrena.juno.hardware.ArduinoUno;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.time.Clock;
             import io.github.jabrena.juno.hardware.serial.Serial;
             public final class MathEverything {
                 public static void main(String[] args) {
-                    int i = ArduinoUno.getClock().millis() % 2 == 0 ? 3 : -7;
+                    int i = MCU.getClock().millis() % 2 == 0 ? 3 : -7;
                     long l = i * 1000000000000L;
                     float f = i / 2.0f;
                     double d = i / 4.0;

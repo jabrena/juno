@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
@@ -10,8 +10,8 @@ import io.github.jabrena.juno.hardware.gpio.Gpio;
 /** Digital and analog pins, the clock, delays and the random generator. */
 public final class GpioApi {
     public static void main(String[] args) {
-        Gpio gpio = ArduinoUno.getGpio();
-        Clock clock = ArduinoUno.getClock();
+        Gpio gpio = MCU.getGpio();
+        Clock clock = MCU.getClock();
         int digitalOutput = gpio.digitalPin("D7");
         int digitalInput = gpio.digitalPin("D2");
         int pwmOutput = gpio.digitalPin("D9");

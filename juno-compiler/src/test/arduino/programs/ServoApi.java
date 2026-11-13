@@ -2,7 +2,7 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.util.Delay;
 import io.github.jabrena.juno.hardware.device.servo.Servo;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.hardware.device.servo.Servo;
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class ServoApi {
     public static void main(String[] args) {
-        Gpio gpio = ArduinoUno.getGpio();
+        Gpio gpio = MCU.getGpio();
         Servo servo = Servo.of(gpio.digitalPin("D10"));
         
         for (int angle = 0; angle <= 180; angle += 30) {

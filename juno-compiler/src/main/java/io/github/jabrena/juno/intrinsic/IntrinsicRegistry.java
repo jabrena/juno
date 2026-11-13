@@ -194,6 +194,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.BOARD_IS_R4),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeBoardModel", "isR3", "()Z"),
                     Intrinsic.BOARD_IS_R3),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeBoardModel",
+                    "onboardSdChipSelect", "()I"), Intrinsic.BOARD_ONBOARD_SD_CHIP_SELECT),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeLedMatrix", "clear",
                     "()V"), Intrinsic.LED_MATRIX_CLEAR),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDisplay", "begin", "()V"),
