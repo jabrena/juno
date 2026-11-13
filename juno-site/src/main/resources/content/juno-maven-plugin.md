@@ -85,7 +85,9 @@ The board ids you pass as `-Djuno.board` are:
 | Arduino UNO R4 WiFi | `arduino-uno-r4-wifi` |
 | Arduino UNO Q | `arduino-uno-q` |
 | Arduino Nano ESP32 | `arduino-nano-esp32` |
+| AI Thinker ESP32-CAM | `ai-thinker-esp32-cam` |
 | M5Stack Cardputer | `m5stack-cardputer` |
+| Raspberry Pi Pico 2 W | `raspberry-pi-pico-2-w` |
 
 ### 2. Compile and check with arduino-cli (no board needed)
 
