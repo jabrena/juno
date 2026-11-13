@@ -31,7 +31,7 @@ import io.github.jabrena.juno.robotics.navigation.GyroHeading;
  */
 final class PoweredUpRobot {
     static final PoweredUpPort LEFT = PoweredUpPort.A;
-    static final PoweredUpPort RIGHT = PoweredUpPort.B;
+    static final PoweredUpPort RIGHT = PoweredUpPort.C;
     /**
      * {@code 1} when the side's motor drives its wheel forward at a positive power, {@code -1} when it is mounted
      * mirrored and runs backward.
@@ -41,14 +41,33 @@ final class PoweredUpRobot {
     /** Measure the wheel: one turn of it covers π × the diameter. */
     static final int WHEEL_DIAMETER_MILLIMETRES = 82;
     /** Used only for a heading from the wheels when the gyroscope gives none, which a GyroHeading never does. */
-    static final int TRACK_WIDTH_MILLIMETRES = 150;
+    static final int TRACK_WIDTH_MILLIMETRES = 170;
     /** Powered Up motors report whole motor degrees; with the wheel on the motor's axle, 360 are one wheel turn. */
     static final int ENCODER_DEGREES_PER_WHEEL_REVOLUTION = 360;
     /** Percent; below the minimum the vehicle may not move at all. */
-    static final int CRUISE_POWER = 50;
+    static final int CRUISE_POWER = 35;
     static final int MIN_POWER = 25;
-    static final int TURN_MAX_POWER = 35;
+    /** At 35 the vehicle spun at about 200 degrees a second and overshot each turn by about 15 degrees. */
+    static final int TURN_MAX_POWER = 30;
     static final int TURN_MIN_POWER = 20;
+    /** Slowing from 60 degrees out, not 30, so the vehicle reaches the minimum power before the target. */
+    static final int TURN_SLOWDOWN_DEGREES = 60;
+    /** A turn settles within 3 degrees: 1.5 left it nudging past the target either way until it gave up. */
+    static final float TURN_TOLERANCE_DEGREES = 3f;
+    /**
+     * The vehicle kept turning about 60 ms after each stop, over the hub's radio: a turn brakes 80 ms of turning ahead of
+     * its target, instead of overshooting it 6 to 8 degrees and nudging back and forth.
+     */
+    static final int TURN_BRAKE_LEAD_MILLIS = 80;
+    /**
+     * Half the pilot's default steering, 1.5 power per degree up to 8, and a gentler lean back to the line, 0.2 degrees
+     * per millimetre up to 5: the defaults swung the heading 20 degrees either way every 1.2 s while the line stayed
+     * within 20 mm, the heading reaching the loop late while the ranger held the processor.
+     */
+    static final int STEERING_AT_QUARTER_TURN = 135;
+    static final int MAX_STEERING = 8;
+    static final int LINE_MILLIDEGREES_PER_MILLIMETRE = 200;
+    static final int MAX_LINE_MILLIDEGREES = 5000;
 
     private static final int CONNECT_TIMEOUT_MILLIS = 10_000;
     private static final int ENCODER_TIMEOUT_MILLIS = 3000;
@@ -76,6 +95,11 @@ final class PoweredUpRobot {
         this.pilot = new GyroDifferentialPilot(left, right, geometry, heading, clock);
         pilot.setTravelPowers(CRUISE_POWER, MIN_POWER);
         pilot.setTurnPowers(TURN_MAX_POWER, TURN_MIN_POWER);
+        pilot.setTurnSlowdownDegrees(TURN_SLOWDOWN_DEGREES);
+        pilot.setTurnToleranceDegrees(TURN_TOLERANCE_DEGREES);
+        pilot.setTurnBrakeLeadMillis(TURN_BRAKE_LEAD_MILLIS);
+        pilot.setSteering(STEERING_AT_QUARTER_TURN, MAX_STEERING);
+        pilot.setLineCorrection(LINE_MILLIDEGREES_PER_MILLIMETRE, MAX_LINE_MILLIDEGREES);
     }
 
     RemotePoweredUpHub hub() {
