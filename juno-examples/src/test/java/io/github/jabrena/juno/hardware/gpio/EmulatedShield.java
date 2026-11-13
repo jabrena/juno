@@ -78,6 +78,12 @@ public final class EmulatedShield implements Gpio {
         NativeGpio.setGpio(INSTANCE);
     }
 
+    /** The shield has no pulse to time: no pulse arrives. */
+    @Override
+    public int pulseIn(int pin, boolean high, int timeoutMicros) {
+        return 0;
+    }
+
     @Override
     public int getBuiltinLed() {
         return 13;

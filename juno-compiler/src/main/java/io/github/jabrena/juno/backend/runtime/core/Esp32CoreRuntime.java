@@ -130,6 +130,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return PIN_REMAP_WRAPPERS.getOrDefault(arduinoFunction, arduinoFunction);
     }
 
+    /** The Nano's printed pin number, translated as the other GPIO wrappers in the core glue translate it. */
+    @Override
+    public String pulseInPin() {
+        return "juno_nano_pin(pin)";
+    }
+
     /** The Cardputer's Grove port (SDA GPIO2, SCL GPIO1) and the ESP32-CAM's SCCB pins (SDA GPIO26, SCL GPIO27). */
     @Override
     public String i2cPinSetup() {

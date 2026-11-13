@@ -387,4 +387,13 @@ public interface CoreRuntime {
     default String mouseHelpers() {
         return "";
     }
+
+    /**
+     * The C expression that turns the Java pin number {@code pin} into the core's, for the {@code pulseIn} helper a
+     * program that uses {@code Gpio.pulseIn} gets: the number itself, unless the core translates its pins as its other
+     * GPIO wrappers do.
+     */
+    default String pulseInPin() {
+        return "static_cast<uint8_t>(pin)";
+    }
 }

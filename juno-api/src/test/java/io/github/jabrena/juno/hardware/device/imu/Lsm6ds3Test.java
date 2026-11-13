@@ -47,6 +47,11 @@ class Lsm6ds3Test {
         }
 
         @Override
+        public int pulseIn(int pin, boolean high, int timeoutMicros) {
+            return 0;
+        }
+
+        @Override
         public void analogWrite(int pin, int value) {
         }
 

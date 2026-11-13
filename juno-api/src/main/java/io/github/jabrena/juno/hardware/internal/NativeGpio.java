@@ -50,6 +50,9 @@ public final class NativeGpio implements Gpio {
     public native int analogRead(int pin);
 
     @Override
+    public native int pulseIn(int pin, boolean high, int timeoutMicros);
+
+    @Override
     public native void analogWrite(int pin, int value);
 
     @Override

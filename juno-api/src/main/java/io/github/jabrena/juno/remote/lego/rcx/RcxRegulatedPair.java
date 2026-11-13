@@ -299,6 +299,28 @@ public final class RcxRegulatedPair implements RegulatedPair {
         return scale.degrees(positions.stepsFromZero(RIGHT));
     }
 
+    /**
+     * One status round trip, then whether the movement still runs. A reply that did not come counts as running, as in
+     * {@link #waitComplete()}, which tells it from a finished movement afterwards.
+     */
+    @Override
+    public boolean pollMoving() {
+        refreshStatus();
+        return state == RcxRegulatedState.RUNNING || state == RcxRegulatedState.LINK_UNKNOWN;
+    }
+
+    /** {@link #cachedLeftTachoCount()}: no round trip. */
+    @Override
+    public int leftTachoCount() {
+        return cachedLeftTachoCount();
+    }
+
+    /** {@link #cachedRightTachoCount()}: no round trip. */
+    @Override
+    public int rightTachoCount() {
+        return cachedRightTachoCount();
+    }
+
     /** The side's tachometer in encoder-shaft degrees, measured from its last zero; refreshes the status first. */
     int tachoCount(int side) {
         refreshStatus();

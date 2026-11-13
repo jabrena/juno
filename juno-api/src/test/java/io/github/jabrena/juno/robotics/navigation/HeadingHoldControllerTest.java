@@ -17,9 +17,10 @@ class HeadingHoldControllerTest {
 
         controller.holdHeading(40);
 
-        assertThat(controller.correction()).isEqualTo(20);
-        assertThat(left.events).containsExactly("power:60", "forward");
-        assertThat(right.events).containsExactly("power:20", "forward");
+        // The target is a quarter turn counter-clockwise: the right side speeds up.
+        assertThat(controller.correction()).isEqualTo(-20);
+        assertThat(left.events).containsExactly("power:20", "forward");
+        assertThat(right.events).containsExactly("power:60", "forward");
     }
 
     @Test
@@ -28,7 +29,7 @@ class HeadingHoldControllerTest {
         controller.setTargetHeadingMillidegrees(10_000);
 
         assertThat(controller.headingErrorMillidegrees()).isEqualTo(20_000);
-        assertThat(controller.correction()).isEqualTo(4);
+        assertThat(controller.correction()).isEqualTo(-4);
     }
 
     @Test
@@ -36,7 +37,7 @@ class HeadingHoldControllerTest {
         HeadingHoldController controller = controller(new Recorder(), new Recorder(), new Pose());
         controller.setTargetHeadingMillidegrees(180_000);
 
-        assertThat(controller.correction()).isEqualTo(30);
+        assertThat(controller.correction()).isEqualTo(-30);
     }
 
     private static HeadingHoldController controller(Recorder left, Recorder right, Pose pose) {

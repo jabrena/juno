@@ -1,8 +1,13 @@
 package io.github.jabrena.juno.backend.runtime;
 
+import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
+import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
+import io.github.jabrena.juno.board.ArduinoCore;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,6 +89,35 @@ class BleCentralShimTest {
         assertThat(count(Pattern.compile("BLE\\.poll\\(\\);"), shim)).isEqualTo(1);
         assertThat(shim).containsPattern(
                 "static void juno_ble_poll\\(\\) \\{\\s+if \\(juno_ble_started\\) \\{\\s+BLE\\.poll\\(\\);");
+    }
+
+    @Test
+    @DisplayName("The ESP32 BLE adapter defines no top-level name the central shim appended after it defines too")
+    void shouldKeepTheEsp32AdapterAndTheCentralShimFreeOfSharedTopLevelNames() {
+        // Given
+        CoreRuntime esp32 = new CoreRuntimes().of(ArduinoCore.ESP32);
+        String adapter = esp32.bleHelpers();
+        String central = shimLibraries.bleCentralHelpers(true, esp32.bleNames());
+
+        // When
+        Set<String> shared = new TreeSet<>(topLevelStatics(adapter));
+        shared.retainAll(topLevelStatics(central));
+
+        // Then
+        // The shim appends both into one translation unit, so a shared name fails the board's compile (#284 did).
+        assertThat(shared).isEmpty();
+    }
+
+    private static final Pattern TOP_LEVEL_STATIC = Pattern.compile(
+            "(?m)^static (?:const |constexpr )?[\\w:<>*& ]+?\\b(juno_\\w+|JUNO_\\w+)\\s*[\\[=;(]");
+
+    private static Set<String> topLevelStatics(String text) {
+        Set<String> names = new TreeSet<>();
+        Matcher matcher = TOP_LEVEL_STATIC.matcher(text);
+        while (matcher.find()) {
+            names.add(matcher.group(1));
+        }
+        return names;
     }
 
     private static int count(Pattern pattern, String text) {

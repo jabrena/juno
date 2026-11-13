@@ -299,6 +299,7 @@ public final class RuntimeShim {
                         carrierCount)),
                 new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
+                new ShimFeatureBlock(ShimFeature.GPIO_PULSE_IN, () -> shimLibraries.pulseInHelpers(core.pulseInPin())),
                 new ShimFeatureBlock(ShimFeature.RANDOM_ACCESS_FILE, () -> shimLibraries.randomAccessFileHelpers(
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/io/FileNotFoundException"),

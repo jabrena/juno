@@ -3,7 +3,8 @@ package io.github.jabrena.juno.robotics.navigation;
 /**
  * Applies a bounded proportional correction to keep a differential drive on a target heading. The
  * controller reads the caller-owned {@link Pose} and delegates motor commands to
- * {@link DifferentialDrive}; it does not depend on an IMU or motor protocol.
+ * {@link DifferentialDrive}; it does not depend on an IMU or motor protocol. Headings are the pose's: Cartesian,
+ * counter-clockwise positive, so a target counter-clockwise of the heading speeds up the right side.
  */
 public final class HeadingHoldController {
     private static final int QUARTER_TURN_MILLIDEGREES = 90_000;
@@ -62,9 +63,13 @@ public final class HeadingHoldController {
         drive.drive(forwardPower, correction());
     }
 
-    /** Returns the current bounded turn-power correction. */
+    /**
+     * Returns the current bounded turn-power correction, as {@link DifferentialDrive#drive} takes it: positive speeds up
+     * the left side and turns clockwise, so a target counter-clockwise of the heading (a positive error) corrects with a
+     * negative turn.
+     */
     public int correction() {
-        int correction = (int) ((long) headingErrorMillidegrees() * correctionAtQuarterTurn
+        int correction = (int) (-(long) headingErrorMillidegrees() * correctionAtQuarterTurn
                 / QUARTER_TURN_MILLIDEGREES);
         if (correction > maximumCorrection) {
             return maximumCorrection;

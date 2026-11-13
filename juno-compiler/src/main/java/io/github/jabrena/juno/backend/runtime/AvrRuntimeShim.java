@@ -189,6 +189,7 @@ public final class AvrRuntimeShim {
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.SERVO, shimLibraries::servoHelpers),
+                new ShimFeatureBlock(ShimFeature.GPIO_PULSE_IN, () -> shimLibraries.pulseInHelpers(core.pulseInPin())),
                 new ShimFeatureBlock(ShimFeature.PARALLEL_BUS, core::parallelBusHelpers),
                 new ShimFeatureBlock(ShimFeature.INFRARED, shimLibraries::infraredHelpers),
                 new ShimFeatureBlock(ShimFeature.I2C, shimLibraries::i2cHelpers),

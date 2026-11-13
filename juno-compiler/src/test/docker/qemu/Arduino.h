@@ -24,6 +24,7 @@ constexpr int INPUT_PULLUP = 2;
 inline void pinMode(int32_t, int32_t) {}
 inline void digitalWrite(int32_t, int32_t) {}
 inline int32_t digitalRead(int32_t) { return LOW; }
+inline unsigned long pulseIn(uint8_t, uint8_t, unsigned long) { return 0; }
 inline int32_t analogRead(int32_t) { return 0; }
 inline void analogWrite(int32_t, int32_t) {}
 // A virtual clock: delay() advances by its requested duration, and the Serial service hook below advances on

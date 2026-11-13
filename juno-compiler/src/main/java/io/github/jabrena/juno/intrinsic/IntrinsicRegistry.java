@@ -124,6 +124,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.GPIO_DIGITAL_READ),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "analogRead", "(I)I"),
                     Intrinsic.GPIO_ANALOG_READ),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "pulseIn", "(IZI)I"),
+                    Intrinsic.GPIO_PULSE_IN),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "analogWrite", "(II)V"),
                     Intrinsic.GPIO_ANALOG_WRITE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeGpio", "toggle", "(I)V"),

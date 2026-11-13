@@ -1719,9 +1719,10 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.GroveRoboticsDemo");
 
             // Then
-            assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl digitalRead", "bl analogWrite",
-                    "bl micros", "bl juno_i2c_begin", "bl juno_i2c_write_register", "bl juno_i2c_read_register");
-            assertThat(result.runtimeShim()).contains("#include <Wire.h>").doesNotContain("#include <DHT.h>");
+            // The ranger's echo is timed by the core's pulseIn, not by polling digitalRead against micros.
+            assertThat(result.assembly()).contains("bl pinMode", "bl digitalWrite", "bl juno_pulse_in", "bl analogWrite",
+                    "bl juno_i2c_begin", "bl juno_i2c_write_register", "bl juno_i2c_read_register");
+            assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_pulse_in").doesNotContain("#include <DHT.h>");
         }
 
         @Test

@@ -26,6 +26,7 @@ typedef enum { INPUT = 0, OUTPUT = 1, INPUT_PULLUP = 2 } PinMode;
 inline void pinMode(uint8_t, PinMode) {}
 inline void digitalWrite(uint8_t, PinStatus) {}
 inline PinStatus digitalRead(uint8_t) { return LOW; }
+inline unsigned long pulseIn(uint8_t, uint8_t, unsigned long) { return 0; }
 inline int analogRead(uint8_t) { return 0; }
 inline void analogWrite(uint8_t, int) {}
 // A virtual clock, as in the QEMU harness: delay() advances it, and so does yield() on every loop backedge. Like the
