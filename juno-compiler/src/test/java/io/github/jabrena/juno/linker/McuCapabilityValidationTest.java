@@ -5,6 +5,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.board.Capability;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -95,6 +96,51 @@ class McuCapabilityValidationTest {
                     .isInstanceOf(CompileException.class)
                     .hasMessageContaining("MCU.getWifi requires @Board(")
                     .hasMessageContaining("UNO R3");
+        }
+    }
+
+    @Nested
+    @DisplayName("Every capability-gated MCU getter is rejected on a board that lacks it")
+    class EveryGatedGetter {
+        /** Each MCU getter that needs a board capability, with the capability it requires. */
+        static java.util.stream.Stream<org.junit.jupiter.params.provider.Arguments> gatedGetters() {
+            return java.util.stream.Stream.of(
+                    org.junit.jupiter.params.provider.Arguments.of("getWifi", Capability.ONBOARD_WIFI, Board.UNO_R3),
+                    org.junit.jupiter.params.provider.Arguments.of("getBluetoothLe", Capability.BLUETOOTH_LE, Board.UNO_R3_WIFI_REV2),
+                    org.junit.jupiter.params.provider.Arguments.of("getMouse", Capability.USB_HID, Board.UNO_Q),
+                    org.junit.jupiter.params.provider.Arguments.of("getLedMatrix", Capability.LED_MATRIX, Board.NANO_ESP32),
+                    org.junit.jupiter.params.provider.Arguments.of("getAccelerometer", Capability.ONBOARD_IMU, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getGyroscope", Capability.ONBOARD_IMU, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getCamera", Capability.CAMERA, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getSdCard", Capability.ONBOARD_SD_CARD, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getDisplay", Capability.M5_DISPLAY, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getKeyboard", Capability.M5_KEYBOARD, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getAudio", Capability.M5_AUDIO, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getBattery", Capability.M5_BATTERY, Board.UNO_R4_WIFI));
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest(name = "MCU.{0}() on {2} (no {1})")
+        @org.junit.jupiter.params.provider.MethodSource("gatedGetters")
+        @DisplayName("The compiler names the getter's capability and a board that lacks it")
+        void shouldRejectTheGetterOnABoardWithoutItsCapability(String getter, Capability capability, Board board)
+                throws Exception {
+            // Given: a board from the table that lacks the capability
+            assertThat(board.supports(capability)).isFalse();
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Gated", """
+                    package demo;
+                    @io.github.jabrena.juno.annotations.Board(%s)
+                    public final class Gated {
+                        public static void main(String[] args) {
+                            io.github.jabrena.juno.hardware.MCU.%s();
+                        }
+                    }
+                    """.formatted("io.github.jabrena.juno.annotations." + board.annotationArgument(), getter));
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Gated", Optional.empty()))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining(capability.apiName() + " requires @Board(")
+                    .hasMessageContaining(board.displayName());
         }
     }
 
