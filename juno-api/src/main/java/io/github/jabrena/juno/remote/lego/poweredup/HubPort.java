@@ -1,10 +1,13 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
 /**
- * A port of a Powered Up hub: the external ports {@link #A} to {@link #D} (a City Hub has A and B), and the built-in
- * sensors of the Technic Hub (88012), which report on their own port numbers once subscribed. Those numbers follow the
- * community documentation of the LEGO Wireless Protocol and have not been verified on a hub.
+ * A port of a Powered Up hub, as one value for both external ports and built-in sensors.
+ *
+ * @deprecated Kept for one compatibility release. Use {@link PoweredUpPort} for the external ports A to D, and
+ *     {@link BuiltInSensor} for the Technic Hub's built-in sensors; the {@code RemotePoweredUpHub} overloads that take
+ *     a {@code HubPort} delegate to them.
  */
+@Deprecated(since = "0.1.0")
 public enum HubPort {
     /** External port A, the first motor or sensor port. */
     A(0),

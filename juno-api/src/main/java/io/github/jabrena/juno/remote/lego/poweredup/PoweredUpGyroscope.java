@@ -24,8 +24,8 @@ public final class PoweredUpGyroscope implements Gyroscope, SampleProvider {
     private final float[] sample = new float[3];
     private int origin;
 
-    PoweredUpGyroscope(PoweredUpPort hubPort, PoweredUpTilt tilt) {
-        this.rate = new PoweredUpSensor(hubPort, HubPort.TECHNIC_GYRO, DEGREES_PER_SECOND_PER_COUNT);
+    PoweredUpGyroscope(PoweredUpTransport hubPort, PoweredUpTilt tilt) {
+        this.rate = new PoweredUpSensor(hubPort, BuiltInSensor.TECHNIC_GYRO, DEGREES_PER_SECOND_PER_COUNT);
         this.tilt = tilt;
     }
 

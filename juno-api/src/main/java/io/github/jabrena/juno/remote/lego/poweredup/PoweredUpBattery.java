@@ -16,10 +16,10 @@ public final class PoweredUpBattery implements Battery {
     private static final int VOLTAGE_FULL_SCALE_MILLIVOLTS = 9615;
     private static final int INTERNAL_SENSOR_WAIT_MILLIS = 300;
 
-    private final PoweredUpPort hubPort;
+    private final PoweredUpTransport hubPort;
     private final Clock clock;
 
-    PoweredUpBattery(PoweredUpPort hubPort, Clock clock) {
+    PoweredUpBattery(PoweredUpTransport hubPort, Clock clock) {
         this.hubPort = hubPort;
         this.clock = clock;
     }
@@ -37,7 +37,7 @@ public final class PoweredUpBattery implements Battery {
      */
     @Override
     public int voltageMillivolts() {
-        int raw = reading(HubPort.TECHNIC_VOLTAGE);
+        int raw = reading(BuiltInSensor.TECHNIC_VOLTAGE);
         return raw < 0 ? -1 : raw * VOLTAGE_FULL_SCALE_MILLIVOLTS / RAW_FULL_SCALE;
     }
 
@@ -45,7 +45,7 @@ public final class PoweredUpBattery implements Battery {
      * Subscribes to an internal sensor on {@code port} if it has not reported yet, waits briefly for the report, and
      * returns its raw value, or {@code -1} if it has not answered. Shared by the voltage and current readings.
      */
-    int reading(HubPort port) {
+    int reading(BuiltInSensor port) {
         if (hubPort.sensorReportSize(port.value()) == 0) {
             hubPort.enableSensor(port.value(), RemotePoweredUpHub.MODE_IMU_VALUES);
             int started = clock.millis();
