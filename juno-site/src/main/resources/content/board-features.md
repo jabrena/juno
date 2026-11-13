@@ -17,9 +17,9 @@ language itself, see the [Java subset](../java-subset) page.
 | Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
 | Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| HTTPS client | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| HTTP server | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
+| HTTP client (plain) | – | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
+| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
+| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ |
 | HTTPS server | ✓ | ✓ | ✓ | – | – | – | – | ✓ |
 | Email over TLS | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
 | Email STARTTLS | – | ✓ | – | – | ✓ | – | – | – |
@@ -33,12 +33,11 @@ language itself, see the [Java subset](../java-subset) page.
 | Onboard IMU (`MCU.getAccelerometer()`, `MCU.getGyroscope()`) | – | – | – | – | – | ✓ | – | – |
 | Hardware random numbers | ✓ | ✓ | ✓ | – | ✓ | ✓ | Weak | – |
 | Watchdog | – | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ |
-| Structured concurrency (threads, scopes, scoped values, locks) | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
+| Structured concurrency (threads, scopes, scoped values, locks) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
 | Double-precision `Math` | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
 | SD card | Shield | Carrier | Built-in | Built-in | Shield | Shield | Shield | – |
 | Grove sockets | Shield | Carrier | – | – | Shield | Shield | Shield | Shield |
 | 9 Axis Motion Shield | Shield | – | – | – | Shield | Shield | Shield | – |
-| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | – | – | – | – | – | ✓ | – | – |
 | LCD Keypad Shield | Shield | – | – | – | Shield | Shield | Shield | – |
 | TFT Touch Shield | Shield | – | – | – | Shield | Shield | – | – |
 | Infrared link to LEGO RCX | ✓ | ✓ | – | – | ✓ | – | – | – |
@@ -52,6 +51,10 @@ Notes:
   [Nano ESP32](../arduino-nano-esp32#shields) page.
 - **Weak** means a non-cryptographic random source, suitable only for best-effort identities. See the
   [Data types](../java-subset#data-types) section.
+- **Structured concurrency** is available on every board except the UNO R3. The UNO R3 WiFi Rev2, UNO R4 WiFi and
+  UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
+  carriers concurrently. See [Concurrency behaviour](../java-subset#concurrency-behaviour) for scheduling and memory
+  limits.
 - **Email STARTTLS** needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.
 - **Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer** reaches a Powered Up hub through the core's own BLE library:
   Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.

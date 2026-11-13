@@ -372,7 +372,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
@@ -383,7 +383,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
@@ -394,7 +394,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
@@ -548,7 +548,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
@@ -599,17 +599,6 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 </tr>
 <tr>
-<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-</tr>
-<tr>
 <td>LCD Keypad Shield</td>
 <td align="center">Shield</td>
 <td align="center">–</td>
@@ -653,6 +642,10 @@ LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shi
 <a href="../arduino-nano-esp32#shields">Nano ESP32</a> page.</li>
 <li><strong>Weak</strong> means a non-cryptographic random source, suitable only for best-effort identities. See the
 <a href="../java-subset#data-types">Data types</a> section.</li>
+<li><strong>Structured concurrency</strong> is available on every board except the UNO R3. The UNO R3 WiFi Rev2, UNO R4 WiFi and
+UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
+carriers concurrently. See <a href="../java-subset#concurrency-behaviour">Concurrency behaviour</a> for scheduling and memory
+limits.</li>
 <li><strong>Email STARTTLS</strong> needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.</li>
 <li><strong>Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer</strong> reaches a Powered Up hub through the core's own BLE library:
 Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.</li>
