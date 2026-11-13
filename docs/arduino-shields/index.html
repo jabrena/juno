@@ -375,15 +375,6 @@ can pass mocks instead. Seat a shield directly on the board, and check the pins 
 <td align="center"></td>
 </tr>
 <tr>
-<td><a href="#arduino-wifi-shield">Arduino WiFi Shield</a></td>
-<td>Wi-Fi for a board without a radio</td>
-<td align="center">✓</td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-<td align="center"></td>
-</tr>
-<tr>
 <td><a href="#nano-connector-carrier">Nano Connector Carrier</a></td>
 <td>microSD, Grove and Qwiic sockets</td>
 <td align="center"></td>
@@ -571,47 +562,6 @@ public final class DataLoggerExample {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a>
 also reads the file back, deletes it, and supports the Nano Connector Carrier.</p>
-<h2 id="arduino-wifi-shield">Arduino WiFi Shield</h2>
-<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="240">
-<p>The retired Arduino WiFi Shield gives the UNO R3, which has no radio, Wi-Fi, UDP, TCP and plain HTTP through
-<code>new ArduinoWifiShield().getWifi()</code>. It reserves D4, D7 and D10, so it cannot be stacked with the LCD Keypad Shield.</p>
-<p>This complete example connects the UNO R3 to the network and prints its local address. The UNO R3 has no secret store,
-so the SSID and password are shown masked; replace the asterisks with your network's name and password:</p>
-<pre><code class="language-java">import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
-import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.serial.BaudRate;
-import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.util.Delay;
-
-public final class ArduinoWifiShieldExample {
-    public static void main(String[] args) {
-        Serial.begin(BaudRate.BAUD_115200);
-        Wifi wifi = new ArduinoWifiShield().getWifi();
-        wifi.begin(&quot;**********&quot;, &quot;********&quot;);
-
-        for (int attempt = 0; wifi.status() != Wifi.STATUS_CONNECTED &amp;&amp; attempt &lt; 30; attempt++) {
-            Delay.millis(1000);
-        }
-        if (wifi.status() != Wifi.STATUS_CONNECTED) {
-            Serial.println(&quot;Wi-Fi connection failed&quot;);
-            return;
-        }
-
-        int[] address = new int[4];
-        wifi.localIP(address);
-        Serial.print(&quot;connected at &quot;);
-        Serial.print(address[0]);
-        Serial.print(&quot;.&quot;);
-        Serial.print(address[1]);
-        Serial.print(&quot;.&quot;);
-        Serial.print(address[2]);
-        Serial.print(&quot;.&quot;);
-        Serial.println(address[3]);
-    }
-}
-</code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java"><code>SntpTime</code></a>
-continues from the same connection and demonstrates the shield's network clock.</p>
 <h2 id="nano-connector-carrier">Nano Connector Carrier</h2>
 <img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="240">
 <p>Arduino's passive carrier for the Nano ESP32: a microSD slot, four Grove sockets and a Qwiic connector, all named by

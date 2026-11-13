@@ -18,7 +18,7 @@ import java.net.InetAddress;
 
 /**
  * a {@code juno} hello there every five seconds and echoes every packet it receives back to its sender, reporting both
- * at 115200 baud. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}); from a
+ * at 115200 baud. From a
  * computer on the same network, {@code nc -u <board-ip> 4210} sends packets and shows the echoes.
  */
 @Board(ArduinoUnoR3WiFiRev2Board.class)

@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 public final class Linker {
 
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
-    private final ShieldPinConflicts shieldPinConflicts = new ShieldPinConflicts(intrinsicRegistry, REQUIRED_CAPABILITIES);
     private final Esp32CamBusConflicts esp32CamBusConflicts = new Esp32CamBusConflicts();
 
     private final SupportedJdkMethods supportedJdkMethods = new SupportedJdkMethods();
@@ -67,7 +66,7 @@ public final class Linker {
     private static final Map<Intrinsic, Capability> REQUIRED_CAPABILITIES = requiredCapabilities();
     /**
      * The on-board {@link Capability} each capability-dependent ordinary API method needs: the board's own radio, which
-     * the UNO R3 lacks (it reaches the Arduino WiFi Shield's instead).
+     * the UNO R3 lacks.
      */
     private static final Map<MethodRef, Capability> REQUIRED_METHOD_CAPABILITIES = Map.ofEntries(
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/ArduinoUno", "getWifi",
@@ -149,7 +148,6 @@ public final class Linker {
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
-        shieldPinConflicts.validate(board, reachability.methods());
         esp32CamBusConflicts.validate(board, reachability.methods());
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),

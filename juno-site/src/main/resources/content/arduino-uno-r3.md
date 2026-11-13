@@ -26,7 +26,7 @@ startup and stay small.
 | Analog inputs | 6 pins, A0-A5, 10-bit ADC |
 | USB connector | USB Type-B, through an ATmega16U2 USB-to-serial converter |
 | Built-in LED | D13 |
-| Wireless connectivity | None (Wi-Fi through the Arduino WiFi Shield) |
+| Wireless connectivity | None |
 | Arduino CLI FQBN | `arduino:avr:uno` |
 | Juno board id | `arduino-uno-r3` |
 
@@ -41,11 +41,10 @@ startup and stay small.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Bounded by the 1 KB arena and 2 KB of SRAM. | |
 | `@Watchdog` | ✓ | ATmega328P hardware watchdog, at most 8 seconds. | |
 | Non-cryptographic UUIDs (`PortNoise`) | ✓ | The R3 has no hardware entropy, so `UUID.randomUUID()` is rejected; `PortNoise` gives best-effort node identities, never secrets. | [`WeakUuid`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java) |
-| `Wifi`, `Udp`, `Tcp`, plain-HTTP `HttpClient` | ✓ | Through the Arduino WiFi Shield; no access point or HTTPS. | [`SocketDatagramEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java), [`PlainHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java) |
 | `SdCard` | ✓ | On the Data Logger Shield's microSD slot. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | Grove Base Shield | ✓ | Passive: every socket is an UNO pin. | |
-| 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line D7 is also the WiFi Shield's handshake. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
-| LCD Keypad Shield | ✓ | Cannot be stacked with the WiFi Shield. | [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) |
+| 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line is D7. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
+| LCD Keypad Shield | ✓ | Uses D4-D10 for the LCD and backlight. | [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) |
 
 ## Features
 
@@ -68,9 +67,8 @@ while (true) {
 
 ## Shields
 
-Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the WiFi Shield reserves
-D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a program that combines them, and the
-9 Axis Motion Shield's sensor reset is also D7.
+Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the compiler rejects a
+program whose shields share a pin, and the 9 Axis Motion Shield's sensor reset uses D7.
 
 ### Grove Base Shield
 
@@ -94,7 +92,7 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 
 [`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings; it is written
 for the UNO WiFi Rev2, and the snippet above is the same read for the R3. See [Grove](../grove-system) for the
-sensor drivers. The WiFi Shield also uses D4, so plug sensors into other sockets when the two are stacked.
+sensor drivers.
 
 ### Arduino 9 Axis Motion Shield
 
@@ -103,7 +101,7 @@ sensor drivers. The WiFi Shield also uses D4, so plug sensors into other sockets
 The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 `NineAxisMotionShield` reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
 direction the sensor pointed at construction. Construction drives D7, the sensor's reset line, so don't use D7 for
-anything else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:
+anything else:
 
 ```java
 NineAxisMotionShield imu = new NineAxisMotionShield();
@@ -158,12 +156,10 @@ if (sd.begin()) {
 
 ## Build and run
 
-Install the AVR core once, and the legacy `WiFi` library for programs that use the WiFi Shield. Then compile and
-upload an example, for instance the UUID demo, which prints over serial:
+Install the AVR core once. Then compile and upload an example, for instance the UUID demo, which prints over serial:
 
 ```bash
 arduino-cli core install arduino:avr
-arduino-cli lib install WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.language.WeakUuid \
   -Djuno.board=arduino-uno-r3

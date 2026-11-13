@@ -20,7 +20,6 @@ startup, and pass it to the classes that need it. A unit test passes `mock(SdCar
 | AZDelivery Data Logger Shield | `new DataLoggerShield().getSdCard()` | D10 |
 | ELEGOO 2.8" TFT touch shield | `new TftTouchShield().getSdCard()` | D10 |
 | LCD Keypad Shield (stacked on a data logger) | `new LcdKeypadShield().getSdCard()` | D10 |
-| Arduino WiFi Shield (UNO R3) | `new ArduinoWifiShield().getSdCard()` | D4 |
 | Nano Connector Carrier | `new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard()` | D4 |
 
 The card's `begin()` selects it on its socket's pin; `begin(chipSelectPin)` takes any other pin.

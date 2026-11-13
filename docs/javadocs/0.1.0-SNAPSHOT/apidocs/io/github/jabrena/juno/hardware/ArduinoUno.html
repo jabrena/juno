@@ -272,9 +272,8 @@ call, as <a href="#getAccelerometer()"><code>getAccelerometer()</code></a> does.
 <h3>getWifi</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></span>&nbsp;<span class="element-name">getWifi</span>()</div>
-<div class="block">The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none, so the compiler
-rejects this call there: stack the Arduino WiFi Shield and use
-<a href="device/wifi/ArduinoWifiShield.html#getWifi()"><code>ArduinoWifiShield.getWifi()</code></a> instead.</div>
+<div class="block">The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none and no network
+support, so the compiler rejects this call there.</div>
 </div>
 </section>
 </li>

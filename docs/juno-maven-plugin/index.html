@@ -559,8 +559,7 @@ a maximum for both sizes; a larger value fails the build and names the maximum.<
 </code></pre>
 <p>Increase <code>juno.Xmx</code> when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
 when the default is too small (<code>JUNO-RISK-002</code>). Use <code>juno.gcLog</code> with <code>juno:monitor</code> to see how full the arena gets.
-The values that the examples need are noted in their Javadoc; for example, a few Wi-Fi examples on the UNO R3 build with
-<code>-Djuno.Xmx=512</code>.</p>
+The values that the examples need are noted in their Javadoc.</p>
 <p><code>juno.Xmx</code> never sizes PSRAM. On the Nano ESP32 and AI Thinker ESP32-CAM, caller-owned bulk bytes can use the static
 <code>Psram</code> API, which reports negative results instead of triggering the Java garbage collector. Release each positive handle
 exactly once; the collector only manages ordinary Java objects and arrays in the internal arena. Camera users should call

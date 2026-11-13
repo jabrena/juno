@@ -75,11 +75,6 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
   </tr>
   <tr>
-    <td><strong>Arduino WiFi Shield</strong></td>
-    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
-    <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
-  </tr>
-  <tr>
     <td><strong>Grove Base Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
     <td>Grove digital, analog, I2C, and UART connectors.</td>
@@ -125,6 +120,30 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
     <td align="center" width="50%">
       <strong>M5Stack Cardputer Adv</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## AI Thinker boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>AI Thinker ESP32-CAM</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Raspberry Pi boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Raspberry Pi Pico 2 W</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W">
     </td>
     <td width="50%"></td>
   </tr>

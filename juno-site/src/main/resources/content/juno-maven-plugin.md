@@ -156,8 +156,7 @@ a maximum for both sizes; a larger value fails the build and names the maximum.
 
 Increase `juno.Xmx` when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
 when the default is too small (`JUNO-RISK-002`). Use `juno.gcLog` with `juno:monitor` to see how full the arena gets.
-The values that the examples need are noted in their Javadoc; for example, a few Wi-Fi examples on the UNO R3 build with
-`-Djuno.Xmx=512`.
+The values that the examples need are noted in their Javadoc.
 
 `juno.Xmx` never sizes PSRAM. On the Nano ESP32 and AI Thinker ESP32-CAM, caller-owned bulk bytes can use the static
 `Psram` API, which reports negative results instead of triggering the Java garbage collector. Release each positive handle

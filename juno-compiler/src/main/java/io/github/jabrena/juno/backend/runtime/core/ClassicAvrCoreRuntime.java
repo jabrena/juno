@@ -11,8 +11,8 @@ import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
 
 /**
- * The classic UNO R3's {@code arduino:avr} core for its ATmega328P. Its only network path is the retired Arduino WiFi
- * Shield's legacy {@code WiFi} library: Wi-Fi, UDP, TCP and plain HTTP, no access point or TLS.
+ * The classic UNO R3's {@code arduino:avr} core for its ATmega328P. It has no network path: the board has no radio and
+ * no network support, so the linker rejects Wi-Fi, UDP, TCP, HTTP and the SNTP clock before any of these methods run.
  */
 final class ClassicAvrCoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
@@ -76,19 +76,17 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
 
     @Override
     public String wifiIncludes(boolean udp) {
-        return "#include <SPI.h>\n#include <WiFi.h>\n" + runtimeSource.load("avr/wifi-shield-client.cpp")
-                + (udp ? "#include <WiFiUdp.h>\n" + runtimeSource.load("avr/wifi-shield-udp.cpp") : "");
+        throw unsupported("Wi-Fi");
     }
 
     @Override
     public String httpClientType() {
-        return "JunoShieldClient";
+        throw unsupported("HttpClient");
     }
 
-    /** The WiFi Shield library's {@code begin}/{@code status}/{@code localIP}; it has no {@code beginAP}. */
     @Override
     public String wifiHelpers() {
-        return runtimeSource.load("avr/wifi-shield.cpp");
+        throw unsupported("Wi-Fi");
     }
 
     @Override
@@ -98,12 +96,12 @@ final class ClassicAvrCoreRuntime implements CoreRuntime {
 
     @Override
     public String udpDeclaration() {
-        return "static JunoShieldUdp juno_udp;";
+        throw unsupported("UDP");
     }
 
     @Override
     public String tcpClientHelpers() {
-        return "using JunoTcpClient = JunoShieldClient;\n";
+        throw unsupported("TCP");
     }
 
     @Override

@@ -197,8 +197,8 @@ class LocalDateTimeTest {
     }
 
     @Test
-    @DisplayName("Runs the SNTP clock on the UNO R3 through the WiFi Shield's UDP socket")
-    void shouldRunTheSntpClockOnTheUnoR3ThroughTheWifiShield() throws Exception {
+    @DisplayName("Rejects the SNTP clock on the UNO R3, which has no network support")
+    void shouldRejectTheSntpClockOnTheUnoR3() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -213,13 +213,10 @@ class LocalDateTimeTest {
                 """;
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.ShieldClock", source, "25");
 
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ShieldClock");
-
-        // Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFiUdp.h>", "static JunoShieldUdp juno_sntp_udp;")
-                .doesNotContain("juno_https_get");
+        // When & Then
+        assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ShieldClock"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
