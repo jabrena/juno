@@ -6,7 +6,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.ArduinoNano;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
@@ -35,29 +35,29 @@ public class PoweredUpMotorEncoders {
                     Delay.millis(1000);
                     continue;
                 }
-                hub.enableSensor(HubPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
-                hub.enableSensor(HubPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                hub.enableSensor(PoweredUpPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                hub.enableSensor(PoweredUpPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
                 Serial.println("Connected; encoders enabled on A and B");
             }
-            hub.getMotor(HubPort.A).drive(DRIVE_POWER_PERCENT);
+            hub.getMotor(PoweredUpPort.A).drive(DRIVE_POWER_PERCENT);
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.A).stop();
+            hub.getMotor(PoweredUpPort.A).stop();
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.B).drive(DRIVE_POWER_PERCENT);
+            hub.getMotor(PoweredUpPort.B).drive(DRIVE_POWER_PERCENT);
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.B).stop();
+            hub.getMotor(PoweredUpPort.B).stop();
             Delay.millis(DRIVE_MILLIS);
             if (!hub.isConnected()) {
                 Serial.println("Hub disconnected");
             } else {
                 Serial.print("A degrees=");
-                Serial.print(hub.readSensor(HubPort.A));
+                Serial.print(hub.readSensor(PoweredUpPort.A));
                 Serial.print(" reports=");
-                Serial.print(hub.sensorReportCount(HubPort.A));
+                Serial.print(hub.sensorReportCount(PoweredUpPort.A));
                 Serial.print(" | B degrees=");
-                Serial.print(hub.readSensor(HubPort.B));
+                Serial.print(hub.readSensor(PoweredUpPort.B));
                 Serial.print(" reports=");
-                Serial.println(hub.sensorReportCount(HubPort.B));
+                Serial.println(hub.sensorReportCount(PoweredUpPort.B));
             }
             Delay.millis(PRINT_INTERVAL_MS);
         }

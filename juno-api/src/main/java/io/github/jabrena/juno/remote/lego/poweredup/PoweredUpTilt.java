@@ -11,8 +11,8 @@ public final class PoweredUpTilt implements SampleProvider {
 
     private final PoweredUpSensor sensor;
 
-    PoweredUpTilt(PoweredUpPort hubPort) {
-        this.sensor = new PoweredUpSensor(hubPort, HubPort.TECHNIC_TILT, DEGREES_PER_COUNT);
+    PoweredUpTilt(PoweredUpTransport hubPort) {
+        this.sensor = new PoweredUpSensor(hubPort, BuiltInSensor.TECHNIC_TILT, DEGREES_PER_COUNT);
     }
 
     void subscribe() {

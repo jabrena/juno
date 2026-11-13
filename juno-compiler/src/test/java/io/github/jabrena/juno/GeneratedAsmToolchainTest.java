@@ -992,15 +992,17 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
                 public final class AsmLegoTrain {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.BLUE);
-                        hub.getMotor(HubPort.A).drive(40);
+                        hub.getMotor(PoweredUpPort.A).drive(40);
                         Delay.millis(1000);
-                        hub.getMotor(HubPort.A).stop();
+                        hub.getMotor(PoweredUpPort.A).stop();
                         if (hub.hubType() != RemotePoweredUpHub.TYPE_UNKNOWN && hub.isConnected()) {
                             hub.disconnect();
                         }
@@ -1399,25 +1401,27 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubImu {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
-                        hub.enableSensor(HubPort.TECHNIC_GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
+                        hub.enableSensor(BuiltInSensor.TECHNIC_GYRO, RemotePoweredUpHub.MODE_IMU_VALUES);
                         hub.setLedRgb(255, 128, 0);
-                        int pair = hub.linkMotors(HubPort.A, HubPort.B);
-                        if (pair >= 0 && hub.getBattery().voltageMillivolts() > 6000) {
-                            hub.setLinkedMotorPower(pair, 40, 40);
-                            hub.brakeLinkedMotors(pair);
-                            hub.unlinkMotors(pair);
+                        LinkedMotors pair = hub.linkMotors(PoweredUpPort.A, PoweredUpPort.B);
+                        if (hub.getBattery().voltageMillivolts() > 6000) {
+                            pair.setPower(40, 40);
+                            pair.brake();
+                            pair.unlink();
                         }
                         while (hub.isConnected()) {
-                            if (hub.sensorReportSize(HubPort.TECHNIC_GYRO) >= 6
-                                    && hub.readSensorValue(HubPort.TECHNIC_GYRO, 2, 2) > 100) {
-                                hub.getMotor(HubPort.A).stop();
+                            if (hub.sensorReportSize(BuiltInSensor.TECHNIC_GYRO) >= 6
+                                    && hub.readSensorValue(BuiltInSensor.TECHNIC_GYRO, 2, 2) > 100) {
+                                hub.getMotor(PoweredUpPort.A).stop();
                             }
                         }
                     }
@@ -1479,17 +1483,19 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 public final class AsmHubPorts {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
-                        if (hub.portDevice(HubPort.B)
+                        if (hub.portDevice(PoweredUpPort.B)
                                 == RemotePoweredUpHub.DEVICE_TECHNIC_LARGE_MOTOR) {
-                            hub.getMotor(HubPort.B).drive(30);
-                            hub.getMotor(HubPort.B).hold();
+                            hub.getMotor(PoweredUpPort.B).drive(30);
+                            hub.getMotor(PoweredUpPort.B).hold();
                         }
                     }
                 }
@@ -1513,7 +1519,9 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
                 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
@@ -1526,9 +1534,9 @@ class GeneratedAsmToolchainTest {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (!hub.connect(0)) return;
                         hub.setLedColor(HubColor.GREEN);
-                        hub.getMotor(HubPort.A).drive(-40);
+                        hub.getMotor(PoweredUpPort.A).drive(-40);
                         Delay.millis(1000);
-                        hub.getMotor(HubPort.A).stop();
+                        hub.getMotor(PoweredUpPort.A).stop();
                     }
                 }
                 """;

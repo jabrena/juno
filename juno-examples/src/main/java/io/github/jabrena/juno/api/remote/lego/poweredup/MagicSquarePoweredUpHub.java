@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
@@ -16,8 +16,8 @@ import io.github.jabrena.juno.util.Delay;
  * with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHub {
-    private static final HubPort LEFT = HubPort.A;
-    private static final HubPort RIGHT = HubPort.B;
+    private static final PoweredUpPort LEFT = PoweredUpPort.A;
+    private static final PoweredUpPort RIGHT = PoweredUpPort.B;
     private static final int POWER = 40;
     private static final int STRAIGHT_MILLIS = 3000;
     private static final int TURN_MILLIS = 700;

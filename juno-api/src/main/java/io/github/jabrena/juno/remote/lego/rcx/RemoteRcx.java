@@ -44,6 +44,8 @@ public final class RemoteRcx {
     private final RcxBattery battery;
     private final RcxButtons buttons;
     private final RcxFirmware firmware;
+    private final RcxMotor[] motors;
+    private final RcxSensor[] sensors;
 
     /** A brick reached through the already-configured link on a Juno firmware channel or the original broadcast. */
     public RemoteRcx(RcxLink link, RcxChannel channel) {
@@ -62,6 +64,8 @@ public final class RemoteRcx {
         this.battery = new RcxBattery(brick);
         this.buttons = new RcxButtons(brick);
         this.firmware = new RcxFirmware(link);
+        this.motors = new RcxMotor[] {motorA, motorB, motorC};
+        this.sensors = new RcxSensor[] {sensor1, sensor2, sensor3};
     }
 
     private static final int HOLD_MILLIS = 300;
@@ -90,6 +94,22 @@ public final class RemoteRcx {
     /** The stop button, and the sound button. */
     public static final int STOP = 0x4000;
     public static final int SOUND = 0x8000;
+
+    /**
+     * The motor on the output {@code port} (A to C), the same object on every call. Equivalent to
+     * {@link #getMotorA()}, {@link #getMotorB()} or {@link #getMotorC()}.
+     */
+    public RcxMotor motor(RcxMotorPort port) {
+        return motors[port.index()];
+    }
+
+    /**
+     * The sensor on the input {@code port} (1 to 3), the same object on every call. Equivalent to
+     * {@link #getSensor1()}, {@link #getSensor2()} or {@link #getSensor3()}.
+     */
+    public RcxSensor sensor(RcxSensorPort port) {
+        return sensors[port.input()];
+    }
 
     /** Output A. */
     public RcxMotor getMotorA() {

@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/RemoteRcx.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -99,6 +100,8 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#motor(io.github.jabrena.juno.remote.lego.rcx.RcxMotorPort)" tabindex="0">motor(RcxMotorPort)</a></li>
+<li><a href="#sensor(io.github.jabrena.juno.remote.lego.rcx.RcxSensorPort)" tabindex="0">sensor(RcxSensorPort)</a></li>
 <li><a href="#getMotorA()" tabindex="0">getMotorA()</a></li>
 <li><a href="#getMotorB()" tabindex="0">getMotorB()</a></li>
 <li><a href="#getMotorC()" tabindex="0">getMotorC()</a></li>
@@ -322,15 +325,25 @@ none is held.</div>
 another RCX or by <a href="#sendMessage(int)"><code>sendMessage(int)</code></a>), <code>0..255</code>, or <code>-1</code> if none has arrived
 since the last call.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#motor(io.github.jabrena.juno.remote.lego.rcx.RcxMotorPort)" class="member-name-link">motor</a><wbr>(<a href="RcxMotorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxMotorPort</a>&nbsp;port)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Transmits a remote-control command with <code>buttonMask</code> to RCX bricks in range, as the remote does.</div>
+<div class="block">The motor on the output <code>port</code> (A to C), the same object on every call.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendButtons(int)" class="member-name-link">sendButtons</a><wbr>(int&nbsp;buttonMask)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Transmits a remote-control command with <code>buttonMask</code> to RCX bricks in range, as the remote does.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sendMessage(int)" class="member-name-link">sendMessage</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#sensor(io.github.jabrena.juno.remote.lego.rcx.RcxSensorPort)" class="member-name-link">sensor</a><wbr>(<a href="RcxSensorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxSensorPort</a>&nbsp;port)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The sensor on the input <code>port</code> (1 to 3), the same object on every call.</div>
 </div>
 </div>
 </div>
@@ -635,6 +648,26 @@ since the last call.</div>
 <section class="method-details" id="method-detail">
 <h2>Method Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="motor(io.github.jabrena.juno.remote.lego.rcx.RcxMotorPort)">
+<h3>motor</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></span>&nbsp;<span class="element-name">motor</span><wbr><span class="parameters">(<a href="RcxMotorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxMotorPort</a>&nbsp;port)</span></div>
+<div class="block">The motor on the output <code>port</code> (A to C), the same object on every call. Equivalent to
+<a href="#getMotorA()"><code>getMotorA()</code></a>, <a href="#getMotorB()"><code>getMotorB()</code></a> or <a href="#getMotorC()"><code>getMotorC()</code></a>.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="sensor(io.github.jabrena.juno.remote.lego.rcx.RcxSensorPort)">
+<h3>sensor</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="RcxSensor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxSensor</a></span>&nbsp;<span class="element-name">sensor</span><wbr><span class="parameters">(<a href="RcxSensorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxSensorPort</a>&nbsp;port)</span></div>
+<div class="block">The sensor on the input <code>port</code> (1 to 3), the same object on every call. Equivalent to
+<a href="#getSensor1()"><code>getSensor1()</code></a>, <a href="#getSensor2()"><code>getSensor2()</code></a> or <a href="#getSensor3()"><code>getSensor3()</code></a>.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="getMotorA()">
 <h3>getMotorA</h3>

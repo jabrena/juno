@@ -5,12 +5,12 @@ import io.github.jabrena.juno.hardware.time.Clock;
 
 /**
  * A LEGO Powered Up hub's LEGO Wireless Protocol 3.0, spoken over the board's {@link BluetoothLe} radio. It connects to
- * the first hub advertising the service, decodes each notification into the state {@link PoweredUpPort} reads, and
+ * the first hub advertising the service, decodes each notification into the state {@link PoweredUpTransport} reads, and
  * delegates the commands to {@link LegoCommands}, the sensor ports to {@link LegoSensors}, the properties to
  * {@link LegoProperties} and the virtual ports to {@link LegoVirtualPorts}. It knows the radio only through
  * {@link BluetoothLe}, so a unit test drives it with a fake radio. Every buffer is allocated once and reused.
  */
-final class LegoWirelessPort implements PoweredUpPort {
+final class LegoWirelessPort implements PoweredUpTransport {
     /** The hub's advertised service and its one characteristic, which carries every command and notification. */
     private static final String SERVICE_UUID = "00001623-1212-efde-1623-785feabcd123";
     private static final String CHARACTERISTIC_UUID = "00001624-1212-efde-1623-785feabcd123";

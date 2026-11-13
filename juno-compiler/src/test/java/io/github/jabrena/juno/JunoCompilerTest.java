@@ -3947,17 +3947,18 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.ArduinoUno;
                     import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                     import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-                    import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                    import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
+                    import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                     @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class Train {
                         public static void main(String[] args) {
                             RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                             if (hub.connect(10000) && hub.hubType() == RemotePoweredUpHub.TYPE_CITY_HUB) {
                                 hub.setLedColor(HubColor.GREEN);
-                                hub.getMotor(HubPort.A).drive(-50);
-                                hub.getMotor(HubPort.A).stop();
-                                hub.enableSensor(HubPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
-                                hub.setLedRgb(hub.readSensor(HubPort.B), 0, 0);
+                                hub.getMotor(PoweredUpPort.A).drive(-50);
+                                hub.getMotor(PoweredUpPort.A).stop();
+                                hub.enableSensor(PoweredUpPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                                hub.setLedRgb(hub.readSensor(PoweredUpPort.B), 0, 0);
                             }
                             if (hub.isConnected()) {
                                 hub.disconnect();

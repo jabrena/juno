@@ -12,13 +12,13 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("RemotePoweredUpHub over a port")
 class RemotePoweredUpHubDelegationTest {
-    private PoweredUpPort port;
+    private PoweredUpTransport port;
     private Clock time;
     private RemotePoweredUpHub hub;
 
     @BeforeEach
     void connectAHubToMockedHardware() {
-        port = mock(PoweredUpPort.class);
+        port = mock(PoweredUpTransport.class);
         time = mock(Clock.class);
         hub = new RemotePoweredUpHub(port, time);
     }

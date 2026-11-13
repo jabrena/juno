@@ -18,8 +18,8 @@ public final class PoweredUpAccelerometer implements Accelerometer, SampleProvid
     private final PoweredUpSensor sensor;
     private final float[] sample = new float[3];
 
-    PoweredUpAccelerometer(PoweredUpPort hubPort) {
-        this.sensor = new PoweredUpSensor(hubPort, HubPort.TECHNIC_ACCELEROMETER, METRES_PER_SECOND_SQUARED_PER_COUNT);
+    PoweredUpAccelerometer(PoweredUpTransport hubPort) {
+        this.sensor = new PoweredUpSensor(hubPort, BuiltInSensor.TECHNIC_ACCELEROMETER, METRES_PER_SECOND_SQUARED_PER_COUNT);
     }
 
     void subscribe() {
