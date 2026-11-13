@@ -529,15 +529,16 @@ public final class App {
 }
 </code></pre>
 <p><code>drawText</code> takes a compile-time string literal, so the message is written directly in the source.</p>
-<h2 id="7-build-and-upload">7. Build and upload</h2>
-<p>Connect the board with a USB-C cable. Compile, verify and upload in one command:</p>
-<pre><code class="language-bash">./mvnw compile juno:flash
+<h2 id="7-build-and-compile">7. Build and compile</h2>
+<p>Compile the project and generate the Arduino sketch:</p>
+<pre><code class="language-bash">./mvnw compile juno:compile
 </code></pre>
-<p>On Windows, use <code>.\mvnw.cmd compile juno:flash</code>. To check the program without touching the board, run <code>juno:verify</code>
-instead:</p>
+<p>On Windows, use <code>.\mvnw.cmd compile juno:compile</code>. To check the generated sketch with Arduino CLI without touching the
+board, run <code>juno:verify</code>:</p>
 <pre><code class="language-bash">./mvnw compile juno:verify
 </code></pre>
-<p>If several boards are connected, list them and choose the port:</p>
+<p>When ready to flash the program, connect the board with a USB-C cable. If several boards are connected, list them and
+choose the port:</p>
 <pre><code class="language-bash">./mvnw juno:boards
 ./mvnw compile juno:flash -Djuno.port=&lt;PORT&gt;
 </code></pre>

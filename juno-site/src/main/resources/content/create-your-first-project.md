@@ -195,22 +195,23 @@ public final class App {
 
 `drawText` takes a compile-time string literal, so the message is written directly in the source.
 
-## 7. Build and upload
+## 7. Build and compile
 
-Connect the board with a USB-C cable. Compile, verify and upload in one command:
+Compile the project and generate the Arduino sketch:
 
 ```bash
-./mvnw compile juno:flash
+./mvnw compile juno:compile
 ```
 
-On Windows, use `.\mvnw.cmd compile juno:flash`. To check the program without touching the board, run `juno:verify`
-instead:
+On Windows, use `.\mvnw.cmd compile juno:compile`. To check the generated sketch with Arduino CLI without touching the
+board, run `juno:verify`:
 
 ```bash
 ./mvnw compile juno:verify
 ```
 
-If several boards are connected, list them and choose the port:
+When ready to flash the program, connect the board with a USB-C cable. If several boards are connected, list them and
+choose the port:
 
 ```bash
 ./mvnw juno:boards
