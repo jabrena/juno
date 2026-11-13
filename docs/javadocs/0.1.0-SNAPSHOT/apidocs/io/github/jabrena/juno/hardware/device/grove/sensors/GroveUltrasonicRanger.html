@@ -107,8 +107,11 @@ implements <a href="../../../../robotics/RangeFinder.html" title="interface in i
 <div class="block">Grove Ultrasonic Ranger (v1 or v2) on one Grove digital socket.
 
 <p>The module uses one shared signal pin: it is driven high for at least 10 microseconds to trigger a reading, then
-it becomes the echo input. <a href="#getRange()"><code>getRange()</code></a> returns metres, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a> when no echo arrives within
-30 ms. It implements <a href="../../../../robotics/RangeFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>RangeFinder</code></a> as well as <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>; both paths allocate nothing.</div>
+it becomes the echo input, high for as long as the sound took there and back. <a href="#getRange()"><code>getRange()</code></a> times the echo with
+<a href="../../../gpio/Gpio.html#pulseIn(int,boolean,int)"><code>Gpio.pulseIn(int, boolean, int)</code></a>, which on the board the core times, so another thread taking its turn in the middle, a
+gyroscope's or a navigator's, cannot make the obstacle look further away. It returns metres, or <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Float.html#NaN" class="external-link"><code>Float.NaN</code></a>
+when no echo arrives within 30 ms. It implements <a href="../../../../robotics/RangeFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>RangeFinder</code></a> as well as <a href="../../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>; both paths
+allocate nothing.</div>
 </div>
 </section>
 <section class="summary">
@@ -125,7 +128,7 @@ it becomes the echo input. <a href="#getRange()"><code>getRange()</code></a> ret
  <a href="../../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
  int&nbsp;signalPin)</code></div>
 <div class="col-last even-row-color">
-<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> can be a test double.</div>
 </div>
 </div>
 </section>
@@ -181,7 +184,8 @@ it becomes the echo input. <a href="#getRange()"><code>getRange()</code></a> ret
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GroveUltrasonicRanger</span><wbr><span class="parameters">(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
  <a href="../../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
  int&nbsp;signalPin)</span></div>
-<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> can be a test double. The echo is timed by <a href="../../../gpio/Gpio.html#pulseIn(int,boolean,int)"><code>Gpio.pulseIn(int, boolean, int)</code></a>, so
+<code>clock</code> is no longer read: it stays a parameter so programs written for the earlier ranger compile.</div>
 </div>
 </section>
 </li>

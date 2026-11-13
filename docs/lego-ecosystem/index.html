@@ -657,14 +657,14 @@ setup with Grove infrared modules.</p>
 <h3 id="installing-the-juno-firmware-to-lego-mindstorms-rcx">Installing the JUno firmware to lego mindstorms RCX</h3>
 <p>Download Juno's firmware to the brick once. Wire the IR receiver to pin 2 and the IR LED to pin 3, point both at the
 switched-on RCX from 10 to 50 cm, and keep them still for about ten minutes; the serial monitor shows the progress:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxFirmwareDownload \
   -Djuno.board=arduino-uno-r4-wifi
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
 <p>On a Nano ESP32 with the Nano Connector Carrier, put a Grove infrared emitter in the A0/A1 socket and a Grove infrared
 receiver on the I2C socket's SCL line, and run the carrier version instead:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.NanoCarrierRcxFirmwareDownload \
   -Djuno.board=arduino-nano-esp32
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32

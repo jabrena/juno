@@ -90,6 +90,8 @@ initTheme();
 <li><a href="#stop()" tabindex="0">stop()</a></li>
 <li><a href="#isMoving()" tabindex="0">isMoving()</a></li>
 <li><a href="#waitComplete()" tabindex="0">waitComplete()</a></li>
+<li><a href="#pollMoving()" tabindex="0">pollMoving()</a></li>
+<li><a href="#distanceMillimetres()" tabindex="0">distanceMillimetres()</a></li>
 </ol>
 </li>
 </ol>
@@ -158,23 +160,34 @@ the robot's right wheel and its right side the left wheel.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#distanceMillimetres()" class="member-name-link">distanceMillimetres</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">How far the robot's centre is from the pair's zero, in millimetres: the average of the two wheels, each by its own
+encoder ratio, as the pair's last read found them.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isMoving()" class="member-name-link">isMoving</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns whether a movement is in progress.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Turns about one wheel by <code>degrees</code> (positive is counter-clockwise), and waits until it completes.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int,boolean)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pivotDegrees(int,boolean)" class="member-name-link">pivotDegrees</a><wbr>(int&nbsp;degrees,
  boolean&nbsp;immediateReturn)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Turns about one wheel by <code>degrees</code>, positive counter-clockwise, returning at once when
 <code>immediateReturn</code> is set: the outer wheel, the right one for a counter-clockwise pivot, moves forward along
 an arc of the whole track width while the other stays.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pollMoving()" class="member-name-link">pollMoving</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Reads the pair's state now, and returns whether the movement started with <code>immediateReturn</code> still runs.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLinearSpeedMillimetresPerSecond(int)" class="member-name-link">setLinearSpeedMillimetresPerSecond</a><wbr>(int&nbsp;millimetresPerSecond)</code></div>
@@ -367,6 +380,25 @@ sensor step of one wheel, half an in-place turn's: a small heading correction.</
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">waitComplete</span>()</div>
 <div class="block">Waits until the current movement completes or reports an error state.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pollMoving()">
+<h3>pollMoving</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">pollMoving</span>()</div>
+<div class="block">Reads the pair's state now, and returns whether the movement started with <code>immediateReturn</code> still runs.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="distanceMillimetres()">
+<h3>distanceMillimetres</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">distanceMillimetres</span>()</div>
+<div class="block">How far the robot's centre is from the pair's zero, in millimetres: the average of the two wheels, each by its own
+encoder ratio, as the pair's last read found them. The difference of two readings is the travel in between.</div>
 </div>
 </section>
 </li>

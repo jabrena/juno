@@ -651,7 +651,7 @@ if (sd.begin()) {
 <code>ArduinoBLE</code>, <code>ESP_SSLClient</code>, <code>Servo</code>, <code>SdFat</code>). Then compile and upload an example, for instance the virtual-threads
 demo:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>

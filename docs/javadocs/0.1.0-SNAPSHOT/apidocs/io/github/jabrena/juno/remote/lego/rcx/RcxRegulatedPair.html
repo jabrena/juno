@@ -114,6 +114,9 @@ initTheme();
 <li><a href="#waitComplete()" tabindex="0">waitComplete()</a></li>
 <li><a href="#cachedLeftTachoCount()" tabindex="0">cachedLeftTachoCount()</a></li>
 <li><a href="#cachedRightTachoCount()" tabindex="0">cachedRightTachoCount()</a></li>
+<li><a href="#pollMoving()" tabindex="0">pollMoving()</a></li>
+<li><a href="#leftTachoCount()" tabindex="0">leftTachoCount()</a></li>
+<li><a href="#rightTachoCount()" tabindex="0">rightTachoCount()</a></li>
 <li><a href="#lastAcknowledgement()" tabindex="0">lastAcknowledgement()</a></li>
 </ol>
 </li>
@@ -279,79 +282,94 @@ trip; with <a href="#cachedRightTachoCount()"><code>cachedRightTachoCount()</cod
 <div class="block">The left side, the motor A output, as a <a href="RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedMotor</code></a> view of this pair.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#maxPower()" class="member-name-link">maxPower</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#leftTachoCount()" class="member-name-link">leftTachoCount</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block"><a href="#cachedLeftTachoCount()"><code>cachedLeftTachoCount()</code></a>: no round trip.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#maxPower()" class="member-name-link">maxPower</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The configured maximum motor power, 1 to 7, as the next <a href="#arm()"><code>arm()</code></a> sends it.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#maxPower(int)" class="member-name-link">maxPower</a><wbr>(int&nbsp;level)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#maxPower(int)" class="member-name-link">maxPower</a><wbr>(int&nbsp;level)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The configuration bits for a maximum motor power of <code>level</code> (1 to 7, full power is 7), to OR into the
 configuration flags.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pollMoving()" class="member-name-link">pollMoving</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">One status round trip, then whether the movement still runs.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#right()" class="member-name-link">right</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The right side, the motor C output, as a <a href="RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedMotor</code></a> view of this pair.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rotate(int,int,boolean)" class="member-name-link">rotate</a><wbr>(int&nbsp;leftDegrees,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rightTachoCount()" class="member-name-link">rightTachoCount</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block"><a href="#cachedRightTachoCount()"><code>cachedRightTachoCount()</code></a>: no round trip.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rotate(int,int,boolean)" class="member-name-link">rotate</a><wbr>(int&nbsp;leftDegrees,
  int&nbsp;rightDegrees,
  boolean&nbsp;immediateReturn)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Starts one coordinated movement: the left and right sides each move relative to their current position, by their
 degrees, in the same infrared command.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setAcceleration(int)" class="member-name-link">setAcceleration</a><wbr>(int&nbsp;degreesPerSecondSquared)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setAcceleration(int)" class="member-name-link">setAcceleration</a><wbr>(int&nbsp;degreesPerSecondSquared)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the acceleration, in encoder-shaft degrees per second squared, applied to the next movement.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBrakeLead(int)" class="member-name-link">setBrakeLead</a><wbr>(int&nbsp;cycles)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBrakeLead(int)" class="member-name-link">setBrakeLead</a><wbr>(int&nbsp;cycles)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the brake lead, in the brick's control cycles (333 a second), 0 to 255: each wheel brakes early by the distance
 it coasts at its current speed, which is its speed times this lead, so the wheels stop on their targets instead of
 past them. 0 brakes only on the target.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxPower(int)" class="member-name-link">setMaxPower</a><wbr>(int&nbsp;level)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxPower(int)" class="member-name-link">setMaxPower</a><wbr>(int&nbsp;level)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the maximum motor power, 1 to 7, keeping the other configuration flags.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setSpeed(int)" class="member-name-link">setSpeed</a><wbr>(int&nbsp;degreesPerSecond)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setSpeed(int)" class="member-name-link">setSpeed</a><wbr>(int&nbsp;degreesPerSecond)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the target speed, in encoder-shaft degrees per second, applied to the next movement.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTimeoutSeconds(int)" class="member-name-link">setTimeoutSeconds</a><wbr>(int&nbsp;seconds)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTimeoutSeconds(int)" class="member-name-link">setTimeoutSeconds</a><wbr>(int&nbsp;seconds)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the time, in seconds (1..255), a movement may run before the brick times it out.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTolerance(int)" class="member-name-link">setTolerance</a><wbr>(int&nbsp;steps)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTolerance(int)" class="member-name-link">setTolerance</a><wbr>(int&nbsp;steps)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the position tolerance, in sensor steps (0..255): a side within it counts as complete.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#speed()" class="member-name-link">speed</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#speed()" class="member-name-link">speed</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the target speed, in encoder-shaft degrees per second.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#status()" class="member-name-link">status</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#status()" class="member-name-link">status</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Reads the brick's status, updates the cached state and positions, and returns the state.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Stops both sides, qualified by the active motion so a stale stop cannot stop a newer movement.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#waitComplete()" class="member-name-link">waitComplete</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#waitComplete()" class="member-name-link">waitComplete</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Polls the status until the movement completes or latches an error.</div>
 </div>
 </div>
@@ -763,6 +781,46 @@ trip; with <a href="#cachedRightTachoCount()"><code>cachedRightTachoCount()</cod
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">cachedRightTachoCount</span>()</div>
 <div class="block">The right side's tachometer as the last <a href="#status()"><code>status()</code></a> read it; see <a href="#cachedLeftTachoCount()"><code>cachedLeftTachoCount()</code></a>.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pollMoving()">
+<h3>pollMoving</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">pollMoving</span>()</div>
+<div class="block">One status round trip, then whether the movement still runs. A reply that did not come counts as running, as in
+<a href="#waitComplete()"><code>waitComplete()</code></a>, which tells it from a finished movement afterwards.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/RegulatedPair.html#pollMoving()">pollMoving</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="leftTachoCount()">
+<h3>leftTachoCount</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">leftTachoCount</span>()</div>
+<div class="block"><a href="#cachedLeftTachoCount()"><code>cachedLeftTachoCount()</code></a>: no round trip.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/RegulatedPair.html#leftTachoCount()">leftTachoCount</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="rightTachoCount()">
+<h3>rightTachoCount</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">rightTachoCount</span>()</div>
+<div class="block"><a href="#cachedRightTachoCount()"><code>cachedRightTachoCount()</code></a>: no round trip.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../../robotics/RegulatedPair.html#rightTachoCount()">rightTachoCount</a></code>&nbsp;in interface&nbsp;<code><a href="../../../robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></code></dd>
+</dl>
 </div>
 </section>
 </li>

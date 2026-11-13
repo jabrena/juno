@@ -359,7 +359,7 @@ Maven plugin in your local repository, so the examples can use it.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/tree/main/juno-maven-plugin"><code>juno-maven-plugin</code></a></td>
-<td>The Maven goals that compile, verify, upload and monitor a program.</td>
+<td>The Maven goals that compile, verify, flash and monitor a program.</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/tree/main/juno-examples"><code>juno-examples</code></a></td>
@@ -411,8 +411,8 @@ Java: it turns the built-in LED on and off every half second.</p>
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p><code>juno:upload</code> flashes it to the board, which then blinks its built-in LED:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<p><code>juno:flash</code> flashes it to the board, which then blinks its built-in LED:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>

@@ -693,7 +693,7 @@ targets the Nano ESP32 and reports every LED change at 115200 baud:</p>
 </code></pre>
 <p>The board can list two ports at once, its USB DFU port (for example <code>1-1</code>) and its serial port, so
 the plugin cannot pick one alone. Upload through the DFU port and monitor the serial one:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBlink -Djuno.port=1-1
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 \
   -Djuno.port=/dev/cu.usbmodem&lt;ID&gt; -Djuno.baudRate=115200

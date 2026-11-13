@@ -516,7 +516,7 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java"><code>M5CardputerWifiStatusSD</code></a> is the complete program: it
 joins the network and shows the connection status on the display.</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.M5CardputerWifiStatusSD
 </code></pre>
 <h3 id="display">Display</h3>
@@ -591,7 +591,7 @@ that new <code>/dev/cu.usbmodem...</code> path as <code>-Djuno.port</code> if th
 <h2 id="build-and-run">Build and run</h2>
 <p>Run <code>juno:install-deps</code> once to install the M5Stack ESP32 board package and the official M5Cardputer library along with
 the other supported board cores and libraries. Then compile and upload an example, for instance the battery report:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.battery.M5CardputerBatteryLevel \
   -Djuno.board=m5stack-cardputer
 </code></pre>

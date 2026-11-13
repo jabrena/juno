@@ -77,6 +77,7 @@ initTheme();
 <li><a href="#digitalWrite(int,boolean)" tabindex="0">digitalWrite(int, boolean)</a></li>
 <li><a href="#digitalRead(int)" tabindex="0">digitalRead(int)</a></li>
 <li><a href="#analogRead(int)" tabindex="0">analogRead(int)</a></li>
+<li><a href="#pulseIn(int,boolean,int)" tabindex="0">pulseIn(int, boolean, int)</a></li>
 <li><a href="#analogWrite(int,int)" tabindex="0">analogWrite(int, int)</a></li>
 <li><a href="#toggle(int)" tabindex="0">toggle(int)</a></li>
 <li><a href="#getBuiltinLed()" tabindex="0">getBuiltinLed()</a></li>
@@ -170,9 +171,18 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#pinMode(int,int)" class="member-name-link">pinMode</a><wbr>(int&nbsp;pin,
  int&nbsp;mode)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#toggle(int)" class="member-name-link">toggle</a><wbr>(int&nbsp;pin)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#pulseIn(int,boolean,int)" class="member-name-link">pulseIn</a><wbr>(int&nbsp;pin,
+ boolean&nbsp;high,
+ int&nbsp;timeoutMicros)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Waits for a pulse on <code>pin</code>, a rise to high and a fall back when <code>high</code> (the other way round
+otherwise), and returns its length in microseconds, or <code>0</code> when no whole pulse arrives within
+<code>timeoutMicros</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#toggle(int)" class="member-name-link">toggle</a><wbr>(int&nbsp;pin)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
 </div>
 </div>
 </div>
@@ -218,6 +228,21 @@ Get the board's pins once, at startup, and pass them to the classes that need th
 <h3>analogRead</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">analogRead</span><wbr><span class="parameters">(int&nbsp;pin)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pulseIn(int,boolean,int)">
+<h3>pulseIn</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">pulseIn</span><wbr><span class="parameters">(int&nbsp;pin,
+ boolean&nbsp;high,
+ int&nbsp;timeoutMicros)</span></div>
+<div class="block">Waits for a pulse on <code>pin</code>, a rise to high and a fall back when <code>high</code> (the other way round
+otherwise), and returns its length in microseconds, or <code>0</code> when no whole pulse arrives within
+<code>timeoutMicros</code>. On the board the core times it, as Arduino's <code>pulseIn</code> does, so a switch to another
+thread in the middle cannot stretch it, as it could a pulse timed by polling <a href="#digitalRead(int)"><code>digitalRead(int)</code></a> from Java. It
+blocks for up to the timeout.</div>
 </div>
 </section>
 </li>

@@ -531,17 +531,17 @@ public final class App {
 <p><code>drawText</code> takes a compile-time string literal, so the message is written directly in the source.</p>
 <h2 id="7-build-and-upload">7. Build and upload</h2>
 <p>Connect the board with a USB-C cable. Compile, verify and upload in one command:</p>
-<pre><code class="language-bash">./mvnw compile juno:upload
+<pre><code class="language-bash">./mvnw compile juno:flash
 </code></pre>
-<p>On Windows, use <code>.\mvnw.cmd compile juno:upload</code>. To check the program without touching the board, run <code>juno:verify</code>
+<p>On Windows, use <code>.\mvnw.cmd compile juno:flash</code>. To check the program without touching the board, run <code>juno:verify</code>
 instead:</p>
 <pre><code class="language-bash">./mvnw compile juno:verify
 </code></pre>
 <p>If several boards are connected, list them and choose the port:</p>
 <pre><code class="language-bash">./mvnw juno:boards
-./mvnw compile juno:upload -Djuno.port=&lt;PORT&gt;
+./mvnw compile juno:flash -Djuno.port=&lt;PORT&gt;
 </code></pre>
-<p>On Windows, quote the property: <code>.\mvnw.cmd compile juno:upload &quot;-Djuno.port=COM11&quot;</code>.</p>
+<p>On Windows, quote the property: <code>.\mvnw.cmd compile juno:flash &quot;-Djuno.port=COM11&quot;</code>.</p>
 <h2 id="8-commit-the-project">8. Commit the project</h2>
 <pre><code class="language-bash">git add .gitmodules juno pom.xml mvnw .mvn src
 git commit -m &quot;chore: first Juno project&quot;
@@ -549,7 +549,7 @@ git commit -m &quot;chore: first Juno project&quot;
 <p>Others can then clone it with <code>git clone --recursive</code> and build it the same way.</p>
 <h2 id="9-review-ideas-for-your-next-steps">9. Review ideas for your next steps</h2>
 <ul>
-<li><strong>Change the message:</strong> edit the text and the scroll range in <code>App.java</code>, then run <code>./mvnw compile juno:upload</code> again.</li>
+<li><strong>Change the message:</strong> edit the text and the scroll range in <code>App.java</code>, then run <code>./mvnw compile juno:flash</code> again.</li>
 <li><strong>Add a second program:</strong> create another class with <code>@Board</code>, then upload it with <code>-Djuno.main=&lt;fully-qualified-name&gt;</code>
 instead of editing <code>pom.xml</code>.</li>
 <li><strong>Update Juno:</strong> move the submodule to a new commit with <code>git -C juno checkout &lt;commit&gt;</code>, rebuild it with the step 3

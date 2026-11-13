@@ -446,14 +446,14 @@ public final class SerialCounter {
 <h2 id="watching-the-output">Watching the output</h2>
 <p>Build, upload, and open the serial monitor with <code>juno-maven-plugin</code> (see
 <a href="../juno-maven-plugin">docs/JUNO-MAVEN-PLUGIN.md</a>):</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialCounter
 
 ./mvnw -f juno-examples/pom.xml juno:monitor \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
 <p>Always use the <code>juno:monitor</code> goal rather than invoking <code>arduino-cli monitor</code> directly — it
-resolves the same board port <code>juno:upload</code> used and defaults to the <code>115200</code> baud rate every
+resolves the same board port <code>juno:flash</code> used and defaults to the <code>115200</code> baud rate every
 <code>juno-examples</code> program uses, so the two never mismatch.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
