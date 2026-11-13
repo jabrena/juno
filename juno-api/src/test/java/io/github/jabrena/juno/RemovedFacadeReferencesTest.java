@@ -16,13 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Keeps the five board-specific facades removed: {@code MCU} is the only onboard-service facade, so no repository
- * source or maintained document may name the old types. The migration guide is the one place that maps them.
+ * source or maintained document may name the old types.
  */
 @DisplayName("Removed board facades stay removed")
 class RemovedFacadeReferencesTest {
     private static final Pattern REMOVED_FACADE = Pattern.compile(
             "\\b(ArduinoUno|ArduinoNano|RaspberryPico2|Esp32Cam|M5StackCardputer)\\b");
-    private static final Path MIGRATION_GUIDE = Path.of("juno-site/src/main/resources/content/migrate-to-mcu.md");
     private static final String SELF = "RemovedFacadeReferencesTest.java";
 
     @Test
@@ -34,7 +33,7 @@ class RemovedFacadeReferencesTest {
         // When
         List<String> offenders = new ArrayList<>();
         for (Path file : maintainedFiles(root)) {
-            if (file.getFileName().toString().equals(SELF) || file.endsWith(MIGRATION_GUIDE)) {
+            if (file.getFileName().toString().equals(SELF)) {
                 continue;
             }
             List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
@@ -47,17 +46,6 @@ class RemovedFacadeReferencesTest {
 
         // Then
         assertThat(offenders).as("references to removed facades").isEmpty();
-    }
-
-    @Test
-    @DisplayName("The migration guide maps every removed facade to MCU")
-    void shouldMapEveryRemovedFacadeInTheMigrationGuide() throws IOException {
-        // Given
-        String guide = Files.readString(repositoryRoot().resolve(MIGRATION_GUIDE), StandardCharsets.UTF_8);
-
-        // Then
-        assertThat(guide).contains("ArduinoUno", "ArduinoNano", "RaspberryPico2", "Esp32Cam", "M5StackCardputer",
-                "MCU.getSdCard()", "getSd()");
     }
 
     private static Path repositoryRoot() {
