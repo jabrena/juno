@@ -15,15 +15,15 @@ language itself, see the [Java subset](../java-subset) page.
 | Feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 | Pico 2 W |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield | ✓ |
+| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
 | Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | Shield | ✓ |
+| HTTP client (plain) | – | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
 | HTTPS client | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
 | HTTP server | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
 | HTTPS server | ✓ | ✓ | ✓ | – | – | – | – | ✓ |
 | Email over TLS | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
 | Email STARTTLS | – | ✓ | – | – | ✓ | – | – | – |
-| SNTP clock (`LocalDateTime.now()`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Shield | ✓ |
+| SNTP clock (`LocalDateTime.now()`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
 | Bluetooth LE | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ |
 | USB HID mouse | – | ✓ | ✓ | – | ✓ | – | – | ✓ |
 | LED matrix | ✓ (13 × 8) | – | – | – | ✓ (12 × 8) | – | – | – |
@@ -42,8 +42,8 @@ language itself, see the [Java subset](../java-subset) page.
 
 Notes:
 
-- **Shield** means the feature comes from an Arduino or ELEGOO shield on the board's headers: the WiFi Shield on the R3 for
-  Wi-Fi, HTTP and the clock, and the Data Logger, TFT or LCD Keypad shields for storage and displays. See
+- **Shield** means the feature comes from an Arduino or ELEGOO shield on the board's headers: the Data Logger, TFT or
+  LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shields for sensors. See
   [Arduino Shields](../arduino-shields).
 - **Carrier** means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
   [Nano ESP32](../arduino-nano-esp32#shields) page.
