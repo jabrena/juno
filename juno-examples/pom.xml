@@ -25,7 +25,7 @@
         <scala-maven-plugin.version>4.10.0</scala-maven-plugin.version>
         <clojure.version>1.12.6</clojure.version>
         <groovy.version>6.0.0</groovy.version>
-        <exec-maven-plugin.version>3.6.4</exec-maven-plugin.version>
+        <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
     </properties>
 
     <dependencies>
