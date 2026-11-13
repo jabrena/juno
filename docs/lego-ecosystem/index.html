@@ -732,7 +732,7 @@ public final class RcxGroveConnectExample {
 <p>The complete examples below repeat the setup so that each one can be copied into its own Juno program. They use the
 HX modules on an UNO; substitute the typed Grove setup above when using the Nano Connector Carrier.</p>
 <h3 id="use-the-motors">Use the motors</h3>
-<p>The brick has three motor outputs, <code>getMotorA()</code>, <code>getMotorB()</code> and <code>getMotorC()</code>; <code>and</code> combines two into one, as a
+<p>The brick has three motor outputs, <code>getMotorA()</code>, <code>getMotorB()</code> and <code>getMotorC()</code>, or <code>motor(RcxMotorPort.A)</code> to <code>motor(RcxMotorPort.C)</code>, which return the same objects; <code>and</code> combines two into one, as a
 vehicle's left and right wheels. <code>drive(speed)</code> runs them from <code>-RcxMotor.MAX_LEVEL</code> (full reverse) to <code>MAX_LEVEL</code>
 (7, full forward). <code>stop()</code> brakes them and <code>flt()</code> lets them coast:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -767,7 +767,7 @@ public final class RcxMotorExample {
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/RcxDriveAC.java"><code>RcxDriveAC</code></a> drives a vehicle with its motors on outputs A and C.</p>
 <h3 id="use-the-rotation-sensor">Use the rotation sensor</h3>
 <p>A rotation sensor counts 16 steps per turn of its axle, signed by direction. Plug it into one of the brick's three
-inputs, <code>getSensor1()</code> to <code>getSensor3()</code>. Constructing the sensor configures the input; <code>reset()</code> sets the count back to zero:</p>
+inputs, <code>getSensor1()</code> to <code>getSensor3()</code>, or <code>sensor(RcxSensorPort.INPUT_1)</code> to <code>sensor(RcxSensorPort.INPUT_3)</code>. Constructing the sensor configures the input; <code>reset()</code> sets the count back to zero:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.ArduinoUno;

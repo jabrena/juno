@@ -437,7 +437,7 @@ HX modules on an UNO; substitute the typed Grove setup above when using the Nano
 
 ### Use the motors
 
-The brick has three motor outputs, `getMotorA()`, `getMotorB()` and `getMotorC()`; `and` combines two into one, as a
+The brick has three motor outputs, `getMotorA()`, `getMotorB()` and `getMotorC()`, or `motor(RcxMotorPort.A)` to `motor(RcxMotorPort.C)`, which return the same objects; `and` combines two into one, as a
 vehicle's left and right wheels. `drive(speed)` runs them from `-RcxMotor.MAX_LEVEL` (full reverse) to `MAX_LEVEL`
 (7, full forward). `stop()` brakes them and `flt()` lets them coast:
 
@@ -477,7 +477,7 @@ public final class RcxMotorExample {
 ### Use the rotation sensor
 
 A rotation sensor counts 16 steps per turn of its axle, signed by direction. Plug it into one of the brick's three
-inputs, `getSensor1()` to `getSensor3()`. Constructing the sensor configures the input; `reset()` sets the count back to zero:
+inputs, `getSensor1()` to `getSensor3()`, or `sensor(RcxSensorPort.INPUT_1)` to `sensor(RcxSensorPort.INPUT_3)`. Constructing the sensor configures the input; `reset()` sets the count back to zero:
 
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
