@@ -30,6 +30,7 @@ initTheme();
 <li><a href="../HubPort.html">Class</a></li>
 <li class="nav-bar-cell1-rev">Use</li>
 <li><a href="../package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../../help-doc.html#use">Help</a></li>
@@ -92,8 +93,9 @@ initTheme();
 <div class="col-first even-row-color"><code>enum&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../HubPort.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">A port of a Powered Up hub: the external ports <a href="../HubPort.html#A"><code>HubPort.A</code></a> to <a href="../HubPort.html#D"><code>HubPort.D</code></a> (a City Hub has A and B), and the built-in
-sensors of the Technic Hub (88012), which report on their own port numbers once subscribed.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">Kept for one compatibility release.</div>
+</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a> that return <a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span></div>
@@ -104,11 +106,13 @@ sensors of the Technic Hub (88012), which report on their own port numbers once 
 <div class="col-first even-row-color"><code>static <a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">HubPort.</span><code><a href="../HubPort.html#valueOf(java.lang.String)" class="member-name-link">valueOf</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </div>
 <div class="col-first odd-row-color"><code>static <a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>[]</code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">HubPort.</span><code><a href="../HubPort.html#values()" class="member-name-link">values</a>()</code></div>
 <div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </div>
@@ -122,52 +126,61 @@ the order they are declared.</div>
 <div class="col-second even-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)" class="member-name-link">enableSensor</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port,
  int&nbsp;mode)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Asks the hub to report every change of <code>mode</code> of the motor or sensor on <code>port</code>,
-for <a href="../RemotePoweredUpHub.html#readSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)"><code>RemotePoweredUpHub.readSensor(HubPort)</code></a> to return.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use the <a href="../PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> or <a href="../BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> overload</div>
+</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="../PoweredUpMotor.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpMotor</a></code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#getMotor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">getMotor</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">The motor on the external port <code>port</code> (A to D), as an <a href="../../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use <a href="../RemotePoweredUpHub.html#getMotor(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>RemotePoweredUpHub.getMotor(PoweredUpPort)</code></a>, which rejects a built-in sensor at compile time</div>
+</div>
 </div>
 <div class="col-first even-row-color"><code>int</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.HubPort,io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">linkMotors</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;portA,
  <a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;portB)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Pairs the motors on ports <code>portA</code> and <code>portB</code> into one virtual port, so a single
-command (<a href="../RemotePoweredUpHub.html#setLinkedMotorPower(int,int,int)"><code>RemotePoweredUpHub.setLinkedMotorPower(int, int, int)</code></a>) drives both in sync, as for a two-motor vehicle.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use <a href="../RemotePoweredUpHub.html#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>RemotePoweredUpHub.linkMotors(PoweredUpPort, PoweredUpPort)</code></a>, which returns a <a href="../LinkedMotors.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>LinkedMotors</code></a> pair</div>
+</div>
 </div>
 <div class="col-first odd-row-color"><code>int</code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#portDevice(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">portDevice</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">The I/O device type the hub reported (Hub Attached I/O) for the external port <code>port</code>
-(<a href="../HubPort.html#A"><code>HubPort.A</code></a> to <a href="../HubPort.html#D"><code>HubPort.D</code></a>), one of the <code>DEVICE_*</code> constants or another protocol type id, or
-<code>0</code> if nothing is attached, the hub has not reported it yet, or <code>port</code> is out of range.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use <a href="../RemotePoweredUpHub.html#portDevice(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>RemotePoweredUpHub.portDevice(PoweredUpPort)</code></a>, which rejects a built-in sensor at compile time</div>
+</div>
 </div>
 <div class="col-first even-row-color"><code>int</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#readSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">readSensor</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
 <div class="col-last even-row-color">
-<div class="block">The latest value reported by the port <a href="../RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to, or <code>0</code>
-before the first report.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use the <a href="../PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> or <a href="../BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> overload</div>
+</div>
 </div>
 <div class="col-first odd-row-color"><code>int</code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#readSensorValue(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int,int)" class="member-name-link">readSensorValue</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port,
  int&nbsp;index,
  int&nbsp;bytesPerValue)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">The <code>index</code>-th value of the latest report of the port <a href="../RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to,
-as a signed integer of <code>bytesPerValue</code> bytes (1, 2 or 4, little endian).</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use the <a href="../PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> or <a href="../BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> overload</div>
+</div>
 </div>
 <div class="col-first even-row-color"><code>int</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#sensorReportCount(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">sensorReportCount</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
 <div class="col-last even-row-color">
-<div class="block">How many reports the hub has sent for <code>port</code> since <a href="../RemotePoweredUpHub.html#enableSensor(io.github.jabrena.juno.remote.lego.poweredup.HubPort,int)"><code>RemotePoweredUpHub.enableSensor(HubPort, int)</code></a> subscribed to it,
-counting repeats of an unchanged value, so a program can measure how often the hub reports.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use the <a href="../PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> or <a href="../BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> overload</div>
+</div>
 </div>
 <div class="col-first odd-row-color"><code>int</code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">RemotePoweredUpHub.</span><code><a href="../RemotePoweredUpHub.html#sensorReportSize(io.github.jabrena.juno.remote.lego.poweredup.HubPort)" class="member-name-link">sensorReportSize</a><wbr>(<a href="../HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&nbsp;port)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">How many value bytes the latest report of <code>port</code> carried (at most 16), <code>0</code> before the first.</div>
+<div class="block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">use the <a href="../PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> or <a href="../BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> overload</div>
+</div>
 </div>
 </div>
 </section>

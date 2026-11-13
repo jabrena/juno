@@ -452,13 +452,13 @@ public final class PoweredUpLedExample {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java"><code>PoweredUpHubHello</code></a> connects and then cycles the LED through several colors.</p>
 <h3 id="drive-the-motors">Drive the motors</h3>
-<p><code>getMotor(port)</code> returns the motor on <code>HubPort.A</code> to <code>HubPort.D</code>. <code>drive(percent)</code> runs it from <code>-100</code> (full reverse) to
+<p><code>getMotor(port)</code> returns the motor on <code>PoweredUpPort.A</code> to <code>PoweredUpPort.D</code>. <code>drive(percent)</code> runs it from <code>-100</code> (full reverse) to
 <code>100</code> (full forward). There are three ways to stop: <code>flt()</code> lets the motor coast, <code>stop()</code> brakes it actively, and
 <code>hold()</code> holds it where it is. <code>portDevice(port)</code> tells which motor the hub detected on a port:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
@@ -470,17 +470,17 @@ public final class PoweredUpMotorExample {
             Serial.println(&quot;no hub found&quot;);
             Delay.millis(1000);
         }
-        if (!hub.isConnected() || hub.portDevice(HubPort.A) == RemotePoweredUpHub.DEVICE_NONE) {
+        if (!hub.isConnected() || hub.portDevice(PoweredUpPort.A) == RemotePoweredUpHub.DEVICE_NONE) {
             Serial.println(&quot;no motor on port A&quot;);
             return;
         }
 
         while (true) {
-            hub.getMotor(HubPort.A).drive(50);    // half speed forward
+            hub.getMotor(PoweredUpPort.A).drive(50);    // half speed forward
             Delay.millis(2000);
-            hub.getMotor(HubPort.A).drive(-50);   // half speed backward
+            hub.getMotor(PoweredUpPort.A).drive(-50);   // half speed backward
             Delay.millis(2000);
-            hub.getMotor(HubPort.A).stop();       // brakes; flt() would coast
+            hub.getMotor(PoweredUpPort.A).stop();       // brakes; flt() would coast
             Delay.millis(1000);
         }
     }
@@ -539,14 +539,15 @@ public final class PoweredUpSensorsExample {
 example prints the values so you can check them on your hub. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHubWithGyro.java"><code>MagicSquarePoweredUpHubWithGyro</code></a>
 uses the Technic Hub's heading to turn a vehicle by angle instead of by a calibrated delay.</p>
 <h3 id="read-hub-properties-and-external-sensors">Read hub properties and external sensors</h3>
-<p>The hub also exposes its battery percentage, button, signal strength, name, firmware and hardware versions. External
+<p>The Technic Hub's built-in sensors are <code>BuiltInSensor</code> values, such as <code>BuiltInSensor.TECHNIC_GYRO</code>. They take the same
+sensor methods as an external port, but never a motor, so <code>getMotor</code> rejects them at compile time. The hub also exposes its battery percentage, button, signal strength, name, firmware and hardware versions. External
 sensors use their protocol-specific mode: subscribe after every reconnect with <code>enableSensor</code>, then poll with
 <code>readSensor</code> or <code>readSensorValue</code> while the program is running. For example, a motor's position is available through
 the higher-level <code>PoweredUpMotor</code> encoder view:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpMotor;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
@@ -563,8 +564,8 @@ public final class PoweredUpPropertiesExample {
             return;
         }
 
-        PoweredUpMotor motor = hub.getMotor(HubPort.A);
-        hub.enableSensor(HubPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+        PoweredUpMotor motor = hub.getMotor(PoweredUpPort.A);
+        hub.enableSensor(PoweredUpPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
         motor.resetTachoCount();
         motor.drive(40);
         Delay.millis(2000);
@@ -572,9 +573,9 @@ public final class PoweredUpPropertiesExample {
         Serial.print(&quot;motor degrees=&quot;);
         Serial.println(motor.getTachoCount());
         Serial.print(&quot;raw position degrees=&quot;);
-        Serial.println(hub.readSensor(HubPort.A));
+        Serial.println(hub.readSensor(PoweredUpPort.A));
         Serial.print(&quot;position reports=&quot;);
-        Serial.println(hub.sensorReportCount(HubPort.A));
+        Serial.println(hub.sensorReportCount(PoweredUpPort.A));
 
         byte[] name = new byte[20];
         int nameLength = hub.hubName(name, name.length);
@@ -590,8 +591,9 @@ public final class PoweredUpPropertiesExample {
 }
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/MagicSquarePoweredUpHub.java"><code>MagicSquarePoweredUpHub</code></a> drives a two-motor vehicle (ports A and B) around a square with two <code>PoweredUpMotor</code> objects.
-For a single synchronized protocol command, pair the ports with <code>linkMotors(HubPort.A, HubPort.B)</code>, drive the returned
-virtual port with <code>setLinkedMotorPower</code>, and call <code>unlinkMotors</code> when finished. The
+For a single synchronized protocol command, pair the ports with <code>LinkedMotors pair = hub.linkMotors(PoweredUpPort.A, PoweredUpPort.B)</code>,
+drive both with <code>pair.setPower(first, second)</code>, and call <code>pair.unlink()</code> when finished. A pair is valid only for the
+connection that made it: after a disconnect, link the motors again. The
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpMotorEncoders.java"><code>PoweredUpMotorEncoders</code></a>
 example shows the lower-level position reports.</p>
 <h2 id="lego-power-functions">LEGO Power Functions</h2>

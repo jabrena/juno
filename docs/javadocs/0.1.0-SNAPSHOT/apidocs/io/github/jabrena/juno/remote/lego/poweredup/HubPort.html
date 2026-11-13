@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/HubPort.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -110,11 +111,15 @@ initTheme();
 </dl>
 <hr>
 <div class="horizontal-scroll">
-<div class="type-signature"><span class="modifiers">public enum </span><span class="element-name type-name-label">HubPort</span>
+<div class="type-signature"><span class="annotations"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Deprecated.html" title="annotation interface in java.lang" class="external-link">@Deprecated</a>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Deprecated.html#since()" class="external-link">since</a>="0.1.0")
+</span><span class="modifiers">public enum </span><span class="element-name type-name-label">HubPort</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Enum.html" title="class in java.lang" class="external-link">Enum</a>&lt;<a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>&gt;</span></div>
-<div class="block">A port of a Powered Up hub: the external ports <a href="#A"><code>A</code></a> to <a href="#D"><code>D</code></a> (a City Hub has A and B), and the built-in
-sensors of the Technic Hub (88012), which report on their own port numbers once subscribed. Those numbers follow the
-community documentation of the LEGO Wireless Protocol and have not been verified on a hub.</div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span>
+<div class="deprecation-comment">Kept for one compatibility release. Use <a href="PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>PoweredUpPort</code></a> for the external ports A to D, and
+    <a href="BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup"><code>BuiltInSensor</code></a> for the Technic Hub's built-in sensors; the <code>RemotePoweredUpHub</code> overloads that take
+    a <code>HubPort</code> delegate to them.</div>
+</div>
+<div class="block">A port of a Powered Up hub, as one value for both external ports and built-in sensors.</div>
 </div>
 </section>
 <section class="summary">
@@ -138,38 +143,47 @@ community documentation of the LEGO Wireless Protocol and have not been verified
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code><a href="#A" class="member-name-link">A</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port A, the first motor or sensor port.</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#B" class="member-name-link">B</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port B.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#C" class="member-name-link">C</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port C (Technic and Move hubs).</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#D" class="member-name-link">D</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port D (Technic and Move hubs).</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#TECHNIC_ACCELEROMETER" class="member-name-link">TECHNIC_ACCELEROMETER</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in accelerometer, gyroscope and tilt sensor, which report like a sensor on a port.</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#TECHNIC_CURRENT" class="member-name-link">TECHNIC_CURRENT</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in current sensor.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#TECHNIC_GYRO" class="member-name-link">TECHNIC_GYRO</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in gyroscope.</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#TECHNIC_TILT" class="member-name-link">TECHNIC_TILT</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in tilt sensor.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#TECHNIC_VOLTAGE" class="member-name-link">TECHNIC_VOLTAGE</a></code></div>
 <div class="col-last even-row-color">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in voltage sensor.</div>
 </div>
 </div>
@@ -180,20 +194,22 @@ community documentation of the LEGO Wireless Protocol and have not been verified
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button><button id="method-summary-table-tab6" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab6', 3)" class="table-tab">Deprecated Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#valueOf(java.lang.String)" class="member-name-link">valueOf</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code>static <a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code><a href="#valueOf(java.lang.String)" class="member-name-link">valueOf</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>[]</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#values()" class="member-name-link">values</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code>static <a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>[]</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6"><code><a href="#values()" class="member-name-link">values</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4 method-summary-table-tab6">
+<div class="block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </div>
@@ -222,6 +238,7 @@ the order they are declared.</div>
 <h3>A</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">A</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port A, the first motor or sensor port.</div>
 </div>
 </section>
@@ -231,6 +248,7 @@ the order they are declared.</div>
 <h3>B</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">B</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port B.</div>
 </div>
 </section>
@@ -240,6 +258,7 @@ the order they are declared.</div>
 <h3>C</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">C</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port C (Technic and Move hubs).</div>
 </div>
 </section>
@@ -249,6 +268,7 @@ the order they are declared.</div>
 <h3>D</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">D</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">External port D (Technic and Move hubs).</div>
 </div>
 </section>
@@ -258,6 +278,7 @@ the order they are declared.</div>
 <h3>TECHNIC_ACCELEROMETER</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">TECHNIC_ACCELEROMETER</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in accelerometer, gyroscope and tilt sensor, which report like a sensor on a port.</div>
 </div>
 </section>
@@ -267,6 +288,7 @@ the order they are declared.</div>
 <h3>TECHNIC_GYRO</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">TECHNIC_GYRO</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in gyroscope.</div>
 </div>
 </section>
@@ -276,6 +298,7 @@ the order they are declared.</div>
 <h3>TECHNIC_TILT</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">TECHNIC_TILT</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in tilt sensor.</div>
 </div>
 </section>
@@ -285,6 +308,7 @@ the order they are declared.</div>
 <h3>TECHNIC_CURRENT</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">TECHNIC_CURRENT</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in current sensor.</div>
 </div>
 </section>
@@ -294,6 +318,7 @@ the order they are declared.</div>
 <h3>TECHNIC_VOLTAGE</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">TECHNIC_VOLTAGE</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">The Technic Hub's built-in voltage sensor.</div>
 </div>
 </section>
@@ -311,6 +336,7 @@ the order they are declared.</div>
 <h3>values</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a>[]</span>&nbsp;<span class="element-name">values</span>()</div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 <dl class="notes">
@@ -325,6 +351,7 @@ the order they are declared.</div>
 <h3>valueOf</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></span>&nbsp;<span class="element-name">valueOf</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;name)</span></div>
+<div class="deprecation-block"><span class="deprecated-label">Deprecated.</span></div>
 <div class="block">Returns the enum constant of this class with the specified name.
 The string must match <i>exactly</i> an identifier used to declare an
 enum constant in this class.  (Extraneous whitespace characters are 

@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Package</li>
 <li><a href="package-use.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#package">Help</a></li>
@@ -93,14 +94,22 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab3"><a href="HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="BuiltInSensor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">BuiltInSensor</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">A sensor built into the Technic Hub (88012).</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab3">
 <div class="block">A colour of a Powered Up hub's status LED, one of the eleven fixed colours the hub's LED protocol offers.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
-<div class="block">A port of a Powered Up hub: the external ports <a href="HubPort.html#A"><code>HubPort.A</code></a> to <a href="HubPort.html#D"><code>HubPort.D</code></a> (a City Hub has A and B), and the built-in
-sensors of the Technic Hub (88012), which report on their own port numbers once subscribed.</div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="HubPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubPort</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">Deprecated.
+<div class="deprecation-comment">Kept for one compatibility release.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="LinkedMotors.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">LinkedMotors</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Two motors of one Powered Up hub paired into a virtual port, so one call drives both in sync, as for a two-motor
+vehicle.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpAccelerometer.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpAccelerometer</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
@@ -119,12 +128,16 @@ supply voltage read from the hub's internal voltage sensor.</div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The motor on one external port of a Powered Up hub, as an <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="PoweredUpPort.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpPort</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">An external port of a Powered Up hub, printed on the hub as A to D: it takes a motor or an external sensor.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="PoweredUpTilt.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpTilt</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The Technic Hub's tilt sensor: three angles in degrees, yaw first, then pitch and roll.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">A LEGO Powered Up hub (City Hub 88009, Technic Hub 88012, BOOST Move Hub 88006, DUPLO Train
 Hub, ...) controlled over Bluetooth Low Energy, recognized as compiler intrinsics by Juno and
 backed by the Arduino <code>ArduinoBLE</code> library (<code>arduino-cli lib install ArduinoBLE</code>).</div>
