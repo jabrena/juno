@@ -64,4 +64,3 @@ Every board's own services come from one facade, `MCU`, and the board is chosen 
 option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
 board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
 of them. Portable getters (`getGpio`, `getI2c`, `getSpi`, `getClock`, `getBoardModel`, `getBoardMemory`) work on every board.
-Programs written for the removed per-board facades need the steps on the [migration](../migrate-to-mcu) page.

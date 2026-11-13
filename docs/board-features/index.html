@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -664,8 +663,7 @@ Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware w
 <p>Every board's own services come from one facade, <code>MCU</code>, and the board is chosen by <code>@Board</code> or the build's <code>juno.board</code>
 option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
 board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
-of them. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>) work on every board.
-Programs written for the removed per-board facades need the steps on the <a href="../migrate-to-mcu">migration</a> page.</p>
+of them. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>) work on every board.</p>
     </div>
   </section>
 </article>
