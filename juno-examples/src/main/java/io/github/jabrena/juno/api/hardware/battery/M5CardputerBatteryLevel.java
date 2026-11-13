@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.battery;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.power.Battery;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.util.Delay;
 /** Prints the Cardputer's estimated battery level over USB serial once per second. */
 @Board(M5StackCardputerBoard.class)
 public final class M5CardputerBatteryLevel {
-    private static final Battery BATTERY = M5StackCardputer.getBattery();
+    private static final Battery BATTERY = MCU.getBattery();
 
     private M5CardputerBatteryLevel() {
     }

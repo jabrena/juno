@@ -15,7 +15,6 @@ io.github.jabrena.juno.hardware.device.motor
 io.github.jabrena.juno.hardware.device.sd
 io.github.jabrena.juno.hardware.device.servo
 io.github.jabrena.juno.hardware.device.tft
-io.github.jabrena.juno.hardware.device.wifi
 io.github.jabrena.juno.hardware.display
 io.github.jabrena.juno.hardware.gpio
 io.github.jabrena.juno.hardware.hid
@@ -28,6 +27,7 @@ io.github.jabrena.juno.hardware.net.email
 io.github.jabrena.juno.hardware.net.http
 io.github.jabrena.juno.hardware.net.udp
 io.github.jabrena.juno.hardware.power
+io.github.jabrena.juno.hardware.security
 io.github.jabrena.juno.hardware.serial
 io.github.jabrena.juno.hardware.spi
 io.github.jabrena.juno.hardware.time

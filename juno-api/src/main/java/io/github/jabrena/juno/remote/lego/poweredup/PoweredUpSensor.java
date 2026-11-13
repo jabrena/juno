@@ -10,12 +10,12 @@ final class PoweredUpSensor implements SampleProvider {
     private static final int VALUES = 3;
     private static final int VALUE_BYTES = 2;
 
-    private final PoweredUpPort hubPort;
-    private final HubPort port;
+    private final PoweredUpTransport hubPort;
+    private final BuiltInSensor port;
     private final float scale;
 
     /** {@code scale} converts one raw value to the sensor's unit, such as metres per second squared. */
-    PoweredUpSensor(PoweredUpPort hubPort, HubPort port, float scale) {
+    PoweredUpSensor(PoweredUpTransport hubPort, BuiltInSensor port, float scale) {
         this.hubPort = hubPort;
         this.port = port;
         this.scale = scale;

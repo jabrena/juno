@@ -1,13 +1,12 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.ParallelBusRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
-import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
  * The UNO Q's {@code arduino:zephyr} core: it provides {@code yield()} itself but inlines
@@ -167,7 +166,7 @@ final class ZephyrCoreRuntime implements CoreRuntime {
     }
 
     @Override
-    public String threadPort(RuntimeConfig config) {
-        return threadRuntime.zephyrPort(config.maxThreads(), config.threadStackBytes(ArduinoCore.ZEPHYR.defaultThreadStackBytes()));
+    public String threadPort(ResolvedRuntimeConfig config) {
+        return threadRuntime.zephyrPort(config.threadStackBytes());
     }
 }

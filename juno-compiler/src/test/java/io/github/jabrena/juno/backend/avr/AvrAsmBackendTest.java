@@ -39,7 +39,7 @@ class AvrAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 %s
                 @Board(ArduinoUnoR3WiFiRev2Board.class)
                 public final class %s {
@@ -58,7 +58,7 @@ class AvrAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 %s
                 @Board(ArduinoUnoR3Board.class)
                 public final class %s {
@@ -163,7 +163,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects a non-AVR board for the AVR backend")
     void shouldRejectANonAvrBoardForTheAvrBackend() {
         // When & Then
-        assertThatThrownBy(() -> new AvrAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT))
+        assertThatThrownBy(() -> new AvrAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R4_WIFI)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is not an AVR board");
     }
@@ -173,8 +173,8 @@ class AvrAsmBackendTest {
     void shouldCompileBasicGpioForTheClassicUnoR3() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
-                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), MCU.getGpio().getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -192,8 +192,8 @@ class AvrAsmBackendTest {
     void shouldOmitWifiSdSoftSpiAndContextSwitchFromTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
-                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), MCU.getGpio().getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -209,8 +209,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinAndDigitalWriteCallsInTheClassicUnoR3Shim() throws Exception {
         // Given
         CompilationResult result = compileR3("demo.R3Blink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
-                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), MCU.getGpio().getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -259,60 +259,13 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects features that do not fit the classic UNO R3")
     void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "ArduinoUno.getLedMatrix().begin();", ""))
+        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "MCU.getLedMatrix().begin();", ""))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard LED matrix");
     }
 
     @Test
-    @DisplayName("The UNO R3 joins a network through the WiFi Shield's legacy WiFi library")
-    void shouldJoinANetworkThroughTheLegacyWifiShieldLibrary() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldWifi", """
-                        int[] ip = new int[4];
-                        Wifi wifi = new ArduinoWifiShield().getWifi();
-                        wifi.begin("ssid", "password");
-                        Serial.println(wifi.status());
-                        wifi.localIP(ip);
-                """, """
-                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
-                import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFi.h>")
-                .contains("WiFi.begin(const_cast<char*>(ssid), password);")
-                .contains("extern \"C\" int32_t juno_wifi_status() {")
-                .doesNotContain("WiFiNINA", "beginAP");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 sends plain HTTP in pieces the WiFi Shield firmware's SPI buffer holds")
-    void shouldSendPlainHttpInPiecesTheShieldFirmwareHolds() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldHttp", """
-                        byte[] body = new byte[16];
-                        byte[] headers = new byte[16];
-                        int[] status = new int[2];
-                        Serial.println(HttpClient.get("http://example.com/", body, 16, headers, 16, status));
-                """, """
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFi.h>")
-                .contains("class JunoShieldClient : public WiFiClient {")
-                .contains("size_t piece = size - sent < 64 ? size - sent : 64;")
-                .contains("return juno_http_run<JunoShieldClient>(\"GET\"")
-                .doesNotContain("WiFiSSLClient", "JunoHttpsClient");
-    }
-
-    @Test
-    @DisplayName("Rejects HTTPS on the UNO R3")
+    @DisplayName("Rejects HTTPS on the UNO R3, which has no network support")
     void shouldRejectHttpsOnTheUnoR3() {
         // When & Then
         assertThatThrownBy(() -> compileR3("demo.R3ShieldHttps", """
@@ -322,36 +275,83 @@ class AvrAsmBackendTest {
                         HttpClient.get("https://example.com/", body, 16, headers, 16, status);
                 """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3 does not provide a supported TLS client");
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
-    @DisplayName("Rejects the LCD Keypad Shield together with the WiFi Shield on the UNO R3: they share D4, D7 and D10")
-    void shouldRejectTheLcdKeypadShieldWithTheWifiShieldOnTheUnoR3() {
+    @DisplayName("Rejects plain HTTP on the UNO R3, which has no network support")
+    void shouldRejectPlainHttpOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3LcdWifi", """
-                        LcdKeypadShield lcd = new LcdKeypadShield();
-                        new ArduinoWifiShield().getWifi().begin("ssid", "password");
+        assertThatThrownBy(() -> compileR3("demo.R3PlainHttp", """
+                        byte[] body = new byte[16];
+                        byte[] headers = new byte[16];
+                        int[] status = new int[2];
+                        HttpClient.get("http://example.com/", body, 16, headers, 16, status);
+                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects UDP on the UNO R3, which has no network support")
+    void shouldRejectUdpOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3Udp", """
+                        try {
+                            DatagramSocket socket = new DatagramSocket(4210);
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
                 """, """
-                import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-                import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
-                import io.github.jabrena.juno.hardware.net.Wifi;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.DatagramSocket;
                 """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("LcdKeypadShield cannot be used with the Arduino WiFi Shield on UNO R3")
-                .hasMessageContaining("D4, D7 and D10");
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
-    @DisplayName("Rejects the LCD Keypad Shield with the SNTP clock on the UNO R3, which needs the WiFi Shield too")
-    void shouldRejectTheLcdKeypadShieldWithTheSntpClockOnTheUnoR3() {
+    @DisplayName("Rejects TCP on the UNO R3, which has no network support")
+    void shouldRejectTcpOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3LcdClock", """
-                        LcdKeypadShield lcd = new LcdKeypadShield();
-                        lcd.print(java.time.LocalDateTime.now().getSecond(), 2);
-                """, "import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;"))
+        assertThatThrownBy(() -> compileR3("demo.R3Tcp", """
+                        try {
+                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
+                            Socket socket = new Socket(peer, 80);
+                            socket.close();
+                        } catch (IOException e) {
+                            Serial.println(0);
+                        }
+                """, """
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                import java.io.IOException;
+                import java.net.InetAddress;
+                import java.net.Socket;
+                """))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("cannot be stacked");
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects the SNTP clock on the UNO R3, which has no network support")
+    void shouldRejectTheSntpClockOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3Sntp", "Serial.println(java.time.LocalDateTime.now().getSecond());",
+                "import io.github.jabrena.juno.hardware.serial.Serial;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
+    }
+
+    @Test
+    @DisplayName("Rejects an HTTP server on the UNO R3, which has no network support")
+    void shouldRejectAnHttpServerOnTheUnoR3() {
+        // When & Then
+        assertThatThrownBy(() -> compileR3("demo.R3HttpServer", "HttpServer.begin(80);",
+                "import io.github.jabrena.juno.hardware.net.http.HttpServer;"))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("UNO R3");
     }
 
     @Test
@@ -373,10 +373,10 @@ class AvrAsmBackendTest {
         // When
         CompilationResult result = compile("demo.Rev2LcdWifi", """
                         LcdKeypadShield lcd = new LcdKeypadShield();
-                        ArduinoUno.getWifi().begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                 """, """
                 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 """);
 
@@ -385,90 +385,14 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and goes through the WiFi Shield")
+    @DisplayName("Rejects the board's own Wi-Fi on the UNO R3, which has no radio and no network support")
     void shouldRejectOnboardWifiOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "ArduinoUno.getWifi().begin(\"ssid\", \"password\");",
+        assertThatThrownBy(() -> compileR3("demo.R3OnboardWifi", "MCU.getWifi().begin(\"ssid\", \"password\");",
                 "import io.github.jabrena.juno.hardware.net.Wifi;"))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("ArduinoUno.getWifi requires @Board(")
-                .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio")
-                .hasMessageContaining("new ArduinoWifiShield().getWifi()");
-    }
-
-    @Test
-    @DisplayName("Rejects an access point on the UNO R3")
-    void shouldRejectAnAccessPointOnTheUnoR3() {
-        // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3ShieldAp",
-                "new ArduinoWifiShield().getWifi().beginAP(\"juno\", \"password\");",
-                "import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3's WiFi library cannot start an access point");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 sends UDP through the WiFi Shield's WiFiUDP, without multicast and in SPI-sized pieces")
-    void shouldSendUdpThroughTheWifiShieldsWifiUdp() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldUdp", """
-                        byte[] payload = new byte[8];
-                        try {
-                            DatagramSocket socket = new DatagramSocket(4210);
-                            InetAddress broadcast = InetAddress.getByAddress(
-                                    new byte[] {(byte) 255, (byte) 255, (byte) 255, (byte) 255});
-                            socket.send(new DatagramPacket(payload, payload.length, broadcast, 4210));
-                            socket.setSoTimeout(10);
-                            socket.receive(new DatagramPacket(payload, payload.length));
-                            Serial.println(payload.length);
-                        } catch (IOException e) {
-                            Serial.println(0);
-                        }
-                """, """
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import java.io.IOException;
-                import java.net.DatagramPacket;
-                import java.net.DatagramSocket;
-                import java.net.InetAddress;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFiUdp.h>")
-                .contains("class JunoShieldUdp : public WiFiUDP {")
-                .contains("uint8_t beginMulticast(IPAddress, uint16_t) {")
-                .contains("static JunoShieldUdp juno_udp;")
-                .doesNotContain("WiFiNINA");
-    }
-
-    @Test
-    @DisplayName("The UNO R3 opens TCP connections through the WiFi Shield's client, in SPI-sized pieces")
-    void shouldOpenTcpThroughTheWifiShieldsClient() throws Exception {
-        // Given
-        CompilationResult result = compileR3("demo.R3ShieldTcp", """
-                        byte[] payload = new byte[8];
-                        try {
-                            InetAddress peer = InetAddress.getByAddress(new byte[] {(byte) 192, (byte) 168, 1, 10});
-                            Socket socket = new Socket(peer, 80);
-                            socket.setSoTimeout(1000);
-                            socket.getOutputStream().write(payload, 0, payload.length);
-                            Serial.println(socket.getInputStream().read(payload, 0, payload.length));
-                            socket.close();
-                        } catch (IOException e) {
-                            Serial.println(0);
-                        }
-                """, """
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import java.io.IOException;
-                import java.net.InetAddress;
-                import java.net.Socket;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("class JunoShieldClient : public WiFiClient {")
-                .contains("using JunoTcpClient = JunoShieldClient;")
-                .contains("static JunoTcpClient juno_tcp_client;");
+                .hasMessageContaining("MCU.getWifi requires @Board(")
+                .hasMessageContaining("UNO R3 has no onboard Wi-Fi radio");
     }
 
     @Test
@@ -485,7 +409,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects an Xmx above the classic UNO R3's one kilobyte")
     void shouldRejectAnXmxAboveTheClassicUnoR3sOneKilobyte() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(2048, 4, OptionalInt.empty()).forBoard(Board.UNO_R3))
+        assertThatThrownBy(() -> new RuntimeConfig(2048, OptionalInt.empty()).resolveFor(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
     }
@@ -622,7 +546,7 @@ class AvrAsmBackendTest {
     void shouldLowerIntBitwiseAndMultiplyByAConstant() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -637,7 +561,7 @@ class AvrAsmBackendTest {
     void shouldLowerMultiplyByAPowerOfTwoConstantAsAShift() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBitwise", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value & 0x0F);
                         Serial.println(value | 0xF0);
                         Serial.println(value * 8);
@@ -653,7 +577,7 @@ class AvrAsmBackendTest {
     void shouldLowerConstantShiftsWithoutTheVariableShiftHelpers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -671,7 +595,7 @@ class AvrAsmBackendTest {
     void shouldLowerTheConstantShiftsToRotateSequences() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrShifts", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println(value << 10);
                         Serial.println(value >> 10);
                         Serial.println(value >>> 10);
@@ -688,7 +612,7 @@ class AvrAsmBackendTest {
     void shouldLowerNarrowingCastsToByteCharAndShort() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrNarrowing", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         Serial.println((byte) value);
                         Serial.println((char) value);
                         Serial.println((short) value);
@@ -706,7 +630,7 @@ class AvrAsmBackendTest {
     void shouldCompareWithGreaterThanAndLessOrEqualOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrCompare", """
-                        int value = ArduinoUno.getGpio().analogRead(0);
+                        int value = MCU.getGpio().analogRead(0);
                         if (value > 10) {
                             Serial.println("big");
                         }
@@ -726,21 +650,21 @@ class AvrAsmBackendTest {
     void shouldLowerLongAndFloatingPointWideOperationsOnAvr() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrWide", """
-                        long left = ArduinoUno.getGpio().analogRead(0);
-                        long right = ArduinoUno.getGpio().analogRead(1);
+                        long left = MCU.getGpio().analogRead(0);
+                        long right = MCU.getGpio().analogRead(1);
                         Serial.println(-left);
                         Serial.println(left > right);
                         int narrowed = (int) left;
                         long widened = narrowed;
                         Serial.println(widened);
 
-                        float fa = ArduinoUno.getGpio().analogRead(2);
-                        float fb = ArduinoUno.getGpio().analogRead(3);
+                        float fa = MCU.getGpio().analogRead(2);
+                        float fb = MCU.getGpio().analogRead(3);
                         Serial.println(fa + fb);
                         Serial.println(fa == fb);
                         Serial.println((int) fa);
 
-                        double da = ArduinoUno.getGpio().analogRead(4);
+                        double da = MCU.getGpio().analogRead(4);
                         Serial.println(-da);
                         Serial.println(da == fb);
                         Serial.println((float) da);
@@ -863,8 +787,8 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects capabilities the board lacks")
     void shouldRejectCapabilitiesTheBoardLacks() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMatrix", "ArduinoUno.getLedMatrix().begin();",
-                "import io.github.jabrena.juno.hardware.ArduinoUno;"))
+        assertThatThrownBy(() -> compile("demo.AvrMatrix", "MCU.getLedMatrix().begin();",
+                "import io.github.jabrena.juno.hardware.MCU;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO WiFi Rev2 has no onboard LED matrix");
     }
@@ -883,7 +807,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects Mouse on a board without a native USB port")
     void shouldRejectMouseOnABoardWithoutANativeUsbPort() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMouse", "ArduinoUno.getMouse().begin();",
+        assertThatThrownBy(() -> compile("demo.AvrMouse", "MCU.getMouse().begin();",
                 "import io.github.jabrena.juno.hardware.hid.Mouse;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("no native USB port");
@@ -897,7 +821,7 @@ class AvrAsmBackendTest {
                         byte[] body = new byte[32];
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
-                        ArduinoUno.getWifi().begin("ssid", "password");
+                        MCU.getWifi().begin("ssid", "password");
                         Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         try {
                             new DatagramSocket(4210).close();
@@ -906,7 +830,7 @@ class AvrAsmBackendTest {
                         }
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import java.io.IOException;
                 import java.net.DatagramSocket;
                 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -1086,7 +1010,7 @@ class AvrAsmBackendTest {
     @DisplayName("Sizes the arena for six kilobytes of RAM")
     void shouldSizeTheArenaForSixKilobytesOfRam() {
         // When & Then
-        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2).arenaBytes())
+        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R3_WIFI_REV2).arenaBytes())
                 .isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
     }
 
@@ -1094,24 +1018,24 @@ class AvrAsmBackendTest {
     @DisplayName("Leaves the R4's default runtime config unchanged")
     void shouldLeaveTheR4DefaultRuntimeConfigUnchanged() {
         // When & Then
-        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R4_WIFI)).isEqualTo(RuntimeConfig.DEFAULT);
+        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R4_WIFI).arenaBytes()).isEqualTo(RuntimeLimits.ARENA_CAPACITY_BYTES);
     }
 
     @Test
     @DisplayName("Keeps an explicit arena that fits the UNO WiFi Rev2")
     void shouldKeepAnExplicitArenaThatFitsTheUnoWifiRev2() {
         // Given
-        RuntimeConfig explicit = new RuntimeConfig(2048, 4, OptionalInt.empty());
+        RuntimeConfig explicit = new RuntimeConfig(2048, OptionalInt.empty());
 
         // When & Then
-        assertThat(explicit.forBoard(Board.UNO_R3_WIFI_REV2)).isEqualTo(explicit);
+        assertThat(explicit.resolveFor(Board.UNO_R3_WIFI_REV2).arenaBytes()).isEqualTo(2048);
     }
 
     @Test
     @DisplayName("Rejects an arena above the AVR limit")
     void shouldRejectAnArenaAboveTheAvrLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(4096, 4, OptionalInt.empty()).forBoard(Board.UNO_R3_WIFI_REV2))
+        assertThatThrownBy(() -> new RuntimeConfig(4096, OptionalInt.empty()).resolveFor(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("at most " + RuntimeLimits.AVR_MAX_ARENA_BYTES);
     }
@@ -1215,7 +1139,7 @@ class AvrAsmBackendTest {
                 .contains("---- Juno threads: AVR port")
                 .contains("static constexpr uint16_t JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.AVR_THREAD_STACK_BYTES + "u;")
                 .contains("\"  out 0x3e, r23\\n\"")
-                .contains("juno_gc_scan_bytes(from, reinterpret_cast<const uint8_t*>(top));")
+                .contains("juno_gc_scan_bytes(from, to);")
                 .contains("juno_thread_gc_scan(&stackMarker);");
     }
 
@@ -1317,8 +1241,8 @@ class AvrAsmBackendTest {
     @DisplayName("Sizes task stacks for six kilobytes of RAM")
     void shouldSizeTaskStacksForSixKilobytesOfRam() {
         // When & Then
-        assertThat(RuntimeConfig.DEFAULT.forBoard(Board.UNO_R3_WIFI_REV2)
-                .threadStackBytes(Board.UNO_R3_WIFI_REV2.core().defaultThreadStackBytes()))
+        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R3_WIFI_REV2)
+                .threadStackBytes())
                 .isEqualTo(RuntimeLimits.AVR_THREAD_STACK_BYTES);
     }
 
@@ -1326,18 +1250,18 @@ class AvrAsmBackendTest {
     @DisplayName("An explicit task stack of one kilobyte is kept on the UNO WiFi Rev2")
     void shouldKeepAnExplicitOneKilobyteTaskStackOnTheUnoWifiRev2() {
         // Given
-        RuntimeConfig larger = new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(1024));
+        RuntimeConfig larger = new RuntimeConfig(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES, OptionalInt.of(1024));
 
         // When & Then
-        assertThat(larger.forBoard(Board.UNO_R3_WIFI_REV2).threadStackBytes()).hasValue(1024);
+        assertThat(larger.resolveFor(Board.UNO_R3_WIFI_REV2).threadStackBytes()).isEqualTo(1024);
     }
 
     @Test
     @DisplayName("Rejects a task stack above the AVR limit")
     void shouldRejectATaskStackAboveTheAvrLimit() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(RuntimeConfig.DEFAULT.arenaBytes(), 4, OptionalInt.of(2048))
-                .forBoard(Board.UNO_R3_WIFI_REV2))
+        assertThatThrownBy(() -> new RuntimeConfig(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES, OptionalInt.of(2048))
+                .resolveFor(Board.UNO_R3_WIFI_REV2))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("juno.Xss can be at most " + RuntimeLimits.AVR_MAX_THREAD_STACK_BYTES);
     }
@@ -1347,8 +1271,8 @@ class AvrAsmBackendTest {
     void shouldReachTheCorePinFunctionsThroughJavaWidthWrappers() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
-                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), MCU.getGpio().getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;
@@ -1369,8 +1293,8 @@ class AvrAsmBackendTest {
     void shouldWrapThePinModeCallWithAPinModeCastInTheShim() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrBlink", """
-                        ArduinoUno.getGpio().pinMode(ArduinoUno.getGpio().getBuiltinLed(), ArduinoUno.getGpio().getOutput());
-                        ArduinoUno.getGpio().digitalWrite(ArduinoUno.getGpio().getBuiltinLed(), true);
+                        MCU.getGpio().pinMode(MCU.getGpio().getBuiltinLed(), MCU.getGpio().getOutput());
+                        MCU.getGpio().digitalWrite(MCU.getGpio().getBuiltinLed(), true);
                         Delay.millis(500);
                 """, """
                 import io.github.jabrena.juno.util.Delay;

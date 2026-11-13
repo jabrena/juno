@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  * board with {@code -Djuno.board}.
  */
 public class PFPowerSequenceWithHX {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     /** The digits of 0123456789876543210: up from 0 to 9, then back down to 0. */

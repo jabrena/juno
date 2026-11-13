@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.avr;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.CompareFusion;
 import io.github.jabrena.juno.backend.FrameLayout;
@@ -83,7 +83,7 @@ public final class AvrAsmBackend implements AsmBackend {
     private final Set<Intrinsic> usedMath = EnumSet.noneOf(Intrinsic.class);
     private final boolean gcLoggingEnabled;
     private final Board board;
-    private final RuntimeConfig runtimeConfig;
+    private final ResolvedRuntimeConfig runtimeConfig;
     private final List<String> clinitLabels = new ArrayList<>();
     private MethodRef entryPoint;
     private boolean usesThreads;
@@ -103,7 +103,7 @@ public final class AvrAsmBackend implements AsmBackend {
      */
     // entryPoint, layout, avr and the lowering helpers are per-program state that generate() assigns before any use.
     @SuppressWarnings("NullAway.Init")
-    public AvrAsmBackend(boolean gcLoggingEnabled, Board board, RuntimeConfig runtimeConfig) {
+    public AvrAsmBackend(boolean gcLoggingEnabled, Board board, ResolvedRuntimeConfig runtimeConfig) {
         if (board.core().architecture() != Architecture.AVR) {
             throw new IllegalArgumentException(board.displayName() + " is not an AVR board");
         }
@@ -135,8 +135,8 @@ public final class AvrAsmBackend implements AsmBackend {
         memory = new AvrMemoryLowering(avr, layout);
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.generation(), features,
-                usedMath, usesThreads, socketStreamsOnly);
+        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.unoGeneration(),
+                board.onboardSdChipSelect(), features, usedMath, usesThreads, socketStreamsOnly);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {
@@ -397,6 +397,7 @@ public final class AvrAsmBackend implements AsmBackend {
                         .append("    call juno_panic\n")
                         .append(nonNull).append(":\n");
             }
+            case IrInstruction.InstanceOf check -> memory.emitInstanceOf(output, frame, check);
             case IrInstruction.NewObject object -> memory.emitNewObject(output, frame, object.className(), object.target());
             case IrInstruction.LoadField load -> memory.emitLoadField(output, frame, load);
             case IrInstruction.StoreField store -> memory.emitStoreField(output, frame, store);

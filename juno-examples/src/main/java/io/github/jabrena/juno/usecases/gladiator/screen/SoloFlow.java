@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.gladiator.screen;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.gladiator.arena.Match;
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /** A complete local CPU-versus-CPU match using the selected player profile and a random opponent on an UNO Q. */
 public final class SoloFlow {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;
     private static final int SWING_FRAMES = 6;
     private static final int HURT_FRAMES = 4;

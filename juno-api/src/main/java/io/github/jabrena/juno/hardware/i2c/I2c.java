@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.i2c;
 
 /**
  * Register access to an I2C peripheral on the board's primary I2C bus ({@code Wire}, the SDA/SCL pins).
- * {@link io.github.jabrena.juno.hardware.ArduinoUno#getI2c()} is the board's own bus, which the compiler lowers to the
+ * {@link io.github.jabrena.juno.hardware.MCU#getI2c()} is the board's own bus, which the compiler lowers to the
  * core-bundled {@code Wire} library; a unit test passes {@code mock(I2c.class)} instead. It is the transport under
  * sensors such as {@link io.github.jabrena.juno.hardware.device.imu.NineAxisMotionShield}. Addresses are the 7-bit
  * device addresses. Get the board's bus once, at startup, and pass it to the classes that need it.
@@ -23,4 +23,18 @@ public interface I2c {
      * {@code -1} if the device did not answer.
      */
     int readRegister16(int address, int register);
+
+    /**
+     * Sends the first {@code length} bytes of {@code data} to the device at {@code address}, with no register address,
+     * for raw protocols such as the ATECC608 command frames. Returns {@code length} on success, or {@code -1} if the
+     * device did not acknowledge. A zero-length write is a wake-up probe: it addresses the device and sends nothing.
+     */
+    int write(int address, byte[] data, int length);
+
+    /**
+     * Reads the first {@code length} bytes from the device at {@code address} into {@code buffer}, with no register
+     * address. Returns {@code length} on success, or {@code -1} if the device did not answer; {@code buffer} is left
+     * unchanged in that case.
+     */
+    int read(int address, byte[] buffer, int length);
 }

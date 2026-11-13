@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.pf;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -24,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public class MagicSquarePFWithGroveAndNano {
-    private static final Clock CLOCK = ArduinoNano.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     private static final int SPEED = 5;
     private static final int STRAIGHT_MILLIS = 3000;
@@ -44,7 +44,7 @@ public class MagicSquarePFWithGroveAndNano {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
         RemotePF remote = new RemotePF(link);
         MagicSquarePFWithGroveAndNano app = new MagicSquarePFWithGroveAndNano(

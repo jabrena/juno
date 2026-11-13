@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/Pop3Client.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -104,9 +105,8 @@ board-specific implicit-TLS transport as
 <a href="../http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests. It supports UNO R4 WiFi and UNO Q
 and requires an active <a href="../Wifi.html#begin(java.lang.String,java.lang.String)"><code>Wifi.begin(String, String)</code></a> connection.
 
-<p><code>host</code>, <code>username</code>, and <code>password</code> must be compile-time strings (a
-literal, or <code>System.getenv("NAME")</code> of a literal name). Responses use caller-owned
-buffers; there is no heap allocation.</div>
+<p><code>host</code>, <code>username</code>, and <code>password</code> accept literals or runtime strings read from a board-side
+<code>SecretStore</code>. Responses use caller-owned buffers; there is no heap allocation.</div>
 </div>
 </section>
 <section class="summary">

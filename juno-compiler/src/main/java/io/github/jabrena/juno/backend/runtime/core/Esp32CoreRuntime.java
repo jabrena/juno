@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
@@ -23,6 +23,7 @@ import java.util.Map;
  * the core's {@code USBHIDMouse} rather than the {@code Mouse} library. A capability the board does not declare is
  * not wired to this core and fails at compile time.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 final class Esp32CoreRuntime implements CoreRuntime {
     private static final Map<String, String> PIN_REMAP_WRAPPERS = Map.of(
             "pinMode", "juno_pin_mode",
@@ -39,6 +40,79 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /** @param core the ESP32 core this runtime serves: {@link ArduinoCore#ESP32} or {@link ArduinoCore#M5STACK_ESP32} */
     Esp32CoreRuntime(ArduinoCore core) {
         this.core = core;
+    }
+
+    @Override
+    public int carrierCount() {
+        return core.carrierCount();
+    }
+
+    /** Xtensa keeps a caller's registers in the windowed register file: spill every window onto the stack. */
+    @Override
+    public String registerSpill() {
+        return "xthal_window_spill();";
+    }
+
+    @Override
+    public String runtimeLock() {
+        return """
+                // Recursive lock shared by both Java carriers. Blocking scheduler/device paths release it before parking.
+                static portMUX_TYPE juno_runtime_mux = portMUX_INITIALIZER_UNLOCKED;
+                static volatile uint32_t juno_runtime_owner = 0u;
+                static volatile uint32_t juno_runtime_depth = 0u;
+
+                extern "C" bool juno_runtime_owned() {
+                  return juno_runtime_owner == static_cast<uint32_t>(xPortGetCoreID() + 1);
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t owner = static_cast<uint32_t>(xPortGetCoreID() + 1);
+                  for (;;) {
+                    portENTER_CRITICAL(&juno_runtime_mux);
+                    if (juno_runtime_owner == 0u || juno_runtime_owner == owner) {
+                      juno_runtime_owner = owner;
+                      juno_runtime_depth++;
+                      portEXIT_CRITICAL(&juno_runtime_mux);
+                      return;
+                    }
+                    portEXIT_CRITICAL(&juno_runtime_mux);
+                    juno_gc_lock_wait();
+                    taskYIELD();
+                  }
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  portENTER_CRITICAL(&juno_runtime_mux);
+                  if (juno_runtime_owner == static_cast<uint32_t>(xPortGetCoreID() + 1) && juno_runtime_depth != 0u) {
+                    if (--juno_runtime_depth == 0u) juno_runtime_owner = 0u;
+                  }
+                  portEXIT_CRITICAL(&juno_runtime_mux);
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "memw";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
     }
 
     @Override
@@ -60,6 +134,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public String pulseInPin() {
         return "juno_nano_pin(pin)";
+    }
+
+    /** The Cardputer's Grove port (SDA GPIO2, SCL GPIO1) and the ESP32-CAM's SCCB pins (SDA GPIO26, SCL GPIO27). */
+    @Override
+    public String i2cPinSetup() {
+        return switch (core) {
+            case M5STACK_ESP32 -> "Wire.setPins(2, 1);\n  ";
+            case ESP32_CAM -> "Wire.setPins(26, 27);\n  ";
+            default -> "";
+        };
     }
 
     @Override
@@ -164,10 +248,11 @@ final class Esp32CoreRuntime implements CoreRuntime {
         } else {
             defaultTrust = CertificateBundle.fromPem(runtimeSource.load("esp32/ca-certificates.pem"))
                     .cArray("juno_ca_bundle");
-            // The Arduino-ESP32 2.x core takes the bundle alone; the ESP-IDF 5 core behind the M5Stack adds its size.
-            defaultTrustConfiguration = this.core == ArduinoCore.M5STACK_ESP32
-                    ? "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));"
-                    : "setCACertBundle(juno_ca_bundle);";
+            // Arduino's arduino-esp32 2.x core (the Nano ESP32) takes the bundle alone; the ESP-IDF 5 cores behind the
+            // M5Stack and the ESP32-CAM also take its size.
+            defaultTrustConfiguration = this.core == ArduinoCore.ESP32
+                    ? "setCACertBundle(juno_ca_bundle);"
+                    : "setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));";
         }
         // The default client also checks this runtime anchor, which only programs using HttpClient.setTrustedCertificate
         // define; without them it stays null and the bundle is used.
@@ -311,6 +396,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/camera.cpp");
     }
 
+    /** The ESP32 capability allocator-backed generic PSRAM service. */
+    @Override
+    public String psramHelpers() {
+        return runtimeSource.load("esp32/psram.cpp");
+    }
+
     private void requireCamera() {
         if (core != ArduinoCore.ESP32_CAM) {
             throw new IllegalStateException("Only the AI Thinker ESP32-CAM has a camera on the ESP32 core");
@@ -358,9 +449,14 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     /** FreeRTOS tasks carry the stacks; the backend preempts at safepoints rather than from a tick. */
     @Override
-    public String threadPort(RuntimeConfig config) {
-        return threadRuntime.esp32Port(config.maxThreads(),
-                config.threadStackBytes(core.defaultThreadStackBytes()));
+    public String threadPort(ResolvedRuntimeConfig config) {
+        return threadRuntime.esp32Port(
+                config.threadStackBytes());
+    }
+
+    @Override
+    public String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
+        return threadRuntime.esp32Port(config.threadStackBytes(), carrierCount);
     }
 
     @Override

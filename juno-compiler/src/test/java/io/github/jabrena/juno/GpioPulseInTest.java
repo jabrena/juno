@@ -17,10 +17,10 @@ class GpioPulseInTest {
 
     @ParameterizedTest(name = "{0}")
     @CsvSource(delimiter = '|', value = {
-        "ArduinoUnoR3Board      | ArduinoUno  | pulseIn(static_cast<uint8_t>(pin),",
-        "ArduinoUnoR4WiFiBoard  | ArduinoUno  | pulseIn(static_cast<uint8_t>(pin),",
-        "ArduinoUnoQBoard       | ArduinoUno  | pulseIn(static_cast<uint8_t>(pin),",
-        "ArduinoNanoEsp32Board  | ArduinoNano | pulseIn(juno_nano_pin(pin),"
+        "ArduinoUnoR3Board      | MCU       | pulseIn(static_cast<uint8_t>(pin),",
+        "ArduinoUnoR4WiFiBoard  | MCU       | pulseIn(static_cast<uint8_t>(pin),",
+        "ArduinoUnoQBoard       | MCU       | pulseIn(static_cast<uint8_t>(pin),",
+        "ArduinoNanoEsp32Board  | MCU       | pulseIn(juno_nano_pin(pin),"
     })
     @DisplayName("A program that times a pulse calls juno_pulse_in, which the shim defines over the core's pulseIn")
     void shouldLowerPulseInToTheCoreHelper(String board, String facade, String coreCall) throws Exception {
@@ -58,11 +58,11 @@ class GpioPulseInTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoNano;
+                import io.github.jabrena.juno.hardware.MCU;
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class NoPulseDemo {
                     public static void main(String[] args) {
-                        ArduinoNano.getGpio().digitalWrite(2, ArduinoNano.getGpio().digitalRead(3));
+                        MCU.getGpio().digitalWrite(2, MCU.getGpio().digitalRead(3));
                     }
                 }
                 """;

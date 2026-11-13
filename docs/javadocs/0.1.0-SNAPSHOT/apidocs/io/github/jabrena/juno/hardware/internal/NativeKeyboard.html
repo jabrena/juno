@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/NativeKeyboard.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#class">Help</a></li>
@@ -114,7 +115,7 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">NativeKeyboard</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
 implements <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></span></div>
-<div class="block">The M5Stack Cardputer's <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over M5StackCardputer.Keyboard.</div>
+<div class="block">The M5Stack Cardputer's <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over the Cardputer keyboard.</div>
 </div>
 </section>
 <section class="summary">
@@ -209,7 +210,7 @@ implements <a href="../keyboard/Keyboard.html" title="interface in io.github.jab
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#keyboard()" class="member-name-link">keyboard</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">The keyboard the M5StackCardputer facade hands out.</div>
+<div class="block">The keyboard the MCU facade hands out.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#keyCount()" class="member-name-link">keyCount</a>()</code></div>
@@ -219,7 +220,7 @@ implements <a href="../keyboard/Keyboard.html" title="interface in io.github.jab
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setKeyboard(io.github.jabrena.juno.hardware.keyboard.Keyboard)" class="member-name-link">setKeyboard</a><wbr>(<a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Makes the M5StackCardputer facade hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
+<div class="block">Makes MCU hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
@@ -264,7 +265,7 @@ implements <a href="../keyboard/Keyboard.html" title="interface in io.github.jab
 <h3>keyboard</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></span>&nbsp;<span class="element-name">keyboard</span>()</div>
-<div class="block">The keyboard the M5StackCardputer facade hands out.</div>
+<div class="block">The keyboard the MCU facade hands out.</div>
 </div>
 </section>
 </li>
@@ -273,7 +274,7 @@ implements <a href="../keyboard/Keyboard.html" title="interface in io.github.jab
 <h3>setKeyboard</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setKeyboard</span><wbr><span class="parameters">(<a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a>&nbsp;replacement)</span></div>
-<div class="block">Makes the M5StackCardputer facade hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
+<div class="block">Makes MCU hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
 </div>
 </section>
 </li>

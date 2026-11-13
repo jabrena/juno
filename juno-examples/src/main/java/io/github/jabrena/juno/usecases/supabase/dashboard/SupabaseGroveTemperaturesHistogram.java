@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.supabase.dashboard;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -30,17 +31,17 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  *       exact count with the first page, then reads pairs of bounded pages concurrently.</li>
  * </ul>
  *
- * <p>This class only wires those pieces together. Build-time environment variables provide
- * {@code JUNO_WIFI_SSID}, {@code JUNO_WIFI_PASSWORD}, {@code SUPABASE_API_HOST} (without {@code https://}), and
- * {@code SUPABASE_API_KEY}. The table needs a Row Level Security policy granting the public client {@code SELECT}
- * access. Never embed a secret or legacy {@code service_role} key in firmware.
+ * <p>This class only wires those pieces together. The ATECC608 {@code SecretStore} provides {@code wifi.ssid},
+ * {@code wifi.password}, {@code supabase.api.host} (without {@code https://}), and {@code supabase.api.key}. The table
+ * needs a Row Level Security policy granting the public client {@code SELECT} access. Never embed a secret or legacy
+ * {@code service_role} key in firmware.
  *
  * <p>Each bin is one degree Celsius from 10 to 39; readings outside that range are counted in open-ended buckets. A
  * row containing any null sensor reading is counted as missing. Buffers and application objects are allocated once at
  * startup; each gathering step creates one bounded structured scope for two independent HTTPS requests,
  * and subsequent controller iterations allocate nothing. Each response buffer holds one page, so this targets UNO R4
- * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k -Djuno.maxThreads=3} so its two task
- * stacks fit beside the WiFi and TFT runtimes.
+ * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k} so its carrier stack fits beside the
+ * WiFi and TFT runtimes; the two subtasks share that carrier and keep their frames in the arena while parked.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class SupabaseGroveTemperaturesHistogram {
@@ -74,8 +75,8 @@ public final class SupabaseGroveTemperaturesHistogram {
                 responseHeaders, RESPONSE_HEADERS_CAPACITY,
                 status);
         SupabaseClient supabase = new SupabaseClient(
-                System.getenv("SUPABASE_API_HOST"),
-                System.getenv("SUPABASE_API_KEY"),
+                ExampleSecrets.supabaseApiHost(),
+                ExampleSecrets.supabaseApiKey(),
                 path, PATH_CAPACITY,
                 requestHeaders, REQUEST_HEADERS_CAPACITY,
                 requestBody, REQUEST_BODY_CAPACITY,
@@ -92,8 +93,8 @@ public final class SupabaseGroveTemperaturesHistogram {
                 nextResponseHeaders, RESPONSE_HEADERS_CAPACITY,
                 nextStatus);
         SupabaseClient nextSupabase = new SupabaseClient(
-                System.getenv("SUPABASE_API_HOST"),
-                System.getenv("SUPABASE_API_KEY"),
+                ExampleSecrets.supabaseApiHost(),
+                ExampleSecrets.supabaseApiKey(),
                 nextPath, PATH_CAPACITY,
                 nextRequestHeaders, REQUEST_HEADERS_CAPACITY,
                 nextRequestBody, REQUEST_BODY_CAPACITY,

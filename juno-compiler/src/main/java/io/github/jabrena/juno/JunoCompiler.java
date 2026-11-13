@@ -24,11 +24,12 @@ public final class JunoCompiler {
         Program program = pipeline.link(request.classPath(), request.mainClass(), request.requestedBoard());
         IrProgram lowered = pipeline.lower(program);
         IrProgram optimized = pipeline.optimize(lowered);
-        RuntimeConfig runtimeConfig = request.runtimeConfig().forBoard(program.board());
+        ResolvedRuntimeConfig runtimeConfig = request.runtimeConfig().resolveFor(program.board());
         CompilationReport report = CompilationReport.from(program, lowered, optimized, runtimeConfig);
         GeneratedCode code = backendFor(program.board(), request.gcLoggingEnabled(), runtimeConfig)
                 .generate(optimized);
-        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report);
+        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report,
+                program.board().fqbn() + code.fqbnOptions(), code.mainLauncher());
     }
 
     /** Compiles {@code request} and writes the generated assembly and runtime shim. */
@@ -70,7 +71,7 @@ public final class JunoCompiler {
     }
 
     /** A fresh backend for {@code board}'s instruction-set architecture. */
-    private AsmBackend backendFor(Board board, boolean gcLoggingEnabled, RuntimeConfig runtimeConfig) {
+    private AsmBackend backendFor(Board board, boolean gcLoggingEnabled, ResolvedRuntimeConfig runtimeConfig) {
         return switch (board.core().architecture()) {
             case THUMB2 -> new Thumb2AsmBackend(gcLoggingEnabled, board, runtimeConfig);
             case AVR -> new AvrAsmBackend(gcLoggingEnabled, board, runtimeConfig);

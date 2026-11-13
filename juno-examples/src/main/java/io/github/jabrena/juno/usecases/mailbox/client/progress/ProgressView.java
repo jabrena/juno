@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client.progress;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -71,7 +71,7 @@ public final class ProgressView implements KeyboardView {
 
     public ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model,
             MailboxConnection connection, Footer footer) {
-        this(navigator, display, client, model, connection, footer, ArduinoUno.getClock());
+        this(navigator, display, client, model, connection, footer, MCU.getClock());
     }
 
     public ProgressView(Navigator navigator, Display display, MailboxApi client, MailboxModel model, Footer footer,

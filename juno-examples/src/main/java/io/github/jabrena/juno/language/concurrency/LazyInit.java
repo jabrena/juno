@@ -1,8 +1,12 @@
 package io.github.jabrena.juno.language.concurrency;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -16,7 +20,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * on the compiler's reordering. The owner checks that all three threads received the same instance and
  * that it was constructed exactly once.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class LazyInit {
     private static final int THRESHOLD = 42;
     private static final int READS = 100;

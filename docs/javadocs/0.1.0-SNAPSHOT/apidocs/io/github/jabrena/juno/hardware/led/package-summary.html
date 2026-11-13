@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Package</li>
 <li><a href="package-use.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#package">Help</a></li>
@@ -83,7 +84,7 @@ initTheme();
 <section class="package-description" id="package-description">
 <div class="block">The built-in LED matrix of the UNO R4 WiFi (12x8) and the UNO Q (13x8):
 <a href="LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>, the raw <code>begin</code>/<code>loadFrame</code>/<code>clear</code>
-operations that <a href="../ArduinoUno.html#getLedMatrix()"><code>ArduinoUno.getLedMatrix()</code></a> hands out, and
+operations that <a href="../MCU.html#getLedMatrix()"><code>MCU.getLedMatrix()</code></a> hands out, and
 <a href="LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led"><code>LedCanvas</code></a>, a <code>boolean[HEIGHT][MAX_WIDTH]</code> pixel buffer
 with shape and text drawing helpers that render into it and send it to the board's matrix with
 <code>show</code>.
@@ -107,8 +108,8 @@ only the glyphs a program actually calls are linked into the generated firmware.
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>

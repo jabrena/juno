@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
@@ -13,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with
- * build-time credentials from {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (see {@link
+ * credentials from the ATECC608 {@code SecretStore} (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON
  * ({@code
@@ -30,10 +31,10 @@ import io.github.jabrena.juno.util.Delay;
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
 public final class HttpServerStatus {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
-    private final Clock clock = ArduinoUno.getClock();
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
+    private final Clock clock = MCU.getClock();
     /** How often to print an arena-usage heartbeat over Serial, in milliseconds. */
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 
@@ -124,7 +125,7 @@ public final class HttpServerStatus {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

@@ -6,7 +6,7 @@ layout: page
 
 The UNO R4 WiFi keeps the classic UNO form factor and 5 V GPIO while replacing the UNO R3's 8-bit AVR with a 32-bit
 Renesas RA4M1, and adds an ESP32-S3 module for Wi-Fi and Bluetooth, a 12 × 8 LED matrix and a Qwiic connector. Juno
-compiles for the RA4M1 with its Thumb-2 backend; the `ArduinoUno` device facade is the entry point for the board's
+compiles for the RA4M1 with its Thumb-2 backend; the `MCU` facade is the entry point for the board's
 peripherals. The UNO R4 Minima is not a Juno target.
 
 <img src="../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
@@ -35,7 +35,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput`, `analogRead`, `analogWrite` | ✓ | Resolve `D0`–`D13` and `A0`–`A5` through `ArduinoUno.getGpio()`; mode values are supplied by the same board context. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
+| `Gpio`, `DigitalOutput`, `analogRead`, `analogWrite` | ✓ | Resolve `D0`–`D13` and `A0`–`A5` through `MCU.getGpio()`; mode values are supplied by the same board context. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `Delay`, `Clock`, `Serial` | ✓ | `Serial` over the native USB port. | |
 | Double-precision `java.lang.Math` | ✓ | | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java) |
@@ -43,7 +43,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `UUID.randomUUID()` | ✓ | The RA4M1's Secure Crypto Engine true-random-number generator. | |
 | `@Watchdog` | ✓ | The RA4M1 hardware watchdog. | |
 | Onboard LED matrix | ✓ | 12 × 8 through `LedMatrix` and `LedCanvas`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
-| USB HID mouse | ✓ | `ArduinoUno.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
+| USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
 | `HttpClient` (HTTP and HTTPS) | ✓ | | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
@@ -59,7 +59,7 @@ These need only the UNO R4 WiFi and its USB-C cable.
 ### Blink the built-in LED
 
 ```java
-DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -77,7 +77,7 @@ while (true) {
 The matrix is 12 columns by 8 rows. `LedCanvas` draws into a frame and `show` sends it to the matrix:
 
 ```java
-LedMatrix matrix = ArduinoUno.getLedMatrix();
+LedMatrix matrix = MCU.getLedMatrix();
 matrix.begin();
 boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
@@ -94,11 +94,11 @@ message forever.
 
 ### USB HID mouse
 
-`ArduinoUno.getMouse()` makes the board a USB mouse for the computer it is plugged into. Call `begin()` once, then
+`MCU.getMouse()` makes the board a USB mouse for the computer it is plugged into. Call `begin()` once, then
 `move(x, y)` moves the pointer by that many pixels:
 
 ```java
-Mouse mouse = ArduinoUno.getMouse();
+Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {
@@ -159,7 +159,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -226,7 +226,7 @@ in the source: put `wifi.ssid` and `wifi.password` in `application.properties` a
 
 ```java
 SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open("application.properties")) {

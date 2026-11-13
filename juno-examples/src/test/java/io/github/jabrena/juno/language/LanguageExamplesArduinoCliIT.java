@@ -75,8 +75,8 @@ class LanguageExamplesArduinoCliIT {
     private static final ArduinoCliBoardScope BOARD_SCOPE = ArduinoCliBoardScope.configured();
     private static final ArduinoCliBoards BOARDS = ArduinoCliBoards.configured();
 
-    private static final Map<Board, Object> CORE_LOCKS = new ConcurrentHashMap<>();
-    private static final Set<Board> CORE_CACHED = ConcurrentHashMap.newKeySet();
+    private static final Map<String, Object> CORE_LOCKS = new ConcurrentHashMap<>();
+    private static final Set<String> CORE_CACHED = ConcurrentHashMap.newKeySet();
 
     @Container
     private static final GenericContainer<?> ARDUINO_CLI = container().withCommand("sleep", "infinity");
@@ -92,7 +92,7 @@ class LanguageExamplesArduinoCliIT {
     @ParameterizedTest(name = "{0} ({1})")
     @MethodSource("examples")
     void compilesAndLinksWithArduinoCli(Example example, Board board) throws Exception {
-        Path sketch;
+        GeneratedSketch sketch;
         try {
             sketch = generateSketch(example, board);
         } catch (CompileException rejected) {
@@ -104,16 +104,16 @@ class LanguageExamplesArduinoCliIT {
             Assumptions.abort(rejected.getMessage());
             return;
         }
-        String target = "/sketches/" + board.id() + "/" + sketch.getFileName();
-        ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch), target);
+        String target = "/sketches/" + board.id() + "/" + sketch.directory().getFileName();
+        ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch.directory()), target);
 
-        List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", board.fqbn()));
+        List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", sketch.fqbn()));
         if (board == Board.UNO_R3_WIFI_REV2) {
             command.add("--build-property");
             command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
         }
         command.add(target);
-        ExecResult result = compile(board, command.toArray(String[]::new));
+        ExecResult result = compile(sketch.fqbn(), command.toArray(String[]::new));
 
         assertThat(result.getExitCode()).as("arduino-cli compile %s (%s):%n%s%s", example.name(),
                 board.displayName(), result.getStdout(), result.getStderr()).isZero();
@@ -176,12 +176,12 @@ class LanguageExamplesArduinoCliIT {
     }
 
     /** Compiles alone while {@code board}'s cached core is first built, then concurrently with the others. */
-    private static ExecResult compile(Board board, String[] command) throws IOException, InterruptedException {
-        synchronized (CORE_LOCKS.computeIfAbsent(board, key -> new Object())) {
-            if (!CORE_CACHED.contains(board)) {
+    private static ExecResult compile(String fqbn, String[] command) throws IOException, InterruptedException {
+        synchronized (CORE_LOCKS.computeIfAbsent(fqbn, key -> new Object())) {
+            if (!CORE_CACHED.contains(fqbn)) {
                 ExecResult result = ARDUINO_CLI.execInContainer(command);
                 if (result.getExitCode() == 0) {
-                    CORE_CACHED.add(board);
+                    CORE_CACHED.add(fqbn);
                 }
                 return result;
             }
@@ -189,8 +189,12 @@ class LanguageExamplesArduinoCliIT {
         return ARDUINO_CLI.execInContainer(command);
     }
 
+    /** A generated sketch directory and the FQBN the compiler says it builds with (board menu options included). */
+    private record GeneratedSketch(Path directory, String fqbn) {
+    }
+
     /** Runs Juno on the example, writing the same sketch directory {@code juno:compile} does. */
-    private static Path generateSketch(Example example, Board board) throws IOException {
+    private static GeneratedSketch generateSketch(Example example, Board board) throws IOException {
         String sketchName = example.name() + "Asm";
         Path directory = SKETCHES.resolve(board.id()).resolve(sketchName);
         Files.createDirectories(directory);
@@ -200,7 +204,7 @@ class LanguageExamplesArduinoCliIT {
                 Optional.of(board.id()));
         // The same .ino wrapper juno-maven-plugin writes.
         result.sketchWrapper().writeTo(directory.resolve(sketchName + ".ino"));
-        return directory;
+        return new GeneratedSketch(directory, result.fqbn());
     }
 
     private static Path codeSource(Class<?> type) {

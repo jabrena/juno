@@ -10,6 +10,8 @@ items:
         path: "/create-your-first-project"
       - title: "Maven Plugin"
         path: "/juno-maven-plugin"
+      - title: "Migrating to MCU"
+        path: "/migrate-to-mcu"
   - title: "Features"
     path: "/features"
     children:
@@ -36,6 +38,8 @@ items:
         path: "/ai-thinker-esp32-cam"
       - title: "UNO Q"
         path: "/arduino-uno-q"
+      - title: "Pico 2 W"
+        path: "/raspberry-pi-pico-2-w"
       - title: "UNO R4 WiFi"
         path: "/arduino-uno-r4-wifi"
       - title: "UNO R3 WiFi"

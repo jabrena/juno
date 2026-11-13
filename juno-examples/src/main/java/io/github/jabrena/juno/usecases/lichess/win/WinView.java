@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.lichess.win;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.lichess.commons.LichessViews;
@@ -24,7 +24,7 @@ public final class WinView implements View {
     private final TftTouchShield tft;
 
     public WinView(TftTouchShield tft, Navigator navigator) {
-        this(tft, navigator, ArduinoUno.getClock());
+        this(tft, navigator, MCU.getClock());
     }
 
     public WinView(TftTouchShield tft, Navigator navigator, Clock clock) {

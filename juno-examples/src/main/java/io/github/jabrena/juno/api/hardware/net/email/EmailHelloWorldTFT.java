@@ -3,7 +3,8 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -20,7 +21,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class EmailHelloWorldTFT {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private static final int POP3_PORT = 995;
     private static final int SMTP_PORT = 465;
@@ -83,9 +84,9 @@ public final class EmailHelloWorldTFT {
 
         showLine(tft, SEND_Y, "Sending...", TftTouchShield.YELLOW);
         int sent = Smtp.sendTls(
-                System.getenv("SMTP_HOST"), SMTP_PORT,
-                System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
-                System.getenv("SMPT_USERNAME"), System.getenv("SMPT_USERNAME"),
+                ExampleSecrets.smtpHost(), SMTP_PORT,
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword(),
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpUsername(),
                 "Hello World", "Hello World");
         Serial.print("Smtp.sendTls: ");
         Serial.println(sent);
@@ -111,8 +112,8 @@ public final class EmailHelloWorldTFT {
         for (int attempt = 0; attempt < DELIVERY_POLL_ATTEMPTS; attempt++) {
             Delay.seconds(DELIVERY_POLL_DELAY_SECONDS);
             after = Pop3Client.messageCount(
-                    System.getenv("SMTP_HOST"), POP3_PORT,
-                    System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                    ExampleSecrets.smtpHost(), POP3_PORT,
+                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
             Serial.print("Inbox count after send: ");
             Serial.println(after);
             showValue(tft, AFTER_Y, "Checking: ", after, TftTouchShield.WHITE);
@@ -129,8 +130,8 @@ public final class EmailHelloWorldTFT {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
-                    System.getenv("SMTP_HOST"), POP3_PORT,
-                    System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                    ExampleSecrets.smtpHost(), POP3_PORT,
+                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
             if (count != -1) {
                 return count;
             }
@@ -141,7 +142,7 @@ public final class EmailHelloWorldTFT {
 
     private static void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

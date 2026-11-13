@@ -20,14 +20,14 @@ A value of zero or less returns at once, so a delay can be computed without chec
 The classic example pauses for half a second in each state:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
 public class Blink {
 
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

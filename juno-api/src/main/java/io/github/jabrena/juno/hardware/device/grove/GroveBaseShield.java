@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
 /**
@@ -27,6 +28,11 @@ public final class GroveBaseShield {
     private final int uartTx;
     private final int i2cSda;
     private final int i2cScl;
+
+    /** Creates the shield handle on the board's own GPIO pins ({@link MCU#getGpio()}). Create it once, at startup. */
+    public GroveBaseShield() {
+        this(MCU.getGpio());
+    }
 
     /** Creates the shield handle for a board GPIO context. Create it once, at startup, and reuse it. */
     public GroveBaseShield(Gpio gpio) {

@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Package</li>
 <li><a href="package-use.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#package">Help</a></li>
@@ -120,6 +121,17 @@ heading corrections without depending on a motor protocol or device implementati
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Fixed geometry and encoder ratios for a two-wheel differential drive.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">A <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a> over a <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics"><code>Gyroscope</code></a>: a virtual thread of its own reads the gyroscope's angular velocity
+every <a href="GyroHeading.html#SAMPLE_MILLIS"><code>GyroHeading.SAMPLE_MILLIS</code></a> and integrates it, so the direction keeps counting while the program waits on something
+else, such as an infrared round trip to an RCX.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">A <a href="RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>RegulatedDifferentialDrive</code></a> that holds its heading with a <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>, such as a
+<a href="GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a>.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">

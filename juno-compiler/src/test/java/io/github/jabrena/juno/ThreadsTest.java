@@ -137,14 +137,15 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("The UNO Q runs each thread on a Zephyr thread passing a baton")
-    void shouldRunEachThreadOnAZephyrThreadPassingABaton() throws Exception {
+    @DisplayName("The UNO Q runs its virtual threads on one carrier Zephyr thread passing a baton with main")
+    void shouldRunVirtualThreadsOnOneCarrierZephyrThreadPassingABaton() throws Exception {
         // Given
         String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
-        assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give")
-                .doesNotContain("juno_context_switch");
+        assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give",
+                "juno_context_switch", "juno_switcher_run", "juno_freeze", "juno_thaw")
+                .doesNotContain("K_THREAD_STACK_ARRAY_DEFINE");
     }
 
     @Test
@@ -259,7 +260,7 @@ class ThreadsTest {
 
         // When & Then
         assertThat(function(shim, "extern \"C\" void juno_preempt_tick(uint32_t* frame) {")).as(board)
-                .contains("if (inJava && resumable && juno_preempt_resume[slot] == 0u) {");
+                .contains("if (inJava && resumable && juno_slots[slot].preemptResume == 0u) {");
     }
 
     @ParameterizedTest(name = "every method entry is a safepoint on {0}")
@@ -462,7 +463,8 @@ class ThreadsTest {
                 .contains("juno_thread_sleep(static_cast<int64_t>(millisToWait));",
                         "JunoHttpGuard guard(&client,", "juno_io_wait(1);",
                         "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
-                .doesNotContain("delay(1);");
+                // A single carrier has no runtime lock to release, and its port does not define one.
+                .doesNotContain("delay(1);", "juno_runtime_owned", "juno_runtime_enter", "juno_runtime_exit");
     }
 
     @Test
@@ -506,7 +508,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 @Board(ArduinoUnoQBoard.class)
@@ -516,7 +518,7 @@ class ThreadsTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         %s
-                        ArduinoUno.getWifi().begin("juno", "secret");
+                        MCU.getWifi().begin("juno", "secret");
                         Serial.println(HttpClient.get("https://example.com/", body, body.length, headers,
                                 headers.length, status));
                     }
@@ -561,14 +563,15 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("A cancelled caller keeps its stack scanned until the worker is done")
+    @DisplayName("A cancelled caller keeps its frames on the carrier, scanned, until the worker is done")
     void shouldKeepACancelledCallersStackScannedUntilTheWorkerIsDone() throws Exception {
         // Given
         String shim = unoQNetworkShim(true);
 
         // When & Then
-        assertThat(shim).as("a caller cancelled during its call keeps its stack scanned until the worker is done")
-                .contains("if (draining) juno_slots[slot].state = JUNO_SLOT_DRAINING;", "static void juno_io_reap() {");
+        assertThat(shim).as("a caller cancelled during its call keeps its frames until the worker is done")
+                .contains("if (!draining) juno_port_cancel(slot);", "juno_slots[slot].state = JUNO_SLOT_DRAINING;",
+                        "static void juno_io_reap() {", "return state == JUNO_SLOT_WAITING_IO || state == JUNO_SLOT_DRAINING;");
     }
 
     @Test

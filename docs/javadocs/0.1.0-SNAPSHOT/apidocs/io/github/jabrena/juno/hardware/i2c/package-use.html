@@ -30,6 +30,7 @@ initTheme();
 <li><a href="package-summary.html">Package</a></li>
 <li class="nav-bar-cell1-rev">Use</li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#use">Help</a></li>
@@ -74,30 +75,39 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.grove.display">io.github.jabrena.juno.hardware.device.grove.display</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.grove">io.github.jabrena.juno.hardware.device.grove</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Zero-allocation drivers and pin names for peripherals connected through the Grove Base Shield.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.grove.display">io.github.jabrena.juno.hardware.device.grove.display</a></div>
+<div class="col-last even-row-color">
 <div class="block">Grove monochrome display adapters.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.imu">io.github.jabrena.juno.hardware.device.imu</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.imu">io.github.jabrena.juno.hardware.device.imu</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Motion sensing: <a href="../device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu"><code>NineAxisMotionShield</code></a>, the orientation sensor of the Arduino
 9 Axis Motion Shield, over <a href="I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.servo">io.github.jabrena.juno.hardware.device.servo</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.servo">io.github.jabrena.juno.hardware.device.servo</a></div>
+<div class="col-last even-row-color">
 <div class="block">Motor handles: <a href="../device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo"><code>Servo</code></a> drives a standard 3-wire hobby servo through the
 Arduino <code>Servo</code> library, and <a href="../device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo"><code>PwmServoShield</code></a> drives up to sixteen of
 them from a PCA9685 servo shield over I2C.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.security">io.github.jabrena.juno.hardware.security</a></div>
+<div class="col-last even-row-color">
+<div class="block">Secrets kept in a secure element: <a href="../security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
+<a href="../security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> is the Microchip ATECC608 provider over an I2C bus.</div>
 </div>
 </div>
 <section class="package-uses">
@@ -109,6 +119,19 @@ them from a PCA9685 servo shield over I2C.</div>
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/I2c.html#io.github.jabrena.juno.hardware">I2c</a></div>
+<div class="col-last even-row-color">
+<div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.grove">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.i2c</a> used by <a href="../device/grove/package-summary.html">io.github.jabrena.juno.hardware.device.grove</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/I2c.html#io.github.jabrena.juno.hardware.device.grove">I2c</a></div>
 <div class="col-last even-row-color">
 <div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
 </div>
@@ -161,6 +184,19 @@ them from a PCA9685 servo shield over I2C.</div>
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/I2c.html#io.github.jabrena.juno.hardware.internal">I2c</a></div>
+<div class="col-last even-row-color">
+<div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.security">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.i2c</a> used by <a href="../security/package-summary.html">io.github.jabrena.juno.hardware.security</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/I2c.html#io.github.jabrena.juno.hardware.security">I2c</a></div>
 <div class="col-last even-row-color">
 <div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).</div>
 </div>

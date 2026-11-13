@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -71,8 +71,8 @@ public final class NanoPoweredUpDetourNavigator implements NavigationListener {
         Thread.sleep(START_MILLIS);
         PoweredUpRobot robot = new PoweredUpRobot();
         GyroHeading heading = robot.heading();
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(ArduinoNano.getGpio(), ArduinoNano.getClock(),
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(MCU.getGpio(), MCU.getClock(),
                 carrier.getGroveA0());
         RangeObstacleDetector detector = new RangeObstacleDetector(ranger, STOP_MILLIMETRES, CLEAR_MILLIMETRES,
                 CONFIRM_READINGS);

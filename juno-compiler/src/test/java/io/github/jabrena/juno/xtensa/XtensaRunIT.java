@@ -1,10 +1,13 @@
 package io.github.jabrena.juno.xtensa;
 
+import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.conformance.ConformanceWorkspace;
+import io.github.jabrena.juno.conformance.ProgramDirectory;
 import io.github.jabrena.juno.conformance.ProgramSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -24,6 +27,7 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +47,7 @@ import static org.assertj.core.api.Assertions.fail;
  * The sketch wrapper brackets the program with {@code [juno-begin]} and {@code [juno-exit]}, so the boot log before
  * it is not part of the transcript, and the core's {@code \r\n} line ends are compared as {@code \n}. The pilot covers
  * the Nano ESP32 only: Cardputer-specific behavior is out of scope. Opt-in:
- * {@code ./mvnw -pl juno-compiler -am -Pxtensa verify}. Skipped when Docker is not available.
+ * {@code ./mvnw -pl juno-compiler -am -Pxtensa verify -Djuno.Xmx=24k} (the arena size CI uses). Skipped when Docker is not available.
  */
 @Tag("xtensa")
 @Testcontainers(disabledWithoutDocker = true)
@@ -55,9 +59,20 @@ class XtensaRunIT {
             CompilerTestSupport.JUNO_API_CLASSES);
     /** The one ESP32-S3 board/core path this pilot claims. */
     private static final Board BOARD = Board.NANO_ESP32;
+    /** The runtime programs QemuRunIT runs on Thumb-2; the ones that declare the Nano ESP32 run here too. */
+    private static final ProgramDirectory QEMU_PROGRAMS =
+            new ProgramDirectory(BASEDIR.resolve("src/test/qemu/programs"));
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
+    /**
+     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and runs the suite
+     * twice, with {@code -Djuno.carriers=1} and {@code 2}; the {@code DualCarrier*} programs only exercise the
+     * cross-core runtime on the second run.
+     */
+    private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(
+            Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")),
+            Optional.ofNullable(System.getProperty("juno.carriers")));
     /**
      * Bounds one build-and-run, so a stalled arduino-cli or QEMU fails its own program's test with the output so far,
      * instead of silently holding the whole CI step. A CI run takes about 70 s per program.
@@ -82,8 +97,25 @@ class XtensaRunIT {
 
     @BeforeAll
     static void compilePrograms() throws IOException {
-        WORKSPACE.compilePrograms(WORKSPACE.conformancePrograms().allSources());
+        List<Path> sources = new ArrayList<>(QEMU_PROGRAMS.sources());
+        sources.addAll(WORKSPACE.conformancePrograms().allSources());
+        WORKSPACE.compilePrograms(sources);
         WORKSPACE.compileBaseline();
+    }
+
+    /** Runtime programs from src/test/qemu/programs that declare the Nano ESP32 (threads and continuations). */
+    static Stream<Arguments> programs() {
+        return QEMU_PROGRAMS.programs().stream().filter(program -> program.declares(BOARD))
+                .map(program -> Arguments.of(program.mainClass(), BOARD));
+    }
+
+    @ParameterizedTest(name = "{0} ({1})")
+    @MethodSource("programs")
+    void matchesTheJvmUnderQemu(String mainClass, Board board) throws Exception {
+        String expected = WORKSPACE.baseline(mainClass);
+        String actual = runUnderQemu(mainClass, board);
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
+                "%s on %s under QEMU (ESP32-S3)".formatted(mainClass, board.displayName()));
     }
 
     /** Primitive semantic-conformance fixtures from the XML catalog that declare the Nano ESP32. */
@@ -111,8 +143,9 @@ class XtensaRunIT {
         Path sketch = directory.resolve(simpleName);
         Files.createDirectories(sketch);
         long start = System.nanoTime();
-        CompilationResult result = new JunoCompiler().compileTo(WORKSPACE.junoClasspath(), mainClass,
-                sketch.resolve("program.S"), sketch.resolve("shim.cpp"), false, Optional.of(board.id()));
+        CompilationResult result = new JunoCompiler().compileTo(new CompilationRequest(WORKSPACE.junoClasspath(),
+                mainClass, false, Optional.of(board.id()), RUNTIME_CONFIG), sketch.resolve("program.S"),
+                sketch.resolve("shim.cpp"));
         Files.writeString(sketch.resolve(simpleName + ".ino"), harnessSketch(result.entryPointSymbol()));
         LOG.info("[{} / {}] Juno compile done in {} ms", mainClass, board.id(), millisSince(start));
 
@@ -125,12 +158,6 @@ class XtensaRunIT {
                 RUN_TIMEOUT_SECONDS);
         start = System.nanoTime();
         ExecResult run = runOnce(work);
-        // QEMU occasionally dies on the host before the guest prints anything (the timeout wrapper reports a core
-        // dump). That is an emulator crash, not a program fault, so the run is repeated once.
-        if (!run.getStdout().contains(BEGIN_MARKER.strip()) && (run.getStderr() + run.getStdout()).contains("dumped core")) {
-            LOG.warn("[{} / {}] QEMU died before the program started; retrying once", mainClass, board.id());
-            run = runOnce(work);
-        }
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         if (run.getExitCode() == TIMED_OUT || run.getExitCode() == KILLED) {

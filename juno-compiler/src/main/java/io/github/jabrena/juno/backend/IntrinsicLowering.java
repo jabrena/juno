@@ -16,6 +16,8 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 /**
@@ -77,24 +79,15 @@ public final class IntrinsicLowering {
         }
     }
 
-    /**
-     * One declared parameter of a call whose {@code String} parameters may be literals or runtime values. When every
-     * string is a literal, the literals sit in {@code literalArguments} and the runtime list skips them; when none is,
-     * the runtime list holds every parameter in order.
-     */
+    /** One declared parameter of a call whose {@code String} parameters may be literals or runtime values. */
     private record Parameter(int parameter, List<Integer> stringParameters) implements Operand {
         @Override
         public WordSource resolve(IrInstruction.IntrinsicCall call) {
-            boolean literals = !call.literalArguments().isEmpty();
-            if (literals && call.literalArguments().size() != stringParameters.size()) {
-                throw new CompileException("a call mixes literal and runtime String arguments; pass every String"
-                        + " argument as a literal or as a runtime value");
+            int literalRank = call.literalArgumentIndexes().indexOf(parameter);
+            if (literalRank >= 0) {
+                return new WordSource.StringAddress(call.literalArguments().get(literalRank));
             }
-            int rank = stringParameters.indexOf(parameter);
-            if (rank >= 0 && literals) {
-                return new WordSource.StringAddress(call.literalArguments().get(rank));
-            }
-            int skipped = literals ? (int) stringParameters.stream().filter(index -> index < parameter).count() : 0;
+            int skipped = (int) call.literalArgumentIndexes().stream().filter(index -> index < parameter).count();
             return new WordSource.FromValue(call.arguments().get(parameter - skipped));
         }
     }
@@ -146,21 +139,32 @@ public final class IntrinsicLowering {
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
     private final boolean socketStreamsOnly;
+    private final RuntimeLockBracket lockBracket;
 
     /**
-     * @param generation the target board's {@link io.github.jabrena.juno.board.Board#generation() UNO generation}
+     * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
+     * @param onboardSdChipSelect the target board's onboard microSD chip-select pin; empty when it has no socket
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, UnoGeneration generation,
-                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
-                      boolean socketStreamsOnly) {
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+                      OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
+                      boolean usesThreads, boolean socketStreamsOnly) {
+        this(target, coreRuntime, generation, onboardSdChipSelect, features, usedMath, usesThreads, socketStreamsOnly,
+                coreRuntime.carrierCount());
+    }
+
+    /** Creates the lowering with the effective carrier count selected by the runtime configuration. */
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+                      OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
+                      boolean usesThreads, boolean socketStreamsOnly, int carrierCount) {
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         this.socketStreamsOnly = socketStreamsOnly;
+        this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
-        registerGpio(coreRuntime, generation, usesThreads);
+        registerGpio(coreRuntime, generation, onboardSdChipSelect, usesThreads);
         registerThreads(usesThreads);
         registerAtomics();
         registerStructuredTasks();
@@ -314,7 +318,8 @@ public final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime, UnoGeneration generation, boolean usesThreads) {
+    private void registerGpio(CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+                              OptionalInt onboardSdChipSelect, boolean usesThreads) {
         String pinMode = coreRuntime.gpioFunction("pinMode");
         String digitalWrite = coreRuntime.gpioFunction("digitalWrite");
         shim(Intrinsic.DIGITAL_OUTPUT_OF, pinMode, Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
@@ -357,7 +362,11 @@ public final class IntrinsicLowering {
         lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
         GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
-                .ifPresent(value -> target.storeImmediate(output, frame, generation == queried ? 1 : 0, value))));
+                .ifPresent(value -> target.storeImmediate(output, frame, generation.filter(queried::equals).isPresent() ? 1 : 0, value))));
+        // Board data: the onboard socket's chip select. The capability check keeps this off boards without one.
+        lowerings.put(Intrinsic.BOARD_ONBOARD_SD_CHIP_SELECT, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, onboardSdChipSelect.orElseThrow(() ->
+                        new CompileException("This board has no onboard SD-card socket")), value)));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);
@@ -368,6 +377,21 @@ public final class IntrinsicLowering {
         shim(Intrinsic.MEMORY_FLASH_USED, "juno_memory_flash_used", Result.WORD, List.of(), ShimFeature.FLASH);
         shim(Intrinsic.MEMORY_FLASH_CAPACITY, "juno_memory_flash_capacity", Result.WORD, List.of(),
                 ShimFeature.FLASH);
+        shim(Intrinsic.PSRAM_AVAILABLE, "juno_psram_is_available", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_NOMINAL_CAPACITY, "juno_psram_nominal_capacity", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_TOTAL_BYTES, "juno_psram_total_bytes", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_FREE_BYTES, "juno_psram_free_bytes", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_LARGEST_FREE_BLOCK, "juno_psram_largest_free_block", Result.WORD, List.of(), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_ALLOCATE, "juno_psram_allocate", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_CAPACITY, "juno_psram_capacity", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_READ_BYTE, "juno_psram_read_byte", Result.WORD, List.of(arg(0), arg(1)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_WRITE_BYTE, "juno_psram_write_byte", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_READ, "juno_psram_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_WRITE, "juno_psram_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
+        shim(Intrinsic.PSRAM_RELEASE, "juno_psram_release", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
     }
 
     /**
@@ -590,6 +614,8 @@ public final class IntrinsicLowering {
 
     private void registerSerial() {
         shim(Intrinsic.SERIAL_BEGIN, "juno_serial_begin", Result.NONE, List.of(arg(0)));
+        shim(Intrinsic.SERIAL_AVAILABLE, "juno_serial_available", Result.WORD, List.of());
+        shim(Intrinsic.SERIAL_READ, "juno_serial_read", Result.WORD, List.of());
         shim(Intrinsic.SERIAL_PRINT, "juno_serial_print", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINTLN, "juno_serial_println", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINT_LONG, "juno_serial_print_long", Result.NONE, wide(0));
@@ -612,6 +638,10 @@ public final class IntrinsicLowering {
         shim(Intrinsic.STRING_CHAR_AT, "juno_string_char_at", Result.WORD, List.of(RECEIVER, arg(0)),
                 ShimFeature.RUNTIME_STRINGS);
         shim(Intrinsic.STRING_EQUALS, "juno_string_equals", Result.WORD, List.of(RECEIVER, arg(0)),
+                ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_EQUALS_NULL_SAFE, "juno_string_equals_null_safe", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_HASH_CODE, "juno_string_hash_code", Result.WORD, List.of(arg(0)),
                 ShimFeature.RUNTIME_STRINGS);
         shim(Intrinsic.STRING_BUILDER_NEW, "juno_string_builder_new", Result.WORD, List.of(arg(0)),
                 ShimFeature.STRING_BUILDER);
@@ -639,6 +669,13 @@ public final class IntrinsicLowering {
         shim(Intrinsic.STRING_CONCAT_APPEND_DOUBLE, "juno_string_concat_append_double", Result.NONE,
                 List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
                 ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.FLOAT_COMPARE, "juno_float_compare", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.FLOAT);
+        shim(Intrinsic.DOUBLE_COMPARE, "juno_double_compare", Result.WORD,
+                List.of(new ArgumentLow(0), new ArgumentHigh(0), new ArgumentLow(1), new ArgumentHigh(1)),
+                ShimFeature.DOUBLE);
+        shim(Intrinsic.FLOAT_HASH_CODE, "juno_float_hash_code", Result.WORD, List.of(arg(0)), ShimFeature.FLOAT);
+        shim(Intrinsic.DOUBLE_HASH_CODE, "juno_double_hash_code", Result.WORD, wide(0), ShimFeature.DOUBLE);
     }
 
     /** SD card files and {@code Properties} parsed from them. */
@@ -816,6 +853,8 @@ public final class IntrinsicLowering {
                 ShimFeature.I2C);
         shim(Intrinsic.I2C_READ_REGISTER16, "juno_i2c_read_register16", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.I2C);
+        shim(Intrinsic.I2C_WRITE, "juno_i2c_write", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
+        shim(Intrinsic.I2C_READ, "juno_i2c_read", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
@@ -957,6 +996,7 @@ public final class IntrinsicLowering {
         for (Operand operand : shimCall.operands()) {
             words.add(operand.resolve(call));
         }
+        lockBracket.enter(output, call.intrinsic());
         target.emitShimCall(output, frame, shimCall.function(), words);
         switch (shimCall.result()) {
             case NONE -> { }
@@ -965,6 +1005,7 @@ public final class IntrinsicLowering {
             case FIRST_ARGUMENT -> call.target().ifPresent(
                     value -> target.copy(output, frame, call.arguments().get(0), value));
         }
+        lockBracket.exit(output, call.intrinsic());
     }
 
     /**
@@ -986,8 +1027,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
+        lockBracket.exit(output);
     }
 
     /**
@@ -1015,8 +1058,10 @@ public final class IntrinsicLowering {
                 words.add(new WordSource.FromValue(argument));
             }
         }
+        lockBracket.enter(output);
         target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
+        lockBracket.exit(output);
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {

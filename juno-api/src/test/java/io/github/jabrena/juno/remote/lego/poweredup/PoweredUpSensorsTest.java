@@ -21,13 +21,13 @@ class PoweredUpSensorsTest {
     private static final int ACCELEROMETER = HubPort.TECHNIC_ACCELEROMETER.value();
     private static final int GYRO = HubPort.TECHNIC_GYRO.value();
     private static final int TILT = HubPort.TECHNIC_TILT.value();
-    private PoweredUpPort port;
+    private PoweredUpTransport port;
     private Clock time;
     private RemotePoweredUpHub hub;
 
     @BeforeEach
     void connectAHubToMockedHardware() {
-        port = mock(PoweredUpPort.class);
+        port = mock(PoweredUpTransport.class);
         time = mock(Clock.class);
         hub = new RemotePoweredUpHub(port, time);
     }

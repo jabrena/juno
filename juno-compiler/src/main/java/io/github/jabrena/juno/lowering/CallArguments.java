@@ -45,6 +45,14 @@ record CallArguments(List<Argument> arguments) {
                 .toList();
     }
 
+    /** Declared parameter indexes whose string arguments were resolved as literals. */
+    List<Integer> literalIndexes() {
+        return java.util.stream.IntStream.range(0, arguments.size())
+                .filter(index -> arguments.get(index) instanceof Literal)
+                .boxed()
+                .toList();
+    }
+
     Value value(int index) {
         return ((RuntimeValue) arguments.get(index)).value();
     }

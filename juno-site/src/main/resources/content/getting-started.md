@@ -77,7 +77,7 @@ Java: it turns the built-in LED on and off every half second.
 public class Blink {
 
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

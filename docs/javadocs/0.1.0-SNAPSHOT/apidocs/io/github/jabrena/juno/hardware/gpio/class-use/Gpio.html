@@ -30,6 +30,7 @@ initTheme();
 <li><a href="../Gpio.html">Class</a></li>
 <li class="nav-bar-cell1-rev">Use</li>
 <li><a href="../package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#use">Help</a></li>
@@ -75,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -143,24 +144,9 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoNano.</span><code><a href="../../ArduinoNano.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The Nano ESP32's pins, using the pin numbers printed on the board.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The board's pins.</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">Esp32Cam.</span><code><a href="../../Esp32Cam.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The AI Thinker ESP32-CAM's GPIO pins.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The Cardputer's GPIO context.</div>
+<div class="block">The selected board's pins.</div>
 </div>
 </div>
 </section>
@@ -193,6 +179,11 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-second even-row-color"><code><a href="../../device/grove/GroveBaseShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveBaseShield</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates the shield handle for a board GPIO context.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/grove/GrovePicoShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePicoShield</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the shield handle for the Pico's GPIO context.</div>
 </div>
 </div>
 </section>
@@ -239,45 +230,52 @@ object-shaped API over passing a pin number to every call.</div>
 <a href="../../../robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a <a href="../../../robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
 </div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveLightV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)" class="member-name-link">GroveLightV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveGpsAir530.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveGpsAir530</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
+ int&nbsp;receivePin)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates a reader whose GPIO and clock can be replaced by mocks in a unit test.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveLightV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)" class="member-name-link">GroveLightV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
  int&nbsp;analogPin,
  int&nbsp;adcMaximum)</code></div>
-<div class="col-last odd-row-color">
+<div class="col-last even-row-color">
 <div class="block">A sensor plugged into <code>analogPin</code> (such as a socket of a <code>GroveBaseShield</code>) and read through
 <code>gpio</code>, with an ADC whose full scale is <code>adcMaximum</code>: <a href="../../device/grove/sensors/GroveLightV12.html#ADC_10_BIT"><code>GroveLightV12.ADC_10_BIT</code></a> or <a href="../../device/grove/sensors/GroveLightV12.html#ADC_12_BIT"><code>GroveLightV12.ADC_12_BIT</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GrovePirMotion.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePirMotion</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GrovePirMotion.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePirMotion</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
 </div>
-<div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GrovePirMotion.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GrovePirMotion</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GrovePirMotion.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GrovePirMotion</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
  int&nbsp;signalPin)</code></div>
-<div class="col-last odd-row-color">
+<div class="col-last even-row-color">
 <div class="block">A sensor on <code>signalPin</code> read through <code>gpio</code>; the pin is configured as an input here.</div>
 </div>
-<div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveSoundV16.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveSoundV16</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
-<div class="col-last even-row-color">
-<div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
-</div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveTemperatureV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveSoundV16.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveSoundV16</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
 </div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GroveTemperatureV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
- int&nbsp;analogPin)</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GroveTemperatureV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last even-row-color">
+<div class="block">A sensor read through <code>gpio</code>: a mocked one in a unit test.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveTemperatureV12.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int)" class="member-name-link">GroveTemperatureV12</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ int&nbsp;analogPin)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A sensor plugged into <code>analogPin</code> (such as <a href="../../device/grove/GroveBaseShield.html#getA0()"><code>GroveBaseShield.getA0()</code></a>) and read through <code>gpio</code>.</div>
 </div>
-<div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../../device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
  <a href="../../time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
  int&nbsp;signalPin)</code></div>
-<div class="col-last odd-row-color">
+<div class="col-last even-row-color">
 <div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
 </div>
 </div>
@@ -411,7 +409,7 @@ Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeGpio.</span><code><a href="../../internal/NativeGpio.html#gpio()" class="member-name-link">gpio</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The pins <a href="../../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> hands out.</div>
+<div class="block">The pins <a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
@@ -422,7 +420,7 @@ Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeGpio.</span><code><a href="../../internal/NativeGpio.html#setGpio(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">setGpio</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes <a href="../../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>

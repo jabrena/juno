@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime.spi;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.board.ArduinoCore;
 
 /**
@@ -14,6 +14,58 @@ import io.github.jabrena.juno.board.ArduinoCore;
  * can both use it without depending on each other or on a specific core.
  */
 public interface CoreRuntime {
+
+    /**
+     * Number of Juno carriers supplied by this core. A carrier is the scheduler context that runs generated Java on
+     * one hardware core. The default keeps every existing single-core port byte-for-byte unchanged.
+     */
+    default int carrierCount() {
+        return 1;
+    }
+
+    /** C++ helpers for the recursive lock around runtime entry points on a dual-carrier core. */
+    default String runtimeLock() {
+        return "";
+    }
+
+    /** Target memory barrier instruction for volatile accesses on a dual-carrier core. */
+    default String memoryBarrierInstruction() {
+        return "";
+    }
+
+    /** Atomic wide-field helpers, emitted only for dual-carrier threaded programs. */
+    default String wideAccessHelpers() {
+        return "";
+    }
+
+    /**
+     * The statement that moves every register a parked carrier's frames may hold onto its stack, so a collector on
+     * another carrier finds the references in them. The default makes GCC save the callee-saved registers.
+     */
+    default String registerSpill() {
+        return "__builtin_unwind_init();";
+    }
+
+    /**
+     * Board menu options the sketch needs on top of the board's FQBN when its threads run on {@code carrierCount}
+     * carriers, each starting with a comma; none by default.
+     */
+    default String fqbnOptions(int carrierCount) {
+        return "";
+    }
+
+    /**
+     * The shim function the sketch's {@code setup()} hands the entry point to when threads run on
+     * {@code carrierCount} carriers, or {@code ""} when {@code setup()} calls the entry point itself.
+     */
+    default String mainLauncher(int carrierCount) {
+        return "";
+    }
+
+    /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
+    default String carrierRuntime(int carrierCount) {
+        return carrierCount > 1 ? runtimeLock() + wideAccessHelpers() : "";
+    }
 
     /** The symbol {@code Delay.millis} branches to, taking the delay in r0. */
     String delayMillisFunction();
@@ -261,7 +313,15 @@ public interface CoreRuntime {
      * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.
      */
-    String threadPort(RuntimeConfig config);
+    String threadPort(ResolvedRuntimeConfig config);
+
+    /**
+     * The thread port selected for the core's carrier count. Single-carrier implementations inherit the original
+     * port so their generated shim remains unchanged.
+     */
+    default String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
+        return threadPort(config);
+    }
 
     /**
      * The BLE central names the LEGO Powered UP runtime is written against: {@code ArduinoBLE}'s device, characteristic
@@ -284,12 +344,17 @@ public interface CoreRuntime {
 
     /** Core-specific headers of the camera driver; only a core whose board declares {@code CAMERA} provides them. */
     default String cameraIncludes() {
-        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+        throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
     }
 
     /** Core-specific implementation of the camera intrinsics, emitted only for a program that uses them. */
     default String cameraHelpers() {
-        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+        throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
+    }
+
+    /** Core-specific explicit PSRAM buffer helpers; only ESP32-family cores provide them. */
+    default String psramHelpers() {
+        throw new IllegalStateException("This core has no supported PSRAM service; the linker should have rejected it");
     }
 
     /** Core-specific headers of the BLE central. */
@@ -299,6 +364,14 @@ public interface CoreRuntime {
 
     /** Core-specific adapter the LEGO runtime calls, emitted before it; empty when the core provides ArduinoBLE itself. */
     default String bleHelpers() {
+        return "";
+    }
+
+    /**
+     * Statements that select the primary {@code Wire} bus's pins before {@code Wire.begin()}, each followed by a newline
+     * and two-space indent; empty when the core's default pins are the board's I2C pins.
+     */
+    default String i2cPinSetup() {
         return "";
     }
 

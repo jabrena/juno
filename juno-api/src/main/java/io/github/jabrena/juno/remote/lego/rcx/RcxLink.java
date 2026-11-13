@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredEmitter;
@@ -19,6 +20,11 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxLink {
     private final Clock clock;
     private final InfraredDriver driver;
+
+    /** A link whose timer is the board's own clock ({@link MCU#getClock()}). */
+    public RcxLink(InfraredEmitter emitter, InfraredReceiver receiver) {
+        this(emitter, receiver, MCU.getClock());
+    }
 
     /** A link configured with its infrared modules and timer; construction completes the link setup. */
     public RcxLink(InfraredEmitter emitter, InfraredReceiver receiver, Clock clock) {

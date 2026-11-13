@@ -1,8 +1,12 @@
 package io.github.jabrena.juno.language.concurrency;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -18,7 +22,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * <p>The plain and volatile totals depend on how the threads interleave, so they can fall short of the expected value
  * on any run. The other three always reach it.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class LostUpdates {
     private static final int INCREMENTS = 1000;
     private static final int EXPECTED = 2 * INCREMENTS;

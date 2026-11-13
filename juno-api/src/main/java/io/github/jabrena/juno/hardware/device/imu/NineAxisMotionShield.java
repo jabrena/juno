@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.imu;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -71,7 +71,7 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
 
     /** A shield on the board's own pins and I2C bus. Create it once, at startup. */
     public NineAxisMotionShield() {
-        this(ArduinoUno.getGpio(), ArduinoUno.getI2c());
+        this(MCU.getGpio(), MCU.getI2c());
     }
 
     /**

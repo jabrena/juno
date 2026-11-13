@@ -13,7 +13,6 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 
 | Goal | Default phase | What it does |
 |---|---|---|
-| `juno:env` | `generate-sources` | Reads a git-ignored `.env` file and exports its entries into the Maven JVM's real process environment. |
 | `juno:install-deps` | (none — run explicitly) | Installs the supported Arduino cores (including M5Stack ESP32) and every optional library any current example needs, once per machine. |
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
@@ -34,15 +33,12 @@ invocation with `-Djuno.main=...`, or, in a module with a single program, fix it
     <groupId>io.github.jabrena</groupId>
     <artifactId>juno-maven-plugin</artifactId>
     <version>${project.version}</version>
-    <executions>
-        <execution>
-            <goals>
-                <goal>env</goal>
-            </goals>
-        </execution>
-    </executions>
 </plugin>
 ```
+
+Board programs cannot read build-machine environment variables: `System.getenv(...)` is rejected by the compiler so a
+credential cannot be embedded in firmware. Provision board credentials with `juno:secret` and read them through
+`SecretStore` instead.
 
 This is how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up: it holds
 many programs, so every `compile`, `verify` or `upload` names one, for example
@@ -144,24 +140,29 @@ them with `-D`:
 
 | Flag | Default | What it sets |
 |---|---|---|
-| `juno.Xmx` | 8 KB on the 32-bit boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there) | The size of the garbage-collected arena, where every `new`, array, string and object lives. |
-| `juno.Xss` | 2048 bytes on the UNO R4 WiFi; 4096 on the UNO Q | The stack of each extra task. |
-| `juno.maxThreads` | 4 | The number of scheduler slots, including `main`. |
+| `juno.Xmx` | 8 KB on most boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there) | The size of the garbage-collected arena, where every `new`, array, string and object lives. Each board has a maximum; see the [Memory Model](../memory-model#board-memory-profiles). |
+| `juno.Xss` | 512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the UNO Q and Pico 2 W; 8192 on the ESP32 boards | The stack of each carrier (on AVR, of each extra task). Each board has a maximum. |
+| `juno.carriers` | 2 on the ESP32 boards and the Pico 2 W; 1 elsewhere | How many carriers run threads: `1` or `2`, at most the board's carriers. Use `1` only in test environments that cannot run both cores. |
 | `juno.gcLog` | `false` | When `true`, the garbage collector prints one `Serial` line per collection with the arena bytes used before and after. |
 
 Sizes take the JVM's syntax: bytes, or a number followed by `k`, `m` or `g`. The arena size must be at least 512 bytes
-and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. `juno.maxThreads` must be
-at least 2; set it to one plus the number of structured subtasks that run at the same time when RAM is tight.
+and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. Each board also has
+a maximum for both sizes; a larger value fails the build and names the maximum.
 
 ```bash
 ./mvnw compile juno:upload -Djuno.Xmx=11k -Djuno.gcLog=true
-./mvnw compile juno:upload -Djuno.maxThreads=3 -Djuno.Xss=1536
+./mvnw compile juno:upload -Djuno.Xss=1536
 ```
 
 Increase `juno.Xmx` when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
 when the default is too small (`JUNO-RISK-002`). Use `juno.gcLog` with `juno:monitor` to see how full the arena gets.
-The values that the examples need are noted in their Javadoc; for example, a few Wi-Fi examples on the UNO R3 build with
-`-Djuno.Xmx=512`.
+The values that the examples need are noted in their Javadoc.
+
+`juno.Xmx` never sizes PSRAM. On the Nano ESP32 and AI Thinker ESP32-CAM, caller-owned bulk bytes can use the static
+`Psram` API, which reports negative results instead of triggering the Java garbage collector. Release each positive handle
+exactly once; the collector only manages ordinary Java objects and arrays in the internal arena. Camera users should call
+`Camera.begin()` before networking or capture; the ESP32-CAM driver owns its PSRAM frame buffers and copies frames into a
+caller-owned Java array.
 
 ## Runtime-risk inspection
 

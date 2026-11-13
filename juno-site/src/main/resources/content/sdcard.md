@@ -20,8 +20,7 @@ startup, and pass it to the classes that need it. A unit test passes `mock(SdCar
 | AZDelivery Data Logger Shield | `new DataLoggerShield().getSdCard()` | D10 |
 | ELEGOO 2.8" TFT touch shield | `new TftTouchShield().getSdCard()` | D10 |
 | LCD Keypad Shield (stacked on a data logger) | `new LcdKeypadShield().getSdCard()` | D10 |
-| Arduino WiFi Shield (UNO R3) | `new ArduinoWifiShield().getSdCard()` | D4 |
-| Nano Connector Carrier | `new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard()` | D4 |
+| Nano Connector Carrier | `new NanoConnectorCarrier().getSdCard()` | D4 |
 
 The card's `begin()` selects it on its socket's pin; `begin(chipSelectPin)` takes any other pin.
 
@@ -104,7 +103,7 @@ if (sdCard.begin()) {
     Properties properties = new Properties();
     properties.load(file);
     file.close();
-    ArduinoUno.getWifi().begin(
+    MCU.getWifi().begin(
         properties.getProperty("wifi.ssid"),
         properties.getProperty("wifi.password"));
 }
@@ -159,4 +158,4 @@ Limits:
 Every byte array, like any other `new` object, lives in Juno's garbage-collected arena, 8 KB by default. A program
 that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
 JVM-style `-Djuno.Xmx` (for example `-Djuno.Xmx=32k`), and check the room left at run time with
-`ArduinoUno.getBoardMemory().arenaCapacityBytes() - ArduinoUno.getBoardMemory().arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.
+`MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -20,9 +21,9 @@ import java.util.concurrent.StructuredTaskScope;
  * preference, avoiding a standalone count request.
  */
 public final class SupabaseTemperatureService implements Task {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     public static final int PAGE_ROWS = 50;
 
     private static final int WIFI_ATTEMPTS = 30;
@@ -69,7 +70,7 @@ public final class SupabaseTemperatureService implements Task {
         }
         started = true;
         Serial.println("Connecting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         nextWifiCheck = CLOCK.millis() + RETRY_DELAY_MILLIS;
     }
 

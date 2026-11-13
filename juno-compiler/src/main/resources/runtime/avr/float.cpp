@@ -8,6 +8,16 @@ extern "C" int32_t juno_fcmp(juno_f32 a, juno_f32 b, int32_t nanResult) {
   int8_t order = juno_f64_compare(juno_f32_wide(a), juno_f32_wide(b));
   return order == 2 ? nanResult : order;
 }
+extern "C" int32_t juno_float_compare(juno_f32 a, juno_f32 b) {
+  int8_t order = juno_f64_compare(juno_f32_wide(a), juno_f32_wide(b));
+  if (order == 2) return juno_f64_is_nan(juno_f32_wide(a))
+      ? (juno_f64_is_nan(juno_f32_wide(b)) ? 0 : 1) : -1;
+  if (order == 0 && ((a | b) << 1) == 0 && ((a ^ b) & 0x80000000u) != 0) return a & 0x80000000u ? -1 : 1;
+  return order;
+}
+extern "C" int32_t juno_float_hash_code(juno_f32 value) {
+  return juno_f64_is_nan(juno_f32_wide(value)) ? 0x7FC00000 : static_cast<int32_t>(value);
+}
 extern "C" juno_f32 juno_i2f(int32_t value) { return juno_f64_to_f32(juno_f64_from_i32(value)); }
 extern "C" int32_t juno_f2i(juno_f32 value) { return juno_f64_to_i32(juno_f32_wide(value)); }
 extern "C" juno_f32 juno_l2f(int64_t value) { return juno_f32_from_i64(value); }

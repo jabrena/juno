@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.robotics.Gyroscope;
 import io.github.jabrena.juno.util.Delay;
@@ -23,8 +23,8 @@ import io.github.jabrena.juno.util.Delay;
  * Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePoweredUpHubWithGyro {
-    private static final HubPort LEFT = HubPort.A;
-    private static final HubPort RIGHT = HubPort.B;
+    private static final PoweredUpPort LEFT = PoweredUpPort.A;
+    private static final PoweredUpPort RIGHT = PoweredUpPort.B;
     private static final int POWER = 40;
     private static final int TURN_POWER = 30;
     private static final int STRAIGHT_MILLIS = 3000;
@@ -36,8 +36,8 @@ public class MagicSquarePoweredUpHubWithGyro {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Clock clock = ArduinoUno.getClock();
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), clock);
+        Clock clock = MCU.getClock();
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), clock);
         MagicSquarePoweredUpHubWithGyro app = new MagicSquarePoweredUpHubWithGyro();
 
         while (true) {

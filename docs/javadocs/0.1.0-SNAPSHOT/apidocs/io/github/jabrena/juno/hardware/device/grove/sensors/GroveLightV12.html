@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/GroveLightV12.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../../help-doc.html#class">Help</a></li>
@@ -80,6 +81,7 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E(int,int)" tabindex="0">GroveLightV12(int, int)</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)" tabindex="0">GroveLightV12(Gpio, int, int)</a></li>
 </ol>
 </li>
@@ -152,10 +154,16 @@ allocates nothing.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)" class="member-name-link">GroveLightV12</a><wbr>(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
- int&nbsp;analogPin,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int,int)" class="member-name-link">GroveLightV12</a><wbr>(int&nbsp;analogPin,
  int&nbsp;adcMaximum)</code></div>
 <div class="col-last even-row-color">
+<div class="block">A sensor plugged into <code>analogPin</code>, read through the board's own GPIO pins (<a href="../../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>), with an ADC
+ whose full scale is <code>adcMaximum</code>.</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)" class="member-name-link">GroveLightV12</a><wbr>(<a href="../../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ int&nbsp;analogPin,
+ int&nbsp;adcMaximum)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A sensor plugged into <code>analogPin</code> (such as a socket of a <code>GroveBaseShield</code>) and read through
 <code>gpio</code>, with an ADC whose full scale is <code>adcMaximum</code>: <a href="#ADC_10_BIT"><code>ADC_10_BIT</code></a> or <a href="#ADC_12_BIT"><code>ADC_12_BIT</code></a>.</div>
 </div>
@@ -264,6 +272,17 @@ at saturation.</div>
 <section class="constructor-details" id="constructor-detail">
 <h2>Constructor Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="&lt;init&gt;(int,int)">
+<h3>GroveLightV12</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GroveLightV12</span><wbr><span class="parameters">(int&nbsp;analogPin,
+ int&nbsp;adcMaximum)</span></div>
+<div class="block">A sensor plugged into <code>analogPin</code>, read through the board's own GPIO pins (<a href="../../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>), with an ADC
+ whose full scale is <code>adcMaximum</code>.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio,int,int)">
 <h3>GroveLightV12</h3>

@@ -10,7 +10,7 @@ import io.github.jabrena.juno.ir.Value;
 import java.util.List;
 import java.util.Optional;
 
-/** Calls Juno evaluates while compiling: {@code System.getenv} of a literal, and {@code LedCanvas.drawText}. */
+/** Calls Juno evaluates while compiling: {@code LedCanvas.drawText}; board programs cannot read the build environment. */
 final class CompileTimeCalls {
     private static final MethodRef GETENV = new MethodRef("java/lang/System", "getenv",
             "(Ljava/lang/String;)Ljava/lang/String;");
@@ -41,22 +41,14 @@ final class CompileTimeCalls {
     }
 
     /**
-     * {@code System.getenv("NAME")} reads Juno's build-time environment, wherever {@code juno compile} runs, never
-     * the board's; the result becomes a string literal. This keeps e.g. Wi-Fi credentials out of committed source.
+     * Rejects {@code System.getenv(...)} in board code. Resolving a build-machine value here would emit it as a
+     * firmware string constant, so credentials must be loaded at runtime from {@code SecretStore} or board storage.
      */
-    void getenv(Instruction instruction) {
-        String name = context.facts().knownString(stack.pop());
-        if (name == null) {
-            throw new CompileException(context.at(instruction) + ": System.getenv requires a compile-time string "
-                    + "literal environment-variable name");
-        }
-        String value = System.getenv(name);
-        if (value == null) {
-            throw new CompileException(context.at(instruction) + ": environment variable " + name + " is not set; "
-                    + "Juno resolves System.getenv(...) at compile time, so it must be set wherever `juno compile` "
-                    + "runs");
-        }
-        stack.pushString(value);
+    void rejectGetenv(Instruction instruction) {
+        stack.pop();
+        throw new CompileException(context.at(instruction) + ": System.getenv(...) is not supported in board programs; "
+                + "its build-time value would become part of the firmware. Use SecretStore or runtime board storage "
+                + "for credentials and configuration");
     }
 
     /**

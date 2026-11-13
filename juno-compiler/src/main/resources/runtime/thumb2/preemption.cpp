@@ -1,7 +1,6 @@
 extern "C" const uint8_t juno_java_code_start[];
 extern "C" const uint8_t juno_java_code_end[];
 static volatile uint32_t juno_preempt_due = 0u;
-static volatile uint32_t juno_preempt_resume[JUNO_MAX_THREADS];
 // How many times a thread was preempted part-way through generated code.
 static volatile uint32_t juno_preemptions = 0u;
 
@@ -52,8 +51,8 @@ extern "C" void juno_preempt_tick(uint32_t* frame) {
       && pc < static_cast<uint32_t>(reinterpret_cast<uintptr_t>(juno_java_code_end));
   bool resumable = (frame[7] & 0x0600FC00u) == 0u;
   uint32_t slot = juno_current_slot;
-  if (inJava && resumable && juno_preempt_resume[slot] == 0u) {
-    juno_preempt_resume[slot] = pc | 1u;
+  if (inJava && resumable && juno_slots[slot].preemptResume == 0u) {
+    juno_slots[slot].preemptResume = pc | 1u;
     frame[6] = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&juno_preempt_trampoline)) & ~1u;
   } else {
     juno_preempt_due = 1u;
@@ -64,8 +63,8 @@ extern "C" void juno_preempt_tick(uint32_t* frame) {
 // where the interrupted code resumes.
 extern "C" uint32_t juno_thread_preempted() {
   uint32_t slot = juno_current_slot;
-  uint32_t resume = juno_preempt_resume[slot];
-  juno_preempt_resume[slot] = 0u;
+  uint32_t resume = juno_slots[slot].preemptResume;
+  juno_slots[slot].preemptResume = 0u;
   juno_preempt_due = 0u;
   juno_preemptions++;
   juno_sched_block();

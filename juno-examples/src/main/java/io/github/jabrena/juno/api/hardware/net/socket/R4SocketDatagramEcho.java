@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -18,12 +18,12 @@ import java.net.InetAddress;
 
 /**
  * a {@code juno} hello there every five seconds and echoes every packet it receives back to its sender, reporting both
- * at 115200 baud. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}); from a
+ * at 115200 baud. From a
  * computer on the same network, {@code nc -u <board-ip> 4210} sends packets and shows the echoes.
  */
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class R4SocketDatagramEcho {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
     private static final SdCard SD_CARD = new TftTouchShield().getSdCard();
 
     private static final int PORT = 4210;

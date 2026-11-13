@@ -7,7 +7,7 @@ import io.github.jabrena.juno.hardware.internal.NativeGpio;
 
 /**
  * The ELEGOO 2.8" TFT touch shield's hardware for whole-program tests: a {@link Gpio} that every
- * {@code ArduinoUno.getGpio()} uses once {@link #install()} has run.
+ * {@code MCU.getGpio()} uses once {@link #install()} has run.
  *
  * <p>The real {@code TftTouchShield} driver bit-bangs an ILI9341 display controller over an 8-bit
  * parallel bus and reads a resistive touch panel through the same pins. This double decodes that
@@ -73,7 +73,7 @@ public final class EmulatedShield implements Gpio {
     private EmulatedShield() {
     }
 
-    /** Makes {@code ArduinoUno.getGpio()} from now on drive this emulated shield instead of the board's pins. */
+    /** Makes {@code MCU.getGpio()} from now on drive this emulated shield instead of the board's pins. */
     public static void install() {
         NativeGpio.setGpio(INSTANCE);
     }

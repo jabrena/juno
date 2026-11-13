@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  * board with {@code -Djuno.board}.
  */
 public class MagicSquarePFWithGrove {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     private static final int SPEED = 5;
     private static final int STRAIGHT_MILLIS = 3000;
@@ -42,7 +42,7 @@ public class MagicSquarePFWithGrove {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
         RemotePF remote = new RemotePF(link);
         MagicSquarePFWithGrove app = new MagicSquarePFWithGrove(

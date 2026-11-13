@@ -50,11 +50,14 @@ public final class ThreadRuntime {
     }
 
     /**
-     * The UNO R4's port: its own stacks and a context switch that saves the AAPCS callee-saved registers
-     * (and, with an FPU, {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}.
+     * The UNO R4's (and Pico 2 W's) port: main keeps its own stack and every other thread is a continuation on one
+     * carrier stack of {@code stackBytes}. A context switch saves the AAPCS callee-saved registers (and, with an FPU,
+     * {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}; a thread that loses the carrier to
+     * another one is frozen (its frames copied into an arena chunk) and thawed back to the same addresses later, by a
+     * switcher running on a small stack of its own.
      */
-    public String renesasPort(int maxThreads, int stackBytes) {
-        return runtimeSource.load("renesas/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String renesasPort(int stackBytes) {
+        return runtimeSource.load("renesas/thread-port.cpp")
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -68,20 +71,23 @@ public final class ThreadRuntime {
      * writes past the stack: every generated function compares its new SP with {@code juno_stack_limit}, which keeps
      * {@code JUNO_STACK_GUARD_BYTES} free for the C calls of the deepest frame and for reporting the overflow.
      */
-    public String avrPort(int maxThreads, int stackBytes) {
+    public String avrPort(int stackBytes) {
         return runtimeSource.load("avr/thread-heap.cpp")
-                + runtimeSource.load("avr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+                + runtimeSource.load("avr/thread-port.cpp")
+                .replace("${JUNO_MAX_THREADS}", Integer.toString(RuntimeLimits.MAX_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
-     * The UNO Q's port: every Juno thread is a Zephyr thread, but each parks on its own semaphore and only the
-     * one holding the baton runs Java code, so the runtime needs no other locking. The preemption tick is a Zephyr
+     * The UNO Q's port: main keeps its Zephyr thread and every other Juno thread is a continuation on one carrier, a
+     * second Zephyr thread whose stack holds the continuations' {@code stackBytes} below the switcher. main and the
+     * carrier hand a baton to each other, so only one runs Java code and the runtime needs no other locking; while the
+     * thread on the carrier waits for its I/O worker it stays pinned there. The preemption tick is a Zephyr
      * {@code k_timer}, whose expiry runs in the system clock's interrupt: Zephyr threads run on the process stack, so
      * {@code psp} holds the interrupted thread's exception frame.
      */
-    public String zephyrPort(int maxThreads, int stackBytes) {
-        return runtimeSource.load("zephyr/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String zephyrPort(int stackBytes) {
+        return runtimeSource.load("zephyr/thread-port.cpp")
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -90,8 +96,16 @@ public final class ThreadRuntime {
      * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
      * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.
      */
-    public String esp32Port(int maxThreads, int stackBytes) {
-        return runtimeSource.load("esp32/thread-port.cpp").replace("${JUNO_MAX_THREADS}", Integer.toString(maxThreads))
+    public String esp32Port(int stackBytes) {
+        return runtimeSource.load("esp32/thread-port.cpp").replace("${JUNO_MAX_THREADS}",
+                        Integer.toString(RuntimeLimits.MAX_THREADS))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
+    /** The ESP32 port selected for a single or dual carrier runtime. */
+    public String esp32Port(int stackBytes, int carrierCount) {
+        return carrierCount == 1 ? esp32Port(stackBytes) : runtimeSource.load("esp32/thread-port-dual.cpp")
+                .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
@@ -101,6 +115,17 @@ public final class ThreadRuntime {
      */
     public String zephyrIoWorker() {
         return runtimeSource.load("zephyr/io-worker.cpp");
+    }
+
+    /**
+     * The RP2350 port selected for a single or dual carrier runtime. With two carriers the sketch is built with
+     * arduino-pico's FreeRTOS SMP, and every Juno thread is a FreeRTOS task pinned to one core, as on the ESP32.
+     */
+    public String rp2350Port(int stackBytes, int carrierCount) {
+        if (carrierCount == 1) return renesasPort(stackBytes);
+        return runtimeSource.load("rp2350/thread-port-dual.cpp")
+                .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
     }
 
     /**
@@ -120,6 +145,22 @@ public final class ThreadRuntime {
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId,
                             int interruptedExceptionClassId, int brokenBarrierExceptionClassId) {
+        return scheduler(asynchronousPreemption, ioWorker, maxHttpRequests, delayFunction, stackScanFunction,
+                exceptions, threadEntry, taskCallableEntry, structuredTasks, scopedValues,
+                failedExceptionClassId, illegalStateExceptionClassId, interruptedExceptionClassId,
+                brokenBarrierExceptionClassId, 1);
+    }
+
+    /**
+     * Generates the common scheduler with the number of physical carriers supplied by the core. Keeping the old
+     * overload above is deliberate: all single-carrier generated text follows the original template exactly.
+     */
+    String scheduler(boolean asynchronousPreemption, boolean ioWorker, int maxHttpRequests, String delayFunction,
+                            String stackScanFunction,
+                            boolean exceptions, boolean threadEntry,
+                            boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
+                            int failedExceptionClassId, int illegalStateExceptionClassId,
+                            int interruptedExceptionClassId, int brokenBarrierExceptionClassId, int carrierCount) {
         String pendingSave = exceptions ? """
                 juno_slots[from].pending = juno_pending_exception;
                   juno_pending_exception = juno_slots[to].pending;""" : "";
@@ -164,14 +205,10 @@ public final class ThreadRuntime {
         String taskRuntime = structuredTasks ? taskRuntime() : "";
         String raiseInterrupted = raiseException(exceptions, interruptedExceptionClassId);
         String raiseBrokenBarrier = raiseException(exceptions, brokenBarrierExceptionClassId);
-        String preemption = asynchronousPreemption ? asynchronousPreemption() : safepointPreemption();
-        String startPreemption = asynchronousPreemption ? """
-                  static bool juno_preempt_started = false;
-                  if (!juno_preempt_started) {
-                    juno_preempt_started = true;
-                    juno_port_preempt_start();
-                  }""" : "";
-        return runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
+        String preemption = asynchronousPreemption ? asynchronousPreemption(carrierCount) : safepointPreemption(carrierCount);
+        SchedulerCarriers carriers = SchedulerCarriers.of(carrierCount);
+        String startPreemption = asynchronousPreemption ? carriers.startPreemption() : "";
+        String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
                 .replace("${JUNO_WAITING_IO_CASE}", ioWorker
                         ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
                 .replace("${JUNO_IO_WAITING_DECLARATION}", ioWorker ? "static bool juno_io_waiting(uint32_t slot);" : "")
@@ -202,6 +239,19 @@ public final class ThreadRuntime {
                 .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
                 .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
                 .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
+        return carriers.apply(source, carrierLoad(exceptions, scopedValues), delayFunction);
+
+    }
+
+    /**
+     * What a thread loads into its carrier's per-carrier state when it takes the carrier without a handoff: a new
+     * thread starting on an idle carrier, or the thread that inherits a carrier from a cancelled one. After a handoff
+     * the values are the ones the handoff already stored.
+     */
+    private static String carrierLoad(boolean exceptions, boolean scopedValues) {
+        return (exceptions ? "\n  juno_pending_exception = juno_slots[slot].pending;" : "")
+                + (scopedValues ? "\n  juno_scoped_top = juno_slots[slot].bindings;" : "")
+                + "\n  juno_slice_start = static_cast<uint32_t>(millis());";
     }
 
     /**
@@ -217,8 +267,50 @@ public final class ThreadRuntime {
      * switch on their own), aligns the stack for the call, and ends with a {@code pop {pc}} that leaves {@code sp}
      * exactly where the interrupted code had it.
      */
-    private String asynchronousPreemption() {
-        return runtimeSource.load("thumb2/preemption.cpp");
+    private String asynchronousPreemption(int carrierCount) {
+        String source = runtimeSource.load("thumb2/preemption.cpp");
+        if (carrierCount > 1) {
+            source = source.replace("static volatile uint32_t juno_preempt_due = 0u;", """
+                    extern "C" uint32_t juno_port_carrier_id();
+                    static volatile uint32_t juno_preempt_dues[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_preempt_due juno_preempt_dues[juno_port_carrier_id()]"""
+                    .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+            source = source.replace("static volatile uint32_t juno_preemptions = 0u;", """
+                    static volatile uint32_t juno_preemptions_by_carrier[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_preemptions juno_preemptions_by_carrier[juno_port_carrier_id()]"""
+                    .replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+            source = source.replace("""
+                    extern "C" void juno_thread_backedge() {
+                      yield();
+                      if (juno_preempt_due == 0u || juno_live_threads == 0u) return;
+                      juno_preempt_due = 0u;
+                      juno_sched_block();
+                    }
+                    """, """
+                    extern "C" void juno_thread_backedge() {
+                      juno_gc_safepoint();
+                      juno_port_check_killed();
+                      juno_runtime_enter();
+                      yield();
+                      if (juno_preempt_due == 0u || juno_live_threads == 0u) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      juno_preempt_due = 0u;
+                      juno_sched_block();
+                      juno_runtime_exit();
+                    }
+                    """);
+            // A carrier preempted in Java parks there while the other carrier collects, and a cancelled thread stops.
+            source = source.replace("""
+                    extern "C" uint32_t juno_thread_preempted() {
+                    """, """
+                    extern "C" uint32_t juno_thread_preempted() {
+                      juno_gc_safepoint();
+                      juno_port_check_killed();
+                    """);
+        }
+        return source;
     }
 
     /**
@@ -226,8 +318,38 @@ public final class ThreadRuntime {
      * {@code juno_thread_safepoint} on every method entry, and either switches once the running thread's time slice
      * is over.
      */
-    private String safepointPreemption() {
-        return runtimeSource.load("avr/preemption.cpp");
+    private String safepointPreemption(int carrierCount) {
+        String source = runtimeSource.load("avr/preemption.cpp");
+        if (carrierCount > 1) {
+            source = source.replace("""
+                    static void juno_thread_slice_over() {
+                      if (juno_live_threads == 0u) return;
+                      uint32_t now = static_cast<uint32_t>(millis());
+                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
+                      juno_slice_start = now;
+                      juno_sched_block();
+                    }
+                    """, """
+                    static void juno_thread_slice_over() {
+                      juno_gc_safepoint();
+                      juno_port_check_killed();
+                      juno_runtime_enter();
+                      if (juno_live_threads == 0u) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      uint32_t now = static_cast<uint32_t>(millis());
+                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) {
+                        juno_runtime_exit();
+                        return;
+                      }
+                      juno_slice_start = now;
+                      juno_sched_block();
+                      juno_runtime_exit();
+                    }
+                    """);
+        }
+        return source.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
     }
 
     /**

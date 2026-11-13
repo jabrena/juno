@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -21,7 +21,7 @@ import io.github.jabrena.juno.util.Delay;
  * vehicle. Pick the board with {@code -Djuno.board}.
  */
 public class MagicSquarePFWithHX {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int TRANSMIT_PIN = 3;
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     private static final int SPEED = 5;

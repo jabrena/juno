@@ -40,6 +40,10 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
     private static final String ESPRESSIF_PACKAGE_INDEX_URL =
             "https://espressif.github.io/arduino-esp32/package_esp32_index.json";
 
+    /** Earle Philhower's arduino-pico Boards Manager index, required to resolve the Raspberry Pi Pico 2 W target. */
+    private static final String PICO_PACKAGE_INDEX_URL =
+            "https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json";
+
     @Override
     void run() {
         List<InstallStep> steps = installSteps(arduinoCli());
@@ -61,6 +65,7 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
         steps.add(new InstallStep("Arduino core " + CORE_PLATFORM, () -> cli.installCore(CORE_PLATFORM)));
         steps.add(new InstallStep("Espressif ESP32 core", () -> cli.installCore("esp32:esp32", ESPRESSIF_PACKAGE_INDEX_URL)));
         steps.add(new InstallStep("M5Stack ESP32 core", () -> cli.installCore("m5stack:esp32", M5STACK_PACKAGE_INDEX_URL)));
+        steps.add(new InstallStep("Raspberry Pi Pico core", () -> cli.installCore("rp2040:rp2040", PICO_PACKAGE_INDEX_URL)));
         OPTIONAL_LIBRARIES.forEach(library ->
                 steps.add(new InstallStep("Arduino library " + library, () -> cli.installLibrary(library))));
         return steps;

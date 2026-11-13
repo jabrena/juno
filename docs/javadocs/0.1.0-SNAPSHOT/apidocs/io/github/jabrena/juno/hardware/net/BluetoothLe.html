@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/BluetoothLe.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#class">Help</a></li>
@@ -99,9 +100,9 @@ exchanges messages with one characteristic of that service. It knows no protocol
 <a href="../../remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup"><code>RemotePoweredUpHub</code></a>, frames its own messages.
 
 <p>It exists only on the boards with a BLE adapter: UNO R4 WiFi and UNO Q
-(<a href="../ArduinoUno.html#getBluetoothLe()"><code>ArduinoUno.getBluetoothLe()</code></a>), Nano ESP32, AI Thinker ESP32-CAM and M5Stack
-Cardputer. The UNO R3 and UNO WiFi Rev2 have none, so the compiler rejects those accessor calls. Get it once, at
-startup, and pass it to the protocols built on it.
+(<a href="../MCU.html#getBluetoothLe()"><code>MCU.getBluetoothLe()</code></a>), Nano ESP32, AI Thinker ESP32-CAM, M5Stack
+Cardputer and Raspberry Pi Pico 2 W. The UNO R3 and UNO WiFi Rev2 have none, so the compiler rejects those accessor
+calls. Get it once, at startup, and pass it to the protocols built on it.
 
 <p>The radio holds one connection at a time. Its messages are copied through caller-owned byte arrays, so the calls
 allocate nothing.</div>

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -110,18 +110,18 @@ public final class NanoCarrierRcxDetourNavigator implements NavigationListener {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         // The I2C socket (A4/A5) holds the BMI088, so the receiver sits in the A2/A3 socket.
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getGroveA2());
-        Clock clock = ArduinoNano.getClock();
+        Clock clock = MCU.getClock();
         RcxLink link = new RcxLink(emitter, receiver, clock);
         RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
 
         Serial.println("Joining Wi-Fi from the microSD card");
-        if (!connectWifi(ArduinoNano.getWifi(), carrier.getSdCard())) {
+        if (!connectWifi(MCU.getWifi(), carrier.getSdCard())) {
             while (true) {
                 Serial.println("No Wi-Fi: not driving, since the run could not be followed");
                 Delay.seconds(IDLE_SECONDS);
@@ -135,7 +135,7 @@ public final class NanoCarrierRcxDetourNavigator implements NavigationListener {
         RcxTouchSensor startButton = touchSensor(remote, syslog);
         waitForClick(startButton, syslog);
         // The robot stands still here: measure the bias, then follow the heading on the virtual thread from zero.
-        Bmi088 imu = new Bmi088(ArduinoNano.getI2c(), clock);
+        Bmi088 imu = new Bmi088(MCU.getI2c(), clock);
         imu.recalibrateOffset();
         GyroHeading heading = new GyroHeading(new NanoCarrierRcxGyroDrive.LinkQuietGyroscope(imu, link), clock);
         heading.start();
@@ -163,7 +163,7 @@ public final class NanoCarrierRcxDetourNavigator implements NavigationListener {
         // The FIFO keeps every sample of a fast turn, so the turn is corrected as well.
         pilot.setCorrectTurns(true);
         // The UART socket's signal pin: the IR modules hold A0/A1 and A2/A3, the BMI088 the I2C socket.
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(ArduinoNano.getGpio(), clock, carrier.getGroveUart());
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(MCU.getGpio(), clock, carrier.getGroveUart());
         RangeObstacleDetector detector = new RangeObstacleDetector(ranger, STOP_MILLIMETRES, CLEAR_MILLIMETRES,
                 CONFIRM_READINGS);
         pilot.setObstacleDetector(detector);

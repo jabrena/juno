@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -89,16 +89,16 @@ public final class NanoCarrierRcxDriveACSyslog {
     }
 
     public static void main(String[] args) throws IOException {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        Clock clock = ArduinoNano.getClock();
+        Clock clock = MCU.getClock();
         RcxLink link = new RcxLink(emitter, receiver, clock);
         RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
 
-        while (!connectWifi(ArduinoNano.getWifi(), carrier.getSdCard())) {
+        while (!connectWifi(MCU.getWifi(), carrier.getSdCard())) {
             Serial.println("No Wi-Fi: not driving, since the run could not be followed");
             Delay.seconds(IDLE_SECONDS);
         }

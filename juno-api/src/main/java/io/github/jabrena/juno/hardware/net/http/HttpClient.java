@@ -9,10 +9,8 @@ package io.github.jabrena.juno.hardware.net.http;
  * connection or bridge, and a board that supports the scheme: the UNO Q has no plain-HTTP client, for example.
  *
  * <p>The {@code url} (and {@code body} for {@link #post}, {@link #patch} and {@link #query}) must each be a
- * compile-time constant: a string literal, or {@code System.getenv("NAME")} of a literal environment-variable name,
- * like {@link io.github.jabrena.juno.hardware.net.Wifi#begin}'s credentials. The compiler splits the URL into scheme,
- * host, port and path, so nothing is parsed on the board. Call these methods with the literal in hand, never through
- * another method's own {@code String} parameter. For request headers or a body that depend on runtime data, use
+ * compile-time literal or a runtime string read from a board-side {@code SecretStore}. Runtime URLs are passed to the
+ * bounded request shim without embedding credentials in firmware. For request headers or a body that depend on runtime data, use
  * {@link #post(String, byte[], int, byte[], int, byte[], int, byte[], int, int[])}. For a path that depends on
  * runtime data, use {@link #get(String, byte[], int, byte[], int, byte[], int, int[])} with a base URL. Small
  * protocol drivers that also need a runtime method or path can use {@link #requestHttps}.

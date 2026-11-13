@@ -3,7 +3,6 @@ package io.github.jabrena.juno.hardware.device.sd;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
-import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import org.junit.jupiter.api.DisplayName;
@@ -27,14 +26,12 @@ class ShieldSdCardTest {
     static Stream<Arguments> shields() {
         DataLoggerShield dataLogger = new DataLoggerShield();
         LcdKeypadShield lcd = new LcdKeypadShield(mock(Gpio.class));
-        ArduinoWifiShield wifi = new ArduinoWifiShield();
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(pins());
         TftTouchShield tft = new TftTouchShield(mock(Gpio.class));
         return Stream.of(
                 arguments("Data Logger Shield", (Supplier<SdCard>) dataLogger::getSdCard, 10),
                 arguments("TFT touch shield", (Supplier<SdCard>) tft::getSdCard, 10),
                 arguments("LCD Keypad Shield", (Supplier<SdCard>) lcd::getSdCard, 10),
-                arguments("Arduino WiFi Shield", (Supplier<SdCard>) wifi::getSdCard, 4),
                 arguments("Nano Connector Carrier", (Supplier<SdCard>) carrier::getSdCard,
                         carrier.getSdChipSelect()));
     }

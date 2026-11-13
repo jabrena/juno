@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
@@ -10,8 +12,8 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Reads a request header with {@link HttpServer#header}: connects to WiFi with build-time credentials from
- * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}, prints its {@link Wifi#localIP}, then serves {@code GET /hello}
+ * Reads a request header with {@link HttpServer#header}: connects to WiFi with credentials from the ATECC608
+ * {@code SecretStore}, prints its {@link Wifi#localIP}, then serves {@code GET /hello}
  * on port 80. The reply greets the caller by the {@code X-Client-Name} header ({@code {"hello":"<name>"}}); a request
  * without it gets a {@code 400} RFC 7807 problem detail, and any other route a {@code 404}. Try it with
  * {@code curl -H "X-Client-Name: Ada" http://<ip>/hello}.
@@ -20,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  * to read it. Quotes and backslashes are dropped from the echoed value to keep the JSON body valid.
  */
 public final class HttpServerHeader {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     public static void main(String[] args) {
         new HttpServerHeader().run();
@@ -76,7 +78,7 @@ public final class HttpServerHeader {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

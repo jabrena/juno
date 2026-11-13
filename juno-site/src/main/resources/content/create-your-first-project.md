@@ -129,12 +129,10 @@ Every plugin option can also be passed on the command line. A `-D` property over
 | `outputDirectory` | `juno.outputDirectory` | Where the generated sketch folders are written. |
 | `arenaSize` | `juno.Xmx` | The memory arena size for the program. |
 | `threadStackSize` | `juno.Xss` | The stack size of each Juno thread. |
-| `maxThreads` | `juno.maxThreads` | The maximum number of threads. |
 
 Juno's compiler needs a few JDK modules opened, so add `.mvn/jvm.config` with these lines:
 
 ```text
---add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
@@ -171,7 +169,7 @@ package com.example.testingjuno;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
@@ -179,7 +177,7 @@ import io.github.jabrena.juno.util.Delay;
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class App {
     public static void main(String[] args) {
-        LedMatrix matrix = ArduinoUno.getLedMatrix();
+        LedMatrix matrix = MCU.getLedMatrix();
         matrix.begin();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

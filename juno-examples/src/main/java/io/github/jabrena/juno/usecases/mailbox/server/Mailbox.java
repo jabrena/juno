@@ -2,7 +2,8 @@ package io.github.jabrena.juno.usecases.mailbox.server;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -22,9 +23,9 @@ import io.github.jabrena.juno.util.Delay;
  * The mailbox composition root: shows the Java and Arduino intro, wires the SD-backed model,
  * HTTPS controller and TFT view, then runs the UI and HTTPS tasks together.
  *
- * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. The address
- * shown on the TFT comes from the {@code JUNO_Q_IP} build-time environment variable, the Q's network port in
- * {@code juno:boards}; the Q cannot report it, so the build requires it. The TLS certificate and private key are read
+ * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. Provision the
+ * address shown on the TFT as {@code mailbox.q.ip} with {@code juno:secret}; the Q's network port is listed by
+ * {@code juno:boards}. The TLS certificate and private key are read
  * at startup from {@code /server.crt} and {@code /server.key} (PEM) on the SD card, so the firmware image holds no key
  * and a certificate is replaced without rebuilding (see {@link MailboxCredentials}); the certificate must name the same
  * address in its {@code subjectAltName}.
@@ -39,8 +40,10 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Copy {@code server.crt} and {@code server.key} to the SD card's root, then build it, for example:
  * <pre>{@code
- * JUNO_Q_IP=192.168.1.47 ./mvnw -f juno-examples/pom.xml compile \
- *   juno:upload -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-uno-q
+ * ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
+ *   -Djuno.board=arduino-uno-r4-wifi -Djuno.secret.key=mailbox.q.ip
+ * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ *   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-uno-q
  * }</pre>
  */
 @Board(ArduinoUnoQBoard.class)
@@ -60,7 +63,7 @@ public final class Mailbox {
         MailboxModel model = new MailboxModel(sdCard);
         MailboxSecurity security = new MailboxSecurity(sdCard);
         MailboxView view = new MailboxView(security);
-        String address = System.getenv("JUNO_Q_IP");
+        String address = ExampleSecrets.mailboxQIp();
         view.drawCover(tft, false, 0);
         view.drawIp(tft, address);
         printLocalIP(address);
@@ -69,7 +72,7 @@ public final class Mailbox {
         MailboxStartupState startupState = new MailboxStartupState();
         MailboxController controller = new MailboxController(model, security, uiState);
         byte[] requestBody = new byte[MailboxModel.MAX_REQUEST_BYTES];
-        Clock clock = ArduinoUno.getClock();
+        Clock clock = MCU.getClock();
         MailboxServerTask serverTask = new MailboxServerTask(controller, requestBody, clock);
         Thread.startVirtualThread(new MailboxStartupTask(sdCard, model, security, startupState, uiState, serverTask));
         runUserInterface(tft, view, uiState, startupState, clock);

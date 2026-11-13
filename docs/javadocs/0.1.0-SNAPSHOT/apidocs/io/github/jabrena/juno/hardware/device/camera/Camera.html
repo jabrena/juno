@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/Camera.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -93,10 +94,12 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Camera</span></div>
 <div class="block">A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.
 
-<p>Take the camera from its board once, at startup: <a href="../../Esp32Cam.html#getCamera()"><code>Esp32Cam.getCamera()</code></a> for
-the AI Thinker ESP32-CAM's OV2640. Call <a href="#begin()"><code>begin()</code></a> once before capturing. Each <a href="#capture(byte%5B%5D)"><code>capture(byte[])</code></a> waits
-for the next frame and copies it into the buffer, so the program allocates the buffer once and reuses it in its loop.
-A frame that does not fit the buffer is reported as a failure rather than truncated.</div>
+<p>Take the camera from its board once, at startup: <a href="../../MCU.html#getCamera()"><code>MCU.getCamera()</code></a> for
+the AI Thinker ESP32-CAM's OV2640. Call <a href="#begin()"><code>begin()</code></a> once before capturing and check its result before starting
+networking or a capture loop. On the ESP32-CAM the native camera driver owns its PSRAM frame buffers; each
+<a href="#capture(byte%5B%5D)"><code>capture(byte[])</code></a> waits for the next frame, copies it into the caller-owned buffer and returns the driver frame
+immediately, so the program allocates the Java buffer once and reuses it in its loop. A frame that does not fit the
+buffer is reported as a failure rather than truncated.</div>
 </div>
 </section>
 <section class="summary">

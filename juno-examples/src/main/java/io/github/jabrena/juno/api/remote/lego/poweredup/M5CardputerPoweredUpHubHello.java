@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
@@ -37,7 +37,7 @@ public class M5CardputerPoweredUpHubHello {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("M5CardputerPoweredUpHubHello started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(M5StackCardputer.getBluetoothLe(), M5StackCardputer.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");

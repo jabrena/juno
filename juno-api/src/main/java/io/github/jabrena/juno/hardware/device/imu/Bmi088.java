@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.imu;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -65,6 +66,11 @@ public final class Bmi088 implements Accelerometer, BufferedGyroscope, SamplePro
     private int lastMillis;
     private boolean started;
     private int bufferedSamples;
+
+    /** The Grove module on the board's own I2C bus and monotonic clock ({@link MCU#getI2c()}, {@link MCU#getClock()}). */
+    public Bmi088() {
+        this(MCU.getI2c(), MCU.getClock());
+    }
 
     /** The Grove module on {@code i2c}; collaborators may be mocks in a unit test. */
     public Bmi088(I2c i2c, Clock clock) {

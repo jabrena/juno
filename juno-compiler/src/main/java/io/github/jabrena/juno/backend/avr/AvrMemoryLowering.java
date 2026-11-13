@@ -39,6 +39,29 @@ final class AvrMemoryLowering {
                 layout.fieldOffset(store.field()));
     }
 
+    void emitInstanceOf(StringBuilder output, FrameLayout frame, IrInstruction.InstanceOf check) {
+        avr.loadPointer(output, frame, check.value());
+        avr.load(output, frame, A, check.value());
+        avr.testZero(output, A);
+        String nonNull = avr.newLabel(".LinstanceofNonNull");
+        String done = avr.newLabel(".LinstanceofDone");
+        output.append("    brne ").append(nonNull).append('\n');
+        avr.loadImmediate(output, A, 0);
+        output.append("    rjmp ").append(done).append('\n')
+                .append(nonNull).append(":\n");
+        avr.loadFromZ(output, A, 0, AvrEmitter.WORD);
+        avr.loadImmediate(output, B, check.typeId());
+        avr.compareQuads(output, A, B);
+        String equal = avr.newLabel(".LinstanceofEqual");
+        output.append("    breq ").append(equal).append('\n');
+        avr.loadImmediate(output, A, 0);
+        output.append("    rjmp ").append(done).append('\n')
+                .append(equal).append(":\n");
+        avr.loadImmediate(output, A, 1);
+        output.append(done).append(":\n");
+        avr.store(output, frame, A, check.target());
+    }
+
     void emitLoadStatic(StringBuilder output, FrameLayout frame, IrInstruction.LoadStatic load) {
         String symbol = layout.staticSymbol(load.field());
         loadStatic(output, A, symbol, 0);

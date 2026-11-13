@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -49,9 +49,9 @@ public class RcxRegulatedTravelAndTurn {
     private static final int IDLE_SECONDS = 5;
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD4()),
-                ArduinoUno.getClock());
+                MCU.getClock());
         DriveGeometry geometry = new DriveGeometry(WHEEL_DIAMETER_MILLIMETRES, TRACK_WIDTH_MILLIMETRES,
                 LEFT_DEGREES_PER_WHEEL_REVOLUTION, RIGHT_DEGREES_PER_WHEEL_REVOLUTION);
         RcxRegulatedDifferentialDrive drive = new RcxRegulatedDifferentialDrive(link, SESSION,

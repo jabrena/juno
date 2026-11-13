@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.hardware.display.Display;
 
-/** The M5Stack Cardputer's {@link Display}, implemented by compiler intrinsics over M5StackCardputer.Display. */
+/** The M5Stack Cardputer's {@link Display}, implemented by compiler intrinsics over the Cardputer keyboard. */
 public final class NativeDisplay implements Display {
     public static final NativeDisplay INSTANCE;
 
@@ -16,12 +16,12 @@ public final class NativeDisplay implements Display {
     private NativeDisplay() {
     }
 
-    /** The display the M5StackCardputer facade hands out. */
+    /** The display the MCU facade hands out. */
     public static Display display() {
         return display;
     }
 
-    /** Makes the M5StackCardputer facade hand out {@code replacement}: for a whole-program emulator in a test, never on the board. */
+    /** Makes MCU hand out {@code replacement}: for a whole-program emulator in a test, never on the board. */
     public static void setDisplay(Display replacement) {
         display = replacement;
     }

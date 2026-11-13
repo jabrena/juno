@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Package</li>
 <li><a href="package-use.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#package">Help</a></li>
@@ -81,7 +82,7 @@ initTheme();
 <div class="package-signature"><span class="annotations">@NullMarked
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.net</span></div>
 <section class="package-description" id="package-description">
-<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and the UNO R3 with the Arduino WiFi Shield:
+<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q and UNO WiFi Rev2:
 <a href="Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> connects and reads the board's address. Built on top of this
 connection, the <a href="udp/package-summary.html"><code>io.github.jabrena.juno.hardware.net.udp</code></a> subpackage provides allocation-free UDP and the SNTP
 clock behind <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a>, <a href="http/package-summary.html"><code>io.github.jabrena.juno.hardware.net.http</code></a> HTTP(S) client/server support and JSON reading, and
@@ -98,8 +99,8 @@ clock behind <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.ba
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -147,7 +148,7 @@ exchanges messages with one characteristic of that service.</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
-<a href="../ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> and <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
+<a href="../MCU.html#getWifi()"><code>MCU.getWifi()</code></a> and <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>
 </div>
 </div>

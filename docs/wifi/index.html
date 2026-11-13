@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -322,14 +324,13 @@ document.addEventListener('DOMContentLoaded', function () {
 <p><code>Wifi</code> connects a Juno program to a Wi-Fi network. Get the radio once at startup, call <code>begin</code> with the network's name
 and password, and wait until <code>status</code> reports that the connection is up.</p>
 <h2 id="connecting-to-wi-fi">Connecting to Wi-Fi</h2>
-<p>Get the board's radio once, at startup. <code>ArduinoUno.getWifi()</code> returns it on the boards with onboard Wi-Fi (UNO R4
-WiFi, UNO WiFi Rev2 and UNO Q). The UNO R3 has no radio, so the compiler rejects <code>ArduinoUno.getWifi()</code> there; stack the
-retired <a href="https://docs.arduino.cc/retired/shields/arduino-wifi-shield/">Arduino WiFi Shield</a> and take the same <code>Wifi</code>
-from <code>new ArduinoWifiShield().getWifi()</code> instead. A unit test passes <code>mock(Wifi.class)</code>.</p>
+<p>Get the board's radio once, at startup. <code>MCU.getWifi()</code> returns it on the boards with onboard Wi-Fi (UNO R4
+WiFi, UNO WiFi Rev2 and UNO Q). The UNO R3 has no radio and no network support, so the compiler rejects
+<code>MCU.getWifi()</code> there. A unit test passes <code>mock(Wifi.class)</code>.</p>
 <p>The credentials stay on the microSD card (see <a href="../sdcard">SD Card</a>), so they are not written in the source. <code>Wifi.begin</code>
 starts the connection; poll <code>Wifi.status()</code> until it equals <code>Wifi.STATUS_CONNECTED</code> before using the network:</p>
 <pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open(&quot;application.properties&quot;)) {

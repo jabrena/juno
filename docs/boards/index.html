@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -316,14 +319,15 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Boards</h1>
 </header>
     <div class="content-prose">
-<p>Juno compiles the same Java program for seven boards through three backends: <strong>AVR</strong> for the 8-bit
-UNO R3 and UNO WiFi Rev2, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi and UNO Q, and <strong>Xtensa</strong> for
-the ESP32-S3 Nano ESP32 and M5Stack Cardputer. Pick the target with the entry point's <code>@Board</code>
-annotation or with <code>-Djuno.board=&lt;id&gt;</code>.</p>
+<p>Juno compiles the same Java program for eight boards through three backends: <strong>AVR</strong> for the 8-bit
+UNO R3 and UNO WiFi Rev2, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi, UNO Q and Raspberry Pi Pico 2 W, and
+<strong>Xtensa</strong> for the Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM. Pick the target with the entry point's
+<code>@Board</code> annotation or with <code>-Djuno.board=&lt;id&gt;</code>.</p>
 <h2 id="hardware-at-a-glance">Hardware at a glance</h2>
-<p>Boards are ordered from the most capable to the smallest: the ESP32-S3 boards first, then the ESP32-CAM, the
-UNO Q's Linux-plus-MCU platform, and finally the UNO family. Within a class, CPU, memory and peripherals
-break the tie.</p>
+<p>Boards are ordered by clock speed, then flash, SRAM and PSRAM, highest first. PSRAM is external RAM on the
+module, slower than the SRAM inside the chip.</p>
+<p>Juno never places ordinary Java objects, arrays or stacks in PSRAM. The Nano ESP32 and AI Thinker ESP32-CAM expose the
+static <code>Psram</code> byte-buffer API; the camera board also keeps its driver-owned frame buffers there behind <code>Camera</code>.</p>
 <table>
 <thead>
 <tr>
@@ -332,6 +336,7 @@ break the tie.</p>
 <th>M5Stack Cardputer</th>
 <th>AI Thinker ESP32-CAM</th>
 <th>UNO Q</th>
+<th>Raspberry Pi Pico 2 W</th>
 <th>UNO R4 WiFi</th>
 <th>UNO WiFi Rev2</th>
 <th>UNO R3</th>
@@ -344,6 +349,7 @@ break the tie.</p>
 <td>ESP32-S3</td>
 <td>ESP32 Q</td>
 <td>STM32U585</td>
+<td>RP2350A</td>
 <td>Renesas RA4M1</td>
 <td>ATmega4809</td>
 <td>ATmega328P</td>
@@ -354,6 +360,7 @@ break the tie.</p>
 <td>Dual-core 32-bit Xtensa LX7</td>
 <td>Dual-core 32-bit Xtensa LX6</td>
 <td>32-bit Cortex-M33F</td>
+<td>Dual-core 32-bit Cortex-M33F</td>
 <td>32-bit Cortex-M4F</td>
 <td>8-bit megaAVR</td>
 <td>8-bit AVR</td>
@@ -364,6 +371,7 @@ break the tie.</p>
 <td>240 MHz</td>
 <td>240 MHz</td>
 <td>160 MHz</td>
+<td>150 MHz</td>
 <td>48 MHz</td>
 <td>16 MHz</td>
 <td>16 MHz</td>
@@ -374,22 +382,36 @@ break the tie.</p>
 <td>8 MB</td>
 <td>4 MB</td>
 <td>2 MB</td>
+<td>4 MB</td>
 <td>256 kB</td>
 <td>48 kB</td>
 <td>32 kB</td>
 </tr>
 <tr>
 <td>SRAM</td>
-<td>512 kB + 8 MB PSRAM</td>
 <td>512 kB</td>
-<td>520 kB + 4 MB PSRAM</td>
+<td>512 kB</td>
+<td>520 kB</td>
 <td>786 kB</td>
+<td>520 kB</td>
 <td>32 kB</td>
 <td>6 kB</td>
 <td>2 kB</td>
 </tr>
 <tr>
+<td>PSRAM</td>
+<td>8 MB</td>
+<td>—</td>
+<td>4 MB</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
 <td>Logic level</td>
+<td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
@@ -404,9 +426,10 @@ break the tie.</p>
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE on the Linux side</td>
+<td>CYW43439 Wi-Fi/BLE</td>
 <td>ESP32-S3 Wi-Fi/BLE</td>
 <td>NINA-W102 Wi-Fi/BLE</td>
-<td>None (WiFi Shield)</td>
+<td>None</td>
 </tr>
 <tr>
 <td>Extras</td>
@@ -414,6 +437,7 @@ break the tie.</p>
 <td>Display, keyboard, speaker, battery</td>
 <td>OV2640 camera, microSD socket</td>
 <td>13×8 LED matrix, Linux MPU</td>
+<td>Built-in LED on the radio chip</td>
 <td>12×8 LED matrix</td>
 <td>Secure element, IMU</td>
 <td></td>
@@ -424,6 +448,7 @@ break the tie.</p>
 <td><code>m5stack: esp32</code></td>
 <td><code>esp32: esp32</code></td>
 <td><code>arduino: zephyr</code></td>
+<td><code>rp2040: rp2040</code></td>
 <td><code>arduino: renesas_uno</code></td>
 <td><code>arduino: megaavr</code></td>
 <td><code>arduino: avr</code></td>
@@ -434,6 +459,7 @@ break the tie.</p>
 <td><code>m5stack-cardputer</code></td>
 <td><code>ai-thinker-esp32-cam</code></td>
 <td><code>arduino-uno-q</code></td>
+<td><code>raspberry-pi-pico-2-w</code></td>
 <td><code>arduino-uno-r4-wifi</code></td>
 <td><code>arduino-uno-r3-wifi-rev2</code></td>
 <td><code>arduino-uno-r3</code></td>
@@ -452,6 +478,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <th align="center">M5Stack Cardputer</th>
 <th align="center">AI Thinker ESP32-CAM</th>
 <th align="center">UNO Q</th>
+<th align="center">Raspberry Pi Pico 2 W</th>
 <th align="center">UNO R4 WiFi</th>
 <th align="center">UNO WiFi Rev2</th>
 <th align="center">UNO R3</th>
@@ -460,6 +487,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <tbody>
 <tr>
 <td>GPIO and board-context pin resolution</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -477,12 +505,14 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Double-precision <code>Math</code> functions</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
@@ -496,6 +526,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center">—</td>
 </tr>
 <tr>
@@ -506,13 +537,15 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">WiFi Shield</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>Wi-Fi access point</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -526,13 +559,15 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">WiFi Shield</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>HTTPS client</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -546,6 +581,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center">—</td>
 </tr>
 <tr>
@@ -553,6 +589,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -567,12 +604,14 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -584,12 +623,14 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
 </tr>
 <tr>
 <td>Bluetooth LE (LEGO Powered Up)</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -605,6 +646,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
 </tr>
@@ -614,12 +656,14 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Onboard IMU (<code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code>)</td>
+<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
+<td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -629,10 +673,11 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Camera (<code>Esp32Cam.getCamera()</code>)</td>
+<td>Camera (<code>MCU.getCamera()</code>)</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -647,6 +692,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Cryptographic <code>UUID.randomUUID()</code></td>
@@ -654,6 +700,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
@@ -667,6 +714,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
+<td align="center">—</td>
 </tr>
 </tbody>
 </table>
@@ -674,10 +722,11 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 support fails with a <code>CompileException</code> naming the board and the missing capability. Some cells
 are compiled support that has not yet been run on every physical board; each board's page notes
 what is confirmed on hardware.</p>
-<p>Every board exposes <code>Gpio.digitalPin(&quot;D0&quot;..&quot;D13&quot;)</code> and <code>Gpio.analogPin(&quot;A0&quot;..&quot;A5&quot;)</code> through its board facade.
+<p>Every board exposes <code>Gpio.digitalPin(&quot;D0&quot;..&quot;D13&quot;)</code> and <code>Gpio.analogPin(&quot;A0&quot;..&quot;A5&quot;)</code> through <code>MCU</code>.
 The selected runtime translates those names to the board's pin mapping. <code>getInput()</code>, <code>getOutput()</code> and
 <code>getInputPullup()</code> are also board-context methods. Invalid names raise <code>IllegalArgumentException</code>; the M5Stack Cardputer
-additionally accepts its documented <code>G*</code> and <code>GPIO*</code> aliases. See <a href="../gpio">GPIO</a> for examples.</p>
+additionally accepts its documented <code>G*</code> and <code>GPIO*</code> aliases. The Raspberry Pi Pico 2 W maps <code>A0</code>..<code>A2</code> to its ADC
+pins GP26..GP28 (it has no <code>A3</code>..<code>A5</code>) and also accepts <code>GP*</code> and <code>GPIO*</code> names for its header pins. See <a href="../gpio">GPIO</a> for examples.</p>
     </div>
   </section>
 </article>

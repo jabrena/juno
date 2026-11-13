@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="active" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="active" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -319,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <p>The Arduino UNO WiFi Rev2 combines an 8-bit ATmega4809 microcontroller with a u-blox NINA-W102 radio module. It keeps
 the familiar UNO form factor and 5 V GPIO while adding Wi-Fi, Bluetooth, a secure element and a six-axis IMU. Juno
 compiles for the ATmega4809 with its <strong>AVR backend</strong> and links against the <code>arduino:megaavr</code> core and the <code>WiFiNINA</code>
-library; the <code>ArduinoUno</code> device facade is the entry point for the board's peripherals.</p>
+library; the <code>MCU</code> facade is the entry point for the board's peripherals.</p>
 <img src="../images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2" width="280">
 <h2 id="core-specification">Core specification</h2>
 <table>
@@ -502,7 +505,7 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <td></td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code> (LSM6DS3TR, over <code>ArduinoUno.getSpi()</code>)</td>
+<td><code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code> (LSM6DS3TR, over <code>MCU.getSpi()</code>)</td>
 <td align="center">✓</td>
 <td>Heading and yaw rate from the gyroscope, acceleration on each axis from the accelerometer; no magnetometer, so the heading is integrated gyro yaw and drifts.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
@@ -519,7 +522,7 @@ library; the <code>ArduinoUno</code> device facade is the entry point for the bo
 <p>These need only the UNO WiFi Rev2 and its USB cable.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
 <p><code>getBuiltinLed()</code> is logical pin 25 on this board, not D13:</p>
-<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -531,11 +534,11 @@ while (true) {
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
 <code>-Djuno.board=arduino-uno-r3-wifi-rev2</code>.</p>
 <h3 id="read-the-onboard-imu">Read the onboard IMU</h3>
-<p>The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. <code>ArduinoUno.getGyroscope()</code> and
-<code>ArduinoUno.getAccelerometer()</code> return the same sensor as two interfaces. The first call starts it, which measures the
+<p>The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. <code>MCU.getGyroscope()</code> and
+<code>MCU.getAccelerometer()</code> return the same sensor as two interfaces. The first call starts it, which measures the
 gyroscope's bias for about 2 s, so keep the board still then:</p>
-<pre><code class="language-java">Gyroscope gyroscope = ArduinoUno.getGyroscope();
-Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+<pre><code class="language-java">Gyroscope gyroscope = MCU.getGyroscope();
+Accelerometer accelerometer = MCU.getAccelerometer();
 
 while (true) {
     Serial.print(gyroscope.getAngle());               // heading in whole degrees, clockwise from startup
@@ -578,7 +581,7 @@ while (true) {
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
 module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
-<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -626,7 +629,7 @@ while (true) {
 that Juno does not drive. Format the card as FAT16 or FAT32. Keep the network's credentials on the card rather than
 in the source: put <code>wifi.ssid</code> and <code>wifi.password</code> in <code>application.properties</code> at the card's root, then:</p>
 <pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open(&quot;application.properties&quot;)) {

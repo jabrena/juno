@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/ArduinoUnoR3Board.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../search.html">Search</a></li>
 <li><a href="../../../../../help-doc.html#class">Help</a></li>
@@ -93,14 +94,8 @@ implements <a href="BoardSupported.html" title="interface in io.github.jabrena.j
 <div class="block">Selects the classic Arduino UNO R3 as <a href="Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target: Juno programs run on its ATmega328P, an 8-bit
 AVR with 2 KB SRAM and 32 KB flash, under Arduino's <code>arduino:avr</code> core. It supports the basic GPIO, analog,
 serial, I2C, and SPI APIs that fit its memory; its <code>java.math</code> support is bounded by the 1 KiB runtime arena.
-It has no LED matrix, native USB HID, task scheduler or onboard radio, so <code>ArduinoUno.getWifi()</code> does not
-compile for it. With the retired Arduino WiFi Shield stacked on it, the <code>Wifi</code> from
-<code>new ArduinoWifiShield().getWifi()</code> (<code>begin</code>,
-<code>status</code>, <code>localIP</code>, <code>gatewayIP</code>, <code>macAddress</code>), <code>Udp</code>, <code>Tcp</code> and
-plain-HTTP <code>HttpClient</code> requests run through Arduino's legacy <code>WiFi</code> library; there is no access point
-or HTTPS, the shield uses D10
-(Wi-Fi), D4 (its SD card) and D7 (handshake), and a shield that does not answer makes <code>Wifi.status()</code> report
-<code>Wifi.STATUS_NO_SHIELD</code>. Only small network programs fit: build them with <code>-Djuno.Xmx=512</code>.</div>
+It has no LED matrix, native USB HID, task scheduler or onboard radio, and no network support: <code>Wifi</code>,
+<code>Udp</code>, <code>Tcp</code>, <code>HttpClient</code> and <code>LocalDateTime.now()</code> do not compile for it.</div>
 </div>
 </section>
 <section class="summary">

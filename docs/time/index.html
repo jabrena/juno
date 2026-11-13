@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -379,11 +381,11 @@ time and <code>Clock</code> for intervals.</p>
 <h2 id="reading-the-time-with-localdatetimenow">Reading the time with LocalDateTime.now()</h2>
 <p><code>LocalDateTime.now()</code> needs the board to be on a Wi-Fi network first. Connect with <a href="../wifi"><code>Wifi</code></a>, wait until
 <code>status()</code> reports <code>Wifi.STATUS_CONNECTED</code>, and then call <code>now()</code>:</p>
-<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import java.time.LocalDateTime;
 
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 wifi.begin(ssid, password);
 while (wifi.status() != Wifi.STATUS_CONNECTED) {
     Delay.millis(500);
@@ -423,11 +425,10 @@ and the port must be between 1 and 65535; otherwise <code>configure</code> retur
 loaded <code>Properties</code> is typically read from the SD card as shown in <a href="../sdcard">SD Card</a>.</p>
 <h2 id="measuring-elapsed-time-with-clock">Measuring elapsed time with Clock</h2>
 <p><code>Clock</code> is the board's own monotonic counter, so it does not depend on Wi-Fi. Get it once at startup with
-<code>ArduinoUno.getClock()</code> and pass it to whatever needs it:</p>
-<pre><code class="language-java">import io.github.jabrena.juno.hardware.ArduinoUno;
-import io.github.jabrena.juno.hardware.time.Clock;
+<code>MCU.getClock()</code> and pass it to whatever needs it:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.time.Clock;
 
-Clock clock = ArduinoUno.getClock();
+Clock clock = MCU.getClock();
 
 int start = clock.millis();
 doWork();

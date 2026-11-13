@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.carrier;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -42,7 +43,7 @@ import org.jspecify.annotations.Nullable;
  *       (white) wires are {@link #getA1()} and {@link #getA3()}.</li>
  *   <li>{@link #getGroveUart()}: RX on D0; TX on D1 is {@link #getUartTx()}. These are the Nano's hardware serial
  *       pins, free on the Nano ESP32, whose {@code Serial} is USB.</li>
- *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@code ArduinoNano.getI2c()}. Use it for I2C
+ *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@code MCU.getI2c()}. Use it for I2C
  *       modules only: the bus pull-ups distort a digital module's output, and a Grove PIR measured about 1.4 V at
  *       rest here, neither low nor high. Plug such a module into an analog socket instead.</li>
  * </ul>
@@ -73,6 +74,11 @@ public final class NanoConnectorCarrier {
     private final int uartRx;
     private final int uartTx;
     private @Nullable SdCard sdCard;
+
+    /** Creates the carrier handle on the board's own GPIO pins ({@link MCU#getGpio()}). Create it once, at startup. */
+    public NanoConnectorCarrier() {
+        this(MCU.getGpio());
+    }
 
     /** Creates the carrier handle for a board GPIO context. Create it once, at startup, and reuse it. */
     public NanoConnectorCarrier(Gpio gpio) {

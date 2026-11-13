@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -18,13 +18,13 @@ import java.net.InetAddress;
 /**
  * Small UDP probe: joins Wi-Fi with the credentials in {@code application.properties} on the Cardputer's microSD card, listens on port 4210, broadcasts
  * a {@code juno} hello there every five seconds and echoes every packet it receives back to its sender, reporting both
- * at 115200 baud. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}); from a
+ * at 115200 baud. From a
  * computer on the same network, {@code nc -u <board-ip> 4210} sends packets and shows the echoes.
  */
 @Board(M5StackCardputerBoard.class)
 public final class M5SocketDatagramEcho {
-    private static final Wifi WIFI = M5StackCardputer.getWifi();
-    private static final SdCard SD_CARD = M5StackCardputer.getSd();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = MCU.getSdCard();
 
     private static final int PORT = 4210;
     private static final int HELLO_INTERVAL_MILLIS = 5000;

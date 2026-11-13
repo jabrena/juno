@@ -30,6 +30,7 @@ initTheme();
 <li><a href="../DriveGeometry.html">Class</a></li>
 <li class="nav-bar-cell1-rev">Use</li>
 <li><a href="../package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#use">Help</a></li>
@@ -73,13 +74,51 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.remote.lego.rcx">io.github.jabrena.juno.remote.lego.rcx</a></div>
 <div class="col-last even-row-color">
+<div class="block">LEGO Mindstorms RCX infrared remote control, brick commands, sensors, and firmware transfer.</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.robotics.navigation">io.github.jabrena.juno.robotics.navigation</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Board-independent motion coordination.</div>
 </div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.remote.lego.rcx">
+<h2>Uses of <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a> in <a href="../../../remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a></h2>
+<div class="caption"><span>Constructors in <a href="../../../remote/lego/rcx/package-summary.html">io.github.jabrena.juno.remote.lego.rcx</a> with parameters of type <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../../remote/lego/rcx/RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry)" class="member-name-link">RcxRegulatedDifferentialDrive</a><wbr>(<a href="../../../remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ int&nbsp;session,
+ int&nbsp;configurationFlags,
+ int&nbsp;sensorStepsPerMotorRevolution,
+ <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the drive over <code>link</code> for <code>session</code> (1..255), with the pair's <code>configurationFlags</code> (its
+<code>INVERT_*</code> and <a href="../../../remote/lego/rcx/RcxRegulatedPair.html#BRAKE_ON_STOP"><code>RcxRegulatedPair.BRAKE_ON_STOP</code></a> bits and <a href="../../../remote/lego/rcx/RcxRegulatedPair.html#maxPower(int)"><code>RcxRegulatedPair.maxPower(int)</code></a>), the
+rotation sensor's steps per motor revolution, and the measured <code>geometry</code>.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../../remote/lego/rcx/RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)" class="member-name-link">RcxRegulatedDifferentialDrive</a><wbr>(<a href="../../../remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a>&nbsp;link,
+ int&nbsp;session,
+ int&nbsp;configurationFlags,
+ int&nbsp;sensorStepsPerMotorRevolution,
+ <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ boolean&nbsp;sidesSwapped)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the drive as <a href="../../../remote/lego/rcx/RcxRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.remote.lego.rcx.RcxLink,int,int,int,io.github.jabrena.juno.robotics.navigation.DriveGeometry)"><code>RcxRegulatedDifferentialDrive(RcxLink, int, int, int, DriveGeometry)</code></a> does; with
+<code>sidesSwapped</code>, the pair's left side (motor A) drives the robot's right wheel, so a counter-clockwise turn
+still turns counter-clockwise.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.robotics.navigation">
 <h2>Uses of <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a> in <a href="../package-summary.html">io.github.jabrena.juno.robotics.navigation</a></h2>
@@ -102,6 +141,14 @@ initTheme();
  <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry)</code></div>
 <div class="col-last odd-row-color">
 <div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../RegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.robotics.RegulatedPair,io.github.jabrena.juno.robotics.navigation.DriveGeometry,boolean)" class="member-name-link">RegulatedDifferentialDrive</a><wbr>(<a href="../../RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a>&nbsp;pair,
+ <a href="../DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ boolean&nbsp;sidesSwapped)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the drive over <code>pair</code> with <code>geometry</code>; with <code>sidesSwapped</code>, the pair's left side drives
+the robot's right wheel and its right side the left wheel.</div>
 </div>
 </div>
 </section>

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -19,13 +19,13 @@ import java.net.InetAddress;
 /**
  * Small UDP probe: joins Wi-Fi with the credentials in {@code application.properties} on the Nano carrier's microSD card, listens on port 4210, broadcasts
  * a {@code juno} hello there every five seconds and echoes every packet it receives back to its sender, reporting both
- * at 115200 baud. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}); from a
+ * at 115200 baud. From a
  * computer on the same network, {@code nc -u <board-ip> 4210} sends packets and shows the echoes.
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketDatagramEcho {
-    private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
 
     private static final int PORT = 4210;
     private static final int HELLO_INTERVAL_MILLIS = 5000;

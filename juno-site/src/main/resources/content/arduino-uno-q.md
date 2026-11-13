@@ -7,7 +7,7 @@ layout: page
 The UNO Q combines two processors on one UNO-form-factor board. A Qualcomm Dragonwing QRB2210
 runs Debian Linux for application-level and multimedia workloads, while an STM32U585 runs Arduino
 sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller with its
-Thumb-2 backend; it does not run generated Java programs on the Linux processor. The `ArduinoUno` device facade is
+Thumb-2 backend; it does not run generated Java programs on the Linux processor. The `MCU` facade is
 the entry point for the board's peripherals, the same one the UNO R4 WiFi uses.
 
 <img src="../images/boards/arduino-uno-q.png" alt="Arduino UNO Q" width="280">
@@ -60,7 +60,7 @@ These need only the UNO Q and its USB-C cable.
 ### Blink the built-in LED
 
 ```java
-DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -78,7 +78,7 @@ while (true) {
 The UNO Q's matrix is 13 columns by 8 rows. `LedCanvas` draws into a frame and `show` sends it to the matrix:
 
 ```java
-LedMatrix matrix = ArduinoUno.getLedMatrix();
+LedMatrix matrix = MCU.getLedMatrix();
 matrix.begin();
 boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

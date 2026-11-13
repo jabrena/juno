@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="active" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
     <a class="active" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -319,7 +322,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <p>The UNO Q combines two processors on one UNO-form-factor board. A Qualcomm Dragonwing QRB2210
 runs Debian Linux for application-level and multimedia workloads, while an STM32U585 runs Arduino
 sketches under Zephyr for deterministic real-time I/O. Juno targets the STM32 microcontroller with its
-Thumb-2 backend; it does not run generated Java programs on the Linux processor. The <code>ArduinoUno</code> device facade is
+Thumb-2 backend; it does not run generated Java programs on the Linux processor. The <code>MCU</code> facade is
 the entry point for the board's peripherals, the same one the UNO R4 WiFi uses.</p>
 <img src="../images/boards/arduino-uno-q.png" alt="Arduino UNO Q" width="280">
 <h2 id="core-specification">Core specification</h2>
@@ -500,7 +503,7 @@ STM32U585's complete flash and SRAM.</p>
 <h2 id="features">Features</h2>
 <p>These need only the UNO Q and its USB-C cable.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
-<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -513,7 +516,7 @@ while (true) {
 <code>-Djuno.board=arduino-uno-q</code>.</p>
 <h3 id="scroll-text-on-the-led-matrix">Scroll text on the LED matrix</h3>
 <p>The UNO Q's matrix is 13 columns by 8 rows. <code>LedCanvas</code> draws into a frame and <code>show</code> sends it to the matrix:</p>
-<pre><code class="language-java">LedMatrix matrix = ArduinoUno.getLedMatrix();
+<pre><code class="language-java">LedMatrix matrix = MCU.getLedMatrix();
 matrix.begin();
 boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 

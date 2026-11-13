@@ -30,6 +30,7 @@ initTheme();
 <li><a href="../Spi.html">Class</a></li>
 <li class="nav-bar-cell1-rev">Use</li>
 <li><a href="../package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#use">Help</a></li>
@@ -75,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -102,9 +103,9 @@ the program's flash usage).</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getSpi()" class="member-name-link">getSpi</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getSpi()" class="member-name-link">getSpi</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The board's primary SPI bus (SCK, MOSI and MISO); a device's chip select is a <a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a> pin the program drives.</div>
+<div class="block">The selected board's primary SPI bus.</div>
 </div>
 </div>
 </section>
@@ -150,7 +151,7 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="col-first even-row-color"><code>static <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeSpi.</span><code><a href="../../internal/NativeSpi.html#spi()" class="member-name-link">spi</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The bus <a href="../../ArduinoUno.html#getSpi()"><code>ArduinoUno.getSpi()</code></a> hands out.</div>
+<div class="block">The bus <a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></span></div>
@@ -161,7 +162,7 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeSpi.</span><code><a href="../../internal/NativeSpi.html#setSpi(io.github.jabrena.juno.hardware.spi.Spi)" class="member-name-link">setSpi</a><wbr>(<a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes <a href="../../ArduinoUno.html#getSpi()"><code>ArduinoUno.getSpi()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>

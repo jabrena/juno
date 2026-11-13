@@ -2,10 +2,10 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.util.Delay;
 
@@ -26,7 +26,7 @@ public class M5CardputerMotorEncoders {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("M5CardputerMotorEncoders started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(M5StackCardputer.getBluetoothLe(), M5StackCardputer.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");
@@ -35,32 +35,32 @@ public class M5CardputerMotorEncoders {
                     Delay.millis(1000);
                     continue;
                 }
-                hub.enableSensor(HubPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
-                hub.enableSensor(HubPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                hub.enableSensor(PoweredUpPort.A, RemotePoweredUpHub.MODE_MOTOR_POSITION);
+                hub.enableSensor(PoweredUpPort.B, RemotePoweredUpHub.MODE_MOTOR_POSITION);
                 Serial.println("Connected; encoders enabled on A and B");
                 Serial.print("battery ");
                 Serial.print(hub.batteryPercent());
                 Serial.println(" %");
             }
-            hub.getMotor(HubPort.A).drive(DRIVE_POWER_PERCENT);
+            hub.getMotor(PoweredUpPort.A).drive(DRIVE_POWER_PERCENT);
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.A).stop();
+            hub.getMotor(PoweredUpPort.A).stop();
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.B).drive(DRIVE_POWER_PERCENT);
+            hub.getMotor(PoweredUpPort.B).drive(DRIVE_POWER_PERCENT);
             Delay.millis(DRIVE_MILLIS);
-            hub.getMotor(HubPort.B).stop();
+            hub.getMotor(PoweredUpPort.B).stop();
             Delay.millis(DRIVE_MILLIS);
             if (!hub.isConnected()) {
                 Serial.println("Hub disconnected");
             } else {
                 Serial.print("A degrees=");
-                Serial.print(hub.readSensor(HubPort.A));
+                Serial.print(hub.readSensor(PoweredUpPort.A));
                 Serial.print(" reports=");
-                Serial.print(hub.sensorReportCount(HubPort.A));
+                Serial.print(hub.sensorReportCount(PoweredUpPort.A));
                 Serial.print(" | B degrees=");
-                Serial.print(hub.readSensor(HubPort.B));
+                Serial.print(hub.readSensor(PoweredUpPort.B));
                 Serial.print(" reports=");
-                Serial.print(hub.sensorReportCount(HubPort.B));
+                Serial.print(hub.sensorReportCount(PoweredUpPort.B));
                 Serial.print(" | battery=");
                 Serial.println(hub.batteryPercent());
             }

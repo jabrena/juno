@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 
 @DisplayName("Powered Up hub version word")
 class RemotePoweredUpHubTest {
-    private final RemotePoweredUpHub hub = new RemotePoweredUpHub(mock(PoweredUpPort.class), mock(Clock.class));
+    private final RemotePoweredUpHub hub = new RemotePoweredUpHub(mock(PoweredUpTransport.class), mock(Clock.class));
 
     @Test
     @DisplayName("Unpacks major, minor, BCD bug-fix and build from a version word")

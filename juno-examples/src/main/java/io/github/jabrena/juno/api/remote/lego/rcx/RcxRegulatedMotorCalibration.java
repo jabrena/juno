@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -38,9 +38,9 @@ public class RcxRegulatedMotorCalibration {
     private static final int RETRY_MILLIS = 1000;
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         RcxLink link = new RcxLink(new GroveInfraredEmitter(shield.getD3()), new GroveInfraredReceiver(shield.getD4()),
-                ArduinoUno.getClock());
+                MCU.getClock());
         RcxRegulatedPair pair = new RcxRegulatedPair(link, SESSION, RcxRegulatedPair.maxPower(MAX_POWER_LEVEL),
                 STEPS_PER_MOTOR_REVOLUTION);
         Serial.begin(BaudRate.BAUD_115200);

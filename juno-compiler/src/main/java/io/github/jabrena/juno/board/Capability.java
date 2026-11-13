@@ -30,25 +30,25 @@ public enum Capability {
             return board.displayName() + " has no onboard LED matrix";
         }
     },
-    M5_DISPLAY("M5StackCardputer.getDisplay") {
+    M5_DISPLAY("MCU.getDisplay") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no M5Stack Cardputer display";
         }
     },
-    M5_KEYBOARD("M5StackCardputer.getKeyboard") {
+    M5_KEYBOARD("MCU.getKeyboard") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no M5Stack Cardputer keyboard";
         }
     },
-    M5_AUDIO("M5StackCardputer.getAudio") {
+    M5_AUDIO("MCU.getAudio") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no M5Stack Cardputer speaker";
         }
     },
-    M5_BATTERY("M5StackCardputer.getBattery") {
+    M5_BATTERY("MCU.getBattery") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no M5Stack Cardputer battery";
@@ -70,20 +70,16 @@ public enum Capability {
             return WIFI.unsupportedReason(board);
         }
     },
-    ONBOARD_IMU("ArduinoUno.getAccelerometer") {
+    ONBOARD_IMU("MCU.getAccelerometer") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no onboard inertial sensor; only the UNO WiFi Rev2 has one";
         }
     },
-    ONBOARD_WIFI("ArduinoUno.getWifi") {
+    ONBOARD_WIFI("MCU.getWifi") {
         @Override
         public String unsupportedReason(Board board) {
-            if (board.supports(WIFI)) {
-                return board.displayName() + " has no onboard Wi-Fi radio; stack the Arduino WiFi Shield and get its "
-                        + "Wi-Fi with new ArduinoWifiShield().getWifi() instead";
-            }
-            return WIFI.unsupportedReason(board);
+            return board.displayName() + " has no onboard Wi-Fi radio";
         }
     },
     HTTP_CLIENT("HttpClient") {
@@ -131,16 +127,29 @@ public enum Capability {
                     + "for a fixed body";
         }
     },
-    BLUETOOTH_LE("ArduinoUno.getBluetoothLe") {
+    BLUETOOTH_LE("BluetoothLe") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no Bluetooth LE adapter reachable through ArduinoBLE";
         }
     },
-    CAMERA("Esp32Cam.getCamera") {
+    CAMERA("MCU.getCamera") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has no onboard camera; only the AI Thinker ESP32-CAM has one";
+        }
+    },
+    ONBOARD_SD_CARD("MCU.getSdCard") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no onboard SD-card socket";
+        }
+    },
+    PSRAM("explicit PSRAM buffers") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " is outside Juno's explicit PSRAM-buffer support; only the Nano ESP32 and AI "
+                    + "Thinker ESP32-CAM are supported";
         }
     },
     WATCHDOG("@Watchdog") {

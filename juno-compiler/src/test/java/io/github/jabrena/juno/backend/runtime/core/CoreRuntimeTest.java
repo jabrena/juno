@@ -1,9 +1,11 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.ArduinoCore;
+import io.github.jabrena.juno.board.Board;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,6 +23,30 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 @DisplayName("Per-core runtime implementations")
 class CoreRuntimeTest {
     private final CoreRuntimes coreRuntimes = new CoreRuntimes();
+
+    @Test
+    @DisplayName("dual-core ports expose two carriers and all other cores expose one")
+    void shouldReportCarrierCountFromTheCoreRuntime() {
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32_CAM).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.M5STACK_ESP32).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
+        assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).carrierCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Single-carrier core port selection remains byte-identical")
+    void shouldKeepTheOriginalPortForSingleCarrierCores() {
+        for (ArduinoCore core : new ArduinoCore[] {
+                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR, ArduinoCore.MEGAAVR
+        }) {
+            CoreRuntime runtime = coreRuntimes.of(core);
+            assertThat(runtime.threadPort(resolvedFor(core), 1)).isEqualTo(runtime.threadPort(resolvedFor(core)));
+        }
+    }
 
     @Test
     @DisplayName("The Renesas core calls delay directly")
@@ -283,51 +309,64 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Renesas thread port sizes its slots and stack from the defaults")
+    @DisplayName("The Renesas thread port runs one carrier sized from the defaults")
     void shouldSizeTheRenesasThreadPortFromTheDefaults() {
         // When
-        String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(RuntimeConfig.DEFAULT);
+        String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(resolvedFor(ArduinoCore.RENESAS_UNO));
 
         // Then
-        assertThat(renesas).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u");
+        assertThat(renesas).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = " + RuntimeLimits.MIN_THREAD_STACK_BYTES + "u").doesNotContain("JUNO_MAX_THREADS");
     }
 
     @Test
-    @DisplayName("The Zephyr thread port sizes its slots and stack from the defaults")
+    @DisplayName("The RP2350 reuses the non-RTOS Thumb-2 carrier port")
+    void shouldSizeTheRp2350ThreadPortFromTheDefaults() {
+        // When
+        CoreRuntime rp2350 = coreRuntimes.of(ArduinoCore.RP2350);
+        String port = rp2350.threadPort(resolvedFor(ArduinoCore.RP2350));
+
+        // Then
+        assertThat(port).contains("juno_carrier_stack[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = 4096u", "juno_preempt_tick");
+        assertThat(rp2350.preemptsAsynchronously()).isTrue();
+    }
+
+    @Test
+    @DisplayName("The Zephyr thread port runs one carrier sized from the defaults")
     void shouldSizeTheZephyrThreadPortFromTheDefaults() {
         // When
-        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(RuntimeConfig.DEFAULT);
+        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(resolvedFor(ArduinoCore.ZEPHYR));
 
         // Then
-        assertThat(zephyr).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = 4096u");
+        assertThat(zephyr).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_zephyr_carrier_stack",
+                "JUNO_THREAD_STACK_BYTES = 4096u").doesNotContain("JUNO_MAX_THREADS");
     }
 
     @Test
-    @DisplayName("The Renesas thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheRenesasThreadPort() {
+    @DisplayName("The Renesas thread port takes the configured carrier stack")
+    void shouldApplyTheConfiguredStackToTheRenesasThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536)).resolveFor(boardOf(ArduinoCore.RENESAS_UNO));
 
         // When
         String renesas = coreRuntimes.of(ArduinoCore.RENESAS_UNO).threadPort(config);
 
         // Then
-        assertThat(renesas).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+        assertThat(renesas).contains("JUNO_THREAD_STACK_BYTES = 1536u");
     }
 
     @Test
-    @DisplayName("The Zephyr thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheZephyrThreadPort() {
+    @DisplayName("The Zephyr thread port takes the configured carrier stack")
+    void shouldApplyTheConfiguredStackToTheZephyrThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(1536));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536)).resolveFor(boardOf(ArduinoCore.ZEPHYR));
 
         // When
         String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(config);
 
         // Then
-        assertThat(zephyr).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 1536u");
+        assertThat(zephyr).contains("JUNO_THREAD_STACK_BYTES = 1536u");
     }
 
     static Stream<Arguments> unsupportedEsp32Features() {
@@ -339,19 +378,40 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 thread port is FreeRTOS tasks with an 8 KiB default stack, preempted at safepoints")
+    @DisplayName("The ESP32 thread port runs FreeRTOS tasks on one 8 KiB carrier, preempted at safepoints")
     void shouldPortThreadsToFreeRtosTasksOnTheEsp32() {
         // Given
         CoreRuntime esp32 = coreRuntimes.of(ArduinoCore.ESP32);
 
         // When
-        String port = esp32.threadPort(RuntimeConfig.DEFAULT);
+        String port = esp32.threadPort(resolvedFor(ArduinoCore.ESP32));
 
         // Then
         assertThat(esp32.threadIncludes()).contains("#include <freertos/semphr.h>", "#include <freertos/task.h>");
-        assertThat(port).contains("JUNO_MAX_THREADS = " + RuntimeLimits.MAX_THREADS + "u",
-                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake");
+        assertThat(port).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_esp32_carrier[JUNO_THREAD_STACK_BYTES]",
+                "JUNO_THREAD_STACK_BYTES = 8192u", "xTaskCreateStaticPinnedToCore", "xSemaphoreTake", "juno_freeze")
+                .doesNotContain("JUNO_MAX_THREADS");
         assertThat(esp32.preemptsAsynchronously()).isFalse();
+    }
+
+    @Test
+    @DisplayName("The ESP32 dual-carrier port exposes a carrier id and gives each slot a heap-allocated task")
+    void shouldPortThreadsToBothEsp32Carriers() {
+        String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(resolvedFor(ArduinoCore.ESP32), 2);
+
+        assertThat(port).contains("juno_port_carrier_id", "juno_slot_carrier", "xTaskCreatePinnedToCore",
+                        "JUNO_INITIAL_SLOTS = 16u")
+                .doesNotContain("juno_dual_stacks", "xTaskCreateStaticPinnedToCore", "${JUNO_");
+        assertThat(coreRuntimes.of(ArduinoCore.ESP32).runtimeLock())
+                .contains("juno_runtime_owner", "portENTER_CRITICAL", "juno_runtime_depth");
+    }
+
+    @Test
+    @DisplayName("The RP2350 dual-carrier path exposes the core-id hook")
+    void shouldExposeTheRp2350CarrierId() {
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).threadPort(resolvedFor(ArduinoCore.RP2350), 2))
+                .contains("juno_port_carrier_id", "get_core_num");
+        assertThat(coreRuntimes.of(ArduinoCore.RP2350).memoryBarrierInstruction()).isEqualTo("dmb ish");
     }
 
     @Test
@@ -369,16 +429,16 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 thread port takes the configured slots and stack")
-    void shouldApplyTheConfiguredSlotsAndStackToTheEsp32ThreadPort() {
+    @DisplayName("The ESP32 thread port takes the configured stack")
+    void shouldApplyTheConfiguredStackToTheEsp32ThreadPort() {
         // Given
-        RuntimeConfig config = new RuntimeConfig(8192, 3, OptionalInt.of(4096));
+        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(4096)).resolveFor(boardOf(ArduinoCore.ESP32));
 
         // When
         String port = coreRuntimes.of(ArduinoCore.ESP32).threadPort(config);
 
         // Then
-        assertThat(port).contains("JUNO_MAX_THREADS = 3u", "JUNO_THREAD_STACK_BYTES = 4096u");
+        assertThat(port).contains("JUNO_THREAD_STACK_BYTES = 4096u");
     }
 
     @Test
@@ -463,5 +523,29 @@ class CoreRuntimeTest {
 
         // When & Then
         assertThat(runtime.gpioFunction("digitalWrite")).isEqualTo("digitalWrite");
+    }
+
+    @Test
+    @DisplayName("The Pico 2 W HTTPS client parses its CA bundle once and sets the clock before a TLS handshake")
+    void shouldGiveThePicoHttpsClientParsedAnchorsAndAClock() {
+        // Given
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.RP2350);
+
+        // When
+        String helpers = runtime.httpsHelpers(false);
+
+        // Then
+        assertThat(helpers).contains("juno_pico_anchors = new BearSSL::X509List(juno_pico_ca);",
+                        "setTrustAnchors(juno_pico_anchors);", "NTP.begin(", "NTP.waitSet(10000);",
+                        "juno_pico_tls_clock();\n    return BearSSL::WiFiClientSecure::connect(host, port);")
+                .doesNotContain("setTrustAnchors(&juno_pico_ca);");
+    }
+
+    private static Board boardOf(ArduinoCore core) {
+        return java.util.Arrays.stream(Board.values()).filter(board -> board.core() == core).findFirst().orElseThrow();
+    }
+
+    private static ResolvedRuntimeConfig resolvedFor(ArduinoCore core) {
+        return RuntimeConfig.DEFAULT.resolveFor(boardOf(core));
     }
 }

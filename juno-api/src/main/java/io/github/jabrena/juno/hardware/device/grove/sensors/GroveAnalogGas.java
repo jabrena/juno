@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 
@@ -10,6 +11,11 @@ import io.github.jabrena.juno.hardware.gpio.Gpio;
  */
 public final class GroveAnalogGas {
     private final Gpio gpio;
+
+    /** A sensor read through the board's own GPIO pins ({@link MCU#getGpio()}). */
+    public GroveAnalogGas() {
+        this(MCU.getGpio());
+    }
 
     /** A sensor read through {@code gpio}: a mocked one in a unit test. */
     public GroveAnalogGas(Gpio gpio) {

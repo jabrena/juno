@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/HttpServer.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -113,7 +114,8 @@ the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi
 BridgeTCPServer</code> (a listener in <code>arduino-router</code> on Linux) on UNO Q. Requires an active
 <a href="../Wifi.html#begin(java.lang.String,java.lang.String)"><code>Wifi.begin(String, String)</code></a> or <a href="../Wifi.html#beginAP(java.lang.String,java.lang.String)"><code>Wifi.beginAP(String, String)</code></a>
 connection. <a href="#begin(int)"><code>begin(int)</code></a> serves plain HTTP on every board; <a href="#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)"><code>beginTls(int, byte[], int, byte[], int)</code></a> serves HTTPS on the ESP32
-boards (Nano ESP32, M5Stack Cardputer) and on the UNO Q, whose MCU runs the TLS session over the bridge.
+boards (Nano ESP32, M5Stack Cardputer), the UNO Q whose MCU runs the TLS session over the bridge, and the Raspberry Pi
+Pico 2 W.
 
 <p><a href="#begin(int)"><code>begin(int)</code></a> starts listening once. From then on, call <a href="#accept(byte%5B%5D,int)"><code>accept(byte[], int)</code></a> once per
 <code>loop()</code> iteration: it returns immediately with <code>-1</code> when no client is currently
@@ -312,7 +314,7 @@ such header.</div>
 certificate themselves (e.g. <code>curl --cacert server.crt</code>, or <code>-k</code>). The buffers are parsed here and
 can be reused afterwards. On success the rest of the API is unchanged: <a href="#accept(byte%5B%5D,int)"><code>accept(byte[], int)</code></a> completes the TLS
 handshake before it reads the request. Returns <code>false</code> when the certificate or key does not parse.
-ESP32 boards (Nano ESP32, M5Stack Cardputer) and UNO Q only, one connection at a time; call it once, instead of
+ESP32 boards (Nano ESP32, M5Stack Cardputer), UNO Q and Raspberry Pi Pico 2 W only, one connection at a time; call it once, instead of
 <a href="#begin(int)"><code>begin(int)</code></a>.</div>
 </div>
 </section>

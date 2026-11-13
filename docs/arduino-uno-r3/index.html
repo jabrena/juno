@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="active" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="active" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -317,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p>The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. Juno compiles for it with its <strong>AVR
-backend</strong> and links against the <code>arduino:avr</code> core; the <code>ArduinoUno</code> device facade is the entry point for the board's
+backend</strong> and links against the <code>arduino:avr</code> core; the <code>MCU</code> facade is the entry point for the board's
 peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
 startup and stay small.</p>
 <img src="../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
@@ -376,7 +379,7 @@ startup and stay small.</p>
 </tr>
 <tr>
 <td>Wireless connectivity</td>
-<td align="right">None (Wi-Fi through the Arduino WiFi Shield)</td>
+<td align="right">None</td>
 </tr>
 <tr>
 <td>Arduino CLI FQBN</td>
@@ -442,12 +445,6 @@ startup and stay small.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java"><code>WeakUuid</code></a></td>
 </tr>
 <tr>
-<td><code>Wifi</code>, <code>Udp</code>, <code>Tcp</code>, plain-HTTP <code>HttpClient</code></td>
-<td align="center">✓</td>
-<td>Through the Arduino WiFi Shield; no access point or HTTPS.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java"><code>SocketDatagramEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a></td>
-</tr>
-<tr>
 <td><code>SdCard</code></td>
 <td align="center">✓</td>
 <td>On the Data Logger Shield's microSD slot.</td>
@@ -462,13 +459,13 @@ startup and stay small.</p>
 <tr>
 <td>9 Axis Motion Shield</td>
 <td align="center">✓</td>
-<td>BNO055 over I2C; its reset line D7 is also the WiFi Shield's handshake.</td>
+<td>BNO055 over I2C; its reset line is D7.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a></td>
 </tr>
 <tr>
 <td>LCD Keypad Shield</td>
 <td align="center">✓</td>
-<td>Cannot be stacked with the WiFi Shield.</td>
+<td>Uses D4-D10 for the LCD and backlight.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a></td>
 </tr>
 </tbody>
@@ -476,7 +473,7 @@ startup and stay small.</p>
 <h2 id="features">Features</h2>
 <p>These need only the UNO R3 and its USB cable.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
-<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -487,31 +484,14 @@ while (true) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass <code>-Djuno.board=arduino-uno-r3</code>.</p>
 <h2 id="shields">Shields</h2>
-<p>Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the WiFi Shield reserves
-D4, D7 and D10, which the LCD Keypad Shield also uses, so the compiler rejects a program that combines them, and the
-9 Axis Motion Shield's sensor reset is also D7.</p>
-<h3 id="arduino-wifi-shield">Arduino WiFi Shield</h3>
-<img src="../images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="280">
-<p>The R3 has no radio, so <code>ArduinoUno.getWifi()</code> does not compile for it: take the <code>Wifi</code> from the retired Arduino WiFi
-Shield instead. The shield runs Arduino's legacy <code>WiFi</code> library over SPI; it joins networks only (no access point) and
-speaks plain HTTP, not HTTPS. The credentials are read at build time from the <code>JUNO_WIFI_SSID</code> and <code>JUNO_WIFI_PASSWORD</code>
-environment variables (or a <code>.env</code> file through <code>juno:env</code>):</p>
-<pre><code class="language-java">Wifi wifi = new ArduinoWifiShield().getWifi();
-wifi.begin(System.getenv(&quot;JUNO_WIFI_SSID&quot;), System.getenv(&quot;JUNO_WIFI_PASSWORD&quot;));
-
-while (wifi.status() != Wifi.STATUS_CONNECTED) {
-    Delay.millis(1000);
-}
-</code></pre>
-<p>Only small network programs fit next to the library: build them with <code>-Djuno.Xmx=512</code>, as
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketDatagramEcho.java"><code>SocketDatagramEcho</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/SocketEcho.java"><code>SocketEcho</code></a>,
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTime.java"><code>SntpTime</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PlainHttpWeather.java"><code>PlainHttpWeather</code></a> do.</p>
+<p>Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the compiler rejects a
+program whose shields share a pin, and the 9 Axis Motion Shield's sensor reset uses D7.</p>
 <h3 id="grove-base-shield">Grove Base Shield</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
 module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
-<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -523,13 +503,13 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java"><code>GroveDht22Monitor</code></a> prints a DHT22's readings; it is written
 for the UNO WiFi Rev2, and the snippet above is the same read for the R3. See <a href="../grove-system">Grove</a> for the
-sensor drivers. The WiFi Shield also uses D4, so plug sensors into other sockets when the two are stacked.</p>
+sensor drivers.</p>
 <h3 id="arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</h3>
 <img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
 <p>The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 <code>NineAxisMotionShield</code> reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
 direction the sensor pointed at construction. Construction drives D7, the sensor's reset line, so don't use D7 for
-anything else; the WiFi Shield's handshake line is also D7, so the two cannot be stacked:</p>
+anything else:</p>
 <pre><code class="language-java">NineAxisMotionShield imu = new NineAxisMotionShield();
 imu.reset();                                      // count the turn from here
 while (true) {
@@ -567,10 +547,8 @@ if (sd.begin()) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java"><code>StorageOccupancy</code></a> reports the card's used and total space.</p>
 <h2 id="build-and-run">Build and run</h2>
-<p>Install the AVR core once, and the legacy <code>WiFi</code> library for programs that use the WiFi Shield. Then compile and
-upload an example, for instance the UUID demo, which prints over serial:</p>
+<p>Install the AVR core once. Then compile and upload an example, for instance the UUID demo, which prints over serial:</p>
 <pre><code class="language-bash">arduino-cli core install arduino:avr
-arduino-cli lib install WiFi
 ./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.language.WeakUuid \
   -Djuno.board=arduino-uno-r3

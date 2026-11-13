@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -40,8 +40,8 @@ public class PoweredUpHubScanWhileBlinking {
         Serial.begin(BaudRate.BAUD_115200);
         // The USB serial drops what is printed before a monitor opens the port.
         Delay.millis(STARTUP_MILLIS);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
-        Clock clock = ArduinoUno.getClock();
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock());
+        Clock clock = MCU.getClock();
         // Shared between the two subtasks; atomic so the same source is also data-race free on the JVM.
         AtomicBoolean scanning = new AtomicBoolean(true);
         AtomicBoolean found = new AtomicBoolean(false);

@@ -32,8 +32,8 @@
  *
  * <p>Every class above has a {@code main} method and writes its results to USB serial at 115200
  * baud. {@link io.github.jabrena.juno.language.UnsupportedFeature} is not part of that tour: it's a
- * counter-example, deliberately outside Juno's supported subset, so {@code juno:compile} rejects
- * it with a link-time diagnostic. The board-backed {@code LocalDateTime.now()} examples are
+ * counter-example, deliberately outside Juno's supported subset because array record components
+ * have no content-identity operations, so {@code juno:compile} rejects it with a link-time diagnostic. The board-backed {@code LocalDateTime.now()} examples are
  * {@link io.github.jabrena.juno.api.hardware.net.udp.SntpTime} and
  * {@link io.github.jabrena.juno.api.hardware.net.udp.SntpTimeSD}; they live with the networking examples because
  * they require Wi-Fi and SNTP.

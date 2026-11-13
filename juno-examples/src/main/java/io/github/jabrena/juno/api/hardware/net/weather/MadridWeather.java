@@ -3,7 +3,8 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -16,8 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * "Madrid Weather: &lt;temp&gt;C" followed by "Madrid Time: HH:MM" across the built-in LED
  * matrix. It uses the same right-to-left one-pixel-per-tick idea as {@code LedMatrixScrollingText},
  * adapted for messages built at runtime
- * instead of a compile-time literal. Credentials come from {@code JUNO_WIFI_SSID}/
- * {@code JUNO_WIFI_PASSWORD} (resolved by Juno itself at compile time, never written to a file).
+ * instead of a compile-time literal. Credentials come from the ATECC608 {@code SecretStore}.
  *
  * <p>{@link WeatherClient} fetches and parses the Open-Meteo response, {@link TimeClient} extracts
  * and formats the local time, and {@link DisplayData} builds and scrolls the runtime messages on
@@ -35,7 +35,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class MadridWeather {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private static final int TIME_TEXT_BUFFER_SIZE = 32;
 
@@ -70,7 +70,7 @@ public final class MadridWeather {
 
     private static void connectWifi(DisplayData display) {
         display.showMessage("Connecting");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
 
         int waitedSeconds = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {

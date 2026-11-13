@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -25,8 +25,8 @@ public final class GroveUltrasonicMonitor {
     }
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(ArduinoUno.getGpio(), ArduinoUno.getClock(),
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
+        GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(MCU.getGpio(), MCU.getClock(),
                 shield.getD5());
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);

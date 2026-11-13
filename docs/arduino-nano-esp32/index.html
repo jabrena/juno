@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -301,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+    <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -375,6 +378,8 @@ own backend instead of the Thumb-2 or AVR one.</p>
 </tr>
 </tbody>
 </table>
+<p>The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and garbage collector; use the static
+<code>Psram</code> API for caller-owned byte buffers when the fixed internal arena is too small.</p>
 <h2 id="what-juno-supports">What Juno supports</h2>
 <table>
 <thead>
@@ -431,7 +436,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td>Threads, <code>synchronized</code>, <code>ReentrantLock</code>, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
 <td align="center">✓</td>
-<td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. At most four threads including <code>main</code> (<code>-Djuno.maxThreads</code>).</td>
+<td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including <code>main</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
 </tr>
 <tr>
@@ -497,7 +502,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
-<td><code>ArduinoNano.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
+<td><code>MCU.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java"><code>NanoRatonLoco</code></a></td>
 </tr>
 </tbody>
@@ -507,7 +512,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
 <p><code>getBuiltinLed()</code> is D13, the pin printed on the board (GPIO48 on the chip).</p>
 <pre><code class="language-java">Serial.begin(BaudRate.BAUD_115200);
-DigitalOutput led = DigitalOutput.of(ArduinoNano.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -520,9 +525,9 @@ while (true) {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBlink.java"><code>SerialBlink</code></a> also prints a cycle counter with each change.</p>
 <h3 id="usb-hid-mouse">USB HID mouse</h3>
-<p><code>ArduinoNano.getMouse()</code> makes the board a USB mouse for the computer it is plugged into; <code>Serial</code> keeps working on the
+<p><code>MCU.getMouse()</code> makes the board a USB mouse for the computer it is plugged into; <code>Serial</code> keeps working on the
 same USB port. Call <code>begin()</code> once, then <code>move(x, y)</code> moves the pointer by that many pixels:</p>
-<pre><code class="language-java">Mouse mouse = ArduinoNano.getMouse();
+<pre><code class="language-java">Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {
@@ -575,7 +580,7 @@ while (true) {
 <tr>
 <td>Grove I2C and Qwiic</td>
 <td>SDA A4, SCL A5</td>
-<td><code>getI2cSda()</code>, <code>getI2cScl()</code> (one bus, <code>ArduinoNano.getI2c()</code>)</td>
+<td><code>getI2cSda()</code>, <code>getI2cScl()</code> (one bus, <code>MCU.getI2c()</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -611,7 +616,7 @@ signal wire (Grove pin 1):</p>
 <p>The Nano has no SD slot of its own, so <code>SdCard</code> needs the carrier: <code>getSdCard()</code> reaches its microSD
 slot (chip select D4, SPI D11–D13) through the same SdFat runtime as the UNO boards. The examples
 that read settings from the card (the <code>…SD</code> programs above) therefore need the carrier too.</p>
-<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 SdCard sd = carrier.getSdCard();
 if (sd.begin() &amp;&amp; sd.exists(&quot;application.properties&quot;)) {
     InputStream in = sd.open(&quot;application.properties&quot;);
@@ -627,8 +632,8 @@ card's root,</p>
 wifi.password=your-password
 </code></pre>
 <p>then read the file with <code>java.util.Properties</code> and join the network:</p>
-<pre><code class="language-java">SdCard sd = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
-Wifi wifi = ArduinoNano.getWifi();
+<pre><code class="language-java">SdCard sd = new NanoConnectorCarrier().getSdCard();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open(&quot;application.properties&quot;)) {
@@ -647,9 +652,9 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 prints its status once a second.</p>
 <h5 id="read-a-grove-sensor">Read a Grove sensor</h5>
 <p>Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.</p>
-<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GrovePirMotion pir = new GrovePirMotion();
-LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
+LightDetector light = new GroveLightV12(carrier.getGroveA0(),
     GroveLightV12.ADC_12_BIT);
 pir.begin(carrier.getGroveA2());
 
@@ -664,10 +669,10 @@ SCL line, the Nano talks to a LEGO Mindstorms RCX brick through <code>RemoteRcx<
 <a href="../lego-ecosystem">LEGO</a>). Download Juno's RCX firmware to the brick once with
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxFirmwareDownload.java"><code>NanoCarrierRcxFirmwareDownload</code></a>: keep the brick 10 to 50 cm away and still for about ten
 minutes. The brick then answers on channel 1:</p>
-<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+<pre><code class="language-java">NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
 GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+RcxLink link = new RcxLink(emitter, receiver);
 RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
 
 RcxMotor motor = rcx.getMotorA();

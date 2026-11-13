@@ -20,7 +20,7 @@ must appear in the server certificate's `subjectAltName`.
 Run the following from the repository root with OpenSSL. The generated `.key` and `.crt` files are stored in `build/`:
 
 ```bash
-export JUNO_Q_IP=192.168.1.47
+export MAILBOX_Q_IP=192.168.1.47
 export TLS_DIR="$PWD/build"
 mkdir -p "$TLS_DIR"
 
@@ -37,9 +37,9 @@ openssl ecparam -name prime256v1 -genkey -noout \
 openssl req -new -sha256 \
   -key "$TLS_DIR/server.key" \
   -out "$TLS_DIR/server.csr" \
-  -subj "/CN=${JUNO_Q_IP}"
+  -subj "/CN=${MAILBOX_Q_IP}"
 cat > "$TLS_DIR/server-ext.cnf" <<EOF
-subjectAltName = IP:${JUNO_Q_IP}
+subjectAltName = IP:${MAILBOX_Q_IP}
 extendedKeyUsage = serverAuth
 EOF
 openssl x509 -req -sha256 -days 825 \
@@ -92,7 +92,9 @@ is shown as secondary Wi-Fi status.
 Run `juno:verify` first to compile and validate the generated sketch without touching hardware:
 
 ```bash
-JUNO_Q_IP="$JUNO_Q_IP" ./mvnw -f juno-examples/pom.xml compile juno:verify \
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
+  -Djuno.board=arduino-uno-r4-wifi -Djuno.secret.key=mailbox.q.ip
+./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
   -Djuno.board=arduino-uno-q
 ```
@@ -100,7 +102,7 @@ JUNO_Q_IP="$JUNO_Q_IP" ./mvnw -f juno-examples/pom.xml compile juno:verify \
 With the UNO Q connected and its SD card inserted, upload it with `juno:upload`:
 
 ```bash
-JUNO_Q_IP="$JUNO_Q_IP" ./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:upload \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
   -Djuno.board=arduino-uno-q
 ```

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
@@ -25,7 +25,7 @@ public final class NanoPoweredUpHubInfo {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("Waiting for a Powered Up hub...");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe(), ArduinoNano.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock());
         if (!hub.connect(0)) {
             Serial.println("hub connection failed");
             return;

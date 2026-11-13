@@ -1,6 +1,7 @@
 package io.github.jabrena.juno;
 
 import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
+import io.github.jabrena.juno.analysis.RuntimeConfigurationFormatter;
 import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import io.github.jabrena.juno.board.Board;
 
@@ -47,8 +48,9 @@ record CompileCommand(ProgramSelection program, Path assemblyOutput, boolean gcL
 
         Board board = result.report().board();
         out.println("Generated " + files.assembly() + ", " + files.runtimeShim() + ", and " + files.wrapper()
-                + " for " + board.displayName() + " (fqbn " + board.fqbn() + ")");
+                + " for " + board.displayName() + " (fqbn " + result.fqbn() + ")");
         out.println();
+        new RuntimeConfigurationFormatter().format(result.report().runtimeConfig()).forEach(out::println);
         new RuntimeRiskReportFormatter().format(result.report().runtimeRisks()).forEach(out::println);
         new ConfigSuggestionFormatter().format(result.report().configSuggestions()).forEach(out::println);
         if (showMetrics) {

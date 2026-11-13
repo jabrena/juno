@@ -1,11 +1,11 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.imu.Bmi088;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
 import io.github.jabrena.juno.robotics.navigation.DriveGeometry;
 import io.github.jabrena.juno.robotics.navigation.GyroDifferentialPilot;
@@ -30,8 +30,8 @@ import io.github.jabrena.juno.robotics.navigation.GyroHeading;
  * on the motors, the weight and the floor.
  */
 final class PoweredUpRobot {
-    static final HubPort LEFT = HubPort.A;
-    static final HubPort RIGHT = HubPort.B;
+    static final PoweredUpPort LEFT = PoweredUpPort.A;
+    static final PoweredUpPort RIGHT = PoweredUpPort.B;
     /**
      * {@code 1} when the side's motor drives its wheel forward at a positive power, {@code -1} when it is mounted
      * mirrored and runs backward.
@@ -65,11 +65,11 @@ final class PoweredUpRobot {
     private final Clock clock;
 
     PoweredUpRobot() {
-        this.clock = ArduinoNano.getClock();
-        this.hub = new RemotePoweredUpHub(ArduinoNano.getBluetoothLe(), clock);
+        this.clock = MCU.getClock();
+        this.hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), clock);
         this.left = new PoweredUpWheel(hub.getMotor(LEFT), LEFT_DIRECTION);
         this.right = new PoweredUpWheel(hub.getMotor(RIGHT), RIGHT_DIRECTION);
-        this.imu = new Bmi088(ArduinoNano.getI2c(), clock);
+        this.imu = new Bmi088(MCU.getI2c(), clock);
         this.heading = new GyroHeading(imu, clock);
         DriveGeometry geometry = new DriveGeometry(WHEEL_DIAMETER_MILLIMETRES, TRACK_WIDTH_MILLIMETRES,
                 ENCODER_DEGREES_PER_WHEEL_REVOLUTION, ENCODER_DEGREES_PER_WHEEL_REVOLUTION);

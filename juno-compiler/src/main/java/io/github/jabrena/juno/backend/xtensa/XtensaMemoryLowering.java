@@ -28,10 +28,12 @@ final class XtensaMemoryLowering {
 
     private final XtensaEmitter xtensa;
     private final ProgramLayout layout;
+    private final XtensaCarrierAccess carrierAccess;
 
-    XtensaMemoryLowering(XtensaEmitter xtensa, ProgramLayout layout) {
+    XtensaMemoryLowering(XtensaEmitter xtensa, ProgramLayout layout, XtensaCarrierAccess carrierAccess) {
         this.xtensa = xtensa;
         this.layout = layout;
+        this.carrierAccess = carrierAccess;
     }
 
     void emitNewObject(StringBuilder output, FrameLayout frame, IrInstruction.NewObject object) {
@@ -63,45 +65,69 @@ final class XtensaMemoryLowering {
 
     void emitLoadField(StringBuilder output, FrameLayout frame, IrInstruction.LoadField load) {
         xtensa.load(output, frame, A, load.receiver());
-        loadFrom(output, frame, layout.fieldOffset(load.field()), load.target());
+        loadFrom(output, frame, layout.fieldOffset(load.field()), load.target(), load.field().volatileField());
     }
 
     void emitStoreField(StringBuilder output, FrameLayout frame, IrInstruction.StoreField store) {
         xtensa.load(output, frame, A, store.receiver());
-        storeTo(output, frame, layout.fieldOffset(store.field()), store.value());
+        storeTo(output, frame, layout.fieldOffset(store.field()), store.value(), store.field().volatileField());
+    }
+
+    void emitInstanceOf(StringBuilder output, FrameLayout frame, IrInstruction.InstanceOf check) {
+        xtensa.load(output, frame, A, check.value());
+        String nonNull = xtensa.newLabel(".LinstanceofNonNull");
+        String equal = xtensa.newLabel(".LinstanceofEqual");
+        String done = xtensa.newLabel(".LinstanceofDone");
+        output.append("    bnez a8, ").append(nonNull).append('\n');
+        xtensa.loadImmediate(output, A, 0);
+        output.append("    j ").append(done).append('\n');
+        output.append(nonNull).append(":\n");
+        xtensa.loadWordAt(output, B, A, 0);
+        xtensa.loadImmediate(output, C, check.typeId());
+        output.append("    beq a9, a10, ").append(equal).append('\n');
+        xtensa.loadImmediate(output, A, 0);
+        output.append("    j ").append(done).append('\n');
+        output.append(equal).append(":\n");
+        xtensa.loadImmediate(output, A, 1);
+        output.append(done).append(":\n");
+        xtensa.store(output, frame, A, check.target());
     }
 
     void emitLoadStatic(StringBuilder output, FrameLayout frame, IrInstruction.LoadStatic load) {
         xtensa.loadAddress(output, A, layout.staticSymbol(load.field()));
-        loadFrom(output, frame, 0, load.target());
+        loadFrom(output, frame, 0, load.target(), load.field().volatileField());
     }
 
     void emitStoreStatic(StringBuilder output, FrameLayout frame, IrInstruction.StoreStatic store) {
         xtensa.loadAddress(output, A, layout.staticSymbol(store.field()));
-        storeTo(output, frame, 0, store.value());
+        storeTo(output, frame, 0, store.value(), store.field().volatileField());
     }
 
     /** Loads the field {@code offset} bytes into the object {@code a8} points at. */
-    private void loadFrom(StringBuilder output, FrameLayout frame, int offset, Value target) {
+    private void loadFrom(StringBuilder output, FrameLayout frame, int offset, Value target, boolean volatileField) {
         int reachable = reach(output, offset, target.type().isWide());
+        if (carrierAccess.loadWide(output, frame, reachable, target)) return;
         xtensa.loadWordAt(output, B, A, reachable);
         if (target.type().isWide()) {
             xtensa.loadWordAt(output, C, A, reachable + WORD);
             xtensa.store64(output, frame, B, C, target);
         } else {
+            output.append(carrierAccess.barrier(volatileField));
             xtensa.store(output, frame, B, target);
         }
     }
 
     /** Stores {@code value} into the field {@code offset} bytes into the object {@code a8} points at. */
-    private void storeTo(StringBuilder output, FrameLayout frame, int offset, Value value) {
+    private void storeTo(StringBuilder output, FrameLayout frame, int offset, Value value, boolean volatileField) {
         int reachable = reach(output, offset, value.type().isWide());
         if (value.type().isWide()) {
             xtensa.load64(output, frame, B, C, value);
+            if (carrierAccess.storeWide(output, reachable)) return;
             xtensa.storeWordAt(output, B, A, reachable);
             xtensa.storeWordAt(output, C, A, reachable + WORD);
         } else {
             xtensa.load(output, frame, B, value);
+            output.append(carrierAccess.barrier(volatileField));
             xtensa.storeWordAt(output, B, A, reachable);
         }
     }

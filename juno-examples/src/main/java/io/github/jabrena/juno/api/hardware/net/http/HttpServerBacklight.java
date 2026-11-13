@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
@@ -13,8 +14,8 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with build-time
- * credentials from {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD} (see {@link
+ * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with credentials from the ATECC608
+ * {@code SecretStore} (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), starts the LCD Keypad Shield with its backlight
  * off — {@link LcdKeypadShield#begin} turns it on as part of its own init sequence, so this
  * immediately overrides that — then, on every {@code
@@ -28,11 +29,11 @@ import io.github.jabrena.juno.util.Delay;
  * are compile-time literals).
  */
 public final class HttpServerBacklight {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final LcdKeypadShield lcd = new LcdKeypadShield();
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock = MCU.getClock();
     private static final int BACKLIGHT_ON_MILLIS = 200;
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 
@@ -106,7 +107,7 @@ public final class HttpServerBacklight {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

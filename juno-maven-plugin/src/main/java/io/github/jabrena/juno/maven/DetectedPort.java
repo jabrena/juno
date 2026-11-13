@@ -13,12 +13,19 @@ record DetectedPort(String address, String protocol, List<String> boardNames, Li
         fqbns = List.copyOf(fqbns);
     }
 
-    /** Whether a board with {@code fqbn} is connected on this port. */
+    /**
+     * Whether a board with {@code fqbn} is connected on this port. Two boards connect without an identity Arduino CLI
+     * can match: the Cardputer, recognized by Espressif's USB vendor ID, and an arduino-pico board held in BOOTSEL,
+     * which shows up as the core's {@code uf2conv} mass-storage port. Board menu options after the third segment (a
+     * sketch built with {@code os=freertos}, say) do not change which board it is.
+     */
     boolean hosts(String fqbn) {
         boolean cardputer = fqbn.equals("m5stack:esp32:m5stack_cardputer")
                 || fqbn.startsWith("m5stack:esp32:m5stack_cardputer:");
-        return fqbns.contains(fqbn)
-                || (cardputer && protocol.equals("serial") && vendorId.equalsIgnoreCase("0x303A"));
+        boolean pico = fqbn.startsWith("rp2040:rp2040:");
+        return fqbns.contains(fqbn) || fqbns.contains(boardOf(fqbn))
+                || (cardputer && protocol.equals("serial") && vendorId.equalsIgnoreCase("0x303A"))
+                || (pico && protocol.equals("uf2conv") && fqbns.isEmpty());
     }
 
     /** One line of {@code juno:boards} output. */
@@ -28,5 +35,10 @@ record DetectedPort(String address, String protocol, List<String> boardNames, Li
                 ? "unknown board"
                 : String.join(", ", boardNames) + " (" + String.join(", ", fqbns) + ")";
         return "  " + address + protocolSuffix + " - " + boards;
+    }
+
+    private static String boardOf(String fqbn) {
+        String[] segments = fqbn.split(":", 4);
+        return segments.length < 3 ? fqbn : segments[0] + ":" + segments[1] + ":" + segments[2];
     }
 }

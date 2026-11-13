@@ -54,8 +54,9 @@ Check that the file and each key exist before using them; the examples print a m
 Values loaded this way are runtime `String`s, and a runtime `String` holds 31 bytes, so keep the password, the subject
 and the body within that length.
 
-The `InboxCount` and `EmailClient` examples read the same values from environment variables at compile time instead,
-with `host` and similar calls. Use that approach only on a board without an SD card.
+The `InboxCount` and `EmailClient` examples read the SMTP values from the ATECC608 `SecretStore` through
+`SecretStore`. SD-card properties remain supported for applications that intentionally use removable configuration;
+they are not a substitute for provisioning credentials into the secure element.
 
 ## SMTP
 

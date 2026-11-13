@@ -21,6 +21,12 @@ mkfifo "$fifo"
 qemu_pid=
 watchdog_pid=
 
+# QEMU exposes the MTD drive as writable and the guest updates flash while booting. Keep the freshly merged image as
+# the immutable baseline and give every emulator process its own copy, so a host-side crash cannot poison a retry.
+base_flash="$sketch/flash.bin"
+# A QEMU core can be hundreds of MiB and provides no useful conformance evidence; stdout/stderr and the exit status do.
+ulimit -c 0
+
 cleanup() {
     if [ -n "${watchdog_pid:-}" ]; then
         kill "$watchdog_pid" 2>/dev/null || true
@@ -40,10 +46,12 @@ trap cleanup EXIT INT TERM
 attempt=1
 while :; do
     begun=0
+    attempt_flash="$tmpdir/flash-attempt-$attempt.bin"
+    cp "$base_flash" "$attempt_flash"
     qemu-system-xtensa -nographic -machine esp32s3 -m 8M \
         -global driver=ssi_psram,property=is_octal,value=true \
         -global driver=timer.esp32s3.timg,property=wdt_disable,value=true \
-        -drive file="$sketch/flash.bin",if=mtd,format=raw >"$fifo" 2>&1 &
+        -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
     qemu_pid=$!
 
     # Keep a real hang guard without making normal marker-terminated runs wait for it. Its sleep outlives the kill of

@@ -22,8 +22,18 @@ public final class RuntimeLimits {
     /** Bounded native storage allocated for one {@code java.util.Properties} instance. */
     public static final int PROPERTIES_STORAGE_BYTES = 4 + 16 * (32 + 64);
 
-    /** Most threads that can run at once, the main thread included; each extra one owns a stack of its own. */
+    /**
+     * Most threads that can run at once, the main thread included, on a board whose threads each own a stack (AVR);
+     * elsewhere virtual threads are continuations on carriers and only the arena bounds them.
+     */
     public static final int MAX_THREADS = 4;
+
+    /**
+     * Most threads that can run at once, the main thread included, when threads run on two carriers (one FreeRTOS
+     * task per slot). A fixed slot table, since the other carrier reads it without the runtime lock; each slot's task
+     * stack comes from the FreeRTOS heap only once a thread uses the slot.
+     */
+    public static final int MAX_DUAL_CARRIER_THREADS = 16;
 
     /**
      * Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
@@ -32,7 +42,7 @@ public final class RuntimeLimits {
     public static final int AVR_THREAD_STACK_BYTES = 512;
     public static final int AVR_MAX_THREAD_STACK_BYTES = 1024;
 
-    /** Stack bytes of each extra thread on the smallest board (UNO R4 WiFi); the UNO Q gives 4096. */
+    /** Stack bytes of the carrier on the smallest board (UNO R4 WiFi); the UNO Q gives 4096. */
     public static final int MIN_THREAD_STACK_BYTES = 2048;
 
     /** Arena bytes of one thread/task handle, including structured-task result and failure state. */

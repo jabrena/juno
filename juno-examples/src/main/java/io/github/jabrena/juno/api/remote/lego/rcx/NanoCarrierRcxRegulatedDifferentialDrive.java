@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -138,11 +138,11 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
     }
 
     public static void main(String[] args) throws IOException {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         // The I2C socket (A4/A5) holds the BMI088, so the receiver sits in the A2/A3 socket.
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getGroveA2());
-        Clock clock = ArduinoNano.getClock();
+        Clock clock = MCU.getClock();
         RcxLink link = new RcxLink(emitter, receiver, clock);
         RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxAudio audio = remote.getAudio();
@@ -150,7 +150,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         Delay.millis(START_MILLIS);
 
         Serial.println("Joining Wi-Fi from the microSD card");
-        if (!connectWifi(ArduinoNano.getWifi(), carrier.getSdCard())) {
+        if (!connectWifi(MCU.getWifi(), carrier.getSdCard())) {
             while (true) {
                 Serial.println("No Wi-Fi: not driving, since the run could not be followed");
                 Delay.seconds(IDLE_SECONDS);
@@ -164,7 +164,7 @@ public final class NanoCarrierRcxRegulatedDifferentialDrive {
         RcxTouchSensor startButton = touchSensor(remote, syslog);
         waitForClick(startButton, syslog);
         // Measured, not used for steering: the robot stands still here, so the gyro's bias is calibrated before it moves.
-        Bmi088 imu = new Bmi088(ArduinoNano.getI2c(), clock);
+        Bmi088 imu = new Bmi088(MCU.getI2c(), clock);
         imu.recalibrateOffset();
         report(syslog, Syslog.NOTICE, "Gyro calibrated");
         countdown(audio, syslog);

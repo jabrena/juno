@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.poweredup;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -12,9 +13,10 @@ import io.github.jabrena.juno.robotics.SampleProvider;
  * backed by the Arduino {@code ArduinoBLE} library ({@code arduino-cli lib install ArduinoBLE}).
  * The board acts as a BLE central speaking the LEGO Wireless Protocol 3.0 to one hub at a time.
  *
- * <p>Ports are numbered from {@link HubPort#A}; a City Hub has ports A and B, a Technic Hub and a
- * Move Hub A to D. Each motor is a {@link PoweredUpMotor} from {@link #getMotor}, which drives train, simple and
- * tacho motors alike with a power percentage, {@code -100..100}.
+ * <p>External ports are {@link PoweredUpPort#A} to {@link PoweredUpPort#D}; a City Hub has ports A and B, a Technic
+ * Hub and a Move Hub A to D. Each motor is a {@link PoweredUpMotor} from {@link #getMotor}, which drives train, simple
+ * and tacho motors alike with a power percentage, {@code -100..100}. The Technic Hub's built-in sensors are
+ * {@link BuiltInSensor} values, which take the sensor methods but never a motor.
  *
  * <p>Motors and sensors report values once {@link #enableSensor} has subscribed to one of their
  * modes; {@link #readSensor} then returns the latest value the hub sent, e.g. a tacho motor's
@@ -26,19 +28,27 @@ import io.github.jabrena.juno.robotics.SampleProvider;
  * {@code Arduino_RouterBridge}, which needs {@code arduino-router} 0.7.0 or newer on the board.
  */
 public final class RemotePoweredUpHub {
-    /** The external ports A to D, indexed by their {@link HubPort#value()}: the motors {@link #getMotor} returns. */
+    /** The external ports A to D, indexed by their {@link PoweredUpPort#value()}: the motors {@link #getMotor} returns. */
     private static final int EXTERNAL_PORTS = 4;
 
-    private final PoweredUpPort hubPort;
+    private final PoweredUpTransport hubPort;
     private final PoweredUpMotor[] motors = new PoweredUpMotor[EXTERNAL_PORTS];
+    /** Counts the connections made so far; a {@link LinkedMotors} pair is valid only for the one that made it. */
+    private int connection;
     private final PoweredUpTilt tilt;
     private final PoweredUpGyroscope gyroscope;
     private final PoweredUpAccelerometer accelerometer;
     private final PoweredUpBattery battery;
 
+    /** A hub controller over the board's own Bluetooth LE radio and clock ({@link MCU#getBluetoothLe()}, {@link MCU#getClock()}).
+     * Create it once, at startup. Only the boards with a BLE radio can be given one. */
+    public RemotePoweredUpHub() {
+        this(MCU.getBluetoothLe(), MCU.getClock());
+    }
+
     /**
      * A hub controller that links to hubs over the board's Bluetooth LE radio {@code bluetooth}, such as
-     * {@code ArduinoUno.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code ArduinoUno.getClock()}.
+     * {@code MCU.getBluetoothLe()}, and times its waits on {@code clock}, such as {@code MCU.getClock()}.
      * Create it once, at startup. Only the boards with a BLE radio can be given one.
      */
     public RemotePoweredUpHub(BluetoothLe bluetooth, Clock clock) {
@@ -46,12 +56,12 @@ public final class RemotePoweredUpHub {
     }
 
     /** A hub controller that drives {@code port} and gives its battery {@code clock} for its waits: fakes in a unit test. */
-    RemotePoweredUpHub(PoweredUpPort port, Clock clock) {
+    RemotePoweredUpHub(PoweredUpTransport port, Clock clock) {
         this.hubPort = port;
-        motors[HubPort.A.value()] = new PoweredUpMotor(port, HubPort.A);
-        motors[HubPort.B.value()] = new PoweredUpMotor(port, HubPort.B);
-        motors[HubPort.C.value()] = new PoweredUpMotor(port, HubPort.C);
-        motors[HubPort.D.value()] = new PoweredUpMotor(port, HubPort.D);
+        motors[PoweredUpPort.A.value()] = new PoweredUpMotor(port, PoweredUpPort.A);
+        motors[PoweredUpPort.B.value()] = new PoweredUpMotor(port, PoweredUpPort.B);
+        motors[PoweredUpPort.C.value()] = new PoweredUpMotor(port, PoweredUpPort.C);
+        motors[PoweredUpPort.D.value()] = new PoweredUpMotor(port, PoweredUpPort.D);
         tilt = new PoweredUpTilt(port);
         gyroscope = new PoweredUpGyroscope(port, tilt);
         accelerometer = new PoweredUpAccelerometer(port);
@@ -76,9 +86,18 @@ public final class RemotePoweredUpHub {
     /**
      * The motor on the external port {@code port} (A to D), as an {@link io.github.jabrena.juno.robotics.EncoderMotor}.
      * The same object is returned on every call. Its position is subscribed on the first read after each connect.
+     */
+    public PoweredUpMotor getMotor(PoweredUpPort port) {
+        return motors[port.value()];
+    }
+
+    /**
+     * The motor on a port given as a {@link HubPort}; a built-in sensor port is rejected at run time.
      *
      * @throws IllegalArgumentException if {@code port} is one of the Technic Hub's built-in sensor ports
+     * @deprecated use {@link #getMotor(PoweredUpPort)}, which rejects a built-in sensor at compile time
      */
+    @Deprecated(since = "0.1.0")
     public PoweredUpMotor getMotor(HubPort port) {
         if (port.value() >= EXTERNAL_PORTS) {
             throw new IllegalArgumentException("only the external ports A to D have motors");
@@ -110,7 +129,7 @@ public final class RemotePoweredUpHub {
     public static final int MODE_PROXIMITY = 1;
 
     /**
-     * {@link #enableSensor} mode of each button set ({@link HubPort#A} left, {@link HubPort#B} right) of
+     * {@link #enableSensor} mode of each button set ({@link PoweredUpPort#A} left, {@link PoweredUpPort#B} right) of
      * the Powered Up remote (88010), connected as a hub of {@link #TYPE_REMOTE_CONTROL}; reads one of
      * the {@code REMOTE_*} values.
      */
@@ -126,7 +145,11 @@ public final class RemotePoweredUpHub {
      * negative. Returns {@code true} immediately if a hub is already connected.
      */
     public boolean connect(int timeoutMillis) {
+        boolean wasConnected = hubPort.isConnected();
         boolean connected = hubPort.connect(timeoutMillis);
+        if (connected && !wasConnected) {
+            connection++;
+        }
         if (connected) {
             for (PoweredUpMotor motor : motors) {
                 motor.onConnect();
@@ -161,6 +184,21 @@ public final class RemotePoweredUpHub {
      * constants cover common devices. Up to eight ports report at a time, and a new
      * {@link #connect} starts with none, so enable them again after reconnecting.
      */
+    public void enableSensor(PoweredUpPort port, int mode) {
+        hubPort.enableSensor(port.value(), mode);
+    }
+
+    /** As {@link #enableSensor(PoweredUpPort, int)}, for one of the Technic Hub's built-in sensors. */
+    public void enableSensor(BuiltInSensor sensor, int mode) {
+        hubPort.enableSensor(sensor.value(), mode);
+    }
+
+    /**
+     * As {@link #enableSensor(PoweredUpPort, int)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use the {@link PoweredUpPort} or {@link BuiltInSensor} overload
+     */
+    @Deprecated(since = "0.1.0")
     public void enableSensor(HubPort port, int mode) {
         hubPort.enableSensor(port.value(), mode);
     }
@@ -172,6 +210,21 @@ public final class RemotePoweredUpHub {
      * regularly: values are received while it (or another hub call) runs, not during
      * {@code Delay.millis}.
      */
+    public int readSensor(PoweredUpPort port) {
+        return hubPort.readSensor(port.value());
+    }
+
+    /** As {@link #readSensor(PoweredUpPort)}, for one of the Technic Hub's built-in sensors. */
+    public int readSensor(BuiltInSensor sensor) {
+        return hubPort.readSensor(sensor.value());
+    }
+
+    /**
+     * As {@link #readSensor(PoweredUpPort)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use the {@link PoweredUpPort} or {@link BuiltInSensor} overload
+     */
+    @Deprecated(since = "0.1.0")
     public int readSensor(HubPort port) {
         return hubPort.readSensor(port.value());
     }
@@ -224,11 +277,21 @@ public final class RemotePoweredUpHub {
 
     /**
      * The I/O device type the hub reported (Hub Attached I/O) for the external port {@code port}
-     * ({@link HubPort#A} to {@link HubPort#D}), one of the {@code DEVICE_*} constants or another protocol type id, or
+     * ({@link PoweredUpPort#A} to {@link PoweredUpPort#D}), one of the {@code DEVICE_*} constants or another protocol type id, or
      * {@code 0} if nothing is attached, the hub has not reported it yet, or {@code port} is out of range.
      * The hub announces its ports right after {@link #connect} and again when something is plugged or
      * unplugged; the announcements are received while a hub call runs, so call this regularly.
      */
+    public int portDevice(PoweredUpPort port) {
+        return hubPort.portDevice(port.value());
+    }
+
+    /**
+     * As {@link #portDevice(PoweredUpPort)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use {@link #portDevice(PoweredUpPort)}, which rejects a built-in sensor at compile time
+     */
+    @Deprecated(since = "0.1.0")
     public int portDevice(HubPort port) {
         return hubPort.portDevice(port.value());
     }
@@ -276,6 +339,21 @@ public final class RemotePoweredUpHub {
      * {@code index} 0, 1 and 2. Returns {@code 0} before the first report or when the report is too short
      * for that index; see {@link #sensorReportSize}.
      */
+    public int readSensorValue(PoweredUpPort port, int index, int bytesPerValue) {
+        return hubPort.readSensorValue(port.value(), index, bytesPerValue);
+    }
+
+    /** As {@link #readSensorValue(PoweredUpPort, int, int)}, for one of the Technic Hub's built-in sensors. */
+    public int readSensorValue(BuiltInSensor sensor, int index, int bytesPerValue) {
+        return hubPort.readSensorValue(sensor.value(), index, bytesPerValue);
+    }
+
+    /**
+     * As {@link #readSensorValue(PoweredUpPort, int, int)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use the {@link PoweredUpPort} or {@link BuiltInSensor} overload
+     */
+    @Deprecated(since = "0.1.0")
     public int readSensorValue(HubPort port, int index, int bytesPerValue) {
         return hubPort.readSensorValue(port.value(), index, bytesPerValue);
     }
@@ -284,11 +362,41 @@ public final class RemotePoweredUpHub {
      * How many reports the hub has sent for {@code port} since {@link #enableSensor} subscribed to it,
      * counting repeats of an unchanged value, so a program can measure how often the hub reports.
      */
+    public int sensorReportCount(PoweredUpPort port) {
+        return hubPort.sensorReportCount(port.value());
+    }
+
+    /** As {@link #sensorReportCount(PoweredUpPort)}, for one of the Technic Hub's built-in sensors. */
+    public int sensorReportCount(BuiltInSensor sensor) {
+        return hubPort.sensorReportCount(sensor.value());
+    }
+
+    /**
+     * As {@link #sensorReportCount(PoweredUpPort)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use the {@link PoweredUpPort} or {@link BuiltInSensor} overload
+     */
+    @Deprecated(since = "0.1.0")
     public int sensorReportCount(HubPort port) {
         return hubPort.sensorReportCount(port.value());
     }
 
     /** How many value bytes the latest report of {@code port} carried (at most 16), {@code 0} before the first. */
+    public int sensorReportSize(PoweredUpPort port) {
+        return hubPort.sensorReportSize(port.value());
+    }
+
+    /** As {@link #sensorReportSize(PoweredUpPort)}, for one of the Technic Hub's built-in sensors. */
+    public int sensorReportSize(BuiltInSensor sensor) {
+        return hubPort.sensorReportSize(sensor.value());
+    }
+
+    /**
+     * As {@link #sensorReportSize(PoweredUpPort)}, for a port given as a {@link HubPort}.
+     *
+     * @deprecated use the {@link PoweredUpPort} or {@link BuiltInSensor} overload
+     */
+    @Deprecated(since = "0.1.0")
     public int sensorReportSize(HubPort port) {
         return hubPort.sensorReportSize(port.value());
     }
@@ -299,13 +407,29 @@ public final class RemotePoweredUpHub {
     }
 
     /**
-     * Pairs the motors on ports {@code portA} and {@code portB} into one virtual port, so a single
-     * command ({@link #setLinkedMotorPower}) drives both in sync, as for a two-motor vehicle. The hub
-     * assigns the virtual port's number, which is returned, or {@code -1} if the hub did not create it
-     * within 500 ms. Pairing the same two ports again returns the existing virtual port; a new
-     * {@link #connect} starts with none. The message formats follow the protocol documentation and have
-     * not been verified on a hub.
+     * Pairs the motors on ports {@code portA} and {@code portB} into a {@link LinkedMotors} pair, so one
+     * call drives both in sync, as for a two-motor vehicle. Throws if the hub does not create the pair within
+     * 500 ms. The pair is valid until the hub disconnects; link the motors again after each {@link #connect}.
+     * Create it once, at startup. The message formats follow the protocol documentation and have not been
+     * verified on a hub.
+     *
+     * @throws IllegalStateException if no hub is connected, or the hub did not create the pair within 500 ms
      */
+    public LinkedMotors linkMotors(PoweredUpPort portA, PoweredUpPort portB) {
+        int virtualPort = hubPort.linkMotors(portA.value(), portB.value());
+        if (virtualPort < 0) {
+            throw new IllegalStateException("the hub did not link the motors within 500 ms");
+        }
+        return new LinkedMotors(this, virtualPort, connection);
+    }
+
+    /**
+     * As {@link #linkMotors(PoweredUpPort, PoweredUpPort)}, returning the raw virtual port number, or {@code -1} if the
+     * hub did not create it within 500 ms.
+     *
+     * @deprecated use {@link #linkMotors(PoweredUpPort, PoweredUpPort)}, which returns a {@link LinkedMotors} pair
+     */
+    @Deprecated(since = "0.1.0")
     public int linkMotors(HubPort portA, HubPort portB) {
         return hubPort.linkMotors(portA.value(), portB.value());
     }
@@ -329,6 +453,13 @@ public final class RemotePoweredUpHub {
         hubPort.brakeLinkedMotors(virtualPort);
     }
 
+    /** Throws unless {@code linkConnection} is the connection that is still up; {@link LinkedMotors} calls it. */
+    void requireConnection(int linkConnection) {
+        if (linkConnection != connection || !hubPort.isConnected()) {
+            throw new IllegalStateException("the hub has disconnected since the motors were linked");
+        }
+    }
+
 
     /**
      * The Technic Hub's battery: its charge level, supply voltage and supply current. The same object is returned on
@@ -338,9 +469,10 @@ public final class RemotePoweredUpHub {
         return battery;
     }
 
-    /** Closes the BLE connection, leaving the hub on and advertising again. */
+    /** Closes the BLE connection, leaving the hub on and advertising again. Linked motor pairs become invalid. */
     public void disconnect() {
         hubPort.disconnect();
+        connection++;
     }
 
     /** Asks the hub to switch itself off, which also ends the connection. */

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -22,12 +22,12 @@ import java.net.Socket;
  * the Wi-Fi credentials in {@code application.properties} on the Nano carrier's microSD card, broadcasts {@code juno?} on UDP port 4210 until a peer answers,
  * then keeps one TCP connection open to that peer's port 7007 and every five seconds writes a line and reads the same
  * number of bytes back, reporting each exchange at 115200 baud. The connection is opened once, not per exchange, so the
- * loop allocates nothing. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}).
+ * loop allocates nothing.
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketEcho {
-    private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
 
     private static final int DISCOVERY_PORT = 4210;
     private static final int ECHO_PORT = 7007;

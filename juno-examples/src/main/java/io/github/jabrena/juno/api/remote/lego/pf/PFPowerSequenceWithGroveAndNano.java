@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.pf;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -27,7 +27,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public class PFPowerSequenceWithGroveAndNano {
-    private static final Clock CLOCK = ArduinoNano.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     /** The digits of 0123456789876543210: up from 0 to 9, then back down to 0. */
     private static final int[] SEQUENCE = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
@@ -47,7 +47,7 @@ public class PFPowerSequenceWithGroveAndNano {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(carrier.getGroveA0()));
         RemotePF remote = new RemotePF(link);
         PFPowerSequenceWithGroveAndNano app = new PFPowerSequenceWithGroveAndNano(

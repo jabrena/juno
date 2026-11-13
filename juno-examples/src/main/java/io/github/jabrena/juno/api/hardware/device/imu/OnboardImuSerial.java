@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.imu;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -44,8 +44,8 @@ public final class OnboardImuSerial {
         Delay.millis(1000);
 
         Serial.println("Calibrating: keep the board still");
-        Gyroscope gyroscope = ArduinoUno.getGyroscope();
-        Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+        Gyroscope gyroscope = MCU.getGyroscope();
+        Accelerometer accelerometer = MCU.getAccelerometer();
         Serial.println("LSM6DS3TR ready");
 
         while (true) {

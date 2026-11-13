@@ -86,4 +86,77 @@ class CompileMojoTest extends AbstractMojoTestCase {
         assertThat(sketchDirectory.resolve("TinyProgramAsm.ino")).isRegularFile();
         assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO R4 WiFi"));
     }
+
+    @Test
+    @DisplayName("Fails with actionable guidance when neither @Board nor juno.board names a target")
+    void shouldRequireABoardWhenNeitherAnnotationNorOptionNamesOne() throws Exception {
+        // Given: TinyProgram has no @Board annotation, and no juno.board is configured
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
+                .set("outputDirectory", "target/juno-mojo-test/no-board")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+
+        // When & Then
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("Target board is required")
+                .hasMessageContaining("-Djuno.board=<id>");
+    }
+
+    @Test
+    @DisplayName("Regenerates for the board selected by the latest build, not the previous output")
+    void shouldRegenerateForTheBoardSelectedNow() throws Exception {
+        // Given: one output directory, compiled first for the UNO R4 WiFi and then for the UNO Q
+        RecordingLog log = new RecordingLog();
+        CompileMojo first = lookupEmptyMojo("compile", new File("."));
+        first = configureMojo(first, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
+                .set("board", "arduino-uno-r4-wifi")
+                .set("outputDirectory", "target/juno-mojo-test/regenerate")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        first.setLog(log);
+        first.execute();
+
+        CompileMojo second = lookupEmptyMojo("compile", new File("."));
+        second = configureMojo(second, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
+                .set("board", "arduino-uno-q")
+                .set("outputDirectory", "target/juno-mojo-test/regenerate")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        second.setLog(log);
+
+        // When
+        second.execute();
+
+        // Then
+        Path sketchDirectory = Path.of("target/juno-mojo-test/regenerate/TinyProgramAsm");
+        assertThat(sketchDirectory.resolve("TinyProgram.S")).isRegularFile();
+        assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO R4 WiFi"));
+        assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO Q"));
+    }
+
+    @Test
+    @DisplayName("Rejects an invalid carrier override")
+    void shouldRejectAnInvalidCarrierOverride() throws Exception {
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
+                .set("board", "arduino-uno-r4-wifi")
+                .set("carrierCount", "3")
+                .set("outputDirectory", "target/juno-mojo-test/invalid-carriers")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class).hasMessageContaining("juno.carriers");
+    }
 }

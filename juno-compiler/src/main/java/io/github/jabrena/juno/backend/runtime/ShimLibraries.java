@@ -32,7 +32,12 @@ public final class ShimLibraries {
 
     /** Register reads and writes on the primary {@code Wire} bus, with the core-bundled {@code Wire} library. */
     String i2cHelpers() {
-        return runtimeSource.load("common/i2c.cpp");
+        return i2cHelpers("");
+    }
+
+    /** {@link #i2cHelpers()} with {@code pinSetup}, a core's {@code Wire} pin selection, run before {@code Wire.begin()}. */
+    String i2cHelpers(String pinSetup) {
+        return runtimeSource.load("common/i2c.cpp").replace("${JUNO_I2C_PIN_SETUP}", pinSetup);
     }
 
     /** Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library. */
@@ -206,6 +211,11 @@ public final class ShimLibraries {
      * way the JVM does and panics. {@code throw null} reports a {@code NullPointerException}.
      */
     String exceptionHelpers(List<String> throwableClasses) {
+        return exceptionHelpers(throwableClasses, 1);
+    }
+
+    /** Exception state is indexed by carrier only when generated threads can run on more than one core. */
+    String exceptionHelpers(List<String> throwableClasses, int carrierCount) {
         StringBuilder names = new StringBuilder();
         if (throwableClasses.isEmpty()) {
             names.append("  \"\",\n"); // only `throw null` reaches the runtime; C++ forbids an empty array
@@ -213,9 +223,17 @@ public final class ShimLibraries {
         for (String className : throwableClasses) {
             names.append("  \"").append(className.replace('/', '.')).append("\",\n");
         }
-        return runtimeSource.load("common/exceptions.cpp").replace("${JUNO_THROWABLE_NAMES}", names.toString())
+        String source = runtimeSource.load("common/exceptions.cpp").replace("${JUNO_THROWABLE_NAMES}", names.toString())
                 .replace("${JUNO_CLASS_ID_WORD}", Integer.toString(ThrowableTypes.CLASS_ID_OFFSET / Integer.BYTES))
                 .replace("${JUNO_MESSAGE_WORD}", Integer.toString(ThrowableTypes.MESSAGE_OFFSET / Integer.BYTES));
+        if (carrierCount > 1) {
+            source = source.replace("static int32_t juno_pending_exception = 0;", """
+                    extern "C" uint32_t juno_port_carrier_id();
+                    static int32_t juno_pending_exceptions[${JUNO_CARRIER_COUNT}] = {};
+                    #define juno_pending_exception juno_pending_exceptions[juno_port_carrier_id()]
+                    """.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount)));
+        }
+        return source;
     }
 
     /** {@code extern "C"} float helpers, called from assembly with float values in core registers (see {@code JUNO_ASM_ABI}). */

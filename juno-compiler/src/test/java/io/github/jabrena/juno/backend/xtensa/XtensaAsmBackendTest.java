@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.backend.xtensa;
 
 import io.github.jabrena.juno.CompilationResult;
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.RuntimeConfig;
@@ -34,7 +33,7 @@ class XtensaAsmBackendTest {
     private static final String AI_THINKER_ESP32_CAM = Board.AI_THINKER_ESP32_CAM.id();
 
     private static final String BLINK = """
-                    DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+                    DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
                     led.high();
                     Delay.millis(500);
                     led.low();
@@ -59,9 +58,9 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String LONGS = """
-                    long value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
-                    long other = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A1")) + 1L;
-                    int shift = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A2"));
+                    long value = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
+                    long other = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A1")) + 1L;
+                    int shift = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A2"));
                     long mixed = value * value + other - value / other + value % other;
                     mixed = (mixed & other) | (mixed ^ value);
                     mixed = (mixed << shift) + (mixed >> shift) + (mixed >>> shift) - mixed;
@@ -71,7 +70,7 @@ class XtensaAsmBackendTest {
                     Serial.println((int) (mixed + 5_000_000_000L));
             """;
     private static final String FLOATS = """
-                    int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A3"));
+                    int raw = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A3"));
                     float reading = raw;
                     float volts = reading * 1.5f + 0.25f - reading / 3f + reading % 2f;
                     if (volts > 2.0f) {
@@ -83,7 +82,7 @@ class XtensaAsmBackendTest {
             """;
 
     private static final String DOUBLES = """
-                    double sample = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A4"));
+                    double sample = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A4"));
                     double mixed = sample * 0.1 + 2.5 - sample / 3.0 + sample % 2.0;
                     if (mixed > 2.0) {
                         mixed = -mixed;
@@ -99,7 +98,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoNano;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoLambdas {
@@ -124,7 +123,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int raw = ArduinoNano.getGpio().analogRead(ArduinoNano.getGpio().analogPin("A0"));
+                    int raw = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
                     int offset = raw & 7;
                     Operation square = value -> value * value;
                     Operation captured = value -> value + offset + raw;
@@ -142,7 +141,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoUno;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoThreads {
@@ -165,7 +164,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) throws InterruptedException {
-                    int limit = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                    int limit = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
                     Total total = new Total();
                     Thread first = Thread.startVirtualThread(new Counter(total, limit));
                     Thread second = Thread.startVirtualThread(new Counter(total, limit));
@@ -181,7 +180,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoUno;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoWide {
@@ -192,7 +191,7 @@ class XtensaAsmBackendTest {
                     return a <= 0 ? f + g * 3 + h * 5 + b + c + d + e : mixed(a - 1, b, c, d, e, f, g, h);
                 }
                 public static void main(String[] args) {
-                    int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                    int raw = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
                     Serial.println(sum(raw, 1, 2, 3, 4, 5, 6));
                     Serial.println(mixed(raw, raw + 1, 2, 3, 4, raw * 1000L, raw + 7, raw + 8));
                 }
@@ -203,7 +202,7 @@ class XtensaAsmBackendTest {
             package demo;
             import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
             import io.github.jabrena.juno.annotations.Board;
-            import io.github.jabrena.juno.hardware.ArduinoUno;
+            import io.github.jabrena.juno.hardware.MCU;
             import io.github.jabrena.juno.hardware.serial.Serial;
             @Board(ArduinoNanoEsp32Board.class)
             public final class NanoShapes {
@@ -241,7 +240,7 @@ class XtensaAsmBackendTest {
                     }
                 }
                 public static void main(String[] args) {
-                    int value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                    int value = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
                     byte[] bytes = new byte[4];
                     char[] chars = new char[4];
                     short[] shorts = new short[4];
@@ -275,7 +274,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 %s
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class %s {
@@ -324,12 +323,12 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
                 @Board(AiThinkerEsp32CamBoard.class)
                 public final class AiThinkerEsp32CamBlink {
                     public static void main(String[] args) {
-                    DigitalOutput led = DigitalOutput.of(Esp32Cam.getGpio().getBuiltinLed());
+                    DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
                         led.high();
                     }
                 }
@@ -347,7 +346,7 @@ class XtensaAsmBackendTest {
     @DisplayName("Rejects a non-Xtensa board for the Xtensa backend")
     void shouldRejectANonXtensaBoard() {
         // When & Then
-        assertThatThrownBy(() -> new XtensaAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT))
+        assertThatThrownBy(() -> new XtensaAsmBackend(false, Board.UNO_R4_WIFI, RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R4_WIFI)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("is not an Xtensa board");
     }
@@ -386,7 +385,7 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoAnalog", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        Serial.println(ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")));
+                        Serial.println(MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0")));
                 """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.gpio.Gpio;\n");
 
         // When & Then
@@ -430,7 +429,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoCalls {
@@ -438,7 +437,7 @@ class XtensaAsmBackendTest {
                         return a <= 0 ? b - c : mix(a - 1, a * b, c);
                     }
                     public static void main(String[] args) {
-                        Serial.println(mix(ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")), 7, 2));
+                        Serial.println(mix(MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0")), 7, 2));
                     }
                 }
                 """;
@@ -456,8 +455,8 @@ class XtensaAsmBackendTest {
     void shouldGuardDivisionByMinusOne() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoDivide", """
-                        int value = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
-                        int divisor = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A1"));
+                        int value = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
+                        int divisor = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A1"));
                         Serial.println(value / divisor);
                         Serial.println(value % divisor);
                         Serial.println(value >> divisor);
@@ -476,7 +475,7 @@ class XtensaAsmBackendTest {
     void shouldFoldEveryBoardModelQueryToFalse() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoModel", """
-                        Serial.println(ArduinoUno.getBoardModel().isR4() ? 1 : 0);
+                        Serial.println(MCU.getBoardModel().isR4() ? 1 : 0);
                 """, SERIAL_IMPORTS);
 
         // When & Then
@@ -488,9 +487,9 @@ class XtensaAsmBackendTest {
     void shouldLowerOnboardWifi() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoWifi", """
-                        ArduinoUno.getWifi().begin("net", "secret");
-                        Serial.println(ArduinoUno.getWifi().status());
-                """, "import io.github.jabrena.juno.hardware.ArduinoUno; import io.github.jabrena.juno.hardware.serial.Serial;"
+                        MCU.getWifi().begin("net", "secret");
+                        Serial.println(MCU.getWifi().status());
+                """, "import io.github.jabrena.juno.hardware.MCU; import io.github.jabrena.juno.hardware.serial.Serial;"
                 + " import io.github.jabrena.juno.hardware.serial.BaudRate;");
 
         // Then
@@ -503,10 +502,10 @@ class XtensaAsmBackendTest {
     void shouldLowerMouseToTheCoreUsbHidMouse() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoMouse", """
-                        Mouse mouse = ArduinoNano.getMouse();
+                        Mouse mouse = MCU.getMouse();
                         mouse.begin();
                         mouse.move(50, -50);
-                """, "import io.github.jabrena.juno.hardware.ArduinoNano; import io.github.jabrena.juno.hardware.hid.Mouse;");
+                """, "import io.github.jabrena.juno.hardware.MCU; import io.github.jabrena.juno.hardware.hid.Mouse;");
 
         // Then
         assertThat(result.assembly()).contains("call8 juno_mouse_begin\n", "call8 juno_mouse_move\n");
@@ -621,16 +620,17 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects an Smtp call that mixes literal and runtime String arguments")
-    void shouldRejectMixedLiteralAndRuntimeSmtpStrings() {
-        // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoMixedMail", """
+    @DisplayName("Passes mixed literal and runtime String arguments to Smtp.sendTls")
+    void shouldLowerMixedLiteralAndRuntimeSmtpStrings() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoMixedMail", """
                         String host = new StringBuilder().append("smtp.example.com").toString();
                         Serial.println(Smtp.sendTls(host, 465, "user", "secret", "from@example.com", "to@example.com",
                                 "subject", "body"));
-                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("mixes literal and runtime String arguments");
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.assembly()).contains("juno_smtp_send_tls");
     }
 
     @Test
@@ -652,8 +652,8 @@ class XtensaAsmBackendTest {
     void shouldLowerAccessPointOnTheSoftAp() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoAp", """
-                        ArduinoUno.getWifi().beginAP("juno-ap", "secret123");
-                """, "import io.github.jabrena.juno.hardware.ArduinoUno;");
+                        MCU.getWifi().beginAP("juno-ap", "secret123");
+                """, "import io.github.jabrena.juno.hardware.MCU;");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap(", "WiFi.softAP(ssid, password)");
@@ -691,7 +691,7 @@ class XtensaAsmBackendTest {
     void shouldRunPoweredUpOverTheEsp32Ble() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHub", """
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
                         Serial.println(hub.connect(0) ? 1 : 0);
                 """, "import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;"
                 + " import io.github.jabrena.juno.hardware.serial.Serial;");
@@ -708,7 +708,7 @@ class XtensaAsmBackendTest {
         // Given
         CompilationResult result = compile("demo.NanoSd", """
                         Serial.begin(BaudRate.BAUD_115200);
-                        SdCard sdCard = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
+                        SdCard sdCard = new NanoConnectorCarrier().getSdCard();
                         if (sdCard.begin()) {
                             InputStream file = sdCard.open("app.txt");
                             if (file != null) {
@@ -723,7 +723,7 @@ class XtensaAsmBackendTest {
                             }
                         }
                 """, SERIAL_IMPORTS + """
-                import io.github.jabrena.juno.hardware.ArduinoNano;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import java.io.InputStream;
@@ -747,13 +747,13 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.Esp32Cam;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.device.sd.SdCard;
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 @Board(AiThinkerEsp32CamBoard.class)
                 public final class AiThinkerEsp32CamWifiFromSd {
-                    private static final Wifi WIFI = Esp32Cam.getWifi();
-                    private static final SdCard SD_CARD = Esp32Cam.getSdCard();
+                    private static final Wifi WIFI = MCU.getWifi();
+                    private static final SdCard SD_CARD = MCU.getSdCard();
                     public static void main(String[] args) {
                         if (SD_CARD.begin()) WIFI.begin("ssid", "password");
                     }
@@ -811,7 +811,7 @@ class XtensaAsmBackendTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.ArduinoUno;
+                import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(ArduinoNanoEsp32Board.class)
                 public final class NanoWideCalls {
@@ -824,7 +824,7 @@ class XtensaAsmBackendTest {
                         return value * scale;
                     }
                     public static void main(String[] args) {
-                        int raw = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0"));
+                        int raw = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0"));
                         total = twice(raw, raw * 1000L);
                         Serial.println((int) (total >>> 3));
                         Serial.println((int) scaled(raw));
@@ -860,7 +860,7 @@ class XtensaAsmBackendTest {
     void shouldLowerDoublePrecisionMath() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoMath", """
-                        double angle = ArduinoUno.getGpio().analogRead(ArduinoUno.getGpio().analogPin("A0")) / 100.0;
+                        double angle = MCU.getGpio().analogRead(MCU.getGpio().analogPin("A0")) / 100.0;
                         Serial.println(Math.sin(angle) + Math.sqrt(angle) + Math.pow(angle, 3) + Math.atan2(angle, 2));
                 """, SERIAL_IMPORTS);
 
@@ -1027,7 +1027,7 @@ class XtensaAsmBackendTest {
                 .containsPattern("entry a1, \\d+\n(    s32i a\\d, a1, \\d+\n)*    call8 juno_thread_safepoint\n")
                 .doesNotContain("call8 yield\n", "juno_java_code_start");
         assertThat(result.runtimeShim())
-                .contains("#include <freertos/semphr.h>", "xTaskCreateStaticPinnedToCore", "juno_thread_backedge")
+                .contains("#include <freertos/semphr.h>", "xTaskCreatePinnedToCore(juno_esp32_entry", "juno_thread_backedge")
                 .doesNotContain("juno_preempt_tick");
     }
 

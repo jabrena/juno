@@ -13,10 +13,9 @@
  * implicit TLS on port 995 (POP3S), so it reuses {@code WiFiSSLClient} exactly like {@link
  * io.github.jabrena.juno.hardware.net.http.HttpClient}'s {@code https://} requests and needs no extra library.
  *
- * <p>Every host, username, password, and message field here must be a compile-time constant — a
- * string literal, or a direct {@code System.getenv("NAME")} call with a literal name — for the
- * same reason as {@link io.github.jabrena.juno.hardware.net.http}: Juno has no heap to build a
- * runtime {@code String} from.
+ * <p>Host and credential fields accept runtime strings read from a board-side {@code SecretStore}; message fields may
+ * also be literals or caller-owned runtime strings. Values are passed directly to the bounded transport and are not
+ * copied into firmware constants.
  *
  * <p>Scope, deliberately: one recipient, plain text only, no attachments, HTML, multipart MIME,
  * folders, or OAuth2. {@code ESP_SSLClient} on this board validates the server host name but not

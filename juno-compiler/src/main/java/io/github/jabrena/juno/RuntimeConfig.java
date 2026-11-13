@@ -1,70 +1,79 @@
 package io.github.jabrena.juno;
 
-import io.github.jabrena.juno.board.Architecture;
 import io.github.jabrena.juno.board.Board;
 
 import java.util.Optional;
 import java.util.OptionalInt;
 
 /**
- * The capacities of the generated runtime: how much RAM the arena and the task stacks take. They change how much a
- * program can hold, never what it means, like a JVM's {@code -Xmx} and {@code -Xss}. {@link #DEFAULT} reproduces the
- * constants in {@link RuntimeLimits}, so a compilation without an explicit configuration is unchanged.
+ * The requested configuration of the generated runtime: the RAM sizes and the optional single-carrier compatibility
+ * mode the build asked for. An empty size means "unset": the board's default applies. {@link #resolveFor} turns this
+ * request into the {@link ResolvedRuntimeConfig} that everything downstream consumes.
  *
- * @param arenaBytes size of the garbage-collected arena, a multiple of 8
- * @param maxThreads scheduler slots, the main thread included; each slot beyond the first owns a stack
- * @param threadStackBytes stack of each extra task, a multiple of 8; empty keeps the board's own size
- *     ({@link RuntimeLimits#MIN_THREAD_STACK_BYTES} on the UNO R4 WiFi, 4096 on the UNO Q)
+ * @param arenaBytes the requested arena, a multiple of 8, or empty for the board's default
+ * @param threadStackBytes the requested carrier (on AVR, extra task) stack, a multiple of 8, or empty for the board's
+ *     default
+ * @param carrierCountOverride optional compatibility override for environments that can execute only one carrier;
+ *     empty keeps the board core's carrier count
  */
-public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadStackBytes) {
-    public static final RuntimeConfig DEFAULT = new RuntimeConfig(RuntimeLimits.ARENA_CAPACITY_BYTES,
-            RuntimeLimits.MAX_THREADS, OptionalInt.empty());
+public record RuntimeConfig(OptionalInt arenaBytes, OptionalInt threadStackBytes, OptionalInt carrierCountOverride) {
 
-    static final int MIN_ARENA_BYTES = 512;
-    static final int MIN_STACK_BYTES = 512;
+    /** The configuration with nothing requested: every size is the board's default. */
+    public static final RuntimeConfig DEFAULT = new RuntimeConfig(OptionalInt.empty(), OptionalInt.empty(),
+            OptionalInt.empty());
+
+    public static final int MIN_ARENA_BYTES = 512;
+    public static final int MIN_STACK_BYTES = 512;
+
+    /** A configuration with an explicit arena and stack, given in bytes; {@code arenaBytes} must be a valid size. */
+    public RuntimeConfig(int arenaBytes, OptionalInt threadStackBytes) {
+        this(OptionalInt.of(arenaBytes), threadStackBytes, OptionalInt.empty());
+    }
 
     public RuntimeConfig {
-        if (arenaBytes < MIN_ARENA_BYTES || arenaBytes % 8 != 0) {
+        if (arenaBytes.isPresent() && (arenaBytes.getAsInt() < MIN_ARENA_BYTES || arenaBytes.getAsInt() % 8 != 0)) {
             throw new CompileException("The arena size must be at least " + MIN_ARENA_BYTES
-                    + " bytes and a multiple of 8, not " + arenaBytes);
-        }
-        if (maxThreads < 2) {
-            throw new CompileException("The runtime needs at least 2 scheduler slots, not " + maxThreads);
+                    + " bytes and a multiple of 8, not " + arenaBytes.getAsInt());
         }
         if (threadStackBytes.isPresent()
                 && (threadStackBytes.getAsInt() < MIN_STACK_BYTES || threadStackBytes.getAsInt() % 8 != 0)) {
             throw new CompileException("The task stack size must be at least " + MIN_STACK_BYTES
                     + " bytes and a multiple of 8, not " + threadStackBytes.getAsInt());
         }
+        if (carrierCountOverride.isPresent()
+                && (carrierCountOverride.getAsInt() < 1 || carrierCountOverride.getAsInt() > 2)) {
+            throw new CompileException("juno.carriers must be 1 or 2, not " + carrierCountOverride.getAsInt());
+        }
     }
 
     /**
-     * The default configuration with the sizes given in the JVM's {@code -Xmx}/{@code -Xss} syntax (see
-     * {@link #parseBytes}); an empty or blank size keeps the default.
+     * The request with the sizes given in the JVM's {@code -Xmx}/{@code -Xss} syntax (see {@link #parseBytes}); an
+     * empty or blank size is unset.
      */
     public static RuntimeConfig of(Optional<String> arenaSize, Optional<String> threadStackSize) {
         return of(arenaSize, threadStackSize, Optional.empty());
     }
 
     /**
-     * The runtime configuration with optional arena, task-stack, and scheduler-slot overrides supplied by a build
-     * integration. An empty scheduler-slot override keeps the runtime default.
+     * The request with optional runtime sizes and carrier-count compatibility override. An empty or blank carrier count
+     * keeps the board core's normal count; CI environments without dual-core emulation pass 1.
      */
-    public static RuntimeConfig of(
-            Optional<String> arenaSize, Optional<String> threadStackSize, Optional<String> schedulerSlots) {
+    public static RuntimeConfig of(Optional<String> arenaSize, Optional<String> threadStackSize,
+                                   Optional<String> carrierCount) {
         Optional<String> arena = arenaSize.filter(size -> !size.isBlank());
         Optional<String> stack = threadStackSize.filter(size -> !size.isBlank());
-        Optional<String> slots = schedulerSlots.filter(size -> !size.isBlank());
-        return new RuntimeConfig(arena.map(size -> parseBytes("juno.Xmx", size)).orElse(DEFAULT.arenaBytes()),
-                slots.map(RuntimeConfig::parseSchedulerSlots).orElse(DEFAULT.maxThreads()),
-                stack.map(size -> OptionalInt.of(parseBytes("juno.Xss", size))).orElse(DEFAULT.threadStackBytes()));
+        Optional<String> carriers = carrierCount.filter(count -> !count.isBlank());
+        return new RuntimeConfig(
+                arena.map(size -> OptionalInt.of(parseBytes("juno.Xmx", size))).orElse(OptionalInt.empty()),
+                stack.map(size -> OptionalInt.of(parseBytes("juno.Xss", size))).orElse(OptionalInt.empty()),
+                carriers.map(RuntimeConfig::parseCarrierCount).orElse(OptionalInt.empty()));
     }
 
-    private static int parseSchedulerSlots(String slots) {
+    private static OptionalInt parseCarrierCount(String value) {
         try {
-            return Integer.parseInt(slots);
+            return OptionalInt.of(Integer.parseInt(value.trim()));
         } catch (NumberFormatException invalid) {
-            throw new CompileException("juno.maxThreads must be a whole number, not '" + slots + "'");
+            throw new CompileException("juno.carriers must be 1 or 2, not '" + value + "'");
         }
     }
 
@@ -86,30 +95,10 @@ public record RuntimeConfig(int arenaBytes, int maxThreads, OptionalInt threadSt
     }
 
     /**
-     * This configuration as {@code board} runs it. An AVR core has only a few KB of RAM, so its core-specific default
-     * and maximum arena and task-stack sizes apply; every other architecture keeps the configuration unchanged.
+     * This request as {@code board} runs it. Unset sizes take the board's profile defaults, explicit sizes must not
+     * exceed its maximums on any architecture, and the carrier override must fit the board's core.
      */
-    public RuntimeConfig forBoard(Board board) {
-        if (board.core().architecture() != Architecture.AVR) {
-            return this;
-        }
-        if (threadStackBytes.isPresent() && threadStackBytes.getAsInt() > board.core().maxThreadStackBytes()) {
-            throw new CompileException("The " + board.displayName() + " has too little RAM for "
-                    + threadStackBytes.getAsInt() + "-byte task stacks; juno.Xss can be at most "
-                    + board.core().maxThreadStackBytes() + " bytes there");
-        }
-        if (arenaBytes == DEFAULT.arenaBytes) {
-            return new RuntimeConfig(board.core().defaultArenaBytes(), maxThreads, threadStackBytes);
-        }
-        if (arenaBytes > board.core().maxArenaBytes()) {
-            throw new CompileException("The " + board.displayName() + " has too little RAM for a " + arenaBytes
-                    + "-byte arena; juno.Xmx can be at most " + board.core().maxArenaBytes() + " bytes there");
-        }
-        return this;
-    }
-
-    /** The task stack size to use on a board whose own size is {@code boardDefault}. */
-    public int threadStackBytes(int boardDefault) {
-        return threadStackBytes.orElse(boardDefault);
+    public ResolvedRuntimeConfig resolveFor(Board board) {
+        return board.memoryProfile().resolve(this, board);
     }
 }

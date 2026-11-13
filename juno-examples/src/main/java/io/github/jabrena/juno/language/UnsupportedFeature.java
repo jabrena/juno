@@ -1,15 +1,14 @@
 package io.github.jabrena.juno.language;
 
 /**
- * Deliberately outside Juno's supported subset: a record's generated {@code toString()} uses the
- * {@code ObjectMethods} invokedynamic bootstrap. Juno accepts {@code invokedynamic} for lambdas,
- * method references, and bounded string concatenation, but does not lower generated record object
- * methods. {@code javac} accepts this class; {@code juno:compile} rejects the reachable
- * {@code toString()} with a diagnostic naming the method and bytecode offset.
+ * Deliberately outside Juno's supported subset: generated record identity methods reject array
+ * components because arrays have no content-identity operations in the board runtime. Juno accepts
+ * primitive and String record components, but rejects this reachable {@code toString()} with a
+ * diagnostic naming the record component and its array descriptor.
  */
-public record UnsupportedFeature(int temperature) {
+public record UnsupportedFeature(int[] temperatures) {
 
     public static void main(String[] args) {
-        String message = new UnsupportedFeature(5).toString();
+        String message = new UnsupportedFeature(new int[] {5}).toString();
     }
 }

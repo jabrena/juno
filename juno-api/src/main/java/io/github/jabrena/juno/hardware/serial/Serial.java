@@ -23,6 +23,21 @@ public final class Serial {
     public static native void begin(int baudRate);
 
     /**
+     * Returns how many bytes the host has sent and the program has not read yet, from {@code 0} up.
+     *
+     * @return the number of unread bytes waiting in the receive buffer
+     */
+    public static native int available();
+
+    /**
+     * Reads the next byte the host sent, {@code 0..255}, or {@code -1} when none is waiting. Call {@link #available()}
+     * first, or treat {@code -1} as "nothing yet".
+     *
+     * @return the next received byte, or {@code -1}
+     */
+    public static native int read();
+
+    /**
      * Prints a boolean as {@code true} or {@code false} without a trailing line ending.
      *
      * @param value the boolean to print

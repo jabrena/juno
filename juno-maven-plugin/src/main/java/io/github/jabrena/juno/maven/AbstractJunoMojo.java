@@ -6,6 +6,7 @@ import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.analysis.ConfigSuggestionFormatter;
+import io.github.jabrena.juno.analysis.RuntimeConfigurationFormatter;
 import io.github.jabrena.juno.analysis.RuntimeRiskReportFormatter;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.jspecify.annotations.Nullable;
@@ -17,6 +18,7 @@ import java.util.Optional;
 
 /** A goal that first compiles the configured entry point into an Arduino sketch. */
 abstract class AbstractJunoMojo extends AbstractArduinoMojo {
+    private final RuntimeConfigurationFormatter configurationFormatter = new RuntimeConfigurationFormatter();
     private final RuntimeRiskReportFormatter riskFormatter = new RuntimeRiskReportFormatter();
     private final ConfigSuggestionFormatter suggestionFormatter = new ConfigSuggestionFormatter();
 
@@ -53,7 +55,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
 
     /**
      * Size of the garbage-collected arena, in the JVM's {@code -Xmx} syntax ({@code 49152}, {@code 48k},
-     * {@code 1m}); a multiple of 8. Defaults to the runtime's 8 KB. Every {@code new} array, string and object
+     * {@code 1m}); a multiple of 8. Defaults to the board's own arena (8 KB on most boards, 1 KB on the AVR boards); the Maven build log prints the effective size and its maximum. Every {@code new} array, string and object
      * lives in the arena, so a program that keeps large data sets in RAM (for example, tables loaded from a file at
      * startup) needs a bigger one; the compiler's startup estimate suggests a size when the default is too small.
      */
@@ -61,18 +63,18 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private @Nullable String arenaSize;
 
     /**
-     * Stack of each extra task, in the JVM's {@code -Xss} syntax; a multiple of 8. Defaults to the board's own
-     * size (2048 bytes on the UNO R4 WiFi, 4096 on the UNO Q).
+     * Stack of each carrier, the stack virtual threads run on (on AVR boards, of each extra task), in the JVM's
+     * {@code -Xss} syntax; a multiple of 8. It must fit the deepest virtual thread. Defaults to the board's own size (512 bytes on the AVR boards, 2048 on the UNO R4 WiFi, 4096 on the UNO Q and Pico 2 W, 8192 on the ESP32 boards). Each board also has a maximum; a larger value fails the build with the maximum named.
      */
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;
 
     /**
-     * Number of scheduler slots, including the main task. Set this to one plus the maximum number of simultaneous
-     * structured subtasks when RAM is constrained; it defaults to four.
+     * Compatibility override for pipelines whose emulator cannot run both cores. Absent by default, so dual-core
+     * boards use both carriers; set {@code -Djuno.carriers=1} only for such constrained test environments.
      */
-    @Parameter(property = "juno.maxThreads")
-    private @Nullable String maxThreads;
+    @Parameter(property = "juno.carriers")
+    private @Nullable String carrierCount;
 
     final CompiledSketch compileSketch() {
         String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
@@ -85,19 +87,20 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
-                Optional.ofNullable(threadStackSize), Optional.ofNullable(maxThreads));
+                Optional.ofNullable(threadStackSize), Optional.ofNullable(carrierCount));
         CompilationResult result = new JunoCompiler().compileTo(
                 new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
                 layout.assembly(), layout.runtimeShim());
         result.sketchWrapper().writeTo(layout.wrapper());
 
         CompilationReport report = result.report();
-        String targetFqbn = targetFqbn(report.board().fqbn());
-        if (!targetFqbn.equals(report.board().fqbn())) {
-            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + report.board().fqbn());
+        String targetFqbn = targetFqbn(result.fqbn());
+        if (!targetFqbn.equals(result.fqbn())) {
+            getLog().warn("Configured FQBN " + targetFqbn + " overrides @Board target " + result.fqbn());
         }
         getLog().info("Generated " + layout.assembly() + ", " + layout.runtimeShim() + ", and " + layout.wrapper()
                 + " for " + report.board().displayName() + " with the ASM backend (fqbn " + targetFqbn + ")");
+        configurationFormatter.format(report.runtimeConfig()).forEach(getLog()::info);
         riskFormatter.format(report.runtimeRisks()).forEach(getLog()::info);
         suggestionFormatter.format(report.configSuggestions()).forEach(getLog()::info);
         return new CompiledSketch(layout.directory(), targetFqbn);

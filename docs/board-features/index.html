@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -96,6 +97,7 @@
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
+        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -329,11 +331,13 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <th align="center">UNO R4 WiFi</th>
 <th align="center">UNO WiFi Rev2</th>
 <th align="center">UNO R3</th>
+<th align="center">Pico 2 W</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Board-context GPIO pin resolver (<code>digitalPin</code>, <code>analogPin</code>)</td>
+<td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -350,7 +354,8 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Wi-Fi access point</td>
@@ -361,6 +366,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTP client (plain)</td>
@@ -370,7 +376,8 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTPS client</td>
@@ -381,6 +388,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTP server</td>
@@ -391,6 +399,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>HTTPS server</td>
@@ -401,6 +410,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Email over TLS</td>
@@ -411,6 +421,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Email STARTTLS</td>
@@ -419,6 +430,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 </tr>
@@ -430,7 +442,8 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">Shield</td>
+<td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Bluetooth LE</td>
@@ -441,6 +454,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -451,6 +465,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>LED matrix</td>
@@ -459,6 +474,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓ (12 × 8)</td>
+<td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 </tr>
@@ -471,6 +487,40 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Onboard microSD socket (<code>MCU.getSdCard()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Onboard camera (<code>MCU.getCamera()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Onboard IMU (<code>MCU.getAccelerometer()</code>, <code>MCU.getGyroscope()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Hardware random numbers</td>
@@ -481,6 +531,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">Weak</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Watchdog</td>
@@ -490,6 +541,29 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Structured concurrency (threads, scopes, scoped values, locks)</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Double-precision <code>Math</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
 <td align="center">✓</td>
 </tr>
 <tr>
@@ -501,6 +575,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>Grove sockets</td>
@@ -508,6 +583,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Carrier</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
@@ -521,15 +597,17 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
-<td>Onboard IMU (<code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code>)</td>
+<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">–</td>
 <td align="center">–</td>
 </tr>
 <tr>
@@ -541,6 +619,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 </tr>
 <tr>
 <td>TFT Touch Shield</td>
@@ -550,6 +629,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
+<td align="center">–</td>
 <td align="center">–</td>
 </tr>
 <tr>
@@ -561,13 +641,14 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">–</td>
 <td align="center">–</td>
+<td align="center">–</td>
 </tr>
 </tbody>
 </table>
 <p>Notes:</p>
 <ul>
-<li><strong>Shield</strong> means the feature comes from an Arduino or ELEGOO shield on the board's headers: the WiFi Shield on the R3 for
-Wi-Fi, HTTP and the clock, and the Data Logger, TFT or LCD Keypad shields for storage and displays. See
+<li><strong>Shield</strong> means the feature comes from an Arduino or ELEGOO shield on the board's headers: the Data Logger, TFT or
+LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shields for sensors. See
 <a href="../arduino-shields">Arduino Shields</a>.</li>
 <li><strong>Carrier</strong> means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
 <a href="../arduino-nano-esp32#shields">Nano ESP32</a> page.</li>
@@ -579,6 +660,12 @@ Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware w
 <li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
 <a href="../lego-ecosystem">LEGO ecosystem</a> page.</li>
 </ul>
+<h2 id="reading-the-board-services-through-mcu">Reading the board services through <code>MCU</code></h2>
+<p>Every board's own services come from one facade, <code>MCU</code>, and the board is chosen by <code>@Board</code> or the build's <code>juno.board</code>
+option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
+board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
+of them. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>) work on every board.
+Programs written for the removed per-board facades need the steps on the <a href="../migrate-to-mcu">migration</a> page.</p>
     </div>
   </section>
 </article>

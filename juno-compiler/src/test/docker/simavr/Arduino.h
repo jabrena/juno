@@ -60,6 +60,8 @@ extern PORT_t juno_harness_ports[6];
 
 struct HarnessSerial {
   void begin(unsigned long) {}
+  int available() { return 0; }
+  int read() { return -1; }
   void print(const char* text) { juno_harness_write(text); }
   void print(char value) {
     char text[2] = {value, '\0'};

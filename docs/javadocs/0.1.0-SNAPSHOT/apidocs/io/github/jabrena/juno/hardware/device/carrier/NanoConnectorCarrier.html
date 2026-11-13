@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/NanoConnectorCarrier.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#class">Help</a></li>
@@ -73,6 +74,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E()" tabindex="0">NanoConnectorCarrier()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" tabindex="0">NanoConnectorCarrier(Gpio)</a></li>
 </ol>
 </li>
@@ -149,7 +151,7 @@ The module's <code>GND</code> and <code>VCC</code> wires are supplied by the soc
       (white) wires are <a href="#getA1()"><code>getA1()</code></a> and <a href="#getA3()"><code>getA3()</code></a>.</li>
   <li><a href="#getGroveUart()"><code>getGroveUart()</code></a>: RX on D0; TX on D1 is <a href="#getUartTx()"><code>getUartTx()</code></a>. These are the Nano's hardware serial
       pins, free on the Nano ESP32, whose <code>Serial</code> is USB.</li>
-  <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through <code>ArduinoNano.getI2c()</code>. Use it for I2C
+  <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through <code>MCU.getI2c()</code>. Use it for I2C
       modules only: the bus pull-ups distort a digital module's output, and a Grove PIR measured about 1.4 V at
       rest here, neither low nor high. Plug such a module into an analog socket instead.</li>
 </ul>
@@ -181,8 +183,12 @@ program reading the card should not blink that LED.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">NanoConnectorCarrier</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">NanoConnectorCarrier</a>()</code></div>
 <div class="col-last even-row-color">
+<div class="block">Creates the carrier handle on the board's own GPIO pins (<a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>).</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">NanoConnectorCarrier</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Creates the carrier handle for a board GPIO context.</div>
 </div>
 </div>
@@ -306,6 +312,15 @@ program reading the card should not blink that LED.</div>
 <section class="constructor-details" id="constructor-detail">
 <h2>Constructor Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="&lt;init&gt;()">
+<h3>NanoConnectorCarrier</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">NanoConnectorCarrier</span>()</div>
+<div class="block">Creates the carrier handle on the board's own GPIO pins (<a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>). Create it once, at startup.</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio)">
 <h3>NanoConnectorCarrier</h3>

@@ -485,10 +485,16 @@ jobs:
         run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
   xtensa:
-    name: Run Xtensa programs under QEMU (ESP32-S3)
+    name: Run Xtensa programs under QEMU (ESP32-S3, ${{ matrix.carriers }} carrier)
     needs: [changes, xtensa-image]
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 1: the single-carrier runtime. 2: one carrier per ESP32-S3 core, the runtime a Nano ESP32 runs by default;
+        # the DualCarrier* programs exercise hand-over, stop-the-world collection and cancellation across the cores.
+        carriers: [1, 2]
     permissions:
       contents: read
       packages: read
@@ -505,19 +511,19 @@ jobs:
       - name: Pull Xtensa image
         run: docker pull ${{ needs.xtensa-image.outputs.ref }}
       - name: Run Xtensa programs under QEMU (ESP32-S3)
-        # About 21 min for 17 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
+        # About 25 min for 21 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
         # backstop, and as a step timeout (not a job timeout) it still lets the failure-evidence upload below run.
         timeout-minutes: 45
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pxtensa
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT
-          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }}
+          -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }} -Djuno.Xmx=24k -Djuno.carriers=${{ matrix.carriers }}
           -b turbo -T1C
       - name: Publish Xtensa conformance report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: xtensa-conformance-junit
+          name: ${{ matrix.carriers == 1 && 'xtensa-conformance-junit' || 'xtensa-conformance-junit-2-carriers' }}
           path: juno-compiler/target/failsafe-reports/**
           if-no-files-found: warn
           retention-days: 7
@@ -525,7 +531,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: xtensa-conformance-failure
+          name: ${{ matrix.carriers == 1 && 'xtensa-conformance-failure' || 'xtensa-conformance-failure-2-carriers' }}
           path: juno-compiler/target/xtensa/generated/**
           if-no-files-found: warn
           retention-days: 7
@@ -563,6 +569,13 @@ jobs:
         with:
           name: xtensa-conformance-junit
           path: reports/xtensa
+      - name: Download two-carrier Xtensa conformance report
+        if: needs.xtensa.result != 'skipped'
+        continue-on-error: true
+        uses: actions/download-artifact@v8
+        with:
+          name: xtensa-conformance-junit-2-carriers
+          path: reports/xtensa-2-carriers
       - name: Summarize conformance reports
         shell: bash
         run: |
@@ -572,7 +585,7 @@ jobs:
           {
             echo "## Conformance reports"
             echo
-            for backend in qemu simavr xtensa; do
+            for backend in qemu simavr xtensa xtensa-2-carriers; do
               files=(reports/$backend/failsafe-reports/TEST-*.xml)
               if [[ -e "${files[0]}" ]]; then
                 for report in "${files[@]}"; do
@@ -713,8 +726,12 @@ jobs:
             board_id: arduino-nano-esp32
           - board: UNO Q
             board_id: arduino-uno-q
+          - board: AI Thinker ESP32-CAM
+            board_id: ai-thinker-esp32-cam
           - board: M5Stack Cardputer
             board_id: m5stack-cardputer
+          - board: Raspberry Pi Pico 2 W
+            board_id: raspberry-pi-pico-2-w
     steps:
       - uses: actions/checkout@v7
         with:

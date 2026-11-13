@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -21,10 +21,10 @@ public final class GroveRcxFirmwareDownload {
     }
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
-        RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
+        RcxLink link = new RcxLink(emitter, receiver, MCU.getClock());
         RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxFirmwareDownload.download(remote);
     }

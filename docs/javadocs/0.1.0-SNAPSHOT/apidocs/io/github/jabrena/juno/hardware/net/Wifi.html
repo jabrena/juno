@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/Wifi.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#class">Help</a></li>
@@ -105,17 +106,13 @@ initTheme();
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Wifi</span></div>
-<div class="block">Wi-Fi connection control. <a href="../ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> is the board's own radio, which the
+<div class="block">Wi-Fi connection control. <a href="../MCU.html#getWifi()"><code>MCU.getWifi()</code></a> is the board's own radio, which the
 compiler lowers to the Arduino board networking stack (<code>WiFiS3</code> on UNO R4 WiFi, <code>WiFiNINA</code> on UNO WiFi
-Rev2, <code>Arduino_RouterBridge</code> on UNO Q); the UNO R3 has no radio of its own, so it gets its Wi-Fi from
-<a href="../device/wifi/ArduinoWifiShield.html#getWifi()"><code>ArduinoWifiShield.getWifi()</code></a> (the retired Arduino WiFi Shield's
-legacy <code>WiFi</code> library) instead. A unit test passes <code>mock(Wifi.class)</code>. Get it once, at startup, and pass
-it to the classes that need it.
+Rev2, <code>Arduino_RouterBridge</code> on UNO Q). The UNO R3 has no radio and no network support. A unit test passes
+<code>mock(Wifi.class)</code>. Get it once, at startup, and pass it to the classes that need it.
 
-<p><code>ssid</code>/<code>password</code> may be string literals, compile-time values resolved from
-<code>System.getenv("NAME")</code>, or stable runtime strings returned by APIs such as
-<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Properties.html#getProperty(java.lang.String)" class="external-link"><code>Properties.getProperty(String)</code></a>. This allows a
-deployed board to keep credentials on removable storage instead of baking them into firmware.</div>
+<p><code>ssid</code>/<code>password</code> may be string literals or stable runtime strings returned by a
+<code>SecretStore</code> or another board-side configuration source. This keeps credentials out of firmware.</div>
 </div>
 </section>
 <section class="summary">
@@ -153,7 +150,7 @@ deployed board to keep credentials on removable storage instead of baking them i
 <div class="col-second even-row-color"><code><a href="#STATUS_NO_SHIELD" class="member-name-link">STATUS_NO_SHIELD</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">The <a href="#status()"><code>status()</code></a> value when the board gets no answer from its Wi-Fi hardware, mirroring Arduino's
-<code>WL_NO_SHIELD</code>, e.g. a UNO R3 whose Arduino WiFi Shield is missing or not seated.</div>
+<code>WL_NO_SHIELD</code>.</div>
 </div>
 </div>
 </section>
@@ -275,8 +272,7 @@ list.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">STATUS_NO_SHIELD</span></div>
 <div class="block">The <a href="#status()"><code>status()</code></a> value when the board gets no answer from its Wi-Fi hardware, mirroring Arduino's
-<code>WL_NO_SHIELD</code>, e.g. a UNO R3 whose Arduino WiFi Shield is missing or not seated. With no shield at all the
-legacy library may instead keep waiting on the shield's D7 handshake line.</div>
+<code>WL_NO_SHIELD</code>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>

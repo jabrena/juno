@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Package</li>
 <li><a href="package-use.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../../help-doc.html#package">Help</a></li>
@@ -94,10 +95,9 @@ ESP_SSLClient</code> library (<code>arduino-cli lib install ESP_SSLClient</code>
 pattern as <a href="../../hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>. <code>Pop3Client</code> instead uses
 implicit TLS on port 995 (POP3S), so it reuses <code>WiFiSSLClient</code> exactly like <a href="../http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests and needs no extra library.
 
-<p>Every host, username, password, and message field here must be a compile-time constant — a
-string literal, or a direct <code>System.getenv("NAME")</code> call with a literal name — for the
-same reason as <a href="../http/package-summary.html"><code>io.github.jabrena.juno.hardware.net.http</code></a>: Juno has no heap to build a
-runtime <code>String</code> from.
+<p>Host and credential fields accept runtime strings read from a board-side <code>SecretStore</code>; message fields may
+also be literals or caller-owned runtime strings. Values are passed directly to the bounded transport and are not
+copied into firmware constants.
 
 <p>Scope, deliberately: one recipient, plain text only, no attachments, HTML, multipart MIME,
 folders, or OAuth2. <code>ESP_SSLClient</code> on this board validates the server host name but not
@@ -117,7 +117,7 @@ deliberate tradeoff to fit STARTTLS in the UNO R4 WiFi's 32KB of RAM.</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware.net</a></div>
 <div class="col-last even-row-color">
-<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and the UNO R3 with the Arduino WiFi Shield:
+<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q and UNO WiFi Rev2:
 <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> connects and reads the board's address.</div>
 </div>
 <div class="col-first odd-row-color"><a href="../http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></div>

@@ -13,8 +13,8 @@ import io.github.jabrena.juno.robotics.EncoderMotor;
 public final class PoweredUpMotor implements EncoderMotor {
     private static final int MAX_POWER = 100;
 
-    private final PoweredUpPort hubPort;
-    private final HubPort port;
+    private final PoweredUpTransport hubPort;
+    private final PoweredUpPort port;
     private int power = MAX_POWER;
     /** {@code 1} for forward, {@code -1} for backward, {@code 0} when not driving. */
     private int direction;
@@ -22,7 +22,7 @@ public final class PoweredUpMotor implements EncoderMotor {
     private boolean subscribed;
     private int zeroOffset;
 
-    PoweredUpMotor(PoweredUpPort hubPort, HubPort port) {
+    PoweredUpMotor(PoweredUpTransport hubPort, PoweredUpPort port) {
         this.hubPort = hubPort;
         this.port = port;
     }

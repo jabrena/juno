@@ -7,8 +7,8 @@ package io.github.jabrena.juno.hardware.net.email;
  * {@link io.github.jabrena.juno.hardware.net.Wifi#begin} connection.
  *
  * <p>{@code host}, {@code username}, {@code password}, {@code from}, {@code to}, {@code subject},
- * and {@code body} must all be compile-time strings (a literal, or {@code System.getenv("NAME")}
- * of a literal name). Authentication is {@code AUTH LOGIN} (base64 username/password), the
+ * and {@code body} accept literals or runtime strings read from a board-side {@code SecretStore}.
+ * Authentication is {@code AUTH LOGIN} (base64 username/password), the
  * baseline every mainstream SMTP submission server accepts.
  */
 public final class Smtp {

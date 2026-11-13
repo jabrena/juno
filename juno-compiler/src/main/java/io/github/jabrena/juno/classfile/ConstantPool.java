@@ -74,6 +74,14 @@ public final class ConstantPool {
         return new MethodHandleRef(handle.referenceKind(), methodRef(handle.referenceIndex()));
     }
 
+    public FieldHandleRef fieldHandle(int index) {
+        Object value = entry(index);
+        if (!(value instanceof MethodHandleEntry handle) || handle.referenceKind() != FieldHandleRef.REF_GET_FIELD) {
+            throw new CompileException("Constant pool entry " + index + " is not an instance-field getter");
+        }
+        return new FieldHandleRef(handle.referenceKind(), fieldRef(handle.referenceIndex()));
+    }
+
     public String methodType(int index) {
         Object value = entry(index);
         if (value instanceof MethodTypeEntry methodType) {

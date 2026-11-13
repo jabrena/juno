@@ -75,11 +75,6 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
   </tr>
   <tr>
-    <td><strong>Arduino WiFi Shield</strong></td>
-    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-wifi.png" alt="Arduino WiFi Shield" width="220"></td>
-    <td>Wi-Fi, UDP, TCP, plain HTTP and the SNTP clock on the UNO R3 (shield firmware 1.1.0). No access point or HTTPS.</td>
-  </tr>
-  <tr>
     <td><strong>Grove Base Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove.png" alt="Grove Base Shield" width="220"></td>
     <td>Grove digital, analog, I2C, and UART connectors.</td>
@@ -130,6 +125,30 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tr>
 </table>
 
+## AI Thinker boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>AI Thinker ESP32-CAM</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Raspberry Pi boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Raspberry Pi Pico 2 W</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
 ## Quick start
 
 Requirements: `Arduino CLI`, `JDK 27+`, `Maven 3.10+`.
@@ -157,7 +176,7 @@ supported board. Its built-in LED alternates on and off every 500 ms (one full c
 ```java
 package io.github.jabrena.juno.api.hardware.gpio;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -165,7 +184,7 @@ public final class Blink {
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

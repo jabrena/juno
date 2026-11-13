@@ -1,9 +1,12 @@
 package io.github.jabrena.juno.lowering;
 
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.analysis.BasicBlock;
 import io.github.jabrena.juno.analysis.Terminator;
+import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.ir.IrMethod;
 import io.github.jabrena.juno.ir.IrTerminator;
+import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.LinkedMethod;
 
 import java.util.List;
@@ -12,6 +15,7 @@ import java.util.Set;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.CHECKCAST;
 import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INSTANCEOF;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEDYNAMIC;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEINTERFACE;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
@@ -33,6 +37,8 @@ final class MethodLowering {
         CallLowering calls = new CallLowering(context);
         ObjectCreationLowering objects = new ObjectCreationLowering(context, calls);
         LambdaLowering lambdas = new LambdaLowering(context, calls);
+        StringConcatLowering concatenations = new StringConcatLowering(context, calls);
+        ObjectMethodsLowering objectMethods = new ObjectMethodsLowering(context, calls, concatenations);
 
         List.of(new ConstantLowering(context), new LocalVariableLowering(context), new ArrayLowering(context),
                 new StackShuffleLowering(context.stack()), new ArithmeticLowering(context),
@@ -41,11 +47,30 @@ final class MethodLowering {
         table.on(GETSTATIC, PUTFIELD, new FieldLowering(context));
         table.on(INVOKEVIRTUAL, INVOKEINTERFACE,
                 new CallGuard(context, new InvokeLowering(context, calls, objects, lambdas)));
-        table.on(INVOKEDYNAMIC, new InvokeDynamicLowering(context, lambdas, new StringConcatLowering(context, calls)));
+        table.on(INVOKEDYNAMIC, new InvokeDynamicLowering(context, lambdas, concatenations, objectMethods));
         table.on(NEW, objects);
         // References are untyped words and javac has already proved the cast, so checkcast generates no code.
         table.on(CHECKCAST, instruction -> { });
+        table.on(INSTANCEOF, this::lowerInstanceOf);
         table.on(MONITORENTER, MONITOREXIT, new MonitorLowering(context));
+    }
+
+    private void lowerInstanceOf(Instruction instruction) {
+        String className = context.constantPool().className(instruction.operandA());
+        var target = context.classes().get(className);
+        if (target == null || !target.isFinal() || target.isInterface()) {
+            throw new CompileException(context.at(instruction) + ": instanceof is supported only for available final classes: "
+                    + className.replace('/', '.'));
+        }
+        Integer typeId = context.program().objectTypeIds().get(className);
+        if (typeId == null) {
+            throw new CompileException(context.at(instruction) + ": no runtime type id for "
+                    + className.replace('/', '.'));
+        }
+        Value value = context.stack().pop();
+        Value result = context.values().int32();
+        context.emit(new io.github.jabrena.juno.ir.IrInstruction.InstanceOf(result, value, typeId));
+        context.stack().push(result);
     }
 
     IrMethod lower() {

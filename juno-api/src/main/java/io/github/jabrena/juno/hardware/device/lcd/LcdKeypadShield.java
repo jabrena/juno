@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.lcd;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -17,11 +17,6 @@ import org.jspecify.annotations.Nullable;
  * intrinsic: every operation here is built from {@link Gpio#pinMode}, {@link Gpio#digitalWrite},
  * {@link Gpio#analogRead}, and {@link Delay}, the same way {@link io.github.jabrena.juno.hardware.led.LedCanvas}
  * is built from {@link io.github.jabrena.juno.hardware.led.LedMatrix}.
- *
- * <p>It cannot be stacked with the Arduino WiFi Shield on a UNO R3: both shields are wired to D4, D7 and D10 (this
- * shield's LCD data and backlight, that one's SD-card chip select, handshake line and Wi-Fi chip select), so the
- * compiler rejects a UNO R3 program that uses this shield together with {@code Wifi}, {@code Udp}, {@code Tcp},
- * {@code HttpClient} or {@code LocalDateTime.now()}.
  */
 public final class LcdKeypadShield {
     /** No button is currently pressed. */
@@ -90,7 +85,7 @@ public final class LcdKeypadShield {
 
     /** A shield on the board's own pins. Create it once, at startup, and share it. */
     public LcdKeypadShield() {
-        this(ArduinoUno.getGpio());
+        this(MCU.getGpio());
     }
 
     /** A shield driven through {@code gpio}: a mocked one in a unit test. */

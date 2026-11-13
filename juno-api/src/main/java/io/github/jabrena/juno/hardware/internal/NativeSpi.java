@@ -11,7 +11,7 @@ public final class NativeSpi implements Spi {
     public static final NativeSpi INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.ArduinoUno#getSpi()} returns: the board's bus, unless a whole-program
+     * What {@link io.github.jabrena.juno.hardware.MCU#getSpi()} returns: the board's bus, unless a whole-program
      * emulator in a test replaced it.
      */
     private static Spi spi;
@@ -24,13 +24,13 @@ public final class NativeSpi implements Spi {
     private NativeSpi() {
     }
 
-    /** The bus {@link io.github.jabrena.juno.hardware.ArduinoUno#getSpi()} hands out. */
+    /** The bus {@link io.github.jabrena.juno.hardware.MCU#getSpi()} hands out. */
     public static Spi spi() {
         return spi;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.ArduinoUno#getSpi()} hand out {@code replacement}: for a
+     * Makes {@link io.github.jabrena.juno.hardware.MCU#getSpi()} hand out {@code replacement}: for a
      * whole-program emulator in a test, never on the board.
      */
     public static void setSpi(Spi replacement) {

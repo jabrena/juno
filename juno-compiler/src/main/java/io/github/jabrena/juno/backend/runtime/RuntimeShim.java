@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import io.github.jabrena.juno.RuntimeConfig;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -22,6 +22,7 @@ import java.util.stream.IntStream;
  * lowered program's {@link ShimFeature}s call for. Optional parts are decided here, at
  * Java-string-generation time, so an unused feature costs no flash, RAM or build dependency.
  */
+@SuppressWarnings("PMD.CyclomaticComplexity")
 public final class RuntimeShim {
     private final ScopedValueRuntime scopedValueRuntime = new ScopedValueRuntime();
     private final AtomicRuntime atomicRuntime = new AtomicRuntime();
@@ -37,6 +38,7 @@ public final class RuntimeShim {
     private final ShimLibraries shimLibraries = new ShimLibraries();
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
+    private final CarrierGcRuntime carrierGcRuntime = new CarrierGcRuntime();
     private final GpioPinRuntime gpioPinRuntime = new GpioPinRuntime();
 
     private final CoreRuntime core;
@@ -45,7 +47,8 @@ public final class RuntimeShim {
     private final Set<Intrinsic> usedMath;
     private final List<String> throwableClasses;
     private final Optional<WatchdogRuntime> watchdog;
-    private final RuntimeConfig config;
+    private final ResolvedRuntimeConfig config;
+    private final int carrierCount;
 
     /**
      * @param core {@code board}'s per-core runtime glue (see {@code CoreRuntimes.of})
@@ -54,11 +57,12 @@ public final class RuntimeShim {
      * @param usedMath every {@code java.lang.Math} intrinsic the lowered program calls
      * @param watchdogTimeoutMillis the entry point's {@code @Watchdog} timeout, if it has one
      */
-    public RuntimeShim(CoreRuntime core, RuntimeConfig config, boolean gcLoggingEnabled,
+    public RuntimeShim(CoreRuntime core, ResolvedRuntimeConfig config, boolean gcLoggingEnabled,
                 Set<ShimFeature> features,
                 Set<Intrinsic> usedMath, List<String> throwableClasses, Optional<Integer> watchdogTimeoutMillis) {
         this.core = core;
         this.config = config;
+        this.carrierCount = config.carrierCount(features.contains(ShimFeature.THREADS));
         this.gcLoggingEnabled = gcLoggingEnabled;
         // The UUID helpers raise a Java exception for an invalid value, so a UUID program needs the exception helpers too.
         this.features = features.contains(ShimFeature.UUID) ? withExceptions(features) : features;
@@ -107,6 +111,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraIncludes());
         }
+        if (uses(ShimFeature.PSRAM)) {
+            shim.append("#include <esp_heap_caps.h>\n");
+        }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.BLUETOOTH_LE)) {
             shim.append(core.bleIncludes());
@@ -142,7 +149,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
-                ShimFeature.SD)) {
+                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE)) {
             shim.append("#include <string.h>\n");
         }
         if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.RUNTIME_STRINGS,
@@ -189,7 +196,8 @@ public final class RuntimeShim {
                 .replace("${JUNO_WATCHDOG_PANIC_MESSAGE}", watchdogPanicMessage)
                 .replace("${JUNO_PANIC_HALT}", core.panicHalt())
                 .replace("${JUNO_WATCHDOG_BEGIN_FUNCTION}", watchdogFunctions)
-                + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration)
+                + allocatorRuntime.source(config.arenaBytes(), 4, gcLoggingEnabled, gcStackScan, gcThreadDeclaration,
+                        carrierCount)
                 + runtimeSource.load("thumb2/serial.cpp").replace("${JUNO_LED_MATRIX_FUNCTIONS}", ledMatrixFunctions);
     }
 
@@ -216,7 +224,7 @@ public final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        shim.append(ioRuntime.preludeFor(core, features));
+        shim.append(ioRuntime.preludeFor(core, features, carrierCount));
         if (uses(ShimFeature.M5_DEVICE)) {
             shim.append(runtimeSource.load("common/m5-device.cpp"));
         }
@@ -246,6 +254,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraHelpers());
         }
+        if (uses(ShimFeature.PSRAM)) {
+            shim.append(core.psramHelpers());
+        }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());
         }
@@ -253,7 +264,7 @@ public final class RuntimeShim {
             shim.append(shimLibraries.infraredHelpers());
         }
         if (uses(ShimFeature.I2C)) {
-            shim.append(shimLibraries.i2cHelpers());
+            shim.append(shimLibraries.i2cHelpers(core.i2cPinSetup()));
         }
         if (uses(ShimFeature.SPI)) {
             shim.append(shimLibraries.spiHelpers());
@@ -284,7 +295,8 @@ public final class RuntimeShim {
             shim.append(mathRuntime.helpers(usedMath));
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
-                new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses)),
+                new ShimFeatureBlock(ShimFeature.EXCEPTIONS, () -> shimLibraries.exceptionHelpers(throwableClasses,
+                        carrierCount)),
                 new ShimFeatureBlock(ShimFeature.GPIO_PIN_LOOKUP, () -> gpioPinRuntime.helpers(core,
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.GPIO_PULSE_IN, () -> shimLibraries.pulseInHelpers(core.pulseInPin())),
@@ -355,10 +367,12 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SCOPED_VALUES)) {
             shim.append(scopedValueRuntime.bindings(uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.SCOPED_CALL_ENTRY),
-                    throwableClasses.indexOf("java/util/NoSuchElementException")));
+                    throwableClasses.indexOf("java/util/NoSuchElementException"), carrierCount));
         }
         if (uses(ShimFeature.THREADS)) {
-            shim.append(core.threadPort(config));
+            shim.append(carrierGcRuntime.source(core, carrierCount));
+            shim.append(core.carrierRuntime(carrierCount));
+            shim.append(core.threadPort(config, carrierCount));
             shim.append(ioRuntime.workerPortFor(core, features));
             shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(), ioRuntime.usesWorker(core, features),
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
@@ -368,7 +382,7 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException"),
                     throwableClasses.indexOf("java/lang/InterruptedException"),
-                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException")));
+                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException"), carrierCount));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }

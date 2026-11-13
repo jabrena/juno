@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -16,7 +16,7 @@ public final class GroveDht22Monitor {
     }
 
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         Serial.begin(BaudRate.BAUD_115200);
         GroveDht22 dht22 = new GroveDht22();
         int[] reading = new int[GroveDht22.READING_LENGTH];

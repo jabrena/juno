@@ -30,6 +30,7 @@ initTheme();
 <li class="nav-bar-cell1-rev">Class</li>
 <li><a href="class-use/NativeBoardModel.html">Use</a></li>
 <li><a href="package-tree.html">Tree</a></li>
+<li><a href="../../../../../../deprecated-list.html">Deprecated</a></li>
 <li><a href="../../../../../../index-all.html">Index</a></li>
 <li><a href="../../../../../../search.html">Search</a></li>
 <li><a href="../../../../../../help-doc.html#class">Help</a></li>
@@ -83,6 +84,7 @@ initTheme();
 <li><a href="#isQ()" tabindex="0">isQ()</a></li>
 <li><a href="#isR4()" tabindex="0">isR4()</a></li>
 <li><a href="#isR3()" tabindex="0">isR3()</a></li>
+<li><a href="#onboardSdChipSelect()" tabindex="0">onboardSdChipSelect()</a></li>
 </ol>
 </li>
 </ol>
@@ -142,7 +144,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#boardModel()" class="member-name-link">boardModel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">The board model <a href="../ArduinoUno.html#getBoardModel()"><code>ArduinoUno.getBoardModel()</code></a> hands out.</div>
+<div class="block">The board model <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hands out.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isQ()" class="member-name-link">isQ</a>()</code></div>
@@ -159,10 +161,15 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Whether the program runs on the UNO R4 WiFi, with its Renesas core and 12-column LED matrix.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)" class="member-name-link">setBoardModel</a><wbr>(<a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onboardSdChipSelect()" class="member-name-link">onboardSdChipSelect</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Makes <a href="../ArduinoUno.html#getBoardModel()"><code>ArduinoUno.getBoardModel()</code></a> hand out <code>replacement</code>: for a
+<div class="block">The selected board's onboard SD chip-select pin; only called after capability validation.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)" class="member-name-link">setBoardModel</a><wbr>(<a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Makes <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>
@@ -204,7 +211,7 @@ whole-program emulator in a test, never on the board.</div>
 <h3>boardModel</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></span>&nbsp;<span class="element-name">boardModel</span>()</div>
-<div class="block">The board model <a href="../ArduinoUno.html#getBoardModel()"><code>ArduinoUno.getBoardModel()</code></a> hands out.</div>
+<div class="block">The board model <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hands out.</div>
 </div>
 </section>
 </li>
@@ -213,7 +220,7 @@ whole-program emulator in a test, never on the board.</div>
 <h3>setBoardModel</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setBoardModel</span><wbr><span class="parameters">(<a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</span></div>
-<div class="block">Makes <a href="../ArduinoUno.html#getBoardModel()"><code>ArduinoUno.getBoardModel()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </section>
@@ -257,6 +264,15 @@ whole-program emulator in a test, never on the board.</div>
 <dt>Specified by:</dt>
 <dd><code><a href="../BoardModel.html#isR3()">isR3</a></code>&nbsp;in interface&nbsp;<code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
 </dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="onboardSdChipSelect()">
+<h3>onboardSdChipSelect</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">onboardSdChipSelect</span>()</div>
+<div class="block">The selected board's onboard SD chip-select pin; only called after capability validation.</div>
 </div>
 </section>
 </li>

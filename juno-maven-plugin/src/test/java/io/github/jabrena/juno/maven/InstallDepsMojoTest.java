@@ -30,7 +30,7 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         RecordingLog log = new RecordingLog();
         mojo.setLog(log);
         FakeExecutor executor = new FakeExecutor();
-        for (int step = 0; step < 10; step++) {
+        for (int step = 0; step < 11; step++) {
             executor.respond(0, "installed");
         }
         mojo.useExecutor(executor);
@@ -39,7 +39,7 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         mojo.execute();
 
         // Then
-        assertThat(executor.invocations()).hasSize(10);
+        assertThat(executor.invocations()).hasSize(11);
         assertThat(executor.invocations().get(0).arguments())
                 .containsExactly("arduino-cli", "core", "install", "arduino:renesas_uno");
         assertThat(executor.invocations().get(1).arguments())
@@ -48,11 +48,14 @@ class InstallDepsMojoTest extends AbstractMojoTestCase {
         assertThat(executor.invocations().get(2).arguments())
                 .containsExactly("arduino-cli", "core", "install", "m5stack:esp32", "--additional-urls",
                         "https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json");
-        assertThat(executor.invocations().subList(3, 10))
+        assertThat(executor.invocations().get(3).arguments())
+                .containsExactly("arduino-cli", "core", "install", "rp2040:rp2040", "--additional-urls",
+                        "https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json");
+        assertThat(executor.invocations().subList(4, 11))
                 .extracting(command -> command.arguments().get(3))
                 .containsExactly("Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1",
                         "M5GFX@0.2.31");
-        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (10 steps)"));
+        assertThat(log.infos()).anyMatch(line -> line.contains("Installing Arduino dependencies (11 steps)"));
         assertThat(log.infos()).anyMatch(line -> line.contains("installation completed in"));
     }
 

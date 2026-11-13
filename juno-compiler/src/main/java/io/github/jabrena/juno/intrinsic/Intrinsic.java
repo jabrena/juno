@@ -33,6 +33,8 @@ public enum Intrinsic {
     STRING_LENGTH,
     STRING_CHAR_AT,
     STRING_EQUALS,
+    STRING_EQUALS_NULL_SAFE,
+    STRING_HASH_CODE,
     STRING_BUILDER_NEW,
     STRING_BUILDER_APPEND_CHAR,
     STRING_BUILDER_APPEND_STRING,
@@ -45,6 +47,10 @@ public enum Intrinsic {
     STRING_CONCAT_APPEND_LONG,
     STRING_CONCAT_APPEND_FLOAT,
     STRING_CONCAT_APPEND_DOUBLE,
+    FLOAT_COMPARE,
+    DOUBLE_COMPARE,
+    FLOAT_HASH_CODE,
+    DOUBLE_HASH_CODE,
     DIGITAL_OUTPUT_OF,
     DIGITAL_OUTPUT_HIGH,
     DIGITAL_OUTPUT_LOW,
@@ -56,6 +62,7 @@ public enum Intrinsic {
     BOARD_IS_Q,
     BOARD_IS_R4,
     BOARD_IS_R3,
+    BOARD_ONBOARD_SD_CHIP_SELECT,
     LED_MATRIX_CLEAR,
     M5_DISPLAY_BEGIN,
     M5_DISPLAY_WIDTH,
@@ -87,6 +94,8 @@ public enum Intrinsic {
     M5_BATTERY_LEVEL_PERCENT,
     M5_BATTERY_VOLTAGE_MILLIVOLTS,
     SERIAL_BEGIN,
+    SERIAL_AVAILABLE,
+    SERIAL_READ,
     SERIAL_PRINT,
     SERIAL_PRINTLN,
     SERIAL_PRINT_LONG,
@@ -118,6 +127,8 @@ public enum Intrinsic {
     I2C_WRITE_REGISTER,
     I2C_READ_REGISTER,
     I2C_READ_REGISTER16,
+    I2C_WRITE,
+    I2C_READ,
     SPI_BEGIN,
     SPI_TRANSFER,
     WIFI_BEGIN,
@@ -234,6 +245,18 @@ public enum Intrinsic {
     MEMORY_ARENA_CAPACITY,
     MEMORY_FLASH_USED,
     MEMORY_FLASH_CAPACITY,
+    PSRAM_AVAILABLE,
+    PSRAM_NOMINAL_CAPACITY,
+    PSRAM_TOTAL_BYTES,
+    PSRAM_FREE_BYTES,
+    PSRAM_LARGEST_FREE_BLOCK,
+    PSRAM_ALLOCATE,
+    PSRAM_CAPACITY,
+    PSRAM_READ_BYTE,
+    PSRAM_WRITE_BYTE,
+    PSRAM_READ,
+    PSRAM_WRITE,
+    PSRAM_RELEASE,
     SMTP_SEND,
     SMTP_SEND_TLS,
     POP3_MESSAGE_COUNT,
@@ -505,9 +528,9 @@ public enum Intrinsic {
      */
     private static final Set<Intrinsic> PORT_OPERATIONS = EnumSet.of(GPIO_PIN_MODE, GPIO_DIGITAL_WRITE,
             GPIO_DIGITAL_READ, GPIO_ANALOG_READ, GPIO_PULSE_IN, GPIO_ANALOG_WRITE, GPIO_TOGGLE, GPIO_BUILTIN_LED, I2C_BEGIN,
-            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, SPI_BEGIN, SPI_TRANSFER, MOUSE_BEGIN, MOUSE_MOVE, LED_MATRIX_BEGIN,
+            I2C_WRITE_REGISTER, I2C_READ_REGISTER, I2C_READ_REGISTER16, I2C_WRITE, I2C_READ, SPI_BEGIN, SPI_TRANSFER, MOUSE_BEGIN, MOUSE_MOVE, LED_MATRIX_BEGIN,
             LED_MATRIX_LOAD_FRAME, LED_MATRIX_COLUMNS, LED_MATRIX_CLEAR, CLOCK_MILLIS, CLOCK_MICROS, BOARD_IS_Q, BOARD_IS_R4,
-            BOARD_IS_R3, MEMORY_ARENA_USED, MEMORY_ARENA_CAPACITY, MEMORY_FLASH_USED, MEMORY_FLASH_CAPACITY);
+            BOARD_IS_R3, BOARD_ONBOARD_SD_CHIP_SELECT, MEMORY_ARENA_USED, MEMORY_ARENA_CAPACITY, MEMORY_FLASH_USED, MEMORY_FLASH_CAPACITY);
 
     /** The {@code DigitalOutput} operations: plain pin calls whose handle is the pin number, so they inline too. */
     private static final Set<Intrinsic> INLINABLE_OPERATIONS = EnumSet.of(DIGITAL_OUTPUT_OF, DIGITAL_OUTPUT_HIGH,
@@ -537,9 +560,14 @@ public enum Intrinsic {
     /** The camera calls behind {@code NativeCamera}: the one sensor is the only state, so they ignore their receiver. */
     private static final Set<Intrinsic> CAMERA_OPERATIONS = EnumSet.of(CAMERA_BEGIN, CAMERA_CAPTURE);
 
+    /** The explicit PSRAM operations behind the static {@code Psram} API; they have no Java receiver. */
+    private static final Set<Intrinsic> PSRAM_OPERATIONS = EnumSet.of(PSRAM_AVAILABLE, PSRAM_NOMINAL_CAPACITY,
+            PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
+            PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
+
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
-                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this);
+                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this);
     }
 }
