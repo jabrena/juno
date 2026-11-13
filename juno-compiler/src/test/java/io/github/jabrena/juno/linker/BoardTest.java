@@ -966,13 +966,13 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.ArduinoUno;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (hub.connect(1000)) {
-                            hub.getMotor(HubPort.A).drive(50);
+                            hub.getMotor(PoweredUpPort.A).drive(50);
                         }
                     }
                 }
@@ -992,7 +992,7 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubPort;
+                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
@@ -1003,7 +1003,7 @@ class BoardTest {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
                         if (hub.connect(1000)) {
-                            hub.getMotor(HubPort.A).drive(50);
+                            hub.getMotor(PoweredUpPort.A).drive(50);
                         }
                     }
                 }
