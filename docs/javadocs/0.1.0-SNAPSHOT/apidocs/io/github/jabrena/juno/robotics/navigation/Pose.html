@@ -83,7 +83,12 @@ initTheme();
 <li><a href="#xMillimetres()" tabindex="0">xMillimetres()</a></li>
 <li><a href="#yMillimetres()" tabindex="0">yMillimetres()</a></li>
 <li><a href="#headingMillidegrees()" tabindex="0">headingMillidegrees()</a></li>
+<li><a href="#setLocation(int,int)" tabindex="0">setLocation(int, int)</a></li>
+<li><a href="#setHeadingMillidegrees(int)" tabindex="0">setHeadingMillidegrees(int)</a></li>
 <li><a href="#reset()" tabindex="0">reset()</a></li>
+<li><a href="#distanceToMillimetres(int,int)" tabindex="0">distanceToMillimetres(int, int)</a></li>
+<li><a href="#angleToMillidegrees(int,int)" tabindex="0">angleToMillidegrees(int, int)</a></li>
+<li><a href="#relativeBearingMillidegrees(int,int)" tabindex="0">relativeBearingMillidegrees(int, int)</a></li>
 </ol>
 </li>
 </ol>
@@ -101,7 +106,11 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Pose</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Mutable, allocation-free planar pose for a differential-drive robot.</div>
+<div class="block">Mutable, allocation-free planar pose for a differential-drive robot, Cartesian as leJOS's pose and a
+<a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>'s direction are: heading zero points along +x, the heading
+grows counter-clockwise, and +y is to the left of heading zero. The position is kept in micrometres, so many short
+moves at a small angle add up their sideways part instead of rounding each one away; it reads in millimetres, and
+stays exact within about two kilometres of the origin.</div>
 </div>
 </section>
 <section class="summary">
@@ -139,24 +148,55 @@ initTheme();
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headingMillidegrees()" class="member-name-link">headingMillidegrees</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#angleToMillidegrees(int,int)" class="member-name-link">angleToMillidegrees</a><wbr>(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The heading, in millidegrees, normalised to <code>0</code> through <code>359_999</code>.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Resets this pose to the origin facing heading zero.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#xMillimetres()" class="member-name-link">xMillimetres</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The x position, in millimetres from the origin.</div>
+<div class="block">The direction from this pose's position to <code>(xMillimetres, yMillimetres)</code>, in millidegrees
+counter-clockwise from +x, normalised to <code>0</code> through <code>359_999</code>: leJOS's <code>angleTo</code>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#yMillimetres()" class="member-name-link">yMillimetres</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#distanceToMillimetres(int,int)" class="member-name-link">distanceToMillimetres</a><wbr>(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The y position, in millimetres from the origin.</div>
+<div class="block">The straight-line distance to <code>(xMillimetres, yMillimetres)</code>, in millimetres, rounded to the nearest.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headingMillidegrees()" class="member-name-link">headingMillidegrees</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The heading, in millidegrees counter-clockwise, normalised to <code>0</code> through <code>359_999</code>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#relativeBearingMillidegrees(int,int)" class="member-name-link">relativeBearingMillidegrees</a><wbr>(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The turn from this pose's heading to face <code>(xMillimetres, yMillimetres)</code>, in millidegrees, positive
+counter-clockwise, the shorter way: <code>-179_999</code> through <code>180_000</code>. leJOS's <code>relativeBearing</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#reset()" class="member-name-link">reset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Resets this pose to the origin facing heading zero.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHeadingMillidegrees(int)" class="member-name-link">setHeadingMillidegrees</a><wbr>(int&nbsp;headingMillidegrees)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the heading, in millidegrees counter-clockwise; any value, normalised to a turn.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setLocation(int,int)" class="member-name-link">setLocation</a><wbr>(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Moves this pose to <code>(xMillimetres, yMillimetres)</code>, keeping its heading.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#xMillimetres()" class="member-name-link">xMillimetres</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The x position, in millimetres from the origin, rounded to the nearest.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#yMillimetres()" class="member-name-link">yMillimetres</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The y position, in millimetres from the origin, rounded to the nearest.</div>
 </div>
 </div>
 </div>
@@ -208,7 +248,7 @@ initTheme();
 <h3>xMillimetres</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">xMillimetres</span>()</div>
-<div class="block">The x position, in millimetres from the origin.</div>
+<div class="block">The x position, in millimetres from the origin, rounded to the nearest.</div>
 </div>
 </section>
 </li>
@@ -217,7 +257,7 @@ initTheme();
 <h3>yMillimetres</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">yMillimetres</span>()</div>
-<div class="block">The y position, in millimetres from the origin.</div>
+<div class="block">The y position, in millimetres from the origin, rounded to the nearest.</div>
 </div>
 </section>
 </li>
@@ -226,7 +266,26 @@ initTheme();
 <h3>headingMillidegrees</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">headingMillidegrees</span>()</div>
-<div class="block">The heading, in millidegrees, normalised to <code>0</code> through <code>359_999</code>.</div>
+<div class="block">The heading, in millidegrees counter-clockwise, normalised to <code>0</code> through <code>359_999</code>.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setLocation(int,int)">
+<h3>setLocation</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setLocation</span><wbr><span class="parameters">(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</span></div>
+<div class="block">Moves this pose to <code>(xMillimetres, yMillimetres)</code>, keeping its heading.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setHeadingMillidegrees(int)">
+<h3>setHeadingMillidegrees</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setHeadingMillidegrees</span><wbr><span class="parameters">(int&nbsp;headingMillidegrees)</span></div>
+<div class="block">Sets the heading, in millidegrees counter-clockwise; any value, normalised to a turn.</div>
 </div>
 </section>
 </li>
@@ -236,6 +295,39 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">reset</span>()</div>
 <div class="block">Resets this pose to the origin facing heading zero.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="distanceToMillimetres(int,int)">
+<h3>distanceToMillimetres</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">distanceToMillimetres</span><wbr><span class="parameters">(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</span></div>
+<div class="block">The straight-line distance to <code>(xMillimetres, yMillimetres)</code>, in millimetres, rounded to the nearest.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="angleToMillidegrees(int,int)">
+<h3>angleToMillidegrees</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">angleToMillidegrees</span><wbr><span class="parameters">(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</span></div>
+<div class="block">The direction from this pose's position to <code>(xMillimetres, yMillimetres)</code>, in millidegrees
+counter-clockwise from +x, normalised to <code>0</code> through <code>359_999</code>: leJOS's <code>angleTo</code>. Zero when the
+point is this position.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="relativeBearingMillidegrees(int,int)">
+<h3>relativeBearingMillidegrees</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">relativeBearingMillidegrees</span><wbr><span class="parameters">(int&nbsp;xMillimetres,
+ int&nbsp;yMillimetres)</span></div>
+<div class="block">The turn from this pose's heading to face <code>(xMillimetres, yMillimetres)</code>, in millidegrees, positive
+counter-clockwise, the shorter way: <code>-179_999</code> through <code>180_000</code>. leJOS's <code>relativeBearing</code>.</div>
 </div>
 </section>
 </li>

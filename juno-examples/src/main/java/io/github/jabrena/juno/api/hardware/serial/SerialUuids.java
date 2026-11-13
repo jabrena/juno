@@ -12,7 +12,7 @@ import java.util.UUID;
  * Prints a fresh random UUID from {@link UUID#randomUUID()} every two seconds at 115200 baud. On the Nano ESP32 the bytes
  * come from the chip's hardware random-number generator, so the values differ on every run.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialUuids -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

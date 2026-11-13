@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="active" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/hardware-apis">Overview</a>
     <a class="" href="/juno/delay">Delay</a>
     <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/syslog">Syslog</a>
     <a class="active" href="/juno/gpio">Gpio</a>
     <a class="" href="/juno/sdcard">SD Card</a>
     <a class="" href="/juno/wifi">Wifi</a>
@@ -423,7 +424,7 @@ without touching the board:</p>
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
@@ -443,7 +444,7 @@ boolean pressed = !gpio.digitalRead(buttonPin);
 <h2 id="troubleshooting">Troubleshooting</h2>
 <ul>
 <li><strong>The LED does not blink:</strong> check the board name in <code>-Djuno.board</code> matches the board you plugged in, and that
-<code>juno:upload</code> finished without an error.</li>
+<code>juno:flash</code> finished without an error.</li>
 <li><strong>A <code>digitalRead</code> always returns the same value:</strong> the pin was not set as an input with <code>pinMode</code> first, or a
 button is not wired between the pin and ground.</li>
 </ul>

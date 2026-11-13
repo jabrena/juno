@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -509,7 +509,10 @@ blink.run();
 <li><code>Thread.startVirtualThread(Runnable)</code>, <code>join()</code>, <code>isAlive()</code>, <code>Thread.sleep</code> and <code>Thread.yield()</code>.</li>
 <li><code>interrupt()</code> and <code>isInterrupted()</code> on a virtual thread. An interrupt ends a <code>sleep</code>, <code>wait</code>, <code>await</code> or <code>acquire</code> that
 the thread is blocked in with <code>InterruptedException</code>, as on the JDK.</li>
-<li>At most four threads run at once, including <code>main</code>.</li>
+<li>On the UNO R3 and UNO R3 WiFi Rev2, at most four scheduler slots exist, including <code>main</code>. On the UNO R4 WiFi and
+UNO Q, the single-carrier slot table grows in the arena. The Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and
+Raspberry Pi Pico 2 W use dual-carrier tables with at most 16 slots, including <code>main</code>; a <code>juno.carriers=1</code> build uses
+the single-carrier table instead.</li>
 </ul>
 <h3 id="structured-concurrency">Structured concurrency</h3>
 <ul>
@@ -539,19 +542,25 @@ write lock) supports <code>lock()</code>, <code>lockInterruptibly()</code>, <cod
 subclass with <code>onAdvance</code>, the timed <code>awaitAdvanceInterruptibly</code>, tiered phasers and termination are not supported.</li>
 </ul>
 <h2 id="concurrency-behaviour">Concurrency behaviour</h2>
-<p>Virtual threads, structured subtasks and <code>main</code> share one preemptive scheduler, and the runtime switches between them in
-1 ms time slices. A subtask is scheduled exactly like a virtual thread; the structured scope only adds lifecycle
-management. Only one task runs at any moment.</p>
+<p>Virtual threads, structured subtasks and <code>main</code> share one preemptive scheduler, which gives each carrier a 1 ms time
+slice. A subtask is scheduled exactly like a virtual thread; the structured scope adds lifecycle management, joining,
+deadlines and cancellation. On single-carrier boards only one task runs at a time. The Nano ESP32, AI Thinker
+ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two tasks concurrently, one on each carrier.</p>
 <ul>
 <li><strong>Every task is preemptive.</strong> When a slice is over, the scheduler takes the processor away from the task. On the UNO R4
-WiFi and the UNO Q a periodic tick can switch a task between any two instructions. On the UNO WiFi Rev2 a task is
-switched at loop back-edges and method entries instead, so a loop with no calls is still switched.</li>
+WiFi, the UNO Q and the Raspberry Pi Pico 2 W, a periodic tick can switch generated Java between instructions. On the
+UNO R3, UNO R3 WiFi Rev2 and ESP32-family boards, a task is switched at loop back-edges and method entries instead,
+so a loop with no calls is still switched.</li>
 <li><strong>Tasks give up the processor when they block.</strong> That happens on <code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code>,
-<code>join</code>, entering a monitor that another task holds, and while a hardware call waits for its device: an HTTP or HTTPS
-request, <code>HttpServer.accept</code>, the retries of <code>SdCard.begin</code>, and a Powered Up scan or reply. Other tasks run during
-those waits. Each device is used by one task at a time, so a second task that needs it waits its turn.</li>
-<li><strong>The runtime itself is never interrupted part-way.</strong> Allocation, the garbage collector, throws, monitors, atomics and
-hardware calls each run to completion, so the arena and the pending-exception slot need no locks.</li>
+<code>join</code>, entering a monitor that another task holds, or waiting on a latch, semaphore, barrier, condition or phaser.
+Juno-controlled waits in HTTP/HTTPS, <code>HttpServer.accept</code>, the retries of <code>SdCard.begin</code>, and Powered Up scans or
+replies also let other tasks run. On the UNO Q, vendor-library waits are moved to an I/O worker; on other boards a
+wait inside a vendor library can still hold up the other tasks. Each device is used by one task at a time, so a second
+task that needs it waits its turn.</li>
+<li><strong>Runtime critical sections are protected.</strong> A single carrier cannot switch in the middle of allocation, collection,
+exception handling, monitor or atomic operations. On dual-carrier boards, the runtime lock serialises those operations
+and the collector stops both carriers while it scans their stacks. Pending exceptions and scoped-value bindings are
+kept per task/carrier, so they are not shared accidentally.</li>
 </ul>
 <p>Because tasks switch at arbitrary points, write shared code as if it ran on the JVM, where tasks run in parallel:</p>
 <ul>

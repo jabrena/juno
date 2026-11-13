@@ -188,7 +188,7 @@ object-shaped API over passing a pin number to every call.</div>
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock,
  int&nbsp;signalPin)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> can be a test double.</div>
 </div>
 </div>
 </section>
@@ -325,15 +325,24 @@ whole-program emulator in a test, never on the board.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.BufferedGyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a>&nbsp;gyroscope,
+<div class="col-second even-row-color"><code><a href="../../../robotics/navigation/GyroDifferentialPilot.html#%3Cinit%3E(io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroDifferentialPilot</a><wbr>(<a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a>&nbsp;left,
+ <a href="../../../robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a>&nbsp;right,
+ <a href="../../../robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ <a href="../../../robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;direction,
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Creates the direction over <code>gyroscope</code>, read from its buffer; nothing is read until <a href="../../../robotics/navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
+<div class="block">Creates the pilot.</div>
 </div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
-<div class="col-second odd-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyroscope,
+<div class="col-second odd-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.BufferedGyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a>&nbsp;gyroscope,
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last odd-row-color">
+<div class="block">Creates the direction over <code>gyroscope</code>, read from its buffer; nothing is read until <a href="../../../robotics/navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../../robotics/navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../../../robotics/Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyroscope,
+ <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last even-row-color">
 <div class="block">Creates the direction over <code>gyroscope</code>, read once a visit; nothing is read until <a href="../../../robotics/navigation/GyroHeading.html#start()"><code>GyroHeading.start()</code></a>.</div>
 </div>
 </div>

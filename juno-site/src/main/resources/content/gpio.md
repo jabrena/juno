@@ -75,7 +75,7 @@ without touching the board:
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
@@ -104,6 +104,6 @@ int light = gpio.analogRead(gpio.analogPin("A0"));
 ## Troubleshooting
 
 - **The LED does not blink:** check the board name in `-Djuno.board` matches the board you plugged in, and that
-  `juno:upload` finished without an error.
+  `juno:flash` finished without an error.
 - **A `digitalRead` always returns the same value:** the pin was not set as an input with `pinMode` first, or a
   button is not wired between the pin and ground.

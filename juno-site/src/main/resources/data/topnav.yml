@@ -10,8 +10,6 @@ items:
         path: "/create-your-first-project"
       - title: "Maven Plugin"
         path: "/juno-maven-plugin"
-      - title: "Migrating to MCU"
-        path: "/migrate-to-mcu"
   - title: "Features"
     path: "/features"
     children:
@@ -55,6 +53,8 @@ items:
         path: "/delay"
       - title: "Serial"
         path: "/serial"
+      - title: "Syslog"
+        path: "/syslog"
       - title: "Gpio"
         path: "/gpio"
       - title: "SD Card"

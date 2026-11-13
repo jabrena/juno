@@ -54,11 +54,11 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 The BLE-enabled board menu is selected automatically by the compiler. BLE uses the core's non-FreeRTOS build because
 the arduino-pico BLE library is not compatible with its FreeRTOS menu.
 
-Install the core with `juno:install-deps`. To flash a new board, hold BOOTSEL while plugging it in; `juno:upload`
+Install the core with `juno:install-deps`. To flash a new board, hold BOOTSEL while plugging it in; `juno:flash`
 finds its `UF2_Board` drive by itself, and later uploads reset the board through its USB serial port.
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.RaspberryPico2Blink \
   -Djuno.board=raspberry-pi-pico-2-w
 ```

@@ -106,21 +106,33 @@ heading corrections without depending on a motor protocol or device implementati
 </li>
 <li>
 <div id="class-summary">
-<div class="caption"><span>Classes</span></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab1" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab1', 2)" class="table-tab">Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab3" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab3', 2)" class="table-tab">Enum Classes</button></div>
+<div id="class-summary.tabpanel" role="tabpanel" aria-labelledby="class-summary-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Plans a mission's path for a <a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> and drives it around obstacles found on the way: the planner leJOS's
+<code>PathFinder</code> feeds a navigator through its <a href="WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>WaypointListener</code></a>, re-planning when the navigator says a leg
+ended at an obstacle, which leJOS leaves to the program.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Coordinates two independently controlled motors as a differential drive.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">Updates a caller-owned pose from two wheel encoders and an IMU.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Updates a caller-owned pose from two wheel encoders and a heading sensor.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Fixed geometry and encoder ratios for a two-wheel differential drive.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">A <a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a> over two <a href="../EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>s whose power the program sets directly, such as a Powered Up hub's, that
+closes both loops itself with a <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>, a <a href="GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a> for instance.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
@@ -137,14 +149,56 @@ else, such as an infrared round trip to an RCX.</div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Applies a bounded proportional correction to keep a differential drive on a target heading.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">Why a <a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a>'s last move ended, and so why a <a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a>'s leg did.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="NavigationListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Hears a <a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a>'s progress along its path, as leJOS's listener of the same name does.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Mutable, allocation-free planar pose for a differential-drive robot.</div>
+<div class="block">Drives a robot through a path of <a href="Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Waypoint</code></a>s, as leJOS's <code>Navigator</code> does: for each waypoint it turns to
+face the point, travels to it, and turns to the waypoint's heading when one is required.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Says whether something is in the robot's way, read by a <a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a> on its own thread while it travels: leJOS's
+<code>FeatureDetector</code> without the thread of its own, which a board's few thread slots cannot spare.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">Moves a robot straight and turns it in place, as leJOS's <code>MoveController</code> with its rotation does: the moves a
+<a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> drives a path with.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Mutable, allocation-free planar pose for a differential-drive robot, Cartesian as leJOS's pose and a
+<a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>'s direction are: heading zero points along +x, the heading
+grows counter-clockwise, and +y is to the left of heading zero.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="RangeObstacleDetector.html" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">An <a href="ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>ObstacleDetector</code></a> over a forward-facing <a href="../RangeFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>RangeFinder</code></a>, such as a Grove Ultrasonic Ranger: blocked once
+<code>confirmReadings</code> readings in a row are nearer than <code>stopMillimetres</code>, and clear again only once a reading
+is beyond <code>clearMillimetres</code> or finds no echo.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Drives a two-wheel robot by distance and heading, with its wheels regulated by a <a href="../RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics"><code>RegulatedPair</code></a> (such as an
 RCX pair).</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">A point a <a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> drives to, in the pose's Cartesian millimetres, optionally with the heading the robot must
+face there, as leJOS's <code>Waypoint</code>.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Receives a path one waypoint at a time from whatever plans it, as leJOS's interface of the same name does: a
+<a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> implements it, and a planner such as <a href="DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>DetourPlanner</code></a> feeds it.</div>
+</div>
 </div>
 </div>
 </div>

@@ -55,7 +55,7 @@ serial as hex, and never puts it on the command line or in the log:
   in its own `SecretSlots` table.
 - Only one of `-Djuno.secret.key`, `-Djuno.secret.list` and `-Djuno.secret.clear` may be used at a time.
 
-Once provisioning is done, upload your own program again with `juno:upload`: the provisioning program replaces it on the
+Once provisioning is done, upload your own program again with `juno:flash`: the provisioning program replaces it on the
 board.
 
 The chip's data zone is not locked by this tool. Locking is a permanent step and is left to a separate, reviewed process.

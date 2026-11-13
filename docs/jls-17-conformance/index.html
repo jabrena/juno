@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -326,8 +326,10 @@ outcome does not make the racy program correct. The deterministic examples there
 one deliberately racy final-field example treats failure to observe the published reference as allowed.</p>
 <h2 id="locks-and-higher-level-coordination-objects">Locks and higher-level coordination objects</h2>
 <p>JLS 17 specifies the memory-ordering primitives (monitors, volatile access, thread start/join and interruption); it
-does not make <code>Semaphore</code>, <code>CountDownLatch</code> or the other <code>java.util.concurrent</code> classes language primitives. The
-examples make that boundary visible:</p>
+does not make <code>Semaphore</code>, <code>CountDownLatch</code> or the other <code>java.util.concurrent</code> classes language primitives. Juno
+nevertheless lowers a restricted, board-usable subset of those library classes on every board with the
+<code>STRUCTURED_CONCURRENCY</code> capability (all scheduler boards except Classic UNO R3). The examples make that boundary
+visible:</p>
 <table>
 <thead>
 <tr>
@@ -340,55 +342,67 @@ examples make that boundary visible:</p>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java"><code>Locks</code></a></td>
 <td>Concrete <code>ReentrantLock</code>, reentrancy, <code>tryLock</code>, and <code>finally</code>/<code>unlock</code></td>
-<td>Board-ready on UNO R4 WiFi, UNO Q and UNO WiFi Rev2</td>
+<td>Board-ready on all scheduler boards</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Atomics.java"><code>Atomics</code></a></td>
 <td><code>AtomicInteger</code>, <code>AtomicLong</code>, <code>AtomicBoolean</code>, <code>compareAndSet</code> and <code>getAndSet</code></td>
-<td>Board-ready on UNO R4 WiFi, UNO Q and UNO WiFi Rev2</td>
+<td>Board-ready on all scheduler boards</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/StructuredRace.java"><code>StructuredRace</code></a></td>
+<td><code>StructuredTaskScope</code> joiners, subtasks, joining and cancellation</td>
+<td>Compiler-supported on all scheduler boards; the example declares its current board targets</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Semaphores.java"><code>Semaphores</code></a></td>
-<td>Counting permits</td>
-<td>JVM-only</td>
+<td>Restricted <code>Semaphore</code>: permits, blocking/try acquire, release and fairness policy</td>
+<td>Compiler-supported subset; this example remains a JVM-oriented executable reference</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/CountDownLatchExample.java"><code>CountDownLatchExample</code></a></td>
-<td>One-shot completion gate</td>
-<td>JVM-only</td>
+<td>Restricted <code>CountDownLatch</code>: count, count-down and blocking/timed await</td>
+<td>Compiler-supported subset; this example remains a JVM-oriented executable reference</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/PhaserExample.java"><code>PhaserExample</code></a></td>
-<td>Reusable phase barrier</td>
-<td>JVM-only</td>
+<td>Non-tiered <code>Phaser</code>: registration, arrival, phase advance and interruptible await</td>
+<td>Compiler-supported subset; timed, tiered and terminating forms are rejected</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/CyclicBarrierExample.java"><code>CyclicBarrierExample</code></a></td>
-<td>Reusable barrier and barrier action</td>
-<td>JVM-only</td>
-</tr>
-<tr>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ExchangerExample.java"><code>ExchangerExample</code></a></td>
-<td>Two-party value exchange</td>
-<td>JVM-only</td>
+<td>Reusable barrier, barrier action and interrupt-driven breakage</td>
+<td>Compiler-supported subset; this example remains a JVM-oriented executable reference</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ReadWriteLockExample.java"><code>ReadWriteLockExample</code></a></td>
 <td>Separate read and write locks</td>
-<td>JVM-only</td>
+<td>Compiler-supported subset; fair <code>ReentrantReadWriteLock</code> is rejected</td>
+</tr>
+<tr>
+<td><code>Condition</code></td>
+<td><code>ReentrantLock.newCondition()</code>, await, signal and signal-all</td>
+<td>Compiler-supported subset; the write lock can also create a condition</td>
+</tr>
+<tr>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ExchangerExample.java"><code>ExchangerExample</code></a></td>
+<td>Two-party value exchange</td>
+<td>JVM-only; no Juno lowering</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BlockingQueueExample.java"><code>BlockingQueueExample</code></a></td>
 <td>Blocking producer/consumer queue</td>
-<td>JVM-only</td>
+<td>JVM-only; no Juno lowering</td>
 </tr>
 </tbody>
 </table>
+<p>The same board capability also includes the JDK 27 preview <code>ScopedValue</code> API used by structured-task programs. It is
+lexically scoped and is not a substitute for a shared mutable field or a synchronization primitive.</p>
 <p>The board-safe <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/BoundedBuffer.java"><code>BoundedBuffer</code></a>
-shows the replacement pattern: a concrete <code>ReentrantLock</code>, a non-blocking <code>offer</code>/<code>poll</code>, and <code>Thread.yield()</code> while
-the caller retries. The compiler rejects the JVM-only classes' higher-level APIs instead of silently changing their
-blocking or fairness semantics. Their JUnit checks still run on OpenJDK, so each object has a focused executable
-example and a deterministic assertion.</p>
+shows the replacement pattern for a queue: a concrete <code>ReentrantLock</code>, a non-blocking <code>offer</code>/<code>poll</code>, and
+<code>Thread.yield()</code> while the caller retries. The compiler rejects unsupported classes and unsupported overloads instead
+of silently changing their blocking or fairness semantics. The JUnit examples still run on OpenJDK, so each object has
+a focused executable example and a deterministic assertion.</p>
 <h2 id="clause-to-example-matrix">Clause-to-example matrix</h2>
 <table>
 <thead>
@@ -406,27 +420,27 @@ example and a deterministic assertion.</p>
 </tr>
 <tr>
 <td>17.2 Wait sets and notification</td>
-<td>Board objects have monitors but Juno does not expose JVM wait-set operations.</td>
-<td>The four following rows retain runnable JVM examples and mark the board boundary explicitly.</td>
+<td>Board objects have monitors and Juno implements a restricted wait set. Timed <code>Object.wait(long)</code> is not lowered.</td>
+<td>The following rows describe the supported zero-argument board operations and their JVM rules.</td>
 </tr>
 <tr>
 <td>17.2.1 Wait</td>
-<td><code>Object.wait</code> is not lowered. On the JVM it requires monitor ownership, releases all of that thread's acquisitions of the monitor, may wake spuriously, and reacquires the same number before returning or throwing.</td>
+<td><code>Object.wait()</code> is lowered. It requires monitor ownership, releases the thread's monitor acquisitions, waits for notification or interruption, and reacquires the monitor before returning or throwing.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/WaitNotification.java"><code>WaitNotification.await</code></a> uses the required guarded <code>while</code> loop.</td>
 </tr>
 <tr>
 <td>17.2.2 Notification</td>
-<td><code>notify</code> and <code>notifyAll</code> are not lowered. JVM <code>notify</code> chooses an arbitrary waiter; <code>notifyAll</code> wakes all waiters, which then reacquire the monitor one at a time.</td>
+<td><code>notify</code> and <code>notifyAll</code> are lowered. JVM <code>notify</code> chooses an arbitrary waiter; <code>notifyAll</code> wakes all waiters, which then reacquire the monitor one at a time.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/WaitNotification.java"><code>WaitNotification.publish</code></a> changes guarded state before <code>notifyAll</code>.</td>
 </tr>
 <tr>
 <td>17.2.3 Interruptions</td>
-<td>Board thread interruption is not lowered. On the JVM, interruption sets the status; an interrupted wait/sleep throws <code>InterruptedException</code> and clears it.</td>
+<td><code>Thread.interrupt()</code> and <code>isInterrupted()</code> are lowered. An interrupt sets the status; a supported blocking operation such as wait, sleep, await or acquire throws <code>InterruptedException</code> and consumes the pending status.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Interruption.java"><code>Interruption</code></a> demonstrates restoring the status when an exception cannot be propagated.</td>
 </tr>
 <tr>
 <td>17.2.4 Wait/notification/interruption races</td>
-<td>Not applicable on boards because neither wait sets nor interruption are exposed. On the JVM a notified-and-interrupted waiter may return normally with a pending interrupt or throw; it may not clear the interrupt and return normally, and notification cannot be lost.</td>
+<td>Juno models the restricted wait/notification/interrupt interaction, but does not provide timed <code>Object.wait(long)</code>. On the JVM a notified-and-interrupted waiter may return normally with a pending interrupt or throw; it may not clear the interrupt and return normally, and notification cannot be lost.</td>
 <td>Covered as a specification rule rather than a deterministic board test because both race outcomes are legal.</td>
 </tr>
 <tr>
@@ -441,22 +455,22 @@ example and a deterministic assertion.</p>
 </tr>
 <tr>
 <td>17.4.2 Actions</td>
-<td>Ordinary reads/writes, volatile reads/writes, monitor actions, thread start, thread termination detection, and serial output are represented. Thread divergence is specification machinery rather than a terminating board test.</td>
+<td>Ordinary reads/writes, volatile reads/writes, monitor actions, thread start, interruption, thread termination detection, and serial output are represented. Thread divergence is specification machinery rather than a terminating board test.</td>
 <td>The examples below exercise each supported action kind.</td>
 </tr>
 <tr>
 <td>17.4.3 Program order and sequential consistency</td>
-<td>Juno executes one task at a time and provides a stronger, sequentially consistent implementation. Portable code must still be correctly synchronized.</td>
+<td>Single-carrier boards execute one task at a time. Dual-carrier ESP32 and Pico 2 W boards can run two Java carriers concurrently; runtime critical sections remain protected, but portable code must still be correctly synchronized.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/LostUpdates.java"><code>LostUpdates</code></a> contrasts a racy compound action with monitor, lock, and atomic updates.</td>
 </tr>
 <tr>
 <td>17.4.4 Synchronization order</td>
-<td>Volatile, monitor, start, and join synchronization edges are supported. Default zero initialization occurs before Java code runs. Interrupt edges are unavailable because interruption is unsupported.</td>
+<td>Volatile, monitor, start, join, and interruption synchronization edges are supported. Default zero initialization occurs before Java code runs.</td>
 <td><code>MonitorHappensBefore</code>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/VolatileHappensBefore.java"><code>VolatileHappensBefore</code></a>, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java"><code>ThreadStartAndJoin</code></a>.</td>
 </tr>
 <tr>
 <td>17.4.5 Happens-before</td>
-<td>Monitor unlock/lock, volatile write/read, start, join, program order, and transitivity publish the expected values. A data race remains a bug even when Juno's single-core execution happens to hide it.</td>
+<td>Monitor unlock/lock, volatile write/read, start, join, program order, and transitivity publish the expected values. A data race remains a bug even when a particular Juno scheduling configuration happens to hide it.</td>
 <td>The three happens-before examples each print <code>42</code>; <code>LostUpdates</code> documents the racy counterexample.</td>
 </tr>
 <tr>
@@ -523,18 +537,38 @@ example and a deterministic assertion.</p>
 <tbody>
 <tr>
 <td>UNO R4 WiFi</td>
-<td>Supported</td>
+<td>Supported; one carrier</td>
 <td>Physical board, or Cortex-M4 QEMU for the language/runtime layer</td>
 </tr>
 <tr>
 <td>UNO Q</td>
-<td>Supported</td>
+<td>Supported; one carrier</td>
 <td>Physical board; Cortex-M4 QEMU uses a stand-in for the Zephyr scheduling port</td>
 </tr>
 <tr>
 <td>UNO WiFi Rev2</td>
-<td>Supported</td>
+<td>Supported; one carrier</td>
 <td>Physical board, or simavr for the AVR language/runtime layer</td>
+</tr>
+<tr>
+<td>Nano ESP32</td>
+<td>Supported; two carriers by default</td>
+<td>Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in</td>
+</tr>
+<tr>
+<td>AI Thinker ESP32-CAM</td>
+<td>Supported; two carriers by default</td>
+<td>Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in</td>
+</tr>
+<tr>
+<td>M5Stack Cardputer</td>
+<td>Supported; two carriers by default</td>
+<td>Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in</td>
+</tr>
+<tr>
+<td>Raspberry Pi Pico 2 W</td>
+<td>Supported; two carriers by default</td>
+<td>Physical board; RP2350 toolchain coverage, no QEMU/simavr stand-in</td>
 </tr>
 <tr>
 <td>Classic UNO R3</td>
@@ -543,10 +577,10 @@ example and a deterministic assertion.</p>
 </tr>
 </tbody>
 </table>
-<p>The annotation on every board-ready example names the three supported targets, so the normal language-example tests
-compile each class once per target. The Arduino CLI integration profile then builds and links the generated sketches
-with each target's real Arduino core. QEMU and simavr compare generated-code output with OpenJDK for the runtime layer;
-real hardware remains the final check for each scheduler port.</p>
+<p>Each board-ready example declares its own target set, while the compiler capability covers every scheduler board listed
+above. The Arduino CLI integration profile builds and links the generated sketches with each target's real Arduino
+core. QEMU and simavr compare generated-code output with OpenJDK where a stand-in exists; real hardware remains the
+final check for each scheduler port.</p>
     </div>
   </section>
 </article>

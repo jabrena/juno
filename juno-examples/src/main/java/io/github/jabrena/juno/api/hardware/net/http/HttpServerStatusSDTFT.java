@@ -25,7 +25,7 @@ import java.util.Properties;
  * <p>The card needs {@code wifi.ssid} and {@code wifi.password}, as in {@link NanoHttpServerSD}. Open
  * {@code http://<address>/status} from a laptop on the same network, or with {@code curl http://<address>/status}.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.HttpServerStatusSDTFT -Djuno.board=arduino-uno-r3-wifi-rev2
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r3-wifi-rev2
  * }</pre>

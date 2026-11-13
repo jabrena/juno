@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Hardware APIs">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC.">
-  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC." />
-  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC." />
+  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/hardware-apis/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="active" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -301,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="active" href="/juno/hardware-apis">Overview</a>
     <a class="" href="/juno/delay">Delay</a>
     <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/syslog">Syslog</a>
     <a class="" href="/juno/gpio">Gpio</a>
     <a class="" href="/juno/sdcard">SD Card</a>
     <a class="" href="/juno/wifi">Wifi</a>
@@ -339,6 +340,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <td><a href="../serial">Serial</a></td>
 <td>Printing and reading over USB serial, the main way to see what a program is doing on a board.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java"><code>SerialCounter</code></a></td>
+</tr>
+<tr>
+<td><a href="../syslog">Syslog</a></td>
+<td>Sending allocation-free RFC 5424 log datagrams over Wi-Fi to <code>juno:monitor</code>, so a board can be followed without USB.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRegulatedDifferentialDrive.java"><code>NanoCarrierRcxRegulatedDifferentialDrive</code></a></td>
 </tr>
 <tr>
 <td><a href="../gpio">Gpio</a></td>

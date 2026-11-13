@@ -32,7 +32,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   `backend`, …) plus its unit tests; depends on `juno-api`. A new `native` API method is declared in `juno-api`
   and needs entries in `IntrinsicRegistry` and `IntrinsicLowering` here, and the backend never branches on a
   specific board.
-- `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `upload`, `monitor`) and their tests; tests use a
+- `juno-maven-plugin/` – Maven goals (`juno:compile`, `verify`, `flash`, `monitor`) and their tests; tests use a
   fake process executor and never touch hardware.
 - `juno-third-parties/juno-rcx-firmware/` – the independent H8/300 RCX firmware generator, its generated S-record and its generated
   Java image; it depends on neither `juno-api` nor `juno-compiler`.
@@ -116,7 +116,7 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 ./mvnw -pl juno-compiler -am -Pqemu verify
 
 # Flash the generated program; auto-detects one matching board, or accepts -Djuno.port=<PORT>
-./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
 
 # Attach the serial monitor at 9600 baud (override with -Djuno.baudRate=<RATE>)
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
@@ -182,7 +182,7 @@ See [Getting Started](https://jabrena.github.io/juno/getting-started) for the fu
 - ✅ **Always do:** upload to every board over USB serial, never over the network: pass `-Djuno.port=<serial port>`
   (the `/dev/cu.*` entry that `juno:boards` lists, such as the UNO Q's when it is plugged in). The network address that
   `juno:boards` may also list needs interactive credentials that the Maven goal cannot provide.
-- ✅ **Always do:** whenever you deploy an example to a board to test a feature, always follow `juno:upload`
+- ✅ **Always do:** whenever you deploy an example to a board to test a feature, always follow `juno:flash`
   with `juno:monitor` (never raw `arduino-cli`) and check the serial output against the expected result before
   calling the feature verified — an upload that succeeds proves nothing about behavior; the program must call
   `Serial.begin` and wait briefly before its first print, and the monitor needs a terminal (e.g.

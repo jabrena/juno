@@ -17,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Build and upload it with:
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.hid.M5RatonLoco \
  *   -Djuno.board=m5stack-cardputer
  * ./mvnw -f juno-examples/pom.xml juno:monitor \

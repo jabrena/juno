@@ -11,7 +11,93 @@ closed-world linking on the development machine, and emits Assembly.
 
 Traditionally, Java programs require a JVM to run. However, in memory-constrained environments, running Java programs inside a JVM can be difficult. Juno enables developers to create small Java programs for microcontrollers such as Arduino.
 
-## Arduino boards supported
+## Boards supported
+
+### Arduino Nano Family
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Nano ESP32</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Arduino Nano shields supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Accessory</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>Arduino Nano Connector Carrier</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
+    <td>Passive carrier for the Arduino Nano ESP32: microSD card slot on SPI, four Grove sockets, and one Qwiic connector.</td>
+  </tr>
+  </tbody>
+</table>
+
+## AI Thinker boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>AI Thinker ESP32-CAM</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## M5Stack boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>M5Stack Cardputer Adv</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Raspberry Pi boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Raspberry Pi Pico 2 W</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Raspberry Pi Pico shields supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Shield</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>Grove Shield for Pi Pico</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-grove-pico.png" alt="Grove Shield for Pi Pico" width="220"></td>
+    <td>Grove digital, analog, I2C, UART, and SPI connectors.</td>
+  </tr>
+  </tbody>
+</table>
 
 ### Arduino Uno Family
 
@@ -82,73 +168,6 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tbody>
 </table>
 
-### Arduino Nano Family
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <strong>Arduino Nano ESP32</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
-
-## Arduino Nano shields supported
-
-<table>
-  <thead>
-    <tr>
-      <th>Accessory</th>
-      <th>Image</th>
-      <th>Supported features</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td><strong>Arduino Nano Connector Carrier</strong></td>
-    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
-    <td>Passive carrier for the Arduino Nano ESP32: microSD card slot on SPI, four Grove sockets, and one Qwiic connector.</td>
-  </tr>
-  </tbody>
-</table>
-
-## M5Stack boards supported
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <strong>M5Stack Cardputer Adv</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer">
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
-
-## AI Thinker boards supported
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <strong>AI Thinker ESP32-CAM</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM">
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
-
-## Raspberry Pi boards supported
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <strong>Raspberry Pi Pico 2 W</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W">
-    </td>
-    <td width="50%"></td>
-  </tr>
-</table>
-
 ## Quick start
 
 Requirements: `Arduino CLI`, `JDK 27+`, `Maven 3.10+`.
@@ -197,17 +216,20 @@ public final class Blink {
 }
 ```
 
-The project provides a `Maven plugin` to help the user with the common operations. `juno:upload` generates the sketch, verifies it with `arduino-cli`, and flashes it in one step.
+The project provides a `Maven plugin` to help the user with the common operations. `juno:flash` generates the sketch, verifies it with `arduino-cli`, and flashes it in one step.
 `Blink` has no board restriction, so pick a target with `-Djuno.board`:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-q
 # -Djuno.board=arduino-uno-r4-wifi
 # -Djuno.board=arduino-uno-r3-wifi-rev2
 # -Djuno.board=arduino-uno-r3
 # -Djuno.board=arduino-nano-esp32
+# -Djuno.board=ai-thinker-esp32-cam
+# -Djuno.board=m5stack-cardputer
+# -Djuno.board=raspberry-pi-pico-2-w
 ```
 
 Select another supported board with `-Djuno.board`. The plugin auto-detects the port when exactly one matching board is
@@ -256,9 +278,9 @@ add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when the 
       <td><code>./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
-      <td><code>juno:upload</code></td>
+      <td><code>juno:flash</code></td>
       <td>Generates, verifies, and uploads the sketch to the selected or detected board.</td>
-      <td><code>./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
+      <td><code>./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi</code></td>
     </tr>
     <tr>
       <td><code>juno:monitor</code></td>
@@ -292,11 +314,6 @@ behavior it cannot guarantee. Valid Java is therefore not automatically valid Ju
 | Concurrency | virtual threads and the JDK 27 preview `StructuredTaskScope` on one preemptive scheduler (up to four threads including `main`), monitors, `ReentrantLock`, atomics, `ScopedValue` |
 | Board services | GPIO, serial, clocks, LED matrix, mouse, Wi-Fi, HTTP/HTTPS, UDP/TCP, SD card, and stacked shields (pin conflicts are rejected at compile time) |
 
-Platform threads (`new Thread`) and `Thread.ofVirtual()` builders are rejected. Objects live in one fixed arena
-(8 KiB, 1 KiB on AVR), so the AVR boards fit smaller programs. The details are on the
-[Java subset](https://jabrena.github.io/juno/java-subset) page, and runnable examples of each feature are under
-[`juno-examples`](juno-examples/src/main/java/io/github/jabrena/juno/language).
-
 ## Maven modules
 
 This is a multi-module Maven build:
@@ -307,7 +324,7 @@ This is a multi-module Maven build:
 - [`juno-compiler/`](juno-compiler) — the compiler (`classfile`, `bytecode`, `linker`, `backend`, …),
   which depends on `juno-api`. Builds the executable `juno-compiler/target/juno-compiler-<version>.jar`.
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
-  compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:upload`), and opening the
+  compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:flash`), and opening the
   serial monitor (`juno:monitor`).
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
   like any other Maven module so they're checked for compile errors on every build.
@@ -345,7 +362,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 4. **Generate the sketch.** The backend emits native assembly and a small C++ runtime shim. The Maven plugin
    packages them with a minimal `.ino` under `target/juno/<Main>Asm/`.
 5. **Build and run.** Arduino CLI compiles the generated sketch for the selected board. Use `juno:verify` to
-   compile it, `juno:upload` to flash it, and `juno:monitor` to read its serial output.
+   compile it, `juno:flash` to flash it, and `juno:monitor` to read its serial output.
 
 ## References
 

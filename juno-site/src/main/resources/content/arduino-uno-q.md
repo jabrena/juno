@@ -178,7 +178,7 @@ arduino-cli lib install Arduino_RouterBridge
 Then compile and upload an example, for instance the virtual-threads demo:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
   -Djuno.board=arduino-uno-q
 ```

@@ -37,7 +37,7 @@ import io.github.jabrena.juno.util.Delay;
  * collection reclaim ticks 0-999's arrays, then see collections stop shrinking arena usage once
  * retention starts, e.g.:
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *     -Djuno.main=io.github.jabrena.juno.api.GcDemo -Djuno.gcLog=true
  * ./mvnw -f juno-examples/pom.xml juno:monitor
  * }</pre>

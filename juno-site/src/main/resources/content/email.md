@@ -195,7 +195,7 @@ show each call in use:
 Build and upload one of them with the Maven plugin, then watch the output with `juno:monitor`:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.EmailClient
 
 ./mvnw -f juno-examples/pom.xml juno:monitor \

@@ -100,7 +100,7 @@ class JunoSiteTest {
         RestAssured.given().when().get("/create-your-first-project/").then().statusCode(200)
                 .body(containsString("git submodule add"))
                 .body(containsString("mainClass"))
-                .body(containsString("juno:upload"));
+                .body(containsString("juno:flash"));
     }
 
     @Test

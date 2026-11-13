@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -368,6 +368,14 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>Infrared, through an IR LED and receiver on the board</td>
 <td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java"><code>RemoteRcx</code></a></td>
+</tr>
+<tr>
+<td>LEGO Mindstorms RCX remote control</td>
+<td>1998</td>
+<td>The 9738 infrared handset that sends button commands to an RCX brick</td>
+<td>Infrared, using RCX remote-control frames</td>
+<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.java"><code>RcxRemoteControl</code></a></td>
 </tr>
 </tbody>
 </table>
@@ -657,14 +665,14 @@ setup with Grove infrared modules.</p>
 <h3 id="installing-the-juno-firmware-to-lego-mindstorms-rcx">Installing the JUno firmware to lego mindstorms RCX</h3>
 <p>Download Juno's firmware to the brick once. Wire the IR receiver to pin 2 and the IR LED to pin 3, point both at the
 switched-on RCX from 10 to 50 cm, and keep them still for about ten minutes; the serial monitor shows the progress:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxFirmwareDownload \
   -Djuno.board=arduino-uno-r4-wifi
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
 <p>On a Nano ESP32 with the Nano Connector Carrier, put a Grove infrared emitter in the A0/A1 socket and a Grove infrared
 receiver on the I2C socket's SCL line, and run the carrier version instead:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.NanoCarrierRcxFirmwareDownload \
   -Djuno.board=arduino-nano-esp32
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32

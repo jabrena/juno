@@ -52,7 +52,7 @@ import java.net.InetAddress;
  * reads in that window, with how long their echo waits held the processor, to tell whether they starve the gyroscope.
  *
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
  *   -Djuno.main=io.github.jabrena.juno.api.remote.lego.poweredup.NanoPoweredUpDetourNavigator
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.syslog=5514
  * }</pre>

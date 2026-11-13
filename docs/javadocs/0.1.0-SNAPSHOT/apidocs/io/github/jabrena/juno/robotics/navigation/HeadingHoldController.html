@@ -104,7 +104,8 @@ initTheme();
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">Applies a bounded proportional correction to keep a differential drive on a target heading. The
 controller reads the caller-owned <a href="Pose.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Pose</code></a> and delegates motor commands to
-<a href="DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>DifferentialDrive</code></a>; it does not depend on an IMU or motor protocol.</div>
+<a href="DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>DifferentialDrive</code></a>; it does not depend on an IMU or motor protocol. Headings are the pose's: Cartesian,
+counter-clockwise positive, so a target counter-clockwise of the heading speeds up the right side.</div>
 </div>
 </section>
 <section class="summary">
@@ -146,7 +147,9 @@ controller reads the caller-owned <a href="Pose.html" title="class in io.github.
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#correction()" class="member-name-link">correction</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Returns the current bounded turn-power correction.</div>
+<div class="block">Returns the current bounded turn-power correction, as <a href="DifferentialDrive.html#drive(int,int)"><code>DifferentialDrive.drive(int, int)</code></a> takes it: positive speeds up
+the left side and turns clockwise, so a target counter-clockwise of the heading (a positive error) corrects with a
+negative turn.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#headingErrorMillidegrees()" class="member-name-link">headingErrorMillidegrees</a>()</code></div>
@@ -256,7 +259,9 @@ ninety-degree error; <code>maximumCorrection</code> limits the correction for la
 <h3>correction</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">correction</span>()</div>
-<div class="block">Returns the current bounded turn-power correction.</div>
+<div class="block">Returns the current bounded turn-power correction, as <a href="DifferentialDrive.html#drive(int,int)"><code>DifferentialDrive.drive(int, int)</code></a> takes it: positive speeds up
+the left side and turns clockwise, so a target counter-clockwise of the heading (a positive error) corrects with a
+negative turn.</div>
 </div>
 </section>
 </li>

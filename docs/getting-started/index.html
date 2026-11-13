@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="active" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -301,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="active" href="/juno/getting-started">Getting Started</a>
     <a class="" href="/juno/create-your-first-project">Create your first project</a>
     <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-    <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -359,7 +358,7 @@ Maven plugin in your local repository, so the examples can use it.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/tree/main/juno-maven-plugin"><code>juno-maven-plugin</code></a></td>
-<td>The Maven goals that compile, verify, upload and monitor a program.</td>
+<td>The Maven goals that compile, verify, flash and monitor a program.</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jabrena/juno/tree/main/juno-examples"><code>juno-examples</code></a></td>
@@ -411,8 +410,8 @@ Java: it turns the built-in LED on and off every half second.</p>
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p><code>juno:upload</code> flashes it to the board, which then blinks its built-in LED:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<p><code>juno:flash</code> flashes it to the board, which then blinks its built-in LED:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>

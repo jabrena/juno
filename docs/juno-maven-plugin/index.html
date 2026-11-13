@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Maven Plugin">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="The juno-maven-plugin goals: compile, verify, upload and monitor.">
-  <meta property="og:description" content="The juno-maven-plugin goals: compile, verify, upload and monitor." />
-  <meta name="twitter:description" content="The juno-maven-plugin goals: compile, verify, upload and monitor.">
+  <meta name="description" content="The juno-maven-plugin goals: compile, verify, flash and monitor.">
+  <meta property="og:description" content="The juno-maven-plugin goals: compile, verify, flash and monitor." />
+  <meta name="twitter:description" content="The juno-maven-plugin goals: compile, verify, flash and monitor.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/juno-maven-plugin/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="active" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -107,6 +106,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
@@ -301,7 +301,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/getting-started">Getting Started</a>
     <a class="" href="/juno/create-your-first-project">Create your first project</a>
     <a class="active" href="/juno/juno-maven-plugin">Maven Plugin</a>
-    <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -344,7 +343,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 <td>Runs <code>juno:compile</code>, then compiles the generated sketch with <code>arduino-cli compile</code> — no board required.</td>
 </tr>
 <tr>
-<td><code>juno:upload</code></td>
+<td><code>juno:flash</code></td>
 <td>(none — run explicitly)</td>
 <td>Runs <code>juno:compile</code> and <code>juno:verify</code>, resolves the board's serial port, and flashes it with <code>arduino-cli upload</code>.</td>
 </tr>
@@ -360,7 +359,7 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 </tr>
 </tbody>
 </table>
-<p><code>compile</code>, <code>verify</code>, and <code>upload</code> each (re)build the sketch first, so running any one of them
+<p><code>compile</code>, <code>verify</code>, and <code>flash</code> each (re)build the sketch first, so running any one of them
 always reflects the current Java source — there is no separate &quot;just compile&quot; step to remember.</p>
 <h2 id="configuration">Configuration</h2>
 <p>Add the plugin to a module's <code>pom.xml</code>. There is no default program: name the one to compile on each
@@ -375,7 +374,7 @@ invocation with <code>-Djuno.main=...</code>, or, in a module with a single prog
 credential cannot be embedded in firmware. Provision board credentials with <code>juno:secret</code> and read them through
 <code>SecretStore</code> instead.</p>
 <p>This is how <a href="https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml"><code>juno-examples/pom.xml</code></a> is set up: it holds
-many programs, so every <code>compile</code>, <code>verify</code> or <code>upload</code> names one, for example
+many programs, so every <code>compile</code>, <code>verify</code> or <code>flash</code> names one, for example
 <code>-Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink</code>. Without it the goal fails and says how to pass it.</p>
 <table>
 <thead>
@@ -389,43 +388,43 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>uploa
 <tbody>
 <tr>
 <td><code>juno.main</code></td>
-<td><code>compile</code>, <code>verify</code>, <code>upload</code></td>
+<td><code>compile</code>, <code>verify</code>, <code>flash</code></td>
 <td><em>(required)</em></td>
 <td>Fully qualified entry-point class.</td>
 </tr>
 <tr>
 <td><code>juno.outputDirectory</code></td>
-<td><code>compile</code>, <code>verify</code>, <code>upload</code></td>
+<td><code>compile</code>, <code>verify</code>, <code>flash</code></td>
 <td><code>${project.build.directory}/juno</code></td>
 <td>Where generated sketch directories are written.</td>
 </tr>
 <tr>
 <td><code>juno.gcLog</code></td>
-<td><code>compile</code>, <code>verify</code>, <code>upload</code></td>
+<td><code>compile</code>, <code>verify</code>, <code>flash</code></td>
 <td><code>false</code></td>
 <td>Emit one <code>Serial</code> line per garbage collection (see <a href="../features">docs/FEATURES.md</a>).</td>
 </tr>
 <tr>
 <td><code>juno.board</code></td>
-<td><code>compile</code>, <code>verify</code>, <code>upload</code>, <code>monitor</code></td>
+<td><code>compile</code>, <code>verify</code>, <code>flash</code>, <code>monitor</code></td>
 <td><em>(required without a single-board <code>@Board</code> declaration)</em></td>
 <td>Which board to build for (<code>arduino-uno-r4-wifi</code>, <code>arduino-uno-q</code>, <code>arduino-uno-r3</code>, <code>arduino-uno-r3-wifi-rev2</code>, <code>arduino-nano-esp32</code>, <code>m5stack-cardputer</code>).</td>
 </tr>
 <tr>
 <td><code>juno.arduinoCli</code></td>
-<td><code>verify</code>, <code>upload</code>, <code>boards</code>, <code>monitor</code>, <code>install-deps</code></td>
+<td><code>verify</code>, <code>flash</code>, <code>boards</code>, <code>monitor</code>, <code>install-deps</code></td>
 <td><code>arduino-cli</code></td>
 <td>Executable name or path.</td>
 </tr>
 <tr>
 <td><code>juno.fqbn</code></td>
-<td><code>compile</code>, <code>verify</code>, <code>upload</code>, <code>monitor</code></td>
+<td><code>compile</code>, <code>verify</code>, <code>flash</code>, <code>monitor</code></td>
 <td>derived from <code>@Board</code></td>
 <td>Overrides the target FQBN.</td>
 </tr>
 <tr>
 <td><code>juno.port</code></td>
-<td><code>upload</code>, <code>monitor</code></td>
+<td><code>flash</code>, <code>monitor</code></td>
 <td>auto-detected</td>
 <td>Serial port, when more than one matching board is connected.</td>
 </tr>
@@ -485,8 +484,16 @@ Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code
 <td><code>arduino-nano-esp32</code></td>
 </tr>
 <tr>
+<td>AI Thinker ESP32-CAM</td>
+<td><code>ai-thinker-esp32-cam</code></td>
+</tr>
+<tr>
 <td>M5Stack Cardputer</td>
 <td><code>m5stack-cardputer</code></td>
+</tr>
+<tr>
+<td>Raspberry Pi Pico 2 W</td>
+<td><code>raspberry-pi-pico-2-w</code></td>
 </tr>
 </tbody>
 </table>
@@ -497,18 +504,18 @@ Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code
 </code></pre>
 <p>Generates the sketch and compiles it with <code>arduino-cli</code>. It does not touch hardware.</p>
 <h3 id="3-flash-the-board">3. Flash the board</h3>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
-<p>Flashes the sketch. <code>upload</code> auto-detects the port when exactly one matching board is connected; otherwise pass
+<p>Flashes the sketch. <code>flash</code> auto-detects the port when exactly one matching board is connected; otherwise pass
 <code>-Djuno.port=&lt;PORT&gt;</code> with the port from step 2.</p>
 <h3 id="4-watch-the-serial-output">4. Watch the Serial output</h3>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
   -Djuno.board=arduino-uno-r4-wifi
 </code></pre>
 <p>Opens the serial monitor at 115200 baud (<code>-Djuno.baudRate</code> to change it). Always use <code>juno:monitor</code> rather than a raw
-<code>arduino-cli monitor</code> call: it resolves the same port logic as <code>upload</code> and defaults to the baud rate every
+<code>arduino-cli monitor</code> call: it resolves the same port logic as <code>flash</code> and defaults to the baud rate every
 <code>juno-examples</code> program uses.</p>
 <h3 id="watch-a-board-over-the-network">Watch a board over the network</h3>
 <p>A program that logs with <a href="../wifi#remote-logging-with-syslog"><code>Syslog</code></a> can be followed without a USB cable, for
@@ -556,8 +563,8 @@ them with <code>-D</code>:</p>
 <p>Sizes take the JVM's syntax: bytes, or a number followed by <code>k</code>, <code>m</code> or <code>g</code>. The arena size must be at least 512 bytes
 and a multiple of 8, and the task stack size must be at least 512 bytes and a multiple of 8. Each board also has
 a maximum for both sizes; a larger value fails the build and names the maximum.</p>
-<pre><code class="language-bash">./mvnw compile juno:upload -Djuno.Xmx=11k -Djuno.gcLog=true
-./mvnw compile juno:upload -Djuno.Xss=1536
+<pre><code class="language-bash">./mvnw compile juno:flash -Djuno.Xmx=11k -Djuno.gcLog=true
+./mvnw compile juno:flash -Djuno.Xss=1536
 </code></pre>
 <p>Increase <code>juno.Xmx</code> when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
 when the default is too small (<code>JUNO-RISK-002</code>). Use <code>juno.gcLog</code> with <code>juno:monitor</code> to see how full the arena gets.
@@ -568,7 +575,7 @@ exactly once; the collector only manages ordinary Java objects and arrays in the
 <code>Camera.begin()</code> before networking or capture; the ESP32-CAM driver owns its PSRAM frame buffers and copies frames into a
 caller-owned Java array.</p>
 <h2 id="runtime-risk-inspection">Runtime-risk inspection</h2>
-<p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>upload</code> goals)
+<p>Every <code>compile</code> (standalone CLI or <code>juno-maven-plugin</code>'s <code>compile</code>/<code>verify</code>/<code>flash</code> goals)
 analyzes the optimized, closed-world IR and prints the findings automatically, before running or
 uploading the program. The resulting <code>CompilationReport.runtimeRisks()</code> data is also available
 programmatically as immutable records with stable diagnostic codes.</p>
@@ -653,7 +660,7 @@ iteration first can't fit alongside everything still reachable, rather than alwa
 <ul>
 <li><strong>&quot;Missing required Juno entry point&quot;:</strong> set <code>&lt;mainClass&gt;</code> in the plugin configuration or pass
 <code>-Djuno.main=&lt;fully-qualified-class-name&gt;</code>.</li>
-<li><strong><code>upload</code>/<code>monitor</code> can't find a port:</strong> run <code>./mvnw juno:boards</code> and pass the port
+<li><strong><code>flash</code>/<code>monitor</code> can't find a port:</strong> run <code>./mvnw juno:boards</code> and pass the port
 explicitly with <code>-Djuno.port=...</code> when more than one matching board is attached.</li>
 <li><strong>Uploaded sketch targets the wrong board variant:</strong> pass <code>-Djuno.fqbn=...</code> to override the FQBN
 Juno derived from the entry point's <code>@Board</code> annotation; the plugin logs a warning whenever an

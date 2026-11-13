@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * Sensor v1.2 in its A0/A1 socket, printing both once a second. Keep the PIR out of the I2C socket: the bus
  * pull-ups hold its output between low and high.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.device.carrier.NanoCarrierGroveSensors -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

@@ -1,6 +1,6 @@
 ---
 title: "Maven Plugin"
-description: "The juno-maven-plugin goals: compile, verify, upload and monitor."
+description: "The juno-maven-plugin goals: compile, verify, flash and monitor."
 layout: page
 ---
 
@@ -16,11 +16,11 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 | `juno:install-deps` | (none — run explicitly) | Installs the supported Arduino cores (including M5Stack ESP32) and every optional library any current example needs, once per machine. |
 | `juno:compile` | `process-classes` | Runs Juno's compiler for `<mainClass>` and writes the generated `.S` assembly, `Shim.cpp` runtime, and `.ino` wrapper. |
 | `juno:verify` | `verify` | Runs `juno:compile`, then compiles the generated sketch with `arduino-cli compile` — no board required. |
-| `juno:upload` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
+| `juno:flash` | (none — run explicitly) | Runs `juno:compile` and `juno:verify`, resolves the board's serial port, and flashes it with `arduino-cli upload`. |
 | `juno:boards` | (none — run explicitly) | Lists the connected boards and serial ports (address, protocol, board name, FQBN). Read-only. |
 | `juno:monitor` | (none — run explicitly) | Resolves the board's serial port and opens an interactive `arduino-cli monitor` session; with `-Djuno.syslog=<port>`, receives the board's syslog messages over the network instead. |
 
-`compile`, `verify`, and `upload` each (re)build the sketch first, so running any one of them
+`compile`, `verify`, and `flash` each (re)build the sketch first, so running any one of them
 always reflects the current Java source — there is no separate "just compile" step to remember.
 
 ## Configuration
@@ -41,18 +41,18 @@ credential cannot be embedded in firmware. Provision board credentials with `jun
 `SecretStore` instead.
 
 This is how [`juno-examples/pom.xml`](https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml) is set up: it holds
-many programs, so every `compile`, `verify` or `upload` names one, for example
+many programs, so every `compile`, `verify` or `flash` names one, for example
 `-Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink`. Without it the goal fails and says how to pass it.
 
 | Property | Goals | Default | Purpose |
 |---|---|---|---|
-| `juno.main` | `compile`, `verify`, `upload` | *(required)* | Fully qualified entry-point class. |
-| `juno.outputDirectory` | `compile`, `verify`, `upload` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
-| `juno.gcLog` | `compile`, `verify`, `upload` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
-| `juno.board` | `compile`, `verify`, `upload`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`, `arduino-nano-esp32`, `m5stack-cardputer`). |
-| `juno.arduinoCli` | `verify`, `upload`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
-| `juno.fqbn` | `compile`, `verify`, `upload`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
-| `juno.port` | `upload`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
+| `juno.main` | `compile`, `verify`, `flash` | *(required)* | Fully qualified entry-point class. |
+| `juno.outputDirectory` | `compile`, `verify`, `flash` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
+| `juno.gcLog` | `compile`, `verify`, `flash` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
+| `juno.board` | `compile`, `verify`, `flash`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-uno-r3-wifi-rev2`, `arduino-nano-esp32`, `m5stack-cardputer`). |
+| `juno.arduinoCli` | `verify`, `flash`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
+| `juno.fqbn` | `compile`, `verify`, `flash`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
+| `juno.port` | `flash`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
 | `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../serial)). |
 | `juno.syslog` | `monitor` | *(unset: serial)* | UDP port to receive RFC 5424 syslog on, e.g. `5514`; no board or serial port is needed (see [Remote logging with syslog](../wifi#remote-logging-with-syslog)). |
 
@@ -85,7 +85,9 @@ The board ids you pass as `-Djuno.board` are:
 | Arduino UNO R4 WiFi | `arduino-uno-r4-wifi` |
 | Arduino UNO Q | `arduino-uno-q` |
 | Arduino Nano ESP32 | `arduino-nano-esp32` |
+| AI Thinker ESP32-CAM | `ai-thinker-esp32-cam` |
 | M5Stack Cardputer | `m5stack-cardputer` |
+| Raspberry Pi Pico 2 W | `raspberry-pi-pico-2-w` |
 
 ### 2. Compile and check with arduino-cli (no board needed)
 
@@ -100,12 +102,12 @@ Generates the sketch and compiles it with `arduino-cli`. It does not touch hardw
 ### 3. Flash the board
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
-Flashes the sketch. `upload` auto-detects the port when exactly one matching board is connected; otherwise pass
+Flashes the sketch. `flash` auto-detects the port when exactly one matching board is connected; otherwise pass
 `-Djuno.port=<PORT>` with the port from step 2.
 
 ### 4. Watch the Serial output
@@ -116,7 +118,7 @@ Flashes the sketch. `upload` auto-detects the port when exactly one matching boa
 ```
 
 Opens the serial monitor at 115200 baud (`-Djuno.baudRate` to change it). Always use `juno:monitor` rather than a raw
-`arduino-cli monitor` call: it resolves the same port logic as `upload` and defaults to the baud rate every
+`arduino-cli monitor` call: it resolves the same port logic as `flash` and defaults to the baud rate every
 `juno-examples` program uses.
 
 ### Watch a board over the network
@@ -150,8 +152,8 @@ and a multiple of 8, and the task stack size must be at least 512 bytes and a mu
 a maximum for both sizes; a larger value fails the build and names the maximum.
 
 ```bash
-./mvnw compile juno:upload -Djuno.Xmx=11k -Djuno.gcLog=true
-./mvnw compile juno:upload -Djuno.Xss=1536
+./mvnw compile juno:flash -Djuno.Xmx=11k -Djuno.gcLog=true
+./mvnw compile juno:flash -Djuno.Xss=1536
 ```
 
 Increase `juno.Xmx` when the program keeps large data sets in RAM. The compiler's startup estimate suggests a size
@@ -166,7 +168,7 @@ caller-owned Java array.
 
 ## Runtime-risk inspection
 
-Every `compile` (standalone CLI or `juno-maven-plugin`'s `compile`/`verify`/`upload` goals)
+Every `compile` (standalone CLI or `juno-maven-plugin`'s `compile`/`verify`/`flash` goals)
 analyzes the optimized, closed-world IR and prints the findings automatically, before running or
 uploading the program. The resulting `CompilationReport.runtimeRisks()` data is also available
 programmatically as immutable records with stable diagnostic codes.
@@ -211,7 +213,7 @@ Two board examples make the distinction observable:
 
 - **"Missing required Juno entry point":** set `<mainClass>` in the plugin configuration or pass
   `-Djuno.main=<fully-qualified-class-name>`.
-- **`upload`/`monitor` can't find a port:** run `./mvnw juno:boards` and pass the port
+- **`flash`/`monitor` can't find a port:** run `./mvnw juno:boards` and pass the port
   explicitly with `-Djuno.port=...` when more than one matching board is attached.
 - **Uploaded sketch targets the wrong board variant:** pass `-Djuno.fqbn=...` to override the FQBN
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an

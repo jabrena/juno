@@ -21,7 +21,7 @@ import io.github.jabrena.juno.robotics.navigation.Pose;
  * and the heading after the turn, in Cartesian degrees, so the right turn reads about -90.
  *
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
  *   -Djuno.main=io.github.jabrena.juno.api.remote.lego.poweredup.NanoPoweredUpGyroDrive
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

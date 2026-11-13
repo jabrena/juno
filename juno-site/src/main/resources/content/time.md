@@ -122,7 +122,7 @@ does the same on a Nano ESP32 in a Nano Connector Carrier.
 Build and watch the output with the Maven plugin, as described in [Serial](../serial):
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.udp.SntpTime
 
 ./mvnw -f juno-examples/pom.xml juno:monitor \
