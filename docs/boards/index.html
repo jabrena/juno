@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -661,7 +662,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Onboard IMU (<code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code>)</td>
+<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -672,7 +673,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Camera (<code>Esp32Cam.getCamera()</code>)</td>
+<td>Camera (<code>MCU.getCamera()</code>)</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">✓</td>
@@ -721,7 +722,7 @@ core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p
 support fails with a <code>CompileException</code> naming the board and the missing capability. Some cells
 are compiled support that has not yet been run on every physical board; each board's page notes
 what is confirmed on hardware.</p>
-<p>Every board exposes <code>Gpio.digitalPin(&quot;D0&quot;..&quot;D13&quot;)</code> and <code>Gpio.analogPin(&quot;A0&quot;..&quot;A5&quot;)</code> through its board facade.
+<p>Every board exposes <code>Gpio.digitalPin(&quot;D0&quot;..&quot;D13&quot;)</code> and <code>Gpio.analogPin(&quot;A0&quot;..&quot;A5&quot;)</code> through <code>MCU</code>.
 The selected runtime translates those names to the board's pin mapping. <code>getInput()</code>, <code>getOutput()</code> and
 <code>getInputPullup()</code> are also board-context methods. Invalid names raise <code>IllegalArgumentException</code>; the M5Stack Cardputer
 additionally accepts its documented <code>G*</code> and <code>GPIO*</code> aliases. The Raspberry Pi Pico 2 W maps <code>A0</code>..<code>A2</code> to its ADC

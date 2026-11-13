@@ -76,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -98,9 +98,9 @@ the program's flash usage).</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led">LedMatrix</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getLedMatrix()" class="member-name-link">getLedMatrix</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getLedMatrix()" class="member-name-link">getLedMatrix</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The board's built-in LED matrix; only the UNO R4 WiFi and the UNO Q have one.</div>
+<div class="block">The selected board's onboard LED matrix.</div>
 </div>
 </div>
 </section>
@@ -128,7 +128,7 @@ the program's flash usage).</div>
 <div class="col-first even-row-color"><code>static <a href="../LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led">LedMatrix</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeLedMatrix.</span><code><a href="../../internal/NativeLedMatrix.html#ledMatrix()" class="member-name-link">ledMatrix</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The matrix <a href="../../ArduinoUno.html#getLedMatrix()"><code>ArduinoUno.getLedMatrix()</code></a> hands out.</div>
+<div class="block">The matrix <a href="../../MCU.html#getLedMatrix()"><code>MCU.getLedMatrix()</code></a> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led">LedMatrix</a></span></div>
@@ -139,7 +139,7 @@ the program's flash usage).</div>
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeLedMatrix.</span><code><a href="../../internal/NativeLedMatrix.html#setLedMatrix(io.github.jabrena.juno.hardware.led.LedMatrix)" class="member-name-link">setLedMatrix</a><wbr>(<a href="../LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led">LedMatrix</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes <a href="../../ArduinoUno.html#getLedMatrix()"><code>ArduinoUno.getLedMatrix()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../../MCU.html#getLedMatrix()"><code>MCU.getLedMatrix()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator or a unit test, never on the board.</div>
 </div>
 </div>

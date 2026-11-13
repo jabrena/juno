@@ -74,7 +74,7 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveDht22Example {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         GroveDht22 sensor = new GroveDht22();
         int[] reading = new int[GroveDht22.READING_LENGTH];
         int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -250,7 +250,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class NanoCarrierGroveLed {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
         DigitalOutput led = DigitalOutput.of(carrier.getGroveA0());
 
         while (true) {

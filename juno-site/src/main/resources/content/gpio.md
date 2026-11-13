@@ -5,8 +5,8 @@ layout: page
 ---
 
 [`Gpio`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/Gpio.java)
-is the selected board's pin resolver and GPIO port. Get it once from the board facade, such as
-`ArduinoUno.getGpio()`, `ArduinoNano.getGpio()`, `Esp32Cam.getGpio()` or `M5StackCardputer.getGpio()`, then resolve
+is the selected board's pin resolver and GPIO port. Get it once from `MCU`, such as
+`MCU.getGpio()`, then resolve
 the names printed on the board and use the returned pin numbers with the GPIO operations. The resolver keeps the
 application independent of the MCU's physical GPIO numbering. [`DigitalOutput`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/gpio/DigitalOutput.java)
 is a lighter handle for a pin you only switch on and off.
@@ -38,7 +38,7 @@ turns the board's onboard LED on and off forever: on for 500 milliseconds, off f
 second. It is the first program to run on any board, because it needs no wiring:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -46,7 +46,7 @@ public class Blink {
 
     public static void main(String[] args) {
 
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();
@@ -61,7 +61,7 @@ public class Blink {
 
 Step by step:
 
-1. `ArduinoUno.getGpio().getBuiltinLed()` asks the linked board which pin its LED is on. The same line works on every
+1. `MCU.getGpio().getBuiltinLed()` asks the linked board which pin its LED is on. The same line works on every
    board, so the program names no pin.
 2. `DigitalOutput.of(...)` configures that pin as an output and returns a handle to it.
 3. The loop sets the pin high, waits with [`Delay`](../delay), sets it low and waits again. Creating the handle happens
@@ -88,7 +88,7 @@ Blink prints nothing over [Serial](../serial), so there is no output to read wit
 with the internal pull-up enabled, reads `false` while the button is pressed:
 
 ```java
-Gpio gpio = ArduinoUno.getGpio();
+Gpio gpio = MCU.getGpio();
 int buttonPin = gpio.digitalPin("D2");
 gpio.pinMode(buttonPin, gpio.getInputPullup());
 

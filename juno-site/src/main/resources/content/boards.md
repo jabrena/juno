@@ -56,8 +56,8 @@ core identifier (for example, `arduino:zephyr`) in build commands.
 | Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
 | USB HID mouse | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
 | Onboard LED matrix | — | — | — | ✓ | — | ✓ | — | — |
-| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | — | — | — | — | — | — | ✓ | — |
-| Camera (`Esp32Cam.getCamera()`) | — | — | ✓ | — | — | — | — | — |
+| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | — | — | — | — | — | — | ✓ | — |
+| Camera (`MCU.getCamera()`) | — | — | ✓ | — | — | — | — | — |
 | `@Watchdog` | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
 | Cryptographic `UUID.randomUUID()` | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
 | Display, keyboard, speaker, battery | — | ✓ | — | — | — | — | — | — |
@@ -67,7 +67,7 @@ support fails with a `CompileException` naming the board and the missing capabil
 are compiled support that has not yet been run on every physical board; each board's page notes
 what is confirmed on hardware.
 
-Every board exposes `Gpio.digitalPin("D0".."D13")` and `Gpio.analogPin("A0".."A5")` through its board facade.
+Every board exposes `Gpio.digitalPin("D0".."D13")` and `Gpio.analogPin("A0".."A5")` through `MCU`.
 The selected runtime translates those names to the board's pin mapping. `getInput()`, `getOutput()` and
 `getInputPullup()` are also board-context methods. Invalid names raise `IllegalArgumentException`; the M5Stack Cardputer
 additionally accepts its documented `G*` and `GPIO*` aliases. The Raspberry Pi Pico 2 W maps `A0`..`A2` to its ADC

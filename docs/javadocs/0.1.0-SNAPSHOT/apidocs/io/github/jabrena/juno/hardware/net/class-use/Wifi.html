@@ -76,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -98,29 +98,9 @@ the program's flash usage).</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoNano.</span><code><a href="../../ArduinoNano.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The Nano ESP32's onboard Wi-Fi radio.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q).</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">Esp32Cam.</span><code><a href="../../Esp32Cam.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The AI Thinker ESP32-CAM's onboard Wi-Fi radio.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The Cardputer's built-in ESP32-S3 Wi-Fi radio.</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">RaspberryPico2.</span><code><a href="../../RaspberryPico2.html#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The Raspberry Pi Pico 2 W's onboard CYW43439 Wi-Fi radio, in station or access-point mode.</div>
+<div class="block">The selected board's onboard Wi-Fi service.</div>
 </div>
 </div>
 </section>
@@ -148,7 +128,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeWifi.</span><code><a href="../../internal/NativeWifi.html#wifi()" class="member-name-link">wifi</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The radio the board facade hands out.</div>
+<div class="block">The radio <code>MCU</code> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></span></div>
@@ -159,7 +139,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeWifi.</span><code><a href="../../internal/NativeWifi.html#setWifi(io.github.jabrena.juno.hardware.net.Wifi)" class="member-name-link">setWifi</a><wbr>(<a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes the board facade hand out <code>replacement</code>: for a
+<div class="block">Makes MCU hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>

@@ -9,16 +9,16 @@ and password, and wait until `status` reports that the connection is up.
 
 ## Connecting to Wi-Fi
 
-Get the board's radio once, at startup. `ArduinoUno.getWifi()` returns it on the boards with onboard Wi-Fi (UNO R4
+Get the board's radio once, at startup. `MCU.getWifi()` returns it on the boards with onboard Wi-Fi (UNO R4
 WiFi, UNO WiFi Rev2 and UNO Q). The UNO R3 has no radio and no network support, so the compiler rejects
-`ArduinoUno.getWifi()` there. A unit test passes `mock(Wifi.class)`.
+`MCU.getWifi()` there. A unit test passes `mock(Wifi.class)`.
 
 The credentials stay on the microSD card (see [SD Card](../sdcard)), so they are not written in the source. `Wifi.begin`
 starts the connection; poll `Wifi.status()` until it equals `Wifi.STATUS_CONNECTED` before using the network:
 
 ```java
 SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open("application.properties")) {

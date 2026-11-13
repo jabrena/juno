@@ -100,8 +100,8 @@ application code must not call directly. Use the public types in the other API p
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -125,7 +125,7 @@ the program's flash usage).</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">The board's <a href="../net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net"><code>BluetoothLe</code></a>: the only instance, shared by every board facade's <code>getBluetoothLe()</code>.</div>
+<div class="block">The board's <a href="../net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net"><code>BluetoothLe</code></a>: the only instance, shared by <code>MCU.getBluetoothLe()</code>.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
@@ -154,7 +154,7 @@ pin mode and returns the pin number as the handle.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">The M5Stack Cardputer's <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>, implemented by compiler intrinsics over M5StackCardputer.Display.</div>
+<div class="block">The M5Stack Cardputer's <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>, implemented by compiler intrinsics over the Cardputer keyboard.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
@@ -168,7 +168,7 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">The M5Stack Cardputer's <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over M5StackCardputer.Keyboard.</div>
+<div class="block">The M5Stack Cardputer's <a href="../keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over the Cardputer keyboard.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
@@ -179,6 +179,14 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>: each method is a USB HID intrinsic the compiler lowers to the Arduino <code>Mouse</code>
 library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Owns the one lazily initialized onboard IMU without putting mutable state on the public MCU facade.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Owns the one card in the selected board's onboard microSD socket.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">

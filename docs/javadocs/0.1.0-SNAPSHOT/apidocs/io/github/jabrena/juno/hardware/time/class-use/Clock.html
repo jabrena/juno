@@ -76,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -133,29 +133,9 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoNano.</span><code><a href="../../ArduinoNano.html#getClock()" class="member-name-link">getClock</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getClock()" class="member-name-link">getClock</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The Nano ESP32's monotonic clock.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The board's monotonic clock.</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">Esp32Cam.</span><code><a href="../../Esp32Cam.html#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The AI Thinker ESP32-CAM's millisecond and microsecond clock, the same object on every call.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The Cardputer's monotonic clock: the board's own timer, shared with every other board facade's getClock().</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">RaspberryPico2.</span><code><a href="../../RaspberryPico2.html#getClock()" class="member-name-link">getClock</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The board's monotonic clock.</div>
+<div class="block">The selected board's monotonic clock.</div>
 </div>
 </div>
 </section>
@@ -277,7 +257,7 @@ no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeClock.</span><code><a href="../../internal/NativeClock.html#clock()" class="member-name-link">clock</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The clock <a href="../../ArduinoUno.html#getClock()"><code>ArduinoUno.getClock()</code></a> hands out.</div>
+<div class="block">The clock <a href="../../MCU.html#getClock()"><code>MCU.getClock()</code></a> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></span></div>
@@ -288,7 +268,7 @@ no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeClock.</span><code><a href="../../internal/NativeClock.html#setClock(io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">setClock</a><wbr>(<a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes <a href="../../ArduinoUno.html#getClock()"><code>ArduinoUno.getClock()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../../MCU.html#getClock()"><code>MCU.getClock()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>
@@ -307,7 +287,7 @@ whole-program emulator in a test, never on the board.</div>
  <a href="../Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
 <div class="col-last even-row-color">
 <div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
-<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.</div>
+<code>MCU.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>MCU.getClock()</code>.</div>
 </div>
 </div>
 </section>

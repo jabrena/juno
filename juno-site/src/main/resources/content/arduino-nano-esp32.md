@@ -51,7 +51,7 @@ The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and ga
 | `HttpServer` | ✓ | Runs on the station address. | [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java) |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on ports 465 and 995, checked against the bundled roots. Password, subject and body must fit in 31 bytes each. | [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java), [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java) |
 | `Smtp.send` (STARTTLS) | ✓ | Needs `arduino-cli lib install ESP_SSLClient`. After the upgrade the server's chain, and its dates, are checked against the bundled Mozilla roots; the first send sets the board's clock over SNTP (`pool.ntp.org`). | [`NanoSmtpStarttlsCredentialsSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpStarttlsCredentialsSD.java) |
-| USB HID mouse | ✓ | `ArduinoNano.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) |
+| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) |
 
 ## Features
 
@@ -63,7 +63,7 @@ These need only the Nano ESP32 and its USB cable.
 
 ```java
 Serial.begin(BaudRate.BAUD_115200);
-DigitalOutput led = DigitalOutput.of(ArduinoNano.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -79,11 +79,11 @@ while (true) {
 
 ### USB HID mouse
 
-`ArduinoNano.getMouse()` makes the board a USB mouse for the computer it is plugged into; `Serial` keeps working on the
+`MCU.getMouse()` makes the board a USB mouse for the computer it is plugged into; `Serial` keeps working on the
 same USB port. Call `begin()` once, then `move(x, y)` moves the pointer by that many pixels:
 
 ```java
-Mouse mouse = ArduinoNano.getMouse();
+Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {
@@ -116,7 +116,7 @@ The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a N
 | Grove A0/A1 (analog) | A0 signal, A1 | `getGroveA0()`; wires `getA0()`, `getA1()` |
 | Grove A2/A3 (analog) | A2 signal, A3 | `getGroveA2()`; wires `getA2()`, `getA3()` |
 | Grove UART | RX D0 (signal), TX D1 | `getGroveUart()`; wires `getUartRx()`, `getUartTx()` |
-| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `ArduinoNano.getI2c()`) |
+| Grove I2C and Qwiic | SDA A4, SCL A5 | `getI2cSda()`, `getI2cScl()` (one bus, `MCU.getI2c()`) |
 
 As with `GroveBaseShield`, plug a single-signal Grove module in and pass the socket's getter to its
 driver: `pir.begin(carrier.getGroveA2())`. The analog sockets work for digital modules too. Keep
@@ -159,7 +159,7 @@ slot (chip select D4, SPI D11–D13) through the same SdFat runtime as the UNO b
 that read settings from the card (the `…SD` programs above) therefore need the carrier too.
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 SdCard sd = carrier.getSdCard();
 if (sd.begin() && sd.exists("application.properties")) {
     InputStream in = sd.open("application.properties");
@@ -183,8 +183,8 @@ wifi.password=your-password
 then read the file with `java.util.Properties` and join the network:
 
 ```java
-SdCard sd = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
-Wifi wifi = ArduinoNano.getWifi();
+SdCard sd = new NanoConnectorCarrier().getSdCard();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open("application.properties")) {
@@ -208,9 +208,9 @@ prints its status once a second.
 Plug a single-signal Grove module into an analog socket and pass the socket's getter to its driver.
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GrovePirMotion pir = new GrovePirMotion();
-LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
+LightDetector light = new GroveLightV12(carrier.getGroveA0(),
     GroveLightV12.ADC_12_BIT);
 pir.begin(carrier.getGroveA2());
 
@@ -230,10 +230,10 @@ SCL line, the Nano talks to a LEGO Mindstorms RCX brick through `RemoteRcx` (see
 minutes. The brick then answers on channel 1:
 
 ```java
-NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+NanoConnectorCarrier carrier = new NanoConnectorCarrier();
 GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
 GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+RcxLink link = new RcxLink(emitter, receiver);
 RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
 
 RcxMotor motor = rcx.getMotorA();

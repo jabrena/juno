@@ -80,6 +80,7 @@
         <a class="active" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -300,6 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="active" href="/juno/getting-started">Getting Started</a>
     <a class="" href="/juno/create-your-first-project">Create your first project</a>
     <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+    <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -380,7 +382,7 @@ Java: it turns the built-in LED on and off every half second.</p>
 <pre><code class="language-java">public class Blink {
 
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

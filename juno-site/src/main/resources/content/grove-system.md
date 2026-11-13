@@ -82,11 +82,11 @@ same on the Grove Base Shield (`shield.getD4()`, `shield.getA0()`, ...) and on t
 Create each driver once, at startup.
 
 The complete examples below use a Grove Base Shield on an UNO board. To use a Nano Connector Carrier, replace the
-shield socket getter with the corresponding carrier getter and use the Nano board's `Gpio` and `Clock` facades.
+shield socket getter with the corresponding carrier getter and use `MCU`'s `Gpio` and `Clock`.
 
 Create each adapter with the board's `Gpio`, so its socket names are resolved for the selected board:
-`new GroveBaseShield(ArduinoUno.getGpio())` on an UNO board and
-`new NanoConnectorCarrier(ArduinoNano.getGpio())` on a Nano ESP32.
+`new GroveBaseShield()` on an UNO board and
+`new NanoConnectorCarrier()` on a Nano ESP32.
 
 | Sensor | Socket | Driver | Reads |
 |---|---|---|---|
@@ -110,9 +110,9 @@ and keeps the USB serial console available for diagnostics. It writes latitude a
 degree and altitude as centimetres into caller-owned arrays:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-Gpio gpio = ArduinoUno.getGpio();
-GroveGpsAir530 gps = new GroveGpsAir530(gpio, ArduinoUno.getClock(), shield.getD2());
+GroveBaseShield shield = new GroveBaseShield();
+Gpio gpio = MCU.getGpio();
+GroveGpsAir530 gps = new GroveGpsAir530(gpio, MCU.getClock(), shield.getD2());
 byte[] sentence = new byte[GroveGpsAir530.SENTENCE_CAPACITY];
 int[] position = new int[GroveGpsAir530.POSITION_LENGTH];
 gps.begin();
@@ -145,7 +145,7 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveDht22Example {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         GroveDht22 dht = new GroveDht22();
         int[] reading = new int[GroveDht22.READING_LENGTH];
         int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -184,7 +184,7 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveDht11Example {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         GroveDht11 dht = new GroveDht11();
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
@@ -212,7 +212,7 @@ A 100-kilohm thermistor divider; the driver converts the ADC count to degrees Ce
 <img src="../images/grove/grove-temperature-v12.jpg" alt="Grove Temperature Sensor v1.2" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveTemperatureV12;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -221,8 +221,8 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveTemperatureExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        GroveTemperatureV12 temperature = new GroveTemperatureV12(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
+        GroveTemperatureV12 temperature = new GroveTemperatureV12();
         Serial.begin(BaudRate.BAUD_115200);
 
         while (true) {
@@ -242,7 +242,6 @@ brightness, not illuminance. Pass `GroveLightV12.ADC_12_BIT` as the ADC full-sca
 <img src="../images/grove/grove-light-v12.jpg" alt="Grove Light Sensor v1.2" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -252,8 +251,8 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveLightExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        LightDetector light = new GroveLightV12(ArduinoUno.getGpio(), shield.getA1(),
+        GroveBaseShield shield = new GroveBaseShield();
+        LightDetector light = new GroveLightV12(shield.getA1(),
                 GroveLightV12.ADC_10_BIT);
         Serial.begin(BaudRate.BAUD_115200);
 
@@ -273,7 +272,6 @@ An ADC sample of the amplified microphone signal, not a decibel measurement:
 <img src="../images/grove/grove-sound-v16.jpg" alt="Grove Sound Sensor v1.6" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveSoundV16;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -282,8 +280,8 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveSoundExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        GroveSoundV16 sound = new GroveSoundV16(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
+        GroveSoundV16 sound = new GroveSoundV16();
         Serial.begin(BaudRate.BAUD_115200);
 
         while (true) {
@@ -303,7 +301,6 @@ sensor's warm-up and calibration procedure:
 <img src="../images/grove/grove-gas-mq2.jpg" alt="Grove Gas Sensor (MQ2)" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveAnalogGas;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -312,8 +309,8 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveGasExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        GroveAnalogGas gas = new GroveAnalogGas(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
+        GroveAnalogGas gas = new GroveAnalogGas();
         Serial.begin(BaudRate.BAUD_115200);
 
         while (true) {
@@ -333,7 +330,6 @@ an analog socket rather than the I2C one:
 <img src="../images/grove/grove-pir-motion.jpg" alt="Grove PIR Motion Sensor" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -342,8 +338,8 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GrovePirExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
-        GrovePirMotion pir = new GrovePirMotion(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
+        GrovePirMotion pir = new GrovePirMotion();
         pir.begin(shield.getD2());
         Serial.begin(BaudRate.BAUD_115200);
 
@@ -366,10 +362,9 @@ Heading is integrated from the Z-axis gyro and drifts over time. Keep the module
 <img src="../images/grove/grove-bmi088.jpg" alt="Grove 6-Axis Accelerometer and Gyroscope (BMI088)" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.imu.Bmi088;
 
-Bmi088 imu = new Bmi088(ArduinoUno.getI2c(), ArduinoUno.getClock());
+Bmi088 imu = new Bmi088();
 float[] acceleration = new float[imu.sampleSize()];
 imu.recalibrateOffset();
 imu.fetchSample(acceleration, 0);
@@ -383,7 +378,6 @@ The Grove Ultrasonic Ranger measures the time for an echo and returns metres, or
 <img src="../images/grove/grove-ultrasonic-ranger.png" alt="Grove Ultrasonic Ranger" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -392,9 +386,9 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveUltrasonicExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(
-                ArduinoUno.getGpio(), ArduinoUno.getClock(), shield.getD5());
+                MCU.getGpio(), MCU.getClock(), shield.getD5());
         Serial.begin(BaudRate.BAUD_115200);
 
         while (true) {
@@ -418,7 +412,6 @@ then construct an `RcxLink` from both modules and pass it to `RemoteRcx`:
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -428,10 +421,10 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GroveRcxExample {
     public static void main(String[] args) {
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(shield.getD4());
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(shield.getD3());
-        RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
+        RcxLink link = new RcxLink(emitter, receiver);
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.begin(BaudRate.BAUD_115200);
 

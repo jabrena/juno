@@ -7,7 +7,7 @@ layout: page
 The Arduino UNO WiFi Rev2 combines an 8-bit ATmega4809 microcontroller with a u-blox NINA-W102 radio module. It keeps
 the familiar UNO form factor and 5 V GPIO while adding Wi-Fi, Bluetooth, a secure element and a six-axis IMU. Juno
 compiles for the ATmega4809 with its **AVR backend** and links against the `arduino:megaavr` core and the `WiFiNINA`
-library; the `ArduinoUno` device facade is the entry point for the board's peripherals.
+library; the `MCU` facade is the entry point for the board's peripherals.
 
 <img src="../images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2" width="280">
 
@@ -52,7 +52,7 @@ library; the `ArduinoUno` device facade is the entry point for the board's perip
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
 | `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields | ✓ | See [Shields](#shields). | |
-| `ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()` (LSM6DS3TR, over `ArduinoUno.getSpi()`) | ✓ | Heading and yaw rate from the gyroscope, acceleration on each axis from the accelerometer; no magnetometer, so the heading is integrated gyro yaw and drifts. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
+| `MCU.getGyroscope()`, `MCU.getAccelerometer()` (LSM6DS3TR, over `MCU.getSpi()`) | ✓ | Heading and yaw rate from the gyroscope, acceleration on each axis from the accelerometer; no magnetometer, so the heading is integrated gyro yaw and drifts. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
 | `Servo`, `Infrared`, `RandomAccessFile` | Untested | Generated, but not yet run in the simulator or on hardware. | |
 
 ## Features
@@ -64,7 +64,7 @@ These need only the UNO WiFi Rev2 and its USB cable.
 `getBuiltinLed()` is logical pin 25 on this board, not D13:
 
 ```java
-DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -79,13 +79,13 @@ while (true) {
 
 ### Read the onboard IMU
 
-The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. `ArduinoUno.getGyroscope()` and
-`ArduinoUno.getAccelerometer()` return the same sensor as two interfaces. The first call starts it, which measures the
+The board's LSM6DS3TR accelerometer and gyroscope sit on the SPI bus. `MCU.getGyroscope()` and
+`MCU.getAccelerometer()` return the same sensor as two interfaces. The first call starts it, which measures the
 gyroscope's bias for about 2 s, so keep the board still then:
 
 ```java
-Gyroscope gyroscope = ArduinoUno.getGyroscope();
-Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+Gyroscope gyroscope = MCU.getGyroscope();
+Accelerometer accelerometer = MCU.getAccelerometer();
 
 while (true) {
     Serial.print(gyroscope.getAngle());               // heading in whole degrees, clockwise from startup
@@ -142,7 +142,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -208,7 +208,7 @@ in the source: put `wifi.ssid` and `wifi.password` in `application.properties` a
 
 ```java
 SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open("application.properties")) {

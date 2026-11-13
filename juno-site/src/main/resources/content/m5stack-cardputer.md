@@ -6,7 +6,7 @@ layout: page
 
 The M5Stack Cardputer is a pocket computer built around an Espressif ESP32-S3, with its own keyboard,
 color display, speaker, microSD slot and battery. Its CPU is an Xtensa LX7, so Juno compiles for it
-with the same Xtensa backend as the Nano ESP32. The `M5StackCardputer` device facade is the entry
+with the same Xtensa backend as the Nano ESP32. The `MCU` facade is the entry
 point for its peripherals.
 
 <img src="../images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" width="280">
@@ -31,31 +31,31 @@ point for its peripherals.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput` | ✓ | `M5StackCardputer.getGpio()` resolves portable `D*`/`A*` names and documented `G*`/`GPIO*` aliases; invalid names raise `IllegalArgumentException`. | |
+| `Gpio`, `DigitalOutput` | ✓ | `MCU.getGpio()` resolves portable `D*`/`A*` names and documented `G*`/`GPIO*` aliases; invalid names raise `IllegalArgumentException`. | |
 | `Delay`, `Serial` | ✓ | `Serial` over the native USB port, at 115200 baud. | |
 | Classes, interfaces and inheritance | ✓ | | [`Inheritance`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java), [`Interfaces`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java) |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
-| `SdCard` | ✓ | Built-in microSD slot through `M5StackCardputer.getSd()`. | [`M5CardputerSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/sd/M5CardputerSd.java) |
-| Wi-Fi station and access point | ✓ | `M5StackCardputer.getWifi()`; credentials can come from the microSD card. | [`M5CardputerWifi`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java), [`M5CardputerWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java) |
+| `SdCard` | ✓ | Built-in microSD slot through `MCU.getSdCard()`. | [`M5CardputerSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/sd/M5CardputerSd.java) |
+| Wi-Fi station and access point | ✓ | `MCU.getWifi()`; credentials can come from the microSD card. | [`M5CardputerWifi`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java), [`M5CardputerWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java) |
 | SNTP clock (`LocalDateTime.now()`) | ✓ | UTC over SNTP, once Wi-Fi is up; the server can be set on the card with `sntp.host` and `sntp.port`. | [`M5CardputerSntpTime`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/M5CardputerSntpTime.java) |
 | `HttpClient` (HTTP and HTTPS) | ✓ | HTTPS with a trusted certificate set by the program. | [`MailboxCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java) |
 | `HttpServer` (HTTP and HTTPS) | ✓ | `HttpServer.beginTls` serves HTTPS on the station address. | [`CardputerHttpsServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpsServerSD.java) |
-| Display | ✓ | 240 × 135 RGB565 through `M5StackCardputer.getDisplay()`. | [`M5CardputerDisplay`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java) |
-| Keyboard | ✓ | `M5StackCardputer.getKeyboard()`, polled without allocation. | [`M5CardputerKeyboard`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java) |
-| Speaker | ✓ | `M5StackCardputer.getAudio()`: `tone`, `setVolume`, `stop`. | [`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java) |
+| Display | ✓ | 240 × 135 RGB565 through `MCU.getDisplay()`. | [`M5CardputerDisplay`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java) |
+| Keyboard | ✓ | `MCU.getKeyboard()`, polled without allocation. | [`M5CardputerKeyboard`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java) |
+| Speaker | ✓ | `MCU.getAudio()`: `tone`, `setVolume`, `stop`. | [`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java) |
 | `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
-| Battery | ✓ | `M5StackCardputer.getBattery()`: estimated level and voltage. | [`M5CardputerBatteryLevel`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java) |
-| USB HID mouse | ✓ | `M5StackCardputer.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) |
+| Battery | ✓ | `MCU.getBattery()`: estimated level and voltage. | [`M5CardputerBatteryLevel`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java) |
+| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) |
 
 ## Features
 
 ### SD card
 
-`M5StackCardputer.getSd()` returns the Cardputer's built-in microSD socket. Calling `begin()` uses its standard SPI wiring: chip
+`MCU.getSdCard()` returns the Cardputer's built-in microSD socket. Calling `begin()` uses its standard SPI wiring: chip
 select GPIO12, MOSI GPIO14, MISO GPIO39, and clock GPIO40.
 
 ```java
-SdCard sd = M5StackCardputer.getSd();
+SdCard sd = MCU.getSdCard();
 if (sd.begin()) {
     Serial.println("SD card ready");
 }
@@ -63,7 +63,7 @@ if (sd.begin()) {
 
 ### Wi-Fi
 
-`M5StackCardputer.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. Keep the network's credentials on the
+`MCU.getWifi()` returns the Cardputer's built-in ESP32-S3 radio. Keep the network's credentials on the
 microSD card rather than in the source: put them in `application.properties` at the card's root,
 
 ```properties
@@ -74,8 +74,8 @@ wifi.password=your-password
 then read the file with `java.util.Properties` and join the network:
 
 ```java
-SdCard sd = M5StackCardputer.getSd();
-Wifi wifi = M5StackCardputer.getWifi();
+SdCard sd = MCU.getSdCard();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open("application.properties")) {
@@ -101,11 +101,11 @@ joins the network and shows the connection status on the display.
 
 ### Display
 
-`M5StackCardputer.getDisplay()` returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
+`MCU.getDisplay()` returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
 available as constants and `Display.color(red, green, blue)` for custom colors. Call `begin()` once before drawing.
 
 ```java
-Display display = M5StackCardputer.getDisplay();
+Display display = MCU.getDisplay();
 display.begin();
 display.fillScreen(Display.BLACK);
 display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
@@ -120,11 +120,11 @@ receive a mock `Display` in desktop unit tests.
 
 ### Keyboard
 
-`M5StackCardputer.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
+`MCU.getKeyboard()` returns the Cardputer's built-in keyboard. Initialize it once, call `update()` in the main loop,
 and inspect the state after `isChanged()` reports a transition.
 
 ```java
-Keyboard keyboard = M5StackCardputer.getKeyboard();
+Keyboard keyboard = MCU.getKeyboard();
 keyboard.begin();
 while (true) {
     keyboard.update();
@@ -143,11 +143,11 @@ methods, so no array or collection needs to be allocated while polling.
 
 ### Speaker
 
-`M5StackCardputer.getAudio()` returns the built-in speaker. `tone(frequencyHz, durationMillis)` plays a note,
+`MCU.getAudio()` returns the built-in speaker. `tone(frequencyHz, durationMillis)` plays a note,
 `setVolume(...)` sets the loudness and `stop()` silences it.
 
 ```java
-Audio audio = M5StackCardputer.getAudio();
+Audio audio = MCU.getAudio();
 audio.setVolume(128);
 audio.tone(440, 500);
 ```
@@ -156,11 +156,11 @@ audio.tone(440, 500);
 
 ### Battery
 
-`M5StackCardputer.getBattery()` reports the built-in battery's estimated charge level in percent and its voltage in
+`MCU.getBattery()` reports the built-in battery's estimated charge level in percent and its voltage in
 millivolts.
 
 ```java
-Battery battery = M5StackCardputer.getBattery();
+Battery battery = MCU.getBattery();
 Serial.print(battery.levelPercent());
 Serial.println("%");
 ```
@@ -171,7 +171,7 @@ The Cardputer's ESP32-S3 can act as a USB HID mouse through its core's TinyUSB s
 then `move(x, y)` moves the computer's pointer by that many pixels:
 
 ```java
-Mouse mouse = M5StackCardputer.getMouse();
+Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {

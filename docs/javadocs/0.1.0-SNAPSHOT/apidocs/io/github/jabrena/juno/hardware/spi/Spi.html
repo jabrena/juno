@@ -94,7 +94,7 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Spi</span></div>
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO). The bus has no chip select of its own: a device
 is selected by driving its chip-select pin low through <a href="../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a> around
-each <a href="#transfer(int)"><code>transfer(int)</code></a> sequence. <a href="../ArduinoUno.html#getSpi()"><code>ArduinoUno.getSpi()</code></a> is the board's own
+each <a href="#transfer(int)"><code>transfer(int)</code></a> sequence. <a href="../MCU.html#getSpi()"><code>MCU.getSpi()</code></a> is the board's own
 bus; a unit test passes <code>mock(Spi.class)</code> instead. Get the bus once, at startup, and pass it to the classes
 that need it.</div>
 </div>

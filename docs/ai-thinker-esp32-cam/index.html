@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -327,10 +328,10 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
 <p>Juno's support on this board:</p>
 <ul>
-<li><strong>GPIO and serial</strong> through <code>Esp32Cam.getGpio()</code>. Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board
+<li><strong>GPIO and serial</strong> through <code>MCU.getGpio()</code>. Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board
 context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.</li>
-<li><strong>Wi-Fi</strong> through <code>Esp32Cam.getWifi()</code>, station mode with plain HTTP.</li>
-<li><strong>microSD</strong> through <code>Esp32Cam.getSdCard()</code>, using the board's built-in socket on GPIO13.</li>
+<li><strong>Wi-Fi</strong> through <code>MCU.getWifi()</code>, station mode with plain HTTP.</li>
+<li><strong>microSD</strong> through <code>MCU.getSdCard()</code>, using the board's built-in socket on GPIO13.</li>
 <li><strong>Bluetooth LE</strong> for <code>RemotePoweredUpHub</code>, used to drive LEGO Powered Up hubs.</li>
 </ul>
 <p>The board has no USB port, so flash it through a USB-serial adapter; the port is passed with

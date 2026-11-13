@@ -95,7 +95,7 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">BoardMemory</span></div>
 <div class="block">Read-only introspection into Juno's arena allocator and the program's flash footprint.
-<a href="ArduinoUno.html#getBoardMemory()"><code>ArduinoUno.getBoardMemory()</code></a> is the board's own answer, which the compiler lowers to its runtime shim; a unit test
+<a href="MCU.html#getBoardMemory()"><code>MCU.getBoardMemory()</code></a> is the board's own answer, which the compiler lowers to its runtime shim; a unit test
 passes <code>mock(BoardMemory.class)</code> instead. The arena figures are useful for a health-check heartbeat over
 <a href="serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial"><code>Serial</code></a>: a value that keeps climbing and never comes back down across
 many collection cycles indicates something is holding references it shouldn't (an unintended leak), whereas one

@@ -115,8 +115,8 @@ top of <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.h
 magnetometer, so it cannot find north: the heading is the gyroscope's yaw rate integrated over time from the
 construction, clockwise positive, and it drifts a little with every minute of use.
 
-<pre><code>Gyroscope gyroscope = ArduinoUno.getGyroscope();       // once, at startup: starts the sensor, keep the board still
-Accelerometer accelerometer = ArduinoUno.getAccelerometer();
+<pre><code>Gyroscope gyroscope = MCU.getGyroscope();       // once, at startup: starts the sensor, keep the board still
+Accelerometer accelerometer = MCU.getAccelerometer();
 Serial.println(gyroscope.getAngle());                  // heading in whole degrees, clockwise
 Serial.println(accelerometer.getXAccel());             // whole m/s^2 along the board's X axis
 </code></pre>

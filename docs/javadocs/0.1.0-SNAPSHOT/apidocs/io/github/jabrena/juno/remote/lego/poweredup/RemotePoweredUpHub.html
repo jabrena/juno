@@ -107,6 +107,7 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E()" tabindex="0">RemotePoweredUpHub()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RemotePoweredUpHub(BluetoothLe, Clock)</a></li>
 </ol>
 </li>
@@ -320,11 +321,15 @@ the <code>REMOTE_*</code> values.</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="../../../hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
- <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">RemotePoweredUpHub</a>()</code></div>
 <div class="col-last even-row-color">
+<div class="block">A hub controller over the board's own Bluetooth LE radio and clock (<a href="../../../hardware/MCU.html#getBluetoothLe()"><code>MCU.getBluetoothLe()</code></a>, <a href="../../../hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a>).</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RemotePoweredUpHub</a><wbr>(<a href="../../../hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
+ <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
-<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.</div>
+<code>MCU.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>MCU.getClock()</code>.</div>
 </div>
 </div>
 </section>
@@ -1098,13 +1103,23 @@ the <code>REMOTE_*</code> values.</div>
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="&lt;init&gt;()">
+<h3>RemotePoweredUpHub</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemotePoweredUpHub</span>()</div>
+<div class="block">A hub controller over the board's own Bluetooth LE radio and clock (<a href="../../../hardware/MCU.html#getBluetoothLe()"><code>MCU.getBluetoothLe()</code></a>, <a href="../../../hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a>).
+ Create it once, at startup. Only the boards with a BLE radio can be given one.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.net.BluetoothLe,io.github.jabrena.juno.hardware.time.Clock)">
 <h3>RemotePoweredUpHub</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RemotePoweredUpHub</span><wbr><span class="parameters">(<a href="../../../hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a>&nbsp;bluetooth,
  <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</span></div>
 <div class="block">A hub controller that links to hubs over the board's Bluetooth LE radio <code>bluetooth</code>, such as
-<code>ArduinoUno.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>ArduinoUno.getClock()</code>.
+<code>MCU.getBluetoothLe()</code>, and times its waits on <code>clock</code>, such as <code>MCU.getClock()</code>.
 Create it once, at startup. Only the boards with a BLE radio can be given one.</div>
 </div>
 </section>

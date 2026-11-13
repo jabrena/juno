@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -489,6 +490,39 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 </tr>
 <tr>
+<td>Onboard microSD socket (<code>MCU.getSdCard()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Onboard camera (<code>MCU.getCamera()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
+<td>Onboard IMU (<code>MCU.getAccelerometer()</code>, <code>MCU.getGyroscope()</code>)</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">–</td>
+<td align="center">✓</td>
+<td align="center">–</td>
+<td align="center">–</td>
+</tr>
+<tr>
 <td>Hardware random numbers</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -566,7 +600,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">–</td>
 </tr>
 <tr>
-<td>Onboard IMU (<code>ArduinoUno.getGyroscope()</code>, <code>ArduinoUno.getAccelerometer()</code>)</td>
+<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
 <td align="center">–</td>
 <td align="center">–</td>
 <td align="center">–</td>
@@ -626,6 +660,12 @@ Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware w
 <li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
 <a href="../lego-ecosystem">LEGO ecosystem</a> page.</li>
 </ul>
+<h2 id="reading-the-board-services-through-mcu">Reading the board services through <code>MCU</code></h2>
+<p>Every board's own services come from one facade, <code>MCU</code>, and the board is chosen by <code>@Board</code> or the build's <code>juno.board</code>
+option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
+board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
+of them. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>) work on every board.
+Programs written for the removed per-board facades need the steps on the <a href="../migrate-to-mcu">migration</a> page.</p>
     </div>
   </section>
 </article>

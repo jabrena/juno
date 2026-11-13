@@ -83,6 +83,7 @@ initTheme();
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E(int)" tabindex="0">PwmServoShield(int)</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,int)" tabindex="0">PwmServoShield(I2c, int)</a></li>
 </ol>
 </li>
@@ -112,7 +113,7 @@ initTheme();
 over I2C as plain Java on top of <a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library). A servo is just a channel number,
 <code>0..15</code>, so nothing is allocated after the shield itself:
 
-<pre><code>PwmServoShield shield = new PwmServoShield(ArduinoUno.getI2c(), PwmServoShield.ADDRESS_DEFAULT); // once, at startup
+<pre><code>PwmServoShield shield = new PwmServoShield(PwmServoShield.ADDRESS_DEFAULT); // once, at startup
 shield.write(0, 90);          // servo on channel 0 to its centre
 shield.writeMicros(1, 1500);  // or a raw pulse width
 shield.release(0);            // stop driving it; the servo no longer holds its position
@@ -172,9 +173,13 @@ Works on every board, wherever <code>Wire</code> reaches the shield's SDA/SCL. T
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,int)" class="member-name-link">PwmServoShield</a><wbr>(<a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;i2c,
- int&nbsp;shieldAddress)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(int)" class="member-name-link">PwmServoShield</a><wbr>(int&nbsp;shieldAddress)</code></div>
 <div class="col-last even-row-color">
+<div class="block">A shield at <code>shieldAddress</code> on the board's own I2C bus (<a href="../../MCU.html#getI2c()"><code>MCU.getI2c()</code></a>).</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,int)" class="member-name-link">PwmServoShield</a><wbr>(<a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a>&nbsp;i2c,
+ int&nbsp;shieldAddress)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A shield at <code>shieldAddress</code> driven through <code>i2c</code>; collaborators may be mocks in a unit test.</div>
 </div>
 </div>
@@ -297,6 +302,15 @@ Works on every board, wherever <code>Wire</code> reaches the shield's SDA/SCL. T
 <section class="constructor-details" id="constructor-detail">
 <h2>Constructor Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="&lt;init&gt;(int)">
+<h3>PwmServoShield</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">PwmServoShield</span><wbr><span class="parameters">(int&nbsp;shieldAddress)</span></div>
+<div class="block">A shield at <code>shieldAddress</code> on the board's own I2C bus (<a href="../../MCU.html#getI2c()"><code>MCU.getI2c()</code></a>).</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.i2c.I2c,int)">
 <h3>PwmServoShield</h3>
