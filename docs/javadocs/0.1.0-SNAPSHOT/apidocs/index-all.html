@@ -219,16 +219,6 @@ NINA-W102 module and the <code>WiFiNINA</code> library.</div>
 <dd>
 <div class="block">Selects the Arduino UNO R4 WiFi as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target; has the onboard 12x8 LED matrix.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.wifi">ArduinoWifiShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/wifi/package-summary.html">io.github.jabrena.juno.hardware.device.wifi</a></dt>
-<dd>
-<div class="block">The retired Arduino WiFi Shield, the UNO R3's only way onto a Wi-Fi network: the R3 has no radio of its own, so
-<a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getWifi()"><code>ArduinoUno.getWifi()</code></a> is rejected there and the program takes its <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> from
-this shield instead.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html#%3Cinit%3E()" class="member-name-link">ArduinoWifiShield()</a> - Constructor for class io.github.jabrena.juno.hardware.device.wifi.<a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" title="class in io.github.jabrena.juno.hardware.device.wifi">ArduinoWifiShield</a></dt>
-<dd>
-<div class="block">Creates the shield handle.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardMemory.html#arenaCapacityBytes()" class="member-name-link">arenaCapacityBytes()</a> - Method in interface io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardMemory.html" title="interface in io.github.jabrena.juno.hardware">BoardMemory</a></dt>
 <dd>
 <div class="block">The arena's total size in bytes, fixed when the program is compiled (the Maven plugin's <code>juno.Xmx</code>).</div>
@@ -2121,10 +2111,6 @@ high values are bright.</div>
 <dd>
 <div class="block">The card in the shield's microSD socket; its <a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> selects it on D10.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html#getSdCard()" class="member-name-link">getSdCard()</a> - Method in class io.github.jabrena.juno.hardware.device.wifi.<a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" title="class in io.github.jabrena.juno.hardware.device.wifi">ArduinoWifiShield</a></dt>
-<dd>
-<div class="block">The card in the shield's microSD socket; its <a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> selects it on D4.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getSdCard()" class="member-name-link">getSdCard()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
 <dd>
 <div class="block">The card in the AI Thinker ESP32-CAM's microSD socket.</div>
@@ -2297,10 +2283,6 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/hardware/ArduinoUno.html#getWifi()" class="member-name-link">getWifi()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/ArduinoUno.html" title="class in io.github.jabrena.juno.hardware">ArduinoUno</a></dt>
 <dd>
 <div class="block">The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q).</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html#getWifi()" class="member-name-link">getWifi()</a> - Method in class io.github.jabrena.juno.hardware.device.wifi.<a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" title="class in io.github.jabrena.juno.hardware.device.wifi">ArduinoWifiShield</a></dt>
-<dd>
-<div class="block">The shield's Wi-Fi radio.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/Esp32Cam.html#getWifi()" class="member-name-link">getWifi()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Esp32Cam.html" title="class in io.github.jabrena.juno.hardware">Esp32Cam</a></dt>
 <dd>
@@ -2886,7 +2868,7 @@ it ignores motor, sensor and sound commands until firmware is loaded), or <a hre
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html#INSTANCE" class="member-name-link">INSTANCE</a> - Static variable in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></dt>
 <dd>
-<div class="block">The board's Wi-Fi radio (onboard, or the UNO R3's Arduino WiFi Shield): the only instance.</div>
+<div class="block">The board's onboard Wi-Fi radio: the only instance.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#INTERNAL_SERVER_ERROR" class="member-name-link">INTERNAL_SERVER_ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
@@ -2994,11 +2976,6 @@ them from a PCA9685 servo shield over I2C.</div>
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/wifi/package-summary.html">io.github.jabrena.juno.hardware.device.wifi</a> - package io.github.jabrena.juno.hardware.device.wifi</dt>
-<dd>
-<div class="block">Wi-Fi shields, currently <a href="io/github/jabrena/juno/hardware/device/wifi/ArduinoWifiShield.html" title="class in io.github.jabrena.juno.hardware.device.wifi"><code>ArduinoWifiShield</code></a>: the retired Arduino
-WiFi Shield, which gives the UNO R3 the <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> it has no radio for.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/package-summary.html">io.github.jabrena.juno.hardware.display</a> - package io.github.jabrena.juno.hardware.display</dt>
 <dd>
 <div class="block">Board displays.</div>
@@ -3040,7 +3017,7 @@ with shape and text drawing helpers that render into it and send it to the board
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/package-summary.html">io.github.jabrena.juno.hardware.net</a> - package io.github.jabrena.juno.hardware.net</dt>
 <dd>
-<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and the UNO R3 with the Arduino WiFi Shield:
+<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q and UNO WiFi Rev2:
 <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> connects and reads the board's address.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/package-summary.html">io.github.jabrena.juno.hardware.net.email</a> - package io.github.jabrena.juno.hardware.net.email</dt>
@@ -5680,7 +5657,7 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#STATUS_NO_SHIELD" class="member-name-link">STATUS_NO_SHIELD</a> - Static variable in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>
 <div class="block">The <a href="io/github/jabrena/juno/hardware/net/Wifi.html#status()"><code>Wifi.status()</code></a> value when the board gets no answer from its Wi-Fi hardware, mirroring Arduino's
-<code>WL_NO_SHIELD</code>, e.g. a UNO R3 whose Arduino WiFi Shield is missing or not seated.</div>
+<code>WL_NO_SHIELD</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/Task.html#step()" class="member-name-link">step()</a> - Method in interface io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/Task.html" title="interface in io.github.jabrena.juno.util.mvc">Task</a></dt>
 <dd>

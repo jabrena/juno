@@ -324,9 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
 and password, and wait until <code>status</code> reports that the connection is up.</p>
 <h2 id="connecting-to-wi-fi">Connecting to Wi-Fi</h2>
 <p>Get the board's radio once, at startup. <code>ArduinoUno.getWifi()</code> returns it on the boards with onboard Wi-Fi (UNO R4
-WiFi, UNO WiFi Rev2 and UNO Q). The UNO R3 has no radio, so the compiler rejects <code>ArduinoUno.getWifi()</code> there; stack the
-retired <a href="https://docs.arduino.cc/retired/shields/arduino-wifi-shield/">Arduino WiFi Shield</a> and take the same <code>Wifi</code>
-from <code>new ArduinoWifiShield().getWifi()</code> instead. A unit test passes <code>mock(Wifi.class)</code>.</p>
+WiFi, UNO WiFi Rev2 and UNO Q). The UNO R3 has no radio and no network support, so the compiler rejects
+<code>ArduinoUno.getWifi()</code> there. A unit test passes <code>mock(Wifi.class)</code>.</p>
 <p>The credentials stay on the microSD card (see <a href="../sdcard">SD Card</a>), so they are not written in the source. <code>Wifi.begin</code>
 starts the connection; poll <code>Wifi.status()</code> until it equals <code>Wifi.STATUS_CONNECTED</code> before using the network:</p>
 <pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();

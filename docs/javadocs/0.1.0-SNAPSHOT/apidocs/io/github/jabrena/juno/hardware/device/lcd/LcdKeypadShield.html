@@ -127,12 +127,7 @@ LCD data/control on digital pins 4-9, backlight on digital pin 10, buttons on <c
 <p>Unlike <a href="../../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>, this shield needs no new compiler
 intrinsic: every operation here is built from <a href="../../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>, <a href="../../gpio/Gpio.html#digitalWrite(int,boolean)"><code>Gpio.digitalWrite(int, boolean)</code></a>,
 <a href="../../gpio/Gpio.html#analogRead(int)"><code>Gpio.analogRead(int)</code></a>, and <a href="../../../util/Delay.html" title="class in io.github.jabrena.juno.util"><code>Delay</code></a>, the same way <a href="../../led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led"><code>LedCanvas</code></a>
-is built from <a href="../../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>.
-
-<p>It cannot be stacked with the Arduino WiFi Shield on a UNO R3: both shields are wired to D4, D7 and D10 (this
-shield's LCD data and backlight, that one's SD-card chip select, handshake line and Wi-Fi chip select), so the
-compiler rejects a UNO R3 program that uses this shield together with <code>Wifi</code>, <code>Udp</code>, <code>Tcp</code>,
-<code>HttpClient</code> or <code>LocalDateTime.now()</code>.</div>
+is built from <a href="../../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>.</div>
 </div>
 </section>
 <section class="summary">
