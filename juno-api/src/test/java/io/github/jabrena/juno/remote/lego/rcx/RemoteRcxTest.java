@@ -153,6 +153,18 @@ class RemoteRcxTest {
     }
 
     @Test
+    @DisplayName("Typed motor and sensor ports return the same parts as the named getters")
+    void shouldReturnTheSamePartsForTypedPorts() {
+        // When & Then
+        assertThat(remote.motor(RcxMotorPort.A)).isSameAs(remote.getMotorA());
+        assertThat(remote.motor(RcxMotorPort.B)).isSameAs(remote.getMotorB());
+        assertThat(remote.motor(RcxMotorPort.C)).isSameAs(remote.getMotorC());
+        assertThat(remote.sensor(RcxSensorPort.INPUT_1)).isSameAs(remote.getSensor1());
+        assertThat(remote.sensor(RcxSensorPort.INPUT_2)).isSameAs(remote.getSensor2());
+        assertThat(remote.sensor(RcxSensorPort.INPUT_3)).isSameAs(remote.getSensor3());
+    }
+
+    @Test
     @DisplayName("Each part getter returns the same instance every call")
     void shouldReturnTheSameInstanceFromEachPartGetter() {
         // When & Then
