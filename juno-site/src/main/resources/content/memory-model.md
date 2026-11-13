@@ -5,8 +5,8 @@ layout: page
 ---
 
 A Juno program is compiled ahead of time into machine code for the board's microcontroller. The board runs that code
-directly: there is no JVM, no operating system and no heap that grows. Everything the program needs is laid out in the
-chip's memories when the firmware is built, and only a few regions are used at run time. This page explains that
+without a JVM or a general Java heap that grows. The board core and, where applicable, its RTOS still provide native
+stacks and buffers at run time; Juno Java objects use a separate arena with a fixed capacity. This page explains that
 layout, what each board allows, and how to size a program.
 
 ## Where the program lives
@@ -22,13 +22,14 @@ The microcontroller has two kinds of memory:
 | Code | Flash | The compiled methods of the program and the runtime shim | The whole program |
 | Constant data (`.rodata`) | Flash | String literals and `static final` tables with an all-constant initializer | The whole program |
 | Static data (`.bss`) | RAM | Mutable `static` fields, one symbol per field | The whole program |
-| Arena | RAM | Objects, records, arrays, capturing closures, `UUID`, `BigInteger` and `BigDecimal` values, atomic cells. Its size depends on the board, see the [board profiles](#board-memory-profiles) | Until the garbage collector reclaims it |
+| Arena | RAM | Objects, records, arrays, capturing closures, `UUID`, `BigInteger` and `BigDecimal` values, atomic cells, scheduler metadata and parked continuation chunks. Its size depends on the board, see the [board profiles](#board-memory-profiles) | Until the garbage collector reclaims it |
 | Stack | RAM | Local variables, operand slots and call frames of the running method | One call |
 | String pool | RAM | Results of `String.valueOf`, `StringBuilder.toString()` and similar, in rotating 32-byte slots | Until the slot is reused |
 | Carrier and task stacks | RAM | The stack each carrier runs on, and one stack for each extra thread where the board needs one. See [concurrency by board](#concurrency-by-board) | The program |
 
-There is no general heap. Everything the program allocates at run time comes from the arena, whose size is fixed when
-the program is built, and no allocation can make it larger.
+There is no general Java heap. Java allocations come from the arena, whose size is fixed when the program is built, and
+no Java allocation can make it larger. Native allocations owned by the board core or RTOS—such as network buffers,
+camera buffers and dual-carrier task stacks—are separate from the arena.
 
 ## Startup
 
@@ -39,8 +40,10 @@ subset. After that the runtime calls `main`, and the program keeps running until
 ## The stack
 
 Each method call takes a frame on the stack, which holds the method's local variables and its working values. A frame is
-released when the method returns. The stack has a fixed size, so a recursion that goes too deep runs out of it. The
-compiler reports recursion cycles it can see as `JUNO-RISK-003`.
+released when the method returns. The native carrier or task stack has a fixed size, so a recursion that goes too deep
+runs out of it. On a single-carrier port, a parked thread's frames are copied into an arena continuation chunk; on a
+dual-carrier port, a thread that uses a slot receives a native task stack from the run-time heap. The compiler reports
+recursion cycles it can see as `JUNO-RISK-003`.
 
 ## The arena
 
@@ -55,11 +58,11 @@ would otherwise exceed the arena, so the program never has to call it.
 
 A collection has three steps:
 
-1. **Find the roots.** The collector scans the places a running program can keep a reference: the stack of every live
-   task, and the reference-valued static fields.
-2. **Mark.** Every word it finds is treated as a possible pointer. A word marks a block only if it points exactly at the
-   start of an allocated block, and the blocks it marks are scanned in turn, so everything reachable from a root is
-   marked.
+1. **Find the roots.** The collector scans the places a running program can keep a reference: the reference-valued
+   static range, scheduler metadata, and the stack or saved continuation of every live task.
+2. **Mark.** Every word it finds is treated as a possible pointer. A word marks a block if it points at the start of an
+   allocated block or at the first element of an array, and the blocks it marks are scanned in turn, so everything
+   reachable from a root is marked.
 3. **Sweep.** Unmarked blocks go back to the free list, and the allocation that triggered the collection continues.
 
 Because the collector has no type information, it cannot tell a pointer from an integer that happens to look like one.
@@ -88,7 +91,9 @@ When the arena is full even after a collection, the program stops with a diagnos
 ## PSRAM and runtime-owned buffers
 
 PSRAM is a separate byte store. It is never part of the Java arena, so the garbage collector does not scan, move or
-reclaim it. Ordinary Java objects, arrays, strings and thread stacks therefore remain in internal SRAM. The runtime may
+reclaim it. Ordinary Java objects, arrays, strings and thread stacks therefore remain in internal SRAM. Juno's explicit
+PSRAM API is available only on the Nano ESP32 and AI Thinker ESP32-CAM; using it for another board is rejected during
+linking. The runtime may
 use PSRAM internally when a subsystem owns a large native buffer: on the AI Thinker ESP32-CAM, `Camera.begin()` asks the
 camera driver to place its frame buffers in PSRAM and `Camera.capture()` copies a frame into the caller's Java array.
 Those driver-owned buffers are not handles and are not visible to application code.
@@ -99,8 +104,9 @@ bytes through a normal caller-owned Java array; `Psram.release` returns the stor
 not keep a Java object alive. Allocation is zero-initialized, at least four-byte aligned, byte-addressable and never
 falls back to internal SRAM. The implementation has a fixed 16-live-handle registry, so release each handle exactly once.
 
-The API reports availability, nominal capacity, current free bytes and the largest contiguous free block. Treat these as
-runtime observations: fragmentation can make a request fail even when total free bytes appear sufficient. Negative result
+The API reports availability, the board's nominal capacity, current free bytes and the largest contiguous free block.
+Treat these as runtime observations: fragmentation can make a request fail even when total free bytes appear sufficient.
+Negative result
 constants distinguish invalid arguments, unavailable or exhausted PSRAM, invalid handles, out-of-bounds ranges and the
 handle limit. Generic buffers are CPU-accessible only; they are not implicitly DMA-safe or interrupt-safe, and callers
 must coordinate higher-level ownership when several calls share a handle or race with release. On dual-core ESP32
@@ -123,12 +129,12 @@ Arrays are fixed-size and allocated from the arena. A `static final` array whose
 in flash instead, which keeps large lookup tables out of RAM. A table that cannot be placed in flash falls back to the
 arena, and the build reports why (`JUNO-RISK-012`).
 
-This table estimates how many arrays fit in the arena on each board. An array costs its element size times its length,
-plus the 4-byte header of its block, so the number that fit is the arena size divided by that cost. The arena is shared
+This table estimates how many arrays fit in the arena on each board. An array costs a 4-byte allocator block header, a
+4-byte length word and its element bytes, with the element area rounded up to a 4-byte boundary. The arena is shared
 with the program's objects and strings, and the static data and stacks take their own share of the RAM, so these are
 upper limits. Every board uses its default arena unless `juno.Xmx` says otherwise.
 
-| Board | Arena (default) | `int[100]` arrays that fit (404 bytes each) | `byte[1000]` arrays that fit (1004 bytes each) |
+| Board | Arena (default) | `int[100]` arrays that fit (408 bytes each) | `byte[1000]` arrays that fit (1008 bytes each) |
 |---|---|---|---|
 | UNO R3 | 1 KB | 2 | 1 |
 | UNO WiFi Rev2 | 1 KB (up to 3 KB with `juno.Xmx=3k`: 7 and 3) | 2 | 1 |
@@ -155,7 +161,7 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 | UNO Q | 256 KB | 8192 / 226928 bytes | 4096 / 16384 bytes | 1 | The loader pool: the sketch's code shares it | None |
 | Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
 | AI Thinker ESP32-CAM | 320 KB | 8192 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
-| M5Stack Cardputer | 320 KB | 8192 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | No size recorded |
+| M5Stack Cardputer | 320 KB | 8192 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Not recorded; explicit API unavailable |
 | Raspberry Pi Pico 2 W | 512 KB | 8192 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
 
 - **Usable RAM** is the limit the Arduino toolchain reports for a sketch's static data and arena. It is smaller than the
@@ -202,7 +208,7 @@ can use, never what the program means. The [Maven Plugin](../juno-maven-plugin#j
 | Flag | Sets | Accepted values | Memory effect |
 |---|---|---|---|
 | `juno.Xmx` | The arena | A size of at least 512 bytes, a multiple of 8, at most the board's maximum arena | A larger arena holds more objects, arrays and strings at once, and takes that much more RAM from the static data and the stacks. |
-| `juno.Xss` | The stack of each carrier (on AVR, of each extra task) | A size of at least 512 bytes, a multiple of 8, at most the board's maximum stack | Each carrier reserves this much RAM. On the ESP32 boards and the Pico 2 W, each thread slot takes it from the run-time heap. |
+| `juno.Xss` | The native stack of each carrier or task (on AVR, of each extra task) | A size of at least 512 bytes, a multiple of 8, at most the board's maximum stack | Each native carrier or task stack reserves this much RAM. In the default two-carrier ESP32 and Pico 2 W ports, a thread slot takes it from the run-time heap; single-carrier ports park extra continuations in arena chunks. |
 | `juno.carriers` | How many carriers run threads | `1` or `2`, at most the board's carriers | `1` runs every thread on one carrier. Use it only in test environments that cannot run both cores. |
 | `juno.gcLog` | Garbage-collector output | `true` or `false` | Prints one `Serial` line per collection, with the arena's use before and after. |
 
@@ -237,16 +243,18 @@ gives the limit each board applies.
 | UNO WiFi Rev2 | Four slots, including `main` | 512 / 1024 bytes | Yes |
 | UNO R4 WiFi | No slot count: the arena bounds the threads | 2048 / 8192 bytes | Yes |
 | UNO Q | No slot count: the arena bounds the threads | 4096 / 16384 bytes | Yes |
-| Nano ESP32 | 16 slots on two carriers (the default); four with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
-| AI Thinker ESP32-CAM | 16 slots on two carriers (the default); four with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
-| M5Stack Cardputer | 16 slots on two carriers (the default); four with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
+| Nano ESP32 | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
+| AI Thinker ESP32-CAM | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
+| M5Stack Cardputer | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | Raspberry Pi Pico 2 W | 16 slots on two carriers (the default); no slot count with `juno.carriers=1` | 4096 / 16384 bytes | Yes |
 
 - On the UNO R3 the three extra threads take 1.5 KB of its 2 KB, which leaves little for the arena and the statics. The
   R3 is the board where threads cost the most RAM.
-- On the four-slot boards, starting a thread beyond the slots stops the program. No flag raises the slot count.
-- On the two-carrier boards each slot's stack comes from the run-time heap only once a thread uses that slot, so a
-  program that starts many threads can exhaust the heap at run time even when it links.
+- On the AVR four-slot boards, starting a thread beyond the slots stops the program. No flag raises the slot count.
+- On the default two-carrier boards each slot's stack comes from the run-time heap only once a thread uses that slot, so
+  a program that starts many threads can exhaust the heap at run time even when it links.
+- With one carrier, the slot table can grow and parked continuations use the arena, so the arena—not a fixed four-slot
+  limit—bounds additional threads on the ESP32 and Pico 2 W ports.
 - Structured concurrency (`StructuredTaskScope`, `ScopedValue`) and `ReentrantLock` need the structured concurrency
   capability, which every board except the UNO R3 has.
 
