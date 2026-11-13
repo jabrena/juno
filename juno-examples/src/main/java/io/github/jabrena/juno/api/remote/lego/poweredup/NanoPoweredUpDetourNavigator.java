@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.remote.lego.poweredup;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
+import io.github.jabrena.juno.api.remote.lego.NavigationTelemetry;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
@@ -11,8 +12,6 @@ import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.udp.Syslog;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.robotics.RangeFinder;
 import io.github.jabrena.juno.robotics.navigation.DetourPlanner;
 import io.github.jabrena.juno.robotics.navigation.GyroHeading;
 import io.github.jabrena.juno.robotics.navigation.NavigationListener;
@@ -119,9 +118,9 @@ public final class NanoPoweredUpDetourNavigator implements NavigationListener {
         GyroHeading heading = robot.heading();
         GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(MCU.getGpio(), MCU.getClock(),
                 carrier.getGroveA0());
-        TimedRangeFinder timedRanger = new TimedRangeFinder(ranger, MCU.getClock());
-        RangeObstacleDetector detector = new RangeObstacleDetector(timedRanger, STOP_MILLIMETRES, CLEAR_MILLIMETRES,
-                CONFIRM_READINGS);
+        NavigationTelemetry telemetry = new NavigationTelemetry(syslog, heading, MCU.getClock(), ranger);
+        RangeObstacleDetector detector = new RangeObstacleDetector(telemetry.ranger(), STOP_MILLIMETRES,
+                CLEAR_MILLIMETRES, CONFIRM_READINGS);
         robot.pilot().setObstacleDetector(detector);
         // Every 150 ms, not 60: a read with no echo holds the processor 30 ms, which at 60 ms starved the gyroscope.
         robot.pilot().setObstacleCheckMillis(OBSTACLE_CHECK_MILLIS);
@@ -147,16 +146,14 @@ public final class NanoPoweredUpDetourNavigator implements NavigationListener {
         }
         planner.startPathFinding();
         // While the navigator drives, this thread samples the IMU for the log; the detour's re-plan can end it early.
-        Clock clock = MCU.getClock();
-        int started = clock.millis();
-        int reads = heading.samples();
         Pose line = robot.pilot().lastTravelPose();
+        telemetry.start();
         while (navigator.isMoving()) {
-            reads = sendImu(syslog, clock.millis() - started, heading, reads, line, timedRanger);
+            telemetry.sample(line);
             Thread.sleep(TELEMETRY_MILLIS);
         }
         boolean completed = navigator.waitForStop();
-        sendImu(syslog, clock.millis() - started, heading, reads, line, timedRanger);
+        telemetry.sample(line);
         robot.finish(completed);
         heading.stop();
         while (true) {
@@ -196,89 +193,6 @@ public final class NanoPoweredUpDetourNavigator implements NavigationListener {
             syslog.begin(Syslog.WARNING).text("obstacle at x=").number(planner.obstacleXMillimetres())
                     .text(" y=").number(planner.obstacleYMillimetres()).text(", detour ").number(reportedDetours)
                     .send();
-        }
-    }
-
-    /**
-     * Sends one IMU sample: the milliseconds since the mission started; the gyroscope's direction in thousandths of a
-     * degree, counter-clockwise positive; how many times the gyroscope's thread read it since the previous sample (about
-     * ten in 100 ms, fewer when it is starved); and the travel's pose along its line, x along it and y to its left, which
-     * shows the weaving; then the ranger's window (see {@link TimedRangeFinder#appendTo}). Returns the read count, for
-     * the next sample.
-     */
-    private static int sendImu(Syslog syslog, int millis, GyroHeading heading, int previousReads, Pose line,
-            TimedRangeFinder ranger) {
-        int reads = heading.samples();
-        synchronized (syslog) {
-            syslog.begin(Syslog.INFO).text("imu t=").number(millis).text(" gyroMdeg=")
-                    .number((int) (heading.getDegreesCartesian() * 1000f)).text(" reads=").number(reads - previousReads)
-                    .text(" lineX=").number(line.xMillimetres()).text(" lineY=").number(line.yMillimetres());
-            ranger.appendTo(syslog);
-            syslog.send();
-        }
-        return reads;
-    }
-
-    /**
-     * The ranger, timed: the pilot reads it on the navigator's thread while it drives forward, and {@code pulseIn} holds
-     * the processor while it waits for the echo, up to 30 ms with nothing in range, so no other thread runs meanwhile.
-     * The counters say how often it read and how long it held the processor, to tell whether it starves the gyroscope's
-     * thread. Only the pilot's thread writes the counters; only the sampling thread reads them and keeps its copies.
-     */
-    private static final class TimedRangeFinder implements RangeFinder {
-        private final RangeFinder ranger;
-        private final Clock clock;
-        private volatile int reads;
-        private volatile int busyMicros;
-        private volatile int maxMicros;
-        private volatile int timeouts;
-        private volatile int lastMillimetres = -1;
-        private int reportedReads;
-        private int reportedBusyMicros;
-        private int reportedTimeouts;
-
-        TimedRangeFinder(RangeFinder ranger, Clock clock) {
-            this.ranger = ranger;
-            this.clock = clock;
-        }
-
-        @Override
-        public float getRange() {
-            int start = clock.micros();
-            float metres = ranger.getRange();
-            int spent = clock.micros() - start;
-            reads = reads + 1;
-            busyMicros = busyMicros + spent;
-            if (spent > maxMicros) {
-                maxMicros = spent;
-            }
-            // No echo reads as NaN, which fails every comparison.
-            if (metres >= 0f) {
-                lastMillimetres = (int) (metres * 1000f);
-            } else {
-                timeouts = timeouts + 1;
-                lastMillimetres = -1;
-            }
-            return metres;
-        }
-
-        /**
-         * Appends the window since the previous line: the last distance in millimetres ({@code -1} for no echo), the
-         * reads, the microseconds they held the processor in all and at most, and the reads that heard no echo; then
-         * starts the next window. The longest read is reset here, so one the pilot's thread finishes meanwhile may be
-         * missed: enough for a log.
-         */
-        void appendTo(Syslog syslog) {
-            int readsNow = reads;
-            int busyNow = busyMicros;
-            int timeoutsNow = timeouts;
-            syslog.text(" rng=").number(lastMillimetres).text(" rngReads=").number(readsNow - reportedReads)
-                    .text(" busyUs=").number(busyNow - reportedBusyMicros).text(" maxUs=").number(maxMicros)
-                    .text(" timeouts=").number(timeoutsNow - reportedTimeouts);
-            reportedReads = readsNow;
-            reportedBusyMicros = busyNow;
-            reportedTimeouts = timeoutsNow;
-            maxMicros = 0;
         }
     }
 
