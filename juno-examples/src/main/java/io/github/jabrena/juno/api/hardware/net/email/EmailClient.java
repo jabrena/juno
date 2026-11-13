@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -15,8 +16,8 @@ import io.github.jabrena.juno.util.Delay;
  * A small menu-driven client on the LCD Keypad Shield: a menu view (row 0 {@code "UP/DOWN
  * Select"}, row 1 cycling {@code Inbox}/{@code Send Email}/{@code About} with UP/DOWN, SELECT
  * confirms) leading to three destinations — Send Email (sends an "Arduino Hello World" message
- * with {@link Smtp#send} to the mailbox configured by {@code SMTP_HOST}/{@code
- * SMPT_USERNAME}/{@code SMTP_PASSWORD}, briefly shows the result, then returns to the menu on its
+ * with {@link Smtp#send} to the mailbox configured by the {@code smtp.host}, {@code smtp.username}, and
+ * {@code smtp.password} entries in the ATECC608, briefly shows the result, then returns to the menu on its
  * own), About (a static banner, any button returns to the menu), and Inbox — itself a submenu
  * (same UP/DOWN/SELECT scheme, plus LEFT to go back to the main menu) between two views: Count
  * (shows {@link Pop3Client#messageCount}, any button returns to the Inbox submenu) and List
@@ -234,8 +235,8 @@ public final class EmailClient {
         lcd.setCursor(0, row);
         byte[] subject = new byte[LcdKeypadShield.COLUMNS];
         int length = Pop3Client.readSubject(
-                System.getenv("SMTP_HOST"), POP3_PORT,
-                System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
+                ExampleSecrets.smtpHost(), POP3_PORT,
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword(),
                 messageNumber, subject, subject.length);
         if (length < 0) {
             lcd.print("err ");
@@ -250,9 +251,9 @@ public final class EmailClient {
         lcd.print("Sending...");
 
         int sent = Smtp.send(
-                System.getenv("SMTP_HOST"), SMTP_PORT,
-                System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
-                System.getenv("SMPT_USERNAME"), System.getenv("SMPT_USERNAME"),
+                ExampleSecrets.smtpHost(), SMTP_PORT,
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword(),
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpUsername(),
                 "Arduino Hello World", "Hello World from Juno on the Arduino UNO R4 WiFi.");
         Serial.print("Smtp.send: ");
         Serial.println(sent);
@@ -293,8 +294,8 @@ public final class EmailClient {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
-                    System.getenv("SMTP_HOST"), POP3_PORT,
-                    System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                    ExampleSecrets.smtpHost(), POP3_PORT,
+                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
             if (count != -1) {
                 return count;
             }
@@ -312,7 +313,7 @@ public final class EmailClient {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

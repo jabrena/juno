@@ -478,8 +478,7 @@ cd ..
 </tbody>
 </table>
 <p>Juno's compiler needs a few JDK modules opened, so add <code>.mvn/jvm.config</code> with these lines:</p>
-<pre><code class="language-text">--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+<pre><code class="language-text">--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED

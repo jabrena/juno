@@ -1,6 +1,15 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+
+import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -9,14 +18,20 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * The Open-Meteo request from {@code MadridWeather}'s {@code WeatherClient}, sent over plain HTTP so a board without
- * TLS, such as the UNO R3 with the retired Arduino WiFi Shield, can make it. Credentials come from
- * {@code JUNO_WIFI_SSID}/{@code JUNO_WIFI_PASSWORD}; the buffers are sized for this one response to fit 2 KB of RAM
- * (build with {@code -Djuno.Xmx=512} there). Prints the HTTP status, the body length and Madrid's current temperature
- * every ten seconds, at 115200 baud. The temperature is read straight from the bytes, since {@code Json} does not fit
- * the R3's 32 KB of flash next to the WiFi library.
+ * TLS can make it. Credentials come from the ATECC608 {@code SecretStore}; the buffers are sized for this one response.
+ * Prints the HTTP status, the body length and Madrid's current temperature every ten seconds, at 115200 baud. The
+ * temperature is read straight from the bytes, since {@code Json} is more code than this one value needs.
  */
+@Board({
+    ArduinoUnoR4WiFiBoard.class,
+    ArduinoUnoR3WiFiRev2Board.class,
+    ArduinoNanoEsp32Board.class,
+    AiThinkerEsp32CamBoard.class,
+    M5StackCardputerBoard.class,
+    RaspberryPico2WifiBoard.class
+})
 public final class PlainHttpWeather {
-    private static final Wifi WIFI = new ArduinoWifiShield().getWifi();
+    private static final Wifi WIFI = ArduinoUno.getWifi();
 
     private static final String API_URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
@@ -88,7 +103,7 @@ public final class PlainHttpWeather {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);

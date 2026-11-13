@@ -53,7 +53,7 @@ public final class IrRewriting {
                     all(node.arguments(), values), node.targets());
             case IrInstruction.IntrinsicCall node -> new IrInstruction.IntrinsicCall(optional(node.target(), values),
                     node.intrinsic(), optional(node.receiver(), values), all(node.arguments(), values),
-                    node.literalArguments());
+                    node.literalArguments(), node.literalArgumentIndexes());
             case IrInstruction.NewArray node -> new IrInstruction.NewArray(values.apply(node.target()),
                     node.elementType(), node.length());
             case IrInstruction.ArrayLoad node -> new IrInstruction.ArrayLoad(values.apply(node.target()),

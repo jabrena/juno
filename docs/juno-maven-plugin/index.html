@@ -327,11 +327,6 @@ serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle nee
 </thead>
 <tbody>
 <tr>
-<td><code>juno:env</code></td>
-<td><code>generate-sources</code></td>
-<td>Reads a git-ignored <code>.env</code> file and exports its entries into the Maven JVM's real process environment.</td>
-</tr>
-<tr>
 <td><code>juno:install-deps</code></td>
 <td>(none — run explicitly)</td>
 <td>Installs the supported Arduino cores (including M5Stack ESP32) and every optional library any current example needs, once per machine.</td>
@@ -372,15 +367,11 @@ invocation with <code>-Djuno.main=...</code>, or, in a module with a single prog
     &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
     &lt;artifactId&gt;juno-maven-plugin&lt;/artifactId&gt;
     &lt;version&gt;${project.version}&lt;/version&gt;
-    &lt;executions&gt;
-        &lt;execution&gt;
-            &lt;goals&gt;
-                &lt;goal&gt;env&lt;/goal&gt;
-            &lt;/goals&gt;
-        &lt;/execution&gt;
-    &lt;/executions&gt;
 &lt;/plugin&gt;
 </code></pre>
+<p>Board programs cannot read build-machine environment variables: <code>System.getenv(...)</code> is rejected by the compiler so a
+credential cannot be embedded in firmware. Provision board credentials with <code>juno:secret</code> and read them through
+<code>SecretStore</code> instead.</p>
 <p>This is how <a href="https://github.com/jabrena/juno/blob/main/juno-examples/pom.xml"><code>juno-examples/pom.xml</code></a> is set up: it holds
 many programs, so every <code>compile</code>, <code>verify</code> or <code>upload</code> names one, for example
 <code>-Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink</code>. Without it the goal fails and says how to pass it.</p>

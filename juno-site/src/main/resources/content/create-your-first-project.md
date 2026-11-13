@@ -133,7 +133,6 @@ Every plugin option can also be passed on the command line. A `-D` property over
 Juno's compiler needs a few JDK modules opened, so add `.mvn/jvm.config` with these lines:
 
 ```text
---add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED

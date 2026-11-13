@@ -7,9 +7,8 @@
  * {@link io.github.jabrena.juno.hardware.net.http.HttpMethod}/{@link
  * io.github.jabrena.juno.hardware.net.http.HttpStatus} as named constants for both directions.
  *
- * <p>The convenience client's URL/body and every JSON path must normally be a compile-time constant — a string
- * literal, or a direct {@code System.getenv("NAME")} call with a literal name — because Juno has no heap to build a
- * runtime {@code String}. {@link io.github.jabrena.juno.hardware.net.http.HttpClient#requestHttps} is the lower-level
+ * <p>The convenience client's URL/body and every JSON path may be literals or runtime strings loaded from a board-side
+ * {@code SecretStore}. {@link io.github.jabrena.juno.hardware.net.http.HttpClient#requestHttps} is the lower-level
  * exception for protocol drivers: it accepts runtime paths, multiple request-header lines, and bodies in bounded,
  * caller-owned byte buffers. {@link io.github.jabrena.juno.hardware.net.http.HttpServer#respond(int, String, String)} also
  * accepts a runtime response body.

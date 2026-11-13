@@ -112,10 +112,8 @@ Rev2, <code>Arduino_RouterBridge</code> on UNO Q); the UNO R3 has no radio of it
 legacy <code>WiFi</code> library) instead. A unit test passes <code>mock(Wifi.class)</code>. Get it once, at startup, and pass
 it to the classes that need it.
 
-<p><code>ssid</code>/<code>password</code> may be string literals, compile-time values resolved from
-<code>System.getenv("NAME")</code>, or stable runtime strings returned by APIs such as
-<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Properties.html#getProperty(java.lang.String)" class="external-link"><code>Properties.getProperty(String)</code></a>. This allows a
-deployed board to keep credentials on removable storage instead of baking them into firmware.</div>
+<p><code>ssid</code>/<code>password</code> may be string literals or stable runtime strings returned by a
+<code>SecretStore</code> or another board-side configuration source. This keeps credentials out of firmware.</div>
 </div>
 </section>
 <section class="summary">

@@ -27,7 +27,7 @@ public final class SecretMojo extends AbstractJunoMojo {
     private static final Duration REPLY_TIMEOUT = Duration.ofSeconds(5);
     private static final String CONFIRMATION = "CLEAR";
 
-    /** The name to store, one of the names in {@link SecretProtocol#KNOWN_NAMES}. */
+    /** The name to store; the board-side {@code SecretSlots} table decides whether it exists. */
     @Parameter(property = "juno.secret.key")
     private @Nullable String key;
 
@@ -109,9 +109,8 @@ public final class SecretMojo extends AbstractJunoMojo {
             throw new ArduinoCliException("Choose exactly one of -Djuno.secret.key=<name>, -Djuno.secret.list=true or "
                     + "-Djuno.secret.clear=true");
         }
-        if (name != null && !SecretProtocol.isKnown(name)) {
-            throw new ArduinoCliException("Unknown secret name " + name + "; the supported names are "
-                    + SecretProtocol.KNOWN_NAMES + ". Nothing was uploaded or written.");
+        if (name != null) {
+            SecretProtocol.validateName(name);
         }
         if (!terminal.present() && (name != null || clear)) {
             throw new ArduinoCliException("juno:secret reads values and confirmations from a terminal, which this session "
@@ -190,14 +189,12 @@ public final class SecretMojo extends AbstractJunoMojo {
     }
 
     private void clearAll(SerialSession session) {
-        for (String name : SecretProtocol.KNOWN_NAMES) {
-            session.send(SecretProtocol.clearRequest(name));
-            String reply = session.nextLine(REPLY_TIMEOUT);
-            if (!reply.equals("OK " + name)) {
-                throw new ArduinoCliException("The board did not clear " + name + ": " + reply);
-            }
-            getLog().info("Cleared " + name);
+        session.send(SecretProtocol.clearAllRequest());
+        String reply = session.nextLine(REPLY_TIMEOUT);
+        if (!reply.equals("OK CLEAR ALL")) {
+            throw new ArduinoCliException("The board did not clear every secret: " + reply);
         }
+        getLog().info("Cleared every secret known by the board");
     }
 
     /** Test seam: substitutes the terminal and the serial opener. */

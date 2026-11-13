@@ -208,12 +208,28 @@ public sealed interface IrInstruction {
 
     /**
      * A call to a hardware operation; {@code receiver} is present only for instance-style intrinsics.
-     * {@code literalArguments} holds this call's {@code String}-typed arguments, in their own left-to-right
-     * order, resolved to compile-time literal text. {@code arguments} holds every other argument,
-     * including the explicitly supported runtime-String parameters, likewise in left-to-right order.
+     * {@code literalArguments} holds this call's {@code String}-typed arguments, in their own left-to-right order,
+     * resolved to compile-time literal text; {@code literalArgumentIndexes} preserves their declared parameter indexes.
+     * {@code arguments} holds every other argument, including explicitly supported runtime-String parameters, likewise
+     * in left-to-right order.
      */
     record IntrinsicCall(Optional<Value> target, Intrinsic intrinsic, Optional<Value> receiver,
-                          List<Value> arguments, List<String> literalArguments) implements IrInstruction {
+                          List<Value> arguments, List<String> literalArguments,
+                          List<Integer> literalArgumentIndexes) implements IrInstruction {
+        public IntrinsicCall(Optional<Value> target, Intrinsic intrinsic, Optional<Value> receiver,
+                      List<Value> arguments, List<String> literalArguments) {
+            this(target, intrinsic, receiver, arguments, literalArguments,
+                    java.util.stream.IntStream.range(0, literalArguments.size()).boxed().toList());
+        }
+
+        public IntrinsicCall {
+            arguments = List.copyOf(arguments);
+            literalArguments = List.copyOf(literalArguments);
+            literalArgumentIndexes = List.copyOf(literalArgumentIndexes);
+            if (literalArguments.size() != literalArgumentIndexes.size()) {
+                throw new IllegalArgumentException("Literal text and parameter indexes must have the same size");
+            }
+        }
     }
 
     /** Declares a fixed-size local array; {@code target} becomes a handle to it. */

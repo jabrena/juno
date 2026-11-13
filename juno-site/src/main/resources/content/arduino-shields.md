@@ -237,8 +237,8 @@ also reads the file back, deletes it, and supports the Nano Connector Carrier.
 The retired Arduino WiFi Shield gives the UNO R3, which has no radio, Wi-Fi, UDP, TCP and plain HTTP through
 `new ArduinoWifiShield().getWifi()`. It reserves D4, D7 and D10, so it cannot be stacked with the LCD Keypad Shield.
 
-This complete example connects the UNO R3 to the network and prints its local address. Set
-`JUNO_WIFI_SSID` and `JUNO_WIFI_PASSWORD` before compiling/uploading; do not put credentials in source code:
+This complete example connects the UNO R3 to the network and prints its local address. The UNO R3 has no secret store,
+so the SSID and password are shown masked; replace the asterisks with your network's name and password:
 
 ```java
 import io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield;
@@ -251,7 +251,7 @@ public final class ArduinoWifiShieldExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Wifi wifi = new ArduinoWifiShield().getWifi();
-        wifi.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        wifi.begin("**********", "********");
 
         for (int attempt = 0; wifi.status() != Wifi.STATUS_CONNECTED && attempt < 30; attempt++) {
             Delay.millis(1000);

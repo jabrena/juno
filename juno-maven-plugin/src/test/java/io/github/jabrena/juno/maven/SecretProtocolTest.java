@@ -9,15 +9,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SecretProtocolTest {
 
     @Test
-    @DisplayName("a Wi-Fi name accepts up to 31 printable characters and rejects 32")
-    void wifiValuesStopAtTheRuntimeStringLimit() {
-        char[] fits = "a".repeat(31).toCharArray();
-        char[] tooLong = "a".repeat(32).toCharArray();
+    @DisplayName("a secret accepts the secure-element slot capacity and rejects larger values")
+    void valuesStopAtTheSlotLimit() {
+        char[] fits = "a".repeat(63).toCharArray();
+        char[] tooLong = "a".repeat(64).toCharArray();
 
-        assertThat(SecretProtocol.valueBytes("wifi.password", fits)).hasSize(31);
+        assertThat(SecretProtocol.valueBytes("wifi.password", fits)).hasSize(63);
         assertThatThrownBy(() -> SecretProtocol.valueBytes("wifi.password", tooLong))
                 .isInstanceOf(ArduinoCliException.class)
-                .hasMessageContaining("at most 31");
+                .hasMessageContaining("at most 63");
     }
 
     @Test
@@ -45,9 +45,9 @@ class SecretProtocolTest {
     }
 
     @Test
-    @DisplayName("only the names the provisioning program maps are accepted")
-    void knownNames() {
-        assertThat(SecretProtocol.isKnown("wifi.password")).isTrue();
-        assertThat(SecretProtocol.isKnown("wifi.unknown")).isFalse();
+    @DisplayName("the protocol does not maintain a board-secret name allowlist")
+    void arbitraryNamesCanBeEncoded() {
+        assertThat(SecretProtocol.setRequest("board.custom", new byte[] {'o', 'k'}))
+                .isEqualTo("SET board.custom 6f6b");
     }
 }

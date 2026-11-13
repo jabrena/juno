@@ -16,6 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * <ul>
  * <li>{@code SET <name> <hex>}: stores the value, given as hex digits (at most 63 bytes), and answers {@code OK <name>}.</li>
  * <li>{@code CLEAR <name>}: empties the name and answers {@code OK <name>}.</li>
+ * <li>{@code CLEAR ALL}: empties every name in this program's {@link SecretSlots} table and answers {@code OK CLEAR ALL}.</li>
  * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name, then {@code END}. No value is printed.</li>
  * </ul>
  * A bad request answers {@code ERR} with a short reason and stores nothing. The board prints {@code READY} once it can
@@ -50,7 +51,14 @@ public final class SecretProvisioner {
         SecretSlots slots = new SecretSlots()
                 .add("wifi.ssid", 8)
                 .add("wifi.password", 9)
-                .add("mailbox.apikey", 10);
+                .add("mailbox.apikey", 10)
+                .add("mailbox.q.ip", 0)
+                .add("smtp.host", 11)
+                .add("smtp.username", 12)
+                .add("smtp.password", 13)
+                .add("supabase.api.host", 14)
+                .add("supabase.api.key", 15)
+                .add("supabase.api.url", 1);
         new SecretProvisioner(new Atecc608(i2c, slots), slots).run();
     }
 
@@ -93,6 +101,8 @@ public final class SecretProvisioner {
     private void handle() {
         if (startsWith("SET ")) {
             set();
+        } else if (startsWith("CLEAR ALL")) {
+            clearAll();
         } else if (startsWith("CLEAR ")) {
             clear();
         } else if (startsWith("LIST")) {
@@ -141,6 +151,18 @@ public final class SecretProvisioner {
             return;
         }
         Serial.println("OK " + name);
+    }
+
+    private void clearAll() {
+        if (lineLength != "CLEAR ALL".length()) {
+            Serial.println("ERR unknown request");
+            return;
+        }
+        if (chip.clearAll() != 0) {
+            Serial.println("ERR write failed");
+            return;
+        }
+        Serial.println("OK CLEAR ALL");
     }
 
     private void list() {

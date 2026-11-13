@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -17,8 +18,8 @@ import io.github.jabrena.juno.util.Delay;
  * accepted the message. Two views on the LCD Keypad Shield: a prompt view that connects to WiFi
  * and then waits for any button press, and a send-and-verify view — triggered by that press —
  * which reads the inbox message count with {@link Pop3Client#messageCount} <em>before</em>
- * sending, sends a "Hello World" message to the mailbox configured by {@code SMTP_HOST}/{@code
- * SMPT_USERNAME}/{@code SMTP_PASSWORD} with {@link Smtp#send}, then polls the count <em>after</em>
+ * sending, sends a "Hello World" message to the mailbox configured by the {@code smtp.*} entries in the ATECC608
+ * with {@link Smtp#send}, then polls the count <em>after</em>
  * sending — every {@link #DELIVERY_POLL_DELAY_SECONDS} seconds, up to {@link
  * #DELIVERY_POLL_ATTEMPTS} times — until it goes up. Every step is logged to Serial, including
  * whether delivery was actually confirmed or the poll gave up waiting.
@@ -86,9 +87,9 @@ public final class EmailHelloWorldLCD {
         lcd.setCursor(0, 1);
         lcd.print("Sending...");
         int sent = Smtp.sendTls(
-                System.getenv("SMTP_HOST"), SMTP_PORT,
-                System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"),
-                System.getenv("SMPT_USERNAME"), System.getenv("SMPT_USERNAME"),
+                ExampleSecrets.smtpHost(), SMTP_PORT,
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword(),
+                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpUsername(),
                 "Hello World", "Hello World");
         Serial.print("Smtp.send: ");
         Serial.println(sent);
@@ -108,8 +109,8 @@ public final class EmailHelloWorldLCD {
         for (int attempt = 0; attempt < DELIVERY_POLL_ATTEMPTS; attempt++) {
             Delay.seconds(DELIVERY_POLL_DELAY_SECONDS);
             after = Pop3Client.messageCount(
-                    System.getenv("SMTP_HOST"), POP3_PORT,
-                    System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                    ExampleSecrets.smtpHost(), POP3_PORT,
+                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
             Serial.print("Inbox count after send: ");
             Serial.println(after);
             if (after > before) {
@@ -125,8 +126,8 @@ public final class EmailHelloWorldLCD {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
-                    System.getenv("SMTP_HOST"), POP3_PORT,
-                    System.getenv("SMPT_USERNAME"), System.getenv("SMTP_PASSWORD"));
+                    ExampleSecrets.smtpHost(), POP3_PORT,
+                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
             if (count != -1) {
                 return count;
             }
@@ -144,7 +145,7 @@ public final class EmailHelloWorldLCD {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

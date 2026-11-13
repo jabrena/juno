@@ -56,19 +56,6 @@ class SecretMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    @DisplayName("Fails before any command when the name is not one of the supported names")
-    void shouldRejectUnknownName() throws Exception {
-        // Given
-        FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, "wifi.unknown", false, false);
-
-        // When & Then
-        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("Unknown secret name wifi.unknown");
-        assertThat(executor.invocations()).isEmpty();
-    }
-
-    @Test
     @DisplayName("Fails before any command when a value is requested without a terminal")
     void shouldRequireATerminalForValues() throws Exception {
         // Given
@@ -172,16 +159,16 @@ class SecretMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    @DisplayName("set rejects a value over the Wi-Fi limit before anything is uploaded")
-    void setRejectsALongWifiValueBeforeUpload() throws Exception {
+    @DisplayName("set rejects a value over the secure-element slot before anything is uploaded")
+    void setRejectsALongValueBeforeUpload() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
         SecretMojo mojo = mojo(executor, "wifi.password", false, false);
-        mojo.useTerminalAndSessions(terminal("a".repeat(32), ""), session("READY\n", new ByteArrayOutputStream()));
+        mojo.useTerminalAndSessions(terminal("a".repeat(64), ""), session("READY\n", new ByteArrayOutputStream()));
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("at most 31");
+                .hasMessageContaining("at most 63");
         assertThat(executor.invocations()).isEmpty();
     }
 
@@ -207,7 +194,10 @@ class SecretMojoTest extends AbstractMojoTestCase {
         SecretMojo mojo = mojo(cliAnswers(), null, true, false);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("", ""), session(
-                "READY\nSTATE wifi.ssid written\nSTATE wifi.password missing\nSTATE mailbox.apikey missing\nEND\n",
+                "READY\nSTATE wifi.ssid written\nSTATE wifi.password missing\nSTATE mailbox.apikey missing\n"
+                        + "STATE mailbox.q.ip missing\nSTATE smtp.host missing\nSTATE smtp.username missing\n"
+                        + "STATE smtp.password missing\nSTATE supabase.api.host missing\nSTATE supabase.api.key missing\n"
+                        + "STATE supabase.api.url missing\nEND\n",
                 new ByteArrayOutputStream()));
 
         // When
@@ -226,15 +216,15 @@ class SecretMojoTest extends AbstractMojoTestCase {
         SecretMojo mojo = mojo(cliAnswers(), null, false, true);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("", "CLEAR"), session(
-                "READY\nSTATE wifi.ssid written\nEND\nOK wifi.ssid\nOK wifi.password\nOK mailbox.apikey\n", sent));
+                "READY\nSTATE wifi.ssid written\nEND\nOK CLEAR ALL\n",
+                sent));
 
         // When
         mojo.execute();
 
         // Then
-        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo(
-                "LIST\nCLEAR wifi.ssid\nCLEAR wifi.password\nCLEAR mailbox.apikey\n");
-        assertThat(log.infos()).contains("Cleared mailbox.apikey");
+        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST\nCLEAR ALL\n");
+        assertThat(log.infos()).contains("Cleared every secret known by the board");
     }
 
     @Test
@@ -261,7 +251,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("did not clear wifi.ssid");
+                .hasMessageContaining("did not clear every secret");
     }
 
     private static String hex(String text) {

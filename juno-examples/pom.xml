@@ -20,7 +20,6 @@
         <jacoco.skip>true</jacoco.skip>
         <!-- Same for PIT: the root -Ppitest profile skips the board programs. -->
         <skipPitest>true</skipPitest>
-        <juno.envFile>${maven.multiModuleProjectDirectory}/.env</juno.envFile>
         <kotlin.version>2.4.21</kotlin.version>
         <scala.version>3.10.0</scala.version>
         <scala-maven-plugin.version>4.10.0</scala-maven-plugin.version>
@@ -311,16 +310,6 @@
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-maven-plugin</artifactId>
                 <version>${project.version}</version>
-                <configuration>
-                    <envFile>${juno.envFile}</envFile>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>env</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

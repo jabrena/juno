@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.backend.xtensa;
 
 import io.github.jabrena.juno.CompilationResult;
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
 import io.github.jabrena.juno.RuntimeConfig;
@@ -621,16 +620,17 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects an Smtp call that mixes literal and runtime String arguments")
-    void shouldRejectMixedLiteralAndRuntimeSmtpStrings() {
-        // When & Then
-        assertThatThrownBy(() -> compile("demo.NanoMixedMail", """
+    @DisplayName("Passes mixed literal and runtime String arguments to Smtp.sendTls")
+    void shouldLowerMixedLiteralAndRuntimeSmtpStrings() throws Exception {
+        // When
+        CompilationResult result = compile("demo.NanoMixedMail", """
                         String host = new StringBuilder().append("smtp.example.com").toString();
                         Serial.println(Smtp.sendTls(host, 465, "user", "secret", "from@example.com", "to@example.com",
                                 "subject", "body"));
-                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("mixes literal and runtime String arguments");
+                """, "import io.github.jabrena.juno.hardware.net.email.Smtp; import io.github.jabrena.juno.hardware.serial.Serial;");
+
+        // Then
+        assertThat(result.assembly()).contains("juno_smtp_send_tls");
     }
 
     @Test

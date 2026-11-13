@@ -114,10 +114,8 @@ URL over a plain <code>WiFiClient</code>. The port defaults to 443 or 80 and can
 connection or bridge, and a board that supports the scheme: the UNO Q has no plain-HTTP client, for example.
 
 <p>The <code>url</code> (and <code>body</code> for <a href="#post(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>post(String, String, byte[], int, byte[], int, int[])</code></a>, <a href="#patch(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>patch(String, String, byte[], int, byte[], int, int[])</code></a> and <a href="#query(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>query(String, String, byte[], int, byte[], int, int[])</code></a>) must each be a
-compile-time constant: a string literal, or <code>System.getenv("NAME")</code> of a literal environment-variable name,
-like <a href="../Wifi.html#begin(java.lang.String,java.lang.String)"><code>Wifi.begin(String, String)</code></a>'s credentials. The compiler splits the URL into scheme,
-host, port and path, so nothing is parsed on the board. Call these methods with the literal in hand, never through
-another method's own <code>String</code> parameter. For request headers or a body that depend on runtime data, use
+compile-time literal or a runtime string read from a board-side <code>SecretStore</code>. Runtime URLs are passed to the
+bounded request shim without embedding credentials in firmware. For request headers or a body that depend on runtime data, use
 <a href="#post(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>post(String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a>. For a path that depends on
 runtime data, use <a href="#get(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>get(String, byte[], int, byte[], int, byte[], int, int[])</code></a> with a base URL. Small
 protocol drivers that also need a runtime method or path can use <a href="#requestHttps(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>requestHttps(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a>.

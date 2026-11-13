@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.services;
 
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -69,7 +70,7 @@ public final class SupabaseTemperatureService implements Task {
         }
         started = true;
         Serial.println("Connecting WiFi");
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
         nextWifiCheck = CLOCK.millis() + RETRY_DELAY_MILLIS;
     }
 

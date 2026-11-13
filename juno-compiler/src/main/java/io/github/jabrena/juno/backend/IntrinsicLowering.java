@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.backend;
 
-import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.runtime.MathRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
@@ -78,24 +77,15 @@ public final class IntrinsicLowering {
         }
     }
 
-    /**
-     * One declared parameter of a call whose {@code String} parameters may be literals or runtime values. When every
-     * string is a literal, the literals sit in {@code literalArguments} and the runtime list skips them; when none is,
-     * the runtime list holds every parameter in order.
-     */
+    /** One declared parameter of a call whose {@code String} parameters may be literals or runtime values. */
     private record Parameter(int parameter, List<Integer> stringParameters) implements Operand {
         @Override
         public WordSource resolve(IrInstruction.IntrinsicCall call) {
-            boolean literals = !call.literalArguments().isEmpty();
-            if (literals && call.literalArguments().size() != stringParameters.size()) {
-                throw new CompileException("a call mixes literal and runtime String arguments; pass every String"
-                        + " argument as a literal or as a runtime value");
+            int literalRank = call.literalArgumentIndexes().indexOf(parameter);
+            if (literalRank >= 0) {
+                return new WordSource.StringAddress(call.literalArguments().get(literalRank));
             }
-            int rank = stringParameters.indexOf(parameter);
-            if (rank >= 0 && literals) {
-                return new WordSource.StringAddress(call.literalArguments().get(rank));
-            }
-            int skipped = literals ? (int) stringParameters.stream().filter(index -> index < parameter).count() : 0;
+            int skipped = (int) call.literalArgumentIndexes().stream().filter(index -> index < parameter).count();
             return new WordSource.FromValue(call.arguments().get(parameter - skipped));
         }
     }

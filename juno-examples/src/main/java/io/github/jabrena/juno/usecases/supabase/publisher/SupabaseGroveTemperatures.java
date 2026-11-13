@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.supabase.publisher;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
@@ -24,10 +25,10 @@ import java.time.LocalDateTime;
  * {@link LocalDateTime#now()} once at startup and then advanced by {@link SensorClock}, so no extra time requests are
  * made; {@code id} is left to the table's default. A sensor that fails to read is sent as {@code null}.
  *
- * <p>Build-time environment variables provide {@code JUNO_WIFI_SSID}, {@code JUNO_WIFI_PASSWORD},
- * {@code SUPABASE_API_URL} (the table endpoint, such as {@code https://abcdefgh.supabase.co/rest/v1/sensor-data})
- * and {@code SUPABASE_API_KEY}. A board is a public client: use a publishable key protected by Row Level Security,
- * never a secret or legacy {@code service_role} key.
+ * <p>The ATECC608 {@code SecretStore} provides {@code wifi.ssid}, {@code wifi.password}, {@code supabase.api.url}
+ * (the table endpoint, such as {@code https://abcdefgh.supabase.co/rest/v1/sensor-data}) and {@code supabase.api.key}.
+ * A board is a public client: use a publishable key protected by Row Level Security, never a secret or legacy
+ * {@code service_role} key.
  *
  * <p>All buffers, the header builder and the row writer are allocated once at startup; the loop allocates nothing.
  * Wi-Fi, TLS and the sensor drivers together exceed the UNO WiFi Rev2's 48 KiB of flash, so the program targets the
@@ -92,7 +93,7 @@ public final class SupabaseGroveTemperatures {
     private boolean connect() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        WIFI.begin(System.getenv("JUNO_WIFI_SSID"), System.getenv("JUNO_WIFI_PASSWORD"));
+        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
 
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < WIFI_ATTEMPTS) {
@@ -153,7 +154,7 @@ public final class SupabaseGroveTemperatures {
     private void insertToSupabase(GroveTemperatureRecord reading) {
         if (!headersPrepared) {
             headersPrepared = true;
-            headers.add("apikey", System.getenv("SUPABASE_API_KEY"))
+            headers.add("apikey", ExampleSecrets.supabaseApiKey())
                     .add("Content-Type", "application/json")
                     .add("Prefer", "return=minimal");
             requestHeadersLength = headers.length();
@@ -169,7 +170,7 @@ public final class SupabaseGroveTemperatures {
             Serial.println("Request body too long");
             return;
         }
-        int responseLength = HttpClient.post(System.getenv("SUPABASE_API_URL"),
+        int responseLength = HttpClient.post(ExampleSecrets.supabaseApiUrl(),
                 requestHeaders, requestHeadersLength,
                 row.buffer(), bodyLength,
                 responseBody, RESPONSE_BODY_CAPACITY,

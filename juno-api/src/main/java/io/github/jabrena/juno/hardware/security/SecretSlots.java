@@ -6,8 +6,8 @@ package io.github.jabrena.juno.hardware.security;
  * {@link #add}, and a lookup for a name that was never added returns {@code -1}.
  */
 public final class SecretSlots {
-    /** The most names a table holds: a program names a handful of secrets, and the chip has 16 data slots. */
-    public static final int MAX_NAMES = 8;
+    /** The most names a table holds: one entry per data slot in the chip. */
+    public static final int MAX_NAMES = 16;
     /** The chip's data slots run from 0 to 15. */
     private static final int SLOT_COUNT = 16;
 

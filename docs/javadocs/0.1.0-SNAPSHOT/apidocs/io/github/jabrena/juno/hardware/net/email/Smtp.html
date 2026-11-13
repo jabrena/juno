@@ -97,8 +97,8 @@ R4 WiFi and UNO Q. Both require an active
 <a href="../Wifi.html#begin(java.lang.String,java.lang.String)"><code>Wifi.begin(String, String)</code></a> connection.
 
 <p><code>host</code>, <code>username</code>, <code>password</code>, <code>from</code>, <code>to</code>, <code>subject</code>,
-and <code>body</code> must all be compile-time strings (a literal, or <code>System.getenv("NAME")</code>
-of a literal name). Authentication is <code>AUTH LOGIN</code> (base64 username/password), the
+and <code>body</code> accept literals or runtime strings read from a board-side <code>SecretStore</code>.
+Authentication is <code>AUTH LOGIN</code> (base64 username/password), the
 baseline every mainstream SMTP submission server accepts.</div>
 </div>
 </section>
