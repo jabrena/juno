@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
@@ -37,10 +37,10 @@ public final class Peripherals {
     }
 
     public static void main(String[] args) throws IOException {
-        ArduinoUno.getWifi().begin("juno", "secret");
-        Serial.println(ArduinoUno.getWifi().status() == Wifi.STATUS_CONNECTED ? "wifi up" : "wifi down");
+        MCU.getWifi().begin("juno", "secret");
+        Serial.println(MCU.getWifi().status() == Wifi.STATUS_CONNECTED ? "wifi up" : "wifi down");
         int[] ip = new int[4];
-        ArduinoUno.getWifi().localIP(ip);
+        MCU.getWifi().localIP(ip);
         Serial.println(ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3]);
 
         byte[] body = new byte[64];

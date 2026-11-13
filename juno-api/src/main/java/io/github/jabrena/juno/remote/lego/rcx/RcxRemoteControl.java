@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.remote.lego.rcx;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.InfraredDriver;
 import io.github.jabrena.juno.hardware.device.ir.InfraredReceiver;
@@ -65,6 +66,11 @@ public final class RcxRemoteControl {
     private int droppedEventCount;
     private boolean started;
     private volatile boolean listening;
+
+    /** A receive-only remote control whose timer is the board's own clock ({@link MCU#getClock()}). */
+    public RcxRemoteControl(InfraredReceiver receiver) {
+        this(receiver, MCU.getClock());
+    }
 
     /** Configures a receive-only RCX infrared link from {@code receiver}. */
     public RcxRemoteControl(InfraredReceiver receiver, Clock clock) {

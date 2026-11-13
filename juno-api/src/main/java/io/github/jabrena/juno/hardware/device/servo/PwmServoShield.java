@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.servo;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.util.Delay;
 
@@ -9,7 +10,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@code 0..15}, so nothing is allocated after the shield itself:
  *
  * <pre>{@code
- * PwmServoShield shield = new PwmServoShield(ArduinoUno.getI2c(), PwmServoShield.ADDRESS_DEFAULT); // once, at startup
+ * PwmServoShield shield = new PwmServoShield(PwmServoShield.ADDRESS_DEFAULT); // once, at startup
  * shield.write(0, 90);          // servo on channel 0 to its centre
  * shield.writeMicros(1, 1500);  // or a raw pulse width
  * shield.release(0);            // stop driving it; the servo no longer holds its position
@@ -51,6 +52,11 @@ public final class PwmServoShield {
 
     private final I2c i2c;
     private int address = ADDRESS_DEFAULT;
+
+    /** A shield at {@code shieldAddress} on the board's own I2C bus ({@link MCU#getI2c()}). */
+    public PwmServoShield(int shieldAddress) {
+        this(MCU.getI2c(), shieldAddress);
+    }
 
     /** A shield at {@code shieldAddress} driven through {@code i2c}; collaborators may be mocks in a unit test. */
     public PwmServoShield(I2c i2c, int shieldAddress) {

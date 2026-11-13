@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -320,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>The M5Stack Cardputer is a pocket computer built around an Espressif ESP32-S3, with its own keyboard,
 color display, speaker, microSD slot and battery. Its CPU is an Xtensa LX7, so Juno compiles for it
-with the same Xtensa backend as the Nano ESP32. The <code>M5StackCardputer</code> device facade is the entry
+with the same Xtensa backend as the Nano ESP32. The <code>MCU</code> facade is the entry
 point for its peripherals.</p>
 <img src="../images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" width="280">
 <h2 id="core-specification">Core specification</h2>
@@ -392,7 +393,7 @@ point for its peripherals.</p>
 <tr>
 <td><code>Gpio</code>, <code>DigitalOutput</code></td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getGpio()</code> resolves portable <code>D*</code>/<code>A*</code> names and documented <code>G*</code>/<code>GPIO*</code> aliases; invalid names raise <code>IllegalArgumentException</code>.</td>
+<td><code>MCU.getGpio()</code> resolves portable <code>D*</code>/<code>A*</code> names and documented <code>G*</code>/<code>GPIO*</code> aliases; invalid names raise <code>IllegalArgumentException</code>.</td>
 <td></td>
 </tr>
 <tr>
@@ -416,13 +417,13 @@ point for its peripherals.</p>
 <tr>
 <td><code>SdCard</code></td>
 <td align="center">✓</td>
-<td>Built-in microSD slot through <code>M5StackCardputer.getSd()</code>.</td>
+<td>Built-in microSD slot through <code>MCU.getSdCard()</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/sd/M5CardputerSd.java"><code>M5CardputerSd</code></a></td>
 </tr>
 <tr>
 <td>Wi-Fi station and access point</td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getWifi()</code>; credentials can come from the microSD card.</td>
+<td><code>MCU.getWifi()</code>; credentials can come from the microSD card.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifi.java"><code>M5CardputerWifi</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/M5CardputerWifiStatusSD.java"><code>M5CardputerWifiStatusSD</code></a></td>
 </tr>
 <tr>
@@ -446,19 +447,19 @@ point for its peripherals.</p>
 <tr>
 <td>Display</td>
 <td align="center">✓</td>
-<td>240 × 135 RGB565 through <code>M5StackCardputer.getDisplay()</code>.</td>
+<td>240 × 135 RGB565 through <code>MCU.getDisplay()</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java"><code>M5CardputerDisplay</code></a></td>
 </tr>
 <tr>
 <td>Keyboard</td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getKeyboard()</code>, polled without allocation.</td>
+<td><code>MCU.getKeyboard()</code>, polled without allocation.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java"><code>M5CardputerKeyboard</code></a></td>
 </tr>
 <tr>
 <td>Speaker</td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getAudio()</code>: <code>tone</code>, <code>setVolume</code>, <code>stop</code>.</td>
+<td><code>MCU.getAudio()</code>: <code>tone</code>, <code>setVolume</code>, <code>stop</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a></td>
 </tr>
 <tr>
@@ -470,35 +471,35 @@ point for its peripherals.</p>
 <tr>
 <td>Battery</td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getBattery()</code>: estimated level and voltage.</td>
+<td><code>MCU.getBattery()</code>: estimated level and voltage.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java"><code>M5CardputerBatteryLevel</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
-<td><code>M5StackCardputer.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
+<td><code>MCU.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java"><code>M5RatonLoco</code></a></td>
 </tr>
 </tbody>
 </table>
 <h2 id="features">Features</h2>
 <h3 id="sd-card">SD card</h3>
-<p><code>M5StackCardputer.getSd()</code> returns the Cardputer's built-in microSD socket. Calling <code>begin()</code> uses its standard SPI wiring: chip
+<p><code>MCU.getSdCard()</code> returns the Cardputer's built-in microSD socket. Calling <code>begin()</code> uses its standard SPI wiring: chip
 select GPIO12, MOSI GPIO14, MISO GPIO39, and clock GPIO40.</p>
-<pre><code class="language-java">SdCard sd = M5StackCardputer.getSd();
+<pre><code class="language-java">SdCard sd = MCU.getSdCard();
 if (sd.begin()) {
     Serial.println(&quot;SD card ready&quot;);
 }
 </code></pre>
 <h3 id="wi-fi">Wi-Fi</h3>
-<p><code>M5StackCardputer.getWifi()</code> returns the Cardputer's built-in ESP32-S3 radio. Keep the network's credentials on the
+<p><code>MCU.getWifi()</code> returns the Cardputer's built-in ESP32-S3 radio. Keep the network's credentials on the
 microSD card rather than in the source: put them in <code>application.properties</code> at the card's root,</p>
 <pre><code class="language-properties">wifi.ssid=your-network
 wifi.password=your-password
 </code></pre>
 <p>then read the file with <code>java.util.Properties</code> and join the network:</p>
-<pre><code class="language-java">SdCard sd = M5StackCardputer.getSd();
-Wifi wifi = M5StackCardputer.getWifi();
+<pre><code class="language-java">SdCard sd = MCU.getSdCard();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open(&quot;application.properties&quot;)) {
@@ -519,9 +520,9 @@ joins the network and shows the connection status on the display.</p>
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.M5CardputerWifiStatusSD
 </code></pre>
 <h3 id="display">Display</h3>
-<p><code>M5StackCardputer.getDisplay()</code> returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
+<p><code>MCU.getDisplay()</code> returns the Cardputer's 240 by 135 pixel color display. Colors use RGB565 values, with common colors
 available as constants and <code>Display.color(red, green, blue)</code> for custom colors. Call <code>begin()</code> once before drawing.</p>
-<pre><code class="language-java">Display display = M5StackCardputer.getDisplay();
+<pre><code class="language-java">Display display = MCU.getDisplay();
 display.begin();
 display.fillScreen(Display.BLACK);
 display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
@@ -533,9 +534,9 @@ display.println(&quot;Hello, Juno!&quot;);
 <p>The display interface also provides <code>height()</code>, <code>drawPixel(...)</code>, <code>print(...)</code>, and <code>println(...)</code>. Applications can
 receive a mock <code>Display</code> in desktop unit tests.</p>
 <h3 id="keyboard">Keyboard</h3>
-<p><code>M5StackCardputer.getKeyboard()</code> returns the Cardputer's built-in keyboard. Initialize it once, call <code>update()</code> in the main loop,
+<p><code>MCU.getKeyboard()</code> returns the Cardputer's built-in keyboard. Initialize it once, call <code>update()</code> in the main loop,
 and inspect the state after <code>isChanged()</code> reports a transition.</p>
-<pre><code class="language-java">Keyboard keyboard = M5StackCardputer.getKeyboard();
+<pre><code class="language-java">Keyboard keyboard = MCU.getKeyboard();
 keyboard.begin();
 while (true) {
     keyboard.update();
@@ -551,24 +552,24 @@ while (true) {
 <code>isKeyPressed(...)</code> checks one character or control key. Shift, Control, Alt, Fn, and Option have dedicated state
 methods, so no array or collection needs to be allocated while polling.</p>
 <h3 id="speaker">Speaker</h3>
-<p><code>M5StackCardputer.getAudio()</code> returns the built-in speaker. <code>tone(frequencyHz, durationMillis)</code> plays a note,
+<p><code>MCU.getAudio()</code> returns the built-in speaker. <code>tone(frequencyHz, durationMillis)</code> plays a note,
 <code>setVolume(...)</code> sets the loudness and <code>stop()</code> silences it.</p>
-<pre><code class="language-java">Audio audio = M5StackCardputer.getAudio();
+<pre><code class="language-java">Audio audio = MCU.getAudio();
 audio.setVolume(128);
 audio.tone(440, 500);
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java"><code>ZeldaOcarinaCardputer</code></a> plays a melody on it.</p>
 <h3 id="battery">Battery</h3>
-<p><code>M5StackCardputer.getBattery()</code> reports the built-in battery's estimated charge level in percent and its voltage in
+<p><code>MCU.getBattery()</code> reports the built-in battery's estimated charge level in percent and its voltage in
 millivolts.</p>
-<pre><code class="language-java">Battery battery = M5StackCardputer.getBattery();
+<pre><code class="language-java">Battery battery = MCU.getBattery();
 Serial.print(battery.levelPercent());
 Serial.println(&quot;%&quot;);
 </code></pre>
 <h3 id="usb-hid-mouse">USB HID mouse</h3>
 <p>The Cardputer's ESP32-S3 can act as a USB HID mouse through its core's TinyUSB stack. Call <code>begin()</code> once,
 then <code>move(x, y)</code> moves the computer's pointer by that many pixels:</p>
-<pre><code class="language-java">Mouse mouse = M5StackCardputer.getMouse();
+<pre><code class="language-java">Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {

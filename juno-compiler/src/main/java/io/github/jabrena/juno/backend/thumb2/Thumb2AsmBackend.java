@@ -202,7 +202,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         fields = new FieldAccessLowering(asm, layout, usesThreads, dualCarrier,
                 coreRuntime.memoryBarrierInstruction());
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm, dualCarrier),
-                coreRuntime, board.unoGeneration(), features,
+                coreRuntime, board.unoGeneration(), board.onboardSdChipSelect(), features,
                 usedMath, usesThreads, socketStreamsOnly, carrierCount);
 
         StringBuilder output = new StringBuilder();

@@ -24,7 +24,7 @@ public enum ShimFeature {
     BLUETOOTH_LE,
     /** {@code HttpServer.beginStream}: an open response the program keeps writing parts to, on the ESP32 transport. */
     HTTP_STREAM,
-    /** {@code Esp32Cam.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
+    /** {@code MCU.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
     CAMERA,
     /** Explicit external PSRAM byte buffers on the Nano ESP32 and AI Thinker ESP32-CAM. */
     PSRAM,

@@ -39,7 +39,7 @@ AI Thinker ESP32-CAM and M5Stack Cardputer have `getBluetoothLe()`; on the UNO R
 rejects the call:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
@@ -49,7 +49,7 @@ public final class PoweredUpConnectExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub();
 
         while (true) {
             if (!hub.isConnected()) {
@@ -74,7 +74,6 @@ The hub's status LED takes a `HubColor`: `OFF`, `PINK`, `PURPLE`, `BLUE`, `LIGHT
 `ORANGE`, `RED` or `WHITE`. For any other color, `setLedRgb(red, green, blue)` takes each channel from `0` to `255`:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
@@ -86,7 +85,7 @@ public final class PoweredUpLedExample {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub();
 
         while (true) {
             if (!hub.isConnected() && !hub.connect(10_000)) {
@@ -117,7 +116,6 @@ public final class PoweredUpLedExample {
 `hold()` holds it where it is. `portDevice(port)` tells which motor the hub detected on a port:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
@@ -127,7 +125,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class PoweredUpMotorExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub();
         while (!hub.isConnected() && !hub.connect(10_000)) {
             Serial.println("no hub found");
             Delay.millis(1000);
@@ -157,7 +155,6 @@ acceleration as an `Accelerometer`, `getGyroscope()` returns the heading and yaw
 and `connect` subscribes them, so a read needs no start-up call. A read returns zero until the hub has reported.
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
@@ -169,7 +166,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class PoweredUpSensorsExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub();
         Accelerometer accelerometer = hub.getAccelerometer();
         Gyroscope gyroscope = hub.getGyroscope();
         SampleProvider tilt = hub.getTilt();
@@ -215,7 +212,6 @@ sensors use their protocol-specific mode: subscribe after every reconnect with `
 the higher-level `PoweredUpMotor` encoder view:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
@@ -226,7 +222,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class PoweredUpPropertiesExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub();
         while (!hub.isConnected() && !hub.connect(10_000)) {
             Serial.println("no hub found");
             Delay.millis(1000);
@@ -298,7 +294,7 @@ public final class PowerFunctionsExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield();
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
         RemotePF remote = new RemotePF(link);
         PFMotor left = new PFMotor(remote, PFChannel.CHANNEL_1, PFPort.RED);
@@ -377,7 +373,6 @@ With an HX-M121 receiver and an HX-53 emitter, here on pins 2 and 3 of an UNO bo
 <img src="../images/ir/hx-m121-hx-53.png" alt="HX-53 infrared emitter and HX-M121 infrared receiver modules" width="280">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
@@ -390,10 +385,10 @@ import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 public final class RcxHxConnectExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Gpio gpio = ArduinoUno.getGpio();
+        Gpio gpio = MCU.getGpio();
         HXM121InfraredReceiver receiver = new HXM121InfraredReceiver(gpio.digitalPin("D2")); // DAT on D2
         HX53InfraredEmitter emitter = new HX53InfraredEmitter(gpio.digitalPin("D3"));       // DAT on D3
-        RcxLink link = new RcxLink(emitter, receiver, ArduinoUno.getClock());
+        RcxLink link = new RcxLink(emitter, receiver);
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.println("RCX infrared link ready");
     }
@@ -409,7 +404,6 @@ on the I2C socket's SCL line, passing the Nano's clock:
 <img src="../images/grove/grove-ir-receiver.jpg" alt="Grove Infrared Receiver" width="240">
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoNano;
 import io.github.jabrena.juno.hardware.device.grove.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredReceiver;
@@ -422,10 +416,10 @@ import io.github.jabrena.juno.remote.lego.rcx.RemoteRcx;
 public final class RcxGroveConnectExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier();
         GroveInfraredEmitter emitter = new GroveInfraredEmitter(carrier.getGroveA0());
         GroveInfraredReceiver receiver = new GroveInfraredReceiver(carrier.getI2cScl());
-        RcxLink link = new RcxLink(emitter, receiver, ArduinoNano.getClock());
+        RcxLink link = new RcxLink(emitter, receiver);
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         Serial.println("RCX Grove infrared link ready");
     }
@@ -444,7 +438,6 @@ vehicle's left and right wheels. `drive(speed)` runs them from `-RcxMotor.MAX_LE
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -456,7 +449,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxMotorExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxMotor wheels = rcx.getMotorA().and(rcx.getMotorC());
 
@@ -482,7 +475,6 @@ inputs, `getSensor1()` to `getSensor3()`, or `sensor(RcxSensorPort.INPUT_1)` to 
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -494,7 +486,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxRotationExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxRotationSensor rotation = new RcxRotationSensor(rcx.getSensor1());
         rotation.reset();
@@ -519,7 +511,6 @@ public final class RcxRotationExample {
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -531,7 +522,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxTouchExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxTouchSensor touch = new RcxTouchSensor(rcx.getSensor1());
 
@@ -557,7 +548,6 @@ public final class RcxTouchExample {
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -569,7 +559,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxTemperatureExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxTemperatureSensor temperature = new RcxTemperatureSensor(rcx.getSensor1());
 
@@ -594,7 +584,6 @@ public final class RcxTemperatureExample {
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -606,7 +595,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxLightExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxLightSensor light = new RcxLightSensor(rcx.getSensor1());
 
@@ -635,7 +624,6 @@ still playing, so wait for it to end before the next:
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -649,7 +637,7 @@ public final class RcxMusicExample {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxAudio audio = rcx.getAudio();
 
@@ -676,7 +664,6 @@ it is off, out of range, or not facing the IR LED. That makes it a good first ch
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -688,7 +675,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxBatteryExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxBattery battery = rcx.getBattery();
 
@@ -718,7 +705,6 @@ digits, and `getLcd().clear()` blanks them:
 ```java
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.remote.lego.rcx.RcxChannel;
@@ -731,7 +717,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxButtonsExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2));
         RemoteRcx rcx = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxButtons buttons = rcx.getButtons();
         RcxLcd lcd = rcx.getLcd();
@@ -776,7 +762,6 @@ click, so the main loop takes them with `pollButton()` whenever it is ready, and
 when nothing is waiting. Clicking the same button again queues it again; holding a button down counts as one click.
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -787,7 +772,7 @@ import io.github.jabrena.juno.util.Delay;
 public final class RcxRemoteControlExample {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxRemoteControl remote = new RcxRemoteControl(new HXM121InfraredReceiver(2), ArduinoUno.getClock());
+        RcxRemoteControl remote = new RcxRemoteControl(new HXM121InfraredReceiver(2));
         Delay.millis(2000);
         Serial.println("Listening for the LEGO RCX remote");
         remote.start();

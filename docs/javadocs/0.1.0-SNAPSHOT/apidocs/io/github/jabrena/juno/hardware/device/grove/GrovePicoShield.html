@@ -74,6 +74,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E()" tabindex="0">GrovePicoShield()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" tabindex="0">GrovePicoShield(Gpio)</a></li>
 </ol>
 </li>
@@ -174,8 +175,12 @@ power switch.
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePicoShield</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E()" class="member-name-link">GrovePicoShield</a>()</code></div>
 <div class="col-last even-row-color">
+<div class="block">Creates the shield handle on the Pico's own GPIO pins (<a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>).</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">GrovePicoShield</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Creates the shield handle for the Pico's GPIO context.</div>
 </div>
 </div>
@@ -306,6 +311,15 @@ power switch.
 <h2>Constructor Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="&lt;init&gt;()">
+<h3>GrovePicoShield</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">GrovePicoShield</span>()</div>
+<div class="block">Creates the shield handle on the Pico's own GPIO pins (<a href="../../MCU.html#getGpio()"><code>MCU.getGpio()</code></a>). Create it once, at startup.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio)">
 <h3>GrovePicoShield</h3>
 <div class="horizontal-scroll">
@@ -382,7 +396,7 @@ power switch.
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></span>&nbsp;<span class="element-name">getI2c0</span>()</div>
 <div class="block">The I2C bus behind the I2C0 socket (SDA GP8, SCL GP9), to pass to a Grove I2C driver such as
-<code>GroveOledSsd1315</code>. It is the Pico's <code>Wire</code> bus, the same instance <code>RaspberryPico2.getI2c()</code>
+<code>GroveOledSsd1315</code>. It is the Pico's <code>Wire</code> bus, the same instance <code>MCU.getI2c()</code>
 returns, on every call.</div>
 </div>
 </section>

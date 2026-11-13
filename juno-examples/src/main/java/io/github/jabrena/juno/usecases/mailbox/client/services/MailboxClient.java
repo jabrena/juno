@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client.services;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
@@ -58,7 +58,7 @@ public final class MailboxClient implements MailboxApi, Task {
 
     /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
     public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling) {
-        this(model, connection, key, polling, ArduinoUno.getClock());
+        this(model, connection, key, polling, MCU.getClock());
     }
 
     MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, Clock clock) {

@@ -16,10 +16,10 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 
 Juno's support on this board:
 
-- **GPIO and serial** through `Esp32Cam.getGpio()`. Resolve portable `D0`–`D13` and `A0`–`A5` names through the board
+- **GPIO and serial** through `MCU.getGpio()`. Resolve portable `D0`–`D13` and `A0`–`A5` names through the board
   context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.
-- **Wi-Fi** through `Esp32Cam.getWifi()`, station mode with plain HTTP.
-- **microSD** through `Esp32Cam.getSdCard()`, using the board's built-in socket on GPIO13.
+- **Wi-Fi** through `MCU.getWifi()`, station mode with plain HTTP.
+- **microSD** through `MCU.getSdCard()`, using the board's built-in socket on GPIO13.
 - **Bluetooth LE** for `RemotePoweredUpHub`, used to drive LEGO Powered Up hubs.
 
 The board has no USB port, so flash it through a USB-serial adapter; the port is passed with

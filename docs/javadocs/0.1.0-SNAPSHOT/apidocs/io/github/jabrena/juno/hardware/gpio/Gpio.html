@@ -102,8 +102,7 @@ initTheme();
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Gpio</span></div>
-<div class="block">The board's GPIO pins. A board facade such as <a href="../ArduinoUno.html#getGpio()"><code>ArduinoUno.getGpio()</code></a> or
-<a href="../Esp32Cam.html#getGpio()"><code>Esp32Cam.getGpio()</code></a> exposes the board's own pins, which the compiler lowers to the Arduino core
+<div class="block">The board's GPIO pins. <a href="../MCU.html#getGpio()"><code>MCU.getGpio()</code></a> exposes the board's own pins, which the compiler lowers to the Arduino core
 calls; a unit test passes <code>mock(Gpio.class)</code> instead. Pin names and modes are resolved by the linked board
 (<a href="#digitalPin(java.lang.String)"><code>digitalPin(String)</code></a>, <a href="#getOutput()"><code>getOutput()</code></a>) and are not raw MCU GPIO numbers. On the Nano ESP32, for
 example, D13 reaches GPIO48 and A4 reaches GPIO11.

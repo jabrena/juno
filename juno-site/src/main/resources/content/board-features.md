@@ -28,6 +28,9 @@ language itself, see the [Java subset](../java-subset) page.
 | USB HID mouse | – | ✓ | ✓ | – | ✓ | – | – | ✓ |
 | LED matrix | ✓ (13 × 8) | – | – | – | ✓ (12 × 8) | – | – | – |
 | Built-in display, keyboard, speaker, battery | – | – | ✓ | – | – | – | – | – |
+| Onboard microSD socket (`MCU.getSdCard()`) | – | – | ✓ | ✓ | – | – | – | – |
+| Onboard camera (`MCU.getCamera()`) | – | – | – | ✓ | – | – | – | – |
+| Onboard IMU (`MCU.getAccelerometer()`, `MCU.getGyroscope()`) | – | – | – | – | – | ✓ | – | – |
 | Hardware random numbers | ✓ | ✓ | ✓ | – | ✓ | ✓ | Weak | – |
 | Watchdog | – | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ |
 | Structured concurrency (threads, scopes, scoped values, locks) | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
@@ -35,7 +38,7 @@ language itself, see the [Java subset](../java-subset) page.
 | SD card | Shield | Carrier | Built-in | Built-in | Shield | Shield | Shield | – |
 | Grove sockets | Shield | Carrier | – | – | Shield | Shield | Shield | Shield |
 | 9 Axis Motion Shield | Shield | – | – | – | Shield | Shield | Shield | – |
-| Onboard IMU (`ArduinoUno.getGyroscope()`, `ArduinoUno.getAccelerometer()`) | – | – | – | – | – | ✓ | – | – |
+| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | – | – | – | – | – | ✓ | – | – |
 | LCD Keypad Shield | Shield | – | – | – | Shield | Shield | Shield | – |
 | TFT Touch Shield | Shield | – | – | – | Shield | Shield | – | – |
 | Infrared link to LEGO RCX | ✓ | ✓ | – | – | ✓ | – | – | – |
@@ -54,3 +57,11 @@ Notes:
   Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.
 - **Infrared** drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
   [LEGO ecosystem](../lego-ecosystem) page.
+
+## Reading the board services through `MCU`
+
+Every board's own services come from one facade, `MCU`, and the board is chosen by `@Board` or the build's `juno.board`
+option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
+board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
+of them. Portable getters (`getGpio`, `getI2c`, `getSpi`, `getClock`, `getBoardModel`, `getBoardMemory`) work on every board.
+Programs written for the removed per-board facades need the steps on the [migration](../migrate-to-mcu) page.

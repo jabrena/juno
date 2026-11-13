@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
@@ -73,6 +74,11 @@ public final class GrovePicoShield {
     private final int spi0Sck;
     private final int spi0Cs;
 
+    /** Creates the shield handle on the Pico's own GPIO pins ({@link MCU#getGpio()}). Create it once, at startup. */
+    public GrovePicoShield() {
+        this(MCU.getGpio());
+    }
+
     /** Creates the shield handle for the Pico's GPIO context. Create it once, at startup, and reuse it. */
     public GrovePicoShield(Gpio gpio) {
         a0 = gpio.analogPin("A0");
@@ -127,7 +133,7 @@ public final class GrovePicoShield {
 
     /**
      * The I2C bus behind the I2C0 socket (SDA GP8, SCL GP9), to pass to a Grove I2C driver such as
-     * {@code GroveOledSsd1315}. It is the Pico's {@code Wire} bus, the same instance {@code RaspberryPico2.getI2c()}
+     * {@code GroveOledSsd1315}. It is the Pico's {@code Wire} bus, the same instance {@code MCU.getI2c()}
      * returns, on every call.
      */
     public I2c getI2c0() {

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.rcx;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -37,7 +37,7 @@ public class RcxIcons {
     }
 
     public static void main(String[] args) {
-        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RcxLink link = new RcxLink(new HX53InfraredEmitter(TRANSMIT_PIN), new HXM121InfraredReceiver(RECEIVE_PIN), MCU.getClock());
         RemoteRcx remote = new RemoteRcx(link, RcxChannel.CHANNEL_1);
         RcxLcd lcd = remote.getLcd();
         RcxMotor motorA = remote.getMotorA();

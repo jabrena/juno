@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
@@ -34,7 +34,7 @@ public class PoweredUpHubHello {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("PoweredUpHubHello started");
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), ArduinoUno.getClock());
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock());
         while (true) {
             if (!hub.isConnected()) {
                 Serial.println("Waiting for a Powered Up hub...");

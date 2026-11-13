@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  * to read it. Quotes and backslashes are dropped from the echoed value to keep the JSON body valid.
  */
 public final class HttpServerHeader {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     public static void main(String[] args) {
         new HttpServerHeader().run();

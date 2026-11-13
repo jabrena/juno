@@ -1,8 +1,7 @@
 package io.github.jabrena.juno.hardware.gpio;
 
 /**
- * The board's GPIO pins. A board facade such as {@link io.github.jabrena.juno.hardware.ArduinoUno#getGpio()} or
- * {@link io.github.jabrena.juno.hardware.Esp32Cam#getGpio()} exposes the board's own pins, which the compiler lowers to the Arduino core
+ * The board's GPIO pins. {@link io.github.jabrena.juno.hardware.MCU#getGpio()} exposes the board's own pins, which the compiler lowers to the Arduino core
  * calls; a unit test passes {@code mock(Gpio.class)} instead. Pin names and modes are resolved by the linked board
  * ({@link #digitalPin(String)}, {@link #getOutput()}) and are not raw MCU GPIO numbers. On the Nano ESP32, for
  * example, D13 reaches GPIO48 and A4 reaches GPIO11.

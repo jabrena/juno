@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.poweredup;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -36,8 +36,8 @@ public class MagicSquarePoweredUpHubWithGyro {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        Clock clock = ArduinoUno.getClock();
-        RemotePoweredUpHub hub = new RemotePoweredUpHub(ArduinoUno.getBluetoothLe(), clock);
+        Clock clock = MCU.getClock();
+        RemotePoweredUpHub hub = new RemotePoweredUpHub(MCU.getBluetoothLe(), clock);
         MagicSquarePoweredUpHubWithGyro app = new MagicSquarePoweredUpHubWithGyro();
 
         while (true) {

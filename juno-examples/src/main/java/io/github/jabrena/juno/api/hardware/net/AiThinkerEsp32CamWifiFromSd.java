@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Esp32Cam;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -18,8 +18,8 @@ import java.util.Properties;
 public final class AiThinkerEsp32CamWifiFromSd {
     private static final String CREDENTIALS_FILE = "application.properties";
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
-    private static final Wifi WIFI = Esp32Cam.getWifi();
-    private static final SdCard SD_CARD = Esp32Cam.getSdCard();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = MCU.getSdCard();
     private static final int[] LOCAL_IP = new int[4];
 
     private AiThinkerEsp32CamWifiFromSd() {

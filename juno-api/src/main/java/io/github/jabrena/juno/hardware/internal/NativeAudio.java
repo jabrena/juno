@@ -11,7 +11,7 @@ public final class NativeAudio implements Audio {
     private NativeAudio() {
     }
 
-    /** The audio device the M5StackCardputer facade hands out. */
+    /** The audio device the MCU facade hands out. */
     public static Audio audio() {
         return audio;
     }

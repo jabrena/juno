@@ -2,7 +2,7 @@ package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 @Board(ArduinoUnoR3Board.class)
 public final class WeakUuid {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final byte[] UUID_BYTES = new byte[UuidCodec.BYTES];
 
     private WeakUuid() {

@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client.services;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -29,7 +29,7 @@ public final class MailboxConnection {
 
     /** A connection to follow; {@code configured} is false when the SD card held no Wi-Fi settings to join with. */
     public MailboxConnection(Wifi wifi, boolean configured) {
-        this(wifi, ArduinoUno.getClock(), configured);
+        this(wifi, MCU.getClock(), configured);
     }
 
     public MailboxConnection(Wifi wifi, Clock clock, boolean configured) {

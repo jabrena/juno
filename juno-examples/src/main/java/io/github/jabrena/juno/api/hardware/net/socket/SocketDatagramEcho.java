@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.socket;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.net.wifi.WifiCredentials;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -24,8 +24,8 @@ import java.net.InetAddress;
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketDatagramEcho {
-    private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
 
     private static final int PORT = 4210;
     private static final int HELLO_INTERVAL_MILLIS = 5000;

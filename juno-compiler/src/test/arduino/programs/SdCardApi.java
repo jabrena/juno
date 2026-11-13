@@ -1,7 +1,7 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
@@ -48,7 +48,7 @@ public final class SdCardApi {
         SD_CARD.appendText(STATE_FILE, "level=3\n");
         // One record written piece by piece: each runtime string stays under 32 bytes, whatever the data type.
         int score = 42;
-        long uptime = ArduinoUno.getClock().millis() * 1000L;
+        long uptime = MCU.getClock().millis() * 1000L;
         float ratio = 0.75f;
         double temperature = 21.5;
         boolean armed = score > 0;
@@ -72,7 +72,7 @@ public final class SdCardApi {
     /** Log: one entry per call with appendLine(), which ends each entry with a newline; the file only grows. */
     private void logEvents() {
         SD_CARD.appendLine(LOG_FILE, "boot");
-        SD_CARD.appendLine(LOG_FILE, "uptime=" + ArduinoUno.getClock().millis());
+        SD_CARD.appendLine(LOG_FILE, "uptime=" + MCU.getClock().millis());
         SD_CARD.appendLine(LOG_FILE, "done");
         // size() is -1 when the file is missing; a log that grew past a limit can be started afresh.
         int logBytes = SD_CARD.size(LOG_FILE);
@@ -92,10 +92,10 @@ public final class SdCardApi {
         if (!SD_CARD.exists(CSV_FILE)) {
             SD_CARD.appendLine(CSV_FILE, "sample,millis,raw,volts,armed");
         }
-        Gpio gpio = ArduinoUno.getGpio();
+        Gpio gpio = MCU.getGpio();
         int analogInput = gpio.analogPin("A0");
         for (int sample = 0; sample < SAMPLES; sample++) {
-            int millis = ArduinoUno.getClock().millis();
+            int millis = MCU.getClock().millis();
             int raw = gpio.analogRead(analogInput);
             double volts = raw * 5.0 / 1023.0;
             boolean armed = raw > 512;

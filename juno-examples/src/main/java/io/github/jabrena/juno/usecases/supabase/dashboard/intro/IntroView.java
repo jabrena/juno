@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard.intro;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.image.ArduinoUnoBoardImage;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.mvc.View;
 public final class IntroView implements View {
 
     private final TftTouchShield tft;
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     /** How long each image stays on screen after it has been drawn, so slow drawing does not eat into it. */
     static final int STEP_MILLIS = 3000;
     static final int NONE = -1;

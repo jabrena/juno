@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Esp32Cam;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -29,10 +29,10 @@ import java.util.Properties;
  */
 @Board(AiThinkerEsp32CamBoard.class)
 public final class AiThinkerEsp32CamStream {
-    private static final Wifi WIFI = Esp32Cam.getWifi();
-    private static final SdCard SD_CARD = Esp32Cam.getSdCard();
-    private static final Camera CAMERA = Esp32Cam.getCamera();
-    private static final Clock CLOCK = Esp32Cam.getClock();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = MCU.getSdCard();
+    private static final Camera CAMERA = MCU.getCamera();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int HTTP_PORT = 80;
     private static final int FRAME_CAPACITY = 4096;

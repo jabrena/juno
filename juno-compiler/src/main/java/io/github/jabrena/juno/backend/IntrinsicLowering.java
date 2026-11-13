@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend;
 
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.runtime.MathRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
@@ -16,6 +17,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 
 /**
@@ -141,27 +143,28 @@ public final class IntrinsicLowering {
 
     /**
      * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
+     * @param onboardSdChipSelect the target board's onboard microSD chip-select pin; empty when it has no socket
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
-                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
-                      boolean socketStreamsOnly) {
-        this(target, coreRuntime, generation, features, usedMath, usesThreads, socketStreamsOnly,
+                      OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
+                      boolean usesThreads, boolean socketStreamsOnly) {
+        this(target, coreRuntime, generation, onboardSdChipSelect, features, usedMath, usesThreads, socketStreamsOnly,
                 coreRuntime.carrierCount());
     }
 
     /** Creates the lowering with the effective carrier count selected by the runtime configuration. */
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
-                      Set<ShimFeature> features, Set<Intrinsic> usedMath, boolean usesThreads,
-                      boolean socketStreamsOnly, int carrierCount) {
+                      OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
+                      boolean usesThreads, boolean socketStreamsOnly, int carrierCount) {
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         this.socketStreamsOnly = socketStreamsOnly;
         this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
-        registerGpio(coreRuntime, generation, usesThreads);
+        registerGpio(coreRuntime, generation, onboardSdChipSelect, usesThreads);
         registerThreads(usesThreads);
         registerAtomics();
         registerStructuredTasks();
@@ -315,7 +318,8 @@ public final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime, Optional<UnoGeneration> generation, boolean usesThreads) {
+    private void registerGpio(CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+                              OptionalInt onboardSdChipSelect, boolean usesThreads) {
         String pinMode = coreRuntime.gpioFunction("pinMode");
         String digitalWrite = coreRuntime.gpioFunction("digitalWrite");
         shim(Intrinsic.DIGITAL_OUTPUT_OF, pinMode, Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
@@ -357,6 +361,10 @@ public final class IntrinsicLowering {
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
         GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
                 .ifPresent(value -> target.storeImmediate(output, frame, generation.filter(queried::equals).isPresent() ? 1 : 0, value))));
+        // Board data: the onboard socket's chip select. The capability check keeps this off boards without one.
+        lowerings.put(Intrinsic.BOARD_ONBOARD_SD_CHIP_SELECT, (output, frame, call) -> call.target().ifPresent(
+                value -> target.storeImmediate(output, frame, onboardSdChipSelect.orElseThrow(() ->
+                        new CompileException("This board has no onboard SD-card socket")), value)));
         shim(Intrinsic.LED_MATRIX_BEGIN, "juno_led_matrix_begin", Result.NONE, List.of(), ShimFeature.LED_MATRIX);
         shim(Intrinsic.LED_MATRIX_LOAD_FRAME, "juno_led_matrix_load_frame", Result.NONE,
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LED_MATRIX);

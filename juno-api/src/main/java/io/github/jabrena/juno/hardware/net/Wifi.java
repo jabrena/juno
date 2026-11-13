@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.net;
 
 /**
- * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.ArduinoUno#getWifi()} is the board's own radio, which the
+ * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.MCU#getWifi()} is the board's own radio, which the
  * compiler lowers to the Arduino board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code WiFiNINA} on UNO WiFi
  * Rev2, {@code Arduino_RouterBridge} on UNO Q). The UNO R3 has no radio and no network support. A unit test passes
  * {@code mock(Wifi.class)}. Get it once, at startup, and pass it to the classes that need it.

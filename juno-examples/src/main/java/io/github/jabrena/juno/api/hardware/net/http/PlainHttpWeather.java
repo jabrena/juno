@@ -9,7 +9,7 @@ import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -31,7 +31,7 @@ import io.github.jabrena.juno.util.Delay;
     RaspberryPico2WifiBoard.class
 })
 public final class PlainHttpWeather {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private static final String API_URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";

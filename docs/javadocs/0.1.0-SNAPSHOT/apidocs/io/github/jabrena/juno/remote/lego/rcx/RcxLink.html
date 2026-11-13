@@ -74,6 +74,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
 <ol class="toc-list">
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver)" tabindex="0">RcxLink(InfraredEmitter, InfraredReceiver)</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" tabindex="0">RcxLink(InfraredEmitter, InfraredReceiver, Clock)</a></li>
 </ol>
 </li>
@@ -120,10 +121,15 @@ gyroscope for a <code>GyroHeading</code>, synchronizes on the link and waits for
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Constructor</div>
 <div class="table-header col-last">Description</div>
-<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink</a><wbr>(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver)" class="member-name-link">RcxLink</a><wbr>(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
+ <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A link whose timer is the board's own clock (<a href="../../../hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a>).</div>
+</div>
+<div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">RcxLink</a><wbr>(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
  <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver,
  <a href="../../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
-<div class="col-last even-row-color">
+<div class="col-last odd-row-color">
 <div class="block">A link configured with its infrared modules and timer; construction completes the link setup.</div>
 </div>
 </div>
@@ -187,6 +193,16 @@ gyroscope for a <code>GyroHeading</code>, synchronizes on the link and waits for
 <section class="constructor-details" id="constructor-detail">
 <h2>Constructor Details</h2>
 <ul class="member-list">
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver)">
+<h3>RcxLink</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">RcxLink</span><wbr><span class="parameters">(<a href="../../../hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredEmitter</a>&nbsp;emitter,
+ <a href="../../../hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a>&nbsp;receiver)</span></div>
+<div class="block">A link whose timer is the board's own clock (<a href="../../../hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a>).</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.device.ir.InfraredEmitter,io.github.jabrena.juno.hardware.device.ir.InfraredReceiver,io.github.jabrena.juno.hardware.time.Clock)">
 <h3>RcxLink</h3>

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.hardware.internal;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 
 /**
- * The board's {@link BluetoothLe}: the only instance, shared by every board facade's {@code getBluetoothLe()}. Each
+ * The board's {@link BluetoothLe}: the only instance, shared by {@code MCU.getBluetoothLe()}. Each
  * method is a BLE intrinsic the compiler lowers to the core's BLE central, so it has no Java body and cannot run, or be
  * mocked, on a desktop JVM. Mock {@link BluetoothLe} instead.
  */
@@ -14,7 +14,7 @@ public final class NativeBluetoothLe implements BluetoothLe {
     private NativeBluetoothLe() {
     }
 
-    /** The radio the board facades hand out. */
+    /** The radio {@code MCU} hands out. */
     public static BluetoothLe bluetoothLe() {
         return INSTANCE;
     }

@@ -29,11 +29,11 @@ Any other `java.time.LocalDateTime` method, such as `plus`, `of`, `parse` or `fo
 `status()` reports `Wifi.STATUS_CONNECTED`, and then call `now()`:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import java.time.LocalDateTime;
 
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 wifi.begin(ssid, password);
 while (wifi.status() != Wifi.STATUS_CONNECTED) {
     Delay.millis(500);
@@ -83,13 +83,12 @@ loaded `Properties` is typically read from the SD card as shown in [SD Card](../
 ## Measuring elapsed time with Clock
 
 `Clock` is the board's own monotonic counter, so it does not depend on Wi-Fi. Get it once at startup with
-`ArduinoUno.getClock()` and pass it to whatever needs it:
+`MCU.getClock()` and pass it to whatever needs it:
 
 ```java
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.time.Clock;
 
-Clock clock = ArduinoUno.getClock();
+Clock clock = MCU.getClock();
 
 int start = clock.millis();
 doWork();

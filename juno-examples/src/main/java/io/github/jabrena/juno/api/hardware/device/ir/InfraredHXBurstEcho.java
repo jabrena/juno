@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.ir;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -20,7 +20,7 @@ import io.github.jabrena.juno.util.Delay;
  * reporting interference, not the transmitter. Pick the board with {@code -Djuno.board}.
  */
 public class InfraredHXBurstEcho {
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock = MCU.getClock();
     private static final int RECEIVE_PIN = 2;
     private static final int TRANSMIT_PIN = 3;
     private static final int BAUD = 2400;

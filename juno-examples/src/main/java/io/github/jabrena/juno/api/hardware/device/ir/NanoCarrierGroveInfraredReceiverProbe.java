@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.ir;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -21,8 +21,8 @@ public final class NanoCarrierGroveInfraredReceiverProbe {
     }
 
     public static void main(String[] args) {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
-        Clock clock = ArduinoNano.getClock();
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
+        Clock clock = MCU.getClock();
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
         Serial.println("Grove IR receiver probe on every carrier signal pin");

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.security.Atecc608;
@@ -26,7 +26,7 @@ public final class SecretWifiStatus {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = ArduinoUno.getI2c();
+        I2c i2c = MCU.getI2c();
         i2c.begin();
         SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
         SecretStore secrets = new Atecc608(i2c, slots).getSecretStore();
@@ -37,7 +37,7 @@ public final class SecretWifiStatus {
             Serial.println("Not possible to start WiFi: secrets are missing from the chip");
             return;
         }
-        Wifi wifi = ArduinoUno.getWifi();
+        Wifi wifi = MCU.getWifi();
         wifi.begin(ssid, password);
         while (true) {
             Serial.println("WiFi status: " + wifi.status());

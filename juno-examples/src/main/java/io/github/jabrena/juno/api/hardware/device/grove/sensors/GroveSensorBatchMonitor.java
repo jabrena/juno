@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR3WiFiRev2Board.class})
 public final class GroveSensorBatchMonitor {
-    private static final GroveBaseShield SHIELD = new GroveBaseShield(ArduinoUno.getGpio());
+    private static final GroveBaseShield SHIELD = new GroveBaseShield(MCU.getGpio());
     private static final int DHT11_PIN = SHIELD.getD4();
     private static final int TEMPERATURE_PIN = SHIELD.getA0();
     private static final int SOUND_PIN = SHIELD.getA1();
@@ -31,10 +31,10 @@ public final class GroveSensorBatchMonitor {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         GroveDht11 dht11 = new GroveDht11();
-        LightDetector light = new GroveLightV12(ArduinoUno.getGpio(), LIGHT_PIN,
+        LightDetector light = new GroveLightV12(MCU.getGpio(), LIGHT_PIN,
                 GroveLightV12.ADC_10_BIT);
-        GroveSoundV16 sound = new GroveSoundV16(ArduinoUno.getGpio());
-        GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
+        GroveSoundV16 sound = new GroveSoundV16(MCU.getGpio());
+        GroveTemperatureV12 thermistor = new GroveTemperatureV12(MCU.getGpio());
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
         Delay.millis(1000);

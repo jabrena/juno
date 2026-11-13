@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.camera;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.Esp32Cam;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board(AiThinkerEsp32CamBoard.class)
 public final class AiThinkerEsp32CamCapture {
-    private static final Camera CAMERA = Esp32Cam.getCamera();
+    private static final Camera CAMERA = MCU.getCamera();
     private static final int FRAME_CAPACITY = 6144;
     private static final int CAPTURE_INTERVAL_MILLIS = 3000;
 

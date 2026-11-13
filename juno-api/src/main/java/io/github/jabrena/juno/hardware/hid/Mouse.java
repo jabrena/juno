@@ -1,13 +1,13 @@
 package io.github.jabrena.juno.hardware.hid;
 
 /**
- * USB HID mouse control. {@link io.github.jabrena.juno.hardware.ArduinoUno#getMouse()} is the board's own mouse, which
+ * USB HID mouse control. {@link io.github.jabrena.juno.hardware.MCU#getMouse()} is the board's own mouse, which
  * the compiler lowers to the Arduino {@code Mouse} library, and
- * {@link io.github.jabrena.juno.hardware.ArduinoNano#getMouse()} is the Nano ESP32's, lowered to its core's
- * {@code USBHIDMouse}; {@link io.github.jabrena.juno.hardware.M5StackCardputer#getMouse()} uses the same ESP32-S3
+ * {@link io.github.jabrena.juno.hardware.MCU#getMouse()} is the Nano ESP32's, lowered to its core's
+ * {@code USBHIDMouse}; {@link io.github.jabrena.juno.hardware.MCU#getMouse()} uses the same ESP32-S3
  * stack; a unit test passes {@code mock(Mouse.class)} instead. Requires a board with native USB: the UNO R4 WiFi,
  * with the {@code Mouse} library installed ({@code arduino-cli lib install Mouse}), Raspberry Pi Pico 2 W, or an
- * ESP32-S3 board such as the Nano ESP32 and M5Stack Cardputer. {@link io.github.jabrena.juno.hardware.RaspberryPico2#getMouse()}
+ * ESP32-S3 board such as the Nano ESP32 and M5Stack Cardputer. {@link io.github.jabrena.juno.hardware.MCU#getMouse()}
  * uses the Pico SDK USB stack. Get the board's mouse once, at startup, and pass it to
  * the classes that need it.
  */

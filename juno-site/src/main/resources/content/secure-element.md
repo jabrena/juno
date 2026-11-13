@@ -64,7 +64,7 @@ The chip's data zone is not locked by this tool. Locking is a permanent step and
 
 ```java
 SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
-SecretStore secrets = new Atecc608(ArduinoUno.getI2c(), slots).getSecretStore();
+SecretStore secrets = new Atecc608(MCU.getI2c(), slots).getSecretStore();
 
 String ssid = secrets.getString("wifi.ssid");
 String password = secrets.getString("wifi.password");

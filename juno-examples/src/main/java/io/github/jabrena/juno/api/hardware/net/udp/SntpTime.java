@@ -9,7 +9,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
     RaspberryPico2WifiBoard.class
 })
 public final class SntpTime {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 

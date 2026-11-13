@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.carrier;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveLightV12;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GrovePirMotion;
@@ -27,9 +27,9 @@ public final class NanoCarrierGroveSensors {
     }
 
     public static void main(String[] args) {
-        NanoConnectorCarrier carrier = new NanoConnectorCarrier(ArduinoNano.getGpio());
-        GrovePirMotion pir = new GrovePirMotion(ArduinoNano.getGpio());
-        LightDetector light = new GroveLightV12(ArduinoNano.getGpio(), carrier.getGroveA0(),
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());
+        GrovePirMotion pir = new GrovePirMotion(MCU.getGpio());
+        LightDetector light = new GroveLightV12(MCU.getGpio(), carrier.getGroveA0(),
                 GroveLightV12.ADC_12_BIT);
         Serial.begin(BaudRate.BAUD_115200);
         pir.begin(carrier.getGroveA2());

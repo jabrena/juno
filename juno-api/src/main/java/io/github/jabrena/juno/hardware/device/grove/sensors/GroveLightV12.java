@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove.sensors;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.robotics.LightDetector;
 import io.github.jabrena.juno.robotics.SampleProvider;
@@ -24,6 +25,12 @@ public final class GroveLightV12 implements LightDetector, SampleProvider {
     private final Gpio gpio;
     private final int analogPin;
     private final float adcMaximum;
+
+    /** A sensor plugged into {@code analogPin}, read through the board's own GPIO pins ({@link MCU#getGpio()}), with an ADC
+     * whose full scale is {@code adcMaximum}. */
+    public GroveLightV12(int analogPin, int adcMaximum) {
+        this(MCU.getGpio(), analogPin, adcMaximum);
+    }
 
     /**
      * A sensor plugged into {@code analogPin} (such as a socket of a {@code GroveBaseShield}) and read through

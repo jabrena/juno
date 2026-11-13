@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.hid;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +14,7 @@ class MouseTest {
     @DisplayName("The board's USB mouse is one shared instance")
     void shouldHandOutOneInstanceForTheBoard() {
         // When & Then
-        assertThat(ArduinoUno.getMouse()).isSameAs(ArduinoUno.getMouse()).isSameAs(NativeMouse.INSTANCE);
+        assertThat(MCU.getMouse()).isSameAs(MCU.getMouse()).isSameAs(NativeMouse.INSTANCE);
     }
 
     @Test
@@ -28,7 +28,7 @@ class MouseTest {
 
         // Then
         try {
-            assertThat(ArduinoUno.getMouse()).isSameAs(replacement);
+            assertThat(MCU.getMouse()).isSameAs(replacement);
         } finally {
             NativeMouse.setMouse(NativeMouse.INSTANCE);
         }

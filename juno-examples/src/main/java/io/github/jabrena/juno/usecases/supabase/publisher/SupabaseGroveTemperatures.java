@@ -4,7 +4,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht22;
@@ -36,10 +36,10 @@ import java.time.LocalDateTime;
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class SupabaseGroveTemperatures {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private static final GroveBaseShield SHIELD = new GroveBaseShield(ArduinoUno.getGpio());
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final GroveBaseShield SHIELD = new GroveBaseShield(MCU.getGpio());
+    private static final Clock CLOCK = MCU.getClock();
     private static final int DHT22_PIN = SHIELD.getD4();
     private static final int DHT11_PIN = SHIELD.getD2();
     private static final int THERMISTOR_PIN = SHIELD.getA0();
@@ -54,7 +54,7 @@ public final class SupabaseGroveTemperatures {
 
     private final GroveDht22 dht22 = new GroveDht22();
     private final GroveDht11 dht11 = new GroveDht11();
-    private final GroveTemperatureV12 thermistor = new GroveTemperatureV12(ArduinoUno.getGpio());
+    private final GroveTemperatureV12 thermistor = new GroveTemperatureV12(MCU.getGpio());
     private final int[] dht22Reading = new int[GroveDht22.READING_LENGTH];
     private final int[] dht11Reading = new int[GroveDht11.READING_LENGTH];
     private final int[] frame = new int[GroveDht22.FRAME_LENGTH];

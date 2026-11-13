@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -320,7 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>The UNO R4 WiFi keeps the classic UNO form factor and 5 V GPIO while replacing the UNO R3's 8-bit AVR with a 32-bit
 Renesas RA4M1, and adds an ESP32-S3 module for Wi-Fi and Bluetooth, a 12 × 8 LED matrix and a Qwiic connector. Juno
-compiles for the RA4M1 with its Thumb-2 backend; the <code>ArduinoUno</code> device facade is the entry point for the board's
+compiles for the RA4M1 with its Thumb-2 backend; the <code>MCU</code> facade is the entry point for the board's
 peripherals. The UNO R4 Minima is not a Juno target.</p>
 <img src="../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
 <h2 id="core-specification">Core specification</h2>
@@ -408,7 +409,7 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <tr>
 <td><code>Gpio</code>, <code>DigitalOutput</code>, <code>analogRead</code>, <code>analogWrite</code></td>
 <td align="center">✓</td>
-<td>Resolve <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> through <code>ArduinoUno.getGpio()</code>; mode values are supplied by the same board context.</td>
+<td>Resolve <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> through <code>MCU.getGpio()</code>; mode values are supplied by the same board context.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
 </tr>
 <tr>
@@ -456,7 +457,7 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
-<td><code>ArduinoUno.getMouse()</code> through the Arduino <code>Mouse</code> library.</td>
+<td><code>MCU.getMouse()</code> through the Arduino <code>Mouse</code> library.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a></td>
 </tr>
 <tr>
@@ -506,7 +507,7 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <h2 id="features">Features</h2>
 <p>These need only the UNO R4 WiFi and its USB-C cable.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
-<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -519,7 +520,7 @@ while (true) {
 <code>-Djuno.board=arduino-uno-r4-wifi</code>.</p>
 <h3 id="scroll-text-on-the-led-matrix">Scroll text on the LED matrix</h3>
 <p>The matrix is 12 columns by 8 rows. <code>LedCanvas</code> draws into a frame and <code>show</code> sends it to the matrix:</p>
-<pre><code class="language-java">LedMatrix matrix = ArduinoUno.getLedMatrix();
+<pre><code class="language-java">LedMatrix matrix = MCU.getLedMatrix();
 matrix.begin();
 boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
@@ -533,9 +534,9 @@ for (int offset = 12; offset &gt;= -60; offset--) {
 <p><code>drawText</code> takes a compile-time string literal. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
 message forever.</p>
 <h3 id="usb-hid-mouse">USB HID mouse</h3>
-<p><code>ArduinoUno.getMouse()</code> makes the board a USB mouse for the computer it is plugged into. Call <code>begin()</code> once, then
+<p><code>MCU.getMouse()</code> makes the board a USB mouse for the computer it is plugged into. Call <code>begin()</code> once, then
 <code>move(x, y)</code> moves the pointer by that many pixels:</p>
-<pre><code class="language-java">Mouse mouse = ArduinoUno.getMouse();
+<pre><code class="language-java">Mouse mouse = MCU.getMouse();
 mouse.begin();
 
 while (true) {
@@ -582,7 +583,7 @@ shield's microSD card (<code>TftTouchShield.getSdCard()</code> on the shield ins
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
 module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
-<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];
@@ -631,7 +632,7 @@ is a Pomodoro timer.</p>
 that Juno does not drive. Format the card as FAT16 or FAT32. Keep the network's credentials on the card rather than
 in the source: put <code>wifi.ssid</code> and <code>wifi.password</code> in <code>application.properties</code> at the card's root, then:</p>
 <pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();
-Wifi wifi = ArduinoUno.getWifi();
+Wifi wifi = MCU.getWifi();
 
 if (sd.begin()) {
     try (InputStream file = sd.open(&quot;application.properties&quot;)) {

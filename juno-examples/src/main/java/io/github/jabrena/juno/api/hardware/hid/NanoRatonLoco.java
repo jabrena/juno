@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.hid;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -43,7 +43,7 @@ public final class NanoRatonLoco {
         Delay.millis(2000);
 
         DigitalOutput led = DigitalOutput.of(LED);
-        Mouse mouse = ArduinoNano.getMouse();
+        Mouse mouse = MCU.getMouse();
         Serial.println("USB mouse started");
 
         while (true) {

@@ -1,6 +1,6 @@
 package demo;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -11,7 +11,7 @@ public final class InfraredApi {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
 
-        Gpio gpio = ArduinoUno.getGpio();
+        Gpio gpio = MCU.getGpio();
         // Infrared.beginHX(receivePin, transmitPin, baudRate);
         Infrared.beginHX(gpio.digitalPin("D2"), gpio.digitalPin("D3"), 2400);
 

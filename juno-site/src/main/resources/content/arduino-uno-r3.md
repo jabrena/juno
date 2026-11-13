@@ -5,7 +5,7 @@ layout: page
 ---
 
 The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. Juno compiles for it with its **AVR
-backend** and links against the `arduino:avr` core; the `ArduinoUno` device facade is the entry point for the board's
+backend** and links against the `arduino:avr` core; the `MCU` facade is the entry point for the board's
 peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
 startup and stay small.
 
@@ -53,7 +53,7 @@ These need only the UNO R3 and its USB cable.
 ### Blink the built-in LED
 
 ```java
-DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -79,7 +79,7 @@ don't hard-code numbers. Plug a Grove module in and pass the socket's getter to 
 module's `GND` and `VCC`. A Grove DHT22 temperature and humidity sensor in the D4 socket:
 
 ```java
-GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

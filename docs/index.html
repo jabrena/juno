@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -340,14 +341,14 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="juno-try">
       <div class="juno-code-window">
         <div class="juno-code-bar"><span></span><span></span><span></span><em>Blink.java</em></div>
-<pre><code>import io.github.jabrena.juno.hardware.ArduinoUno;
+<pre><code>import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
 public class Blink {
 
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
         while (true) {
             led.high();

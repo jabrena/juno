@@ -97,7 +97,7 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">I2c</span></div>
 <div class="block">Register access to an I2C peripheral on the board's primary I2C bus (<code>Wire</code>, the SDA/SCL pins).
-<a href="../ArduinoUno.html#getI2c()"><code>ArduinoUno.getI2c()</code></a> is the board's own bus, which the compiler lowers to the
+<a href="../MCU.html#getI2c()"><code>MCU.getI2c()</code></a> is the board's own bus, which the compiler lowers to the
 core-bundled <code>Wire</code> library; a unit test passes <code>mock(I2c.class)</code> instead. It is the transport under
 sensors such as <a href="../device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu"><code>NineAxisMotionShield</code></a>. Addresses are the 7-bit
 device addresses. Get the board's bus once, at startup, and pass it to the classes that need it.</div>

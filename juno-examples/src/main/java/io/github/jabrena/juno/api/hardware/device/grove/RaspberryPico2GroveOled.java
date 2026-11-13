@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.grove;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.hardware.RaspberryPico2;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GrovePicoShield;
 import io.github.jabrena.juno.hardware.device.grove.display.GroveOledSsd1315;
 import io.github.jabrena.juno.hardware.display.Display;
@@ -26,7 +26,7 @@ public final class RaspberryPico2GroveOled {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_9600);
         Delay.millis(2000);
-        GrovePicoShield shield = new GrovePicoShield(RaspberryPico2.getGpio());
+        GrovePicoShield shield = new GrovePicoShield(MCU.getGpio());
         I2c i2c = shield.getI2c0();
         i2c.begin();
         // -1 means nothing answered at that address: check the socket, the cable and the power switch.

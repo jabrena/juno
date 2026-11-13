@@ -220,7 +220,7 @@ internal RAM and the default. For example, `-Djuno.Xmx=1g` on the UNO R4 WiFi fa
    capacity, the compiler's suggestion gives a size to try.
 3. **Check the live set at run time.** Build with `-Djuno.gcLog=true`, watch the collections on the serial port, and
    raise `juno.Xmx` in steps while the arena stays nearly full after each collection. The program can also read
-   `ArduinoUno.getBoardMemory()` (or `ArduinoNano.getBoardMemory()` on the Nano ESP32): `arenaUsedBytes()` and `arenaCapacityBytes()` give the same figures from inside the
+   `MCU.getBoardMemory()` (or `MCU.getBoardMemory()` on the Nano ESP32): `arenaUsedBytes()` and `arenaCapacityBytes()` give the same figures from inside the
    program.
 4. **Confirm the build runs.** On the UNO R3 and UNO R4, a link that succeeds is a reliable sign the sizes fit. On the
    Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W and UNO Q, the run-time heap or the loader pool decides, so upload the

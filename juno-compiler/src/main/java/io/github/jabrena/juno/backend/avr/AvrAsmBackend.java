@@ -135,8 +135,8 @@ public final class AvrAsmBackend implements AsmBackend {
         memory = new AvrMemoryLowering(avr, layout);
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
-        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.unoGeneration(), features,
-                usedMath, usesThreads, socketStreamsOnly);
+        intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board.unoGeneration(),
+                board.onboardSdChipSelect(), features, usedMath, usesThreads, socketStreamsOnly);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {

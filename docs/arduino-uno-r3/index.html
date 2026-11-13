@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -319,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p>The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. Juno compiles for it with its <strong>AVR
-backend</strong> and links against the <code>arduino:avr</code> core; the <code>ArduinoUno</code> device facade is the entry point for the board's
+backend</strong> and links against the <code>arduino:avr</code> core; the <code>MCU</code> facade is the entry point for the board's
 peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
 startup and stay small.</p>
 <img src="../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
@@ -472,7 +473,7 @@ startup and stay small.</p>
 <h2 id="features">Features</h2>
 <p>These need only the UNO R3 and its USB cable.</p>
 <h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
-<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(ArduinoUno.getGpio().getBuiltinLed());
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
 
 while (true) {
     led.high();
@@ -490,7 +491,7 @@ program whose shields share a pin, and the 9 Axis Motion Shield's sensor reset u
 <p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
 module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
-<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
 GroveDht22 dht = new GroveDht22();
 int[] reading = new int[GroveDht22.READING_LENGTH];
 int[] frame = new int[GroveDht22.FRAME_LENGTH];

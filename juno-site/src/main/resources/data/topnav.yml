@@ -10,6 +10,8 @@ items:
         path: "/create-your-first-project"
       - title: "Maven Plugin"
         path: "/juno-maven-plugin"
+      - title: "Migrating to MCU"
+        path: "/migrate-to-mcu"
   - title: "Features"
     path: "/features"
     children:

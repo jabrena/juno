@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.carrier;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveUltrasonicRanger;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -18,8 +18,8 @@ public final class NanoCarrierUltrasonic {
     }
 
     public static void main(String[] args) {
-        Gpio gpio = ArduinoNano.getGpio();
-        Clock clock = ArduinoNano.getClock();
+        Gpio gpio = MCU.getGpio();
+        Clock clock = MCU.getClock();
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(gpio);
         GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(gpio, clock, carrier.getGroveA2());
         Serial.begin(BaudRate.BAUD_115200);

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.gpio;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.hardware.RaspberryPico2;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
@@ -13,7 +13,7 @@ public final class RaspberryPico2Blink {
 
     /** Blinks the LED once per second: on for 500 milliseconds, off for 500 milliseconds. */
     public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(RaspberryPico2.getGpio().getBuiltinLed());
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
         while (true) {
             led.high();
             Delay.millis(BLINK_DELAY_MILLIS);

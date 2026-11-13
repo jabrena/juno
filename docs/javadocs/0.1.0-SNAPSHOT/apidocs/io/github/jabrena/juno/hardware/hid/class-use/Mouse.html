@@ -76,8 +76,8 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
@@ -98,25 +98,9 @@ the program's flash usage).</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">ArduinoNano.</span><code><a href="../../ArduinoNano.html#getMouse()" class="member-name-link">getMouse</a>()</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getMouse()" class="member-name-link">getMouse</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The Nano ESP32 acting as a USB HID mouse, through the core's TinyUSB stack: the USB port stays the serial
-console too.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">ArduinoUno.</span><code><a href="../../ArduinoUno.html#getMouse()" class="member-name-link">getMouse</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The board acting as a USB HID mouse; only boards with native USB (UNO R4 WiFi) support it.</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">M5StackCardputer.</span><code><a href="../../M5StackCardputer.html#getMouse()" class="member-name-link">getMouse</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The Cardputer's ESP32-S3 acting as a USB HID mouse through the core's TinyUSB stack.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">RaspberryPico2.</span><code><a href="../../RaspberryPico2.html#getMouse()" class="member-name-link">getMouse</a>()</code></div>
-<div class="col-last odd-row-color">
-<div class="block">The Raspberry Pi Pico 2 W's USB HID mouse.</div>
+<div class="block">The selected board acting as a USB HID mouse.</div>
 </div>
 </div>
 </section>
@@ -144,7 +128,7 @@ library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no J
 <div class="col-first even-row-color"><code>static <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeMouse.</span><code><a href="../../internal/NativeMouse.html#mouse()" class="member-name-link">mouse</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The mouse <a href="../../ArduinoUno.html#getMouse()"><code>ArduinoUno.getMouse()</code></a> hands out.</div>
+<div class="block">The mouse <a href="../../MCU.html#getMouse()"><code>MCU.getMouse()</code></a> hands out.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></span></div>
@@ -155,7 +139,7 @@ library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no J
 <div class="col-first even-row-color"><code>static void</code></div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeMouse.</span><code><a href="../../internal/NativeMouse.html#setMouse(io.github.jabrena.juno.hardware.hid.Mouse)" class="member-name-link">setMouse</a><wbr>(<a href="../Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Makes <a href="../../ArduinoUno.html#getMouse()"><code>ArduinoUno.getMouse()</code></a> hand out <code>replacement</code>: for a
+<div class="block">Makes <a href="../../MCU.html#getMouse()"><code>MCU.getMouse()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </div>
 </div>

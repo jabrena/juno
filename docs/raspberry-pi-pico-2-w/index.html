@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -447,7 +448,7 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 <tr>
 <td>Wi-Fi station</td>
 <td align="center">✓</td>
-<td><code>RaspberryPico2.getWifi()</code> provides station mode, status, addresses and TCP/UDP networking.</td>
+<td><code>MCU.getWifi()</code> provides station mode, status, addresses and TCP/UDP networking.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java"><code>RaspberryPico2WifiStatus</code></a></td>
 </tr>
 <tr>
@@ -495,13 +496,13 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 <tr>
 <td>Bluetooth LE</td>
 <td align="center">✓</td>
-<td><code>RaspberryPico2.getBluetoothLe()</code> uses the arduino-pico BTstack central adapter.</td>
+<td><code>MCU.getBluetoothLe()</code> uses the arduino-pico BTstack central adapter.</td>
 <td></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
-<td><code>RaspberryPico2.getMouse()</code> uses the core's <code>Mouse</code> library.</td>
+<td><code>MCU.getMouse()</code> uses the core's <code>Mouse</code> library.</td>
 <td></td>
 </tr>
 <tr>
@@ -617,7 +618,7 @@ wire its getter returns. The analog sockets always take 3.3 V; the others take <
 </tbody>
 </table>
 <p>With a Grove LED in socket D16 and an analog module, such as a light sensor, in A0:</p>
-<pre><code class="language-java">import io.github.jabrena.juno.hardware.RaspberryPico2;
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GrovePicoShield;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -627,7 +628,7 @@ import io.github.jabrena.juno.util.Delay;
 
 public final class GrovePicoExample {
     public static void main(String[] args) {
-        Gpio gpio = RaspberryPico2.getGpio();
+        Gpio gpio = MCU.getGpio();
         GrovePicoShield shield = new GrovePicoShield(gpio);
         DigitalOutput led = DigitalOutput.of(shield.getD16());
         Serial.begin(BaudRate.BAUD_9600);

@@ -11,7 +11,7 @@ public final class NativeBattery implements Battery {
     private NativeBattery() {
     }
 
-    /** The battery device the M5StackCardputer facade hands out. */
+    /** The battery device the MCU facade hands out. */
     public static Battery battery() {
         return battery;
     }

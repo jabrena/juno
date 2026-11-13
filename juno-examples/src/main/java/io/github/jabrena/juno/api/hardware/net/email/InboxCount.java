@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class InboxCount {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private static final int POP3_PORT = 995;

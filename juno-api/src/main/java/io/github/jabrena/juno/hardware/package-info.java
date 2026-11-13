@@ -1,6 +1,6 @@
 /**
- * The board's own hardware and program-wide introspection: {@link io.github.jabrena.juno.hardware.ArduinoUno} and
- * {@link io.github.jabrena.juno.hardware.ArduinoNano} hand out
+ * The board's own hardware and program-wide introspection: {@link io.github.jabrena.juno.hardware.MCU} and
+ * {@link io.github.jabrena.juno.hardware.MCU} hand out
  * the board's pins, I2C bus, USB mouse, LED matrix, clock, {@link io.github.jabrena.juno.hardware.BoardModel} (which
  * board the program was compiled for) and {@link io.github.jabrena.juno.hardware.BoardMemory} (Juno's arena and
  * the program's flash usage). Board I/O has one subpackage per interface: {@code gpio} holds the pin-level
@@ -20,7 +20,7 @@
  * <p>The API lives in subpackages, grouped by the hardware or concern they address:
  * <ul>
  *   <li>{@code hardware} — the board's own peripherals, handed out by
- *       {@link io.github.jabrena.juno.hardware.ArduinoUno}: general-purpose I/O ({@code hardware.gpio},
+ *       {@link io.github.jabrena.juno.hardware.MCU}: general-purpose I/O ({@code hardware.gpio},
  *       {@link io.github.jabrena.juno.hardware.gpio.Gpio}, {@link io.github.jabrena.juno.hardware.gpio.DigitalOutput}),
  *       I2C ({@code hardware.i2c}), serial port I/O ({@code hardware.serial}), USB HID mouse control
  *       ({@code hardware.hid}),

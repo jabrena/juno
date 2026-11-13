@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.gladiator.screen;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.gladiator.view.ClassWireframe;
@@ -11,7 +11,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /** The CPU-opponent reveal and the final result screens around a Solo bout. */
 public final class SoloPresentation {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     public static final int RESULT_MILLIS = 5000;
 
     private static final int FRAME_MILLIS = 50;

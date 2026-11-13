@@ -344,12 +344,12 @@ public interface CoreRuntime {
 
     /** Core-specific headers of the camera driver; only a core whose board declares {@code CAMERA} provides them. */
     default String cameraIncludes() {
-        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+        throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
     }
 
     /** Core-specific implementation of the camera intrinsics, emitted only for a program that uses them. */
     default String cameraHelpers() {
-        throw new IllegalStateException("This core has no camera; the linker should have rejected Esp32Cam.getCamera");
+        throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
     }
 
     /** Core-specific explicit PSRAM buffer helpers; only ESP32-family cores provide them. */

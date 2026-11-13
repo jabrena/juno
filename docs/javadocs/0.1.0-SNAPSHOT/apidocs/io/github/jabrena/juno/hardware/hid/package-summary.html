@@ -83,10 +83,10 @@ initTheme();
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.hid</span></div>
 <section class="package-description" id="package-description">
 <div class="block">USB HID mouse control: <a href="Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>, which
-<a href="../ArduinoUno.html#getMouse()"><code>ArduinoUno.getMouse()</code></a> hands out, backed by the Arduino <code>Mouse</code> library.
+<a href="../MCU.html#getMouse()"><code>MCU.getMouse()</code></a> hands out, backed by the Arduino <code>Mouse</code> library.
 
 <p>Requires a board with native USB (the UNO R4 WiFi) and the <code>Mouse</code> library installed.
-Once a program calls <code>ArduinoUno.getMouse().begin()</code>, it takes control of the pointer on whatever
+Once a program calls <code>MCU.getMouse().begin()</code>, it takes control of the pointer on whatever
 computer the board's USB port is plugged into, so uploading such a sketch needs a known way to
 recover (disconnect the board, or use its reset/bootloader sequence).</div>
 </section>
@@ -101,8 +101,8 @@ recover (disconnect the board, or use its reset/bootloader sequence).</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware</a></div>
 <div class="col-last even-row-color">
-<div class="block">The board's own hardware and program-wide introspection: <a href="../ArduinoUno.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoUno</code></a> and
-<a href="../ArduinoNano.html" title="class in io.github.jabrena.juno.hardware"><code>ArduinoNano</code></a> hand out
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>

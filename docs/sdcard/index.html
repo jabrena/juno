@@ -80,6 +80,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -355,7 +356,7 @@ startup, and pass it to the classes that need it. A unit test passes <code>mock(
 </tr>
 <tr>
 <td>Nano Connector Carrier</td>
-<td><code>new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard()</code></td>
+<td><code>new NanoConnectorCarrier().getSdCard()</code></td>
 <td>D4</td>
 </tr>
 </tbody>
@@ -498,7 +499,7 @@ if (sdCard.begin()) {
     Properties properties = new Properties();
     properties.load(file);
     file.close();
-    ArduinoUno.getWifi().begin(
+    MCU.getWifi().begin(
         properties.getProperty(&quot;wifi.ssid&quot;),
         properties.getProperty(&quot;wifi.password&quot;));
 }
@@ -546,7 +547,7 @@ then not checked against the array's real size.</li>
 <p>Every byte array, like any other <code>new</code> object, lives in Juno's garbage-collected arena, 8 KB by default. A program
 that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
 JVM-style <code>-Djuno.Xmx</code> (for example <code>-Djuno.Xmx=32k</code>), and check the room left at run time with
-<code>ArduinoUno.getBoardMemory().arenaCapacityBytes() - ArduinoUno.getBoardMemory().arenaUsedBytes()</code>. <code>-Djuno.Xss</code> sets each extra task's stack the same way.</p>
+<code>MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes()</code>. <code>-Djuno.Xss</code> sets each extra task's stack the same way.</p>
     </div>
   </section>
 </article>

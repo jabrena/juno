@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -32,8 +32,8 @@ import java.util.Properties;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoHttpsGetSD {
-    private static final Wifi WIFI = ArduinoNano.getWifi();
-    private static final SdCard SD_CARD = new NanoConnectorCarrier(ArduinoNano.getGpio()).getSdCard();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
 
     private static final int HTTPS_PORT = 443;
     private static final int MAX_CONNECTION_ATTEMPTS = 30;

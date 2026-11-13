@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.display;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.display.Display;
 
 /** Draws colored shapes and text on the Cardputer's built-in display. */
@@ -13,7 +13,7 @@ public final class M5CardputerDisplay {
 
     /** Initializes the display and draws a small status screen. */
     public static void main(String[] args) {
-        Display display = M5StackCardputer.getDisplay();
+        Display display = MCU.getDisplay();
         display.fillScreen(Display.BLACK);
         display.fillRect(8, 8, display.width() - 16, 4, Display.BLUE);
         display.setCursor(12, 24);

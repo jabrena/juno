@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
@@ -136,7 +136,7 @@ public final class TftTouchShield {
 
     /** A shield on the board's own pins. Create it once, at startup, and pass it to every class that draws. */
     public TftTouchShield() {
-        this(ArduinoUno.getGpio());
+        this(MCU.getGpio());
     }
 
     /** A shield driven through {@code gpio}: a mocked one in a unit test. */

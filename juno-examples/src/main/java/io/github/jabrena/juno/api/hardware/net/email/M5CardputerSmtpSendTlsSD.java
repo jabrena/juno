@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.email;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
@@ -35,8 +35,8 @@ import java.util.Properties;
  */
 @Board({M5StackCardputerBoard.class})
 public final class M5CardputerSmtpSendTlsSD {
-    private static final Wifi WIFI = M5StackCardputer.getWifi();
-    private static final SdCard SD_CARD = M5StackCardputer.getSd();
+    private static final Wifi WIFI = MCU.getWifi();
+    private static final SdCard SD_CARD = MCU.getSdCard();
 
     private static final int IMPLICIT_TLS_SMTP_PORT = 465;
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
