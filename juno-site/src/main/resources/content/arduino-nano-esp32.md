@@ -262,7 +262,7 @@ The board can list two ports at once, its USB DFU port (for example `1-1`) and i
 the plugin cannot pick one alone. Upload through the DFU port and monitor the serial one:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBlink -Djuno.port=1-1
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 \
   -Djuno.port=/dev/cu.usbmodem<ID> -Djuno.baudRate=115200

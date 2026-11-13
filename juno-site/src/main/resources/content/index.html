@@ -86,7 +86,7 @@ public class Blink {
         <li>
           <h3>Flash</h3>
           <p>Upload to the board and watch the serial output.</p>
-          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:upload \
+          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ./mvnw -f juno-examples/pom.xml juno:monitor \

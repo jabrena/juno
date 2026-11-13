@@ -49,7 +49,7 @@ Maven plugin in your local repository, so the examples can use it.
 |---|---|
 | [`juno-api`](https://github.com/jabrena/juno/tree/main/juno-api) | The Java API your programs compile against: GPIO, timing, Serial, Wi-Fi, shields, LEGO and the `@Board` annotations. |
 | [`juno-compiler`](https://github.com/jabrena/juno/tree/main/juno-compiler) | The compiler: reads `.class` files, links the program and emits AVR, Thumb-2 or Xtensa assembly plus a C++ runtime shim. |
-| [`juno-maven-plugin`](https://github.com/jabrena/juno/tree/main/juno-maven-plugin) | The Maven goals that compile, verify, upload and monitor a program. |
+| [`juno-maven-plugin`](https://github.com/jabrena/juno/tree/main/juno-maven-plugin) | The Maven goals that compile, verify, flash and monitor a program. |
 | [`juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples) | Ready-to-run example programs, from Blink to games. |
 
 ### 4. Connect the board
@@ -117,10 +117,10 @@ juno-examples/target/juno/BlinkAsm/
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
-`juno:upload` flashes it to the board, which then blinks its built-in LED:
+`juno:flash` flashes it to the board, which then blinks its built-in LED:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ```

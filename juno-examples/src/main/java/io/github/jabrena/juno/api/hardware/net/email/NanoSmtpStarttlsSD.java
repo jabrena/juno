@@ -27,7 +27,7 @@ import java.util.Properties;
  * {@code String} holds 31 bytes, so keep the password, the subject and the body within that length. After the
  * upgrade, the server's certificate chain is checked against the bundled Mozilla roots, once the clock is set over SNTP.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.NanoSmtpStarttlsSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

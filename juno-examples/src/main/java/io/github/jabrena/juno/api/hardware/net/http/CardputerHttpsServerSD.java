@@ -23,7 +23,7 @@ import java.util.Properties;
  * <pre>{@code
  * openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 3650 \
  *   -subj /CN=juno.local -keyout server.key -out server.crt
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.CardputerHttpsServerSD -Djuno.board=m5stack-cardputer
  * curl --cacert server.crt --resolve juno.local:443:<address> https://juno.local/status
  * }</pre>

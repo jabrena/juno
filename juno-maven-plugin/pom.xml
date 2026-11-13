@@ -31,7 +31,7 @@
             <artifactId>juno-bearssl</artifactId>
         </dependency>
         <!-- Only juno-compiler's transitive compile dependency in production code; declared explicitly, test
-             scope, because CompileMojoTest/VerifyMojoTest/UploadMojoTest's fixture entry point imports it
+             scope, because CompileMojoTest/VerifyMojoTest/FlashMojoTest's fixture entry point imports it
              directly. -->
         <dependency>
             <groupId>io.github.jabrena</groupId>

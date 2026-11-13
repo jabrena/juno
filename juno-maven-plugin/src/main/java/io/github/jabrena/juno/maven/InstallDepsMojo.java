@@ -11,7 +11,7 @@ import java.util.List;
  * Installs the Arduino cores and every optional library any current Juno example needs, so a fresh
  * checkout can build every example without hunting down "arduino-cli lib install X" instructions
  * one at a time. Run this once per machine (or again after a new example starts needing a new
- * optional library) — ordinary {@code compile}/{@code verify}/{@code upload} builds never run
+ * optional library) — ordinary {@code compile}/{@code verify}/{@code flash} builds never run
  * this themselves, so they don't pay arduino-cli's library-index/network cost on every single
  * build.
  */

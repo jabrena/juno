@@ -160,7 +160,7 @@ Install the AVR core once. Then compile and upload an example, for instance the 
 
 ```bash
 arduino-cli core install arduino:avr
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.language.WeakUuid \
   -Djuno.board=arduino-uno-r3
 ```

@@ -342,7 +342,7 @@ Download Juno's firmware to the brick once. Wire the IR receiver to pin 2 and th
 switched-on RCX from 10 to 50 cm, and keep them still for about ten minutes; the serial monitor shows the progress:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.RcxFirmwareDownload \
   -Djuno.board=arduino-uno-r4-wifi
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi
@@ -352,7 +352,7 @@ On a Nano ESP32 with the Nano Connector Carrier, put a Grove infrared emitter in
 receiver on the I2C socket's SCL line, and run the carrier version instead:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.remote.lego.rcx.NanoCarrierRcxFirmwareDownload \
   -Djuno.board=arduino-nano-esp32
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32

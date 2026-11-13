@@ -95,7 +95,7 @@ while (wifi.status() != Wifi.STATUS_CONNECTED) {
 joins the network and shows the connection status on the display.
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.M5CardputerWifiStatusSD
 ```
 
@@ -199,7 +199,7 @@ Run `juno:install-deps` once to install the M5Stack ESP32 board package and the 
 the other supported board cores and libraries. Then compile and upload an example, for instance the battery report:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.battery.M5CardputerBatteryLevel \
   -Djuno.board=m5stack-cardputer
 ```

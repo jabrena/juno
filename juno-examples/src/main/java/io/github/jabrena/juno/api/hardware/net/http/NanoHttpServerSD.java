@@ -23,7 +23,7 @@ import java.util.Properties;
  * <p>The card needs {@code wifi.ssid} and {@code wifi.password}. Open {@code http://<address>/status} from a laptop on
  * the same network.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.NanoHttpServerSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

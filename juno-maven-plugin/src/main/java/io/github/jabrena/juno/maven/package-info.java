@@ -8,7 +8,7 @@
  *       point.</li>
  *   <li>{@link io.github.jabrena.juno.maven.VerifyMojo} ({@code juno:verify}) — compiles, then
  *       builds the sketch with {@code arduino-cli compile}, no board required.</li>
- *   <li>{@link io.github.jabrena.juno.maven.UploadMojo} ({@code juno:upload}) — compiles, verifies,
+ *   <li>{@link io.github.jabrena.juno.maven.FlashMojo} ({@code juno:flash}) — compiles, verifies,
  *       resolves the board's serial port, and flashes it.</li>
  *   <li>{@link io.github.jabrena.juno.maven.MonitorMojo} ({@code juno:monitor}) — resolves the
  *       board's serial port and opens an interactive {@code arduino-cli monitor} session.</li>
@@ -17,7 +17,7 @@
  * <p>{@link io.github.jabrena.juno.maven.AbstractJunoMojo} and
  * {@link io.github.jabrena.juno.maven.AbstractArduinoMojo} hold the shared configuration
  * (entry point, classpath, output directory, FQBN/port overrides) and behavior (invoking
- * {@link io.github.jabrena.juno.JunoCompiler}, resolving a board's port) the compile/verify/upload
+ * {@link io.github.jabrena.juno.JunoCompiler}, resolving a board's port) the compile/verify/flash
  * goals build on. The package-private {@code ArduinoCli}, {@code CommandExecutor}, and
  * {@code SystemCommandExecutor} types wrap {@code arduino-cli} invocations behind a small,
  * testable seam, with {@code ArduinoCliException} as their failure type.

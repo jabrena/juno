@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
  * Connects the Nano ESP32 to a LEGO Powered UP hub over Bluetooth LE and prints the hub's type, battery level and
  * signal strength every two seconds at 115200 baud. It only reads from the hub: no motor or light is driven.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.remote.lego.poweredup.NanoPoweredUpHubInfo -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

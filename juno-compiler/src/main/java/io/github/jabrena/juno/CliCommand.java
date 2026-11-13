@@ -46,7 +46,7 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                                             Use the final ELF and target hardware for size/cycle measurements.
                   Also emits <Main>Shim.cpp and the matching <Main>.ino wrapper alongside it.
                   Runtime-risk resource estimates and structured findings are printed automatically
-                  afterward (also true of juno-maven-plugin's compile/verify/upload goals).
+                  afterward (also true of juno-maven-plugin's compile/verify/flash goals).
 
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board), or from the required --board option when the

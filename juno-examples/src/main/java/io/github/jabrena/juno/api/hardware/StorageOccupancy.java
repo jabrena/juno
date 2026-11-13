@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * (counting the card's free space scans its whole allocation table) and the whole report repeats every two seconds,
  * so a monitor attached late still sees it.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.StorageOccupancy
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.baudRate=115200
  * }</pre>

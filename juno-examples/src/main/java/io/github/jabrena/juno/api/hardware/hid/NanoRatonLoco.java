@@ -15,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * between laps. The same USB port stays the serial console, and each side is reported over Serial at 115200 baud, so
  * {@code juno:monitor} shows the HID and serial interfaces working together. No extra library is needed.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.hid.NanoRatonLoco -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

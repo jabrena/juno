@@ -250,7 +250,7 @@ demo:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:install-deps
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.language.VirtualThreads \
   -Djuno.board=arduino-uno-r4-wifi
 ```

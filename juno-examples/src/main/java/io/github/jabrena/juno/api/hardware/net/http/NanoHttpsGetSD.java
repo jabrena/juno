@@ -25,7 +25,7 @@ import java.util.Properties;
  * since it is a runtime {@code String}) and {@code https.path}, for example {@code https.host=api.open-meteo.com}
  * and {@code https.path=/v1/forecast?latitude=40.4168&longitude=-3.7038&current=temperature_2m}.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.NanoHttpsGetSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
