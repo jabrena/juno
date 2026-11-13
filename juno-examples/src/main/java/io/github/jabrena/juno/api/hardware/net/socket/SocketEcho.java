@@ -22,7 +22,7 @@ import java.net.Socket;
  * the Wi-Fi credentials in {@code application.properties} on the Nano carrier's microSD card, broadcasts {@code juno?} on UDP port 4210 until a peer answers,
  * then keeps one TCP connection open to that peer's port 7007 and every five seconds writes a line and reads the same
  * number of bytes back, reporting each exchange at 115200 baud. The connection is opened once, not per exchange, so the
- * loop allocates nothing. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}).
+ * loop allocates nothing.
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class SocketEcho {

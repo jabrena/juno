@@ -21,7 +21,7 @@ import java.net.Socket;
  * Small TCP socket probe that finds its echo server over UDP first, like {@code KasaSmartPlugDiscovery}: joins Wi-Fi with
  * then keeps one TCP connection open to that peer's port 7007 and every five seconds writes a line and reads the same
  * number of bytes back, reporting each exchange at 115200 baud. The connection is opened once, not per exchange, so the
- * loop allocates nothing. Small enough for a UNO R3 with the Arduino WiFi Shield (build it with {@code -Djuno.Xmx=512}).
+ * loop allocates nothing.
  */
 @Board(ArduinoUnoQBoard.class)
 public final class QSocketEcho {

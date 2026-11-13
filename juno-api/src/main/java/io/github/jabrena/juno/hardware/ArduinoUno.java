@@ -93,9 +93,8 @@ public final class ArduinoUno {
     }
 
     /**
-     * The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none, so the compiler
-     * rejects this call there: stack the Arduino WiFi Shield and use
-     * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} instead.
+     * The Arduino UNO board's onboard Wi-Fi radio (UNO R4 WiFi, UNO WiFi Rev2, UNO Q). The UNO R3 has none and no network
+     * support, so the compiler rejects this call there.
      */
     public static Wifi getWifi() {
         return NativeWifi.wifi();

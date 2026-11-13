@@ -3,10 +3,8 @@ package io.github.jabrena.juno.hardware.net;
 /**
  * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.ArduinoUno#getWifi()} is the board's own radio, which the
  * compiler lowers to the Arduino board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code WiFiNINA} on UNO WiFi
- * Rev2, {@code Arduino_RouterBridge} on UNO Q); the UNO R3 has no radio of its own, so it gets its Wi-Fi from
- * {@link io.github.jabrena.juno.hardware.device.wifi.ArduinoWifiShield#getWifi()} (the retired Arduino WiFi Shield's
- * legacy {@code WiFi} library) instead. A unit test passes {@code mock(Wifi.class)}. Get it once, at startup, and pass
- * it to the classes that need it.
+ * Rev2, {@code Arduino_RouterBridge} on UNO Q). The UNO R3 has no radio and no network support. A unit test passes
+ * {@code mock(Wifi.class)}. Get it once, at startup, and pass it to the classes that need it.
  *
  * <p>{@code ssid}/{@code password} may be string literals or stable runtime strings returned by a
  * {@code SecretStore} or another board-side configuration source. This keeps credentials out of firmware.
@@ -24,8 +22,7 @@ public interface Wifi {
 
     /**
      * The {@link #status} value when the board gets no answer from its Wi-Fi hardware, mirroring Arduino's
-     * {@code WL_NO_SHIELD}, e.g. a UNO R3 whose Arduino WiFi Shield is missing or not seated. With no shield at all the
-     * legacy library may instead keep waiting on the shield's D7 handshake line.
+     * {@code WL_NO_SHIELD}.
      */
     int STATUS_NO_SHIELD = 255;
 
