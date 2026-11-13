@@ -1,6 +1,6 @@
 ---
 title: "Hardware APIs"
-description: "An overview of the hardware and network APIs Juno programs can use: delays, serial, SD card, Wi-Fi, time, HTTP, email and MVC."
+description: "An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC."
 layout: page
 ---
 
@@ -8,6 +8,7 @@ layout: page
 |---|---|---|
 | [Delay](../delay) | Pausing a program for a fixed time with `Delay.millis`, `Delay.micros` and `Delay.seconds`. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | [Serial](../serial) | Printing and reading over USB serial, the main way to see what a program is doing on a board. | [`SerialCounter`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialCounter.java) |
+| [Syslog](../syslog) | Sending allocation-free RFC 5424 log datagrams over Wi-Fi to `juno:monitor`, so a board can be followed without USB. | [`NanoCarrierRcxRegulatedDifferentialDrive`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRegulatedDifferentialDrive.java) |
 | [Gpio](../gpio) | Driving and reading the board's pins, with `DigitalOutput` and the Blink example. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | [IMU](../arduino-uno-r3-wifi#read-the-onboard-imu) | Reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with `MCU.getGyroscope()` and `MCU.getAccelerometer()`, over the `Spi` bus from `MCU.getSpi()`; see the UNO WiFi Rev2 page. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |
 | [SD Card](../sdcard) | Loading configuration and credentials from a microSD card at boot, and reading and writing files. | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |

@@ -53,6 +53,8 @@ items:
         path: "/delay"
       - title: "Serial"
         path: "/serial"
+      - title: "Syslog"
+        path: "/syslog"
       - title: "Gpio"
         path: "/gpio"
       - title: "SD Card"
