@@ -40,12 +40,17 @@ point for its peripherals.
 | SNTP clock (`LocalDateTime.now()`) | ✓ | UTC over SNTP, once Wi-Fi is up; the server can be set on the card with `sntp.host` and `sntp.port`. | [`M5CardputerSntpTime`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/M5CardputerSntpTime.java) |
 | `HttpClient` (HTTP and HTTPS) | ✓ | HTTPS with a trusted certificate set by the program. | [`MailboxCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java) |
 | `HttpServer` (HTTP and HTTPS) | ✓ | `HttpServer.beginTls` serves HTTPS on the station address. | [`CardputerHttpsServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpsServerSD.java) |
+| Email over TLS | ✓ | POP3 over implicit TLS and SMTP over implicit TLS. | [`M5CardputerPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/M5CardputerPop3InboxSD.java), [`M5CardputerSmtpSendTlsSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/M5CardputerSmtpSendTlsSD.java) |
+| TCP and UDP sockets | ✓ | Network sockets use the built-in Wi-Fi radio. | [`M5SocketEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/M5SocketEcho.java), [`M5SocketDatagramEcho`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/socket/M5SocketDatagramEcho.java) |
+| Bluetooth LE and Powered Up | ✓ | Connects to LEGO Powered Up hubs through NimBLE. | [`M5CardputerPoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/M5CardputerPoweredUpHubHello.java), [`M5CardputerMotorEncoders`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/M5CardputerMotorEncoders.java) |
 | Display | ✓ | 240 × 135 RGB565 through `MCU.getDisplay()`. | [`M5CardputerDisplay`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/M5CardputerDisplay.java) |
 | Keyboard | ✓ | `MCU.getKeyboard()`, polled without allocation. | [`M5CardputerKeyboard`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/keyboard/M5CardputerKeyboard.java) |
-| Speaker | ✓ | `MCU.getAudio()`: `tone`, `setVolume`, `stop`. | [`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java) |
+| Speaker | ✓ | `MCU.getAudio()`: `tone`, `setVolume`, `stop`. | No dedicated Cardputer example yet |
 | `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
 | Battery | ✓ | `MCU.getBattery()`: estimated level and voltage. | [`M5CardputerBatteryLevel`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java) |
 | USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) |
+| UUIDs and double-precision math | ✓ | Hardware random UUIDs and the Xtensa double-precision math implementation. | [`M5CardputerUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerUuids.java), [`M5CardputerDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerDoubleMath.java) |
+| Virtual threads and structured concurrency | ✓ | Virtual threads, structured task scopes and scoped values run on the dual-carrier scheduler. | [`M5CardputerThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), [`ScopedValuesPrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java) |
 
 ## Features
 
@@ -144,15 +149,14 @@ methods, so no array or collection needs to be allocated while polling.
 ### Speaker
 
 `MCU.getAudio()` returns the built-in speaker. `tone(frequencyHz, durationMillis)` plays a note,
-`setVolume(...)` sets the loudness and `stop()` silences it.
+`setVolume(...)` sets the loudness and `stop()` silences it. The API is available on the Cardputer; a dedicated
+Cardputer audio example has not yet been added.
 
 ```java
 Audio audio = MCU.getAudio();
 audio.setVolume(128);
 audio.tone(440, 500);
 ```
-
-[`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java) plays a melody on it.
 
 ### Battery
 
