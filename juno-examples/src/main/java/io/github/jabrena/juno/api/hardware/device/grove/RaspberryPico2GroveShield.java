@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.grove;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.hardware.RaspberryPico2;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GrovePicoShield;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -20,7 +20,7 @@ public final class RaspberryPico2GroveShield {
 
     /** Toggles the D16 LED every 500 milliseconds and prints the A0 reading after each toggle. */
     public static void main(String[] args) {
-        Gpio gpio = RaspberryPico2.getGpio();
+        Gpio gpio = MCU.getGpio();
         GrovePicoShield shield = new GrovePicoShield(gpio);
         DigitalOutput led = DigitalOutput.of(shield.getD16());
         Serial.begin(BaudRate.BAUD_9600);

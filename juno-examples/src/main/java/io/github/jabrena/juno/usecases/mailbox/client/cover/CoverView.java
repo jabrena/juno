@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client.cover;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxViews;
@@ -51,7 +51,7 @@ public final class CoverView implements KeyboardView {
     private int twinkle;
 
     public CoverView(Navigator navigator, Display display) {
-        this(navigator, display, ArduinoUno.getClock());
+        this(navigator, display, MCU.getClock());
     }
 
     CoverView(Navigator navigator, Display display, Clock clock) {

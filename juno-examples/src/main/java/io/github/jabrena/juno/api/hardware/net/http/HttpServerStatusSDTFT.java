@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -32,7 +32,7 @@ import java.util.Properties;
  */
 @Board({ArduinoUnoR3WiFiRev2Board.class})
 public final class HttpServerStatusSDTFT {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int HTTP_PORT = 80;

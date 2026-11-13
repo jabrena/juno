@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.device.imu;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoNano;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.imu.Bmi088;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -26,7 +26,7 @@ public final class NanoBmi088Serial {
 
         Serial.println("BMI088: initializing");
         Delay.millis(500);
-        Bmi088 imu = new Bmi088(ArduinoNano.getI2c(), ArduinoNano.getClock());
+        Bmi088 imu = new Bmi088(MCU.getI2c(), MCU.getClock());
         imu.recalibrateOffset();
         Serial.println("BMI088: connected");
 

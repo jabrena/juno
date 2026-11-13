@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.gladiator.screen;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.gladiator.arena.GladiatorClass;
@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.Random;
 
 /** The laurel title and rotating wireframe class gallery shown before the game connects. */
 public final class Opening {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
 
     public static final int INTRO_MILLIS = 5000;
     /** The quotes the title picks one of at random, each time it is shown ({@link #quoteLine}). */

@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.net.wifi;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.RaspberryPico2;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -20,7 +20,7 @@ public final class RaspberryPico2WifiStatus {
 
     /** Starts Wi-Fi and reports its status every second. */
     public static void main(String[] args) {
-        Wifi wifi = RaspberryPico2.getWifi();
+        Wifi wifi = MCU.getWifi();
         int[] address = new int[4];
         Serial.begin(BaudRate.BAUD_9600);
         Delay.millis(2000);

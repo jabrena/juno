@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveGpsAir530;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -20,8 +20,8 @@ public final class GroveGpsAir530Reader {
     }
 
     public static void main(String[] args) {
-        Gpio gpio = ArduinoUno.getGpio();
-        Clock clock = ArduinoUno.getClock();
+        Gpio gpio = MCU.getGpio();
+        Clock clock = MCU.getClock();
         GroveBaseShield shield = new GroveBaseShield(gpio);
         GroveGpsAir530 gps = new GroveGpsAir530(gpio, clock, shield.getD2());
         byte[] sentence = new byte[GroveGpsAir530.SENTENCE_CAPACITY];

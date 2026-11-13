@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.server;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -72,7 +72,7 @@ public final class Mailbox {
         MailboxStartupState startupState = new MailboxStartupState();
         MailboxController controller = new MailboxController(model, security, uiState);
         byte[] requestBody = new byte[MailboxModel.MAX_REQUEST_BYTES];
-        Clock clock = ArduinoUno.getClock();
+        Clock clock = MCU.getClock();
         MailboxServerTask serverTask = new MailboxServerTask(controller, requestBody, clock);
         Thread.startVirtualThread(new MailboxStartupTask(sdCard, model, security, startupState, uiState, serverTask));
         runUserInterface(tft, view, uiState, startupState, clock);

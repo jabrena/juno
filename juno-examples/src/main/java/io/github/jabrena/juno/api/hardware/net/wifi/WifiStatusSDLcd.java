@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -28,7 +28,7 @@ import java.util.Properties;
  * the shields. This program never changes the LCD backlight after SD-card initialization.
  */
 public final class WifiStatusSDLcd {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
     private final LcdKeypadShield lcd = new LcdKeypadShield();
     private final SdCard sdCard = lcd.getSdCard();

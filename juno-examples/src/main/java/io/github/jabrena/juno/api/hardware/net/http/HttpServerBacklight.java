@@ -1,9 +1,8 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-
-import io.github.jabrena.juno.hardware.ArduinoUno;
 import io.github.jabrena.juno.hardware.BoardMemory;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
@@ -30,11 +29,11 @@ import io.github.jabrena.juno.util.Delay;
  * are compile-time literals).
  */
 public final class HttpServerBacklight {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private static final BoardMemory MEMORY = ArduinoUno.getBoardMemory();
+    private static final BoardMemory MEMORY = MCU.getBoardMemory();
     private final LcdKeypadShield lcd = new LcdKeypadShield();
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock = MCU.getClock();
     private static final int BACKLIGHT_ON_MILLIS = 200;
     private static final int HEARTBEAT_INTERVAL_MS = 5000;
 

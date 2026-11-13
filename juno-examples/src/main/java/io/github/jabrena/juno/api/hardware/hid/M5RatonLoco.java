@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.hid;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -52,8 +52,8 @@ public final class M5RatonLoco {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
-        Mouse mouse = M5StackCardputer.getMouse();
-        Display display = M5StackCardputer.getDisplay();
+        Mouse mouse = MCU.getMouse();
+        Display display = MCU.getDisplay();
         Serial.println("M5 Cardputer booting");
         Serial.println("M5 display started");
         Serial.println("M5 HID mouse started");

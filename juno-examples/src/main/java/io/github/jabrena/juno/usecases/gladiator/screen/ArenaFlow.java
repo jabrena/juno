@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.gladiator.screen;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -34,7 +34,7 @@ import io.github.jabrena.juno.util.Delay;
  * </pre>
  */
 public final class ArenaFlow {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final int WORLD_MILLIS = 100;
     private static final int PACKETS_PER_PASS = 8;
 

@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.remote.lego.rcx;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -22,7 +22,7 @@ public final class RcxRemoteControlReceiver {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
-        RcxRemoteControl remote = new RcxRemoteControl(new HXM121InfraredReceiver(RECEIVE_PIN), ArduinoUno.getClock());
+        RcxRemoteControl remote = new RcxRemoteControl(new HXM121InfraredReceiver(RECEIVE_PIN), MCU.getClock());
         Delay.millis(START_MILLIS);
         Serial.println("Listening for the LEGO RCX remote");
         remote.start();

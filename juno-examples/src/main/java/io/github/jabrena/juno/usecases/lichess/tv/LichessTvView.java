@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.lichess.tv;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.lichess.challenge.PuzzleBoard;
@@ -33,7 +33,7 @@ public final class LichessTvView implements View {
     private final Navigator navigator;
     private final LichessApi api;
     private final TvModel model;
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock = MCU.getClock();
     private int drawnVersion = -1;
     private int lastPoll;
 

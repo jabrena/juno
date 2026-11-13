@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.hardware.security;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.Atecc608;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
@@ -85,7 +85,7 @@ public final class ExampleSecrets {
     }
 
     private static SecretStore open() {
-        I2c i2c = ArduinoUno.getI2c();
+        I2c i2c = MCU.getI2c();
         i2c.begin();
         SecretSlots slots = new SecretSlots()
                 .add(WIFI_SSID, 8)

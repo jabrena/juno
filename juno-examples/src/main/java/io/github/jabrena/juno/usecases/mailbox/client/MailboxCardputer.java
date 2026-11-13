@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.mailbox.client;
 
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.M5StackCardputer;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
@@ -50,7 +50,7 @@ public final class MailboxCardputer {
     private static final int FRAME_MILLIS = 50;
     private static final int MESSAGE_BODY_TOP = 32;
     private static final int MESSAGE_BODY_HEIGHT = 74;
-    private static final Wifi WIFI = M5StackCardputer.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
     private static MailboxTrustedCertificate trustedCertificate;
 
     private MailboxCardputer() {
@@ -60,11 +60,11 @@ public final class MailboxCardputer {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(1000);
 
-        Display display = M5StackCardputer.getDisplay();
-        Keyboard keyboard = M5StackCardputer.getKeyboard();
+        Display display = MCU.getDisplay();
+        Keyboard keyboard = MCU.getKeyboard();
 
         // The join starts right away: the SSID and password are runtime Strings, which must not be kept for later.
-        SdCard sd = M5StackCardputer.getSd();
+        SdCard sd = MCU.getSdCard();
         MailboxKey key = new MailboxKey(sd);
         MailboxPolling polling = new MailboxPolling(sd);
         MailboxSettings settings = loadSettings(sd, key, polling);

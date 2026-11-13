@@ -2,7 +2,7 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.Atecc608;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
@@ -46,7 +46,7 @@ public final class SecretProvisioner {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = ArduinoUno.getI2c();
+        I2c i2c = MCU.getI2c();
         i2c.begin();
         SecretSlots slots = new SecretSlots()
                 .add("wifi.ssid", 8)

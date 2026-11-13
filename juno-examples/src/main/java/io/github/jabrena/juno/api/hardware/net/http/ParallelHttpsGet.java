@@ -9,7 +9,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -32,9 +32,9 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class ParallelHttpsGet {
-    private static final Wifi WIFI = ArduinoUno.getWifi();
+    private static final Wifi WIFI = MCU.getWifi();
 
-    private final Clock clock = ArduinoUno.getClock();
+    private final Clock clock = MCU.getClock();
     // A host whose chain ends in a root every board trusts (ISRG Root X1). The Nano ESP32's core checks only the
     // issuer of the topmost certificate the server sends, so a chain cross-signed by a root outside the bundle fails.
     private static final String FIRST_URL = "https://letsencrypt.org/?request=first";

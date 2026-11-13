@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.lichess.services;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpClient;
@@ -21,7 +21,7 @@ public final class LichessApi {
     private static final int RESPONSE_CAPACITY = 2048;
     private static final int RESPONSE_HEADERS_CAPACITY = 256;
 
-    private final Wifi wifi = ArduinoUno.getWifi();
+    private final Wifi wifi = MCU.getWifi();
     private final byte[] response = new byte[RESPONSE_CAPACITY];
     private final byte[] responseHeaders = new byte[RESPONSE_HEADERS_CAPACITY];
     private final int[] status = new int[2];

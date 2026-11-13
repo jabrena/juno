@@ -3,7 +3,7 @@ package io.github.jabrena.juno.api.hardware.device.tft;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.hid.MouseIcon;
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.hardware.hid.Mouse;
@@ -59,7 +59,7 @@ public final class RatonLocoTFT {
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
         DigitalOutput led = DigitalOutput.of(LED);
-        Mouse mouse = ArduinoUno.getMouse();
+        Mouse mouse = MCU.getMouse();
 
         MouseIcon.draw();
 

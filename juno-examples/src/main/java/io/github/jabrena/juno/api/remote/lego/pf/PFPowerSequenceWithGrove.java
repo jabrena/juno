@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.api.remote.lego.pf;
 
-import io.github.jabrena.juno.hardware.ArduinoUno;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveInfraredEmitter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -24,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The power maps onto the protocol's seven speed steps, so neighbouring digits can run at the same speed.
  */
 public class PFPowerSequenceWithGrove {
-    private static final Clock CLOCK = ArduinoUno.getClock();
+    private static final Clock CLOCK = MCU.getClock();
     private static final PFChannel CHANNEL = PFChannel.CHANNEL_1;
     /** The digits of 0123456789876543210: up from 0 to 9, then back down to 0. */
     private static final int[] SEQUENCE = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
@@ -44,7 +44,7 @@ public class PFPowerSequenceWithGrove {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(START_MILLIS);
-        GroveBaseShield shield = new GroveBaseShield(ArduinoUno.getGpio());
+        GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         PFLink link = new PFLink(new GroveInfraredEmitter(shield.getD3()));
         RemotePF remote = new RemotePF(link);
         PFPowerSequenceWithGrove app = new PFPowerSequenceWithGrove(
