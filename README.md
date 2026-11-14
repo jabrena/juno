@@ -82,6 +82,18 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tbody>
 </table>
 
+### Arduino Portenta H7
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Portenta H7</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7">
+    </td>
+    <td width="50%">Portenta H7 M7-core support through Arduino's Mbed core, including GPIO, delays, serial output, and built-in RGB LED control.</td>
+  </tr>
+</table>
+
 ### Arduino Nano Family
 
 <table>
@@ -360,6 +372,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://docs.arduino.cc/hardware/uno-rev3/
+- https://docs.arduino.cc/hardware/portenta-h7/
 - https://docs.arduino.cc/hardware/nano-esp32/
 - https://docs.m5stack.com/en/core/Cardputer-Adv
 - https://lejos.sourceforge.io/
