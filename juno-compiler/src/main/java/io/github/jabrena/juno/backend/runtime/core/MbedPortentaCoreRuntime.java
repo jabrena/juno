@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
@@ -12,12 +14,13 @@ import io.github.jabrena.juno.board.Architecture;
  * symbols, so the Thumb-2 backend can use direct calls. The Portenta's built-in RGB LED is exposed by the variant as
  * digital pin 24 ({@code LED_BUILTIN}).
  *
- * <p>The basic runtime pieces shared with the UNO R4 are inherited; optional services remain unavailable until they
- * have a Portenta-specific implementation and board capability declaration.
+ * <p>The basic Arduino runtime pieces shared with the UNO R4 are inherited. Thread execution uses Mbed OS's RTOS
+ * threads rather than the UNO R4's bare-metal stack switcher.
  */
 final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ShimLibraries shimLibraries = new ShimLibraries();
+    private final ThreadRuntime threadRuntime = new ThreadRuntime();
 
     @Override
     public String wifiIncludes(boolean udp) {
@@ -69,6 +72,21 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                 };
                 static JunoPortentaMouse Mouse;
                 """;
+    }
+
+    @Override
+    public boolean preemptsAsynchronously() {
+        return false;
+    }
+
+    @Override
+    public String threadIncludes() {
+        return "#include <mbed.h>\n#include <new>\n";
+    }
+
+    @Override
+    public String threadPort(ResolvedRuntimeConfig config) {
+        return threadRuntime.mbedPort(config.threadStackBytes());
     }
 
     @Override
