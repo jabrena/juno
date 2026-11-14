@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Hardware APIs">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
-  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC." />
-  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use, organized by category.">
+  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use, organized by category." />
+  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use, organized by category.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/hardware-apis/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
 
 </head>
 <body>
@@ -102,21 +102,14 @@
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="active active" href="/juno/hardware-apis" >APIs</a>
+      <a class="active active active active active active active" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="active" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/delay">Delay</a>
-        <a class="" href="/juno/serial">Serial</a>
-        <a class="" href="/juno/syslog">Syslog</a>
-        <a class="" href="/juno/gpio">Gpio</a>
-        <a class="" href="/juno/secure-element">SecretStore</a>
-        <a class="" href="/juno/sdcard">SD Card</a>
-        <a class="" href="/juno/wifi">Wifi</a>
-        <a class="" href="/juno/time">Time</a>
-        <a class="" href="/juno/httpclient">HTTP client</a>
-        <a class="" href="/juno/httpserver">HTTP server</a>
-        <a class="" href="/juno/email">Email</a>
-        <a class="" href="/juno/mvc">MVC</a>
+        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
+        <a class="" href="/juno/hardware-apis#storage">Storage</a>
+        <a class="" href="/juno/hardware-apis#internet">Internet</a>
+        <a class="" href="/juno/hardware-apis#utils">Utils</a>
+        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
       </div>
       <a class="" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
@@ -301,18 +294,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <nav class="juno-subnav" aria-label="APIs">
   <div class="juno-subnav-inner">
     <a class="active" href="/juno/hardware-apis">Overview</a>
-    <a class="" href="/juno/delay">Delay</a>
-    <a class="" href="/juno/serial">Serial</a>
-    <a class="" href="/juno/syslog">Syslog</a>
-    <a class="" href="/juno/gpio">Gpio</a>
-    <a class="" href="/juno/secure-element">SecretStore</a>
-    <a class="" href="/juno/sdcard">SD Card</a>
-    <a class="" href="/juno/wifi">Wifi</a>
-    <a class="" href="/juno/time">Time</a>
-    <a class="" href="/juno/httpclient">HTTP client</a>
-    <a class="" href="/juno/httpserver">HTTP server</a>
-    <a class="" href="/juno/email">Email</a>
-    <a class="" href="/juno/mvc">MVC</a>
+    <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
+    <a class="" href="/juno/hardware-apis#storage">Storage</a>
+    <a class="" href="/juno/hardware-apis#internet">Internet</a>
+    <a class="" href="/juno/hardware-apis#utils">Utils</a>
+    <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -328,17 +314,49 @@ document.addEventListener('DOMContentLoaded', function () {
 <table>
 <thead>
 <tr>
+<th>Category</th>
+<th>APIs</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#telemetry">Telemetry</a></td>
+<td><a href="../serial">Serial</a>, <a href="../syslog">Syslog</a></td>
+<td>Observing a running program locally or over Wi-Fi.</td>
+</tr>
+<tr>
+<td><a href="#storage">Storage</a></td>
+<td><a href="../sdcard">SD Card</a>, <a href="../secure-element">SecretStore</a></td>
+<td>Files and credentials kept outside the program image.</td>
+</tr>
+<tr>
+<td><a href="#internet">Internet</a></td>
+<td><a href="../wifi">Wifi</a>, <a href="../time">Time</a>, <a href="../httpclient">HTTP client</a>, <a href="../httpserver">HTTP server</a>, <a href="../email">Email</a></td>
+<td>Network connectivity, services and Internet protocols.</td>
+</tr>
+<tr>
+<td><a href="#utils">Utils</a></td>
+<td><a href="../delay">Delay</a>, <a href="../mvc">MVC</a></td>
+<td>Timing and application structure.</td>
+</tr>
+<tr>
+<td><a href="#hardware">Hardware</a></td>
+<td><a href="../gpio">Gpio</a>, <a href="../arduino-uno-r3-wifi#read-the-onboard-imu">IMU</a></td>
+<td>Direct access to pins and board-mounted devices.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="telemetry">Telemetry</h2>
+<table>
+<thead>
+<tr>
 <th>API</th>
 <th>What it provides</th>
 <th>Complete example</th>
 </tr>
 </thead>
 <tbody>
-<tr>
-<td><a href="../delay">Delay</a></td>
-<td>Pausing a program for a fixed time with <code>Delay.millis</code>, <code>Delay.micros</code> and <code>Delay.seconds</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
-</tr>
 <tr>
 <td><a href="../serial">Serial</a></td>
 <td>Printing and reading over USB serial, the main way to see what a program is doing on a board.</td>
@@ -349,21 +367,40 @@ document.addEventListener('DOMContentLoaded', function () {
 <td>Sending allocation-free RFC 5424 log datagrams over Wi-Fi to <code>juno:monitor</code>, so a board can be followed without USB.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRegulatedDifferentialDrive.java"><code>NanoCarrierRcxRegulatedDifferentialDrive</code></a></td>
 </tr>
+</tbody>
+</table>
+<h2 id="storage">Storage</h2>
+<table>
+<thead>
 <tr>
-<td><a href="../gpio">Gpio</a></td>
-<td>Driving and reading the board's pins, with <code>DigitalOutput</code> and the Blink example.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+<th>API</th>
+<th>What it provides</th>
+<th>Complete example</th>
 </tr>
-<tr>
-<td><a href="../arduino-uno-r3-wifi#read-the-onboard-imu">IMU</a></td>
-<td>Reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with <code>MCU.getGyroscope()</code> and <code>MCU.getAccelerometer()</code>, over the <code>Spi</code> bus from <code>MCU.getSpi()</code>; see the UNO WiFi Rev2 page.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
-</tr>
+</thead>
+<tbody>
 <tr>
 <td><a href="../sdcard">SD Card</a></td>
 <td>Loading configuration and credentials from a microSD card at boot, and reading and writing files.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a></td>
 </tr>
+<tr>
+<td><a href="../secure-element">SecretStore</a></td>
+<td>Reading named secrets from an ATECC608 secure element without placing credentials on the SD card or in the firmware image.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="internet">Internet</h2>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>What it provides</th>
+<th>Complete example</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><a href="../wifi">Wifi</a></td>
 <td>Joining a Wi-Fi network on the boards that have a radio.</td>
@@ -389,10 +426,49 @@ document.addEventListener('DOMContentLoaded', function () {
 <td>Sending mail over SMTP with <code>Smtp</code>, and reading a mailbox over POP3 with <code>Pop3Client</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java"><code>EmailClient</code></a></td>
 </tr>
+</tbody>
+</table>
+<h2 id="utils">Utils</h2>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>What it provides</th>
+<th>Complete example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../delay">Delay</a></td>
+<td>Pausing a program for a fixed time with <code>Delay.millis</code>, <code>Delay.micros</code> and <code>Delay.seconds</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+</tr>
 <tr>
 <td><a href="../mvc">MVC</a></td>
 <td>Organizing a multi-screen app with a model, views, a navigator and a router from <code>util.mvc</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java"><code>MailboxCardputer</code></a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="hardware">Hardware</h2>
+<table>
+<thead>
+<tr>
+<th>API</th>
+<th>What it provides</th>
+<th>Complete example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../gpio">Gpio</a></td>
+<td>Driving and reading the board's pins, with <code>DigitalOutput</code> and the Blink example.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+</tr>
+<tr>
+<td><a href="../arduino-uno-r3-wifi#read-the-onboard-imu">IMU</a></td>
+<td>Reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with <code>MCU.getGyroscope()</code> and <code>MCU.getAccelerometer()</code>, over the <code>Spi</code> bus from <code>MCU.getSpi()</code>; see the UNO WiFi Rev2 page.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
 </tr>
 </tbody>
 </table>
