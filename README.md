@@ -42,7 +42,7 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
 <table>
   <thead>
     <tr>
-      <th>Accessory</th>
+      <th>Shield</th>
       <th>Image</th>
       <th>Supported features</th>
     </tr>
