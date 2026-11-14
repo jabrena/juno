@@ -80,13 +80,26 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Portenta core uses the Mbed WiFi header and its AP overload")
+    @DisplayName("The Portenta core uses the Mbed WiFi header and AP overload")
     void shouldUseTheMbedPortentaWifiApi() {
         CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
 
         assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
         assertThat(runtime.wifiHelpers()).contains("WiFi.begin(ssid, password)", "WiFi.beginAP(ssid, \"\")")
                 .doesNotContain("WiFi.beginAP(ssid);");
+        assertThat(runtime.i2cBus()).isEqualTo("Wire1");
+    }
+
+    @Test
+    @DisplayName("The Portenta core supplies native HTTPS server, watchdog, UUID and HID adapters")
+    void shouldProvidePortentaOptionalRuntimeAdapters() {
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
+
+        assertThat(runtime.httpsServerTransport()).contains("mbedtls_ssl_config", "WiFiServer");
+        assertThat(runtime.watchdog(1000).begin()).contains("Watchdog::get_instance().start");
+        assertThat(runtime.uuidRandomHelpers()).contains("mbedtls_hardware_poll");
+        assertThat(runtime.mouseIncludes()).isEqualTo("#include <USBMouse.h>\n");
+        assertThat(runtime.mouseHelpers()).contains("USBMouse", "void begin() {}");
     }
 
     @Test
