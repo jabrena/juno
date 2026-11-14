@@ -12,7 +12,7 @@ import io.github.jabrena.juno.util.image.JavaLogoImage;
  * and run-length rows ({@link JavaLogoImage}), so it is drawn once from flash onto a white screen and nothing is
  * allocated afterwards.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.images.JavaLogoTFT -Djuno.board=arduino-uno-r4-wifi
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi -Djuno.baudRate=115200
  * }</pre>

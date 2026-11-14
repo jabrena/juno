@@ -28,7 +28,7 @@ import java.util.Properties;
  * {@code smtp.password}. The port is fixed at 587. Prints the status over Serial at 115200 baud: {@code 0} means the
  * message was accepted. A runtime {@code String} holds 31 bytes, so keep the password within that length.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.M5CardputerSmtpSendTlsSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Grove system">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java.">
-  <meta property="og:description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java." />
-  <meta name="twitter:description" content="Connecting Grove sensors through the Grove Base Shield or the Nano Connector Carrier, and reading them from Java.">
+  <meta name="description" content="Connecting Grove sensors through the Grove Base Shield, Grove Shield for Pi Pico or Nano Connector Carrier, and reading them from Java.">
+  <meta property="og:description" content="Connecting Grove sensors through the Grove Base Shield, Grove Shield for Pi Pico or Nano Connector Carrier, and reading them from Java." />
+  <meta name="twitter:description" content="Connecting Grove sensors through the Grove Base Shield, Grove Shield for Pi Pico or Nano Connector Carrier, and reading them from Java.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/grove-system/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -108,6 +107,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/secure-element">SecretStore</a>
         <a class="" href="/juno/sdcard">SD Card</a>
@@ -318,9 +318,9 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>Seeed Studio's <a href="https://wiki.seeedstudio.com/Grove_System/">Grove</a> system connects sensors with one four-wire cable:
 <code>GND</code>, <code>VCC</code>, and two signal wires, the first of which (yellow) carries the module's main signal. Juno reaches a Grove
-module in one of two ways, depending on the board, and its drivers take the socket's pin, so the same driver code works
-with either.</p>
-<h2 id="two-ways-to-connect">Two ways to connect</h2>
+module in one of three ways, depending on the board, and its drivers take the socket's pin, so the same driver code works
+with any pin-mapped shield or carrier.</p>
+<h2 id="three-ways-to-connect">Three ways to connect</h2>
 <h3 id="grove-base-shield-on-the-uno-boards">Grove Base Shield, on the UNO boards</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
 <p>The <a href="https://wiki.seeedstudio.com/Base_Shield_V2/">Grove Base Shield</a> is a passive adapter for the UNO headers, used
@@ -344,6 +344,16 @@ shield's physical layout:</p>
  Grove DHT22 ---- cable ----&gt; [D4]
  Java:  dht.read(shield.getD4(), reading, reading.length, frame, frame.length)
 </code></pre>
+<h3 id="grove-shield-for-pi-pico-on-the-raspberry-pi-pico-2-w">Grove Shield for Pi Pico, on the Raspberry Pi Pico 2 W</h3>
+<img src="../images/shields/shield-grove-pico.png" alt="Grove Shield for Pi Pico" width="240">
+<p>The <a href="https://www.seeedstudio.com/Grove-Shield-for-Pi-Pico-v1-0-p-4846.html">Grove Shield for Pi Pico v1.0</a> is a
+passive adapter for the Raspberry Pi Pico 2 W. <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GrovePicoShield.java"><code>GrovePicoShield</code></a>
+resolves its sockets to the Pico pins: D16, D18 and D20 are digital sockets; A0, A1 and A2 are ADC sockets; I2C0 is
+the normal <code>MCU.getI2c()</code> bus on GP8/GP9; and I2C1, UART0, UART1 and SPI0 expose their signal pins individually. The
+analog sockets always receive 3.3 V; set the power switch to 3.3 V for Grove modules that require it.</p>
+<p>Use the digital or analog getters with the same pin-based drivers shown below. For an I2C module such as the Grove
+SSD1315 OLED, pass <code>shield.getI2c0()</code> to the driver. The <a href="../raspberry-pi-pico-2-w#grove-shield-for-pi-pico">Pico board page</a>
+has the complete socket diagram and pin table.</p>
 <h3 id="nano-connector-carrier-on-the-nano-esp32">Nano Connector Carrier, on the Nano ESP32</h3>
 <img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="240">
 <p>The Arduino Nano Connector Carrier holds the Nano ESP32 and adds four Grove sockets (two analog, UART and I2C) plus a
@@ -374,14 +384,16 @@ Qwiic connector; <code>NanoConnectorCarrier</code> names them. Set its input sel
 <p>Keep digital modules out of the carrier's I2C socket: its bus pull-ups hold a digital output between low and high.</p>
 <h2 id="grove-sensors">Grove Sensors</h2>
 <p>Every pin-based driver below allocates nothing while it runs and takes the socket's pin as an argument, so it works the
-same on the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>, ...) and on the Nano Connector Carrier
-(<code>carrier.getGroveA0()</code>, <code>carrier.getGroveA2()</code>). The BMI088 uses the socket's I2C bus and the board's <code>Clock</code> instead.
-Create each driver once, at startup.</p>
-<p>The complete examples below use a Grove Base Shield on an UNO board. To use a Nano Connector Carrier, replace the
-shield socket getter with the corresponding carrier getter and use <code>MCU</code>'s <code>Gpio</code> and <code>Clock</code>.</p>
+same on the Grove Base Shield (<code>shield.getD4()</code>, <code>shield.getA0()</code>, ...), the Grove Shield for Pi Pico
+(<code>shield.getD16()</code>, <code>shield.getA0()</code>, ...) and the Nano Connector Carrier (<code>carrier.getGroveA0()</code>,
+<code>carrier.getGroveA2()</code>). The BMI088 uses the socket's I2C bus and the board's <code>Clock</code> instead. Create each driver once,
+at startup.</p>
+<p>The complete examples below use a Grove Base Shield on an UNO board unless stated otherwise. To use a Nano Connector
+Carrier or the Grove Shield for Pi Pico, replace the shield socket getter with the corresponding carrier or Pico getter
+and use <code>MCU</code>'s <code>Gpio</code>, <code>Clock</code> and <code>I2c</code> as the driver requires.</p>
 <p>Create each adapter with the board's <code>Gpio</code>, so its socket names are resolved for the selected board:
 <code>new GroveBaseShield()</code> on an UNO board and
-<code>new NanoConnectorCarrier()</code> on a Nano ESP32.</p>
+<code>new GrovePicoShield()</code> on a Pico 2 W or <code>new NanoConnectorCarrier()</code> on a Nano ESP32.</p>
 <table>
 <thead>
 <tr>
@@ -394,9 +406,9 @@ shield socket getter with the corresponding carrier getter and use <code>MCU</co
 <tbody>
 <tr>
 <td><a href="#gps-air530">GPS (Air530)</a></td>
-<td>Digital UART (RX on D2)</td>
+<td>Digital input / UART TX</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.java"><code>GroveGpsAir530</code></a></td>
-<td>NMEA GGA latitude, longitude and altitude</td>
+<td>NMEA GGA latitude, longitude, altitude, satellites and fix quality</td>
 </tr>
 <tr>
 <td><a href="#temperature-and-humidity-sensor-pro-dht22">Temperature and Humidity Sensor Pro (DHT22)</a></td>
@@ -460,11 +472,21 @@ shield socket getter with the corresponding carrier getter and use <code>MCU</co
 </tr>
 </tbody>
 </table>
+<p>This table is the complete list of Grove sensor drivers currently exposed by Juno. The Grove OLED display is a separate
+I2C device rather than a sensor.</p>
+<h2 id="grove-displays">Grove displays</h2>
+<h3 id="oled-096-inch-ssd1315">OLED 0.96-inch (SSD1315)</h3>
+<img src="../images/grove/grove-oled-ssd1315.jpg" alt="Grove 0.96-inch SSD1315 OLED display" width="240">
+<p>The Grove 0.96-inch 128x64 OLED uses I2C. On an UNO, connect it to the Base Shield's I2C socket; on the Pico 2 W,
+connect it to the Grove Shield for Pi Pico's I2C0 socket and pass <code>shield.getI2c0()</code>. The display uses a caller-owned
+1,024-byte framebuffer, so construct it once at startup. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveOled.java"><code>RaspberryPico2GroveOled</code></a>
+is the complete Pico example.</p>
 <h3 id="gps-air530">GPS Air530</h3>
 <p>The Grove GPS Air530 emits NMEA 0183 at 9,600 baud by default. Plug it into the Base Shield's D2 socket and connect
-the module's TX wire to D2; the module's RX wire is not needed for reading fixes. <code>GroveGpsAir530</code> uses a software UART
-and keeps the USB serial console available for diagnostics. It writes latitude and longitude as signed millionths of a
-degree and altitude as centimetres into caller-owned arrays:</p>
+the module's TX wire to D2; the module's RX wire is not needed for reading fixes. On the Nano Connector Carrier or the
+Pico shield, use a digital signal getter for the socket carrying the module's TX wire. <code>GroveGpsAir530</code> uses a software
+UART and keeps the USB serial console available for diagnostics. It writes latitude and longitude as signed millionths
+of a degree, altitude as centimetres, satellite count and fix quality into caller-owned arrays:</p>
 <pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
 Gpio gpio = MCU.getGpio();
 GroveGpsAir530 gps = new GroveGpsAir530(gpio, MCU.getClock(), shield.getD2());

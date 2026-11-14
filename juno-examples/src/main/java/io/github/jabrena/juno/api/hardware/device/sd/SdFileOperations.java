@@ -25,7 +25,7 @@ import java.io.InputStream;
  * <p>On an UNO R4 WiFi or UNO Q, put the card in a {@link DataLoggerShield}, which selects it on D10. On a Nano
  * ESP32, plug it into a {@link NanoConnectorCarrier}, whose microSD slot selects the card on D4. Upload, then watch the result:
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.device.sd.SdFileOperations -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

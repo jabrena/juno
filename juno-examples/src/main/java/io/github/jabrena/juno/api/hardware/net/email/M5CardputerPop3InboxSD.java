@@ -23,7 +23,7 @@ import java.util.Properties;
  * {@code smtp.password}. A runtime {@code String} holds 31 bytes, so keep the password within that length.
  * The TLS client checks the server's chain against Mozilla's root certificates.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.M5CardputerPop3InboxSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

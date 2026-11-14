@@ -19,19 +19,19 @@
 
   <!-- SEO TITLE -->
   
-  <title>Migrating to MCU - Juno: Java for Arduino</title>
-  <meta property="og:title" content="Migrating to MCU" />
-  <meta name="twitter:title" content="Migrating to MCU">
+  <title>Syslog - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Syslog" />
+  <meta name="twitter:title" content="Syslog">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Mapping every removed board facade (ArduinoUno, ArduinoNano, RaspberryPico2, Esp32Cam, M5StackCardputer) to the single MCU facade.">
-  <meta property="og:description" content="Mapping every removed board facade (ArduinoUno, ArduinoNano, RaspberryPico2, Esp32Cam, M5StackCardputer) to the single MCU facade." />
-  <meta name="twitter:description" content="Mapping every removed board facade (ArduinoUno, ArduinoNano, RaspberryPico2, Esp32Cam, M5StackCardputer) to the single MCU facade.">
+  <meta name="description" content="Send allocation-free RFC 5424 log messages over Wi-Fi and receive them with juno:monitor.">
+  <meta property="og:description" content="Send allocation-free RFC 5424 log messages over Wi-Fi and receive them with juno:monitor." />
+  <meta name="twitter:description" content="Send allocation-free RFC 5424 log messages over Wi-Fi and receive them with juno:monitor.">
 
   <!-- SEO URL -->
-  <link rel="canonical" href="https://jabrena.github.io/juno/migrate-to-mcu/" />
-  <meta property="og:url" content="https://jabrena.github.io/juno/migrate-to-mcu/" />
-  <meta name="twitter:url" content="https://jabrena.github.io/juno/migrate-to-mcu/">
+  <link rel="canonical" href="https://jabrena.github.io/juno/syslog/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/syslog/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/syslog/">
 
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
@@ -45,7 +45,7 @@
 
 <!-- Favicon -->
 
-<base href="/juno/migrate-to-mcu/">
+<base href="/juno/syslog/">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -75,12 +75,11 @@
          data-index-src="/juno/search-index.js">
   <ul class="juno-search-results" id="juno-search-results-mobile" role="listbox" hidden></ul>
 </form>
-      <a class=" active" href="/juno/getting-started" >Getting Started</a>
+      <a class="" href="/juno/getting-started" >Getting Started</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="active" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -103,11 +102,12 @@
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="active" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/secure-element">SecretStore</a>
         <a class="" href="/juno/sdcard">SD Card</a>
@@ -298,12 +298,21 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-search').forEach(attach);
 })();
 </script>
-<nav class="juno-subnav" aria-label="Getting Started">
+<nav class="juno-subnav" aria-label="APIs">
   <div class="juno-subnav-inner">
-    <a class="" href="/juno/getting-started">Getting Started</a>
-    <a class="" href="/juno/create-your-first-project">Create your first project</a>
-    <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-    <a class="active" href="/juno/migrate-to-mcu">Migrating to MCU</a>
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="active" href="/juno/syslog">Syslog</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="" href="/juno/secure-element">SecretStore</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -313,179 +322,105 @@ document.addEventListener('DOMContentLoaded', function () {
 
   <section class="content-main">
 <header class="juno-page-header">
-  <h1>Migrating to MCU</h1>
+  <h1>Syslog</h1>
 </header>
     <div class="content-prose">
-<p>Juno now has one facade for a board's own services: <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/MCU.java"><code>MCU</code></a>.
-The <code>@Board</code> annotation, or the build's <code>juno.board</code> option, selects the target, so the facade name no longer repeats it.
-This is a <strong>breaking change</strong>: the five board facades are deleted, with no deprecated forwarders or aliases. Switch your
-imports and calls as shown below.</p>
-<p>Written for: application developers who compile Juno programs and need a mechanical migration.</p>
-<h2 id="mechanical-rules">Mechanical rules</h2>
-<ol>
-<li>Replace <code>import io.github.jabrena.juno.hardware.&lt;Facade&gt;;</code> with <code>import io.github.jabrena.juno.hardware.MCU;</code>.</li>
-<li>Replace <code>&lt;Facade&gt;.getX()</code> with <code>MCU.getX()</code>, using the table below. The getter names are the same except <code>getSd()</code>, which is now <code>getSdCard()</code>.</li>
-<li>Where a constructor was given a facade getter that is the board's own singleton, you may drop that argument and use the convenience constructor (see <a href="#constructors">Constructors</a>). Passing <code>MCU.getX()</code> explicitly keeps working.</li>
-<li>Keep the <code>@Board</code> annotation. Nothing else about target selection changes.</li>
-</ol>
-<h2 id="getter-mapping">Getter mapping</h2>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/udp/Syslog.java"><code>Syslog</code></a>
+sends log messages as RFC 5424 datagrams over UDP. It is the network counterpart to
+<a href="../serial">Serial</a>: use it when the board is installed away from the computer or when a USB cable is not practical.
+The board and the computer running <code>juno:monitor</code> must be on the same network.</p>
+<p>Syslog uses the board's existing UDP socket. A program can own only one UDP socket, so create the logger after the
+socket and reuse it for the rest of the program. Create its caller-owned buffer once at startup; logging in a loop
+then allocates no objects.</p>
+<h2 id="create-a-logger">Create a logger</h2>
+<p>After connecting the board to Wi-Fi, create a destination address and a logger. The default receiver port is <code>5514</code>,
+because the standard syslog port <code>514</code> usually requires elevated privileges on the computer:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.net.udp.Syslog;
+
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+
+InetAddress receiver = InetAddress.getByAddress(new byte[] {
+        (byte) 192, (byte) 168, (byte) 1, (byte) 42
+});
+DatagramSocket socket = new DatagramSocket(5515);
+Syslog syslog = new Syslog(socket, receiver, Syslog.DEFAULT_PORT, &quot;nano-rcx&quot;, &quot;drive&quot;, new byte[128]);
+
+syslog.info(&quot;program started&quot;);
+syslog.warning(&quot;battery is low&quot;);
+</code></pre>
+<p>Use the computer's address for a single receiver. The broadcast address <code>255.255.255.255</code> sends the datagram to every
+syslog monitor on the local network:</p>
+<pre><code class="language-java">InetAddress everyone = InetAddress.getByAddress(new byte[] {
+        (byte) 255, (byte) 255, (byte) 255, (byte) 255
+});
+Syslog syslog = new Syslog(new DatagramSocket(5515), everyone, Syslog.DEFAULT_PORT,
+        &quot;nano-rcx&quot;, &quot;drive&quot;, new byte[128]);
+</code></pre>
+<p>The <code>hostName</code> and <code>appName</code> identify the sender in every message. They must be printable ASCII without spaces, with
+maximum lengths of 255 and 48 characters respectively. A buffer must contain at least 32 bytes; a 128-byte buffer is a
+useful size for short telemetry messages.</p>
+<h2 id="build-messages-without-concatenation">Build messages without concatenation</h2>
+<p>The convenience methods send one complete line at a fixed severity:</p>
 <table>
 <thead>
 <tr>
-<th>Removed call</th>
-<th>Replacement</th>
+<th>Method</th>
+<th>Severity</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>ArduinoUno.getGpio()</code>, <code>ArduinoNano.getGpio()</code>, <code>RaspberryPico2.getGpio()</code>, <code>Esp32Cam.getGpio()</code>, <code>M5StackCardputer.getGpio()</code></td>
-<td><code>MCU.getGpio()</code></td>
+<td><code>error(String)</code></td>
+<td>Error condition</td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getI2c()</code>, <code>ArduinoNano.getI2c()</code>, <code>RaspberryPico2.getI2c()</code>, <code>Esp32Cam.getI2c()</code>, <code>M5StackCardputer.getI2c()</code></td>
-<td><code>MCU.getI2c()</code></td>
+<td><code>warning(String)</code></td>
+<td>Warning condition</td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getSpi()</code></td>
-<td><code>MCU.getSpi()</code></td>
+<td><code>notice(String)</code></td>
+<td>Normal but significant condition</td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getClock()</code>, <code>ArduinoNano.getClock()</code>, <code>RaspberryPico2.getClock()</code>, <code>Esp32Cam.getClock()</code>, <code>M5StackCardputer.getClock()</code></td>
-<td><code>MCU.getClock()</code></td>
+<td><code>info(String)</code></td>
+<td>Informational message</td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getBoardModel()</code>, <code>ArduinoNano.getBoardModel()</code></td>
-<td><code>MCU.getBoardModel()</code></td>
+<td><code>debug(String)</code></td>
+<td>Debug message</td>
 </tr>
 <tr>
-<td><code>ArduinoUno.getBoardMemory()</code>, <code>ArduinoNano.getBoardMemory()</code></td>
-<td><code>MCU.getBoardMemory()</code></td>
-</tr>
-<tr>
-<td><code>ArduinoUno.getWifi()</code>, <code>ArduinoNano.getWifi()</code>, <code>RaspberryPico2.getWifi()</code>, <code>Esp32Cam.getWifi()</code>, <code>M5StackCardputer.getWifi()</code></td>
-<td><code>MCU.getWifi()</code></td>
-</tr>
-<tr>
-<td><code>ArduinoUno.getBluetoothLe()</code>, <code>ArduinoNano.getBluetoothLe()</code>, <code>RaspberryPico2.getBluetoothLe()</code>, <code>Esp32Cam.getBluetoothLe()</code>, <code>M5StackCardputer.getBluetoothLe()</code></td>
-<td><code>MCU.getBluetoothLe()</code></td>
-</tr>
-<tr>
-<td><code>ArduinoUno.getMouse()</code>, <code>ArduinoNano.getMouse()</code>, <code>RaspberryPico2.getMouse()</code>, <code>M5StackCardputer.getMouse()</code></td>
-<td><code>MCU.getMouse()</code></td>
-</tr>
-<tr>
-<td><code>ArduinoUno.getLedMatrix()</code></td>
-<td><code>MCU.getLedMatrix()</code></td>
-</tr>
-<tr>
-<td><code>ArduinoUno.getAccelerometer()</code>, <code>ArduinoUno.getGyroscope()</code></td>
-<td><code>MCU.getAccelerometer()</code>, <code>MCU.getGyroscope()</code></td>
-</tr>
-<tr>
-<td><code>Esp32Cam.getCamera()</code></td>
-<td><code>MCU.getCamera()</code></td>
-</tr>
-<tr>
-<td><code>Esp32Cam.getSdCard()</code>, <code>M5StackCardputer.getSd()</code></td>
-<td><code>MCU.getSdCard()</code></td>
-</tr>
-<tr>
-<td><code>M5StackCardputer.getDisplay()</code></td>
-<td><code>MCU.getDisplay()</code></td>
-</tr>
-<tr>
-<td><code>M5StackCardputer.getKeyboard()</code></td>
-<td><code>MCU.getKeyboard()</code></td>
-</tr>
-<tr>
-<td><code>M5StackCardputer.getAudio()</code></td>
-<td><code>MCU.getAudio()</code></td>
-</tr>
-<tr>
-<td><code>M5StackCardputer.getBattery()</code></td>
-<td><code>MCU.getBattery()</code></td>
+<td><code>log(int, String)</code></td>
+<td>A caller-selected RFC 5424 severity</td>
 </tr>
 </tbody>
 </table>
-<p>Shield- and carrier-owned sockets are unchanged. <code>DataLoggerShield.getSdCard()</code> and <code>NanoConnectorCarrier.getSdCard()</code> are
-not onboard sockets, so they do not move to <code>MCU</code>.</p>
-<h2 id="capability-gated-getters">Capability-gated getters</h2>
-<p><code>MCU</code> exposes every onboard service, but a getter that the target board does not provide is rejected at compile time,
-and the diagnostic names the getter, the offending board and the boards that do support it:</p>
-<ul>
-<li><code>MCU.getWifi()</code> on the UNO R3 (no radio), <code>MCU.getBluetoothLe()</code> on boards without a BLE radio, <code>MCU.getLedMatrix()</code> without an LED matrix.</li>
-<li><code>MCU.getAccelerometer()</code> and <code>MCU.getGyroscope()</code> on anything but the UNO WiFi Rev2, <code>MCU.getCamera()</code> on anything but the AI Thinker ESP32-CAM.</li>
-<li><code>MCU.getSdCard()</code> on boards without an onboard SD socket (only the M5Stack Cardputer and the AI Thinker ESP32-CAM).</li>
-<li><code>MCU.getMouse()</code> on boards without a USB HID stack (the UNO Q and the UNO WiFi Rev2 have none).</li>
-</ul>
-<p>A multi-board <code>@Board</code> declaration must support every reachable getter on <strong>each</strong> declared board, even when one board is
-selected for the build. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>)
-work everywhere.</p>
-<h2 id="constructors">Constructors</h2>
-<p>Where the only non-default argument was a board's own singleton, use the convenience constructor. The explicit forms stay
-for mocks, alternate buses or clocks, and non-default topology.</p>
-<table>
-<thead>
-<tr>
-<th>Before</th>
-<th>After</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>new GroveBaseShield(MCU.getGpio())</code></td>
-<td><code>new GroveBaseShield()</code></td>
-</tr>
-<tr>
-<td><code>new GrovePicoShield(MCU.getGpio())</code></td>
-<td><code>new GrovePicoShield()</code></td>
-</tr>
-<tr>
-<td><code>new NanoConnectorCarrier(MCU.getGpio())</code></td>
-<td><code>new NanoConnectorCarrier()</code></td>
-</tr>
-<tr>
-<td><code>new GroveTemperatureV12(MCU.getGpio())</code></td>
-<td><code>new GroveTemperatureV12()</code></td>
-</tr>
-<tr>
-<td><code>new GrovePirMotion(MCU.getGpio())</code>, <code>new GroveAnalogGas(MCU.getGpio())</code>, <code>new GroveSoundV16(MCU.getGpio())</code></td>
-<td>the same class with <code>()</code></td>
-</tr>
-<tr>
-<td><code>new GroveLightV12(MCU.getGpio(), pin, adc)</code></td>
-<td><code>new GroveLightV12(pin, adc)</code></td>
-</tr>
-<tr>
-<td><code>new GroveGpsAir530(MCU.getGpio(), MCU.getClock(), pin)</code></td>
-<td><code>new GroveGpsAir530(pin)</code></td>
-</tr>
-<tr>
-<td><code>new Bmi088(MCU.getI2c(), MCU.getClock())</code></td>
-<td><code>new Bmi088()</code></td>
-</tr>
-<tr>
-<td><code>new PwmServoShield(MCU.getI2c(), address)</code></td>
-<td><code>new PwmServoShield(address)</code></td>
-</tr>
-<tr>
-<td><code>new RcxLink(emitter, receiver, MCU.getClock())</code></td>
-<td><code>new RcxLink(emitter, receiver)</code></td>
-</tr>
-<tr>
-<td><code>new RcxRemoteControl(receiver, MCU.getClock())</code></td>
-<td><code>new RcxRemoteControl(receiver)</code></td>
-</tr>
-<tr>
-<td><code>new RemotePoweredUpHub(MCU.getBluetoothLe(), MCU.getClock())</code></td>
-<td><code>new RemotePoweredUpHub()</code></td>
-</tr>
-</tbody>
-</table>
-<p>Pins, addresses, buffers, shield or carrier buses, and explicitly supplied collaborators remain constructor arguments.</p>
-<h2 id="diagnostics">Diagnostics</h2>
-<p>Compile-time messages name the service through <code>MCU</code>, for example <code>MCU.getDisplay requires @Board(M5StackCardputerBoard.class)</code>.
-The Esp32-CAM camera and I2C conflict now reads <code>MCU.getCamera() and MCU.getI2c() cannot be used in one program</code>.</p>
+<p>For telemetry, build the message in the reusable logger buffer with <code>begin</code>, <code>text</code>, <code>number</code> and <code>send</code>:</p>
+<pre><code class="language-java">syslog.begin(Syslog.DEBUG)
+        .text(&quot;elapsed=&quot;).number(elapsedMillis)
+        .text(&quot; left=&quot;).number(leftSteps)
+        .text(&quot; right=&quot;).number(rightSteps)
+        .send();
+</code></pre>
+<p><code>send()</code> returns <code>false</code> when the datagram could not be sent and increments <code>failures()</code>. A message longer than the
+buffer is truncated; logging therefore does not throw or interrupt the control loop. Characters outside printable
+ASCII are sent as <code>?</code>.</p>
+<h2 id="receive-messages-with-junomonitor">Receive messages with <code>juno:monitor</code></h2>
+<p>Start the network monitor on the computer before or after flashing the board:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.syslog=5514
+</code></pre>
+<p>No board or serial port is needed for this mode. The monitor prints the arrival time, severity, sender and message:</p>
+<pre><code class="language-text">[INFO] Listening for syslog on UDP port 5514; press Ctrl+C to stop
+[INFO] 12:04:07.218 NOTICE    nano-rcx drive: program started
+[INFO] 12:04:07.412 DEBUG     nano-rcx drive: elapsed=400 left=118 right=-121
+</code></pre>
+<p>If the monitor receives nothing, first confirm that both devices are on the same network, that the receiver port is
+<code>5514</code>, and that the computer firewall allows inbound UDP. Use the computer's address instead of broadcast when the
+network blocks broadcast datagrams.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxRegulatedDifferentialDrive.java"><code>NanoCarrierRcxRegulatedDifferentialDrive</code></a>
+is a complete example: it connects to an RCX through the Nano Connector Carrier and sends drive, sensor and fault
+diagnostics over Wi-Fi while the robot runs.</p>
     </div>
   </section>
 </article>

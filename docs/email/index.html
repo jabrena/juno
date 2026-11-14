@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -108,6 +107,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/secure-element">SecretStore</a>
         <a class="" href="/juno/sdcard">SD Card</a>
@@ -303,6 +303,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/hardware-apis">Overview</a>
     <a class="" href="/juno/delay">Delay</a>
     <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/syslog">Syslog</a>
     <a class="" href="/juno/gpio">Gpio</a>
     <a class="" href="/juno/secure-element">SecretStore</a>
     <a class="" href="/juno/sdcard">SD Card</a>
@@ -552,7 +553,7 @@ and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/ja
 run on a Nano ESP32 and read the Wi-Fi and mail settings from the SD card.</li>
 </ul>
 <p>Build and upload one of them with the Maven plugin, then watch the output with <code>juno:monitor</code>:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.EmailClient
 
 ./mvnw -f juno-examples/pom.xml juno:monitor \

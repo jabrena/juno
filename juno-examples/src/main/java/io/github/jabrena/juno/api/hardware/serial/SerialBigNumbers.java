@@ -16,7 +16,7 @@ import java.math.RoundingMode;
  * 20 factorial, and the square root of 2. Each line stays under the 31-byte limit of a runtime {@code String}, so the
  * values can be checked against a desktop JVM run of the same source.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBigNumbers -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

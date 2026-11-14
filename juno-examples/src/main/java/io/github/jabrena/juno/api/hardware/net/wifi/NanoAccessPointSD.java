@@ -24,7 +24,7 @@ import java.util.Properties;
  * <p>The card needs {@code ap.ssid} and {@code ap.password}. The passphrase must be at least eight characters (WPA2);
  * leave {@code ap.password} empty to open the network.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.NanoAccessPointSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

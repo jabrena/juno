@@ -24,7 +24,7 @@ import io.github.jabrena.juno.robotics.navigation.Waypoint;
  * navigator gives up on a waypoint.
  *
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=arduino-nano-esp32 -Djuno.Xmx=16k \
  *   -Djuno.main=io.github.jabrena.juno.api.remote.lego.poweredup.NanoPoweredUpNavigator
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

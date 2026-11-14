@@ -22,7 +22,7 @@ import java.util.Properties;
  * connecting, the example prints {@link Wifi#status()} once per second; {@link Wifi#STATUS_CONNECTED} ({@code 3})
  * means the Nano ESP32 is on the network. Everything is reported over Serial at 115200 baud.
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:upload \
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.wifi.NanoWifiStatusSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>

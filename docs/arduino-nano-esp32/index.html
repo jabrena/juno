@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-OOZAR5HY.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
 
 </head>
 <body>
@@ -80,7 +80,6 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/create-your-first-project">Create your first project</a>
         <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
-        <a class="" href="/juno/migrate-to-mcu">Migrating to MCU</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
@@ -108,6 +107,7 @@
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
+        <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
         <a class="" href="/juno/secure-element">SecretStore</a>
         <a class="" href="/juno/sdcard">SD Card</a>
@@ -696,7 +696,7 @@ targets the Nano ESP32 and reports every LED change at 115200 baud:</p>
 </code></pre>
 <p>The board can list two ports at once, its USB DFU port (for example <code>1-1</code>) and its serial port, so
 the plugin cannot pick one alone. Upload through the DFU port and monitor the serial one:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:upload \
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialBlink -Djuno.port=1-1
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 \
   -Djuno.port=/dev/cu.usbmodem&lt;ID&gt; -Djuno.baudRate=115200

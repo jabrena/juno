@@ -80,10 +80,10 @@ Install the Mbed Portenta core once if needed:
 arduino-cli core install arduino:mbed_portenta
 ```
 
-Flash over USB serial by passing the Portenta's `/dev/cu.*` device to `juno:upload`:
+Flash over USB serial by passing the Portenta's `/dev/cu.*` device to `juno:flash`:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-portenta-h7 \
   -Djuno.port=/dev/cu.usbmodem11201

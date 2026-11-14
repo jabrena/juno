@@ -99,10 +99,10 @@ Run `juno:verify` first to compile and validate the generated sketch without tou
   -Djuno.board=arduino-uno-q
 ```
 
-With the UNO Q connected and its SD card inserted, upload it with `juno:upload`:
+With the UNO Q connected and its SD card inserted, upload it with `juno:flash`:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
   -Djuno.board=arduino-uno-q
 ```
@@ -128,7 +128,7 @@ The Cardputer reads `mailbox-ca.crt` from its SD card at startup. The example ne
   -Djuno.board=m5stack-cardputer \
   -Djuno.Xmx=12k
 
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.client.MailboxCardputer \
   -Djuno.board=m5stack-cardputer \
   -Djuno.Xmx=12k

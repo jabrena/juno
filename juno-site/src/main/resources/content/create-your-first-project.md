@@ -195,29 +195,30 @@ public final class App {
 
 `drawText` takes a compile-time string literal, so the message is written directly in the source.
 
-## 7. Build and upload
+## 7. Build and compile
 
-Connect the board with a USB-C cable. Compile, verify and upload in one command:
+Compile the project and generate the Arduino sketch:
 
 ```bash
-./mvnw compile juno:upload
+./mvnw compile juno:compile
 ```
 
-On Windows, use `.\mvnw.cmd compile juno:upload`. To check the program without touching the board, run `juno:verify`
-instead:
+On Windows, use `.\mvnw.cmd compile juno:compile`. To check the generated sketch with Arduino CLI without touching the
+board, run `juno:verify`:
 
 ```bash
 ./mvnw compile juno:verify
 ```
 
-If several boards are connected, list them and choose the port:
+When ready to flash the program, connect the board with a USB-C cable. If several boards are connected, list them and
+choose the port:
 
 ```bash
 ./mvnw juno:boards
-./mvnw compile juno:upload -Djuno.port=<PORT>
+./mvnw compile juno:flash -Djuno.port=<PORT>
 ```
 
-On Windows, quote the property: `.\mvnw.cmd compile juno:upload "-Djuno.port=COM11"`.
+On Windows, quote the property: `.\mvnw.cmd compile juno:flash "-Djuno.port=COM11"`.
 
 ## 8. Commit the project
 
@@ -230,7 +231,7 @@ Others can then clone it with `git clone --recursive` and build it the same way.
 
 ## 9. Review ideas for your next steps
 
-- **Change the message:** edit the text and the scroll range in `App.java`, then run `./mvnw compile juno:upload` again.
+- **Change the message:** edit the text and the scroll range in `App.java`, then run `./mvnw compile juno:flash` again.
 - **Add a second program:** create another class with `@Board`, then upload it with `-Djuno.main=<fully-qualified-name>`
   instead of editing `pom.xml`.
 - **Update Juno:** move the submodule to a new commit with `git -C juno checkout <commit>`, rebuild it with the step 3

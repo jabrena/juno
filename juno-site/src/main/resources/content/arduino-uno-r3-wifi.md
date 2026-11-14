@@ -233,7 +233,7 @@ optional libraries. Then compile and upload an example, for instance the thread 
 arduino-cli core install arduino:megaavr
 arduino-cli lib install WiFiNINA
 ./mvnw -f juno-examples/pom.xml juno:install-deps
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.language.concurrency.ThreadStartAndJoin \
   -Djuno.board=arduino-uno-r3-wifi-rev2
 ```

@@ -107,7 +107,7 @@ Build, upload, and open the serial monitor with `juno-maven-plugin` (see
 [docs/JUNO-MAVEN-PLUGIN.md](../juno-maven-plugin)):
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:upload \
+./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.serial.SerialCounter
 
 ./mvnw -f juno-examples/pom.xml juno:monitor \
@@ -115,7 +115,7 @@ Build, upload, and open the serial monitor with `juno-maven-plugin` (see
 ```
 
 Always use the `juno:monitor` goal rather than invoking `arduino-cli monitor` directly — it
-resolves the same board port `juno:upload` used and defaults to the `115200` baud rate every
+resolves the same board port `juno:flash` used and defaults to the `115200` baud rate every
 `juno-examples` program uses, so the two never mismatch.
 
 ## Troubleshooting
