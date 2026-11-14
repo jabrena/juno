@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.hardware.serial;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -16,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The board's USB port re-enumerates when the program starts, so it waits two seconds before the first line,
  * giving a serial monitor time to reattach.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class})
 public final class SerialDoubleMath {
     /**
      * Opens the serial port and prints the same block of results indefinitely, with a round counter.

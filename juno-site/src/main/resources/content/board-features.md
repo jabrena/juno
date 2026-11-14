@@ -17,25 +17,26 @@ language itself, see the [Java subset](../java-subset) page.
 | GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — | — |
-| Double-precision `Math` functions | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
+| Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
 | Threads, `StructuredTaskScope`, `ScopedValue`, locks | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi access point | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP client | — | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
-| HTTPS client | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP server | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTPS server | — | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
+| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP client | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTPS server | ✓ | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
 | HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — | — | — |
 | Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| Email over STARTTLS (`Smtp.send`) | — | ✓ | — | — | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
-| USB HID mouse | — | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| Email over STARTTLS (`Smtp.send`) | ✓ | ✓ | — | — | — | — | ✓ | — | — |
+| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
+| USB HID mouse | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
 | Onboard LED matrix | — | — | — | — | ✓ | — | ✓ | — | — |
 | Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | — | — | — | — | — | — | — | ✓ | — |
 | Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — | — |
-| `@Watchdog` | — | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | — | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
+| `@Watchdog` | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
+| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
+| `SecretStore` over onboard ATECC608 | ✓ | — | — | — | — | — | ✓ | — | — |
 | Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
 
 The compiler checks this table for you: a program that uses an API its target board does not support fails with a
@@ -69,6 +70,9 @@ Notes:
 - **Email STARTTLS** needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.
 - **Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer** reaches a Powered Up hub through the core's own BLE library:
   Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.
+- **Portenta H7 Wi-Fi and Bluetooth LE** use the Arduino Mbed core's `WiFi` and `ArduinoBLE` libraries. The Portenta's
+  onboard ATECC608 is read through the ordinary `I2c`/`SecretStore` API; credentials stay in the chip rather than in
+  the generated sketch. Hardware verification remains pending for the connected-board run.
 - **Infrared** drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
   [LEGO ecosystem](../lego-ecosystem) page.
 

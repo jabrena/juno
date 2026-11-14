@@ -375,6 +375,11 @@ public interface CoreRuntime {
         return "";
     }
 
+    /** The Arduino {@code TwoWire} instance used by Juno's primary I2C API. */
+    default String i2cBus() {
+        return "Wire";
+    }
+
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
     default String mouseIncludes() {
         return "#include <Mouse.h>\n";

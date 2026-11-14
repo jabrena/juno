@@ -101,7 +101,12 @@ public enum Board {
     PORTENTA_H7("io/github/jabrena/juno/annotations/ArduinoPortentaH7Board", "arduino-portenta-h7", "Portenta H7",
             "arduino:mbed_portenta:envie_m7", ArduinoCore.MBED_PORTENTA, MbedFamily.PORTENTA_H7,
             new BoardMemoryProfile(1024 * 1024, 65536, 917504, 8192, 32768, MemoryAuthority.RUNTIME_HEAP,
-                    OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS));
+                    OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM,
+                    Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI,
+                    Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
+                    Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS,
+                    Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.WATCHDOG, Capability.BIG_NUMBERS,
+                    Capability.DOUBLE_MATH));
 
     private final String apiClassName;
     private final String id;

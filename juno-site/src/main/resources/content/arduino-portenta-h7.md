@@ -37,14 +37,36 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 | `Delay`, `Clock`, `Serial` | ✓ | Serial output uses the native USB connection. | |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in Juno's fixed arena. | [`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java) |
 | Objects, arrays, inheritance, static and interface calls | ✓ | | |
-| Wi-Fi, Bluetooth LE, Ethernet | — | The Portenta hardware provides these interfaces, but Juno does not expose them for this target yet. | |
-| Double-precision `java.lang.Math` | — | The M7 has the hardware capability, but the Portenta board profile does not currently expose the Juno double-math runtime. | |
+| Wi-Fi station and access-point modes | ✓ | Uses the Mbed core's `WiFi.h` transport, including the Portenta-specific `beginAP(ssid, password)` overload. | [`WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatus.java) |
+| HTTP and HTTPS client/server | ✓ | Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use `WiFiSSLClient`, and the HTTPS server uses the core's bundled mbedTLS. | [`HttpsMethods`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java) |
+| Email over TLS and STARTTLS | ✓ | Uses the existing Juno email transports over the Portenta Wi-Fi client; credentials should come from `SecretStore`. | |
+| Bluetooth LE | ✓ | Uses the ArduinoBLE library for the Powered Up central runtime. | [`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java) |
+| Double-precision `java.lang.Math` | ✓ | The M7's floating-point toolchain assembles Juno's double runtime. | [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
 | Threads, locks and structured concurrency | — | Not exposed by the Portenta board profile yet. | |
-| USB HID mouse, watchdog and LED matrix | — | Not exposed by the Portenta board profile. | |
+| USB HID mouse | ✓ | Uses the Mbed core's `USBMouse`; `PortentaMouse` keeps serial progress on the same USB connection. | [`PortentaMouse`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/PortentaMouse.java) |
+| Watchdog | ✓ | Uses `mbed::Watchdog` behind `@Watchdog`. | [`GcDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/GcDemo.java) |
+| Cryptographic UUID | ✓ | Uses the Mbed hardware entropy provider behind `UUID.randomUUID()`. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
+| `SecretStore` / ATECC608 | ✓ | The existing `Atecc608` driver uses Portenta's primary I2C bus; the slot contents are not embedded in firmware. | [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) |
+| Threads, locks and structured concurrency | — | The Mbed RTOS carrier port still needs implementation and hardware verification. | |
+| Ethernet | — | The hardware has Ethernet, but Juno has no Ethernet API/capability yet. | |
 
 The Juno runtime emits a small C-linkage wrapper for the Mbed core's `pinMode` overload. This keeps generated
 Thumb-2 assembly independent of C++ overload mangling while leaving the regular Arduino `digitalWrite`, `analogRead`
-and `delay` calls on the core's native symbols.
+and `delay` calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
+are selected by reachability, so a GPIO-only sketch does not pull them into the image.
+
+## Wi-Fi with SecretStore
+
+Provision the ATECC608 slots with `wifi.ssid` and `wifi.password`, then compile the example for Portenta:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretWifiStatus \
+  -Djuno.board=arduino-portenta-h7
+```
+
+The example reads both values from the secure element and prints only status, never the SSID or password. Flash it over
+USB with `-Djuno.port=<serial-port>` and follow with `juno:monitor -Djuno.baudRate=115200`.
 
 ## Features
 

@@ -37,7 +37,13 @@ public final class ShimLibraries {
 
     /** {@link #i2cHelpers()} with {@code pinSetup}, a core's {@code Wire} pin selection, run before {@code Wire.begin()}. */
     String i2cHelpers(String pinSetup) {
-        return runtimeSource.load("common/i2c.cpp").replace("${JUNO_I2C_PIN_SETUP}", pinSetup);
+        return i2cHelpers(pinSetup, "Wire");
+    }
+
+    /** {@link #i2cHelpers(String)} with the core's named {@code TwoWire} instance. */
+    String i2cHelpers(String pinSetup, String bus) {
+        return runtimeSource.load("common/i2c.cpp").replace("${JUNO_I2C_PIN_SETUP}", pinSetup)
+                .replace("${JUNO_I2C_BUS}", bus);
     }
 
     /** Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library. */
