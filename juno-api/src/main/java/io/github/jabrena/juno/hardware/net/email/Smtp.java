@@ -2,8 +2,8 @@ package io.github.jabrena.juno.hardware.net.email;
 
 /**
  * A minimal SMTP client recognized as a compiler intrinsic by Juno. {@link #send} uses STARTTLS
- * and is available on UNO R4 WiFi; {@link #sendTls} uses implicit TLS and is portable across UNO
- * R4 WiFi and UNO Q. Both require an active
+ * and is available on UNO R4 WiFi and ESP32 boards; {@link #sendTls} uses implicit TLS and is portable across UNO
+ * R4 WiFi, UNO WiFi Rev2, ESP32 boards and UNO Q. Both require an active
  * {@link io.github.jabrena.juno.hardware.net.Wifi#begin} connection.
  *
  * <p>{@code host}, {@code username}, {@code password}, {@code from}, {@code to}, {@code subject},

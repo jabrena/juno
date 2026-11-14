@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.core;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.board.Architecture;
 
@@ -13,6 +14,7 @@ import io.github.jabrena.juno.board.Architecture;
  * have a Portenta-specific implementation and board capability declaration.
  */
 final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRuntime {
+    private final ShimLibraries shimLibraries = new ShimLibraries();
 
     @Override
     public int builtinLedPin() {
@@ -42,6 +44,18 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public String gpioAnalogPins() {
         return "15, 16, 17, 18, 19, 20";
+    }
+
+    @Override
+    public String wifiIncludes(boolean udp) {
+        return "#include <WiFi.h>\n";
+    }
+
+    @Override
+    public String wifiHelpers() {
+        // The Mbed Portenta WiFi library has no one-argument beginAP overload; keep the shared helper's open-network
+        // behavior by passing an empty passphrase explicitly.
+        return shimLibraries.wifiHelpers().replace("WiFi.beginAP(ssid);", "WiFi.beginAP(ssid, \"\");");
     }
 
     @Override

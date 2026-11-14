@@ -62,6 +62,8 @@ class BoardTest {
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3, Capability.WIFI, false),
                 arguments(Board.PORTENTA_H7, Capability.BIG_NUMBERS, true),
+                arguments(Board.PORTENTA_H7, Capability.WIFI, true),
+                arguments(Board.PORTENTA_H7, Capability.ONBOARD_WIFI, true),
                 arguments(Board.UNO_R3, Capability.UUID_RANDOM, true),
                 arguments(Board.UNO_R3, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
@@ -224,6 +226,24 @@ class BoardTest {
                 .contains("setCACertBundle(juno_ca_bundle, sizeof(juno_ca_bundle));");
         assertThat(new CoreRuntimes().of(ArduinoCore.ESP32).httpsHelpers(false))
                 .contains("setCACertBundle(juno_ca_bundle);");
+    }
+
+    @Test
+    @DisplayName("The AI Thinker ESP32-CAM exposes the ESP32 software capabilities")
+    void shouldExposeTheEsp32CamSoftwareCapabilities() {
+        Board board = Board.AI_THINKER_ESP32_CAM;
+
+        assertThat(board.supports(Capability.WIFI_ACCESS_POINT)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_SERVER)).isTrue();
+        assertThat(board.supports(Capability.TLS_EMAIL)).isTrue();
+        assertThat(board.supports(Capability.SMTP_STARTTLS)).isTrue();
+        assertThat(board.supports(Capability.WATCHDOG)).isTrue();
+        assertThat(board.supports(Capability.UUID_RANDOM)).isTrue();
+        assertThat(board.supports(Capability.SECURE_ENTROPY)).isTrue();
+        assertThat(board.supports(Capability.DOUBLE_MATH)).isTrue();
+        assertThat(board.supports(Capability.USB_HID)).isFalse();
+        assertThat(board.supports(Capability.LED_MATRIX)).isFalse();
+        assertThat(board.supports(Capability.ONBOARD_IMU)).isFalse();
     }
 
     @Test

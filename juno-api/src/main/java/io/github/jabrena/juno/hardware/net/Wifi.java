@@ -26,11 +26,11 @@ public interface Wifi {
      */
     int STATUS_NO_SHIELD = 255;
 
-    /** The {@link #status} value once {@link #beginAP} is serving, mirroring {@code WL_AP_LISTENING} (UNO R4 WiFi only). */
+    /** The {@link #status} value once {@link #beginAP} is serving, mirroring {@code WL_AP_LISTENING}. */
     int STATUS_AP_LISTENING = 7;
 
     /**
-     * Starts station-mode Wi-Fi on UNO R4 WiFi. On UNO Q, Wi-Fi belongs to Linux and must already
+     * Starts station-mode Wi-Fi on boards with an onboard radio. On UNO Q, Wi-Fi belongs to Linux and must already
      * be configured through App Lab or {@code nmcli}; this method initializes the MCU-to-Linux
      * bridge and ignores the credential arguments.
      */
@@ -39,7 +39,7 @@ public interface Wifi {
     /**
      * Starts the board as a Wi-Fi access point named {@code ssid}, so a phone or laptop can join it
      * directly (typically to serve a provisioning page through {@link
-     * io.github.jabrena.juno.hardware.net.http.HttpServer}). On UNO R4 WiFi, {@code password} is a WPA2
+     * io.github.jabrena.juno.hardware.net.http.HttpServer}). On UNO R4 WiFi and ESP32 boards, {@code password} is a WPA2
      * passphrase of at least 8 characters, or empty for an open network; call {@link #localIP} after
      * {@link #status} reports {@link #STATUS_AP_LISTENING} to obtain the access point's address. On UNO Q the
      * MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running
