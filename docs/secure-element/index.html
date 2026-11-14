@@ -337,71 +337,6 @@ chip. Treat this page as a preview until the hardware steps are done.</p>
 program on the board can read any slot.</li>
 <li>A secret that is missing, unreadable or fails its checksum is reported as missing. No copy is kept in plaintext anywhere.</li>
 </ul>
-<h2 id="names-and-limits">Names and limits</h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>Used for</th>
-<th>Longest value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>wifi.ssid</code></td>
-<td>Wi-Fi network name</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>wifi.password</code></td>
-<td>Wi-Fi password</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>mailbox.apikey</code></td>
-<td>Mailbox API key</td>
-<td>63 bytes</td>
-</tr>
-<tr>
-<td><code>mailbox.q.ip</code></td>
-<td>UNO Q mailbox address</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>smtp.host</code></td>
-<td>SMTP server</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>smtp.username</code></td>
-<td>SMTP username</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>smtp.password</code></td>
-<td>SMTP password</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>supabase.api.host</code></td>
-<td>Supabase REST host</td>
-<td>31 characters</td>
-</tr>
-<tr>
-<td><code>supabase.api.key</code></td>
-<td>Supabase publishable key</td>
-<td>63 bytes</td>
-</tr>
-<tr>
-<td><code>supabase.api.url</code></td>
-<td>Supabase table endpoint</td>
-<td>63 bytes</td>
-</tr>
-</tbody>
-</table>
-<p>Values must be printable ASCII. The Wi-Fi limit is 31 characters because the example builds the SSID and password as runtime
-<code>String</code>s. The plugin only enforces the 63-byte secure-element slot capacity; the board-side <code>SecretSlots</code> table is the
-source of truth for valid names.</p>
 <h2 id="provisioning">Provisioning</h2>
 <p>Upload the provisioning program with <code>juno:secret</code>. It asks for the value at a hidden prompt, sends it to the board over USB
 serial as hex, and never puts it on the command line or in the log:</p>
@@ -430,7 +365,8 @@ String password = secrets.getString(&quot;wifi.password&quot;);
 <p><code>SecretSlots</code> maps each name to a data slot. The program owns that mapping, and the provisioning program must use the same
 slot numbers. <code>getString</code> returns <code>null</code> for a missing name. The <code>read(name, buffer)</code> form copies the bytes into your own
 buffer and allocates nothing.</p>
-<p>The complete example is <code>SecretWifiStatus</code> in <code>juno-examples</code>.</p>
+<p>The complete example is <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a>
+in <code>juno-examples</code>.</p>
 <h2 id="wiring">Wiring</h2>
 <ul>
 <li><strong>UNO WiFi Rev2:</strong> the chip is on the board's I2C bus; no extra hardware.</li>

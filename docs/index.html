@@ -318,10 +318,13 @@ document.addEventListener('DOMContentLoaded', function () {
     <div>
       <h2><i class="fa-solid fa-microchip"></i> Embedded</h2>
       <p>
-        Juno runs on the Arduino UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q, on the Arduino Nano
-        ESP32 and on the M5Stack Cardputer. GPIO, timing, Serial, the LED matrix, Wi-Fi, HTTP, JSON,
-        SD cards, USB HID and LCD/TFT shields are plain Java <code>native</code> methods lowered to
-        shim calls at link time.
+        The five strongest Juno targets by board-level compute resources are the UNO Q (quad-core Linux
+        processor, up to 2.0 GHz, 2–4 GB RAM), Portenta H7 (dual-core, up to 480 MHz, 1 MB SRAM plus
+        8 MB SDRAM), Nano ESP32 (dual-core 240 MHz, 512 kB SRAM plus 8 MB PSRAM), M5Stack Cardputer
+        (dual-core 240 MHz, 512 kB SRAM) and AI Thinker ESP32-CAM (dual-core 240 MHz, 520 kB SRAM plus
+        4 MB PSRAM). Juno targets the UNO Q's real-time MCU; GPIO, timing, Serial, Wi-Fi, HTTP, JSON,
+        SD cards, USB HID and displays are plain Java <code>native</code> methods lowered to shim calls
+        at link time.
       </p>
     </div>
     <div>
@@ -435,7 +438,7 @@ public class Blink {
           <a class="juno-eco" href="arduino-shields#arduino-9-axis-motion-shield"><img src="/juno/images/shields/shield-nine-axis.png" alt="9 Axis Motion Shield" loading="lazy"><span>9 Axis Motion Shield</span><small>Shield</small></a>
           <a class="juno-eco" href="arduino-shields#azdelivery-data-logger-shield"><img src="/juno/images/shields/shield-data-logger.png" alt="Data Logger Shield" loading="lazy"><span>Data Logger Shield</span><small>Shield</small></a>
           <a class="juno-eco" href="arduino-shields#grove-base-shield"><img src="/juno/images/shields/shield-grove.png" alt="Grove Base Shield" loading="lazy"><span>Grove Base Shield</span><small>Shield</small></a>
-          <a class="juno-eco" href="grove-system#grove-shield-for-pi-pico"><img src="/juno/images/shields/shield-grove-pico.png" alt="Grove Shield for Pi Pico" loading="lazy"><span>Grove Shield for Pi Pico</span><small>Shield</small></a>
+          <a class="juno-eco" href="grove-system#grove-shield-for-pi-pico-on-the-raspberry-pi-pico-2-w"><img src="/juno/images/shields/shield-grove-pico.png" alt="Grove Shield for Pi Pico" loading="lazy"><span>Grove Shield for Pi Pico</span><small>Shield</small></a>
           <a class="juno-eco" href="grove-system"><img src="/juno/images/grove/grove-bmi088.jpg" alt="Grove BMI088 6-axis accelerometer and gyroscope" loading="lazy"><span>BMI088 IMU</span><small>Grove sensor</small></a>
           <a class="juno-eco" href="grove-system"><img src="/juno/images/grove/grove-ultrasonic-ranger.png" alt="Grove Ultrasonic Ranger" loading="lazy"><span>Ultrasonic Ranger</span><small>Grove sensor</small></a>
           <a class="juno-eco" href="grove-system"><img src="/juno/images/grove/grove-oled-ssd1315.jpg" alt="Grove 0.96-inch SSD1315 OLED display" loading="lazy"><span>SSD1315 OLED</span><small>Grove display</small></a>
@@ -459,7 +462,7 @@ public class Blink {
           <a class="juno-eco" href="arduino-shields#arduino-9-axis-motion-shield" tabindex="-1"><img src="/juno/images/shields/shield-nine-axis.png" alt="" loading="lazy"><span>9 Axis Motion Shield</span><small>Shield</small></a>
           <a class="juno-eco" href="arduino-shields#azdelivery-data-logger-shield" tabindex="-1"><img src="/juno/images/shields/shield-data-logger.png" alt="" loading="lazy"><span>Data Logger Shield</span><small>Shield</small></a>
           <a class="juno-eco" href="arduino-shields#grove-base-shield" tabindex="-1"><img src="/juno/images/shields/shield-grove.png" alt="" loading="lazy"><span>Grove Base Shield</span><small>Shield</small></a>
-          <a class="juno-eco" href="grove-system#grove-shield-for-pi-pico" tabindex="-1"><img src="/juno/images/shields/shield-grove-pico.png" alt="" loading="lazy"><span>Grove Shield for Pi Pico</span><small>Shield</small></a>
+          <a class="juno-eco" href="grove-system#grove-shield-for-pi-pico-on-the-raspberry-pi-pico-2-w" tabindex="-1"><img src="/juno/images/shields/shield-grove-pico.png" alt="" loading="lazy"><span>Grove Shield for Pi Pico</span><small>Shield</small></a>
           <a class="juno-eco" href="grove-system" tabindex="-1"><img src="/juno/images/grove/grove-bmi088.jpg" alt="" loading="lazy"><span>BMI088 IMU</span><small>Grove sensor</small></a>
           <a class="juno-eco" href="grove-system" tabindex="-1"><img src="/juno/images/grove/grove-ultrasonic-ranger.png" alt="" loading="lazy"><span>Ultrasonic Ranger</span><small>Grove sensor</small></a>
           <a class="juno-eco" href="grove-system" tabindex="-1"><img src="/juno/images/grove/grove-oled-ssd1315.jpg" alt="" loading="lazy"><span>SSD1315 OLED</span><small>Grove display</small></a>

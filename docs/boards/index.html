@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Boards">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="The boards Juno compiles for, side by side: hardware, memory, backend and which Juno APIs each one supports.">
-  <meta property="og:description" content="The boards Juno compiles for, side by side: hardware, memory, backend and which Juno APIs each one supports." />
-  <meta name="twitter:description" content="The boards Juno compiles for, side by side: hardware, memory, backend and which Juno APIs each one supports.">
+  <meta name="description" content="The boards Juno compiles for, side by side: hardware, memory and backend details.">
+  <meta property="og:description" content="The boards Juno compiles for, side by side: hardware, memory and backend details." />
+  <meta name="twitter:description" content="The boards Juno compiles for, side by side: hardware, memory and backend details.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/boards/" />
@@ -408,6 +408,18 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>2 kB</td>
 </tr>
 <tr>
+<td>SDRAM</td>
+<td>8 MB</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
 <td>PSRAM</td>
 <td>—</td>
 <td>8 MB</td>
@@ -483,282 +495,9 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 </table>
 <p>The spaces after <code>:</code> in the Arduino core row are visual break points for this table; use the compact
 core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p>
-<h2 id="api-support">API support</h2>
-<p>✓ supported · — not available on this board</p>
-<table>
-<thead>
-<tr>
-<th>Juno API or feature</th>
-<th align="center">Portenta H7</th>
-<th align="center">Nano ESP32</th>
-<th align="center">M5Stack Cardputer</th>
-<th align="center">AI Thinker ESP32-CAM</th>
-<th align="center">UNO Q</th>
-<th align="center">Raspberry Pi Pico 2 W</th>
-<th align="center">UNO R4 WiFi</th>
-<th align="center">UNO WiFi Rev2</th>
-<th align="center">UNO R3</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>GPIO and board-context pin resolution</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-</tr>
-<tr>
-<td><code>BigInteger</code>, <code>BigDecimal</code></td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-</tr>
-<tr>
-<td>Double-precision <code>Math</code> functions</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Threads, <code>StructuredTaskScope</code>, <code>ScopedValue</code>, locks</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Wi-Fi</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Wi-Fi access point</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>HTTP client</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>HTTPS client</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>HTTP server</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>HTTPS server</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>HTTP response streaming (<code>HttpServer.beginStream</code>)</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Email over STARTTLS (<code>Smtp.send</code>)</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Bluetooth LE (LEGO Powered Up)</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>USB HID mouse</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Onboard LED matrix</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Camera (<code>MCU.getCamera()</code>)</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td><code>@Watchdog</code></td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-</tr>
-<tr>
-<td>Cryptographic <code>UUID.randomUUID()</code></td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-</tr>
-<tr>
-<td>Display, keyboard, speaker, battery</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-</tbody>
-</table>
-<p>The compiler checks this table for you: a program that uses an API its target board does not
-support fails with a <code>CompileException</code> naming the board and the missing capability. Some cells
-are compiled support that has not yet been run on every physical board; each board's page notes
-what is confirmed on hardware.</p>
+<p>For the API and board-feature support matrix, see <a href="../board-features">Board features</a>. The compiler checks that matrix for
+you: a program that uses an API its target board does not support fails with a <code>CompileException</code> naming the board and the
+missing capability.</p>
 <p>Every board exposes <code>Gpio.digitalPin(&quot;D0&quot;..&quot;D13&quot;)</code> and <code>Gpio.analogPin(&quot;A0&quot;..&quot;A5&quot;)</code> through <code>MCU</code>.
 The selected runtime translates those names to the board's pin mapping. <code>getInput()</code>, <code>getOutput()</code> and
 <code>getInputPullup()</code> are also board-context methods. Invalid names raise <code>IllegalArgumentException</code>; the M5Stack Cardputer

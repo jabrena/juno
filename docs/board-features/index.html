@@ -320,25 +320,26 @@ document.addEventListener('DOMContentLoaded', function () {
 <p>Every board runs the same Java subset, but the hardware around the program differs. This page summarises the features
 that depend on the board rather than on the language: networking, Bluetooth, USB, displays, storage and shields. For the
 language itself, see the <a href="../java-subset">Java subset</a> page.</p>
-<h2 id="summary">Summary</h2>
-<p>✓ supported · – not available · the notes after the table explain the exceptions.</p>
+<h2 id="api-support">API support</h2>
+<p>✓ supported · — not supported by Juno on this board</p>
 <table>
 <thead>
 <tr>
-<th>Feature</th>
-<th align="center">UNO Q</th>
+<th>Juno API or feature</th>
+<th align="center">Portenta H7</th>
 <th align="center">Nano ESP32</th>
 <th align="center">M5Stack Cardputer</th>
 <th align="center">AI Thinker ESP32-CAM</th>
+<th align="center">UNO Q</th>
+<th align="center">Raspberry Pi Pico 2 W</th>
 <th align="center">UNO R4 WiFi</th>
 <th align="center">UNO WiFi Rev2</th>
 <th align="center">UNO R3</th>
-<th align="center">Pico 2 W</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Board-context GPIO pin resolver (<code>digitalPin</code>, <code>analogPin</code>)</td>
+<td>GPIO and board-context pin resolution</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -347,244 +348,314 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code></td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Explicit PSRAM byte buffers (<code>Psram</code>)</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Double-precision <code>Math</code> functions</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Threads, <code>StructuredTaskScope</code>, <code>ScopedValue</code>, locks</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>Wi-Fi</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>Wi-Fi access point</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>HTTP client (plain)</td>
-<td align="center">–</td>
+<td>HTTP client</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>HTTPS client</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>HTTP server</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>HTTPS server</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Email over TLS</td>
+<td>HTTP response streaming (<code>HttpServer.beginStream</code>)</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Email STARTTLS</td>
-<td align="center">–</td>
+<td>Onboard microSD (<code>MCU.getSdCard()</code>)</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>SNTP clock (<code>LocalDateTime.now()</code>)</td>
+<td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Bluetooth LE</td>
+<td>Email over STARTTLS (<code>Smtp.send</code>)</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>Bluetooth LE (LEGO Powered Up)</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
-<td align="center">–</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
 <td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>LED matrix</td>
-<td align="center">✓ (13 × 8)</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">✓ (12 × 8)</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td>Onboard LED matrix</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Built-in display, keyboard, speaker, battery</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td>Onboard IMU (<code>MCU.getGyroscope()</code>, <code>MCU.getAccelerometer()</code>)</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Onboard microSD socket (<code>MCU.getSdCard()</code>)</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td>Camera (<code>MCU.getCamera()</code>)</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Onboard camera (<code>MCU.getCamera()</code>)</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-</tr>
-<tr>
-<td>Onboard IMU (<code>MCU.getAccelerometer()</code>, <code>MCU.getGyroscope()</code>)</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-</tr>
-<tr>
-<td>Hardware random numbers</td>
+<td><code>@Watchdog</code></td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">Weak</td>
-<td align="center">–</td>
-</tr>
-<tr>
-<td>Watchdog</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 </tr>
 <tr>
-<td>Structured concurrency (threads, scopes, scoped values, locks)</td>
+<td>Cryptographic <code>UUID.randomUUID()</code></td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
+<td align="center">—</td>
 </tr>
 <tr>
-<td>Double-precision <code>Math</code></td>
+<td>Display, keyboard, speaker, battery</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
+</tbody>
+</table>
+<p>The compiler checks this table for you: a program that uses an API its target board does not support fails with a
+<code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
+on every physical board; each board's page notes what is confirmed on hardware.</p>
+<h2 id="physical-expansions">Physical expansions</h2>
+<p>✓ supported · — not available</p>
+<table>
+<thead>
+<tr>
+<th>Expansion</th>
+<th align="center">Portenta H7</th>
+<th align="center">Nano ESP32</th>
+<th align="center">M5Stack Cardputer</th>
+<th align="center">AI Thinker ESP32-CAM</th>
+<th align="center">UNO Q</th>
+<th align="center">Raspberry Pi Pico 2 W</th>
+<th align="center">UNO R4 WiFi</th>
+<th align="center">UNO WiFi Rev2</th>
+<th align="center">UNO R3</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td>SD card</td>
-<td align="center">Shield</td>
+<td align="center">—</td>
 <td align="center">Carrier</td>
 <td align="center">Built-in</td>
 <td align="center">Built-in</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
 </tr>
 <tr>
 <td>Grove sockets</td>
-<td align="center">Shield</td>
+<td align="center">—</td>
 <td align="center">Carrier</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
@@ -592,47 +663,51 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 </tr>
 <tr>
 <td>9 Axis Motion Shield</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
 </tr>
 <tr>
 <td>LCD Keypad Shield</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
 </tr>
 <tr>
 <td>TFT Touch Shield</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
 <td align="center">Shield</td>
-<td align="center">Shield</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 <tr>
 <td>Infrared link to LEGO RCX</td>
+<td align="center">—</td>
 <td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">–</td>
-<td align="center">–</td>
-<td align="center">–</td>
+<td align="center">—</td>
+<td align="center">—</td>
 </tr>
 </tbody>
 </table>
@@ -643,8 +718,6 @@ LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shi
 <a href="../arduino-shields">Arduino Shields</a>.</li>
 <li><strong>Carrier</strong> means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
 <a href="../arduino-nano-esp32#shields">Nano ESP32</a> page.</li>
-<li><strong>Weak</strong> means a non-cryptographic random source, suitable only for best-effort identities. See the
-<a href="../java-subset#data-types">Data types</a> section.</li>
 <li><strong>Structured concurrency</strong> is available on every board except the UNO R3. The UNO R3 WiFi Rev2, UNO R4 WiFi and
 UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
 carriers concurrently. See <a href="../java-subset#concurrency-behaviour">Concurrency behaviour</a> for scheduling and memory
