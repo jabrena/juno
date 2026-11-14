@@ -74,6 +74,7 @@ class BoardTest {
                 arguments(Board.PORTENTA_H7, Capability.WATCHDOG, true),
                 arguments(Board.PORTENTA_H7, Capability.UUID_RANDOM, true),
                 arguments(Board.PORTENTA_H7, Capability.DOUBLE_MATH, true),
+                arguments(Board.PORTENTA_H7, Capability.STRUCTURED_CONCURRENCY, true),
                 arguments(Board.UNO_R3, Capability.UUID_RANDOM, true),
                 arguments(Board.UNO_R3, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
