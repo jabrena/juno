@@ -15,7 +15,7 @@ features and their verification status.
 7. Hardware watchdog.
 8. Cryptographic `UUID.randomUUID()`.
 9. `SecretStore` access through the Portenta's onboard secure element.
-10. Threads, structured concurrency, scoped values and locks.
+10. Hardware verification of threads, structured concurrency, scoped values and locks.
 
 Ethernet is intentionally not included: the current Juno API has no Ethernet capability or transport to implement.
 
@@ -30,6 +30,7 @@ Ethernet is intentionally not included: the current Juno API has no Ethernet cap
 - [x] Implement and compile-check USB HID mouse.
 - [x] Implement and compile-check double math, watchdog and cryptographic UUID.
 - [ ] Implement and verify `SecretStore` on the onboard ATECC608.
-- [ ] Implement and verify the Mbed RTOS thread port.
+- [x] Implement the Mbed RTOS thread port.
+- [ ] Verify threads, locks, structured concurrency and scoped values on hardware.
 
 Credentials are never stored in this worktree or printed by the verification programs.
