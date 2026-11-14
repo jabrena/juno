@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.security;
 
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -23,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  * take requests. The name-to-slot table here must match the reading program's table: it is the only place slot numbers
  * are chosen. Upload this program with {@code juno:secret}.
  */
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;
@@ -134,7 +135,18 @@ public final class SecretProvisioner {
             return;
         }
         if (chip.write(name, value, hexLength / 2) < 0) {
-            Serial.println("ERR write failed");
+            if (chip.lastFailure() == Atecc608.FAILURE_UNAVAILABLE) {
+                Serial.println("ERR ATECC608 unavailable at I2C address 0x60");
+            } else if (chip.lastFailure() == Atecc608.FAILURE_REJECTED) {
+                if (chip.lastStatus() == 0x0F) {
+                    Serial.println("ERR ATECC608 execution error: slot is locked or clear-text writes are disabled");
+                } else {
+                    Serial.print("ERR ATECC608 rejected the write with status ");
+                    Serial.println(chip.lastStatus());
+                }
+            } else {
+                Serial.println("ERR ATECC608 protocol failure");
+            }
             return;
         }
         Serial.println("OK " + name);
