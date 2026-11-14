@@ -80,6 +80,16 @@ class CoreRuntimeTest {
     }
 
     @Test
+    @DisplayName("The Portenta core uses the Mbed WiFi header and its AP overload")
+    void shouldUseTheMbedPortentaWifiApi() {
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
+
+        assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
+        assertThat(runtime.wifiHelpers()).contains("WiFi.begin(ssid, password)", "WiFi.beginAP(ssid, \"\")")
+                .doesNotContain("WiFi.beginAP(ssid);");
+    }
+
+    @Test
     @DisplayName("The Renesas core declares its UDP socket and SSL client")
     void shouldDeclareTheRenesasUdpSocketAndSslClient() {
         // Given

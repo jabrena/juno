@@ -742,6 +742,11 @@
     align-items: start;
 }
 
+.juno-try-actions {
+    justify-content: center;
+    margin-top: 2rem;
+}
+
 .juno-code-window {
     overflow: hidden;
     border-radius: 0.75rem;

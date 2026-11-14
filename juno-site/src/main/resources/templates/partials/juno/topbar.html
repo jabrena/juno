@@ -9,7 +9,9 @@
       {#if item.children??}
       <div class="juno-topnav-children">
         {#for child in item.children}
-        <a class="{page.url.isActive(site.url(child.path).path) ? 'active' : ''}" href="{site.url(child.path)}">{child.title}</a>
+        {#if child.hidden??}{#else}
+        <a class="{#if child.fragment??}{#else}{page.url.isActive(site.url(child.path).path) ? 'active' : ''}{/if}" href="{site.url(child.path)}{#if child.fragment??}#{child.fragment}{/if}">{child.title}</a>
+        {/if}
         {/for}
       </div>
       {/if}
@@ -180,11 +182,13 @@ document.addEventListener('DOMContentLoaded', function () {
 {#for item in cdi:topnav.items}
 {#if item.children??}
 {#for current in item.children}
-{#if page.url.isActive(site.url(current.path).path)}
+{#if !current.fragment?? && page.url.isActive(site.url(current.path).path)}
 <nav class="juno-subnav" aria-label="{item.title}">
   <div class="juno-subnav-inner">
     {#for child in item.children}
-    <a class="{page.url.isActive(site.url(child.path).path) ? 'active' : ''}" href="{site.url(child.path)}">{child.title}</a>
+    {#if child.hidden??}{#else}
+    <a class="{#if child.fragment??}{#else}{page.url.isActive(site.url(child.path).path) ? 'active' : ''}{/if}" href="{site.url(child.path)}{#if child.fragment??}#{child.fragment}{/if}">{child.title}</a>
+    {/if}
     {/for}
   </div>
 </nav>

@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
 
 </head>
 <body>
@@ -105,18 +105,11 @@
       <a class="" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/delay">Delay</a>
-        <a class="" href="/juno/serial">Serial</a>
-        <a class="" href="/juno/syslog">Syslog</a>
-        <a class="" href="/juno/gpio">Gpio</a>
-        <a class="" href="/juno/secure-element">SecretStore</a>
-        <a class="" href="/juno/sdcard">SD Card</a>
-        <a class="" href="/juno/wifi">Wifi</a>
-        <a class="" href="/juno/time">Time</a>
-        <a class="" href="/juno/httpclient">HTTP client</a>
-        <a class="" href="/juno/httpserver">HTTP server</a>
-        <a class="" href="/juno/email">Email</a>
-        <a class="" href="/juno/mvc">MVC</a>
+        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
+        <a class="" href="/juno/hardware-apis#storage">Storage</a>
+        <a class="" href="/juno/hardware-apis#internet">Internet</a>
+        <a class="" href="/juno/hardware-apis#utils">Utils</a>
+        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
       </div>
       <a class="" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
@@ -351,7 +344,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 </tr>
 <tr>
-<td><code>BigInteger</code>, <code>BigDecimal</code></td>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -387,7 +380,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Threads, <code>StructuredTaskScope</code>, <code>ScopedValue</code>, locks</td>
+<td>Threads, <code>synchronized</code>, locks, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
 <td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -399,7 +392,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Wi-Fi</td>
+<td>Wi-Fi station</td>
 <td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -616,9 +609,45 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 </tr>
 </tbody>
 </table>
+<p>The AI Thinker ESP32-CAM is a Wi-Fi station target, not an access point. Its board-specific support includes the onboard
+microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response streaming and explicit PSRAM buffers;
+it does not provide an HTTPS server, TLS email, USB HID, watchdog, UUID entropy or double-precision <code>Math</code> runtime.</p>
 <p>The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 <code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.</p>
+<h2 id="secret-storage">Secret storage</h2>
+<p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from an ATECC608 secure
+element. Secrets stay outside the firmware image and the SD card, so provisioning does not put them in source code,
+build output or removable storage.</p>
+<table>
+<thead>
+<tr>
+<th>Setup</th>
+<th>Boards</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Built in</td>
+<td>UNO WiFi Rev2</td>
+<td>The board includes a Microchip ATECC608A on its I2C bus.</td>
+</tr>
+<tr>
+<td>External breakout</td>
+<td>UNO R4 WiFi, UNO Q, Nano ESP32, M5Stack Cardputer, Raspberry Pi Pico 2 W and AI Thinker ESP32-CAM</td>
+<td>Connect an ATECC608 breakout to the board's I2C pins; the Cardputer and ESP32-CAM use their documented Grove or camera I2C pins.</td>
+</tr>
+<tr>
+<td>Not supported</td>
+<td>UNO R3</td>
+<td>The board has no supported secure-element path.</td>
+</tr>
+</tbody>
+</table>
+<p>The chip must be provisioned with <code>juno:secret</code> before the application reads its names and slots. The <a href="../secure-element">secure-element
+guide</a> covers provisioning, wiring, missing-secret handling and the current hardware-validation
+status.</p>
 <h2 id="physical-expansions">Physical expansions</h2>
 <p>✓ supported · — not available</p>
 <table>

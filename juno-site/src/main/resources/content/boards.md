@@ -23,7 +23,7 @@ static `Psram` byte-buffer API; the camera board also keeps its driver-owned fra
 | CPU | Cortex-M7 at 480 MHz; M4 at 240 MHz | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX7 | Dual-core 32-bit Xtensa LX6 | 32-bit Cortex-M33F | Dual-core 32-bit Cortex-M33F | 32-bit Cortex-M4F | 8-bit megaAVR | 8-bit AVR |
 | Clock | 480 MHz (M7) | 240 MHz | 240 MHz | 240 MHz | 160 MHz | 150 MHz | 48 MHz | 16 MHz | 16 MHz |
 | Flash | 2 MB internal + 16 MB NOR | 16 MB | 8 MB | 4 MB | 2 MB | 4 MB | 256 kB | 48 kB | 32 kB |
-| SRAM | 1 MB internal + 8 MB SDRAM | 512 kB | 512 kB | 520 kB | 786 kB | 520 kB | 32 kB | 6 kB | 2 kB |
+| SRAM | 1 MB | 512 kB | 512 kB | 520 kB | 786 kB | 520 kB | 32 kB | 6 kB | 2 kB |
 | SDRAM | 8 MB | — | — | — | — | — | — | — | — |
 | PSRAM | — | 8 MB | — | 4 MB | — | — | — | — | — |
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V | 5 V |
