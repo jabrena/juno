@@ -13,7 +13,7 @@ import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
  * symbols the assembly calls directly, and the shim overrides the core's weak {@code yield()} to keep
  * USB serviced.
  */
-final class RenesasCoreRuntime implements CoreRuntime {
+class RenesasCoreRuntime implements CoreRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
     private final ParallelBusRuntime parallelBusRuntime = new ParallelBusRuntime();
     private final ThreadRuntime threadRuntime = new ThreadRuntime();

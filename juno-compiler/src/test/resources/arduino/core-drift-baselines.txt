@@ -3,8 +3,9 @@
 #
 # Columns: board id, Arduino core the baseline was measured with, baseline bytes, margin bytes.
 # Margin: 1% of the board's usable RAM (memory-model page), with a floor of 64 bytes.
-# Measured 2026-11-12 with arduino-cli 1.5.1 on macOS, LC_ALL=C, cores as installed there. The first Docker run of
-# CoreDriftIT must confirm these; a host difference larger than the margin is re-recorded here, not hidden.
+# Measured 2026-11-12 with arduino-cli 1.5.1 on macOS, LC_ALL=C, cores as installed there. The Portenta figure was
+# derived from the host linker's .data + .bss output for the same core version while Docker was unavailable.
+# CoreDriftIT must confirm these; a difference larger than the margin is re-recorded here, not hidden.
 #
 # board                        core                          baseline  margin
 arduino-uno-r3                 arduino:avr@1.8.8                  198      64
@@ -15,3 +16,4 @@ arduino-nano-esp32             arduino:esp32@2.0.18-arduino.5   30560    3276
 ai-thinker-esp32-cam           esp32:esp32@3.3.12               22172    3276
 m5stack-cardputer              m5stack:esp32@3.3.10             53988    3276
 raspberry-pi-pico-2-w          rp2040:rp2040@6.3.2              87792    5242
+arduino-portenta-h7            arduino:mbed_portenta@4.6.0     341864     655

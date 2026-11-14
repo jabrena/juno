@@ -9,5 +9,6 @@ public sealed interface BoardSupported permits
         ArduinoNanoEsp32Board,
         AiThinkerEsp32CamBoard,
         M5StackCardputerBoard,
-        RaspberryPico2WifiBoard {
+        RaspberryPico2WifiBoard,
+        ArduinoPortentaH7Board {
 }
