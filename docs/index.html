@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
 
 </head>
 <body>
@@ -105,18 +105,11 @@
       <a class="" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/delay">Delay</a>
-        <a class="" href="/juno/serial">Serial</a>
-        <a class="" href="/juno/syslog">Syslog</a>
-        <a class="" href="/juno/gpio">Gpio</a>
-        <a class="" href="/juno/secure-element">SecretStore</a>
-        <a class="" href="/juno/sdcard">SD Card</a>
-        <a class="" href="/juno/wifi">Wifi</a>
-        <a class="" href="/juno/time">Time</a>
-        <a class="" href="/juno/httpclient">HTTP client</a>
-        <a class="" href="/juno/httpserver">HTTP server</a>
-        <a class="" href="/juno/email">Email</a>
-        <a class="" href="/juno/mvc">MVC</a>
+        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
+        <a class="" href="/juno/hardware-apis#storage">Storage</a>
+        <a class="" href="/juno/hardware-apis#internet">Internet</a>
+        <a class="" href="/juno/hardware-apis#utils">Utils</a>
+        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
       </div>
       <a class="" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
@@ -318,12 +311,9 @@ document.addEventListener('DOMContentLoaded', function () {
     <div>
       <h2><i class="fa-solid fa-microchip"></i> Embedded</h2>
       <p>
-        The five strongest Juno targets by board-level compute resources are the UNO Q (quad-core Linux
-        processor, up to 2.0 GHz, 2–4 GB RAM), Portenta H7 (dual-core, up to 480 MHz, 1 MB SRAM plus
-        8 MB SDRAM), Nano ESP32 (dual-core 240 MHz, 512 kB SRAM plus 8 MB PSRAM), M5Stack Cardputer
-        (dual-core 240 MHz, 512 kB SRAM) and AI Thinker ESP32-CAM (dual-core 240 MHz, 520 kB SRAM plus
-        4 MB PSRAM). Juno targets the UNO Q's real-time MCU; GPIO, timing, Serial, Wi-Fi, HTTP, JSON,
-        SD cards, USB HID and displays are plain Java <code>native</code> methods lowered to shim calls
+        The strongest Juno targets by board-level compute resources are Portenta H7, Nano ESP32, M5Stack Cardputer
+        and AI Thinker ESP32-CAM. Across the supported boards, GPIO, timing, Serial, Wi-Fi, HTTP, JSON, SD cards,
+        USB HID and displays are plain Java <code>native</code> methods lowered to shim calls
         at link time.
       </p>
     </div>
@@ -390,6 +380,9 @@ public class Blink {
         </li>
       </ol>
     </div>
+    <div class="juno-hero-actions juno-try-actions">
+      <a href="getting-started" class="juno-btn juno-btn-primary">Continue with Getting Started <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
   </div>
 </section>
 
@@ -400,7 +393,6 @@ public class Blink {
     <div class="juno-boards">
       <div class="juno-boards-track">
         <div class="juno-boards-set">
-          <a class="juno-board" href="arduino-uno-q"><img src="/juno/images/boards/arduino-uno-q.png" alt="Arduino UNO Q" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-portenta-h7"><img src="/juno/images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7" loading="lazy"><span>Portenta H7</span><small>STM32H747 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-nano-esp32"><img src="/juno/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
           <a class="juno-board" href="m5stack-cardputer"><img src="/juno/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
@@ -411,7 +403,6 @@ public class Blink {
           <a class="juno-board" href="arduino-uno-r3"><img src="/juno/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" loading="lazy"><span>UNO R3</span><small>ATmega328P &middot; AVR</small></a>
         </div>
         <div class="juno-boards-set" aria-hidden="true">
-          <a class="juno-board" href="arduino-uno-q" tabindex="-1"><img src="/juno/images/boards/arduino-uno-q.png" alt="" loading="lazy"><span>UNO Q</span><small>STM32U585 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-portenta-h7" tabindex="-1"><img src="/juno/images/boards/arduino-portenta-h7.png" alt="" loading="lazy"><span>Portenta H7</span><small>STM32H747 &middot; Thumb-2</small></a>
           <a class="juno-board" href="arduino-nano-esp32" tabindex="-1"><img src="/juno/images/boards/arduino-nano-esp32.png" alt="" loading="lazy"><span>Nano ESP32</span><small>ESP32-S3 &middot; Xtensa</small></a>
           <a class="juno-board" href="m5stack-cardputer" tabindex="-1"><img src="/juno/images/boards/m5stack-cardputer.png" alt="" loading="lazy"><span>M5Stack Cardputer</span><small>ESP32-S3 &middot; Xtensa</small></a>
@@ -503,7 +494,7 @@ public class Blink {
       <a class="juno-card" href="boards">
         <i class="fa-solid fa-boxes-stacked"></i>
         <h3>Choose your launchpad</h3>
-        <p>From a Linux-backed UNO Q to compact ESP32 and classic UNO boards, one Java program can target an entire family of hardware.</p>
+        <p>From compact ESP32 to classic UNO boards, one Java program can target an entire family of hardware.</p>
         <span>Find your board <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="memory-model#concurrency-by-board">

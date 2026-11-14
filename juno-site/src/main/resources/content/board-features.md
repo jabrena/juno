@@ -15,11 +15,11 @@ language itself, see the [Java subset](../java-subset) page.
 | Juno API or feature | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — | — |
 | Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
-| Threads, `StructuredTaskScope`, `ScopedValue`, locks | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi station | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP client | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
@@ -39,9 +39,30 @@ language itself, see the [Java subset](../java-subset) page.
 | `SecretStore` over onboard ATECC608 | ✓ | — | — | — | — | — | ✓ | — | — |
 | Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
 
+The AI Thinker ESP32-CAM supports Wi-Fi station and access-point modes, HTTPS server sessions, both implicit-TLS and
+STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response
+streaming, explicit PSRAM buffers, the task watchdog, hardware-random UUIDs and double-precision `Math`. It has no
+native USB HID controller, onboard LED matrix or onboard IMU.
+
 The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 `CompileException` naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.
+
+## Secret storage
+
+Juno's [`SecretStore`](../secure-element) API reads named Wi-Fi, API and email credentials from an ATECC608 secure
+element. Secrets stay outside the firmware image and the SD card, so provisioning does not put them in source code,
+build output or removable storage.
+
+| Setup | Boards | Notes |
+|---|---|---|
+| Built in | UNO WiFi Rev2 | The board includes a Microchip ATECC608A on its I2C bus. |
+| External breakout | UNO R4 WiFi, UNO Q, Nano ESP32, M5Stack Cardputer, Raspberry Pi Pico 2 W and AI Thinker ESP32-CAM | Connect an ATECC608 breakout to the board's I2C pins; the Cardputer and ESP32-CAM use their documented Grove or camera I2C pins. |
+| Not supported | UNO R3 | The board has no supported secure-element path. |
+
+The chip must be provisioned with `juno:secret` before the application reads its names and slots. The [secure-element
+guide](../secure-element) covers provisioning, wiring, missing-secret handling and the current hardware-validation
+status.
 
 ## Physical expansions
 

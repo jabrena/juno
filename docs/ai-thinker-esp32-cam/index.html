@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-QJUSWXQO.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
 
 </head>
 <body>
@@ -105,18 +105,11 @@
       <a class="" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/delay">Delay</a>
-        <a class="" href="/juno/serial">Serial</a>
-        <a class="" href="/juno/syslog">Syslog</a>
-        <a class="" href="/juno/gpio">Gpio</a>
-        <a class="" href="/juno/secure-element">SecretStore</a>
-        <a class="" href="/juno/sdcard">SD Card</a>
-        <a class="" href="/juno/wifi">Wifi</a>
-        <a class="" href="/juno/time">Time</a>
-        <a class="" href="/juno/httpclient">HTTP client</a>
-        <a class="" href="/juno/httpserver">HTTP server</a>
-        <a class="" href="/juno/email">Email</a>
-        <a class="" href="/juno/mvc">MVC</a>
+        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
+        <a class="" href="/juno/hardware-apis#storage">Storage</a>
+        <a class="" href="/juno/hardware-apis#internet">Internet</a>
+        <a class="" href="/juno/hardware-apis#utils">Utils</a>
+        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
       </div>
       <a class="" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
@@ -329,17 +322,133 @@ backend as the Nano ESP32.</p>
 receives copied bytes through <code>Camera.capture()</code>. For other large, caller-owned byte payloads use the static <code>Psram</code> API.
 PSRAM is not part of the Java arena and is not managed by the garbage collector.</p>
 <img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
-<p>Juno's support on this board:</p>
-<ul>
-<li><strong>GPIO and serial</strong> through <code>MCU.getGpio()</code>. Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board
-context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.</li>
-<li><strong>Wi-Fi</strong> through <code>MCU.getWifi()</code>, with station mode, HTTP/HTTPS clients and an HTTP server.</li>
-<li><strong>HTTP response streaming</strong> through <code>HttpServer.beginStream()</code>, used by the camera-stream example.</li>
-<li><strong>microSD</strong> through <code>MCU.getSdCard()</code>, using the board's built-in socket on GPIO13.</li>
-<li><strong>Bluetooth LE</strong> for <code>RemotePoweredUpHub</code>, used to drive LEGO Powered Up hubs.</li>
-<li><strong>Camera</strong> through <code>MCU.getCamera()</code>, using the OV2640 and JPEG frames owned by the camera driver.</li>
-<li><strong>PSRAM</strong> through the static <code>Psram</code> API for caller-owned byte buffers; camera frame buffers remain driver-owned.</li>
-</ul>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code>, <code>DigitalOutput</code></td>
+<td align="center">✓</td>
+<td>Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board context; board-specific aliases are available where documented, including the red status LED on GPIO33.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/AiThinkerEsp32CamBlink.java"><code>AiThinkerEsp32CamBlink</code></a></td>
+</tr>
+<tr>
+<td><code>Delay</code>, <code>Serial</code></td>
+<td align="center">✓</td>
+<td>Serial output uses a USB-serial adapter because the board has no USB port.</td>
+<td></td>
+</tr>
+<tr>
+<td>Classes, interfaces and inheritance</td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Wi-Fi station</td>
+<td align="center">✓</td>
+<td>Through <code>MCU.getWifi()</code>; credentials can come from the onboard microSD card.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java"><code>AiThinkerEsp32CamWifiFromSd</code></a></td>
+</tr>
+<tr>
+<td><code>HttpClient</code> (HTTP and HTTPS)</td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>HttpServer</code> (HTTP)</td>
+<td align="center">✓</td>
+<td>Runs on the station address.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java"><code>AiThinkerEsp32CamStream</code></a></td>
+</tr>
+<tr>
+<td>HTTPS server</td>
+<td align="center">—</td>
+<td>The board supports HTTPS clients, but not TLS server sessions.</td>
+<td></td>
+</tr>
+<tr>
+<td>HTTP response streaming</td>
+<td align="center">✓</td>
+<td><code>HttpServer.beginStream()</code> sends the camera's MJPEG response.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java"><code>AiThinkerEsp32CamStream</code></a></td>
+</tr>
+<tr>
+<td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
+<td align="center">—</td>
+<td>The AI Thinker target does not provide Juno's TLS email runtime.</td>
+<td></td>
+</tr>
+<tr>
+<td>Bluetooth LE (LEGO Powered Up)</td>
+<td align="center">✓</td>
+<td>Through <code>RemotePoweredUpHub</code> and ArduinoBLE.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpMotorEncoders.java"><code>PoweredUpMotorEncoders</code></a></td>
+</tr>
+<tr>
+<td><code>SdCard</code></td>
+<td align="center">✓</td>
+<td>Built-in microSD socket through <code>MCU.getSdCard()</code>, using GPIO13 as chip select.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java"><code>AiThinkerEsp32CamWifiFromSd</code></a></td>
+</tr>
+<tr>
+<td>OV2640 camera</td>
+<td align="center">✓</td>
+<td><code>MCU.getCamera()</code> captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java"><code>AiThinkerEsp32CamCapture</code></a></td>
+</tr>
+<tr>
+<td>Explicit PSRAM buffers</td>
+<td align="center">✓</td>
+<td>The static <code>Psram</code> API provides caller-owned byte buffers; PSRAM is outside the Java arena.</td>
+<td></td>
+</tr>
+<tr>
+<td>Threads, <code>synchronized</code>, locks, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
+<td align="center">✓</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>USB HID mouse</td>
+<td align="center">—</td>
+<td>The board has no native USB port; use a USB-serial adapter for flashing and serial output.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>@Watchdog</code></td>
+<td align="center">—</td>
+<td>The AI Thinker ESP32-CAM target does not expose a Juno watchdog runtime.</td>
+<td></td>
+</tr>
+<tr>
+<td>Cryptographic <code>UUID.randomUUID()</code></td>
+<td align="center">—</td>
+<td>No cryptographic UUID entropy provider is exposed for this target.</td>
+<td></td>
+</tr>
+<tr>
+<td>Double-precision <code>java.lang.Math</code></td>
+<td align="center">—</td>
+<td>The board profile exposes only single-precision math functions.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <p>The board has no USB port, so flash it through a USB-serial adapter; the port is passed with
 <code>-Djuno.port</code>.</p>
     </div>

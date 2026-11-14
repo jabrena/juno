@@ -51,30 +51,57 @@ items:
     children:
       - title: "Overview"
         path: "/hardware-apis"
+      - title: "Telemetry"
+        path: "/hardware-apis"
+        fragment: "telemetry"
+      - title: "Storage"
+        path: "/hardware-apis"
+        fragment: "storage"
+      - title: "Internet"
+        path: "/hardware-apis"
+        fragment: "internet"
+      - title: "Utils"
+        path: "/hardware-apis"
+        fragment: "utils"
+      - title: "Hardware"
+        path: "/hardware-apis"
+        fragment: "hardware"
       - title: "Delay"
         path: "/delay"
+        hidden: true
       - title: "Serial"
         path: "/serial"
+        hidden: true
       - title: "Syslog"
         path: "/syslog"
+        hidden: true
       - title: "Gpio"
         path: "/gpio"
+        hidden: true
       - title: "SecretStore"
         path: "/secure-element"
+        hidden: true
       - title: "SD Card"
         path: "/sdcard"
+        hidden: true
       - title: "Wifi"
         path: "/wifi"
+        hidden: true
       - title: "Time"
         path: "/time"
+        hidden: true
       - title: "HTTP client"
         path: "/httpclient"
+        hidden: true
       - title: "HTTP server"
         path: "/httpserver"
+        hidden: true
       - title: "Email"
         path: "/email"
+        hidden: true
       - title: "MVC"
         path: "/mvc"
+        hidden: true
   - title: "Third parties"
     path: "/third-parties"
     children:

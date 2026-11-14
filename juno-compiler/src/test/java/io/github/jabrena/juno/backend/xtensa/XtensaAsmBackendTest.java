@@ -661,6 +661,53 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("Enables the ESP32-CAM networking, entropy, watchdog and double-math capabilities")
+    void shouldLowerAiThinkerEsp32CamSoftwareCapabilities() throws Exception {
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.Watchdog;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.net.email.Pop3Client;
+                import io.github.jabrena.juno.hardware.net.email.Smtp;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                @Board(AiThinkerEsp32CamBoard.class)
+                @Watchdog(timeoutMillis = 3001)
+                public final class AiThinkerEsp32CamSoftwareCapabilities {
+                    public static void main(String[] args) {
+                        MCU.getWifi().beginAP("juno-cam", "secret123");
+                        byte[] certificate = new byte[1024];
+                        byte[] key = new byte[512];
+                        byte[] body = new byte[64];
+                        if (HttpServer.beginTls(443, certificate, certificate.length, key, key.length)) {
+                            HttpServer.accept(body, body.length);
+                        }
+                        int starttls = Smtp.send("smtp.example.com", 587, "user", "secret", "from@example.com",
+                                "to@example.com", "subject", "body");
+                        int implicitTls = Smtp.sendTls("smtp.example.com", 465, "user", "secret", "from@example.com",
+                                "to@example.com", "subject", "body");
+                        int messages = Pop3Client.messageCount("pop.example.com", 995, "user", "secret");
+                        double value = Math.sin(0.5) + Math.sqrt(2.0);
+                        Serial.println((int) (value + starttls + implicitTls + messages
+                                + java.util.UUID.randomUUID().variant()));
+                    }
+                }
+                """;
+
+        CompilationResult result = compileSource("demo.AiThinkerEsp32CamSoftwareCapabilities", source,
+                AI_THINKER_ESP32_CAM);
+
+        assertThat(result.assembly()).contains("juno_wifi_begin_ap", "juno_http_server_begin_tls",
+                "juno_smtp_send", "juno_smtp_send_tls", "juno_pop3_message_count", "juno_uuid_random",
+                "juno_math_sin", "juno_math_sqrt", "juno_watchdog_begin");
+        assertThat(result.runtimeShim()).contains("WiFi.softAP(ssid, password)", "MBEDTLS_SSL_IS_SERVER",
+                "#include <ESP_SSLClient.h>", "juno_smtp_send_tls", "esp_fill_random(target, length)",
+                "esp_task_wdt_init(&config)", "sin(", "sqrt(");
+    }
+
+    @Test
     @DisplayName("Generates UUIDs from the ESP32 hardware random-number generator")
     void shouldGenerateUuidsOnTheNano() throws Exception {
         // When

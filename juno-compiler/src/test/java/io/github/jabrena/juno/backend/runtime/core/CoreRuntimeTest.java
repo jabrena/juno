@@ -84,7 +84,7 @@ class CoreRuntimeTest {
     void shouldUseTheMbedPortentaWifiApi() {
         CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
 
-        assertThat(runtime.wifiIncludes(true)).isEqualTo("#include <WiFi.h>\n");
+        assertThat(runtime.wifiIncludes(false)).isEqualTo("#include <WiFi.h>\n");
         assertThat(runtime.wifiHelpers()).contains("WiFi.begin(ssid, password)", "WiFi.beginAP(ssid, \"\")")
                 .doesNotContain("WiFi.beginAP(ssid);");
         assertThat(runtime.i2cBus()).isEqualTo("Wire1");

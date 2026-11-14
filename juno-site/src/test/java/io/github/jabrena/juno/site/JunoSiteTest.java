@@ -121,10 +121,15 @@ class JunoSiteTest {
 
     @Test
     void apisSectionListsHardwareApisInSecondaryNavigation() {
-        RestAssured.given().when().get("/serial/").then().statusCode(200)
+        RestAssured.given().when().get("/hardware-apis/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
-                .body(containsString("Delay"))
-                .body(containsString("SD Card"))
+                .body(containsString("Telemetry"))
+                .body(containsString("Storage"))
+                .body(containsString("Internet"))
+                .body(containsString("Utils"))
+                .body(containsString("Hardware"))
+                .body(containsString("href=\"/hardware-apis#telemetry\""))
+                .body(containsString("href=\"/hardware-apis#storage\""))
                 .body(containsString("juno-topnav-children"));
     }
 
@@ -176,12 +181,27 @@ class JunoSiteTest {
     }
 
     @Test
-    void showcasePageListsExamplesInSecondaryNavigation() {
+    void showcasePageListsArticlesAndPagination() {
         RestAssured.given().when().get("/showcase/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
-                .body(containsString("/images/showcase/gladiator-solo.gif"))
-                .body(containsString("/images/games/lichess-daily.gif"))
-                .body(containsString("/images/showcase/mailbox1.png"));
+                .body(containsString("/blog/gladiator/"))
+                .body(containsString("/blog/lichess/"))
+                .body(containsString("/blog/mailbox/"))
+                .body(containsString("/posts/page2/"));
+    }
+
+    @Test
+    void showcaseArticleRendersDetail() {
+        RestAssured.given().when().get("/blog/mailbox/").then().statusCode(200)
+                .body(containsString("Mailbox is a remote messaging system for Claude"))
+                .body(containsString("usecases/mailbox"));
+    }
+
+    @Test
+    void showcasePaginationRendersNextPage() {
+        RestAssured.given().when().get("/posts/page2/").then().statusCode(200)
+                .body(containsString("Supabase: publish Grove temperatures to the cloud"))
+                .body(containsString("Showcase"));
     }
 
 }

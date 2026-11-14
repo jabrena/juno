@@ -239,6 +239,24 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The AI Thinker ESP32-CAM exposes the ESP32 software capabilities")
+    void shouldExposeTheEsp32CamSoftwareCapabilities() {
+        Board board = Board.AI_THINKER_ESP32_CAM;
+
+        assertThat(board.supports(Capability.WIFI_ACCESS_POINT)).isTrue();
+        assertThat(board.supports(Capability.HTTPS_SERVER)).isTrue();
+        assertThat(board.supports(Capability.TLS_EMAIL)).isTrue();
+        assertThat(board.supports(Capability.SMTP_STARTTLS)).isTrue();
+        assertThat(board.supports(Capability.WATCHDOG)).isTrue();
+        assertThat(board.supports(Capability.UUID_RANDOM)).isTrue();
+        assertThat(board.supports(Capability.SECURE_ENTROPY)).isTrue();
+        assertThat(board.supports(Capability.DOUBLE_MATH)).isTrue();
+        assertThat(board.supports(Capability.USB_HID)).isFalse();
+        assertThat(board.supports(Capability.LED_MATRIX)).isFalse();
+        assertThat(board.supports(Capability.ONBOARD_IMU)).isFalse();
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W resolves to its arduino-pico Thumb-2 target")
     void shouldResolveRaspberryPico2WTarget() {
         // Given
