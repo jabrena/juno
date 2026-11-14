@@ -109,7 +109,7 @@ public enum Board {
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS,
                     Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.WATCHDOG, Capability.BIG_NUMBERS,
-                    Capability.DOUBLE_MATH));
+                    Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY));
 
     private final String apiClassName;
     private final String id;

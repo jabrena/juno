@@ -18,6 +18,15 @@ public final class Atecc608 implements SecretStore {
     /** The chip's 7-bit I2C address. */
     public static final int ADDRESS = 0x60;
 
+    /** No failure was recorded by the last operation. */
+    public static final int FAILURE_NONE = 0;
+    /** The chip did not answer on the I2C bus. */
+    public static final int FAILURE_UNAVAILABLE = 1;
+    /** The chip answered with a non-zero command status. */
+    public static final int FAILURE_REJECTED = 2;
+    /** The chip answered with a malformed or corrupt response. */
+    public static final int FAILURE_PROTOCOL = 3;
+
     private static final int WAKE_ADDRESS = 0x00;
     private static final int WORD_SLEEP = 0x01;
     private static final int WORD_COMMAND = 0x03;
@@ -49,6 +58,8 @@ public final class Atecc608 implements SecretStore {
     private final byte[] status = new byte[STATUS_RESPONSE_BYTES];
     private final byte[] slot = new byte[SLOT_BYTES];
     private final byte[] value = new byte[MAX_VALUE_BYTES];
+    private int lastFailure;
+    private int lastStatus;
 
     /**
      * A driver over {@code i2c}, the bus the chip is wired to, reading the names in {@code slots}. The driver holds no
@@ -64,8 +75,20 @@ public final class Atecc608 implements SecretStore {
         return this;
     }
 
+    /** Returns the failure kind recorded by the most recent read or write operation. */
+    public int lastFailure() {
+        return lastFailure;
+    }
+
+    /** Returns the raw ATECC608 status byte from the most recent command response, or {@code 0} if none was received. */
+    public int lastStatus() {
+        return lastStatus;
+    }
+
     @Override
     public int read(String key, byte[] buffer) {
+        lastFailure = FAILURE_NONE;
+        lastStatus = 0;
         int slotNumber = slots.slotOf(key);
         if (slotNumber < 0 || !readBlock(slotNumber, 0) || !readBlock(slotNumber, 1)) {
             return -1;
@@ -104,6 +127,8 @@ public final class Atecc608 implements SecretStore {
 
     @Override
     public int write(String key, byte[] value, int length) {
+        lastFailure = FAILURE_NONE;
+        lastStatus = 0;
         int slotNumber = slots.slotOf(key);
         if (slotNumber < 0 || length < 0 || length > MAX_VALUE_BYTES || length > value.length) {
             return -1;
@@ -194,32 +219,55 @@ public final class Atecc608 implements SecretStore {
         writeFrame[1 + WRITE_COUNT - 2] = (byte) (crc & 0xFF);
         writeFrame[1 + WRITE_COUNT - 1] = (byte) ((crc >> 8) & 0xFF);
         if (i2c.write(ADDRESS, writeFrame, writeFrame.length) != writeFrame.length) {
+            lastFailure = FAILURE_UNAVAILABLE;
             sleep();
             return false;
         }
         Delay.millis(WRITE_DELAY_MILLIS);
         boolean ok = false;
+        int failure = FAILURE_NONE;
         for (int attempt = 0; attempt < READ_ATTEMPTS && !ok; attempt++) {
             ok = receiveStatus();
             if (!ok) {
+                failure = moreSpecificFailure(failure, lastFailure);
                 Delay.millis(RETRY_DELAY_MILLIS);
             }
+        }
+        if (!ok) {
+            lastFailure = failure;
         }
         sleep();
         return ok;
     }
 
+    private static int moreSpecificFailure(int current, int candidate) {
+        return candidate == FAILURE_REJECTED || (candidate == FAILURE_PROTOCOL && current == FAILURE_UNAVAILABLE)
+                ? candidate
+                : current == FAILURE_NONE ? candidate : current;
+    }
+
     /** Receives a 4-byte status response; true only for a well-formed success (status 0x00). */
     private boolean receiveStatus() {
         if (i2c.read(ADDRESS, status, STATUS_RESPONSE_BYTES) != STATUS_RESPONSE_BYTES) {
+            lastFailure = FAILURE_UNAVAILABLE;
             return false;
         }
         if ((status[0] & 0xFF) != STATUS_RESPONSE_BYTES) {
+            lastFailure = FAILURE_PROTOCOL;
             return false;
         }
         int crc = crc16(status, 0, 2);
         int received = (status[2] & 0xFF) | ((status[3] & 0xFF) << 8);
-        return crc == received && status[1] == 0;
+        if (crc != received) {
+            lastFailure = FAILURE_PROTOCOL;
+            return false;
+        }
+        if (status[1] != 0) {
+            lastStatus = status[1] & 0xFF;
+            lastFailure = FAILURE_REJECTED;
+            return false;
+        }
+        return true;
     }
 
     /** Receives a read response and, when its length and CRC check out, copies the block into the slot buffer. */

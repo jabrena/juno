@@ -18,7 +18,7 @@ language itself, see the [Java subset](../java-subset) page.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — | — |
 | Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
-| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi station | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP client | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |

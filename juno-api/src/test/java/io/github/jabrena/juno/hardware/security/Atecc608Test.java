@@ -184,6 +184,7 @@ class Atecc608Test {
         assertThat(driver.write("wifi.ssid", tooLong, tooLong.length)).isEqualTo(-1);
         chip.present = false;
         assertThat(driver.write("wifi.ssid", value, value.length)).isEqualTo(-1);
+        assertThat(driver.lastFailure()).isEqualTo(Atecc608.FAILURE_UNAVAILABLE);
         chip.present = true;
         assertThat(driver.getString("wifi.ssid")).isNull();
     }
@@ -196,6 +197,8 @@ class Atecc608Test {
         chip.writeStatus = 0x01;
 
         assertThat(driver.write("wifi.ssid", value, value.length)).isEqualTo(-1);
+        assertThat(driver.lastFailure()).isEqualTo(Atecc608.FAILURE_REJECTED);
+        assertThat(driver.lastStatus()).isEqualTo(0x01);
     }
 
     @Test

@@ -149,6 +149,16 @@ class ThreadsTest {
     }
 
     @Test
+    @DisplayName("The Portenta runs Juno threads on Mbed RTOS threads passing a semaphore baton")
+    void shouldRunPortentaThreadsOnMbedRtosThreads() throws Exception {
+        String shim = compile("ArduinoPortentaH7Board", START_AND_JOIN).runtimeShim();
+
+        assertThat(shim).contains("#include <mbed.h>", "Portenta H7 Mbed RTOS port", "rtos::Thread",
+                        "rtos::Semaphore", "juno_mbed_main_baton", "juno_port_live_range")
+                .doesNotContain("SysTick_Handler", "juno_context_switch", "juno_preempt_tick");
+    }
+
+    @Test
     @DisplayName("Generated code is bracketed so the tick knows what it may interrupt")
     void shouldBracketGeneratedCodeSoTheTickKnowsWhatItMayInterrupt() throws Exception {
         // Given

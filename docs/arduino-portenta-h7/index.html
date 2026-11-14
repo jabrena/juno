@@ -451,10 +451,10 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
 </tr>
 <tr>
-<td>Threads, locks and structured concurrency</td>
-<td align="center">—</td>
-<td>Not exposed by the Portenta board profile yet.</td>
-<td></td>
+<td>Threads, locks, structured concurrency and scoped values</td>
+<td align="center">✓</td>
+<td>Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Hardware verification remains pending.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -479,12 +479,6 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td align="center">✓</td>
 <td>The existing <code>Atecc608</code> driver uses Portenta's primary I2C bus; the slot contents are not embedded in firmware.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
-</tr>
-<tr>
-<td>Threads, locks and structured concurrency</td>
-<td align="center">—</td>
-<td>The Mbed RTOS carrier port still needs implementation and hardware verification.</td>
-<td></td>
 </tr>
 <tr>
 <td>Ethernet</td>
