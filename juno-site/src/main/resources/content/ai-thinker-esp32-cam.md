@@ -18,9 +18,12 @@ Juno's support on this board:
 
 - **GPIO and serial** through `MCU.getGpio()`. Resolve portable `D0`–`D13` and `A0`–`A5` names through the board
   context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.
-- **Wi-Fi** through `MCU.getWifi()`, station mode with plain HTTP.
+- **Wi-Fi** through `MCU.getWifi()`, with station mode, HTTP/HTTPS clients and an HTTP server.
+- **HTTP response streaming** through `HttpServer.beginStream()`, used by the camera-stream example.
 - **microSD** through `MCU.getSdCard()`, using the board's built-in socket on GPIO13.
 - **Bluetooth LE** for `RemotePoweredUpHub`, used to drive LEGO Powered Up hubs.
+- **Camera** through `MCU.getCamera()`, using the OV2640 and JPEG frames owned by the camera driver.
+- **PSRAM** through the static `Psram` API for caller-owned byte buffers; camera frame buffers remain driver-owned.
 
 The board has no USB port, so flash it through a USB-serial adapter; the port is passed with
 `-Djuno.port`.

@@ -8,39 +8,52 @@ Every board runs the same Java subset, but the hardware around the program diffe
 that depend on the board rather than on the language: networking, Bluetooth, USB, displays, storage and shields. For the
 language itself, see the [Java subset](../java-subset) page.
 
-## Summary
+## API support
 
-✓ supported · – not available · the notes after the table explain the exceptions.
+✓ supported · — not supported by Juno on this board
 
-| Feature | UNO Q | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 | Pico 2 W |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Board-context GPIO pin resolver (`digitalPin`, `analogPin`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Wi-Fi | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
-| Wi-Fi access point | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| HTTP client (plain) | – | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
-| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
-| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ |
-| HTTPS server | ✓ | ✓ | ✓ | – | – | – | – | ✓ |
-| Email over TLS | ✓ | ✓ | ✓ | – | ✓ | ✓ | – | ✓ |
-| Email STARTTLS | – | ✓ | – | – | ✓ | – | – | – |
-| SNTP clock (`LocalDateTime.now()`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
-| Bluetooth LE | ✓ | ✓ | ✓ | ✓ | ✓ | – | – | ✓ |
-| USB HID mouse | – | ✓ | ✓ | – | ✓ | – | – | ✓ |
-| LED matrix | ✓ (13 × 8) | – | – | – | ✓ (12 × 8) | – | – | – |
-| Built-in display, keyboard, speaker, battery | – | – | ✓ | – | – | – | – | – |
-| Onboard microSD socket (`MCU.getSdCard()`) | – | – | ✓ | ✓ | – | – | – | – |
-| Onboard camera (`MCU.getCamera()`) | – | – | – | ✓ | – | – | – | – |
-| Onboard IMU (`MCU.getAccelerometer()`, `MCU.getGyroscope()`) | – | – | – | – | – | ✓ | – | – |
-| Hardware random numbers | ✓ | ✓ | ✓ | – | ✓ | ✓ | Weak | – |
-| Watchdog | – | ✓ | ✓ | – | ✓ | ✓ | ✓ | ✓ |
-| Structured concurrency (threads, scopes, scoped values, locks) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | – | ✓ |
-| Double-precision `Math` | ✓ | ✓ | ✓ | – | ✓ | – | – | ✓ |
-| SD card | Shield | Carrier | Built-in | Built-in | Shield | Shield | Shield | – |
-| Grove sockets | Shield | Carrier | – | – | Shield | Shield | Shield | Shield |
-| 9 Axis Motion Shield | Shield | – | – | – | Shield | Shield | Shield | – |
-| LCD Keypad Shield | Shield | – | – | – | Shield | Shield | Shield | – |
-| TFT Touch Shield | Shield | – | – | – | Shield | Shield | – | – |
-| Infrared link to LEGO RCX | ✓ | ✓ | – | – | ✓ | – | – | – |
+| Juno API or feature | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — | — |
+| Double-precision `Math` functions | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
+| Threads, `StructuredTaskScope`, `ScopedValue`, locks | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi access point | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP client | — | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTPS client | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP server | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTPS server | — | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
+| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — | — | — |
+| Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — | — | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
+| Email over STARTTLS (`Smtp.send`) | — | ✓ | — | — | — | — | ✓ | — | — |
+| Bluetooth LE (LEGO Powered Up) | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
+| USB HID mouse | — | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
+| Onboard LED matrix | — | — | — | — | ✓ | — | ✓ | — | — |
+| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | — | — | — | — | — | — | — | ✓ | — |
+| Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — | — |
+| `@Watchdog` | — | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
+| Cryptographic `UUID.randomUUID()` | — | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
+| Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
+
+The compiler checks this table for you: a program that uses an API its target board does not support fails with a
+`CompileException` naming the board and the missing capability. Some cells are compiled support that has not yet been run
+on every physical board; each board's page notes what is confirmed on hardware.
+
+## Physical expansions
+
+✓ supported · — not available
+
+| Expansion | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| SD card | — | Carrier | Built-in | Built-in | — | — | Shield | Shield | Shield |
+| Grove sockets | — | Carrier | — | — | Shield | Shield | Shield | Shield | Shield |
+| 9 Axis Motion Shield | — | — | — | — | Shield | — | Shield | Shield | Shield |
+| LCD Keypad Shield | — | — | — | — | Shield | — | Shield | Shield | Shield |
+| TFT Touch Shield | — | — | — | — | Shield | — | Shield | — | — |
+| Infrared link to LEGO RCX | — | ✓ | — | — | ✓ | — | ✓ | — | — |
 
 Notes:
 
@@ -49,8 +62,6 @@ Notes:
   [Arduino Shields](../arduino-shields).
 - **Carrier** means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
   [Nano ESP32](../arduino-nano-esp32#shields) page.
-- **Weak** means a non-cryptographic random source, suitable only for best-effort identities. See the
-  [Data types](../java-subset#data-types) section.
 - **Structured concurrency** is available on every board except the UNO R3. The UNO R3 WiFi Rev2, UNO R4 WiFi and
   UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
   carriers concurrently. See [Concurrency behaviour](../java-subset#concurrency-behaviour) for scheduling and memory
