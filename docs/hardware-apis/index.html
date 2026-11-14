@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Hardware APIs">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, secrets, SD card, Wi-Fi, time, HTTP, email and MVC.">
-  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, secrets, SD card, Wi-Fi, time, HTTP, email and MVC." />
-  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, secrets, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta name="description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
+  <meta property="og:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC." />
+  <meta name="twitter:description" content="An overview of the hardware and network APIs Juno programs can use: delays, serial, syslog, SD card, Wi-Fi, time, HTTP, email and MVC.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/hardware-apis/" />
@@ -360,11 +360,6 @@ document.addEventListener('DOMContentLoaded', function () {
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java"><code>OnboardImuSerial</code></a></td>
 </tr>
 <tr>
-<td><a href="../secure-element">SecretStore</a></td>
-<td>Reading named credentials from an ATECC608 secure element without putting them on an SD card, in firmware or in build output.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
-</tr>
-<tr>
 <td><a href="../sdcard">SD Card</a></td>
 <td>Loading configuration and credentials from a microSD card at boot, and reading and writing files.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a></td>
@@ -401,31 +396,6 @@ document.addEventListener('DOMContentLoaded', function () {
 </tr>
 </tbody>
 </table>
-<h2 id="secretstore">SecretStore</h2>
-<p><code>SecretStore</code> reads named values from an ATECC608 secure element on the board's I2C bus. Use it for Wi-Fi
-credentials, API keys and other configuration that should not be stored on an SD card or embedded in the firmware.
-The board remains the trust boundary: code running on the board can read the secrets, but a copied firmware image does
-not contain their values.</p>
-<p>Provision a name with the <code>juno:secret</code> goal. The value is requested through a hidden prompt and sent to the board over
-USB serial; it is not placed on the command line or in the build log:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:secret \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
-  -Djuno.board=arduino-uno-r4-wifi \
-  -Djuno.port=/dev/cu.usbmodemXXXX \
-  -Djuno.secret.key=wifi.ssid
-</code></pre>
-<p>Read the value from a board program with a caller-owned slot map:</p>
-<pre><code class="language-java">SecretSlots slots = new SecretSlots()
-        .add(&quot;wifi.ssid&quot;, 8)
-        .add(&quot;wifi.password&quot;, 9);
-SecretStore secrets = new Atecc608(MCU.getI2c(), slots).getSecretStore();
-
-String ssid = secrets.getString(&quot;wifi.ssid&quot;);
-String password = secrets.getString(&quot;wifi.password&quot;);
-</code></pre>
-<p><code>getString</code> returns <code>null</code> when a value is missing. For zero-allocation reads, pass a caller-owned byte array to
-<code>read(name, buffer)</code> instead. The provisioning program and the application must use the same name-to-slot mapping.
-See <a href="../secure-element">Secrets in a Secure Element</a> for supported names, limits, wiring, listing and clearing values.</p>
     </div>
   </section>
 </article>

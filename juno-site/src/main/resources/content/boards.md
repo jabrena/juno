@@ -1,6 +1,6 @@
 ---
 title: "Boards"
-description: "The boards Juno compiles for, side by side: hardware, memory, backend and which Juno APIs each one supports."
+description: "The boards Juno compiles for, side by side: hardware, memory and backend details."
 layout: page
 ---
 
@@ -24,6 +24,7 @@ static `Psram` byte-buffer API; the camera board also keeps its driver-owned fra
 | Clock | 480 MHz (M7) | 240 MHz | 240 MHz | 240 MHz | 160 MHz | 150 MHz | 48 MHz | 16 MHz | 16 MHz |
 | Flash | 2 MB internal + 16 MB NOR | 16 MB | 8 MB | 4 MB | 2 MB | 4 MB | 256 kB | 48 kB | 32 kB |
 | SRAM | 1 MB internal + 8 MB SDRAM | 512 kB | 512 kB | 520 kB | 786 kB | 520 kB | 32 kB | 6 kB | 2 kB |
+| SDRAM | 8 MB | — | — | — | — | — | — | — | — |
 | PSRAM | — | 8 MB | — | 4 MB | — | — | — | — | — |
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V | 5 V |
 | Radio | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE on the Linux side | CYW43439 Wi-Fi/BLE | ESP32-S3 Wi-Fi/BLE | NINA-W102 Wi-Fi/BLE | None |
@@ -34,38 +35,9 @@ static `Psram` byte-buffer API; the camera board also keeps its driver-owned fra
 The spaces after `:` in the Arduino core row are visual break points for this table; use the compact
 core identifier (for example, `arduino:zephyr`) in build commands.
 
-## API support
-
-✓ supported · — not available on this board
-
-| Juno API or feature | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `BigInteger`, `BigDecimal` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Double-precision `Math` functions | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
-| Threads, `StructuredTaskScope`, `ScopedValue`, locks | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi access point | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP client | — | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | — |
-| HTTPS client | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP server | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTPS server | — | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
-| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | — | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| Email over STARTTLS (`Smtp.send`) | — | ✓ | — | — | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | — | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
-| USB HID mouse | — | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
-| Onboard LED matrix | — | — | — | — | ✓ | — | ✓ | — | — |
-| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | — | — | — | — | — | — | — | ✓ | — |
-| Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — | — |
-| `@Watchdog` | — | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | — | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
-| Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
-
-The compiler checks this table for you: a program that uses an API its target board does not
-support fails with a `CompileException` naming the board and the missing capability. Some cells
-are compiled support that has not yet been run on every physical board; each board's page notes
-what is confirmed on hardware.
+For the API and board-feature support matrix, see [Board features](../board-features). The compiler checks that matrix for
+you: a program that uses an API its target board does not support fails with a `CompileException` naming the board and the
+missing capability.
 
 Every board exposes `Gpio.digitalPin("D0".."D13")` and `Gpio.analogPin("A0".."A5")` through `MCU`.
 The selected runtime translates those names to the board's pin mapping. `getInput()`, `getOutput()` and

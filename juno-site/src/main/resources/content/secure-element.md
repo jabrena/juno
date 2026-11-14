@@ -18,25 +18,6 @@ chip. Treat this page as a preview until the hardware steps are done.
   program on the board can read any slot.
 - A secret that is missing, unreadable or fails its checksum is reported as missing. No copy is kept in plaintext anywhere.
 
-## Names and limits
-
-| Name | Used for | Longest value |
-|---|---|---|
-| `wifi.ssid` | Wi-Fi network name | 31 characters |
-| `wifi.password` | Wi-Fi password | 31 characters |
-| `mailbox.apikey` | Mailbox API key | 63 bytes |
-| `mailbox.q.ip` | UNO Q mailbox address | 31 characters |
-| `smtp.host` | SMTP server | 31 characters |
-| `smtp.username` | SMTP username | 31 characters |
-| `smtp.password` | SMTP password | 31 characters |
-| `supabase.api.host` | Supabase REST host | 31 characters |
-| `supabase.api.key` | Supabase publishable key | 63 bytes |
-| `supabase.api.url` | Supabase table endpoint | 63 bytes |
-
-Values must be printable ASCII. The Wi-Fi limit is 31 characters because the example builds the SSID and password as runtime
-`String`s. The plugin only enforces the 63-byte secure-element slot capacity; the board-side `SecretSlots` table is the
-source of truth for valid names.
-
 ## Provisioning
 
 Upload the provisioning program with `juno:secret`. It asks for the value at a hidden prompt, sends it to the board over USB
@@ -74,7 +55,8 @@ String password = secrets.getString("wifi.password");
 slot numbers. `getString` returns `null` for a missing name. The `read(name, buffer)` form copies the bytes into your own
 buffer and allocates nothing.
 
-The complete example is `SecretWifiStatus` in `juno-examples`.
+The complete example is [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java)
+in `juno-examples`.
 
 ## Wiring
 

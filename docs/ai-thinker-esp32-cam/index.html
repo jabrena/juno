@@ -333,9 +333,12 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <ul>
 <li><strong>GPIO and serial</strong> through <code>MCU.getGpio()</code>. Resolve portable <code>D0</code>–<code>D13</code> and <code>A0</code>–<code>A5</code> names through the board
 context; board-specific MCU GPIO aliases are available where documented, including the red status LED on GPIO33.</li>
-<li><strong>Wi-Fi</strong> through <code>MCU.getWifi()</code>, station mode with plain HTTP.</li>
+<li><strong>Wi-Fi</strong> through <code>MCU.getWifi()</code>, with station mode, HTTP/HTTPS clients and an HTTP server.</li>
+<li><strong>HTTP response streaming</strong> through <code>HttpServer.beginStream()</code>, used by the camera-stream example.</li>
 <li><strong>microSD</strong> through <code>MCU.getSdCard()</code>, using the board's built-in socket on GPIO13.</li>
 <li><strong>Bluetooth LE</strong> for <code>RemotePoweredUpHub</code>, used to drive LEGO Powered Up hubs.</li>
+<li><strong>Camera</strong> through <code>MCU.getCamera()</code>, using the OV2640 and JPEG frames owned by the camera driver.</li>
+<li><strong>PSRAM</strong> through the static <code>Psram</code> API for caller-owned byte buffers; camera frame buffers remain driver-owned.</li>
 </ul>
 <p>The board has no USB port, so flash it through a USB-serial adapter; the port is passed with
 <code>-Djuno.port</code>.</p>
