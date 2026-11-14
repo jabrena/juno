@@ -226,7 +226,8 @@ on the sensor, so a reader that comes late still gets every sample since its pre
  <a href="../navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
  <a href="../navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a>&nbsp;pose)</code></div>
 <div class="col-last even-row-color">
-<div class="block">Creates odometry that updates <code>pose</code> in place.</div>
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>gyro</code>'s angle: whole degrees,
+read once each <a href="../navigation/DifferentialDriveOdometry.html#update()"><code>DifferentialDriveOdometry.update()</code></a>, and no sample while the angle reads negative.</div>
 </div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../navigation/GyroHeading.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroHeading</a><wbr>(<a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyroscope,

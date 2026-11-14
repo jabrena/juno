@@ -154,13 +154,24 @@ this side's own.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry</a><wbr>(<a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;leftEncoder,
+<div class="col-second even-row-color"><code><a href="../navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry</a><wbr>(<a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;leftEncoder,
+ <a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;rightEncoder,
+ <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;direction,
+ <a href="../navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ <a href="../navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a>&nbsp;pose)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>direction</code>, such as a
+<a href="../navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a>: thousandths of a degree, followed between updates, and a valid sample on every update.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry</a><wbr>(<a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;leftEncoder,
  <a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;rightEncoder,
  <a href="../Gyroscope.html" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a>&nbsp;gyro,
  <a href="../navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
  <a href="../navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a>&nbsp;pose)</code></div>
-<div class="col-last even-row-color">
-<div class="block">Creates odometry that updates <code>pose</code> in place.</div>
+<div class="col-last odd-row-color">
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>gyro</code>'s angle: whole degrees,
+read once each <a href="../navigation/DifferentialDriveOdometry.html#update()"><code>DifferentialDriveOdometry.update()</code></a>, and no sample while the angle reads negative.</div>
 </div>
 </div>
 </section>

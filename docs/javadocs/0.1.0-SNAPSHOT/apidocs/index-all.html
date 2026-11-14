@@ -127,6 +127,14 @@ initTheme();
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#ADDRESS_DEFAULT" class="member-name-link">ADDRESS_DEFAULT</a> - Static variable in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#addWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint)" class="member-name-link">addWaypoint(Waypoint)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Appends <code>waypoint</code> to the path without moving.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html#addWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint)" class="member-name-link">addWaypoint(Waypoint)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a></dt>
+<dd>
+<div class="block">Appends <code>waypoint</code> to the path being received.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">AiThinkerEsp32CamBoard</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">Selects the AI Thinker ESP32-CAM as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
@@ -158,6 +166,11 @@ initTheme();
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#and(io.github.jabrena.juno.remote.lego.rcx.RcxMotor)" class="member-name-link">and(RcxMotor)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>
 <div class="block">These outputs and <code>other</code>'s, driven together in one command.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#angleToMillidegrees(int,int)" class="member-name-link">angleToMillidegrees(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
+<dd>
+<div class="block">The direction from this pose's position to <code>(xMillimetres, yMillimetres)</code>, in millidegrees
+counter-clockwise from +x, normalised to <code>0</code> through <code>359_999</code>: leJOS's <code>angleTo</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#appendLine(java.lang.String,java.lang.String)" class="member-name-link">appendLine(String, String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -193,6 +206,10 @@ rotated 180 degrees.</div>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.tft.TftTouchShield)" class="member-name-link">ArduinoNanoEsp32Image(TftTouchShield)</a> - Constructor for class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html" title="class in io.github.jabrena.juno.util.image">ArduinoNanoEsp32Image</a></dt>
 <dd>
 <div class="block">Draws on <code>tft</code>, the program's one shield instance.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/annotations/ArduinoPortentaH7Board.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">ArduinoPortentaH7Board</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
+<dd>
+<div class="block">Selects the Arduino Portenta H7's M7 core as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoUnoBoardImage.html" class="type-name-link" title="class in io.github.jabrena.juno.util.image">ArduinoUnoBoardImage</a> - Class in <a href="io/github/jabrena/juno/util/image/package-summary.html">io.github.jabrena.juno.util.image</a></dt>
 <dd>
@@ -255,6 +272,12 @@ whose outer ring is black and whose inner 4x4 cells encode the id.</div>
 <dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#%3Cinit%3E(io.github.jabrena.juno.hardware.i2c.I2c,io.github.jabrena.juno.hardware.security.SecretSlots)" class="member-name-link">Atecc608(I2c, SecretSlots)</a> - Constructor for class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
 <dd>
 <div class="block">A driver over <code>i2c</code>, the bus the chip is wired to, reading the names in <code>slots</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#atWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">atWaypoint(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html#atWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">atWaypoint(Waypoint, Pose, int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a></dt>
+<dd>
+<div class="block">The robot reached <code>waypoint</code>, the <code>sequence</code>-th reached since the navigator was created.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#audio()" class="member-name-link">audio()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>
@@ -522,6 +545,12 @@ certificate themselves (e.g.</div>
 <dd>
 <div class="block">The largest block <a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#transfer(int,byte%5B%5D,int)"><code>RcxFirmware.transfer(int, byte[], int)</code></a> sends.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html#blocked()" class="member-name-link">blocked()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></dt>
+<dd>
+<div class="block">Takes a reading and returns whether the way is blocked now.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html#blocked()" class="member-name-link">blocked()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFPort.html#BLUE" class="member-name-link">BLUE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.pf.<a href="io/github/jabrena/juno/remote/lego/pf/PFPort.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFPort</a></dt>
 <dd>
 <div class="block">The blue output, also called B.</div>
@@ -700,6 +729,10 @@ y = 319.</div>
 <dd>
 <div class="block">A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#capacity()" class="member-name-link">capacity()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">How many waypoints the path holds at most: the length of the array it was given.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#capacity(int)" class="member-name-link">capacity(int)</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Returns a live buffer's capacity.</div>
@@ -823,6 +856,10 @@ touched.</div>
 <dd>
 <div class="block">Blanks the display, its number and icons too (but for the IR cones), until a number or text is shown.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#clearPath()" class="member-name-link">clearPath()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Empties the path; a move in progress ends first, as with <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#stop()"><code>Navigator.stop()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#clearSensor(int)" class="member-name-link">clearSensor(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
 <div class="block">Sets the value of the sensor on <code>input</code> back to zero, e.g. a rotation sensor's count.</div>
@@ -869,6 +906,10 @@ reply.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#COMPLETE" class="member-name-link">COMPLETE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#COMPLETED" class="member-name-link">COMPLETED</a> - Enum constant in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
+<dd>
+<div class="block">The move reached its distance or its turn.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html#configure(java.util.Properties)" class="member-name-link">configure(Properties)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></dt>
 <dd>
 <div class="block">Applies optional <code>sntp.host</code> and <code>sntp.port</code> values loaded by the application, normally from
@@ -906,7 +947,9 @@ not answer.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html#correction()" class="member-name-link">correction()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></dt>
 <dd>
-<div class="block">Returns the current bounded turn-power correction.</div>
+<div class="block">Returns the current bounded turn-power correction, as <a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html#drive(int,int)"><code>DifferentialDrive.drive(int, int)</code></a> takes it: positive speeds up
+the left side and turns clockwise, so a target counter-clockwise of the heading (a positive error) corrects with a
+negative turn.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#corrections()" class="member-name-link">corrections()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
 <dd>
@@ -995,9 +1038,17 @@ not answer.</div>
 <dd>
 <div class="block">A reasonable default size for a caller's headers buffer, in bytes.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#DEFAULT_MAX_DETOURS" class="member-name-link">DEFAULT_MAX_DETOURS</a> - Static variable in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Detours tried for one mission waypoint before the planner gives up on it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEFAULT_PORT" class="member-name-link">DEFAULT_PORT</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">The UDP port <code>juno:monitor</code> listens on by default; the standard 514 needs root on most computers.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#DEFAULT_POSITION_ERROR_MILLIMETRES" class="member-name-link">DEFAULT_POSITION_ERROR_MILLIMETRES</a> - Static variable in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">How close to a waypoint a leg must end, when the waypoint does not say.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#DEFAULT_RESPONSE_BUFFER_SIZE" class="member-name-link">DEFAULT_RESPONSE_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -1025,6 +1076,21 @@ not answer.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#DELETE" class="member-name-link">DELETE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Plans a mission's path for a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> and drives it around obstacles found on the way: the planner leJOS's
+<code>PathFinder</code> feeds a navigator through its <a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>WaypointListener</code></a>, re-planning when the navigator says a leg
+ended at an obstacle, which leJOS leaves to the program.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#%3Cinit%3E(io.github.jabrena.juno.robotics.navigation.Navigator,io.github.jabrena.juno.robotics.navigation.ObstacleDetector,io.github.jabrena.juno.robotics.navigation.Waypoint%5B%5D)" class="member-name-link">DetourPlanner(Navigator, ObstacleDetector, Waypoint[])</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">A planner for <code>mission</code>, driven by <code>navigator</code>, whose pilot reads <code>detector</code>; it becomes the
+navigator's listener.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#detours()" class="member-name-link">detours()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">How many detours the planner has planned.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#DEVICE_COLOR_DISTANCE_SENSOR" class="member-name-link">DEVICE_COLOR_DISTANCE_SENSOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#DEVICE_LARGE_ANGULAR_MOTOR" class="member-name-link">DEVICE_LARGE_ANGULAR_MOTOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
@@ -1063,11 +1129,17 @@ not answer.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
 <dd>
-<div class="block">Updates a caller-owned pose from two wheel encoders and an IMU.</div>
+<div class="block">Updates a caller-owned pose from two wheel encoders and a heading sensor.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry(Encoder, Encoder, DirectionFinder, DriveGeometry, Pose)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></dt>
+<dd>
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>direction</code>, such as a
+<a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a>: thousandths of a degree, followed between updates, and a valid sample on every update.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Gyroscope,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry(Encoder, Encoder, Gyroscope, DriveGeometry, Pose)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></dt>
 <dd>
-<div class="block">Creates odometry that updates <code>pose</code> in place.</div>
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>gyro</code>'s angle: whole degrees,
+read once each <a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html#update()"><code>DifferentialDriveOdometry.update()</code></a>, and no sample while the angle reads negative.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a> - Interface in <a href="io/github/jabrena/juno/hardware/gpio/package-summary.html">io.github.jabrena.juno.hardware.gpio</a></dt>
 <dd>
@@ -1126,6 +1198,15 @@ system-information query <a href="io/github/jabrena/juno/hardware/device/kasa/Ka
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.display">Display</a> - Interface in <a href="io/github/jabrena/juno/hardware/display/package-summary.html">io.github.jabrena.juno.hardware.display</a></dt>
 <dd>
 <div class="block">A board display with RGB565 colors, basic drawing operations and text output.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#distanceMillimetres()" class="member-name-link">distanceMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">How far the robot's centre is from the pair's zero, in millimetres: the average of the two wheels, each by its own
+encoder ratio, as the pair's last read found them.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#distanceToMillimetres(int,int)" class="member-name-link">distanceToMillimetres(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
+<dd>
+<div class="block">The straight-line distance to <code>(xMillimetres, yMillimetres)</code>, in millimetres, rounded to the nearest.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#DOWN" class="member-name-link">DOWN</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
@@ -1384,6 +1465,10 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 </dl>
 <h2 class="title" id="I:F">F</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#FAILED" class="member-name-link">FAILED</a> - Enum constant in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
+<dd>
+<div class="block">It failed or timed out: a stalled wheel, a link that did not answer, a robot that did not move.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#failures()" class="member-name-link">failures()</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">How many sends have failed since this logger was created.</div>
@@ -1539,6 +1624,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#flush()" class="member-name-link">flush()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
 <div class="block">Transfers all eight display pages from the framebuffer.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#followPath()" class="member-name-link">followPath()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Starts or resumes driving the path, and returns at once.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#FORBIDDEN" class="member-name-link">FORBIDDEN</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
@@ -2029,6 +2118,10 @@ high values are bright.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getOutput()" class="member-name-link">getOutput()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#getPose()" class="member-name-link">getPose()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">The navigator's pose; it changes while the navigator drives.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#getPower()" class="member-name-link">getPower()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
 <dd>
 <div class="block">Returns the configured PWM power percentage.</div>
@@ -2225,6 +2318,10 @@ either ADC rail.</div>
 <dd>
 <div class="block">The UNO pin behind the UART_TX socket.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#getWaypoint()" class="member-name-link">getWaypoint()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">The waypoint being driven to, or the next one, or <code>null</code> when the path is empty.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html#getWidth()" class="member-name-link">getWidth()</a> - Method in class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/ArduinoNanoEsp32Image.html" title="class in io.github.jabrena.juno.util.image">ArduinoNanoEsp32Image</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/util/image/ArduinoUnoBoardImage.html#getWidth()" class="member-name-link">getWidth()</a> - Method in class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/ArduinoUnoBoardImage.html" title="class in io.github.jabrena.juno.util.image">ArduinoUnoBoardImage</a></dt>
@@ -2313,6 +2410,10 @@ either ADC rail.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html#GLYPH_WIDTH" class="member-name-link">GLYPH_WIDTH</a> - Static variable in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedMatrixFontSmall.html" title="class in io.github.jabrena.juno.hardware.led">LedMatrixFontSmall</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#goTo(io.github.jabrena.juno.robotics.navigation.Waypoint)" class="member-name-link">goTo(Waypoint)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Appends <code>destination</code> and follows the path to it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#gpio()" class="member-name-link">gpio()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>
 <div class="block">The pins <a href="io/github/jabrena/juno/hardware/MCU.html#getGpio()"><code>MCU.getGpio()</code></a> hands out.</div>
@@ -2512,7 +2613,16 @@ Temperature Sensor v1.2</a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock,int)" class="member-name-link">GroveUltrasonicRanger(Gpio, Clock, int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveUltrasonicRanger.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveUltrasonicRanger</a></dt>
 <dd>
-<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> and <code>clock</code> can be test doubles.</div>
+<div class="block">A ranger on <code>signalPin</code>; <code>gpio</code> can be a test double.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">A <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a> over two <a href="io/github/jabrena/juno/robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>EncoderMotor</code></a>s whose power the program sets directly, such as a Powered Up hub's, that
+closes both loops itself with a <a href="io/github/jabrena/juno/robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>, a <a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a> for instance.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#%3Cinit%3E(io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroDifferentialPilot(EncoderMotor, EncoderMotor, DriveGeometry, DirectionFinder, Clock)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">Creates the pilot.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
 <dd>
@@ -2560,6 +2670,10 @@ else, such as an infrared round trip to an RCX.</div>
 truncated to <code>bufferLength</code>, and returns the number of bytes copied, or <code>-1</code> when the request has no
 such header.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#headingDegrees()" class="member-name-link">headingDegrees()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">The heading to face on arrival, in degrees counter-clockwise from +x; meaningful when it is required.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html#headingErrorMillidegrees()" class="member-name-link">headingErrorMillidegrees()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></dt>
 <dd>
 <div class="block">Returns the signed shortest error from the current pose to the target heading.</div>
@@ -2574,7 +2688,7 @@ such header.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#headingMillidegrees()" class="member-name-link">headingMillidegrees()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
 <dd>
-<div class="block">The heading, in millidegrees, normalised to <code>0</code> through <code>359_999</code>.</div>
+<div class="block">The heading, in millidegrees counter-clockwise, normalised to <code>0</code> through <code>359_999</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
@@ -3125,9 +3239,15 @@ boards.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isControlPressed()" class="member-name-link">isControlPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#isDetour(io.github.jabrena.juno.robotics.navigation.Waypoint)" class="member-name-link">isDetour(Waypoint)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Whether <code>waypoint</code> is one of the planner's detour points rather than a mission waypoint.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isFnPressed()" class="member-name-link">isFnPressed()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isFnPressed()" class="member-name-link">isFnPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#isHeadingRequired()" class="member-name-link">isHeadingRequired()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html#isHigh()" class="member-name-link">isHigh()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></dt>
 <dd>
@@ -3173,6 +3293,10 @@ boards.</div>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html#isMoving()" class="member-name-link">isMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></dt>
 <dd>
 <div class="block">Returns <code>true</code> while the motor is commanded to move, otherwise <code>false</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Whether the navigator is driving its path: it stays <code>true</code> between the moves of a leg.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#isMoving()" class="member-name-link">isMoving()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
 <dd>
@@ -3343,6 +3467,26 @@ boards.</div>
 <dd>
 <div class="block">The heading error measured after the last move, before its correction, in degrees, counter-clockwise positive.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Why the last <a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#travel(int)"><code>GyroRegulatedDifferentialDrive.travel(int)</code></a> or <a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#rotate(int)"><code>GyroRegulatedDifferentialDrive.rotate(int)</code></a> ended.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Why the last leg ended: <a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#COMPLETED"><code>MoveOutcome.COMPLETED</code></a> after a waypoint was reached, the pilot's outcome when a move
+ended early, <a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#STOPPED"><code>MoveOutcome.STOPPED</code></a> after <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#stop()"><code>Navigator.stop()</code></a>, or <a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#FAILED"><code>MoveOutcome.FAILED</code></a> when the robot stayed
+outside the waypoint's tolerance after its last leg.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">Why the last <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)"><code>Pilot.travel(int)</code></a> or <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#rotate(int)"><code>Pilot.rotate(int)</code></a> ended.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#lastTravelPose()" class="member-name-link">lastTravelPose()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">The odometry's pose of the last travel: x along the line it started on, y to the left of it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#LATITUDE_MICRODEGREES" class="member-name-link">LATITUDE_MICRODEGREES</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/lcd/package-summary.html">io.github.jabrena.juno.hardware.device.lcd</a></dt>
@@ -3405,6 +3549,14 @@ glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT 
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDiagnostics.html#leftPower()" class="member-name-link">leftPower()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDiagnostics.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDiagnostics</a></dt>
 <dd>
 <div class="block">The left side's power at the last <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDiagnostics.html#refreshDrive()"><code>RcxRegulatedDiagnostics.refreshDrive()</code></a>, 0 while braked.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#leftTachoCount()" class="member-name-link">leftTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#cachedLeftTachoCount()"><code>RcxRegulatedPair.cachedLeftTachoCount()</code></a>: no round trip.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#leftTachoCount()" class="member-name-link">leftTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">The left side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedMatrixFont.html#letterPixel(int,int,int)" class="member-name-link">letterPixel(int, int, int)</a> - Static method in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedMatrixFont.html" title="class in io.github.jabrena.juno.hardware.led">LedMatrixFont</a></dt>
 <dd>
@@ -3541,6 +3693,10 @@ list.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html#MAX_ANGLE" class="member-name-link">MAX_ANGLE</a> - Static variable in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/PwmServoShield.html" title="class in io.github.jabrena.juno.hardware.device.servo">PwmServoShield</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#MAX_LEGS" class="member-name-link">MAX_LEGS</a> - Static variable in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Legs driven toward one waypoint before the navigator gives up on it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#MAX_LEVEL" class="member-name-link">MAX_LEVEL</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxMotor</a></dt>
 <dd>
 <div class="block">The highest power level an RCX output accepts: the Output Power command takes a level from <code>0</code> (weakest) to
@@ -3577,6 +3733,10 @@ list.</div>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#MAX_WIDTH" class="member-name-link">MAX_WIDTH</a> - Static variable in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led">LedCanvas</a></dt>
 <dd>
 <div class="block">The widest supported matrix (UNO Q, 13 columns): the width every frame is allocated with.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#maxPositionErrorMillimetres()" class="member-name-link">maxPositionErrorMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">How close the robot must end to the point, in millimetres, or <a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#NAVIGATOR_DEFAULT"><code>Waypoint.NAVIGATOR_DEFAULT</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#maxPower()" class="member-name-link">maxPower()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
@@ -3752,6 +3912,10 @@ the <code>REMOTE_*</code> values.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html#move(int,int)" class="member-name-link">move(int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" class="type-name-link" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a> - Enum Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Why a <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a>'s last move ended, and so why a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a>'s leg did.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:N">N</h2>
 <dl class="index">
@@ -3868,9 +4032,27 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>: each method is a Wi-Fi intrinsic the compiler lowers to the board's networking library,
 so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a> - Interface in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Hears a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a>'s progress along its path, as leJOS's listener of the same name does.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Drives a robot through a path of <a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Waypoint</code></a>s, as leJOS's <code>Navigator</code> does: for each waypoint it turns to
+face the point, travels to it, and turns to the waypoint's heading when one is required.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/Navigator.html" class="type-name-link" title="interface in io.github.jabrena.juno.util.mvc">Navigator</a> - Interface in <a href="io/github/jabrena/juno/util/mvc/package-summary.html">io.github.jabrena.juno.util.mvc</a></dt>
 <dd>
 <div class="block">What a <a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc"><code>View</code></a> uses to hand over control.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#%3Cinit%3E(io.github.jabrena.juno.robotics.navigation.Pilot,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.robotics.navigation.Waypoint%5B%5D)" class="member-name-link">Navigator(Pilot, DirectionFinder, Waypoint[])</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">A navigator moving with <code>pilot</code>, its heading from <code>direction</code>, that keeps its path in <code>path</code>: up
+to that many waypoints.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#NAVIGATOR_DEFAULT" class="member-name-link">NAVIGATOR_DEFAULT</a> - Static variable in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">The tolerance that leaves it to the navigator's default.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#NAVY" class="member-name-link">NAVY</a> - Static variable in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>&nbsp;</dd>
@@ -3935,6 +4117,21 @@ in a unit test.</div>
 </dl>
 <h2 class="title" id="I:O">O</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#OBSTACLE" class="member-name-link">OBSTACLE</a> - Enum constant in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
+<dd>
+<div class="block">The pilot's <a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>ObstacleDetector</code></a> saw something in the way, and the robot stopped short of it.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a> - Interface in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Says whether something is in the robot's way, read by a <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a> on its own thread while it travels: leJOS's
+<code>FeatureDetector</code> without the thread of its own, which a board's few thread slots cannot spare.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#obstacleXMillimetres()" class="member-name-link">obstacleXMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Where the last obstacle was, in the navigator's millimetres.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#obstacleYMillimetres()" class="member-name-link">obstacleYMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html#of(int)" class="member-name-link">of(int)</a> - Static method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></dt>
 <dd>
 <div class="block">Returns the servo on <code>pin</code>.</div>
@@ -4024,6 +4221,37 @@ strobe pulsed low then high.</div>
 <dd>
 <div class="block">The request path (e.g.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#pathComplete(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">pathComplete(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html#pathComplete(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">pathComplete(Waypoint, Pose, int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a></dt>
+<dd>
+<div class="block"><code>waypoint</code> was the path's last: it is now empty.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#pathCompleted()" class="member-name-link">pathCompleted()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Whether the path is empty, every waypoint reached.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#pathGenerated()" class="member-name-link">pathGenerated()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">The planner's path is complete: follows it, as <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#followPath()"><code>Navigator.followPath()</code></a> does.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html#pathGenerated()" class="member-name-link">pathGenerated()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a></dt>
+<dd>
+<div class="block">The path is complete.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#pathInterrupted(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">pathInterrupted(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Plans a detour when an obstacle ended the leg and detours are left; otherwise passes the interruption on.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html#pathInterrupted(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">pathInterrupted(Waypoint, Pose, int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a></dt>
+<dd>
+<div class="block">Driving to <code>waypoint</code> ended without reaching it: <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#stop()"><code>Navigator.stop()</code></a> was called, or a move failed or
+timed out, or the robot stayed outside the waypoint's tolerance.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#pathSize()" class="member-name-link">pathSize()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">How many waypoints the path holds now.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a> - Enum Class in <a href="io/github/jabrena/juno/remote/lego/pf/package-summary.html">io.github.jabrena.juno.remote.lego.pf</a></dt>
 <dd>
 <div class="block">A channel of a Power Functions receiver, as set by its channel switch: <code>CHANNEL_1</code> to <code>CHANNEL_4</code>.</div>
@@ -4049,6 +4277,11 @@ blue port of a receiver on a channel.</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/PFPort.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFPort</a> - Enum Class in <a href="io/github/jabrena/juno/remote/lego/pf/package-summary.html">io.github.jabrena.juno.remote.lego.pf</a></dt>
 <dd>
 <div class="block">An output of a Power Functions receiver: the red port, also called A, or the blue port, also called B.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a> - Interface in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Moves a robot straight and turns it in place, as leJOS's <code>MoveController</code> with its rotation does: the moves a
+<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> drives a path with.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#PINK" class="member-name-link">PINK</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
@@ -4105,6 +4338,19 @@ of a second (<code>1..255</code>, so up to 2.55 s), then returns without waiting
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html#pollButtonMask()" class="member-name-link">pollButtonMask()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRemoteControl</a></dt>
 <dd>
 <div class="block">Returns the next queued raw button mask, or zero when the queue is empty.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#pollMoving()" class="member-name-link">pollMoving()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block">One status round trip, then whether the movement still runs.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#pollMoving()" class="member-name-link">pollMoving()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Reads the pair's state now, and returns whether the movement started with <code>immediateReturn</code> still runs.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#pollMoving()" class="member-name-link">pollMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">Reads the controller's state now, and returns whether the movement is still running: what a caller polls while a
+movement started with <code>immediateReturn</code> runs, to watch something else between the reads.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a> - Class in <a href="io/github/jabrena/juno/hardware/net/email/package-summary.html">io.github.jabrena.juno.hardware.net.email</a></dt>
 <dd>
@@ -4170,7 +4416,9 @@ board-specific implicit-TLS transport as
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
 <dd>
-<div class="block">Mutable, allocation-free planar pose for a differential-drive robot.</div>
+<div class="block">Mutable, allocation-free planar pose for a differential-drive robot, Cartesian as leJOS's pose and a
+<a href="io/github/jabrena/juno/robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>'s direction are: heading zero points along +x, the heading
+grows counter-clockwise, and +y is to the left of heading zero.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#%3Cinit%3E()" class="member-name-link">Pose()</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
 <dd>
@@ -4365,6 +4613,14 @@ cursor.</div>
 <dd>
 <div class="block">Explicit access to the board's external pseudo-static RAM (PSRAM).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#pulseIn(int,boolean,int)" class="member-name-link">pulseIn(int, boolean, int)</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
+<dd>
+<div class="block">Waits for a pulse on <code>pin</code>, a rise to high and a fall back when <code>high</code> (the other way round
+otherwise), and returns its length in microseconds, or <code>0</code> when no whole pulse arrives within
+<code>timeoutMicros</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#pulseIn(int,boolean,int)" class="member-name-link">pulseIn(int, boolean, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html#PURPLE" class="member-name-link">PURPLE</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></dt>
 <dd>
 <div class="block">Purple.</div>
@@ -4409,6 +4665,22 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 <dt><a href="io/github/jabrena/juno/robotics/RangeFinder.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">RangeFinder</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">A sensor that reports the distance to the nearest object.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html#rangeMillimetres()" class="member-name-link">rangeMillimetres()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></dt>
+<dd>
+<div class="block">The distance to the obstacle that last made <a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html#blocked()"><code>ObstacleDetector.blocked()</code></a> true, in millimetres.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html#rangeMillimetres()" class="member-name-link">rangeMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">An <a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>ObstacleDetector</code></a> over a forward-facing <a href="io/github/jabrena/juno/robotics/RangeFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>RangeFinder</code></a>, such as a Grove Ultrasonic Ranger: blocked once
+<code>confirmReadings</code> readings in a row are nearer than <code>stopMillimetres</code>, and clear again only once a reading
+is beyond <code>clearMillimetres</code> or finds no echo.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html#%3Cinit%3E(io.github.jabrena.juno.robotics.RangeFinder,int,int,int)" class="member-name-link">RangeObstacleDetector(RangeFinder, int, int, int)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a></dt>
+<dd>
+<div class="block">Creates the detector.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">RaspberryPico2WifiBoard</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
@@ -4818,6 +5090,11 @@ the robot's right wheel and its right side the left wheel.</div>
 <dd>
 <div class="block">Two regulated motors that start, stop and report as one unit, such as the two drive wheels of a vehicle.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#relativeBearingMillidegrees(int,int)" class="member-name-link">relativeBearingMillidegrees(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
+<dd>
+<div class="block">The turn from this pose's heading to face <code>(xMillimetres, yMillimetres)</code>, in millidegrees, positive
+counter-clockwise, the shorter way: <code>-179_999</code> through <code>180_000</code>. leJOS's <code>relativeBearing</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#RELAY_OFF" class="member-name-link">RELAY_OFF</a> - Static variable in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
 <div class="block">The discovery or system-information reply identifies a relay that is off.</div>
@@ -4951,12 +5228,18 @@ storage.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></dt>
 <dd>
-<div class="block">Resets both encoders and the pose; the next update establishes a new IMU reference heading.</div>
+<div class="block">Resets both encoders and the pose; the next update establishes a new reference heading.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html#reset()" class="member-name-link">reset()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></dt>
+<dd>
+<div class="block">Forgets what earlier readings saw, as at the start of a move.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
 <dd>
 <div class="block">Resets this pose to the origin facing heading zero.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RangeObstacleDetector.html" title="class in io.github.jabrena.juno.robotics.navigation">RangeObstacleDetector</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/DirectionFinder.html#resetCartesianZero()" class="member-name-link">resetCartesianZero()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a></dt>
 <dd>
 <div class="block">Makes the current direction zero.</div>
@@ -5007,8 +5290,26 @@ storage.</div>
 <dd>
 <div class="block">The right side's power at the last <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDiagnostics.html#refreshDrive()"><code>RcxRegulatedDiagnostics.refreshDrive()</code></a>, 0 while braked.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#rightTachoCount()" class="member-name-link">rightTachoCount()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#cachedRightTachoCount()"><code>RcxRegulatedPair.cachedRightTachoCount()</code></a>: no round trip.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#rightTachoCount()" class="member-name-link">rightTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
+<dd>
+<div class="block">The right side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Turns by <code>degrees</code> from the direction the robot has.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">Turns in place by <code>degrees</code>, counter-clockwise when positive, and waits until it ends.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedMotor.html#rotate(int)" class="member-name-link">rotate(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedMotor.html" title="interface in io.github.jabrena.juno.robotics">RegulatedMotor</a></dt>
 <dd>
 <div class="block">Rotates by <code>degrees</code> relative to the current tachometer position.</div>
@@ -5325,6 +5626,10 @@ past them. 0 brakes only on the target.</div>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setControlPeriodMillis(int)" class="member-name-link">setControlPeriodMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How often the pilot reads its sensors and commands the motors; each command may be a radio write.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#setCorrectTurns(boolean)" class="member-name-link">setCorrectTurns(boolean)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
 <dd>
 <div class="block">Whether a turn is corrected to the heading asked, as a straight segment is, rather than left to the encoders.</div>
@@ -5362,6 +5667,10 @@ whole-program emulator in a test, never on the board.</div>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getGpio()"><code>MCU.getGpio()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#setHeadingMillidegrees(int)" class="member-name-link">setHeadingMillidegrees(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
+<dd>
+<div class="block">Sets the heading, in millidegrees counter-clockwise; any value, normalised to a turn.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html#setI2c(io.github.jabrena.juno.hardware.i2c.I2c)" class="member-name-link">setI2c(I2c)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></dt>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getI2c()"><code>MCU.getI2c()</code></a> hand out <code>replacement</code>: for a
@@ -5398,11 +5707,28 @@ whole-program emulator or a unit test, never on the board.</div>
 <div class="block">Sets the forward speed, in millimetres per second, by the left wheel's encoder ratio; the pair applies one speed
 to both sides, so asymmetric gearing changes only the timing of the two sides, not where they stop.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setLineCorrection(int,int)" class="member-name-link">setLineCorrection(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How far a travel leans its heading back toward its line: <code>millidegreesPerMillimetre</code> per millimetre off it,
+at most <code>maxMillidegrees</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLinkedMotorPower(int,int,int)" class="member-name-link">setLinkedMotorPower(int, int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Drives the two motors of a virtual port in one message: <code>first</code> for the motor on the first
 port given to <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#linkMotors(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort,io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>RemotePoweredUpHub.linkMotors(PoweredUpPort, PoweredUpPort)</code></a> and <code>second</code> for the other, each <code>-100..100</code>
 (clamped), negative for backwards, <code>0</code> to coast.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#setLocation(int,int)" class="member-name-link">setLocation(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
+<dd>
+<div class="block">Moves this pose to <code>(xMillimetres, yMillimetres)</code>, keeping its heading.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#setMaxDetours(int)" class="member-name-link">setMaxDetours(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Detours tried for one mission waypoint before the planner gives up on it.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#setMaxPositionErrorMillimetres(int)" class="member-name-link">setMaxPositionErrorMillimetres(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">Sets how close the robot must end to the point, in millimetres, or <a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#NAVIGATOR_DEFAULT"><code>Waypoint.NAVIGATOR_DEFAULT</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#setMaxPower(int)" class="member-name-link">setMaxPower(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
@@ -5421,9 +5747,42 @@ port given to <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePowere
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getMouse()"><code>MCU.getMouse()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#setNavigationListener(io.github.jabrena.juno.robotics.navigation.NavigationListener)" class="member-name-link">setNavigationListener(NavigationListener)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Passes each of the navigator's calls on to <code>listener</code>, the program's.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#setNavigationListener(io.github.jabrena.juno.robotics.navigation.NavigationListener)" class="member-name-link">setNavigationListener(NavigationListener)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Makes <code>listener</code> hear each waypoint reached, the path's end and an interruption; one listener at a time.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setObstacleCheckMillis(int)" class="member-name-link">setObstacleCheckMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How often a forward travel reads the obstacle detector.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setObstacleDetector(io.github.jabrena.juno.robotics.navigation.ObstacleDetector)" class="member-name-link">setObstacleDetector(ObstacleDetector)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">Reads <code>detector</code> during forward travels, and stops for what it sees.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#setObstacleDetector(io.github.jabrena.juno.robotics.navigation.ObstacleDetector)" class="member-name-link">setObstacleDetector(ObstacleDetector)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Reads <code>detector</code> during forward segments, and stops for what it sees.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#setObstacleSize(int,int)" class="member-name-link">setObstacleSize(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">The obstacle's assumed width across the robot's way and depth along it, in millimetres.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedCanvas.html#setPixel(boolean%5B%5D%5B%5D,int,int)" class="member-name-link">setPixel(boolean[][], int, int)</a> - Static method in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led">LedCanvas</a></dt>
 <dd>
 <div class="block">Lights pixel (x, y), silently ignoring coordinates outside the frame.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#setPose(int,int,int)" class="member-name-link">setPose(int, int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Places the robot at <code>(xMillimetres, yMillimetres)</code> facing <code>headingDegrees</code>: the direction finder's
+current direction becomes that heading.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#setPositionErrorMillimetres(int)" class="member-name-link">setPositionErrorMillimetres(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">The tolerance for waypoints that do not set their own, in millimetres.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#setPower(int)" class="member-name-link">setPower(int)</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
 <dd>
@@ -5454,6 +5813,14 @@ while the outputs are on.</div>
 <dd>
 <div class="block">Drives the first motor at <code>first</code> and the second at <code>second</code>, each <code>-100..100</code> (clamped),
 negative for backwards, <code>0</code> to coast.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setRampMillimetres(int)" class="member-name-link">setRampMillimetres(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">The distance over which the travel's power ramps up after the start and down before the end.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#setRobotHalfWidth(int,int)" class="member-name-link">setRobotHalfWidth(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">The robot's half width, and the clearance kept from the obstacle on every side, in millimetres.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#setRotation(int)" class="member-name-link">setRotation(int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
@@ -5510,6 +5877,11 @@ for one direction, negative for the other, <code>0</code> lets it coast.</div>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getSpi()"><code>MCU.getSpi()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setSteering(int,int)" class="member-name-link">setSteering(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How hard a travel steers to its heading: <code>correctionAtQuarterTurn</code> is the power correction a 90 degree error
+would get, so 270 is 3 power per degree, and <code>maximumCorrection</code> bounds it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html#setTargetHeadingMillidegrees(int)" class="member-name-link">setTargetHeadingMillidegrees(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></dt>
 <dd>
 <div class="block">Sets the target heading, normalized to <code>0..359999</code> milli-degrees.</div>
@@ -5548,6 +5920,10 @@ whole-program emulator in a test, never on the board.</div>
 connect and then again for the response, elsewhere for the response only, as those boards' WiFi clients take no
 connect timeout.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTimeoutMillis(int)" class="member-name-link">setTimeoutMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How long a move may take before it ends as failed.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html#setTimeoutSeconds(int)" class="member-name-link">setTimeoutSeconds(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDifferentialDrive</a></dt>
 <dd>
 <div class="block">Sets the time, in seconds (1..255), a movement may run before the brick times it out.</div>
@@ -5569,9 +5945,30 @@ connect timeout.</div>
 <div class="block">Configures <code>input</code> for a touch sensor reading <code>1</code> when pressed and <code>0</code>
 otherwise.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTravelPowers(int,int)" class="member-name-link">setTravelPowers(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">The travel's cruise power and the power it starts and ends at, percent; the minimum must still move the robot.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html#setTrustedCertificate(byte%5B%5D,int)" class="member-name-link">setTrustedCertificate(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpClient</a></dt>
 <dd>
 <div class="block">Sets a caller-owned PEM trust anchor for later HTTPS requests.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTurnBrakeLeadMillis(int)" class="member-name-link">setTurnBrakeLeadMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How long the robot keeps turning after the pilot sends a stop, in milliseconds: the radio's delay and the robot's
+momentum.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTurnPowers(int,int)" class="member-name-link">setTurnPowers(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">The rotation's power far from the target and near it, percent.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTurnSlowdownDegrees(int)" class="member-name-link">setTurnSlowdownDegrees(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How far before the target a rotation starts slowing from its maximum power toward its minimum, in degrees.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTurnToleranceDegrees(float)" class="member-name-link">setTurnToleranceDegrees(float)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">How close to the target direction a rotation must settle, in degrees.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/audio/Audio.html#setVolume(int)" class="member-name-link">setVolume(int)</a> - Method in interface io.github.jabrena.juno.hardware.audio.<a href="io/github/jabrena/juno/hardware/audio/Audio.html" title="interface in io.github.jabrena.juno.hardware.audio">Audio</a></dt>
 <dd>
@@ -5648,6 +6045,10 @@ cannot draw show blank).</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredReceiver.html#signalPin()" class="member-name-link">signalPin()</a> - Method in interface io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredReceiver.html" title="interface in io.github.jabrena.juno.hardware.device.ir">InfraredReceiver</a></dt>
 <dd>
 <div class="block">The Arduino pin carrying the receiver module's digital signal.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#singleStep(boolean)" class="member-name-link">singleStep(boolean)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">With <code>yes</code>, the navigator stops after each waypoint, until the next <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#followPath()"><code>Navigator.followPath()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#size(java.lang.String)" class="member-name-link">size(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -5746,6 +6147,11 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Starts averaging the gyroscope's rate as its bias, instead of integrating it; the robot must stand still.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#startPathFinding()" class="member-name-link">startPathFinding()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
+<dd>
+<div class="block">Sends the whole mission to the navigator and starts it, as leJOS's <code>startPathFinding</code> sends a path to its
+listeners; the navigator follows it on its own thread.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html#status()" class="member-name-link">status()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#status()" class="member-name-link">status()</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
@@ -5825,9 +6231,23 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Stops both motors with active braking, as <a href="io/github/jabrena/juno/robotics/BaseMotor.html#stop()"><code>BaseMotor.stop()</code></a> does.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a></dt>
 <dd>
 <div class="block">Stops the thread after its current read; the direction keeps its last value.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Ends a <a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#travel(int)"><code>GyroRegulatedDifferentialDrive.travel(int)</code></a> after the segment in progress; a turn in progress completes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Ends the move in progress as soon as the pilot can, keeping the path; <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#followPath()"><code>Navigator.followPath()</code></a> resumes it.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#stop()" class="member-name-link">stop()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">Asks the move in progress to end as soon as it can; safe to call from another thread.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a></dt>
 <dd>
@@ -5861,6 +6281,10 @@ up to <code>checksum</code> (modulo 65536).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#STOPPED" class="member-name-link">STOPPED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#STOPPED" class="member-name-link">STOPPED</a> - Enum constant in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#stop()"><code>Pilot.stop()</code></a> ended it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamBytes(byte%5B%5D,int)" class="member-name-link">streamBytes(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream.</div>
@@ -6067,6 +6491,37 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="block">Sends block number <code>index</code> (1 for the first) holding the first <code>length</code> bytes of <code>block</code>
 (at most <a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#BLOCK_SIZE">200</a>), once; a full block takes about two seconds.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#travel(int)" class="member-name-link">travel(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#travel(int)" class="member-name-link">travel(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)" class="member-name-link">travel(int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">Drives straight by <code>millimetres</code>, forward when positive, and waits until it ends.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#travelledLeftMillimetres()" class="member-name-link">travelledLeftMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>
+<div class="block">The odometry's offset to the left of the last travel's line at its end, which it measures from the encoders.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#travelledLeftMillimetres()" class="member-name-link">travelledLeftMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">Not measured: the brick regulates the wheels and the heading is corrected between segments.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travelledLeftMillimetres()" class="member-name-link">travelledLeftMillimetres()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">How far to the left of the line the last <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)"><code>Pilot.travel(int)</code></a> started on it ended, in millimetres, as the pilot measured
+it, or <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#UNMEASURED"><code>Pilot.UNMEASURED</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#travelledMillimetres()" class="member-name-link">travelledMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#travelledMillimetres()" class="member-name-link">travelledMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
+<dd>
+<div class="block">The segments the last travel completed, signed; a segment that failed is not counted.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travelledMillimetres()" class="member-name-link">travelledMillimetres()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">The distance the last <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)"><code>Pilot.travel(int)</code></a> covered, in millimetres, signed as it was asked, also when it ended early.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html#travelMillimetres(int)" class="member-name-link">travelMillimetres(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDifferentialDrive</a></dt>
 <dd>
 <div class="block">Drives straight forward (or backward, when negative) by <code>millimetres</code>, and waits until it completes.</div>
@@ -6175,6 +6630,10 @@ after each one corrects the heading back to the one held.</div>
 <dd>
 <div class="block">Starts the downloaded firmware once the brick has checked it.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#UNMEASURED" class="member-name-link">UNMEASURED</a> - Static variable in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
+<dd>
+<div class="block">What <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travelledLeftMillimetres()"><code>Pilot.travelledLeftMillimetres()</code></a> returns when the pilot does not measure the sideways offset.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#UP" class="member-name-link">UP</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#update()" class="member-name-link">update()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
@@ -6249,6 +6708,10 @@ after each one corrects the heading back to the one held.</div>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
@@ -6311,6 +6774,11 @@ the order they are declared.</div>
 the order they are declared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxSensorPort</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
@@ -6387,6 +6855,10 @@ not answered.</div>
 <dd>
 <div class="block">Waits until the current movement completes or reports an error state.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#waitForStop()" class="member-name-link">waitForStop()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation">Navigator</a></dt>
+<dd>
+<div class="block">Waits until the navigator stops, and returns whether the path is now empty.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#warning(java.lang.String)" class="member-name-link">warning(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#WARNING"><code>Syslog.WARNING</code></a>; returns whether the datagram left the board.</div>
@@ -6398,6 +6870,24 @@ not answered.</div>
 <dt><a href="io/github/jabrena/juno/annotations/Watchdog.html" class="type-name-link" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a> - Annotation Interface in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">Enables the target's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">A point a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> drives to, in the pose's Cartesian millimetres, optionally with the heading the robot must
+face there, as leJOS's <code>Waypoint</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#%3Cinit%3E(int,int)" class="member-name-link">Waypoint(int, int)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">A point to reach, facing whichever way the robot arrives.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#%3Cinit%3E(int,int,int)" class="member-name-link">Waypoint(int, int, int)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>
+<div class="block">A point to reach and then face <code>headingDegrees</code>, counter-clockwise from +x.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a> - Interface in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
+<dd>
+<div class="block">Receives a path one waypoint at a time from whatever plans it, as leJOS's interface of the same name does: a
+<a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> implements it, and a planner such as <a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>DetourPlanner</code></a> feeds it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html#wheelDiameterMillimetres()" class="member-name-link">wheelDiameterMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></dt>
 <dd>
@@ -6524,8 +7014,10 @@ write succeeded.</div>
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#xMillimetres()" class="member-name-link">xMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
 <dd>
-<div class="block">The x position, in millimetres from the origin.</div>
+<div class="block">The x position, in millimetres from the origin, rounded to the nearest.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#xMillimetres()" class="member-name-link">xMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:Y">Y</h2>
 <dl class="index">
@@ -6539,8 +7031,10 @@ write succeeded.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pose.html#yMillimetres()" class="member-name-link">yMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a></dt>
 <dd>
-<div class="block">The y position, in millimetres from the origin.</div>
+<div class="block">The y position, in millimetres from the origin, rounded to the nearest.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#yMillimetres()" class="member-name-link">yMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:H">H</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:J">J</a>&nbsp;<a href="#I:K">K</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:Q">Q</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:U">U</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:W">W</a>&nbsp;<a href="#I:X">X</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="constant-values.html">Constant&nbsp;Field&nbsp;Values</a>
 <footer>

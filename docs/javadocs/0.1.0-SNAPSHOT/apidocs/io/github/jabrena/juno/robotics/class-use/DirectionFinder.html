@@ -103,6 +103,25 @@ else, such as an infrared round trip to an RCX.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../navigation/DifferentialDriveOdometry.html#%3Cinit%3E(io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.Encoder,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.navigation.Pose)" class="member-name-link">DifferentialDriveOdometry</a><wbr>(<a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;leftEncoder,
+ <a href="../Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a>&nbsp;rightEncoder,
+ <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;direction,
+ <a href="../navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ <a href="../navigation/Pose.html" title="class in io.github.jabrena.juno.robotics.navigation">Pose</a>&nbsp;pose)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates odometry that updates <code>pose</code> in place, with the heading from <code>direction</code>, such as a
+<a href="../navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a>: thousandths of a degree, followed between updates, and a valid sample on every update.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../navigation/GyroDifferentialPilot.html#%3Cinit%3E(io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.EncoderMotor,io.github.jabrena.juno.robotics.navigation.DriveGeometry,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GyroDifferentialPilot</a><wbr>(<a href="../EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a>&nbsp;left,
+ <a href="../EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a>&nbsp;right,
+ <a href="../navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a>&nbsp;geometry,
+ <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;direction,
+ <a href="../../hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a>&nbsp;clock)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the pilot.</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../navigation/GyroRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.robotics.navigation.RegulatedDifferentialDrive,io.github.jabrena.juno.robotics.DirectionFinder,int,int,int)" class="member-name-link">GyroRegulatedDifferentialDrive</a><wbr>(<a href="../navigation/RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">RegulatedDifferentialDrive</a>&nbsp;drive,
  <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;heading,
  int&nbsp;segmentMillimetres,
@@ -110,6 +129,14 @@ else, such as an infrared round trip to an RCX.</div>
  int&nbsp;settleMillis)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Creates the drive.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../navigation/Navigator.html#%3Cinit%3E(io.github.jabrena.juno.robotics.navigation.Pilot,io.github.jabrena.juno.robotics.DirectionFinder,io.github.jabrena.juno.robotics.navigation.Waypoint%5B%5D)" class="member-name-link">Navigator</a><wbr>(<a href="../navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a>&nbsp;pilot,
+ <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a>&nbsp;direction,
+ @Nullable <a href="../navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a>[]&nbsp;path)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">A navigator moving with <code>pilot</code>, its heading from <code>direction</code>, that keeps its path in <code>path</code>: up
+to that many waypoints.</div>
 </div>
 </div>
 </section>

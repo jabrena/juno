@@ -70,6 +70,7 @@ initTheme();
 <div class="toc-header">Contents&nbsp;<input type="text" class="filter-input" disabled title="Filter contents (type .)" placeholder="Filter contents (type .)" aria-label="Filter table of contents" autocomplete="off" spellcheck="false"><input type="reset" class="reset-filter" disabled tabindex="-1" value="Reset">&nbsp;<button class="toc-sort-toggle" id="toc-lexical-order-toggle"><img src="../../../../../../resource-files/sort-a-z.svg" alt="Sort member details in lexicographical order"></button></div>
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
+<li><a href="#field-summary" tabindex="0">Field Summary</a></li>
 <li><a href="#constructor-summary" tabindex="0">Constructor Summary</a></li>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
@@ -82,6 +83,13 @@ initTheme();
 <li><a href="#setCorrectTurns(boolean)" tabindex="0">setCorrectTurns(boolean)</a></li>
 <li><a href="#holdCurrentHeading()" tabindex="0">holdCurrentHeading()</a></li>
 <li><a href="#travelMillimetres(int)" tabindex="0">travelMillimetres(int)</a></li>
+<li><a href="#setObstacleDetector(io.github.jabrena.juno.robotics.navigation.ObstacleDetector)" tabindex="0">setObstacleDetector(ObstacleDetector)</a></li>
+<li><a href="#travel(int)" tabindex="0">travel(int)</a></li>
+<li><a href="#rotate(int)" tabindex="0">rotate(int)</a></li>
+<li><a href="#lastOutcome()" tabindex="0">lastOutcome()</a></li>
+<li><a href="#stop()" tabindex="0">stop()</a></li>
+<li><a href="#travelledMillimetres()" tabindex="0">travelledMillimetres()</a></li>
+<li><a href="#travelledLeftMillimetres()" tabindex="0">travelledLeftMillimetres()</a></li>
 <li><a href="#turnDegrees(int)" tabindex="0">turnDegrees(int)</a></li>
 <li><a href="#corrections()" tabindex="0">corrections()</a></li>
 <li><a href="#lastErrorDegrees()" tabindex="0">lastErrorDegrees()</a></li>
@@ -99,10 +107,15 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.robotics.navigation.GyroRegulatedDifferentialDrive</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">GyroRegulatedDifferentialDrive</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
+implements <a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></span></div>
 <div class="block">A <a href="RegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>RegulatedDifferentialDrive</code></a> that holds its heading with a <a href="../DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics"><code>DirectionFinder</code></a>, such as a
 <a href="GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>GyroHeading</code></a>. The wheels are regulated where the direction finder cannot reach them, on an RCX for instance, so the heading is corrected between moves: a straight travel
 is driven in segments, and after each segment the robot settles, the gyroscope measures how far its heading is from
@@ -119,11 +132,41 @@ turns to the heading asked as well.
 must be at least half that step, or the pivot rounds to nothing (on 82 mm wheels and a 160 mm track with 16 steps a
 turn, a step is 5.8 degrees, so 3 degrees). Turns, headings and errors are all Cartesian degrees, counter-clockwise
 positive, as the drive's turns and the direction finder's directions are. Create it once at startup; its moves allocate
-nothing.</div>
+nothing.
+
+<p>As a <a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a>, for a <a href="Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a>: <a href="#travel(int)"><code>travel(int)</code></a> drives the same segments, and a <a href="#stop()"><code>stop()</code></a> from
+another thread ends it after the segment in progress, since the regulated pair is not asked to stop from a second
+thread; <a href="#rotate(int)"><code>rotate(int)</code></a> turns from the direction the robot has, not from the heading held, since the navigator plans
+each turn from the direction it measures. Both report a refused or failed move as <code>false</code>, not as an exception.
+
+<p>With an <a href="ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>ObstacleDetector</code></a>, a forward segment starts without waiting, and between the pair's status reads
+the pilot reads the detector on the same thread, the only one that talks to the pair: when the way is blocked it stops
+the pair mid-segment and the travel ends with <a href="MoveOutcome.html#OBSTACLE"><code>MoveOutcome.OBSTACLE</code></a>, its distance measured by the pair's
+tachometers. Without one, segments run as before.</div>
 </div>
 </section>
 <section class="summary">
 <ul class="summary-list">
+<!-- =========== FIELD SUMMARY =========== -->
+<li>
+<section class="field-summary" id="field-summary">
+<h2>Field Summary</h2>
+<div class="inherited-list">
+<h3 id="fields-inherited-from-class-io.github.jabrena.juno.robotics.navigation.Pilot">Fields inherited from interface&nbsp;<a href="Pilot.html#field-summary" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></h3>
+<code><a href="Pilot.html#UNMEASURED">UNMEASURED</a></code>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Field</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="Pilot.html#UNMEASURED" class="member-name-link">UNMEASURED</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">What <a href="Pilot.html#travelledLeftMillimetres()"><code>Pilot.travelledLeftMillimetres()</code></a> returns when the pilot does not measure the sideways offset.</div>
+</div>
+</div>
+</div>
+</section>
+</li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
 <li>
 <section class="constructor-summary" id="constructor-summary">
@@ -169,25 +212,60 @@ nothing.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The heading error measured after the last move, before its correction, in degrees, counter-clockwise positive.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#lastOutcome()" class="member-name-link">lastOutcome</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Why the last <a href="#travel(int)"><code>travel(int)</code></a> or <a href="#rotate(int)"><code>rotate(int)</code></a> ended.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#rotate(int)" class="member-name-link">rotate</a><wbr>(int&nbsp;degrees)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Turns by <code>degrees</code> from the direction the robot has.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCorrectTurns(boolean)" class="member-name-link">setCorrectTurns</a><wbr>(boolean&nbsp;correctTurns)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Whether a turn is corrected to the heading asked, as a straight segment is, rather than left to the encoders.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setObstacleDetector(io.github.jabrena.juno.robotics.navigation.ObstacleDetector)" class="member-name-link">setObstacleDetector</a><wbr>(<a href="ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a>&nbsp;detector)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Reads <code>detector</code> during forward segments, and stops for what it sees.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Ends a <a href="#travel(int)"><code>travel(int)</code></a> after the segment in progress; a turn in progress completes.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#targetDegrees()" class="member-name-link">targetDegrees</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The heading the drive holds, in degrees, counter-clockwise positive.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#travelMillimetres(int)" class="member-name-link">travelMillimetres</a><wbr>(int&nbsp;millimetres)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#travel(int)" class="member-name-link">travel</a><wbr>(int&nbsp;millimetres)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Drives straight by <code>millimetres</code>, forward when positive, and waits until it ends.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#travelledLeftMillimetres()" class="member-name-link">travelledLeftMillimetres</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Not measured: the brick regulates the wheels and the heading is corrected between segments.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#travelledMillimetres()" class="member-name-link">travelledMillimetres</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The segments the last travel completed, signed; a segment that failed is not counted.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#travelMillimetres(int)" class="member-name-link">travelMillimetres</a><wbr>(int&nbsp;millimetres)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Drives straight by <code>millimetres</code>, forward when positive, in segments of at most the configured length, and
 after each one corrects the heading back to the one held.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#turnDegrees(int)" class="member-name-link">turnDegrees</a><wbr>(int&nbsp;degrees)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#turnDegrees(int)" class="member-name-link">turnDegrees</a><wbr>(int&nbsp;degrees)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Turns in place by <code>degrees</code>, positive counter-clockwise, by the wheel encoders.</div>
 </div>
 </div>
@@ -257,6 +335,97 @@ it on only with a direction finder that counts fast rotations whole, such as a <
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">travelMillimetres</span><wbr><span class="parameters">(int&nbsp;millimetres)</span></div>
 <div class="block">Drives straight by <code>millimetres</code>, forward when positive, in segments of at most the configured length, and
 after each one corrects the heading back to the one held.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setObstacleDetector(io.github.jabrena.juno.robotics.navigation.ObstacleDetector)">
+<h3>setObstacleDetector</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setObstacleDetector</span><wbr><span class="parameters">(<a href="ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a>&nbsp;detector)</span></div>
+<div class="block">Reads <code>detector</code> during forward segments, and stops for what it sees.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="travel(int)">
+<h3>travel</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">travel</span><wbr><span class="parameters">(int&nbsp;millimetres)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="Pilot.html#travel(int)">Pilot</a></code></span></div>
+<div class="block">Drives straight by <code>millimetres</code>, forward when positive, and waits until it ends. Returns <code>true</code> when
+the travel completed, <code>false</code> when it failed, timed out or was stopped; <a href="Pilot.html#travelledMillimetres()"><code>Pilot.travelledMillimetres()</code></a>
+then says how far it got.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#travel(int)">travel</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="rotate(int)">
+<h3>rotate</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">rotate</span><wbr><span class="parameters">(int&nbsp;degrees)</span></div>
+<div class="block">Turns by <code>degrees</code> from the direction the robot has. A turn below the correction threshold is not made and
+counts as completed: it is finer than the wheels can turn, as for a correction.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#rotate(int)">rotate</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="lastOutcome()">
+<h3>lastOutcome</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></span>&nbsp;<span class="element-name">lastOutcome</span>()</div>
+<div class="block">Why the last <a href="#travel(int)"><code>travel(int)</code></a> or <a href="#rotate(int)"><code>rotate(int)</code></a> ended.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#lastOutcome()">lastOutcome</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="stop()">
+<h3>stop</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">stop</span>()</div>
+<div class="block">Ends a <a href="#travel(int)"><code>travel(int)</code></a> after the segment in progress; a turn in progress completes.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#stop()">stop</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="travelledMillimetres()">
+<h3>travelledMillimetres</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">travelledMillimetres</span>()</div>
+<div class="block">The segments the last travel completed, signed; a segment that failed is not counted.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#travelledMillimetres()">travelledMillimetres</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="travelledLeftMillimetres()">
+<h3>travelledLeftMillimetres</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">travelledLeftMillimetres</span>()</div>
+<div class="block">Not measured: the brick regulates the wheels and the heading is corrected between segments.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="Pilot.html#travelledLeftMillimetres()">travelledLeftMillimetres</a></code>&nbsp;in interface&nbsp;<code><a href="Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></code></dd>
+</dl>
 </div>
 </section>
 </li>

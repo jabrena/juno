@@ -80,6 +80,9 @@ initTheme();
 <li><a href="#isMoving()" tabindex="0">isMoving()</a></li>
 <li><a href="#isStalled()" tabindex="0">isStalled()</a></li>
 <li><a href="#waitComplete()" tabindex="0">waitComplete()</a></li>
+<li><a href="#pollMoving()" tabindex="0">pollMoving()</a></li>
+<li><a href="#leftTachoCount()" tabindex="0">leftTachoCount()</a></li>
+<li><a href="#rightTachoCount()" tabindex="0">rightTachoCount()</a></li>
 </ol>
 </li>
 </ol>
@@ -128,32 +131,48 @@ same control cycle.
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Returns whether the controller has detected that a side cannot complete its movement.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#rotate(int,int,boolean)" class="member-name-link">rotate</a><wbr>(int&nbsp;leftDegrees,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#leftTachoCount()" class="member-name-link">leftTachoCount</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">The left side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#pollMoving()" class="member-name-link">pollMoving</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Reads the controller's state now, and returns whether the movement is still running: what a caller polls while a
+movement started with <code>immediateReturn</code> runs, to watch something else between the reads.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#rightTachoCount()" class="member-name-link">rightTachoCount</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">The right side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#rotate(int,int,boolean)" class="member-name-link">rotate</a><wbr>(int&nbsp;leftDegrees,
  int&nbsp;rightDegrees,
  boolean&nbsp;immediateReturn)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Rotates the left side by <code>leftDegrees</code> and the right side by <code>rightDegrees</code>, relative to their current
 positions, starting both in one coordinated movement.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#setAcceleration(int)" class="member-name-link">setAcceleration</a><wbr>(int&nbsp;degreesPerSecondSquared)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#setAcceleration(int)" class="member-name-link">setAcceleration</a><wbr>(int&nbsp;degreesPerSecondSquared)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Sets the acceleration, in degrees per second squared, used by subsequent movements of both sides.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#setSpeed(int)" class="member-name-link">setSpeed</a><wbr>(int&nbsp;degreesPerSecond)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#setSpeed(int)" class="member-name-link">setSpeed</a><wbr>(int&nbsp;degreesPerSecond)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Sets the target speed, in degrees per second, used by subsequent movements of both sides.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#stop()" class="member-name-link">stop</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Stops the movement on both sides.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#waitComplete()" class="member-name-link">waitComplete</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#waitComplete()" class="member-name-link">waitComplete</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Waits until the current movement completes or reports an error state.</div>
 </div>
 </div>
@@ -233,6 +252,34 @@ positions, starting both in one coordinated movement. Waits for completion unles
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">waitComplete</span>()</div>
 <div class="block">Waits until the current movement completes or reports an error state.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="pollMoving()">
+<h3>pollMoving</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">boolean</span>&nbsp;<span class="element-name">pollMoving</span>()</div>
+<div class="block">Reads the controller's state now, and returns whether the movement is still running: what a caller polls while a
+movement started with <code>immediateReturn</code> runs, to watch something else between the reads.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="leftTachoCount()">
+<h3>leftTachoCount</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">leftTachoCount</span>()</div>
+<div class="block">The left side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="rightTachoCount()">
+<h3>rightTachoCount</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">rightTachoCount</span>()</div>
+<div class="block">The right side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
 </div>
 </section>
 </li>
