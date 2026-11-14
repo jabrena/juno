@@ -93,8 +93,8 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Smtp</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
 <div class="block">A minimal SMTP client recognized as a compiler intrinsic by Juno. <a href="#send(java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)"><code>send(String, int, String, String, String, String, String, String)</code></a> uses STARTTLS
-and is available on UNO R4 WiFi; <a href="#sendTls(java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)"><code>sendTls(String, int, String, String, String, String, String, String)</code></a> uses implicit TLS and is portable across UNO
-R4 WiFi and UNO Q. Both require an active
+and is available on UNO R4 WiFi and ESP32 boards; <a href="#sendTls(java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)"><code>sendTls(String, int, String, String, String, String, String, String)</code></a> uses implicit TLS and is portable across UNO
+R4 WiFi, UNO WiFi Rev2, ESP32 boards and UNO Q. Both require an active
 <a href="../Wifi.html#begin(java.lang.String,java.lang.String)"><code>Wifi.begin(String, String)</code></a> connection.
 
 <p><code>host</code>, <code>username</code>, <code>password</code>, <code>from</code>, <code>to</code>, <code>subject</code>,

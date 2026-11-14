@@ -139,7 +139,7 @@ Rev2, <code>Arduino_RouterBridge</code> on UNO Q). The UNO R3 has no radio and n
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#STATUS_AP_LISTENING" class="member-name-link">STATUS_AP_LISTENING</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The <a href="#status()"><code>status()</code></a> value once <a href="#beginAP(java.lang.String,java.lang.String)"><code>beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code> (UNO R4 WiFi only).</div>
+<div class="block">The <a href="#status()"><code>status()</code></a> value once <a href="#beginAP(java.lang.String,java.lang.String)"><code>beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code>.</div>
 </div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#STATUS_CONNECTED" class="member-name-link">STATUS_CONNECTED</a></code></div>
@@ -170,7 +170,7 @@ Rev2, <code>Arduino_RouterBridge</code> on UNO Q). The UNO R3 has no radio and n
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#begin(java.lang.String,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Starts station-mode Wi-Fi on UNO R4 WiFi.</div>
+<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#beginAP(java.lang.String,java.lang.String)" class="member-name-link">beginAP</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
@@ -289,7 +289,7 @@ list.</div>
 <h3>STATUS_AP_LISTENING</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">STATUS_AP_LISTENING</span></div>
-<div class="block">The <a href="#status()"><code>status()</code></a> value once <a href="#beginAP(java.lang.String,java.lang.String)"><code>beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code> (UNO R4 WiFi only).</div>
+<div class="block">The <a href="#status()"><code>status()</code></a> value once <a href="#beginAP(java.lang.String,java.lang.String)"><code>beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -315,7 +315,7 @@ list.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">begin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
-<div class="block">Starts station-mode Wi-Fi on UNO R4 WiFi. On UNO Q, Wi-Fi belongs to Linux and must already
+<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio. On UNO Q, Wi-Fi belongs to Linux and must already
 be configured through App Lab or <code>nmcli</code>; this method initializes the MCU-to-Linux
 bridge and ignores the credential arguments.</div>
 </div>
@@ -328,7 +328,7 @@ bridge and ignores the credential arguments.</div>
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">beginAP</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi, <code>password</code> is a WPA2
+directly (typically to serve a provisioning page through <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
 passphrase of at least 8 characters, or empty for an open network; call <a href="#localIP(int%5B%5D)"><code>localIP(int[])</code></a> after
 <a href="#status()"><code>status()</code></a> reports <a href="#STATUS_AP_LISTENING"><code>STATUS_AP_LISTENING</code></a> to obtain the access point's address. On UNO Q the
 MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running

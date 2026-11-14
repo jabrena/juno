@@ -150,7 +150,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="../net/Wifi.html#STATUS_AP_LISTENING" class="member-name-link">STATUS_AP_LISTENING</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> value once <a href="../net/Wifi.html#beginAP(java.lang.String,java.lang.String)"><code>Wifi.beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code> (UNO R4 WiFi only).</div>
+<div class="block">The <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> value once <a href="../net/Wifi.html#beginAP(java.lang.String,java.lang.String)"><code>Wifi.beginAP(String, String)</code></a> is serving, mirroring <code>WL_AP_LISTENING</code>.</div>
 </div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="../net/Wifi.html#STATUS_CONNECTED" class="member-name-link">STATUS_CONNECTED</a></code></div>
@@ -182,7 +182,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin(java.lang.String,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts station-mode Wi-Fi on UNO R4 WiFi.</div>
+<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#beginAP(java.lang.String,java.lang.String)" class="member-name-link">beginAP</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
@@ -284,7 +284,7 @@ whole-program emulator in a test, never on the board.</div>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#begin(java.lang.String,java.lang.String)">Wifi</a></code></span></div>
-<div class="block">Starts station-mode Wi-Fi on UNO R4 WiFi. On UNO Q, Wi-Fi belongs to Linux and must already
+<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio. On UNO Q, Wi-Fi belongs to Linux and must already
 be configured through App Lab or <code>nmcli</code>; this method initializes the MCU-to-Linux
 bridge and ignores the credential arguments.</div>
 <dl class="notes">
@@ -302,7 +302,7 @@ bridge and ignores the credential arguments.</div>
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#beginAP(java.lang.String,java.lang.String)">Wifi</a></code></span></div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="../net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi, <code>password</code> is a WPA2
+directly (typically to serve a provisioning page through <a href="../net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
 passphrase of at least 8 characters, or empty for an open network; call <a href="../net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a> after
 <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_AP_LISTENING"><code>Wifi.STATUS_AP_LISTENING</code></a> to obtain the access point's address. On UNO Q the
 MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running

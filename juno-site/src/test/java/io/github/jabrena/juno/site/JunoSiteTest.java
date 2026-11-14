@@ -175,33 +175,35 @@ class JunoSiteTest {
     }
 
     @Test
-    void showcaseIsInMainNavigation() {
+    void blogIsInMainNavigation() {
         RestAssured.given().when().get("/").then().statusCode(200)
-                .body(containsString("Showcase"));
+                .body(containsString("Blog"));
     }
 
     @Test
-    void showcasePageListsArticlesAndPagination() {
-        RestAssured.given().when().get("/showcase/").then().statusCode(200)
+    void blogPageListsArticlesWithoutImagesAndWithPagination() {
+        RestAssured.given().when().get("/blog/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("/blog/gladiator/"))
                 .body(containsString("/blog/lichess/"))
                 .body(containsString("/blog/mailbox/"))
+                .body(containsString("A chess tactics trainer for the UNO R4 WiFi and TFT touch shield"))
+                .body(not(containsString("post-thumbnail")))
                 .body(containsString("/posts/page2/"));
     }
 
     @Test
-    void showcaseArticleRendersDetail() {
+    void blogArticleRendersDetail() {
         RestAssured.given().when().get("/blog/mailbox/").then().statusCode(200)
                 .body(containsString("Mailbox is a remote messaging system for Claude"))
                 .body(containsString("usecases/mailbox"));
     }
 
     @Test
-    void showcasePaginationRendersNextPage() {
+    void blogPaginationRendersNextPage() {
         RestAssured.given().when().get("/posts/page2/").then().statusCode(200)
                 .body(containsString("Supabase: publish Grove temperatures to the cloud"))
-                .body(containsString("Showcase"));
+                .body(containsString("Blog"));
     }
 
 }

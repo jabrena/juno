@@ -118,9 +118,9 @@
         <a class="" href="/juno/grove-system">Grove system</a>
         <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
       </div>
-      <a class="" href="/juno/showcase" >Showcase</a>
+      <a class="" href="/juno/blog" >Blog</a>
       <div class="juno-topnav-children">
-        <a class="" href="/juno/showcase">Overview</a>
+        <a class="" href="/juno/blog">Overview</a>
       </div>
       <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
     </nav>
@@ -421,16 +421,34 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td></td>
 </tr>
 <tr>
-<td>Wi-Fi, Bluetooth LE, Ethernet</td>
-<td align="center">—</td>
-<td>The Portenta hardware provides these interfaces, but Juno does not expose them for this target yet.</td>
+<td>Wi-Fi station and access-point modes</td>
+<td align="center">✓</td>
+<td>Uses the Mbed core's <code>WiFi.h</code> transport, including the Portenta-specific <code>beginAP(ssid, password)</code> overload.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatus.java"><code>WifiStatus</code></a></td>
+</tr>
+<tr>
+<td>HTTP and HTTPS client/server</td>
+<td align="center">✓</td>
+<td>Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use <code>WiFiSSLClient</code>, and the HTTPS server uses the core's bundled mbedTLS.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java"><code>HttpsMethods</code></a></td>
+</tr>
+<tr>
+<td>Email over TLS and STARTTLS</td>
+<td align="center">✓</td>
+<td>Uses the existing Juno email transports over the Portenta Wi-Fi client; credentials should come from <code>SecretStore</code>.</td>
 <td></td>
 </tr>
 <tr>
+<td>Bluetooth LE</td>
+<td align="center">✓</td>
+<td>Uses the ArduinoBLE library for the Powered Up central runtime.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java"><code>PoweredUpHubHello</code></a></td>
+</tr>
+<tr>
 <td>Double-precision <code>java.lang.Math</code></td>
-<td align="center">—</td>
-<td>The M7 has the hardware capability, but the Portenta board profile does not currently expose the Juno double-math runtime.</td>
-<td></td>
+<td align="center">✓</td>
+<td>The M7's floating-point toolchain assembles Juno's double runtime.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
 </tr>
 <tr>
 <td>Threads, locks and structured concurrency</td>
@@ -439,16 +457,55 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td></td>
 </tr>
 <tr>
-<td>USB HID mouse, watchdog and LED matrix</td>
+<td>USB HID mouse</td>
+<td align="center">✓</td>
+<td>Uses the Mbed core's <code>USBMouse</code>; <code>PortentaMouse</code> keeps serial progress on the same USB connection.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/PortentaMouse.java"><code>PortentaMouse</code></a></td>
+</tr>
+<tr>
+<td>Watchdog</td>
+<td align="center">✓</td>
+<td>Uses <code>mbed::Watchdog</code> behind <code>@Watchdog</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/GcDemo.java"><code>GcDemo</code></a></td>
+</tr>
+<tr>
+<td>Cryptographic UUID</td>
+<td align="center">✓</td>
+<td>Uses the Mbed hardware entropy provider behind <code>UUID.randomUUID()</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
+</tr>
+<tr>
+<td><code>SecretStore</code> / ATECC608</td>
+<td align="center">✓</td>
+<td>The existing <code>Atecc608</code> driver uses Portenta's primary I2C bus; the slot contents are not embedded in firmware.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
+</tr>
+<tr>
+<td>Threads, locks and structured concurrency</td>
 <td align="center">—</td>
-<td>Not exposed by the Portenta board profile.</td>
+<td>The Mbed RTOS carrier port still needs implementation and hardware verification.</td>
+<td></td>
+</tr>
+<tr>
+<td>Ethernet</td>
+<td align="center">—</td>
+<td>The hardware has Ethernet, but Juno has no Ethernet API/capability yet.</td>
 <td></td>
 </tr>
 </tbody>
 </table>
 <p>The Juno runtime emits a small C-linkage wrapper for the Mbed core's <code>pinMode</code> overload. This keeps generated
 Thumb-2 assembly independent of C++ overload mangling while leaving the regular Arduino <code>digitalWrite</code>, <code>analogRead</code>
-and <code>delay</code> calls on the core's native symbols.</p>
+and <code>delay</code> calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
+are selected by reachability, so a GPIO-only sketch does not pull them into the image.</p>
+<h2 id="wi-fi-with-secretstore">Wi-Fi with SecretStore</h2>
+<p>Provision the ATECC608 slots with <code>wifi.ssid</code> and <code>wifi.password</code>, then compile the example for Portenta:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretWifiStatus \
+  -Djuno.board=arduino-portenta-h7
+</code></pre>
+<p>The example reads both values from the secure element and prints only status, never the SSID or password. Flash it over
+USB with <code>-Djuno.port=&lt;serial-port&gt;</code> and follow with <code>juno:monitor -Djuno.baudRate=115200</code>.</p>
 <h2 id="features">Features</h2>
 <p>These examples need only a Portenta H7 and its USB-C cable.</p>
 <h3 id="blink-the-built-in-rgb-led">Blink the built-in RGB LED</h3>
