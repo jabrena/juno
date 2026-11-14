@@ -56,7 +56,7 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tbody>
 </table>
 
-### Vision boards support
+### Vision boards supported
 
 <table>
   <tr>
