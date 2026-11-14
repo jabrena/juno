@@ -96,7 +96,12 @@ public enum Board {
             "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2, new BoardMemoryProfile(524288, 8192, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
-                    Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH));
+                    Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH)),
+    /** Arduino Portenta H7's Cortex-M7 running the M7 image through the Arduino Mbed core. */
+    PORTENTA_H7("io/github/jabrena/juno/annotations/ArduinoPortentaH7Board", "arduino-portenta-h7", "Portenta H7",
+            "arduino:mbed_portenta:envie_m7", ArduinoCore.MBED_PORTENTA, MbedFamily.PORTENTA_H7,
+            new BoardMemoryProfile(1024 * 1024, 65536, 917504, 8192, 32768, MemoryAuthority.RUNTIME_HEAP,
+                    OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS));
 
     private final String apiClassName;
     private final String id;

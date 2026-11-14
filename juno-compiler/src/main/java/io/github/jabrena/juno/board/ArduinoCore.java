@@ -35,7 +35,9 @@ public enum ArduinoCore {
      * {@code rp2040:rp2040}: Earle Philhower's arduino-pico core, built for the RP2350's Cortex-M33 on the Raspberry Pi
      * Pico 2 W. Published on its own Boards Manager index, not Arduino's.
      */
-    RP2350("RP2350", Architecture.THUMB2);
+    RP2350("RP2350", Architecture.THUMB2),
+    /** {@code arduino:mbed_portenta}: Arduino's Mbed-based Portenta H7 M7 core. */
+    MBED_PORTENTA("Mbed Portenta", Architecture.THUMB2);
 
     private final String displayName;
     private final Architecture architecture;

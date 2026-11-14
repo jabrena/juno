@@ -92,6 +92,7 @@
       <a class="" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/arduino-portenta-h7">Portenta H7</a>
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
@@ -101,13 +102,14 @@
         <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <a class=" active" href="/juno/hardware-apis" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/hardware-apis">Overview</a>
         <a class="" href="/juno/delay">Delay</a>
         <a class="" href="/juno/serial">Serial</a>
         <a class="" href="/juno/syslog">Syslog</a>
         <a class="" href="/juno/gpio">Gpio</a>
+        <a class="active" href="/juno/secure-element">SecretStore</a>
         <a class="" href="/juno/sdcard">SD Card</a>
         <a class="" href="/juno/wifi">Wifi</a>
         <a class="" href="/juno/time">Time</a>
@@ -296,6 +298,23 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-search').forEach(attach);
 })();
 </script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/hardware-apis">Overview</a>
+    <a class="" href="/juno/delay">Delay</a>
+    <a class="" href="/juno/serial">Serial</a>
+    <a class="" href="/juno/syslog">Syslog</a>
+    <a class="" href="/juno/gpio">Gpio</a>
+    <a class="active" href="/juno/secure-element">SecretStore</a>
+    <a class="" href="/juno/sdcard">SD Card</a>
+    <a class="" href="/juno/wifi">Wifi</a>
+    <a class="" href="/juno/time">Time</a>
+    <a class="" href="/juno/httpclient">HTTP client</a>
+    <a class="" href="/juno/httpserver">HTTP server</a>
+    <a class="" href="/juno/email">Email</a>
+    <a class="" href="/juno/mvc">MVC</a>
+  </div>
+</nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
 <main class="juno-docs">
 

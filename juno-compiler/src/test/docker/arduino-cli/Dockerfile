@@ -19,10 +19,10 @@ RUN case "$(dpkg --print-architecture)" in \
         | tar -xz -C /usr/local/bin arduino-cli
 
 # The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, UNO WiFi Rev2, Nano ESP32, M5Stack
-# Cardputer, AI Thinker ESP32-CAM and Raspberry Pi Pico 2 W); pin any with
+# Cardputer, AI Thinker ESP32-CAM, Raspberry Pi Pico 2 W and Portenta H7); pin any with
 # --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
 # MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version> /
-# M5STACK_ESP32_CORE=m5stack:esp32@<version>.
+# M5STACK_ESP32_CORE=m5stack:esp32@<version> / PORTENTA_CORE=arduino:mbed_portenta@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
 ARG MEGAAVR_CORE=arduino:megaavr
@@ -36,12 +36,14 @@ ARG ESPRESSIF_PACKAGE_INDEX_URL=https://espressif.github.io/arduino-esp32/packag
 # The Raspberry Pi Pico 2 W targets Earle Philhower's arduino-pico rp2040:rp2040 core, published on its own index.
 ARG PICO_CORE=rp2040:rp2040
 ARG PICO_PACKAGE_INDEX_URL=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+ARG PORTENTA_CORE=arduino:mbed_portenta
 RUN arduino-cli core update-index \
         --additional-urls "${M5STACK_PACKAGE_INDEX_URL},${ESPRESSIF_PACKAGE_INDEX_URL},${PICO_PACKAGE_INDEX_URL}" \
     && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}" "${ESP32_CORE}" \
     && arduino-cli core install "${M5STACK_ESP32_CORE}" --additional-urls "${M5STACK_PACKAGE_INDEX_URL}" \
     && arduino-cli core install "${ESPRESSIF_CORE}" --additional-urls "${ESPRESSIF_PACKAGE_INDEX_URL}" \
-    && arduino-cli core install "${PICO_CORE}" --additional-urls "${PICO_PACKAGE_INDEX_URL}"
+    && arduino-cli core install "${PICO_CORE}" --additional-urls "${PICO_PACKAGE_INDEX_URL}" \
+    && arduino-cli core install "${PORTENTA_CORE}"
 
 # Optional library some TFT programs (e.g. RatonLocoTFT) need; not bundled with either core above,
 # see juno-site/src/main/resources/content/hid.md.

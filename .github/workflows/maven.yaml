@@ -672,7 +672,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
-        run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+              exit 0
+            fi
+            echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
+            sleep $((attempt * 10))
+          done
+          exit 1
       - uses: actions/download-artifact@v8
         with:
           name: integration-build-${{ github.sha }}
@@ -732,6 +742,8 @@ jobs:
             board_id: m5stack-cardputer
           - board: Raspberry Pi Pico 2 W
             board_id: raspberry-pi-pico-2-w
+          - board: Portenta H7
+            board_id: arduino-portenta-h7
     steps:
       - uses: actions/checkout@v7
         with:
@@ -743,7 +755,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
-        run: docker pull ${{ needs.arduino-cli-image.outputs.ref }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+              exit 0
+            fi
+            echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
+            sleep $((attempt * 10))
+          done
+          exit 1
       - uses: actions/download-artifact@v8
         with:
           name: integration-build-${{ github.sha }}

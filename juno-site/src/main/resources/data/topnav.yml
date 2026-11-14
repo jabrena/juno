@@ -28,6 +28,8 @@ items:
     children:
       - title: "Overview"
         path: "/boards"
+      - title: "Portenta H7"
+        path: "/arduino-portenta-h7"
       - title: "Nano ESP32"
         path: "/arduino-nano-esp32"
       - title: "M5Stack Cardputer"
@@ -57,6 +59,8 @@ items:
         path: "/syslog"
       - title: "Gpio"
         path: "/gpio"
+      - title: "SecretStore"
+        path: "/secure-element"
       - title: "SD Card"
         path: "/sdcard"
       - title: "Wifi"

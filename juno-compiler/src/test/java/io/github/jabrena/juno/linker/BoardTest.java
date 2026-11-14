@@ -11,6 +11,7 @@ import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.board.Capability;
 import io.github.jabrena.juno.board.Esp32Family;
 import io.github.jabrena.juno.board.M5StackFamily;
+import io.github.jabrena.juno.board.MbedFamily;
 import io.github.jabrena.juno.board.NanoFamily;
 import io.github.jabrena.juno.board.PicoFamily;
 import io.github.jabrena.juno.board.UnoGeneration;
@@ -46,7 +47,9 @@ class BoardTest {
         assertThat(Board.AI_THINKER_ESP32_CAM.family()).isEqualTo(Esp32Family.AI_THINKER_ESP32_CAM);
         assertThat(Board.M5_CARDPUTER.family()).isEqualTo(M5StackFamily.CARDPUTER_ADV);
         assertThat(Board.PICO_2_W.family()).isEqualTo(PicoFamily.PICO_2);
+        assertThat(Board.PORTENTA_H7.family()).isEqualTo(MbedFamily.PORTENTA_H7);
         assertThat(Board.PICO_2_W.unoGeneration()).isEmpty();
+        assertThat(Board.PORTENTA_H7.unoGeneration()).isEmpty();
     }
 
     static Stream<Arguments> capabilities() {
@@ -58,6 +61,7 @@ class BoardTest {
                 arguments(Board.UNO_R3, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3, Capability.WIFI, false),
+                arguments(Board.PORTENTA_H7, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.UUID_RANDOM, true),
                 arguments(Board.UNO_R3, Capability.BIG_NUMBERS, true),
                 arguments(Board.UNO_R3, Capability.WIFI_ACCESS_POINT, false),
@@ -173,6 +177,19 @@ class BoardTest {
         assertThatThrownBy(() -> Board.fromId("arduino-one-q"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("arduino-one-q");
+    }
+
+    @Test
+    @DisplayName("The Portenta H7 resolves to the Mbed M7 target")
+    void shouldResolvePortentaH7Target() {
+        Board board = Board.fromId("ARDUINO-PORTENTA-H7");
+
+        assertThat(board).isEqualTo(Board.PORTENTA_H7);
+        assertThat(board.annotationArgument()).isEqualTo("ArduinoPortentaH7Board.class");
+        assertThat(board.fqbn()).isEqualTo("arduino:mbed_portenta:envie_m7");
+        assertThat(board.core()).isEqualTo(ArduinoCore.MBED_PORTENTA);
+        assertThat(Board.fromApiClassName("io/github/jabrena/juno/annotations/ArduinoPortentaH7Board"))
+                .isEqualTo(board);
     }
 
     @Test

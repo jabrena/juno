@@ -168,6 +168,85 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tbody>
 </table>
 
+### Arduino Portenta H7
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Portenta H7</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7">
+    </td>
+    <td width="50%">Portenta H7 M7-core support through Arduino's Mbed core, including GPIO, delays, serial output, and built-in RGB LED control.</td>
+  </tr>
+</table>
+
+### Arduino Nano Family
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Arduino Nano ESP32</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Arduino Nano shields supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Accessory</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>Arduino Nano Connector Carrier</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="220"></td>
+    <td>Passive carrier for the Arduino Nano ESP32: microSD card slot on SPI, four Grove sockets, and one Qwiic connector.</td>
+  </tr>
+  </tbody>
+</table>
+
+## M5Stack boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>M5Stack Cardputer Adv</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## AI Thinker boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>AI Thinker ESP32-CAM</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
+## Raspberry Pi boards supported
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <strong>Raspberry Pi Pico 2 W</strong><br>
+      <img src="./juno-site/src/main/resources/public/images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W">
+    </td>
+    <td width="50%"></td>
+  </tr>
+</table>
+
 ## Quick start
 
 Requirements: `Arduino CLI`, `JDK 27+`, `Maven 3.10+`.
@@ -377,6 +456,7 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://docs.arduino.cc/hardware/uno-rev3/
+- https://docs.arduino.cc/hardware/portenta-h7/
 - https://docs.arduino.cc/hardware/nano-esp32/
 - https://docs.m5stack.com/en/core/Cardputer-Adv
 - https://lejos.sourceforge.io/
