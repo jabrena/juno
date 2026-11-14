@@ -21,7 +21,7 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
       <strong>Arduino Portenta H7</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7">
     </td>
-    <td width="50%">Portenta H7 M7-core support through Arduino's Mbed core, including GPIO, delays, serial output, and built-in RGB LED control.</td>
+    <td width="50%"></td>
   </tr>
 </table>
 
