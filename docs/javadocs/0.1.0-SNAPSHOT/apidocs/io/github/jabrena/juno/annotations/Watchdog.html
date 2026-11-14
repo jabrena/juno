@@ -90,7 +90,7 @@ initTheme();
 <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/annotation/Target.html" title="annotation interface in java.lang.annotation" class="external-link">@Target</a>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/annotation/ElementType.html#TYPE" class="external-link">TYPE</a>)
 </span><span class="modifiers">public @interface </span><span class="element-name type-name-label">Watchdog</span></div>
 <div class="block">Enables the target's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class. UNO R3,
-UNO WiFi Rev2, UNO R4 WiFi, Nano ESP32 and Raspberry Pi Pico 2 W are supported. UNO Q is rejected because its current Arduino
+UNO WiFi Rev2, UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W are supported. UNO Q is rejected because its current Arduino
 Zephyr firmware does not enable the watchdog subsystem, even though its STM32U585 contains the
 peripheral.
 
@@ -104,7 +104,7 @@ disabled.
 
 <p>AVR watchdogs provide discrete periods. Juno rounds <a href="#timeoutMillis()"><code>timeoutMillis()</code></a> up to the nearest
 available period: at most 8,000 ms on UNO R3 and approximately 8,200 ms on UNO WiFi Rev2.
-Nano ESP32's task watchdog uses whole seconds, so Juno likewise rounds its timeout up to the nearest second. The Pico
+ESP32 task watchdogs use whole seconds, so Juno likewise rounds its timeout up to the nearest second. The Pico
 2 W uses the RP2350 hardware watchdog's millisecond timeout directly.</div>
 </div>
 </section>

@@ -118,9 +118,9 @@
         <a class="" href="/juno/grove-system">Grove system</a>
         <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
       </div>
-      <a class="" href="/juno/showcase" >Showcase</a>
+      <a class="" href="/juno/blog" >Blog</a>
       <div class="juno-topnav-children">
-        <a class="" href="/juno/showcase">Overview</a>
+        <a class="" href="/juno/blog">Overview</a>
       </div>
       <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
     </nav>
@@ -316,7 +316,8 @@ compiler intrinsics, and both need an active <a href="../wifi"><code>Wifi</code>
 <p>The host, username, password, and message fields come from the microSD card, as runtime <code>String</code> values. Each one holds at
 most 31 bytes, so keep them short (see <a href="#credentials">Credentials</a>).</p>
 <h2 id="board-support">Board support</h2>
-<p><code>Smtp.sendTls</code> and <code>Pop3Client</code> work on the boards with the <code>TLS_EMAIL</code> capability: UNO R4 WiFi, UNO Q, UNO WiFi Rev2
+<p><code>Smtp.sendTls</code> and <code>Pop3Client</code> work on the boards with the <code>TLS_EMAIL</code> capability: UNO R4 WiFi, UNO Q, UNO WiFi Rev2,
+Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM.
 and Nano ESP32. <code>Smtp.send</code> (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
 boards have the <code>SMTP_STARTTLS</code> capability. The compiler rejects a call the board cannot run.</p>
 <h2 id="credentials">Credentials</h2>

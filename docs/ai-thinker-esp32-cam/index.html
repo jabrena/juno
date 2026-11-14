@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="AI Thinker ESP32-CAM">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, microSD, Bluetooth LE and the OV2640 camera.">
-  <meta property="og:description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, microSD, Bluetooth LE and the OV2640 camera." />
-  <meta name="twitter:description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, microSD, Bluetooth LE and the OV2640 camera.">
+  <meta name="description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, TLS networking, microSD, Bluetooth LE and the OV2640 camera.">
+  <meta property="og:description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, TLS networking, microSD, Bluetooth LE and the OV2640 camera." />
+  <meta name="twitter:description" content="Board notes for the AI Thinker ESP32-CAM and what Juno supports on it: GPIO, Wi-Fi, TLS networking, microSD, Bluetooth LE and the OV2640 camera.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/ai-thinker-esp32-cam/" />
@@ -118,9 +118,9 @@
         <a class="" href="/juno/grove-system">Grove system</a>
         <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
       </div>
-      <a class="" href="/juno/showcase" >Showcase</a>
+      <a class="" href="/juno/blog" >Blog</a>
       <div class="juno-topnav-children">
-        <a class="" href="/juno/showcase">Overview</a>
+        <a class="" href="/juno/blog">Overview</a>
       </div>
       <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
     </nav>
@@ -364,6 +364,12 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java"><code>AiThinkerEsp32CamWifiFromSd</code></a></td>
 </tr>
 <tr>
+<td>Wi-Fi access point</td>
+<td align="center">✓</td>
+<td><code>MCU.getWifi().beginAP(ssid, password)</code> uses the ESP32 soft-AP.</td>
+<td></td>
+</tr>
+<tr>
 <td><code>HttpClient</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
 <td></td>
@@ -377,8 +383,8 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 </tr>
 <tr>
 <td>HTTPS server</td>
-<td align="center">—</td>
-<td>The board supports HTTPS clients, but not TLS server sessions.</td>
+<td align="center">✓</td>
+<td><code>HttpServer.beginTls()</code> uses the ESP32 mbedTLS server transport.</td>
 <td></td>
 </tr>
 <tr>
@@ -389,8 +395,14 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 </tr>
 <tr>
 <td>Email over TLS (<code>Smtp.sendTls</code>, <code>Pop3Client</code>)</td>
-<td align="center">—</td>
-<td>The AI Thinker target does not provide Juno's TLS email runtime.</td>
+<td align="center">✓</td>
+<td>Implicit TLS uses the ESP32 secure client.</td>
+<td></td>
+</tr>
+<tr>
+<td>Email over STARTTLS (<code>Smtp.send</code>)</td>
+<td align="center">✓</td>
+<td>STARTTLS upgrades through the ESP32 <code>ESP_SSLClient</code> wrapper.</td>
 <td></td>
 </tr>
 <tr>
@@ -431,20 +443,20 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 </tr>
 <tr>
 <td><code>@Watchdog</code></td>
-<td align="center">—</td>
-<td>The AI Thinker ESP32-CAM target does not expose a Juno watchdog runtime.</td>
+<td align="center">✓</td>
+<td>ESP32 task watchdog; the timeout is rounded up to whole seconds.</td>
 <td></td>
 </tr>
 <tr>
 <td>Cryptographic <code>UUID.randomUUID()</code></td>
-<td align="center">—</td>
-<td>No cryptographic UUID entropy provider is exposed for this target.</td>
+<td align="center">✓</td>
+<td>Uses the ESP32 hardware random-number generator.</td>
 <td></td>
 </tr>
 <tr>
 <td>Double-precision <code>java.lang.Math</code></td>
-<td align="center">—</td>
-<td>The board profile exposes only single-precision math functions.</td>
+<td align="center">✓</td>
+<td>Uses the Xtensa toolchain's double-precision libm functions.</td>
 <td></td>
 </tr>
 </tbody>
