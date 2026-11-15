@@ -629,9 +629,11 @@ native USB HID controller, onboard LED matrix or onboard IMU.</p>
 <code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.</p>
 <h2 id="secret-storage">Secret storage</h2>
-<p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from a secure element: an
-ATECC608 on the I2C boards, and the Portenta H7's own NXP SE050C2. Secrets stay outside the firmware image and the SD
-card, so provisioning does not put them in source code, build output or removable storage.</p>
+<p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from whatever store the
+board has: an ATECC608 on the I2C boards, the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which
+is weaker than a chip — a flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware
+image and the SD card either way, so provisioning does not put them in source code, build output or removable
+storage.</p>
 <table>
 <thead>
 <tr>
@@ -652,9 +654,14 @@ card, so provisioning does not put them in source code, build output or removabl
 <td>The board includes a Microchip ATECC608A on its I2C bus.</td>
 </tr>
 <tr>
+<td>Built in, in flash</td>
+<td>Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM</td>
+<td>No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. A program can use an ATECC608 breakout explicitly when stronger storage is needed.</td>
+</tr>
+<tr>
 <td>External breakout</td>
-<td>UNO R4 WiFi, UNO Q, Nano ESP32, M5Stack Cardputer, Raspberry Pi Pico 2 W and AI Thinker ESP32-CAM</td>
-<td>Connect an ATECC608 breakout to the board's I2C pins; the Cardputer and ESP32-CAM use their documented Grove or camera I2C pins.</td>
+<td>UNO R4 WiFi, UNO Q and Raspberry Pi Pico 2 W</td>
+<td>Connect an ATECC608 breakout to the board's I2C pins.</td>
 </tr>
 <tr>
 <td>Not supported</td>

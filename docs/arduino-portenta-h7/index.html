@@ -433,14 +433,14 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <tr>
 <td>HTTP and HTTPS client/server</td>
 <td align="center">✓</td>
-<td>Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use <code>WiFiSSLClient</code>, and the HTTPS server uses the core's bundled mbedTLS.</td>
+<td>Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use <code>WiFiSSLClient</code>, and the HTTPS server uses the core's bundled mbedTLS. Confirmed on hardware: the HTTP and HTTPS clients, a plain HTTP server on port 80 (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpServer.java"><code>PortentaHttpServer</code></a>), and an HTTPS server on port 443 whose certificate and key are sent over USB at boot (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpsServer.java"><code>PortentaHttpsServer</code></a>).</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java"><code>HttpsMethods</code></a></td>
 </tr>
 <tr>
 <td>Email over TLS and STARTTLS</td>
 <td align="center">✓</td>
-<td>Uses the existing Juno email transports over the Portenta Wi-Fi client; credentials should come from <code>SecretStore</code>.</td>
-<td></td>
+<td><code>Smtp.send</code> upgrades a TCP socket to TLS with Mbed's <code>TLSSocketWrapper</code> and checks the server certificate against the bundled Mozilla roots; <code>Smtp.sendTls</code> and <code>Pop3Client</code> use the Portenta's TLS client. Credentials come from <code>SecretStore</code>. Confirmed on hardware: STARTTLS on port 587, implicit TLS on port 465 and POP3 on port 995.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/PortentaEmailSmoke.java"><code>PortentaEmailSmoke</code></a></td>
 </tr>
 <tr>
 <td>Bluetooth LE</td>
@@ -481,7 +481,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <tr>
 <td><code>SecretStore</code> / SE050C2</td>
 <td align="center">✓</td>
-<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>SecretStoreFactory</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretStore.java"><code>PortentaSecretStore</code></a>, and a reboot that joins Wi-Fi from the stored credentials.</td>
+<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>SecretStoreFactory</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a>, a reboot that joins Wi-Fi from the stored credentials, and <code>clearAll()</code>, a whole-chip wipe that erases the Wi-Fi and SMTP credentials too, checked with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretClearAllRead.java"><code>PortentaSecretClearAllRead</code></a>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
 </tr>
 <tr>

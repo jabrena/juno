@@ -311,14 +311,47 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Secrets in a Secure Element</h1>
 </header>
     <div class="content-prose">
-<p>Juno can read named secrets from a secure element through the <code>SecretStore</code> interface, so no secret is written on the
-SD card, in the firmware image or in build output. Two chips are supported behind the same interface: the Portenta H7's
-onboard NXP SE050C2, and an ATECC608 on an I2C bus — built into the UNO WiFi Rev2, an external breakout on the other
-I2C boards. <code>SecretStoreFactory.open(MCU.getBoardModel(), MCU.getI2c(), slots)</code> picks the provider for the board, and
-the compiler folds that choice, so the unused driver is left out of the image.</p>
-<p><strong>Status:</strong> the SE050C2 path is confirmed on a Portenta H7: writes, updates, per-name clears, a rewrite after a clear
-and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ATECC608 path is still
-tested only against a simulated chip and has not been confirmed on a board with a real one.</p>
+<p>Juno reads named secrets through the <code>SecretStore</code> interface, so no secret is written on the SD card, in the firmware
+image or in build output. Three implementations sit behind that one interface:</p>
+<table>
+<thead>
+<tr>
+<th>Implementation</th>
+<th>Boards</th>
+<th>Strength</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Se050C2</code></td>
+<td>Portenta H7 (onboard NXP SE050C2)</td>
+<td>The value lives in a secure element; the processor asks it for the value.</td>
+</tr>
+<tr>
+<td><code>Atecc608</code></td>
+<td>UNO WiFi Rev2 (onboard), UNO R4 WiFi and the other I2C boards (breakout)</td>
+<td>As above, over I2C.</td>
+</tr>
+<tr>
+<td><code>Esp32Nvs</code></td>
+<td>Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM</td>
+<td>Weaker: the board's own flash. See the warning below.</td>
+</tr>
+</tbody>
+</table>
+<p><code>SecretStoreFactory.open(MCU.getI2c(), slots)</code> picks the one the board has. The board query is
+answered when the program is linked and the branches the target cannot take are dropped with it, so only the chosen
+implementation reaches the image — and a core without the others' shim code never has to supply it.</p>
+<p><strong>The ESP32 store is not a secure element.</strong> Those boards carry no crypto chip, so <code>Esp32Nvs</code> keeps each value in an
+NVS entry in the board's own flash partition. That still takes the secret out of the firmware image, out of the build
+output and off the SD card — a shared sketch or a copied card carries nothing — but a flash readout of the board
+exposes every value unless flash encryption is enabled. Treat it as &quot;not in the program&quot;, not as &quot;not extractable
+from the hardware&quot;. Wire an ATECC608 breakout to the I2C pins and instantiate <code>Atecc608</code> explicitly when the stronger
+guarantee is needed.</p>
+<p><strong>Status:</strong> the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
+and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
+confirmed on a Nano ESP32. The ATECC608 path runs on an UNO WiFi Rev2 and reads its onboard chip, but no value has
+been provisioned into one yet, so its writes are still only tested against a simulated chip.</p>
 <h2 id="what-is-protected">What is protected</h2>
 <ul>
 <li>A copied SD card or firmware image contains no secret value.</li>
@@ -346,7 +379,7 @@ board.</p>
 <p>The chip's data zone is not locked by this tool. Locking is a permanent step and is left to a separate, reviewed process.</p>
 <h2 id="reading-secrets-in-a-program">Reading secrets in a program</h2>
 <pre><code class="language-java">SecretSlots slots = new SecretSlots().add(&quot;wifi.ssid&quot;, 8).add(&quot;wifi.password&quot;, 9);
-SecretStore secrets = SecretStoreFactory.open(MCU.getBoardModel(), MCU.getI2c(), slots);
+SecretStore secrets = SecretStoreFactory.open(MCU.getI2c(), slots);
 
 String ssid = secrets.getString(&quot;wifi.ssid&quot;);
 String password = secrets.getString(&quot;wifi.password&quot;);
@@ -366,12 +399,16 @@ erased too. To empty just the names a program owns, loop over <code>clear(name)<
 <p><code>-Djuno.secret.clear=true</code> is the host side of <code>clearAll()</code>, which is why it asks for the word <code>CLEAR</code> first. On a
 provisioned board the Wi-Fi credentials go with it and have to be provisioned again.</p>
 <p>Two examples cover the two operations from the board itself, with dummy values and no host provisioning:
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretStore.java"><code>PortentaSecretStore</code></a> checks writes, updates, per-name <code>clear</code> and the 63-byte
-maximum without ever wiping the chip, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java"><code>PortentaSecretWipe</code></a> writes two dummy
-names, reads them back, calls <code>clearAll()</code> and checks that both are then missing.</p>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a> checks writes, updates, per-name <code>clear</code> and the 63-byte maximum
+without ever wiping the store, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java"><code>PortentaSecretWipe</code></a> writes two dummy names,
+reads them back, calls <code>clearAll()</code> and checks that both are then missing.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretProbe.java"><code>SecretProbe</code></a> is the read-only one: it prints what each name holds, without writing
+anything, which is the first thing to run on a board whose store has never answered.</p>
 <h2 id="wiring">Wiring</h2>
 <ul>
 <li><strong>Portenta H7:</strong> the SE050C2 is on the board; no extra hardware and no I2C bus of your own.</li>
+<li><strong>Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM:</strong> nothing to wire — the store is the board's own NVS
+partition. Add an ATECC608 breakout only to trade up to a real secure element.</li>
 <li><strong>UNO WiFi Rev2:</strong> the chip is on the board's I2C bus; no extra hardware.</li>
 <li><strong>UNO R4 WiFi, UNO Q, Nano ESP32, Pico 2 W:</strong> an ATECC608 breakout on the board's I2C pins, at 3.3 V for the Q, Nano
 ESP32 and Pico 2 W, and at 5 V logic on the R4 WiFi with a level-shifting breakout.</li>

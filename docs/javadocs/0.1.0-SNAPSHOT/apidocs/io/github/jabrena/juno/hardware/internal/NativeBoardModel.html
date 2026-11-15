@@ -70,21 +70,11 @@ initTheme();
 <div class="toc-header">Contents&nbsp;<input type="text" class="filter-input" disabled title="Filter contents (type .)" placeholder="Filter contents (type .)" aria-label="Filter table of contents" autocomplete="off" spellcheck="false"><input type="reset" class="reset-filter" disabled tabindex="-1" value="Reset">&nbsp;<button class="toc-sort-toggle" id="toc-lexical-order-toggle"><img src="../../../../../../resource-files/sort-a-z.svg" alt="Sort member details in lexicographical order"></button></div>
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
-<li><a href="#field-summary" tabindex="0">Field Summary</a></li>
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
-<li><a href="#field-detail" tabindex="0">Field Details</a>
-<ol class="toc-list">
-<li><a href="#INSTANCE" tabindex="0">INSTANCE</a></li>
-</ol>
-</li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#boardModel()" tabindex="0">boardModel()</a></li>
 <li><a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)" tabindex="0">setBoardModel(BoardModel)</a></li>
-<li><a href="#isQ()" tabindex="0">isQ()</a></li>
-<li><a href="#isR4()" tabindex="0">isR4()</a></li>
-<li><a href="#isR3()" tabindex="0">isR3()</a></li>
-<li><a href="#isPortentaH7()" tabindex="0">isPortentaH7()</a></li>
 <li><a href="#onboardSdChipSelect()" tabindex="0">onboardSdChipSelect()</a></li>
 </ol>
 </li>
@@ -99,73 +89,33 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.hardware.internal.NativeBoardModel</div>
 </div>
 <section class="class-description" id="class-description">
-<dl class="notes">
-<dt>All Implemented Interfaces:</dt>
-<dd><code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
-</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">NativeBoardModel</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
-implements <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></span></div>
-<div class="block">The board's <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a>: each method is an intrinsic the compiler folds to a constant for the target board,
-so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> instead.</div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<div class="block">The board's own answer to <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a>. On the board the call is an
+intrinsic the compiler folds to the target's constant, so this body never runs there; on a desktop JVM it hands out
+whatever <a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)"><code>setBoardModel(BoardModel)</code></a> last set, which is how a whole-program emulator in a test says which board it is
+pretending to be.</div>
 </div>
 </section>
 <section class="summary">
 <ul class="summary-list">
-<!-- =========== FIELD SUMMARY =========== -->
-<li>
-<section class="field-summary" id="field-summary">
-<h2>Field Summary</h2>
-<div class="caption"><span>Fields</span></div>
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Field</div>
-<div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static final <a href="NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></code></div>
-<div class="col-second even-row-color"><code><a href="#INSTANCE" class="member-name-link">INSTANCE</a></code></div>
-<div class="col-last even-row-color">
-<div class="block">The board's own answer: the only instance.</div>
-</div>
-</div>
-</section>
-</li>
 <!-- ========== METHOD SUMMARY =========== -->
 <li>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab4" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab4', 3)" class="table-tab">Concrete Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#boardModel()" class="member-name-link">boardModel</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The board model <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hands out.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isPortentaH7()" class="member-name-link">isPortentaH7</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Whether the program runs on the Portenta H7, whose onboard secure element is an NXP SE050C2.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isQ()" class="member-name-link">isQ</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Whether the program runs on the UNO Q, the board with the most memory and the 13-column LED matrix.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isR3()" class="member-name-link">isR3</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Whether the program runs on an R3-format board, the UNO WiFi Rev2 with its MegaAVR core.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isR4()" class="member-name-link">isR4</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Whether the program runs on the UNO R4 WiFi, with its Renesas core and 12-column LED matrix.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onboardSdChipSelect()" class="member-name-link">onboardSdChipSelect</a>()</code></div>
@@ -173,10 +123,10 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
 <div class="block">The selected board's onboard SD chip-select pin; only called after capability validation.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)" class="member-name-link">setBoardModel</a><wbr>(<a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setBoardModel(io.github.jabrena.juno.hardware.BoardModel)" class="member-name-link">setBoardModel</a><wbr>(<a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Makes <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hand out <code>replacement</code>: for a
-whole-program emulator in a test, never on the board.</div>
+whole-program emulator in a test, never on the board, where the call is folded to a constant instead.</div>
 </div>
 </div>
 </div>
@@ -190,23 +140,6 @@ whole-program emulator in a test, never on the board.</div>
 </section>
 <section class="details">
 <ul class="details-list">
-<!-- ============ FIELD DETAIL =========== -->
-<li>
-<section class="field-details" id="field-detail">
-<h2>Field Details</h2>
-<ul class="member-list">
-<li>
-<section class="detail" id="INSTANCE">
-<h3>INSTANCE</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></span>&nbsp;<span class="element-name">INSTANCE</span></div>
-<div class="block">The board's own answer: the only instance.</div>
-</div>
-</section>
-</li>
-</ul>
-</section>
-</li>
 <!-- ============ METHOD DETAIL ========== -->
 <li>
 <section class="method-details" id="method-detail">
@@ -216,7 +149,7 @@ whole-program emulator in a test, never on the board.</div>
 <section class="detail" id="boardModel()">
 <h3>boardModel</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></span>&nbsp;<span class="element-name">boardModel</span>()</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></span>&nbsp;<span class="element-name">boardModel</span>()</div>
 <div class="block">The board model <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hands out.</div>
 </div>
 </section>
@@ -225,65 +158,9 @@ whole-program emulator in a test, never on the board.</div>
 <section class="detail" id="setBoardModel(io.github.jabrena.juno.hardware.BoardModel)">
 <h3>setBoardModel</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setBoardModel</span><wbr><span class="parameters">(<a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setBoardModel</span><wbr><span class="parameters">(<a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a>&nbsp;replacement)</span></div>
 <div class="block">Makes <a href="../MCU.html#getBoardModel()"><code>MCU.getBoardModel()</code></a> hand out <code>replacement</code>: for a
-whole-program emulator in a test, never on the board.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="isQ()">
-<h3>isQ</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isQ</span>()</div>
-<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../BoardModel.html#isQ()">BoardModel</a></code></span></div>
-<div class="block">Whether the program runs on the UNO Q, the board with the most memory and the 13-column LED matrix.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="../BoardModel.html#isQ()">isQ</a></code>&nbsp;in interface&nbsp;<code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="isR4()">
-<h3>isR4</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isR4</span>()</div>
-<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../BoardModel.html#isR4()">BoardModel</a></code></span></div>
-<div class="block">Whether the program runs on the UNO R4 WiFi, with its Renesas core and 12-column LED matrix.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="../BoardModel.html#isR4()">isR4</a></code>&nbsp;in interface&nbsp;<code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="isR3()">
-<h3>isR3</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isR3</span>()</div>
-<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../BoardModel.html#isR3()">BoardModel</a></code></span></div>
-<div class="block">Whether the program runs on an R3-format board, the UNO WiFi Rev2 with its MegaAVR core.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="../BoardModel.html#isR3()">isR3</a></code>&nbsp;in interface&nbsp;<code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="isPortentaH7()">
-<h3>isPortentaH7</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isPortentaH7</span>()</div>
-<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../BoardModel.html#isPortentaH7()">BoardModel</a></code></span></div>
-<div class="block">Whether the program runs on the Portenta H7, whose onboard secure element is an NXP SE050C2.</div>
-<dl class="notes">
-<dt>Specified by:</dt>
-<dd><code><a href="../BoardModel.html#isPortentaH7()">isPortentaH7</a></code>&nbsp;in interface&nbsp;<code><a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></code></dd>
-</dl>
+whole-program emulator in a test, never on the board, where the call is folded to a constant instead.</div>
 </div>
 </section>
 </li>
