@@ -841,16 +841,20 @@ y = 319.</div>
 <div class="block">Stores <code>value[0..length)</code> under <code>key</code>, rewriting both blocks of its slot so no byte of an older, longer
 value survives.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#clear(java.lang.String)" class="member-name-link">clear(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#clear(java.lang.String)" class="member-name-link">clear(String)</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>
 <div class="block">Empties <code>key</code>, so that a later <a href="io/github/jabrena/juno/hardware/security/SecretStore.html#read(java.lang.String,byte%5B%5D)"><code>SecretStore.read(String, byte[])</code></a> reports it missing.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#clearAll()" class="member-name-link">clearAll()</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#clearAll()" class="member-name-link">clearAll()</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#clearAll()" class="member-name-link">clearAll()</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>
-<div class="block">Empties every name the store knows, which are the names in its table; a slot that the table does not name is not
-touched.</div>
+<div class="block">Empties every data slot on the chip, not only the ones this store's table names: it decommissions the chip, so
+a secret another program provisioned under a name this table does not list is erased too.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#clearDisplay()" class="member-name-link">clearDisplay()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
@@ -1468,6 +1472,22 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 <dt><a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html#FAILED" class="member-name-link">FAILED</a> - Enum constant in enum class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/MoveOutcome.html" title="enum class in io.github.jabrena.juno.robotics.navigation">MoveOutcome</a></dt>
 <dd>
 <div class="block">It failed or timed out: a stalled wheel, a link that did not answer, a robot that did not move.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_NONE" class="member-name-link">FAILURE_NONE</a> - Static variable in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">No failure was recorded by the last operation.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_PROTOCOL" class="member-name-link">FAILURE_PROTOCOL</a> - Static variable in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">The chip answered with a malformed or corrupt response.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_REJECTED" class="member-name-link">FAILURE_REJECTED</a> - Static variable in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">The chip answered with a non-zero command status.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_UNAVAILABLE" class="member-name-link">FAILURE_UNAVAILABLE</a> - Static variable in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">The chip did not answer on the I2C bus.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#failures()" class="member-name-link">failures()</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
@@ -2244,6 +2264,8 @@ missing, resolves to an object or array, or the raw text is too long for Juno's 
 <div class="block">Decodes a JSON string to UTF-8 and returns the number of bytes written.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>
@@ -3155,7 +3177,7 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 <dt><a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a> - package io.github.jabrena.juno.hardware.security</dt>
 <dd>
 <div class="block">Secrets kept in a secure element: <a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> is the Microchip ATECC608 provider over an I2C bus.</div>
+<a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/package-summary.html">io.github.jabrena.juno.hardware.serial</a> - package io.github.jabrena.juno.hardware.serial</dt>
 <dd>
@@ -3314,6 +3336,12 @@ boards.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isOptionPressed()" class="member-name-link">isOptionPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#isPortentaH7()" class="member-name-link">isPortentaH7()</a> - Method in interface io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="interface in io.github.jabrena.juno.hardware">BoardModel</a></dt>
+<dd>
+<div class="block">Whether the program runs on the Portenta H7, whose onboard secure element is an NXP SE050C2.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardModel.html#isPortentaH7()" class="member-name-link">isPortentaH7()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isPressed()" class="member-name-link">isPressed()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isPressed()" class="member-name-link">isPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
@@ -3467,6 +3495,10 @@ boards.</div>
 <dd>
 <div class="block">The heading error measured after the last move, before its correction, in degrees, counter-clockwise positive.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#lastFailure()" class="member-name-link">lastFailure()</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">Returns the failure kind recorded by the most recent read or write operation.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
@@ -3482,6 +3514,10 @@ outside the waypoint's tolerance after its last leg.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
 <dd>
 <div class="block">Why the last <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)"><code>Pilot.travel(int)</code></a> or <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#rotate(int)"><code>Pilot.rotate(int)</code></a> ended.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#lastStatus()" class="member-name-link">lastStatus()</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>
+<div class="block">Returns the raw ATECC608 status byte from the most recent command response, or <code>0</code> if none was received.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#lastTravelPose()" class="member-name-link">lastTravelPose()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>
@@ -4157,6 +4193,10 @@ in a unit test.</div>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardModel.html#onboardSdChipSelect()" class="member-name-link">onboardSdChipSelect()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardModel</a></dt>
 <dd>
 <div class="block">The selected board's onboard SD chip-select pin; only called after capability validation.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html#open(io.github.jabrena.juno.hardware.BoardModel,io.github.jabrena.juno.hardware.i2c.I2c,io.github.jabrena.juno.hardware.security.SecretSlots)" class="member-name-link">open(BoardModel, I2c, SecretSlots)</a> - Static method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security">SecretStoreFactory</a></dt>
+<dd>
+<div class="block">Opens the board's secure store.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#open(java.lang.String)" class="member-name-link">open(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -4901,6 +4941,8 @@ address.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#read(java.lang.String,byte%5B%5D)" class="member-name-link">read(String, byte[])</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#read(java.lang.String,byte%5B%5D)" class="member-name-link">read(String, byte[])</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#read(java.lang.String,byte%5B%5D)" class="member-name-link">read(String, byte[])</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>
 <div class="block">Copies the value of <code>key</code> into <code>buffer</code> and returns its length, or a negative value when the key is
@@ -5464,13 +5506,21 @@ shield creates it once and keeps it.</div>
 <div class="block">Access to an SPI SD card, backed by the Arduino <code>SdFat</code> library with long-file-name support
 enabled.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a> - Class in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
+<dd>
+<div class="block">Named-secret storage in the NXP SE050C2 used by the Portenta H7.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#%3Cinit%3E(io.github.jabrena.juno.hardware.security.SecretSlots)" class="member-name-link">Se050C2(SecretSlots)</a> - Constructor for class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
+<dd>
+<div class="block">Opens the Portenta H7's SE050C2 and uses <code>slots</code> as its stable name-to-object mapping.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/Delay.html#seconds(int)" class="member-name-link">seconds(int)</a> - Static method in class io.github.jabrena.juno.util.<a href="io/github/jabrena/juno/util/Delay.html" title="class in io.github.jabrena.juno.util">Delay</a></dt>
 <dd>
 <div class="block">Delays <code>seconds</code> seconds.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretSlots.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a> - Class in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
 <dd>
-<div class="block">The names a program reads from an <a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> and the data slot that holds each one.</div>
+<div class="block">The names a program reads from a <a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> and the logical slot that holds each one.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretSlots.html#%3Cinit%3E()" class="member-name-link">SecretSlots()</a> - Constructor for class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a></dt>
 <dd>
@@ -5479,6 +5529,10 @@ enabled.</div>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a> - Interface in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
 <dd>
 <div class="block">Named secrets read from a secure element.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.security">SecretStoreFactory</a> - Class in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
+<dd>
+<div class="block">Selects the secure-element provider compiled for a board.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/Random.html#seed(int)" class="member-name-link">seed(int)</a> - Static method in class io.github.jabrena.juno.util.<a href="io/github/jabrena/juno/util/Random.html" title="class in io.github.jabrena.juno.util">Random</a></dt>
 <dd>
@@ -6979,6 +7033,8 @@ for raw protocols such as the ATECC608 command frames.</div>
 <div class="block">Copies bytes from a caller-owned Java array into PSRAM.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#write(java.lang.String,byte%5B%5D,int)" class="member-name-link">write(String, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/security/Se050C2.html#write(java.lang.String,byte%5B%5D,int)" class="member-name-link">write(String, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#write(java.lang.String,byte%5B%5D,int)" class="member-name-link">write(String, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>

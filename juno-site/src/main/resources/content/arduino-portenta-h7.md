@@ -25,6 +25,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 | Built-in RGB LED | Arduino pin 24 (`LED_BUILTIN`) |
 | Wireless connectivity | 2.4 GHz Wi-Fi and Bluetooth Low Energy |
 | Ethernet | 10/100 Mbps through the onboard Ethernet interface |
+| Secure element | NXP SE050C2, read through `SecretStore` |
 | Arduino CLI FQBN | `arduino:mbed_portenta:envie_m7` |
 | Juno board id | `arduino-portenta-h7` |
 
@@ -42,11 +43,11 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 | Email over TLS and STARTTLS | ✓ | Uses the existing Juno email transports over the Portenta Wi-Fi client; credentials should come from `SecretStore`. | |
 | Bluetooth LE | ✓ | Uses the ArduinoBLE library for the Powered Up central runtime. | [`PoweredUpHubHello`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpHubHello.java) |
 | Double-precision `java.lang.Math` | ✓ | The M7's floating-point toolchain assembles Juno's double runtime. | [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
-| Threads, locks, structured concurrency and scoped values | ✓ | Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Hardware verification remains pending. | [`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java) |
+| Threads, locks, structured concurrency and scoped values | ✓ | Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Confirmed on hardware with four soak programs that repeat their concurrent work every round: [`PortentaLocks`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaLocks.java), [`PortentaStructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaStructuredConcurrency.java) and [`PortentaScopedValues`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaScopedValues.java) beside the one linked here. | [`PortentaThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaThreads.java) |
 | USB HID mouse | ✓ | Uses the Mbed core's `USBMouse`; `PortentaMouse` keeps serial progress on the same USB connection. | [`PortentaMouse`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/PortentaMouse.java) |
 | Watchdog | ✓ | Uses `mbed::Watchdog` behind `@Watchdog`. | [`GcDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/GcDemo.java) |
 | Cryptographic UUID | ✓ | Uses the Mbed hardware entropy provider behind `UUID.randomUUID()`. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
-| `SecretStore` / ATECC608 | ✓ | The existing `Atecc608` driver uses Portenta's primary I2C bus; the slot contents are not embedded in firmware. | [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) |
+| `SecretStore` / SE050C2 | ✓ | The board's onboard NXP SE050C2 holds each name as a binary object; `SecretStoreFactory` picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with [`PortentaSecretStore`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretStore.java), and a reboot that joins Wi-Fi from the stored credentials. | [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) |
 | Ethernet | — | The hardware has Ethernet, but Juno has no Ethernet API/capability yet. | |
 
 The Juno runtime emits a small C-linkage wrapper for the Mbed core's `pinMode` overload. This keeps generated
@@ -56,7 +57,8 @@ are selected by reachability, so a GPIO-only sketch does not pull them into the 
 
 ## Wi-Fi with SecretStore
 
-Provision the ATECC608 slots with `wifi.ssid` and `wifi.password`, then compile the example for Portenta:
+Provision the SE050C2 with `wifi.ssid` and `wifi.password` (see [Secrets in a Secure
+Element](../secure-element)), then compile the example for Portenta:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \

@@ -370,6 +370,10 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td align="right">10/100 Mbps through the onboard Ethernet interface</td>
 </tr>
 <tr>
+<td>Secure element</td>
+<td align="right">NXP SE050C2, read through <code>SecretStore</code></td>
+</tr>
+<tr>
 <td>Arduino CLI FQBN</td>
 <td align="right"><code>arduino:mbed_portenta:envie_m7</code></td>
 </tr>
@@ -453,8 +457,8 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <tr>
 <td>Threads, locks, structured concurrency and scoped values</td>
 <td align="center">✓</td>
-<td>Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Hardware verification remains pending.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
+<td>Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Confirmed on hardware with four soak programs that repeat their concurrent work every round: <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaLocks.java"><code>PortentaLocks</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaStructuredConcurrency.java"><code>PortentaStructuredConcurrency</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaScopedValues.java"><code>PortentaScopedValues</code></a> beside the one linked here.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaThreads.java"><code>PortentaThreads</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -475,9 +479,9 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
 </tr>
 <tr>
-<td><code>SecretStore</code> / ATECC608</td>
+<td><code>SecretStore</code> / SE050C2</td>
 <td align="center">✓</td>
-<td>The existing <code>Atecc608</code> driver uses Portenta's primary I2C bus; the slot contents are not embedded in firmware.</td>
+<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>SecretStoreFactory</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretStore.java"><code>PortentaSecretStore</code></a>, and a reboot that joins Wi-Fi from the stored credentials.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
 </tr>
 <tr>
@@ -493,7 +497,8 @@ Thumb-2 assembly independent of C++ overload mangling while leaving the regular 
 and <code>delay</code> calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
 are selected by reachability, so a GPIO-only sketch does not pull them into the image.</p>
 <h2 id="wi-fi-with-secretstore">Wi-Fi with SecretStore</h2>
-<p>Provision the ATECC608 slots with <code>wifi.ssid</code> and <code>wifi.password</code>, then compile the example for Portenta:</p>
+<p>Provision the SE050C2 with <code>wifi.ssid</code> and <code>wifi.password</code> (see <a href="../secure-element">Secrets in a Secure
+Element</a>), then compile the example for Portenta:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretWifiStatus \
   -Djuno.board=arduino-portenta-h7

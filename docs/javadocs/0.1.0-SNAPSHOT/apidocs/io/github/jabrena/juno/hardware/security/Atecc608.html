@@ -76,6 +76,10 @@ initTheme();
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
 <li><a href="#ADDRESS" tabindex="0">ADDRESS</a></li>
+<li><a href="#FAILURE_NONE" tabindex="0">FAILURE_NONE</a></li>
+<li><a href="#FAILURE_UNAVAILABLE" tabindex="0">FAILURE_UNAVAILABLE</a></li>
+<li><a href="#FAILURE_REJECTED" tabindex="0">FAILURE_REJECTED</a></li>
+<li><a href="#FAILURE_PROTOCOL" tabindex="0">FAILURE_PROTOCOL</a></li>
 </ol>
 </li>
 <li><a href="#constructor-detail" tabindex="0">Constructor Details</a>
@@ -86,6 +90,8 @@ initTheme();
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#getSecretStore()" tabindex="0">getSecretStore()</a></li>
+<li><a href="#lastFailure()" tabindex="0">lastFailure()</a></li>
+<li><a href="#lastStatus()" tabindex="0">lastStatus()</a></li>
 <li><a href="#read(java.lang.String,byte%5B%5D)" tabindex="0">read(String, byte[])</a></li>
 <li><a href="#clear(java.lang.String)" tabindex="0">clear(String)</a></li>
 <li><a href="#clearAll()" tabindex="0">clearAll()</a></li>
@@ -139,6 +145,26 @@ its buffers once, at construction, and <a href="#read(java.lang.String,byte%5B%5
 <div class="col-last even-row-color">
 <div class="block">The chip's 7-bit I2C address.</div>
 </div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#FAILURE_NONE" class="member-name-link">FAILURE_NONE</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">No failure was recorded by the last operation.</div>
+</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#FAILURE_PROTOCOL" class="member-name-link">FAILURE_PROTOCOL</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The chip answered with a malformed or corrupt response.</div>
+</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#FAILURE_REJECTED" class="member-name-link">FAILURE_REJECTED</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The chip answered with a non-zero command status.</div>
+</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#FAILURE_UNAVAILABLE" class="member-name-link">FAILURE_UNAVAILABLE</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The chip did not answer on the I2C bus.</div>
+</div>
 </div>
 </section>
 </li>
@@ -178,8 +204,8 @@ value survives.</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#clearAll()" class="member-name-link">clearAll</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Empties every name the store knows, which are the names in its table; a slot that the table does not name is not
-touched.</div>
+<div class="block">Empties every data slot on the chip, not only the ones this store's table names: it decommissions the chip, so
+a secret another program provisioned under a name this table does not list is erased too.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSecretStore()" class="member-name-link">getSecretStore</a>()</code></div>
@@ -190,6 +216,16 @@ touched.</div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getString(java.lang.String)" class="member-name-link">getString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;key)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the value of <code>key</code> as a <code>String</code>, or <code>null</code> when it is missing.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#lastFailure()" class="member-name-link">lastFailure</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the failure kind recorded by the most recent read or write operation.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#lastStatus()" class="member-name-link">lastStatus</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the raw ATECC608 status byte from the most recent command response, or <code>0</code> if none was received.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#read(java.lang.String,byte%5B%5D)" class="member-name-link">read</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;key,
@@ -240,6 +276,74 @@ unknown, the secret is missing, the chip does not answer or fails its checksum, 
 </div>
 </section>
 </li>
+<li>
+<section class="detail" id="FAILURE_NONE">
+<h3>FAILURE_NONE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">FAILURE_NONE</span></div>
+<div class="block">No failure was recorded by the last operation.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_NONE">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="FAILURE_UNAVAILABLE">
+<h3>FAILURE_UNAVAILABLE</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">FAILURE_UNAVAILABLE</span></div>
+<div class="block">The chip did not answer on the I2C bus.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_UNAVAILABLE">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="FAILURE_REJECTED">
+<h3>FAILURE_REJECTED</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">FAILURE_REJECTED</span></div>
+<div class="block">The chip answered with a non-zero command status.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_REJECTED">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="FAILURE_PROTOCOL">
+<h3>FAILURE_PROTOCOL</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">FAILURE_PROTOCOL</span></div>
+<div class="block">The chip answered with a malformed or corrupt response.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="tag-list">
+<li><a href="../../../../../../constant-values.html#io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_PROTOCOL">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</div>
+</section>
+</li>
 </ul>
 </section>
 </li>
@@ -273,6 +377,24 @@ secret names or slot numbers: the program that provisions the chip owns that map
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></span>&nbsp;<span class="element-name">getSecretStore</span>()</div>
 <div class="block">The store this chip provides; the same instance is returned every call.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="lastFailure()">
+<h3>lastFailure</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">lastFailure</span>()</div>
+<div class="block">Returns the failure kind recorded by the most recent read or write operation.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="lastStatus()">
+<h3>lastStatus</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">lastStatus</span>()</div>
+<div class="block">Returns the raw ATECC608 status byte from the most recent command response, or <code>0</code> if none was received.</div>
 </div>
 </section>
 </li>
@@ -315,9 +437,10 @@ locked data zone). A failed write may leave the slot partly rewritten, so the ca
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">clearAll</span>()</div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="SecretStore.html#clearAll()">SecretStore</a></code></span></div>
-<div class="block">Empties every name the store knows, which are the names in its table; a slot that the table does not name is not
-touched. Tries every name even after a failure. Returns <code>0</code> when all were cleared, or <code>-1</code> when any
-failed.</div>
+<div class="block">Empties every data slot on the chip, not only the ones this store's table names: it decommissions the chip, so
+a secret another program provisioned under a name this table does not list is erased too. Use <a href="SecretStore.html#clear(java.lang.String)"><code>SecretStore.clear(String)</code></a>
+in a loop over the names a program owns to empty just those. Tries every slot even after a failure, and
+returns <code>0</code> when all were cleared or <code>-1</code> when any slot refused the write.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="SecretStore.html#clearAll()">clearAll</a></code>&nbsp;in interface&nbsp;<code><a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></code></dd>

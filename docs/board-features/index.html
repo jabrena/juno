@@ -596,7 +596,7 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">—</td>
 </tr>
 <tr>
-<td><code>SecretStore</code> over onboard ATECC608</td>
+<td><code>SecretStore</code> over an onboard secure element</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -629,9 +629,9 @@ native USB HID controller, onboard LED matrix or onboard IMU.</p>
 <code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.</p>
 <h2 id="secret-storage">Secret storage</h2>
-<p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from an ATECC608 secure
-element. Secrets stay outside the firmware image and the SD card, so provisioning does not put them in source code,
-build output or removable storage.</p>
+<p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from a secure element: an
+ATECC608 on the I2C boards, and the Portenta H7's own NXP SE050C2. Secrets stay outside the firmware image and the SD
+card, so provisioning does not put them in source code, build output or removable storage.</p>
 <table>
 <thead>
 <tr>
@@ -641,6 +641,11 @@ build output or removable storage.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Built in</td>
+<td>Portenta H7</td>
+<td>The board includes an NXP SE050C2; <code>SecretStoreFactory</code> selects it by board, so programs use the same <code>SecretStore</code> API.</td>
+</tr>
 <tr>
 <td>Built in</td>
 <td>UNO WiFi Rev2</td>

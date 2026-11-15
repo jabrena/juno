@@ -36,7 +36,7 @@ language itself, see the [Java subset](../java-subset) page.
 | Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — | — |
 | `@Watchdog` | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
 | Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
-| `SecretStore` over onboard ATECC608 | ✓ | — | — | — | — | — | ✓ | — | — |
+| `SecretStore` over an onboard secure element | ✓ | — | — | — | — | — | ✓ | — | — |
 | Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
 
 The AI Thinker ESP32-CAM supports Wi-Fi station and access-point modes, HTTPS server sessions, both implicit-TLS and
@@ -50,12 +50,13 @@ on every physical board; each board's page notes what is confirmed on hardware.
 
 ## Secret storage
 
-Juno's [`SecretStore`](../secure-element) API reads named Wi-Fi, API and email credentials from an ATECC608 secure
-element. Secrets stay outside the firmware image and the SD card, so provisioning does not put them in source code,
-build output or removable storage.
+Juno's [`SecretStore`](../secure-element) API reads named Wi-Fi, API and email credentials from a secure element: an
+ATECC608 on the I2C boards, and the Portenta H7's own NXP SE050C2. Secrets stay outside the firmware image and the SD
+card, so provisioning does not put them in source code, build output or removable storage.
 
 | Setup | Boards | Notes |
 |---|---|---|
+| Built in | Portenta H7 | The board includes an NXP SE050C2; `SecretStoreFactory` selects it by board, so programs use the same `SecretStore` API. |
 | Built in | UNO WiFi Rev2 | The board includes a Microchip ATECC608A on its I2C bus. |
 | External breakout | UNO R4 WiFi, UNO Q, Nano ESP32, M5Stack Cardputer, Raspberry Pi Pico 2 W and AI Thinker ESP32-CAM | Connect an ATECC608 breakout to the board's I2C pins; the Cardputer and ESP32-CAM use their documented Grove or camera I2C pins. |
 | Not supported | UNO R3 | The board has no supported secure-element path. |
