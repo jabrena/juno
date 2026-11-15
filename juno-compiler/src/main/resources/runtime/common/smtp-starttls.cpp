@@ -3,11 +3,8 @@ extern "C" int32_t juno_smtp_send(const char* host, int32_t port,
                                    const char* username, const char* password,
                                    const char* from, const char* to,
                                    const char* subject, const char* body) {
-  WiFiClient plainClient;
-  ESP_SSLClient client;
+  ${JUNO_SMTP_STARTTLS_CLIENT}
   ${JUNO_SMTP_STARTTLS_TRUST}
-  client.setBufferSizes(2048, 512);
-  client.setClient(&plainClient, false);
 
   if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
   unsigned long deadline = millis() + 15000;

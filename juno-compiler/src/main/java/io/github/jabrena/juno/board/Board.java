@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.board;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.hardware.BoardModel;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -109,7 +110,7 @@ public enum Board {
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS,
                     Capability.BLUETOOTH_LE, Capability.USB_HID, Capability.WATCHDOG, Capability.BIG_NUMBERS,
-                    Capability.DOUBLE_MATH));
+                    Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY));
 
     private final String apiClassName;
     private final String id;
@@ -183,6 +184,14 @@ public enum Board {
 
     public String fqbn() {
         return fqbn;
+    }
+
+    /**
+     * The {@code BoardModel} constant a program compiled for this board sees from {@code MCU.getBoardModel()}. The
+     * names match one for one, which {@code BoardModelMappingTest} keeps true.
+     */
+    public BoardModel boardModel() {
+        return BoardModel.valueOf(name());
     }
 
     /** The Arduino core this board's sketches are built with, which decides how generated code calls into it. */

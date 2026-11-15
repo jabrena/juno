@@ -121,6 +121,12 @@ public final class RuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append("#include <Wire.h>\n");
         }
+        if (uses(ShimFeature.SE050)) {
+            shim.append("#include <Arduino_SE05X.h>\n");
+        }
+        if (uses(ShimFeature.NVS)) {
+            shim.append("#include <Preferences.h>\n");
+        }
         if (uses(ShimFeature.SPI)) {
             shim.append("#include <SPI.h>\n");
         }
@@ -137,12 +143,12 @@ public final class RuntimeShim {
         if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsInclude());
         }
-        // ESP_SSLClient is a third-party library (arduino-cli lib install ESP_SSLClient), the same
-        // manual-install pattern as Mouse above: the UNO R4 WiFi's native WiFiSSLClient can only
-        // negotiate TLS from the first byte, so Smtp's STARTTLS upgrade (mail submission on port
-        // 587) needs this wrapper around a plain WiFiClient instead.
+        // Smtp's STARTTLS upgrade (mail submission on port 587) needs a client that starts TLS on a plain connection.
+        // The default is ESP_SSLClient, a third-party library (arduino-cli lib install ESP_SSLClient), the same
+        // manual-install pattern as Mouse above, because the UNO R4 WiFi's native WiFiSSLClient can only negotiate TLS
+        // from the first byte. A core with its own upgrade overrides smtpStarttlsInclude.
         if (uses(ShimFeature.SMTP)) {
-            shim.append("#include <ESP_SSLClient.h>\n");
+            shim.append(core.smtpStarttlsInclude());
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append("#include <new>\n");
@@ -266,6 +272,12 @@ public final class RuntimeShim {
         if (uses(ShimFeature.I2C)) {
             shim.append(shimLibraries.i2cHelpers(core.i2cPinSetup(), core.i2cBus()));
         }
+        if (uses(ShimFeature.SE050)) {
+            shim.append(shimLibraries.se050Helpers());
+        }
+        if (uses(ShimFeature.NVS)) {
+            shim.append(core.nvsHelpers());
+        }
         if (uses(ShimFeature.SPI)) {
             shim.append(shimLibraries.spiHelpers());
         }
@@ -334,7 +346,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),
-                    core.smtpStarttlsTrust()));
+                    core.smtpStarttlsTrust(), core.smtpStarttlsHelpers(), core.smtpStarttlsClient()));
         }
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),

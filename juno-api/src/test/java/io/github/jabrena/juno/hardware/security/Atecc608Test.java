@@ -184,6 +184,7 @@ class Atecc608Test {
         assertThat(driver.write("wifi.ssid", tooLong, tooLong.length)).isEqualTo(-1);
         chip.present = false;
         assertThat(driver.write("wifi.ssid", value, value.length)).isEqualTo(-1);
+        assertThat(driver.lastFailure()).isEqualTo(Atecc608.FAILURE_UNAVAILABLE);
         chip.present = true;
         assertThat(driver.getString("wifi.ssid")).isNull();
     }
@@ -196,6 +197,8 @@ class Atecc608Test {
         chip.writeStatus = 0x01;
 
         assertThat(driver.write("wifi.ssid", value, value.length)).isEqualTo(-1);
+        assertThat(driver.lastFailure()).isEqualTo(Atecc608.FAILURE_REJECTED);
+        assertThat(driver.lastStatus()).isEqualTo(0x01);
     }
 
     @Test
@@ -215,28 +218,32 @@ class Atecc608Test {
     }
 
     @Test
-    @DisplayName("clearAll empties every name in the table")
-    void clearAllNames() {
+    @DisplayName("clearAll empties every data slot, including slots the table does not name")
+    void clearAllSlots() {
         Atecc608 driver = new Atecc608(chip, TABLE);
         byte[] ssid = "MyNetwork".getBytes(StandardCharsets.US_ASCII);
         byte[] password = "secret-pass".getBytes(StandardCharsets.US_ASCII);
         driver.write("wifi.ssid", ssid, ssid.length);
         driver.write("wifi.password", password, password.length);
+        int unnamedSlot = 5;
+        chip.store(unnamedSlot, "another program's secret");
 
         assertThat(driver.clearAll()).isZero();
 
         assertThat(driver.getString("wifi.ssid")).isNull();
         assertThat(driver.getString("wifi.password")).isNull();
+        assertThat(chip.isEmpty(unnamedSlot)).isTrue();
     }
 
     @Test
-    @DisplayName("clearAll reports failure when the chip refuses a write, and still tries every name")
+    @DisplayName("clearAll reports failure when the chip refuses a write, and still tries every slot")
     void clearAllReportsFailure() {
         Atecc608 driver = new Atecc608(chip, TABLE);
         chip.writeStatus = 0x01;
 
         assertThat(driver.clearAll()).isEqualTo(-1);
-        assertThat(chip.commandsSent).isEqualTo(2);
+        // One command per slot: the first block's refusal ends that slot's write, and the next slot is still tried.
+        assertThat(chip.commandsSent).isEqualTo(SecretSlots.SLOT_COUNT);
     }
 
     @Test
@@ -261,6 +268,16 @@ class Atecc608Test {
         /** The status byte a Write answers with: 0x00 is success. */
         byte writeStatus;
         int commandsSent;
+
+        /** Whether every byte of {@code slot} is zero, as a cleared slot is. */
+        boolean isEmpty(int slot) {
+            for (byte stored : slots[slot]) {
+                if (stored != 0) {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         /** Stores {@code value} the way provisioning does: a length byte, then the bytes. */
         void store(int slot, String value) {

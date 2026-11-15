@@ -77,7 +77,7 @@ initTheme();
 <div class="col-last even-row-color">
 <div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
 <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
-the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
+the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
@@ -107,7 +107,7 @@ them from a PCA9685 servo shield over I2C.</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.security">io.github.jabrena.juno.hardware.security</a></div>
 <div class="col-last even-row-color">
 <div class="block">Secrets kept in a secure element: <a href="../security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="../security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> is the Microchip ATECC608 provider over an I2C bus.</div>
+<a href="../security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
 </div>
 </div>
 <section class="package-uses">

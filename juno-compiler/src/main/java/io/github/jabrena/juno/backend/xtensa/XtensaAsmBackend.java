@@ -144,7 +144,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         wides = new XtensaWideArithmeticLowering(xtensa, features);
         lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa, dualCarrier),
-                coreRuntime, board.unoGeneration(), board.onboardSdChipSelect(),
+                coreRuntime, board, board.onboardSdChipSelect(),
                 features, usedMath, usesThreads, socketStreamsOnly, carrierCount);
 
         StringBuilder text = new StringBuilder();

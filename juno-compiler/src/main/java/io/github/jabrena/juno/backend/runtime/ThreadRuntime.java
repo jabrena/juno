@@ -92,6 +92,16 @@ public final class ThreadRuntime {
     }
 
     /**
+     * The Portenta H7's Mbed OS port: every Juno thread is an Mbed RTOS thread with a caller-owned stack from the
+     * Juno arena. A semaphore baton keeps exactly one Mbed thread inside the Juno scheduler at a time, while the
+     * stack ranges remain available to the collector even when a thread is parked by the RTOS.
+     */
+    public String mbedPort(int stackBytes) {
+        return runtimeSource.load("mbed/thread-port.cpp")
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
+    /**
      * The Nano ESP32's port: like the UNO Q's, every Juno thread is an RTOS task (here FreeRTOS, which the
      * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
      * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.

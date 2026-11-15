@@ -1,15 +1,15 @@
 package io.github.jabrena.juno.hardware.security;
 
 /**
- * The names a program reads from an {@link Atecc608} and the data slot that holds each one. The program builds it once,
+ * The names a program reads from a {@link SecretStore} and the logical slot that holds each one. The program builds it once,
  * at startup, with the slot numbers its provisioning used; the driver itself knows no names. A name is added with
  * {@link #add}, and a lookup for a name that was never added returns {@code -1}.
  */
 public final class SecretSlots {
     /** The most names a table holds: one entry per data slot in the chip. */
     public static final int MAX_NAMES = 16;
-    /** The chip's data slots run from 0 to 15. */
-    private static final int SLOT_COUNT = 16;
+    /** The chip's data slots run from 0 to 15; a whole-chip {@code clearAll} walks all of them. */
+    static final int SLOT_COUNT = 16;
 
     private final String[] names = new String[MAX_NAMES];
     private final int[] slots = new int[MAX_NAMES];

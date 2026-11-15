@@ -1,6 +1,5 @@
-package io.github.jabrena.juno.lowering;
+package io.github.jabrena.juno.bytecode;
 
-import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.ConstantPool;
 import org.jspecify.annotations.Nullable;
 
@@ -13,9 +12,9 @@ import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
 import static io.github.jabrena.juno.bytecode.Opcodes.SIPUSH;
 
 /** Reads the int literal an instruction pushes, resolving {@code ldc} through the class's constant pool. */
-record IntLiterals(ConstantPool constantPool) {
+public record IntLiterals(ConstantPool constantPool) {
     /** The int {@code instruction} pushes, or {@code null} when it does not push an int literal. */
-    @Nullable Integer pushedBy(Instruction instruction) {
+    public @Nullable Integer pushedBy(Instruction instruction) {
         int opcode = instruction.opcode();
         if (opcode >= ICONST_M1 && opcode <= ICONST_5) {
             return opcode - ICONST_0;

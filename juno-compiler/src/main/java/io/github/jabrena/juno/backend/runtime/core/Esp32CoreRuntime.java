@@ -460,6 +460,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public boolean hasNvs() {
+        return true;
+    }
+
+    @Override
+    public String nvsHelpers() {
+        return runtimeSource.load("esp32/nvs.cpp");
+    }
+
+    @Override
     public boolean preemptsAsynchronously() {
         return false;
     }

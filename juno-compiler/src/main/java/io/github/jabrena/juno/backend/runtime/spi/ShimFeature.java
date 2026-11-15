@@ -34,6 +34,11 @@ public enum ShimFeature {
     INFRARED,
     /** {@code I2c}: register access on the primary {@code Wire} bus, with the core-bundled library. */
     I2C,
+    /** Portenta H7's NXP SE050C2 through Arduino's SE05X library. */
+    SE050,
+
+    /** Named secrets in an ESP32 board's non-volatile storage, through the core's Preferences library. */
+    NVS,
     /** {@code Spi}: full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled library. */
     SPI,
     /** Runtime parsing and board-specific resolution of {@code Gpio.digitalPin}/{@code analogPin} names. */

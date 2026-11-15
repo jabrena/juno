@@ -2,9 +2,9 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.Atecc608;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
+import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** Shared secure-element credentials used by the connected examples. The table matches {@link SecretProvisioner}. */
@@ -86,7 +86,6 @@ public final class ExampleSecrets {
 
     private static SecretStore open() {
         I2c i2c = MCU.getI2c();
-        i2c.begin();
         SecretSlots slots = new SecretSlots()
                 .add(WIFI_SSID, 8)
                 .add(WIFI_PASSWORD, 9)
@@ -98,6 +97,6 @@ public final class ExampleSecrets {
                 .add(SUPABASE_API_HOST, 14)
                 .add(SUPABASE_API_KEY, 15)
                 .add(SUPABASE_API_URL, 1);
-        return new Atecc608(i2c, slots).getSecretStore();
+        return SecretStoreFactory.open(i2c, slots);
     }
 }

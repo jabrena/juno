@@ -24,7 +24,8 @@ static int32_t juno_udp_send_to(const IPAddress& address, int32_t port,
     juno_udp.endPacket();
     return -1;
   }
-  return juno_udp.endPacket() == 1 ? length : -1;
+  // Arduino cores return 1 from endPacket(); the Mbed Portenta core returns the byte count, so any positive result counts.
+  return juno_udp.endPacket() > 0 ? length : -1;
 }
 
 extern "C" int32_t juno_udp_listen(int32_t localPort) {

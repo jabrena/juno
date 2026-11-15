@@ -198,6 +198,22 @@ public interface CoreRuntime {
         return "client.setInsecure();";
     }
 
+    /** The includes the STARTTLS client needs, emitted with the shim's other includes. */
+    default String smtpStarttlsInclude() {
+        return "#include <ESP_SSLClient.h>\n";
+    }
+
+    /** File-scope helpers the STARTTLS client needs, emitted before the STARTTLS function. */
+    default String smtpStarttlsHelpers() {
+        return "";
+    }
+
+    /** Declares the STARTTLS client as {@code client} and sets it up, before its trust is installed. */
+    default String smtpStarttlsClient() {
+        return "WiFiClient plainClient;\n  ESP_SSLClient client;\n  client.setBufferSizes(2048, 512);\n"
+                + "  client.setClient(&plainClient, false);";
+    }
+
     /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
     default String httpsTrustHelpers() {
         return """
@@ -378,6 +394,24 @@ public interface CoreRuntime {
     /** The Arduino {@code TwoWire} instance used by Juno's primary I2C API. */
     default String i2cBus() {
         return "Wire";
+    }
+
+    /** Whether this core targets the Portenta H7 variant with an onboard NXP SE050C2. */
+    default boolean hasSe050C2() {
+        return false;
+    }
+
+    /**
+     * Whether this core keeps named secrets in the board's own non-volatile storage, which the ESP32-family cores do
+     * and no other core does: they have NVS and no secure element.
+     */
+    default boolean hasNvs() {
+        return false;
+    }
+
+    /** Core-specific named-secret storage in NVS; only the ESP32-family cores provide it. */
+    default String nvsHelpers() {
+        throw new IllegalStateException("This core has no NVS secret store; the linker should have rejected it");
     }
 
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */

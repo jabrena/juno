@@ -83,7 +83,7 @@ initTheme();
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.security</span></div>
 <section class="package-description" id="package-description">
 <div class="block">Secrets kept in a secure element: <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> is the Microchip ATECC608 provider over an I2C bus.</div>
+<a href="SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
 </section>
 </div>
 <section class="summary">
@@ -98,7 +98,7 @@ initTheme();
 <div class="col-last even-row-color">
 <div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
 <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
-the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
+the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
@@ -116,13 +116,27 @@ the program's flash usage).</div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">An ATECC608 secure element on an I2C bus, holding named secrets in data slots.</div>
 </div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Esp32Nvs.html" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32 board, for the ESP32-family boards that carry no
+secure element at all: each logical slot is one entry of a private NVS namespace, written through the core's
+<code>Preferences</code> library.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Named-secret storage in the NXP SE050C2 used by the Portenta H7.</div>
+</div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">The names a program reads from an <a href="Atecc608.html" title="class in io.github.jabrena.juno.hardware.security"><code>Atecc608</code></a> and the data slot that holds each one.</div>
+<div class="block">The names a program reads from a <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> and the logical slot that holds each one.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab1"><a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
 <div class="block">Named secrets read from a secure element.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security">SecretStoreFactory</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Selects the secure-element provider compiled for a board.</div>
 </div>
 </div>
 </div>

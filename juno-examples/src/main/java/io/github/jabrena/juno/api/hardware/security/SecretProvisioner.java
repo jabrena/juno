@@ -1,36 +1,39 @@
 package io.github.jabrena.juno.api.hardware.security;
 
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.Atecc608;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
+import io.github.jabrena.juno.hardware.security.SecretStore;
+import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Writes named secrets into the ATECC608 on the board's I2C bus, on request from the host. The host sends one line per
+ * Writes named secrets into the board's secure element, on request from the host. The host sends one line per
  * request over USB serial, so the value never goes on the command line or onto the SD card:
  * <ul>
  * <li>{@code SET <name> <hex>}: stores the value, given as hex digits (at most 63 bytes), and answers {@code OK <name>}.</li>
  * <li>{@code CLEAR <name>}: empties the name and answers {@code OK <name>}.</li>
- * <li>{@code CLEAR ALL}: empties every name in this program's {@link SecretSlots} table and answers {@code OK CLEAR ALL}.</li>
+ * <li>{@code CLEAR ALL}: empties every data slot on the chip, including names outside this program's
+ * {@link SecretSlots} table, and answers {@code OK CLEAR ALL}. It decommissions the chip rather than this
+ * program's names.</li>
  * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name, then {@code END}. No value is printed.</li>
  * </ul>
  * A bad request answers {@code ERR} with a short reason and stores nothing. The board prints {@code READY} once it can
  * take requests. The name-to-slot table here must match the reading program's table: it is the only place slot numbers
  * are chosen. Upload this program with {@code juno:secret}.
  */
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;
     private static final int NAME_PREFIX_SET = 4;
     private static final int NAME_PREFIX_CLEAR = 6;
-
-    private final Atecc608 chip;
+    private final SecretStore chip;
     private final SecretSlots slots;
     private final byte[] line = new byte[LINE_BYTES];
     private final byte[] value = new byte[VALUE_BYTES];
@@ -38,7 +41,7 @@ public final class SecretProvisioner {
     private int lineLength;
     private boolean lineTooLong;
 
-    SecretProvisioner(Atecc608 chip, SecretSlots slots) {
+    SecretProvisioner(SecretStore chip, SecretSlots slots) {
         this.chip = chip;
         this.slots = slots;
     }
@@ -47,7 +50,6 @@ public final class SecretProvisioner {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         I2c i2c = MCU.getI2c();
-        i2c.begin();
         SecretSlots slots = new SecretSlots()
                 .add("wifi.ssid", 8)
                 .add("wifi.password", 9)
@@ -59,7 +61,7 @@ public final class SecretProvisioner {
                 .add("supabase.api.host", 14)
                 .add("supabase.api.key", 15)
                 .add("supabase.api.url", 1);
-        new SecretProvisioner(new Atecc608(i2c, slots), slots).run();
+        new SecretProvisioner(SecretStoreFactory.open(i2c, slots), slots).run();
     }
 
     private void run() {
@@ -134,7 +136,7 @@ public final class SecretProvisioner {
             return;
         }
         if (chip.write(name, value, hexLength / 2) < 0) {
-            Serial.println("ERR write failed");
+            Serial.println("ERR secure element rejected the write");
             return;
         }
         Serial.println("OK " + name);

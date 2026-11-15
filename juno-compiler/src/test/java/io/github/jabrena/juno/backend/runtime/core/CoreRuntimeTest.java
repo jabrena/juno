@@ -32,6 +32,7 @@ class CoreRuntimeTest {
         assertThat(coreRuntimes.of(ArduinoCore.M5STACK_ESP32).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.MBED_PORTENTA).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).carrierCount()).isEqualTo(1);
@@ -96,10 +97,28 @@ class CoreRuntimeTest {
         CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
 
         assertThat(runtime.httpsServerTransport()).contains("mbedtls_ssl_config", "WiFiServer");
+        assertThat(runtime.httpsHelpers()).contains("juno_portenta_ca", "setCACert(juno_portenta_ca)");
+        assertThat(runtime.httpsClientDeclaration()).isEqualTo("JunoPortentaHttpsClient client;");
+        assertThat(runtime.smtpStarttlsInclude()).contains("netsocket/TLSSocketWrapper.h");
+        assertThat(runtime.smtpStarttlsHelpers()).contains("struct JunoMbedSmtpClient", "TRANSPORT_KEEP",
+                "JUNO_PORTENTA_TRUST_ROOTS", "juno_portenta_ca");
+        assertThat(runtime.smtpStarttlsClient()).isEqualTo("JunoMbedSmtpClient client;");
+        assertThat(runtime.smtpStarttlsTrust()).isEqualTo("client.setCACert(juno_portenta_ca);");
         assertThat(runtime.watchdog(1000).begin()).contains("Watchdog::get_instance().start");
         assertThat(runtime.uuidRandomHelpers()).contains("mbedtls_hardware_poll");
         assertThat(runtime.mouseIncludes()).isEqualTo("#include <USBMouse.h>\n");
         assertThat(runtime.mouseHelpers()).contains("USBMouse", "void begin() {}");
+    }
+
+    @Test
+    @DisplayName("The Portenta core uses an Mbed RTOS carrier for Juno threads")
+    void shouldUseTheMbedRtosCarrierForPortentaThreads() {
+        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
+
+        assertThat(runtime.threadIncludes()).contains("#include <mbed.h>");
+        assertThat(runtime.preemptsAsynchronously()).isFalse();
+        assertThat(runtime.threadPort(resolvedFor(ArduinoCore.MBED_PORTENTA)))
+                .contains("Portenta H7 Mbed RTOS port", "rtos::Thread", "rtos::Semaphore", "JUNO_THREAD_STACK_BYTES");
     }
 
     @Test

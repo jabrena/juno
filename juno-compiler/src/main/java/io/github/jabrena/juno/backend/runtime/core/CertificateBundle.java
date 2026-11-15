@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -92,6 +93,30 @@ final class CertificateBundle {
             throw new IllegalStateException("A custom TLS CA contains the reserved C++ raw-string delimiter");
         }
         return "static const char " + name + "[] = R\"JUNO_CA(\n" + value + ")JUNO_CA\";\n";
+    }
+
+    /**
+     * The PEM text without the certificates whose elliptic-curve key is {@code fieldSize} bits wide. A TLS library built
+     * without that curve refuses the whole list when one such root is present, so those roots are left out.
+     */
+    static String pemWithoutCurve(String pem, int fieldSize) {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            StringBuilder kept = new StringBuilder();
+            Matcher block = PEM_BLOCK.matcher(pem);
+            while (block.find()) {
+                X509Certificate x509 = (X509Certificate) factory.generateCertificate(
+                        new ByteArrayInputStream(block.group().getBytes(StandardCharsets.US_ASCII)));
+                if (x509.getPublicKey() instanceof ECPublicKey key
+                        && key.getParams().getCurve().getField().getFieldSize() == fieldSize) {
+                    continue;
+                }
+                kept.append(block.group().stripTrailing()).append('\n');
+            }
+            return kept.toString();
+        } catch (CertificateException exception) {
+            throw new IllegalStateException("Cannot read the trusted root certificates", exception);
+        }
     }
 
     private static void writeLength(ByteArrayOutputStream bundle, int length) {

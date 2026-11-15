@@ -215,8 +215,11 @@ class GyroHeadingTest {
             float turned = heading.getDegreesCartesian();
 
             // Then: no drift while still; the turn is counted without the bias
-            // Read on the JVM's clock, so a millisecond of jitter may shift it slightly
-            assertThat(bias).isBetween(1180, 1220);
+            // Read on the JVM's clock, and each sample's rotation is rounded to a whole thousandth of a degree, so
+            // the averaged bias carries up to half a thousandth per sample over a ~10 ms interval: about 4% either
+            // way (1.2 degrees a second over 11 ms reads back as 13/11, over 13 ms as 16/13). The band is wide
+            // enough for that quantization and still rejects a bias that was ignored or taken from the turn.
+            assertThat(bias).isBetween(1150, 1250);
             assertThat(still).isCloseTo(0f, within(0.05f));
             assertThat(turned).isBetween(-35f, -20f);
         } finally {

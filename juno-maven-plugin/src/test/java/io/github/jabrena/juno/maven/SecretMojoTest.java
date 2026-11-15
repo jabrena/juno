@@ -224,7 +224,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
 
         // Then
         assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST\nCLEAR ALL\n");
-        assertThat(log.infos()).contains("Cleared every secret known by the board");
+        assertThat(log.infos()).contains("Emptied every data slot on the chip");
     }
 
     @Test
@@ -251,7 +251,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("did not clear every secret");
+                .hasMessageContaining("did not empty every data slot");
     }
 
     private static String hex(String text) {

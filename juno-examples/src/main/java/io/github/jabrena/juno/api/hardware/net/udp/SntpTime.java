@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.udp;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
@@ -27,6 +28,7 @@ import java.time.LocalDateTime;
     ArduinoUnoQBoard.class,
     ArduinoUnoR3WiFiRev2Board.class,
     ArduinoNanoEsp32Board.class,
+    ArduinoPortentaH7Board.class,
     AiThinkerEsp32CamBoard.class,
     M5StackCardputerBoard.class,
     RaspberryPico2WifiBoard.class

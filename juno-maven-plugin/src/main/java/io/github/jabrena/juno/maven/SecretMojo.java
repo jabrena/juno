@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 /**
- * Stores a named secret in the board's ATECC608 and lists or clears the stored names. The program is uploaded first, which
+ * Stores a named secret in the board's secure element and lists the stored names or empties the chip. The program is uploaded first, which
  * is {@code SecretProvisioner} in {@code juno-examples}: pass it with {@code -Djuno.main}. The value is typed at a hidden
  * prompt and sent over USB serial as hex, so it never appears on the command line, in the Maven log or on the SD card.
  *
@@ -35,7 +35,7 @@ public final class SecretMojo extends AbstractJunoMojo {
     @Parameter(property = "juno.secret.list", defaultValue = "false")
     private boolean list;
 
-    /** Empties every name after asking for the word {@code CLEAR}, then prints the list. */
+    /** Empties every data slot on the chip after asking for the word {@code CLEAR}, then prints the list. */
     @Parameter(property = "juno.secret.clear", defaultValue = "false")
     private boolean clear;
 
@@ -158,7 +158,7 @@ public final class SecretMojo extends AbstractJunoMojo {
     }
 
     private boolean confirmed() {
-        String answer = terminal.readLine("Type " + CONFIRMATION + " to clear every stored name: ");
+        String answer = terminal.readLine("Type " + CONFIRMATION + " to empty every data slot on the chip: ");
         return CONFIRMATION.equals(answer);
     }
 
@@ -192,9 +192,9 @@ public final class SecretMojo extends AbstractJunoMojo {
         session.send(SecretProtocol.clearAllRequest());
         String reply = session.nextLine(REPLY_TIMEOUT);
         if (!reply.equals("OK CLEAR ALL")) {
-            throw new ArduinoCliException("The board did not clear every secret: " + reply);
+            throw new ArduinoCliException("The board did not empty every data slot: " + reply);
         }
-        getLog().info("Cleared every secret known by the board");
+        getLog().info("Emptied every data slot on the chip");
     }
 
     /** Test seam: substitutes the terminal and the serial opener. */

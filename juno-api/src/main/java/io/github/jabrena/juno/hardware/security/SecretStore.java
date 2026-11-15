@@ -32,9 +32,10 @@ public interface SecretStore {
     int clear(String key);
 
     /**
-     * Empties every name the store knows, which are the names in its table; a slot that the table does not name is not
-     * touched. Tries every name even after a failure. Returns {@code 0} when all were cleared, or {@code -1} when any
-     * failed.
+     * Empties every data slot on the chip, not only the ones this store's table names: it decommissions the chip, so
+     * a secret another program provisioned under a name this table does not list is erased too. Use {@link #clear}
+     * in a loop over the names a program owns to empty just those. Tries every slot even after a failure, and
+     * returns {@code 0} when all were cleared or {@code -1} when any slot refused the write.
      */
     int clearAll();
 

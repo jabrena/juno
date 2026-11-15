@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.bytecode.IntLiterals;
 import io.github.jabrena.juno.ir.ArrayElementType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.LinkedMethod;

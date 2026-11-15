@@ -85,6 +85,22 @@ class CertificateBundleTest {
                 .endsWith(")JUNO_CA\";\n");
     }
 
+    @Test
+    @DisplayName("Leaves out the one P-521 root of the shipped list, and keeps every root on a curve nothing uses")
+    void shouldLeaveOutRootsOnTheCurveTheMbedBuildLacks() {
+        // When
+        String withoutP521 = CertificateBundle.pemWithoutCurve(PEM, 521);
+        String withoutUnusedCurve = CertificateBundle.pemWithoutCurve(PEM, 1);
+
+        // Then
+        assertThat(certificates(withoutP521)).isEqualTo(certificates(PEM) - 1);
+        assertThat(certificates(withoutUnusedCurve)).isEqualTo(certificates(PEM));
+    }
+
+    private static int certificates(String pem) {
+        return pem.split(Pattern.quote("-----BEGIN CERTIFICATE-----"), -1).length - 1;
+    }
+
     private static int word(byte[] bytes, int offset) {
         return (bytes[offset] & 0xFF) << 8 | bytes[offset + 1] & 0xFF;
     }
