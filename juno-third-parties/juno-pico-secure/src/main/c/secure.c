@@ -21,6 +21,7 @@
 #define NOCACHE_ALIAS      0x04000000u  // XIP_NOCACHE_NOALLOC_BASE - XIP_BASE
 #define SECURE_RAM         0x2007E000u
 #define SECTOR_SIZE        4096u
+#define FLASH_PAGE         256u
 
 // The store: 16 slots of 64 bytes at the start of the sector, a length byte and up to 63 value bytes each. An erased
 // slot reads 0xFF, which is what "missing" looks like.
@@ -35,6 +36,8 @@
 #define OP_WRITE           2u
 #define OP_CLEAR           3u
 #define OP_CLEAR_ALL       4u
+#define OP_FLASH_ERASE     5u
+#define OP_FLASH_PROGRAM   6u
 #define FIRMWARE_MAGIC     0x4A554E4F  // "JUNO"
 
 // Core registers.
@@ -143,13 +146,12 @@ static void fence(void) {
     dma_mpu_secure(7, BOOTRAM, BOOTRAM + 0xFFFu);
     REG(DMA_BASE + 0x500u) = 0x8u;  // NS_HIDE_ADDR; addresses outside the regions are non-secure
 
-    // Interrupts, coprocessors (GPIO, double, FPU) and the non-secure fault handlers belong to the image.
+    // Interrupts and coprocessors (GPIO, double, FPU) belong to the image. HardFault, BusFault and NMI stay with this
+    // firmware (AIRCR.BFHFNMINS clear), so a crash in the image reboots into BOOTSEL and the board stays reflashable
+    // without pressing its button.
     REG(NVIC_ITNS0) = 0xFFFFFFFFu;
     REG(NVIC_ITNS0 + 4u) = 0xFFFFFFFFu;
     REG(SCB_NSACR) = 0x00000CFFu;
-#ifndef JUNO_SECURE_DIAGNOSTICS
-    REG(SCB_AIRCR) = 0x05FA0000u | (REG(SCB_AIRCR) & 0x700u) | 0x2000u;  // BFHFNMINS
-#endif
     REG(SCB_SHCSR) |= (1u << 19) | (1u << 18) | (1u << 16);              // SecureFault, UsageFault, MemManage
 }
 
@@ -177,11 +179,13 @@ typedef struct {
 
 static uint32_t boot2_copy[64];
 static uint8_t image[STORE_BYTES];
+static uint8_t page[FLASH_PAGE];
 
 // Runs from RAM: flash is out of XIP mode for the whole call. The sequence is the Pico SDK's for the RP2350: save the
-// QSPI pads and the CS1 window, erase and program through the ROM, flush, restore, and re-enter XIP through the copy of
-// the boot ROM's XIP set-up taken before the flash went away.
-static void __attribute__((section(".ramfunc"), noinline)) flash_rewrite(const flash_rom_t *rom, uint32_t length) {
+// QSPI pads and the CS1 window, erase or program through the ROM, flush, restore, and re-enter XIP through the copy of
+// the boot ROM's XIP set-up taken before the flash went away. A null `data` erases [offset, offset + count).
+static void __attribute__((section(".ramfunc"), noinline)) flash_op(const flash_rom_t *rom, uint32_t offset,
+                                                                   const uint8_t *data, uint32_t count) {
     uint32_t pads[6];
     for (uint32_t i = 0; i < 6u; i++) {
         pads[i] = REG(PADS_QSPI_IO + 4u * i);
@@ -191,9 +195,10 @@ static void __attribute__((section(".ramfunc"), noinline)) flash_rewrite(const f
     uint32_t rcmd = REG(QMI_M1 + 8u);
     rom->connect_internal_flash();
     rom->flash_exit_xip();
-    rom->flash_range_erase(STORE_OFFSET, SECTOR_SIZE, 1u << 16, 0xD8u);
-    if (length != 0u) {
-        rom->flash_range_program(STORE_OFFSET, image, length);
+    if (data == 0) {
+        rom->flash_range_erase(offset, count, 1u << 16, 0xD8u);
+    } else {
+        rom->flash_range_program(offset, data, count);
     }
     rom->flash_flush_cache();
     for (uint32_t i = 0; i < 6u; i++) {
@@ -205,7 +210,8 @@ static void __attribute__((section(".ramfunc"), noinline)) flash_rewrite(const f
     ((void (*)(void))((uintptr_t)boot2_copy + 1u))();
 }
 
-static void store_image(uint32_t length) {
+/** Erases (data null) or programs flash at offset, with both worlds' interrupts masked for the duration. */
+static void flash(uint32_t offset, const uint8_t *data, uint32_t count) {
     flash_rom_t rom = {
             (void (*)(void))rom_lookup('I', 'F'),
             (void (*)(void))rom_lookup('E', 'X'),
@@ -217,9 +223,16 @@ static void store_image(uint32_t length) {
         boot2_copy[i] = REG(BOOTRAM + 4u * i);
     }
     uint32_t primask;
-    __asm volatile("mrs %0, primask\n cpsid i" : "=r"(primask) : : "memory");  // masks both worlds' interrupts
-    flash_rewrite(&rom, length);
+    __asm volatile("mrs %0, primask\n cpsid i" : "=r"(primask) : : "memory");
+    flash_op(&rom, offset, data, count);
     __asm volatile("msr primask, %0" : : "r"(primask) : "memory");
+}
+
+static void store_image(uint32_t length) {
+    flash(STORE_OFFSET, 0, SECTOR_SIZE);
+    if (length != 0u) {
+        flash(STORE_OFFSET, image, length);
+    }
 }
 
 static const volatile uint8_t *slot_in_flash(uint32_t slot) {
@@ -307,6 +320,50 @@ static int clear_all(void) {
     return 0;
 }
 
+// ---- Flash service --------------------------------------------------------------------------------------------
+// The image cannot erase or program flash itself: that needs the flash controller, the boot RAM and boot-ROM calls
+// only this world has. It asks here instead (Juno's runtime wraps the SDK's flash_range_erase and flash_range_program,
+// which BTstack's bond storage and the EEPROM library use), and only for flash it owns: its own image area and the
+// EEPROM sector, never this firmware's slot or the store.
+
+/** Whether [offset, offset + count) lies wholly in flash the non-secure image owns. */
+static int image_owns(uint32_t offset, uint32_t count) {
+    uint32_t start = offset;
+    uint32_t end = offset + count;
+    if (count == 0u || end < start) {
+        return 0;
+    }
+    uint32_t app_start = APP_VECTORS - 0x10000000u;
+    uint32_t store_start = STORE_OFFSET;
+    uint32_t eeprom_start = EEPROM_SECTOR - 0x10000000u;
+    uint32_t flash_end = FLASH_END - 0x10000000u;
+    return (start >= app_start && end <= store_start) || (start >= eeprom_start && end <= flash_end);
+}
+
+static int image_flash_erase(uint32_t offset, uint32_t count) {
+    if (offset % SECTOR_SIZE != 0u || count % SECTOR_SIZE != 0u || !image_owns(offset, count)) {
+        return -1;
+    }
+    flash(offset, 0, count);
+    return 0;
+}
+
+/** Programs page by page from a secure copy, so the source may be anywhere the caller can read, flash included. */
+static int image_flash_program(uint32_t offset, uint32_t data, uint32_t count) {
+    if (offset % FLASH_PAGE != 0u || count % FLASH_PAGE != 0u || !image_owns(offset, count)
+            || !caller_may_access(data, count, 0)) {
+        return -1;
+    }
+    for (uint32_t done = 0; done < count; done += FLASH_PAGE) {
+        const volatile uint8_t *source = (const volatile uint8_t *)(data + done);
+        for (uint32_t i = 0; i < FLASH_PAGE; i++) {
+            page[i] = source[i];
+        }
+        flash(offset + done, page, FLASH_PAGE);
+    }
+    return 0;
+}
+
 int juno_secure_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
     switch (op) {
         case OP_VERSION:
@@ -319,6 +376,10 @@ int juno_secure_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
             return write_slot(a, 0u, 0u) == 0 ? 0 : -1;
         case OP_CLEAR_ALL:
             return clear_all();
+        case OP_FLASH_ERASE:
+            return image_flash_erase(a, b);
+        case OP_FLASH_PROGRAM:
+            return image_flash_program(a, b, c);
         default:
             return -1;
     }
@@ -327,18 +388,20 @@ int juno_secure_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
 // ---- Start-up and faults ----------------------------------------------------------------------------------------
 
 /**
- * A TrustZone violation, or a fault in this firmware. The record goes to the watchdog scratch registers (kind and
+ * A crash in the image, a TrustZone violation, or a fault in this firmware. The record goes to the watchdog scratch registers (kind and
  * exception, faulting world, stacked PC, SFAR or CFSR) and the board restarts into BOOTSEL, so it can be reflashed;
  * it never falls back to running the image secure, which would be a way around the fence.
  */
 void secure_fault_c(uint32_t *frame, uint32_t exc_return) {
     uint32_t sfsr = REG(SAU_SFSR);
     REG(WATCHDOG_SCRATCH + 0u) = 0x5EC00000u | ((sfsr & 0x7Fu) << 8) | (REG(SCB_ICSR) & 0xFFu);
-    REG(WATCHDOG_SCRATCH + 4u) = (exc_return & 0x40u) == 0u ? 1u : 0u;
+    REG(WATCHDOG_SCRATCH + 4u) = (REG(WATCHDOG_SCRATCH + 4u) & 0xF0000000u) | ((exc_return & 0x40u) == 0u ? 1u : 0u);
     REG(WATCHDOG_SCRATCH + 8u) = frame[6];
     REG(WATCHDOG_SCRATCH + 12u) = (sfsr & 0x40u) != 0u ? REG(SAU_SFAR)
             : REG((exc_return & 0x40u) == 0u ? 0xE002ED28u : 0xE000ED28u);
 #ifdef JUNO_SECURE_DIAGNOSTICS
+    REG(WATCHDOG_SCRATCH + 0u) = frame[6];
+    REG(WATCHDOG_SCRATCH + 4u) = 0xA0000000u | ((sfsr & 0xFFu) << 8) | (REG(SCB_ICSR) & 0xFFu);
     REG(WATCHDOG_CTRL) |= 0x80000000u;
 #endif
     typedef int (*reboot_fn)(uint32_t flags, uint32_t delay_ms, uint32_t p0, uint32_t p1);
@@ -353,25 +416,30 @@ void secure_fault_c(uint32_t *frame, uint32_t exc_return) {
 // where it stopped. Running the image secure is exactly what the fence must not allow, hence the separate build.
 static void diagnostics_arm(void) {
     REG(WATCHDOG_SCRATCH + 0u) = 0x5EC20000u;
+    REG(WATCHDOG_SCRATCH + 4u) = 0xA0000000u;
     REG(0x40018008u) = 0x01FFFFFFu & ~0xCu;  // PSM_WDSEL: everything but the oscillators
+#ifndef JUNO_DIAG_NO_WATCHDOG
     REG(0x40108034u) = 12u;                  // TICKS watchdog cycles
     REG(0x40108030u) = 1u;
     REG(WATCHDOG_CTRL + 4u) = 0x00FFFFFFu;
     REG(WATCHDOG_CTRL) |= 0x40000000u;
+#endif
+#ifndef JUNO_DIAG_NO_SYSTICK
     REG(0xE000E014u) = 0x000FFFFFu;          // SysTick reload
     REG(0xE000E018u) = 0u;
     REG(0xE000E010u) = 0x7u;
+#endif
 }
 
 void diagnostics_sample(uint32_t *frame) {
-    REG(WATCHDOG_SCRATCH + 8u) = frame[6];
+    REG(WATCHDOG_SCRATCH + 0u) = frame[6];  // scratch2 and 3 do not survive the reboot; 0 and 1 do
 }
 
 static int diagnostics_fallback(void) {
-    uint32_t state = REG(WATCHDOG_SCRATCH + 0u);
-    uint32_t kind = state & 0xFFFF0000u;
-    if ((kind == 0x5EC00000u || kind == 0x5EC20000u) && (state & 0x8000u) == 0u) {
-        REG(WATCHDOG_SCRATCH + 0u) = state | 0x8000u;
+    // scratch1 holds 0xA0000000 while a non-secure start is under way; a reboot that still finds it means that start
+    // hung or faulted, so this boot falls back once (scratch1 cleared) and the record in scratch0/2/3 is kept.
+    if ((REG(WATCHDOG_SCRATCH + 4u) & 0xF0000000u) == 0xA0000000u) {
+        REG(WATCHDOG_SCRATCH + 4u) &= 0x0FFFFFFFu;
         const uint32_t *vectors = (const uint32_t *)APP_VECTORS;
         REG(0xE000ED08u) = APP_VECTORS;
         __asm volatile("msr msp, %0\n bx %1" : : "r"(vectors[0]), "r"(vectors[1]));

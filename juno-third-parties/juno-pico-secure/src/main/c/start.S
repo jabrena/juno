@@ -2,8 +2,8 @@
     .cpu cortex-m33
     .thumb
 
-    /* Secure vector table. AIRCR.BFHFNMINS is set at start-up, so HardFault, BusFault and NMI go to the non-secure
-       image's own handlers; what reaches these is a TrustZone violation or a fault in this firmware itself. */
+    /* Secure vector table. HardFault, BusFault and NMI stay secure, so a crash in the non-secure image, a TrustZone
+       violation and a fault in this firmware itself all land in secure_fault. */
     .section .vectors, "a"
     .align 2
     .global secure_vectors

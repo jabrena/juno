@@ -26,6 +26,12 @@ public final class PicoSecureFirmware {
     public static final int STORE_SECTOR = 0x103FE000;
     /** The arduino-pico build property that keeps the sketch's RAM below the secure firmware's 8 KB. */
     public static final String RAM_LENGTH_PROPERTY = "build.ram_length=504k";
+    /**
+     * The arduino-pico build property that routes the SDK's flash writes (BTstack's bonds, the EEPROM library) through
+     * the gateway: the sketch cannot erase or program flash itself from the non-secure world.
+     */
+    public static final String WRAP_FLASH_PROPERTY =
+            "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,--wrap=flash_range_program";
 
     private static final String RESOURCE = "pico-secure/juno-pico-secure.bin";
     private static final int UF2_BLOCK = 512;

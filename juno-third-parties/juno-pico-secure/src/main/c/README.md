@@ -29,6 +29,8 @@ the OTP fuses, the flash controller (QMI, XIP control and stream), the QSPI pins
 | 2 | write(slot, value, length) | `length` (0 clears), or -1 for a bad slot, a length over 63, or a `value` the caller cannot read |
 | 3 | clear(slot) | 0, or -1 |
 | 4 | clearAll() | 0 |
+| 5 | flashErase(offset, count) | 0, or -1 unless the 4 KB-aligned range is the sketch's own flash |
+| 6 | flashProgram(offset, data, count) | 0, or -1 unless the 256-byte-aligned range is the sketch's own flash and `data` the caller's |
 
 Every pointer is checked with `TTA` against what the non-secure caller may itself access, so the gateway cannot be
 pointed at secure memory. A write rewrites the sector only when its contents change.
@@ -37,7 +39,10 @@ pointed at secure memory. A write rewrites the sector only when its contents cha
 
 The non-secure sketch must skip the SDK start-up steps that belong to the secure world: the ROM state reset, the boot
 locks, and the resets of JTAG, DMA, IO_QSPI and PADS_QSPI, whose reset-done bits read as 0 from the non-secure side.
-Juno's Pico 2 W runtime does that when the program uses `SecretStore`.
+It also cannot erase or program flash itself, so it is linked with `--wrap=flash_range_erase,--wrap=flash_range_program`
+and those calls, BTstack's bond storage and the EEPROM library among them, go through gateway operations 5 and 6, which
+accept only the sketch's own image area and the EEPROM sector. Juno's Pico 2 W runtime does all of this when the
+program uses `SecretStore`; the second core stays unused, as it cannot be started from the non-secure world.
 
 ## What it does not do
 
@@ -46,7 +51,7 @@ firmware through BOOTSEL. The fence protects the secrets from the program runnin
 and a USB cable can still read or replace the whole flash. The values are not encrypted: without locking the chip, any
 key would live in the same readable flash.
 
-A TrustZone violation, or a fault in this firmware, reboots the board into BOOTSEL with a record in the watchdog
-scratch registers. `JUNO_SECURE_FLAGS=-DJUNO_SECURE_DIAGNOSTICS ./build.sh` builds a development variant into `target/`
+A crash in the sketch (HardFault, BusFault and NMI stay with this firmware), a TrustZone violation or a fault in this
+firmware reboots the board into BOOTSEL with a record in the watchdog scratch registers. `JUNO_SECURE_FLAGS=-DJUNO_SECURE_DIAGNOSTICS ./build.sh` builds a development variant into `target/`
 only, which instead reboots a hung or faulting start into an ordinary secure start of the sketch, so a probe sketch
 can print where it stopped. That variant defeats the fence by design and is never shipped.
