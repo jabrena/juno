@@ -23,6 +23,17 @@ class LocalDateTimeRuntimeTest {
     @Test
     @DisplayName("Synchronizes over SNTP: sends a client request and turns the server's 1900-based seconds into UTC")
     void shouldSynchronizeOverSntp() throws Exception {
+        assertThat(runSntpFetch(1)).isEqualTo(0);
+    }
+
+    @Test
+    @DisplayName("Accepts an endPacket() that returns the byte count, as the Mbed Portenta core does")
+    void shouldAcceptByteCountFromEndPacket() throws Exception {
+        assertThat(runSntpFetch(48)).isEqualTo(0);
+    }
+
+    /** Runs the fetch against a UDP stub whose {@code endPacket()} returns {@code sentResult}; 0 means every check passed. */
+    private int runSntpFetch(int sentResult) throws Exception {
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         long ntpSeconds = Instant.parse("2024-02-29T12:34:56Z").getEpochSecond() + 2_208_988_800L;
@@ -61,7 +72,7 @@ class LocalDateTimeRuntimeTest {
                   int begin(uint16_t) { open = true; return 1; }
                   int beginPacket(const char* name, uint16_t remotePort) { host = name; port = remotePort; return 1; }
                   size_t write(const uint8_t* data, size_t size) { std::memcpy(request, data, size); return size; }
-                  int endPacket() { return 1; }
+                  int endPacket() { return %d; }
                   int parsePacket() { return 48; }
                   int read(uint8_t* data, size_t size) {
                     std::memset(data, 0, size);
@@ -88,9 +99,9 @@ class LocalDateTimeRuntimeTest {
                       || fetched.hour != 12 || fetched.minute != 34 || fetched.second != 56) return 5;
                   return 0;
                 }
-                """.formatted(ntpSeconds, runtime);
+                """.formatted(ntpSeconds, sentResult, runtime);
 
-        assertThat(compileAndRun(compiler, "local-date-time-sntp-driver", driver)).isEqualTo(0);
+        return compileAndRun(compiler, "local-date-time-sntp-driver", driver);
     }
 
     private int compileAndRun(String compiler, String name, String driver) throws Exception {

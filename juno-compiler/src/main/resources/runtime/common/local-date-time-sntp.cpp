@@ -11,9 +11,10 @@ static bool juno_local_date_time_fetch(JunoLocalDateTime* target) {
   memset(packet, 0, sizeof(packet));
   packet[0] = 0x1B;  // leap indicator 0, version 3, mode 3 (client)
   uint32_t seconds = 0;
+  // Arduino cores return 1 from endPacket(); the Mbed Portenta core returns the byte count, so any positive result counts.
   if (juno_sntp_udp.beginPacket(${JUNO_SNTP_HOST}, static_cast<uint16_t>(${JUNO_SNTP_PORT})) == 1
       && juno_sntp_udp.write(packet, sizeof(packet)) == sizeof(packet)
-      && juno_sntp_udp.endPacket() == 1) {
+      && juno_sntp_udp.endPacket() > 0) {
     uint32_t start = static_cast<uint32_t>(millis());
     while (static_cast<uint32_t>(millis()) - start < JUNO_SNTP_TIMEOUT_MILLIS) {
       if (juno_sntp_udp.parsePacket() >= static_cast<int>(sizeof(packet))) {
