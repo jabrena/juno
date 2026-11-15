@@ -57,7 +57,18 @@ public record Descriptor(List<String> parameters, String returnType) {
                         || new SocketSupport().isSocketType(returnType)
                         || new LocalDateTimeSupport().isLocalDateTimeType(returnType)
                         || isSupportedArrayType(returnType, referenceClassNames)
-                        || isReferenceType(returnType, referenceClassNames));
+                        || isReferenceType(returnType, referenceClassNames)
+                        || isErasedGenericReturn(returnType));
+    }
+
+    /**
+     * {@code java.lang.Object} as a result only: the erased return of a generic getter, such as
+     * {@code HttpResponse<T>.body()} and the bridge method javac writes beside it. References are untyped words and the
+     * caller's {@code checkcast} generates no code, so the value it gets back is the closed-world reference the callee
+     * returned. {@code Object} stays rejected as a parameter, where nothing would prove what the callee receives.
+     */
+    public static boolean isErasedGenericReturn(String type) {
+        return type.equals("Ljava/lang/Object;");
     }
 
     public static boolean isIntegerLike(String type) {

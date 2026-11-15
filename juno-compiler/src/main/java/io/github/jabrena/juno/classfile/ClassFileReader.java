@@ -15,6 +15,8 @@ public final class ClassFileReader {
 
     private final BootstrapMethodsReader bootstrapMethodsReader = new BootstrapMethodsReader();
 
+    private final JdkClassAliases jdkClassAliases = new JdkClassAliases();
+
     private static final int CLASS_FILE_MAGIC = 0xCAFEBABE;
     private static final String BOARD_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Board;";
     private static final String WATCHDOG_ANNOTATION_DESCRIPTOR = "Lio/github/jabrena/juno/annotations/Watchdog;";
@@ -77,7 +79,7 @@ public final class ClassFileReader {
         for (int index = 1; index < count; index++) {
             int tag = input.readUnsignedByte();
             entries[index] = switch (tag) {
-                case 1 -> input.readUTF();
+                case 1 -> jdkClassAliases.apply(input.readUTF());
                 case 3 -> input.readInt();
                 case 4 -> Float.intBitsToFloat(input.readInt());
                 case 5 -> {
