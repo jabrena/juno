@@ -52,6 +52,7 @@ Flashed to a Portenta H7 over USB and read back with `juno:monitor` on 2026-11-1
 | Scoped values | `PortentaScopedValues` | 19k rounds; the binding reached every subtask, nested rebinding restored the outer value, 0 failures |
 | Wi-Fi from the secure element | `SecretWifiStatus` | Joined with the SSID and password read from the SE050C2 after a reboot: `WiFi status: 3` |
 | Secure store | `SecretStoreCheck` | Write, update, per-name clear, rewrite after clear and the 63-byte maximum all pass |
+| Secure store wipe | `PortentaSecretClearAllRead` | Write reports 15 bytes; read-before returns the same 15 bytes; `clearAll` returns 0; read-after returns -1 and counts as the expected failure |
 | HTTP server | `PortentaHttpServer` | Listening on port 80 at the board's address: `GET /status` returns 200 with `ok`; an unknown path and `POST /status` return 404 |
 | HTTPS server | `PortentaHttpsServer` | Listening on port 443 with a self-signed EC P-256 certificate. `GET /status` returns 200 with `ok` to a client that trusts that certificate, and an unknown path returns 404. A client without the certificate is refused. The certificate and key come over USB at boot with `scripts/portenta-https-send-pem.sh` and stay in RAM, so a reboot needs them sent again |
 | HTTP and HTTPS client | `SingleHttpsGet`, `HttpsMethods` | `https://example.com/` returns 200; `httpbin.org` and `httpbun.com` return OK for GET, POST, DELETE, PATCH and QUERY. Plain `http://example.com/` returns 200 in the same run |
@@ -76,5 +77,6 @@ Three fixes came out of that verification:
 The HTTPS server's private key is never part of the firmware or the repository. The board's TLS credentials live in
 RAM only, so they are not kept across a reboot.
 
-Still unverified on hardware: `SecretStore.clearAll()`, whose whole-chip wipe erases the provisioned Wi-Fi credentials.
-`PortentaSecretWipe` exists for that run, and the credentials have to be provisioned again afterwards.
+`SecretStore.clearAll()` is a whole-chip wipe: it erases the Wi-Fi and SMTP credentials too, so they have to be provisioned
+again afterwards. `PortentaSecretClearAllRead` runs write, read, `clearAll` and a read that must fail, and it passed on
+hardware. The same wipe is also covered by `PortentaSecretWipe`.
