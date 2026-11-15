@@ -313,6 +313,32 @@ class ArduinoCliTest {
                     interactive(List.of("/opt/arduino-cli", "monitor", "--port", "COM3",
                             "--config", "baudrate=115200")));
         }
+
+        @Test
+        @DisplayName("Builds and uploads a Pico 2 W secure-firmware sketch through its own build directory")
+        void shouldBuildAndUploadThroughTheBuildDirectoryForThePicoSecureFirmware() {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, "built").respond(0, "uploaded");
+            ArduinoCli cli = new ArduinoCli("/opt/arduino-cli", executor, ignored -> { });
+            Path sketch = Path.of("target/juno/SecretsAsm");
+            Path build = sketch.resolve("build");
+            String fqbn = "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble";
+
+            // When
+            cli.compileForPicoSecureFirmware(fqbn, sketch, build);
+            cli.upload(fqbn, "/dev/cu.usbmodem1", sketch, build);
+
+            // Then
+            String sketchPath = sketch.toAbsolutePath().normalize().toString();
+            String buildPath = build.toAbsolutePath().normalize().toString();
+            assertThat(executor.invocations()).containsExactly(
+                    captured(List.of("/opt/arduino-cli", "compile", "--fqbn", fqbn, "--build-property",
+                            "build.ram_length=504k", "--build-property",
+                            "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,--wrap=flash_range_program",
+                            "--build-path", buildPath, sketchPath)),
+                    captured(List.of("/opt/arduino-cli", "upload", "--port", "/dev/cu.usbmodem1", "--fqbn", fqbn,
+                            "--input-dir", buildPath, sketchPath)));
+        }
     }
 
     private static String boardList(String... ports) {

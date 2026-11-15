@@ -39,6 +39,8 @@ public enum ShimFeature {
 
     /** Named secrets in an ESP32 board's non-volatile storage, through the core's Preferences library. */
     NVS,
+    /** Named secrets behind Juno's TrustZone secure firmware on the Pico 2 W, through its gateway. */
+    PICO_TRUSTZONE,
     /** {@code Spi}: full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled library. */
     SPI,
     /** Runtime parsing and board-specific resolution of {@code Gpio.digitalPin}/{@code analogPin} names. */

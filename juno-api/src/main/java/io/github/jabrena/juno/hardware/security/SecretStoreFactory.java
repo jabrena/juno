@@ -10,7 +10,7 @@ public final class SecretStoreFactory {
     /** Whether the board being compiled has a secret store, so {@link #open} has one to return. */
     public static boolean isAvailable() {
         return switch (MCU.getBoardModel()) {
-            case PORTENTA_H7, NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> true;
+            case PORTENTA_H7, NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM, PICO_2_W -> true;
             default -> false;
         };
     }
@@ -21,7 +21,9 @@ public final class SecretStoreFactory {
      * <ul>
      *   <li>the Portenta H7's onboard NXP {@link Se050C2};</li>
      *   <li>the ESP32-family boards' own non-volatile storage ({@link Esp32Nvs}), since they carry no secure element
-     *       — weaker than a chip, and its Javadoc says how.</li>
+     *       — weaker than a chip, and its Javadoc says how;</li>
+     *   <li>the Pico 2 W's slots behind Juno's own TrustZone secure firmware ({@link Pico2WTrustZoneStore}), which
+     *       {@code juno:flash} installs with the program.</li>
      * </ul>
      *
      * <p>The other boards have no secret store: check {@link #isAvailable} and read their settings from elsewhere,
@@ -35,6 +37,7 @@ public final class SecretStoreFactory {
         return switch (MCU.getBoardModel()) {
             case PORTENTA_H7 -> new Se050C2(slots);
             case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> new Esp32Nvs(slots);
+            case PICO_2_W -> new Pico2WTrustZoneStore(slots);
             default -> throw new IllegalStateException("This board has no secret store");
         };
     }

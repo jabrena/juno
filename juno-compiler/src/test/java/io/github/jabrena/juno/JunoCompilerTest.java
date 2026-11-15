@@ -1210,6 +1210,7 @@ class JunoCompilerTest {
         @CsvSource({
             "ArduinoNanoEsp32Board, juno_nvs_read, juno_se050_read",
             "ArduinoPortentaH7Board, juno_se050_read, juno_nvs_read",
+            "RaspberryPico2WifiBoard, juno_pico_tz_read, juno_nvs_read",
             // A board with no secret store reaches neither provider, so a read through the store cannot compile.
             "ArduinoUnoR4WiFiBoard, , juno_se050_read"})
         @DisplayName("SecretStoreFactory compiles to the one store its target board has, and is rejected on a board with none")
@@ -1248,6 +1249,127 @@ class JunoCompilerTest {
 
             // Then: the provider the board does not have is neither called nor given shim code
             assertThat(result.assembly()).contains(present).doesNotContain(absent);
+        }
+
+        @Test
+        @DisplayName("The Pico 2 W's TrustZone store brings its gateway shim, its non-secure start-up and the firmware flag")
+        void shouldCompileThePico2WTrustZoneStore() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.security.SecretStore;
+                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(RaspberryPico2WifiBoard.class)
+                    public final class PicoSecrets {
+                        public static void main(String[] args) {
+                            SecretStore store = SecretStoreFactory.open(new SecretSlots().add("wifi.ssid", 8));
+                            store.write("wifi.ssid", new byte[] {1, 2}, 2);
+                            Serial.println(store.clearAll());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoSecrets", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoSecrets");
+
+            // Then
+            assertThat(result.report().usesPicoSecureFirmware()).isTrue();
+            assertThat(result.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble");
+            assertThat(result.assembly()).contains("juno_pico_tz_begin", "juno_pico_tz_write", "juno_pico_tz_clear_all");
+            assertThat(result.runtimeShim()).contains("0x10002F01u", "void runtime_init_early_resets(void)",
+                    "void runtime_init_bootrom_reset(void)", "pico_processor_state_is_nonsecure()",
+                    "void __wrap_flash_range_erase(", "void __wrap_flash_range_program(");
+        }
+
+        @Test
+        @DisplayName("A program without the store needs no secure firmware and keeps the SDK's own start-up")
+        void shouldLeaveOtherPicoProgramsAlone() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(RaspberryPico2WifiBoard.class)
+                    public final class PicoPlain {
+                        public static void main(String[] args) {
+                            Serial.println(1);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoPlain", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoPlain");
+
+            // Then
+            assertThat(result.report().usesPicoSecureFirmware()).isFalse();
+            assertThat(result.fqbn()).isEqualTo("rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble");
+            assertThat(result.runtimeShim()).doesNotContain("juno_pico_tz", "runtime_init_early_resets");
+        }
+
+        @Test
+        @DisplayName("The Pico 2 W's TrustZone store and Bluetooth LE compile together, BTstack's flash going through the gateway")
+        void shouldCompileTheTrustZoneStoreWithBluetooth() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(RaspberryPico2WifiBoard.class)
+                    public final class PicoBle {
+                        public static void main(String[] args) {
+                            Serial.println(MCU.getBluetoothLe().isConnected());
+                            Serial.println(SecretStoreFactory.open(new SecretSlots().add("a", 2)).clearAll());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PicoBle", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoBle");
+
+            // Then
+            assertThat(result.report().usesPicoSecureFirmware()).isTrue();
+            assertThat(result.fqbn()).contains("ipbtstack=ipv4btcble");
+            assertThat(result.runtimeShim()).contains("void __wrap_flash_range_erase(");
+        }
+
+        @Test
+        @DisplayName("The Pico 2 W's TrustZone store refuses a program on two carriers")
+        void shouldRejectTheTrustZoneStoreOnTwoCarriers() throws Exception {
+            // Given: virtual threads give the Pico 2 W its second carrier, which the non-secure world cannot start
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(RaspberryPico2WifiBoard.class)
+                    public final class PicoThreads {
+                        public static void main(String[] args) throws InterruptedException {
+                            Thread worker = Thread.startVirtualThread(() -> Serial.println(1));
+                            worker.join();
+                            Serial.println(SecretStoreFactory.open(new SecretSlots().add("a", 2)).clearAll());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.PicoThreads", source);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoThreads"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("-Djuno.carriers=1");
         }
 
     }

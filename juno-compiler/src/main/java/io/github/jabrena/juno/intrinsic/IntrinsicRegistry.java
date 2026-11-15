@@ -9,6 +9,8 @@ import java.util.Set;
 
 /** The single place that resolves a Java {@link MethodRef} to the {@link Intrinsic} it implements. */
 public final class IntrinsicRegistry {
+    private static final String PICO_TZ_TRANSPORT =
+            "io/github/jabrena/juno/hardware/security/Pico2WTrustZoneStore$NativeTransport";
 
     /**
      * (intrinsic, declared-parameter-index) pairs exempt from the default rule that every
@@ -346,6 +348,10 @@ public final class IntrinsicRegistry {
                     Intrinsic.NVS_WRITE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/security/Esp32Nvs$NativeTransport", "clear", "(I)Z"),
                     Intrinsic.NVS_CLEAR),
+            Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "begin", "()Z"), Intrinsic.PICO_TZ_BEGIN),
+            Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "read", "(I[BI)I"), Intrinsic.PICO_TZ_READ),
+            Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "write", "(I[BI)I"), Intrinsic.PICO_TZ_WRITE),
+            Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "clearAll", "()Z"), Intrinsic.PICO_TZ_CLEAR_ALL),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeSpi", "begin", "()V"),
                     Intrinsic.SPI_BEGIN),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeSpi", "transfer", "(I)I"),

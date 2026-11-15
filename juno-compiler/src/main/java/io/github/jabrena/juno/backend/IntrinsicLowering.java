@@ -866,6 +866,13 @@ public final class IntrinsicLowering {
         shim(Intrinsic.NVS_WRITE, "juno_nvs_write", Result.WORD,
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.NVS);
         shim(Intrinsic.NVS_CLEAR, "juno_nvs_clear", Result.WORD, List.of(arg(0)), ShimFeature.NVS);
+        shim(Intrinsic.PICO_TZ_BEGIN, "juno_pico_tz_begin", Result.WORD, List.of(), ShimFeature.PICO_TRUSTZONE);
+        shim(Intrinsic.PICO_TZ_READ, "juno_pico_tz_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.PICO_TRUSTZONE);
+        shim(Intrinsic.PICO_TZ_WRITE, "juno_pico_tz_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.PICO_TRUSTZONE);
+        shim(Intrinsic.PICO_TZ_CLEAR_ALL, "juno_pico_tz_clear_all", Result.WORD, List.of(),
+                ShimFeature.PICO_TRUSTZONE);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);

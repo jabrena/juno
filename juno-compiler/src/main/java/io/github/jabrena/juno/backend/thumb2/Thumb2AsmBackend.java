@@ -10,6 +10,7 @@ import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.IntrinsicLowering;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
+import io.github.jabrena.juno.backend.runtime.PicoTrustZoneRuntime;
 import io.github.jabrena.juno.backend.runtime.RuntimeEntryPoints;
 import io.github.jabrena.juno.backend.runtime.RuntimeShim;
 import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
@@ -220,6 +221,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
             emitMethod(code, method);
         }
         arrays.emitHelpers(code);
+        PicoTrustZoneRuntime.check(features, dualCarrier);
         output.append(runtimeEntryPoints.preemptibleCode(usesThreads, code));
         String runtimeShim = new RuntimeShim(coreRuntime, runtimeConfig, gcLoggingEnabled, features, usedMath,
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
