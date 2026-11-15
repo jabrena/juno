@@ -47,7 +47,7 @@ Flashed to a Portenta H7 over USB and read back with `juno:monitor` on 2026-11-1
 | Structured concurrency | `PortentaStructuredConcurrency` | 105 rounds of three scopes; a failing subtask cancelled a 200 ms sleeper in ~21 ms, 0 failures |
 | Scoped values | `PortentaScopedValues` | 19k rounds; the binding reached every subtask, nested rebinding restored the outer value, 0 failures |
 | Wi-Fi from the secure element | `SecretWifiStatus` | Joined with the SSID and password read from the SE050C2 after a reboot: `WiFi status: 3` |
-| Secure store | `PortentaSecretStore` | Write, update, per-name clear, rewrite after clear and the 63-byte maximum all pass |
+| Secure store | `SecretStoreCheck` | Write, update, per-name clear, rewrite after clear and the 63-byte maximum all pass |
 
 The arena rises and falls between 18 and 60 KiB of the Portenta's 64 KiB default in the concurrency programs, so the
 collector keeps up with the thread stacks the Mbed port allocates per round.
