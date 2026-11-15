@@ -198,6 +198,22 @@ public interface CoreRuntime {
         return "client.setInsecure();";
     }
 
+    /** The includes the STARTTLS client needs, emitted with the shim's other includes. */
+    default String smtpStarttlsInclude() {
+        return "#include <ESP_SSLClient.h>\n";
+    }
+
+    /** File-scope helpers the STARTTLS client needs, emitted before the STARTTLS function. */
+    default String smtpStarttlsHelpers() {
+        return "";
+    }
+
+    /** Declares the STARTTLS client as {@code client} and sets it up, before its trust is installed. */
+    default String smtpStarttlsClient() {
+        return "WiFiClient plainClient;\n  ESP_SSLClient client;\n  client.setBufferSizes(2048, 512);\n"
+                + "  client.setClient(&plainClient, false);";
+    }
+
     /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
     default String httpsTrustHelpers() {
         return """

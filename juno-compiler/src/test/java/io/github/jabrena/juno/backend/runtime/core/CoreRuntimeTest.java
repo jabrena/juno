@@ -99,6 +99,11 @@ class CoreRuntimeTest {
         assertThat(runtime.httpsServerTransport()).contains("mbedtls_ssl_config", "WiFiServer");
         assertThat(runtime.httpsHelpers()).contains("juno_portenta_ca", "setCACert(juno_portenta_ca)");
         assertThat(runtime.httpsClientDeclaration()).isEqualTo("JunoPortentaHttpsClient client;");
+        assertThat(runtime.smtpStarttlsInclude()).contains("netsocket/TLSSocketWrapper.h");
+        assertThat(runtime.smtpStarttlsHelpers()).contains("struct JunoMbedSmtpClient", "TRANSPORT_KEEP",
+                "JUNO_PORTENTA_TRUST_ROOTS", "juno_portenta_ca");
+        assertThat(runtime.smtpStarttlsClient()).isEqualTo("JunoMbedSmtpClient client;");
+        assertThat(runtime.smtpStarttlsTrust()).isEqualTo("client.setCACert(juno_portenta_ca);");
         assertThat(runtime.watchdog(1000).begin()).contains("Watchdog::get_instance().start");
         assertThat(runtime.uuidRandomHelpers()).contains("mbedtls_hardware_poll");
         assertThat(runtime.mouseIncludes()).isEqualTo("#include <USBMouse.h>\n");

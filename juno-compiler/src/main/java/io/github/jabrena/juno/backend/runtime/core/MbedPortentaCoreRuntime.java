@@ -56,14 +56,7 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
      */
     @Override
     public String httpsHelpers() {
-        // JUNO_TLS_CA replaces the bundle with a custom CA, as on the ESP32 cores. The Portenta's Mbed TLS build compiles
-        // out SECP521R1, so the bundle leaves out the P-521 root that would otherwise make it refuse the whole list.
-        String customCa = System.getenv("JUNO_TLS_CA");
-        String roots = customCa != null && !customCa.isBlank()
-                ? customCa
-                : CertificateBundle.pemWithoutCurve(runtimeSource.load("esp32/ca-certificates.pem"), 521);
-        String trustedRoots = CertificateBundle.cPem("juno_portenta_ca", roots);
-        return trustedRoots + """
+        return trustedRootsDefinition() + """
                 struct JunoPortentaHttpsClient : WiFiSSLClient {
                   JunoPortentaHttpsClient() {
                     setCACert(juno_portenta_ca);
@@ -75,6 +68,146 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public String httpsClientDeclaration() {
         return "JunoPortentaHttpsClient client;";
+    }
+
+    /**
+     * The roots the Portenta's TLS clients trust. {@code JUNO_TLS_CA} replaces the Mozilla bundle with a custom CA, as on
+     * the ESP32 cores. The Portenta's Mbed TLS build compiles out SECP521R1, so the bundle leaves out the P-521 root that
+     * would otherwise make it refuse the whole list.
+     */
+    private String trustedRootsPem() {
+        String customCa = System.getenv("JUNO_TLS_CA");
+        return customCa != null && !customCa.isBlank()
+                ? customCa
+                : CertificateBundle.pemWithoutCurve(runtimeSource.load("esp32/ca-certificates.pem"), 521);
+    }
+
+    /**
+     * The trusted roots as one file-scope definition, {@code juno_portenta_ca}, shared by the HTTPS and STARTTLS clients.
+     * The guard keeps the list in flash once when a program uses both, since the bundle is about 120 KB of text.
+     */
+    private String trustedRootsDefinition() {
+        return "#ifndef JUNO_PORTENTA_TRUST_ROOTS\n#define JUNO_PORTENTA_TRUST_ROOTS\n"
+                + CertificateBundle.cPem("juno_portenta_ca", trustedRootsPem()) + "#endif\n";
+    }
+
+    /**
+     * Smtp's STARTTLS on Mbed: a TCP socket that a TLS wrapper takes over in place once the server accepts STARTTLS. The
+     * Arduino WiFiSSLClient starts TLS from the first byte, and ESP_SSLClient is a BearSSL client the Mbed core does not
+     * link. The server's chain is checked against the same roots as HTTPS, and the host name must match.
+     */
+    @Override
+    public String smtpStarttlsInclude() {
+        return "#include <netsocket/TCPSocket.h>\n#include <netsocket/TLSSocketWrapper.h>\n";
+    }
+
+    @Override
+    public String smtpStarttlsHelpers() {
+        return trustedRootsDefinition() + """
+                struct JunoMbedSmtpClient {
+                  TCPSocket tcp;
+                  TLSSocketWrapper tls;
+                  const char* host = nullptr;
+                  nsapi_error_t trust = NSAPI_ERROR_OK;
+                  int peeked = -1;
+                  bool open = false;
+                  bool secure = false;
+
+                  JunoMbedSmtpClient() : tls(&tcp, nullptr, TLSSocketWrapper::TRANSPORT_KEEP) {}
+
+                  // The greeting and the STARTTLS reply travel in clear text; everything after the handshake uses TLS.
+                  Socket* active() {
+                    return secure ? static_cast<Socket*>(&tls) : static_cast<Socket*>(&tcp);
+                  }
+
+                  bool connect(const char* name, uint16_t port) {
+                    host = name;
+                    NetworkInterface* network = WiFi.getNetwork();
+                    SocketAddress address;
+                    if (network->gethostbyname(name, &address) != NSAPI_ERROR_OK) return false;
+                    address.set_port(port);
+                    if (tcp.open(network) != NSAPI_ERROR_OK) return false;
+                    tcp.set_timeout(15000);
+                    open = tcp.connect(address) == NSAPI_ERROR_OK;
+                    return open;
+                  }
+
+                  void setCACert(const char* pem) {
+                    trust = tls.set_root_ca_cert(pem);
+                  }
+
+                  bool connectSSL() {
+                    if (trust != NSAPI_ERROR_OK) return false;
+                    tls.set_hostname(host);
+                    for (int attempt = 0; attempt < 200; attempt++) {
+                      nsapi_error_t err = tls.connect();
+                      if (err == NSAPI_ERROR_OK || err == NSAPI_ERROR_IS_CONNECTED) {
+                        secure = true;
+                        return true;
+                      }
+                      if (err != NSAPI_ERROR_IN_PROGRESS && err != NSAPI_ERROR_ALREADY) return false;
+                      delay(100);
+                    }
+                    return false;
+                  }
+
+                  size_t print(const char* text) {
+                    size_t length = strlen(text);
+                    size_t sent = 0;
+                    active()->set_timeout(15000);
+                    while (sent < length) {
+                      nsapi_size_or_error_t count = active()->send(text + sent, length - sent);
+                      if (count <= 0) {
+                        open = false;
+                        break;
+                      }
+                      sent += static_cast<size_t>(count);
+                    }
+                    return sent;
+                  }
+
+                  int available() {
+                    if (peeked >= 0) return 1;
+                    if (!open) return 0;
+                    active()->set_timeout(0);
+                    uint8_t value = 0;
+                    nsapi_size_or_error_t count = active()->recv(&value, 1);
+                    if (count == 1) {
+                      peeked = value;
+                      return 1;
+                    }
+                    if (count != NSAPI_ERROR_WOULD_BLOCK) open = false;
+                    return 0;
+                  }
+
+                  int read() {
+                    if (available() == 0) return -1;
+                    int value = peeked;
+                    peeked = -1;
+                    return value;
+                  }
+
+                  bool connected() const {
+                    return open;
+                  }
+
+                  void stop() {
+                    if (secure) tls.close();
+                    tcp.close();
+                    open = false;
+                  }
+                };
+                """;
+    }
+
+    @Override
+    public String smtpStarttlsClient() {
+        return "JunoMbedSmtpClient client;";
+    }
+
+    @Override
+    public String smtpStarttlsTrust() {
+        return "client.setCACert(juno_portenta_ca);";
     }
 
     @Override
