@@ -27,6 +27,14 @@ class DescriptorTest {
     }
 
     @Test
+    @DisplayName("Accepts Object as the erased result of a generic getter, but not as a parameter")
+    void shouldAcceptObjectOnlyAsAResult() {
+        // When & Then
+        assertThat(Descriptor.parse("()Ljava/lang/Object;").usesOnlyV01Types()).isTrue();
+        assertThat(Descriptor.parse("(Ljava/lang/Object;)V").usesOnlyV01Types()).isFalse();
+    }
+
+    @Test
     @DisplayName("A method with no parameters has an empty parameter list")
     void shouldHaveNoParametersForANoArgumentMethod() {
         // When & Then

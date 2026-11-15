@@ -1250,6 +1250,54 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains(present).doesNotContain(absent);
         }
 
+        @ParameterizedTest
+        @CsvSource({
+            "'\"http://example.com/status\"', juno_http_request_buffer, juno_https_request_buffer",
+            "'\"https://example.com/status\"', juno_https_request_buffer, juno_http_request_buffer",
+            // A URI the linker cannot read could be either scheme, so both requests stay.
+            "'address()', juno_http_request_buffer, juno_https_request_buffer"})
+        @DisplayName("A program written against java.net.http links only the request shim its URIs' scheme needs")
+        void shouldCompileTheJdkHttpClientSyntax(String uriArgument, String present, String other) throws Exception {
+            // Given: javac resolves java.net.http to the JDK; Juno reads the board-side classes under those names
+            boolean bothSchemes = uriArgument.equals("address()");
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    public final class JdkHttp {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(URI.create(%s)).GET().build();
+                            HttpResponse<byte[]> reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                            Serial.println(reply.statusCode());
+                            Serial.println(reply.body().length);
+                        }
+
+                        private static String address() {
+                            return "http://example.com/status";
+                        }
+                    }
+                    """.formatted(uriArgument);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttp", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttp");
+
+            // Then: the request is sent through the board's own buffered request, and only for the schemes in use
+            assertThat(result.assembly()).contains(present);
+            if (bothSchemes) {
+                assertThat(result.assembly()).contains(other);
+            } else {
+                assertThat(result.assembly()).doesNotContain(other);
+            }
+        }
     }
 
     @Nested

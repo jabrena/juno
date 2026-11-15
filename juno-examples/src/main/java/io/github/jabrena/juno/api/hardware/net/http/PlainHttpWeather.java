@@ -7,18 +7,25 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
-
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
 /**
  * The Open-Meteo request from {@code MadridWeather}'s {@code WeatherClient}, sent over plain HTTP so a board without
- * TLS can make it. Credentials come from {@code ExampleSecrets}; the buffers are sized for this one response.
- * Prints the HTTP status, the body length and Madrid's current temperature every ten seconds, at 115200 baud. The
+ * TLS can make it, written with the JDK's {@code java.net.http} client: on the board it runs Juno's board-side
+ * implementation of that API (package {@code io.github.jabrena.juno.jdk.net.http}). Credentials come from
+ * {@code ExampleSecrets}. The client, request and response are created once, before the loop, so each request
+ * allocates nothing. Prints the HTTP status, the body length and Madrid's current temperature every ten seconds, at
+ * 115200 baud. On the board {@code body()} is a fixed-capacity buffer, so the length printed is that capacity; the
  * temperature is read straight from the bytes, since {@code Json} is more code than this one value needs.
  */
 @Board({
@@ -37,24 +44,27 @@ public final class PlainHttpWeather {
         '"', ':'};
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         if (!connectWifi()) {
             return;
         }
 
-        byte[] response = new byte[360];
-        byte[] headers = new byte[16];
-        int[] statusAndHeadersLength = new int[2];
+        HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+        HttpRequest request = HttpRequest.newBuilder().uri(URI.create(API_URL)).GET().build();
         while (true) {
-            int bodyLength = HttpClient.get(API_URL, response, response.length, headers, headers.length,
-                    statusAndHeadersLength);
-            Serial.print("status=");
-            Serial.print(statusAndHeadersLength[0]);
-            Serial.print(" body=");
-            Serial.println(bodyLength);
-            printTemperature(response, bodyLength);
+            try {
+                HttpResponse<byte[]> reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                byte[] body = reply.body();
+                Serial.print("status=");
+                Serial.print(reply.statusCode());
+                Serial.print(" body=");
+                Serial.println(body.length);
+                printTemperature(body, body.length);
+            } catch (IOException e) {
+                Serial.println("request failed");
+            }
             Delay.millis(10000);
         }
     }

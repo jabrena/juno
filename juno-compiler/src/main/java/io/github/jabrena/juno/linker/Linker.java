@@ -12,6 +12,7 @@ import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,9 @@ public final class Linker {
 
     private final InvokeDynamicSupport invokeDynamicSupport = new InvokeDynamicSupport();
 
+    private final UriSchemeScan uriSchemeScan = new UriSchemeScan();
+    private final HttpSchemeFolding httpSchemeFolding = new HttpSchemeFolding();
+
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         return link(classes, mainClassName, Optional.empty());
     }
@@ -95,13 +99,12 @@ public final class Linker {
         MethodRef entryPoint = main.reference();
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
         List<MethodRef> clojureFunctions = new ArrayList<>();
-        ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
-                mainInitializer == null ? null : mainInitializer.reference(), classes,
-                reference -> linkMethod(classes, reference, reference.equals(entryPoint), board),
-                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
-                        work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
-                method -> reachableBodySupport.hasReachableBody(method, classes),
-                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
+        // Linked once, or twice when the program sends HTTP requests, so only the schemes it uses are linked.
+        ReachabilityClosure.Result reachability = uriSchemeScan.link(schemes -> {
+            clojureFunctions.clear();
+            return resolveReachability(classes, entryPoint, mainInitializer, board, declaredBoards, schemes,
+                    clojureFunctions);
+        });
         structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
                 reachability.lambdaSites().values(), classes);
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
@@ -119,6 +122,19 @@ public final class Linker {
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
                 clojureFunctions);
+    }
+
+    /** Walks every method reachable from the entry point, deciding scheme queries with {@code schemes}. */
+    private ReachabilityClosure.Result resolveReachability(Map<String, JavaClass> classes, MethodRef entryPoint,
+            @Nullable JavaMethod mainInitializer, Board board, List<Board> declaredBoards, HttpSchemes schemes,
+            List<MethodRef> clojureFunctions) {
+        return reachabilityClosure.resolve(entryPoint,
+                mainInitializer == null ? null : mainInitializer.reference(), classes,
+                reference -> linkMethod(classes, reference, reference.equals(entryPoint), board, schemes),
+                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
+                        work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
+                method -> reachableBodySupport.hasReachableBody(method, classes),
+                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -171,7 +187,7 @@ public final class Linker {
      * {@link BoardQueryFolding}), so the side this target can never take is neither linked nor lowered.
      */
     private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint,
-            Board board) {
+            Board board, HttpSchemes schemes) {
         JavaClass owner = classes.get(reference.owner());
         if (owner == null) {
             throw new CompileException("Reachable class not found: " + reference.owner().replace('/', '.'));
@@ -182,7 +198,8 @@ public final class Linker {
         }
         validateMethod(method, entryPoint, classes.keySet(), owner);
         BoardQueryFolding boardQueryFolding = new BoardQueryFolding(classes, decoder);
-        BoardQueryFolding.Folded folded = boardQueryFolding.fold(decoder.decode(method), owner, board);
+        BoardQueryFolding.Folded folded = httpSchemeFolding.foldAfter(
+                boardQueryFolding.fold(decoder.decode(method), owner, board), owner, schemes);
         List<Instruction> instructions = folded.instructions();
         ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
                 method.exceptionHandlers());
