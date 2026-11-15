@@ -1,10 +1,7 @@
 package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -27,7 +24,7 @@ import io.github.jabrena.juno.util.Delay;
  * take requests. The name-to-slot table here must match the reading program's table: it is the only place slot numbers
  * are chosen. Upload this program with {@code juno:secret}.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoPortentaH7Board.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;
@@ -49,7 +46,6 @@ public final class SecretProvisioner {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         SecretSlots slots = new SecretSlots()
                 .add("wifi.ssid", 8)
                 .add("wifi.password", 9)
@@ -61,7 +57,7 @@ public final class SecretProvisioner {
                 .add("supabase.api.host", 14)
                 .add("supabase.api.key", 15)
                 .add("supabase.api.url", 1);
-        new SecretProvisioner(SecretStoreFactory.open(i2c, slots), slots).run();
+        new SecretProvisioner(SecretStoreFactory.open(slots), slots).run();
     }
 
     private void run() {

@@ -3,12 +3,8 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -22,10 +18,9 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>It is written against {@link SecretStore} alone and takes its instance from
  * {@link SecretStoreFactory#open}, so the same program runs on every board that has a store and names no chip: the
- * factory picks the Portenta H7's onboard NXP SE050C2, the ESP32-family boards' own non-volatile storage (they have
- * no secure element, and that store is weaker — see {@code Esp32Nvs}), or an ATECC608 over I2C otherwise, built into
- * the UNO WiFi Rev2 and a breakout on the UNO R4 WiFi. The board query is answered when the program is linked, so
- * only the chosen provider reaches the image.
+ * factory picks the Portenta H7's onboard NXP SE050C2 or the ESP32-family boards' own non-volatile storage (they have
+ * no secure element, and that store is weaker — see {@code Esp32Nvs}). The board query is answered when the
+ * program is linked, so only the chosen provider reaches the image.
  *
  * <p>For each name it prints the length the chip returned, using the slot numbers of
  * {@link SecretProvisioner}'s table:
@@ -33,10 +28,8 @@ import io.github.jabrena.juno.util.Delay;
  * <ul>
  *   <li>{@code read <n>} — the name holds {@code n} bytes. The value itself is never printed;</li>
  *   <li>{@code read -1} — the store reports the name missing. On an ESP32 board that is unambiguous: NVS is always
- *       there, so the name simply holds nothing. On a board with a chip it means an empty slot <em>or</em> a chip that
- *       never answered, because both look the same through the interface — on an ATECC608 the driver's
- *       {@code lastFailure()} and {@code lastStatus()} separate "no answer on the bus" from "the chip refused the
- *       command".</li>
+ *       there, so the name simply holds nothing. On the Portenta H7 it means an empty object <em>or</em> a chip
+ *       that never answered, because both look the same through the interface.</li>
  * </ul>
  *
  * <p>Nothing here writes, clears or locks anything, so it is safe to flash on a board whose chip is already
@@ -49,7 +42,7 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r3-wifi-rev2 -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class,
+@Board({ArduinoNanoEsp32Board.class,
         M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class SecretProbe {
     /** The largest value Juno's secure-store providers accept. */
@@ -67,10 +60,9 @@ public final class SecretProbe {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         SecretSlots slots = new SecretSlots().add(SSID_NAME, 8).add(PASSWORD_NAME, 9);
         Serial.println("probe start");
-        SecretProbe probe = new SecretProbe(SecretStoreFactory.open(i2c, slots));
+        SecretProbe probe = new SecretProbe(SecretStoreFactory.open(slots));
         Serial.println("store open");
         while (true) {
             probe.report(1, SSID_NAME);

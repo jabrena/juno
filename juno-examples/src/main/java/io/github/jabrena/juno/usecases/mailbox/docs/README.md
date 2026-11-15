@@ -92,8 +92,6 @@ is shown as secondary Wi-Fi status.
 Run `juno:verify` first to compile and validate the generated sketch without touching hardware:
 
 ```bash
-./mvnw -f juno-examples/pom.xml juno:secret -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
-  -Djuno.board=arduino-uno-r4-wifi -Djuno.secret.key=mailbox.q.ip
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
   -Djuno.board=arduino-uno-q

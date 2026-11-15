@@ -8,7 +8,6 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -20,7 +19,7 @@ import java.time.LocalDateTime;
 
 /**
  * Prints UTC from {@link LocalDateTime#now()} every ten seconds at 115200 baud. Joins Wi-Fi with
- * credentials from the ATECC608 {@code SecretStore}; the clock synchronizes over SNTP with the default
+ * credentials from {@code ExampleSecrets}; the clock synchronizes over SNTP with the default
  * {@code pool.ntp.org} host and port 123.
  */
 @Board({
@@ -30,8 +29,7 @@ import java.time.LocalDateTime;
     ArduinoNanoEsp32Board.class,
     ArduinoPortentaH7Board.class,
     AiThinkerEsp32CamBoard.class,
-    M5StackCardputerBoard.class,
-    RaspberryPico2WifiBoard.class
+    M5StackCardputerBoard.class
 })
 public final class SntpTime {
     private static final Wifi WIFI = MCU.getWifi();

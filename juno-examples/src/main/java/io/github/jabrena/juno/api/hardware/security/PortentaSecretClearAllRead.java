@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -61,7 +60,7 @@ public final class PortentaSecretClearAllRead {
         Delay.millis(2000);
         SecretSlots slots = new SecretSlots().add(NAME, SLOT);
         PortentaSecretClearAllRead example =
-                new PortentaSecretClearAllRead(SecretStoreFactory.open(MCU.getI2c(), slots));
+                new PortentaSecretClearAllRead(SecretStoreFactory.open(slots));
         example.run();
         while (true) {
             example.report();

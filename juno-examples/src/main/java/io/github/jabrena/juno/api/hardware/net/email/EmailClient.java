@@ -17,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * Select"}, row 1 cycling {@code Inbox}/{@code Send Email}/{@code About} with UP/DOWN, SELECT
  * confirms) leading to three destinations — Send Email (sends an "Arduino Hello World" message
  * with {@link Smtp#send} to the mailbox configured by the {@code smtp.host}, {@code smtp.username}, and
- * {@code smtp.password} entries in the ATECC608, briefly shows the result, then returns to the menu on its
+ * {@code smtp.password} entries in {@code ExampleSecrets}, briefly shows the result, then returns to the menu on its
  * own), About (a static banner, any button returns to the menu), and Inbox — itself a submenu
  * (same UP/DOWN/SELECT scheme, plus LEFT to go back to the main menu) between two views: Count
  * (shows {@link Pop3Client#messageCount}, any button returns to the Inbox submenu) and List

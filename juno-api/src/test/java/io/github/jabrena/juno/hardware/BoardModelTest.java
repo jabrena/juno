@@ -42,7 +42,7 @@ class BoardModelTest {
         String chosen = switch (MCU.getBoardModel()) {
             case PORTENTA_H7 -> "se050";
             case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> "nvs";
-            default -> "atecc";
+            default -> "none";
         };
 
         // Then

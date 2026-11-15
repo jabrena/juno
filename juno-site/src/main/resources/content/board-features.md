@@ -51,18 +51,16 @@ on every physical board; each board's page notes what is confirmed on hardware.
 ## Secret storage
 
 Juno's [`SecretStore`](../secure-element) API reads named Wi-Fi, API and email credentials from whatever store the
-board has: an ATECC608 on the I2C boards, the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which
-is weaker than a chip — a flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware
-image and the SD card either way, so provisioning does not put them in source code, build output or removable
-storage.
+board has: the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which is weaker than a chip — a
+flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware image and the SD card either
+way, so provisioning does not put them in source code, build output or removable storage. The other boards have no
+secret store: their examples read `application.properties` from the SD card, in plain text.
 
 | Setup | Boards | Notes |
 |---|---|---|
 | Built in | Portenta H7 | The board includes an NXP SE050C2; `SecretStoreFactory` selects it by board, so programs use the same `SecretStore` API. |
-| Built in | UNO WiFi Rev2 | The board includes a Microchip ATECC608A on its I2C bus. |
-| Built in, in flash | Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM | No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. A program can use an ATECC608 breakout explicitly when stronger storage is needed. |
-| External breakout | UNO R4 WiFi, UNO Q and Raspberry Pi Pico 2 W | Connect an ATECC608 breakout to the board's I2C pins. |
-| Not supported | UNO R3 | The board has no supported secure-element path. |
+| Built in, in flash | Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM | No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. |
+| None: SD-card settings | UNO R4 WiFi, UNO Q, UNO WiFi Rev2, UNO R3 and Raspberry Pi Pico 2 W | No secret store. The examples read `application.properties` from a UNO shield's SD card, in plain text. The UNO WiFi Rev2's ATECC608 is not used: it refuses every read and write until it is permanently locked. |
 
 The chip must be provisioned with `juno:secret` before the application reads its names and slots. The [secure-element
 guide](../secure-element) covers provisioning, wiring, missing-secret handling and the current hardware-validation
@@ -96,7 +94,7 @@ Notes:
 - **Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer** reaches a Powered Up hub through the core's own BLE library:
   Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.
 - **Portenta H7 Wi-Fi and Bluetooth LE** use the Arduino Mbed core's `WiFi` and `ArduinoBLE` libraries. The Portenta's
-  onboard ATECC608 is read through the ordinary `I2c`/`SecretStore` API; credentials stay in the chip rather than in
+  onboard SE050C2 is read through the ordinary `SecretStore` API; credentials stay in the chip rather than in
   the generated sketch. Hardware verification remains pending for the connected-board run.
 - **Infrared** drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
   [LEGO ecosystem](../lego-ecosystem) page.

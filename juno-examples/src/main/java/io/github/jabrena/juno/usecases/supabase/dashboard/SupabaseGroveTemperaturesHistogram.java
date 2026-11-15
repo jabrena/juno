@@ -31,7 +31,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  *       exact count with the first page, then reads pairs of bounded pages concurrently.</li>
  * </ul>
  *
- * <p>This class only wires those pieces together. The ATECC608 {@code SecretStore} provides {@code wifi.ssid},
+ * <p>This class only wires those pieces together. {@code ExampleSecrets} provides {@code wifi.ssid},
  * {@code wifi.password}, {@code supabase.api.host} (without {@code https://}), and {@code supabase.api.key}. The table
  * needs a Row Level Security policy granting the public client {@code SELECT} access. Never embed a secret or legacy
  * {@code service_role} key in firmware.

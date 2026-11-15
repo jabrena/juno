@@ -1208,19 +1208,18 @@ class JunoCompilerTest {
 
         @ParameterizedTest
         @CsvSource({
-            // The ATECC608 driver is Java over the I2C intrinsics, so its transport shows up as juno_i2c_*.
-            "ArduinoNanoEsp32Board, juno_nvs_read, juno_se050_read, juno_i2c_read",
-            "ArduinoUnoR4WiFiBoard, juno_i2c_read, juno_se050_read, juno_nvs_read",
-            "ArduinoPortentaH7Board, juno_se050_read, juno_nvs_read, juno_i2c_read"})
-        @DisplayName("SecretStoreFactory compiles to the one store its target board has")
-        void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absentOne,
-                String absentTwo) throws Exception {
-            // Given: the factory asks two board queries and constructs one of three providers
+            "ArduinoNanoEsp32Board, juno_nvs_read, juno_se050_read",
+            "ArduinoPortentaH7Board, juno_se050_read, juno_nvs_read",
+            // A board with no secret store reaches neither provider, so a read through the store cannot compile.
+            "ArduinoUnoR4WiFiBoard, , juno_se050_read"})
+        @DisplayName("SecretStoreFactory compiles to the one store its target board has, and is rejected on a board with none")
+        void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absent)
+                throws Exception {
+            // Given: the factory asks one board query and constructs one of two providers, or throws
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.security.SecretSlots;
                     import io.github.jabrena.juno.hardware.security.SecretStore;
                     import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -1229,19 +1228,28 @@ class JunoCompilerTest {
                     public final class Secrets {
                         public static void main(String[] args) {
                             SecretSlots slots = new SecretSlots().add("wifi.ssid", 8);
-                            SecretStore store = SecretStoreFactory.open(MCU.getI2c(), slots);
+                            SecretStore store = SecretStoreFactory.open(slots);
                             Serial.println(store.read("wifi.ssid", new byte[63]));
                         }
                     }
                     """.formatted(board);
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.Secrets", source);
 
+            if (present == null) {
+                // When & Then: nothing implements the store's read, so the program is rejected when it is built
+                assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Secrets"))
+                        .isInstanceOf(CompileException.class)
+                        .hasMessageContaining("no reachable implementation of io.github.jabrena.juno.hardware.security.SecretStore");
+                return;
+            }
+
             // When
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Secrets");
 
-            // Then: the two providers the board does not have are neither called nor given shim code
-            assertThat(result.assembly()).contains(present).doesNotContain(absentOne, absentTwo);
+            // Then: the provider the board does not have is neither called nor given shim code
+            assertThat(result.assembly()).contains(present).doesNotContain(absent);
         }
+
     }
 
     @Nested

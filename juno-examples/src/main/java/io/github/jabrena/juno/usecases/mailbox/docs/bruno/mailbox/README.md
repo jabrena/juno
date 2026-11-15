@@ -19,13 +19,11 @@ To override the host or the key without editing the environment file:
 npx --yes @usebruno/cli run --env local --env-var host=192.168.1.42 --env-var apiKey=24680135
 ```
 
-The UNO Q gets its network from Linux, so provision the address shown on the TFT as `mailbox.q.ip` with `juno:secret`.
-It is the Q's `[network]` port in `juno:boards`:
+The UNO Q gets its network from Linux, so write the address shown on the TFT as `mailbox.q.ip` in
+`application.properties` on the SD card. It is the Q's `[network]` port in `juno:boards`:
 
-```bash
-./mvnw -f juno-examples/pom.xml juno:secret \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
-  -Djuno.board=arduino-uno-r4-wifi -Djuno.secret.key=mailbox.q.ip
+```properties
+mailbox.q.ip=192.168.1.42
 ```
 
 The collection contains requests for listing, creating, retrieving, and deleting messages, plus `GET /actuator/info`,

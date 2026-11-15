@@ -14,8 +14,8 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with credentials from the ATECC608
- * {@code SecretStore} (see {@link
+ * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with credentials from
+ * {@code ExampleSecrets} (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), starts the LCD Keypad Shield with its backlight
  * off — {@link LcdKeypadShield#begin} turns it on as part of its own init sequence, so this
  * immediately overrides that — then, on every {@code

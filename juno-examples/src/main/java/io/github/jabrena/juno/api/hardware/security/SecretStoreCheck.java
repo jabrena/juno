@@ -3,12 +3,8 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -19,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * Checks the write, update, clear and rewrite behaviour of whatever store the board actually has, and prints one
  * line per check over USB serial. {@link SecretStoreFactory} decides which that is — the Portenta H7's NXP SE050C2,
- * an ESP32 board's own non-volatile storage, or an ATECC608 over I2C — so the same checks run against all three
+ * or an ESP32 board's own non-volatile storage — so the same checks run against both
  * through {@link SecretStore} alone.
  *
  * <p>The checks run <b>once</b> at startup and the results are then reprinted every two seconds, so a monitor
@@ -59,7 +55,7 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<board id> -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class,
+@Board({ArduinoNanoEsp32Board.class,
         M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class SecretStoreCheck {
     /** The largest value Juno's secure-store providers accept. */
@@ -99,14 +95,13 @@ public final class SecretStoreCheck {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         // Three names of this program's own, on slots the provisioned tables leave free.
         SecretSlots slots = new SecretSlots()
                 .add(SHORT_NAME, 2)
                 .add(LONG_NAME, 3)
                 .add(SPARE_NAME, 4);
         SecretStoreCheck example =
-                new SecretStoreCheck(SecretStoreFactory.open(i2c, slots));
+                new SecretStoreCheck(SecretStoreFactory.open(slots));
         example.check();
         example.report();
     }

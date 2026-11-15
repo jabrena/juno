@@ -2,8 +2,6 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -78,10 +76,9 @@ public final class PortentaSecretWipe {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         // Two dummy names of this program's own; clearAll reaches every slot either way.
         SecretSlots slots = new SecretSlots().add(FIRST_NAME, 5).add(SECOND_NAME, 6);
-        PortentaSecretWipe example = new PortentaSecretWipe(SecretStoreFactory.open(i2c, slots));
+        PortentaSecretWipe example = new PortentaSecretWipe(SecretStoreFactory.open(slots));
         example.check();
         example.report();
     }

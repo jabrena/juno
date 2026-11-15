@@ -1,10 +1,8 @@
 package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
@@ -21,15 +19,14 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The board builds runtime {@code String}s of at most 31 characters, so the SSID and password must each fit in that.
  * A longer value is not truncated: the board may stop without a message.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoPortentaH7Board.class})
 public final class SecretWifiStatus {
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
-        SecretStore secrets = SecretStoreFactory.open(i2c, slots);
+        SecretStore secrets = SecretStoreFactory.open(slots);
 
         String ssid = secrets.getString("wifi.ssid");
         String password = secrets.getString("wifi.password");

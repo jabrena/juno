@@ -7,14 +7,13 @@ import org.jspecify.annotations.Nullable;
  * secure element at all: each logical slot is one entry of a private NVS namespace, written through the core's
  * {@code Preferences} library. NVS lives in its own flash partition, so the values outlive a sketch upload.
  *
- * <p><b>This is weaker than a secure element, and deliberately so.</b> The ATECC608 and the SE050C2 keep a value in a
- * chip that the processor asks for it; NVS keeps it in the board's own flash. It takes the secret out of the firmware
- * image, out of the build output and off the SD card — a shared sketch or a copied card carries nothing — but a flash
- * readout of the board exposes every value unless the board has flash encryption enabled. Treat it as "not in the
- * program", not as "not extractable from the hardware"; wire an ATECC608 breakout to the I2C pins when the stronger
- * guarantee is needed, and {@link SecretStoreFactory} will use it instead.
+ * <p><b>This is weaker than a secure element, and deliberately so.</b> The SE050C2 keeps a value in a chip that the
+ * processor asks for it; NVS keeps it in the board's own flash. It takes the secret out of the firmware image, out of
+ * the build output and off the SD card — a shared sketch or a copied card carries nothing — but a flash readout of the
+ * board exposes every value unless the board has flash encryption enabled. Treat it as "not in the program", not as
+ * "not extractable from the hardware".
  *
- * <p>A missing name is reported missing, the same as on either chip, and NVS is always present: a negative length here
+ * <p>A missing name is reported missing, the same as on the SE050C2, and NVS is always present: a negative length here
  * means the name holds nothing, never that the hardware failed to answer.
  *
  * <p>The instance owns its scratch buffers and allocates nothing while reading or writing. Callers should obtain it
