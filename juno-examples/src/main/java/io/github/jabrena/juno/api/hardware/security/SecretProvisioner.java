@@ -18,7 +18,9 @@ import io.github.jabrena.juno.util.Delay;
  * <ul>
  * <li>{@code SET <name> <hex>}: stores the value, given as hex digits (at most 63 bytes), and answers {@code OK <name>}.</li>
  * <li>{@code CLEAR <name>}: empties the name and answers {@code OK <name>}.</li>
- * <li>{@code CLEAR ALL}: empties every name in this program's {@link SecretSlots} table and answers {@code OK CLEAR ALL}.</li>
+ * <li>{@code CLEAR ALL}: empties every data slot on the chip, including names outside this program's
+ * {@link SecretSlots} table, and answers {@code OK CLEAR ALL}. It decommissions the chip rather than this
+ * program's names.</li>
  * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name, then {@code END}. No value is printed.</li>
  * </ul>
  * A bad request answers {@code ERR} with a short reason and stores nothing. The board prints {@code READY} once it can

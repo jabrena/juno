@@ -12,7 +12,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Checks the write, update, clear and {@code clearAll} behaviour of the board's secure store against the real chip —
+ * Checks the write, update, clear and rewrite behaviour of the board's secure store against the real chip —
  * the NXP SE050C2 on the Portenta H7 — and prints one line per check over USB serial.
  *
  * <p>The checks run <b>once</b> at startup and the results are then reprinted every two seconds, so a monitor
@@ -20,10 +20,14 @@ import io.github.jabrena.juno.util.Delay;
  * endurance, and a loop that rewrote an object thousands of times would wear it out for no extra information.
  *
  * <p>This program uses a table of its own three test names on slots 2 to 4, which {@link ExampleSecrets} and
- * {@link SecretProvisioner} leave free. That matters for the last checks: {@code clearAll} empties only the names in
- * the table of the store that runs it, so the provisioned {@code wifi.ssid} and {@code wifi.password} on slots 8 and
- * 9 are never touched here. The test values are constants in the firmware, not secrets. The last check empties the
- * test names again, so a run leaves no test data on the chip.
+ * {@link SecretProvisioner} leave free, and it empties them with {@code clear} per name when it is done, so a run
+ * leaves no test data on the chip and never touches the provisioned {@code wifi.ssid} and {@code wifi.password} on
+ * slots 8 and 9. The test values are constants in the firmware, not secrets.
+ *
+ * <p>{@code clearAll} is deliberately <b>not</b> exercised here: it empties every data slot on the chip, not only the
+ * names in a store's table, so calling it would decommission the chip and destroy the provisioned Wi-Fi credentials,
+ * which can only be restored by typing them again at {@code juno:secret}'s hidden prompt. Verify that path on purpose
+ * with {@code juno:secret -Djuno.secret.clear=true}, which asks for the word {@code CLEAR} first.
  *
  * <p>The checks, in order, each printed as {@code <name> 1} for pass or {@code <name> 0} for fail:
  *
@@ -36,11 +40,7 @@ import io.github.jabrena.juno.util.Delay;
  *       the provider left the object <em>unlocked</em>: the SE050C2 deletes and recreates an object to replace its
  *       value, and an object left locked or policy-restricted would refuse this write;</li>
  *   <li>{@code long-value}: the 63-byte maximum the providers share round-trips at full length;</li>
- *   <li>{@code clear-all}: {@code clearAll} empties every name in this program's table, and all three then report
- *       missing;</li>
- *   <li>{@code rewrite-after-clear-all}: a name is written and read once more, so {@code clearAll} is shown to
- *       leave the objects usable too;</li>
- *   <li>{@code left-clean}: the test names are emptied a final time and all report missing.</li>
+ *   <li>{@code left-clean}: every test name is emptied with {@code clear} and all three report missing.</li>
  * </ol>
  *
  * <p>{@code failures 0} on the summary line means every check passed. Flash it and read the output:
@@ -72,8 +72,6 @@ public final class PortentaSecretStore {
     private boolean cleared;
     private boolean rewrite;
     private boolean longRoundTrip;
-    private boolean clearedAll;
-    private boolean rewriteAfterClearAll;
     private boolean leftClean;
 
     PortentaSecretStore(SecretStore chip) {
@@ -115,18 +113,15 @@ public final class PortentaSecretStore {
                 && readsBack(SHORT_NAME, first, FIRST_LENGTH);
         longRoundTrip = chip.write(LONG_NAME, longValue, MAX_VALUE_BYTES) == MAX_VALUE_BYTES
                 && readsBack(LONG_NAME, longValue, MAX_VALUE_BYTES);
-        clearedAll = chip.clearAll() == 0
-                && isMissing(SHORT_NAME) && isMissing(LONG_NAME) && isMissing(SPARE_NAME);
-        rewriteAfterClearAll = chip.write(SPARE_NAME, second, SECOND_LENGTH) == SECOND_LENGTH
-                && readsBack(SPARE_NAME, second, SECOND_LENGTH);
-        leftClean = chip.clearAll() == 0
+        // Per name, never clearAll: that would empty every slot on the chip, the provisioned Wi-Fi ones included.
+        leftClean = chip.clear(SHORT_NAME) == 0 && chip.clear(LONG_NAME) == 0 && chip.clear(SPARE_NAME) == 0
                 && isMissing(SHORT_NAME) && isMissing(LONG_NAME) && isMissing(SPARE_NAME);
     }
 
     /** Reprints the results for as long as the board runs, allocating nothing. */
     private void report() {
         int failures = count(writeRead) + count(update) + count(cleared) + count(rewrite)
-                + count(longRoundTrip) + count(clearedAll) + count(rewriteAfterClearAll) + count(leftClean);
+                + count(longRoundTrip) + count(leftClean);
         while (true) {
             Serial.print("write-read ");
             Serial.println(flag(writeRead));
@@ -138,10 +133,6 @@ public final class PortentaSecretStore {
             Serial.println(flag(rewrite));
             Serial.print("long-value ");
             Serial.println(flag(longRoundTrip));
-            Serial.print("clear-all ");
-            Serial.println(flag(clearedAll));
-            Serial.print("rewrite-after-clear-all ");
-            Serial.println(flag(rewriteAfterClearAll));
             Serial.print("left-clean ");
             Serial.println(flag(leftClean));
             Serial.print("failures ");

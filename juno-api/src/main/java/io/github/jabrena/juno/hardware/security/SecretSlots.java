@@ -8,8 +8,8 @@ package io.github.jabrena.juno.hardware.security;
 public final class SecretSlots {
     /** The most names a table holds: one entry per data slot in the chip. */
     public static final int MAX_NAMES = 16;
-    /** The chip's data slots run from 0 to 15. */
-    private static final int SLOT_COUNT = 16;
+    /** The chip's data slots run from 0 to 15; a whole-chip {@code clearAll} walks all of them. */
+    static final int SLOT_COUNT = 16;
 
     private final String[] names = new String[MAX_NAMES];
     private final int[] slots = new int[MAX_NAMES];

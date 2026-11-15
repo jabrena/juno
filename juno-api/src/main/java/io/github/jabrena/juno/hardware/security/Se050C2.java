@@ -5,7 +5,8 @@ import org.jspecify.annotations.Nullable;
 /**
  * Named-secret storage in the NXP SE050C2 used by the Portenta H7. Each logical slot maps to one binary object in
  * Juno's private object-ID namespace. Replacing a value deletes and recreates only that object; this provider never
- * changes an object's access policy and never issues a lock command.
+ * changes an object's access policy and never issues a lock command. {@link #clearAll} deletes every object in that
+ * namespace, including slots this instance's table does not name, and leaves objects outside it alone.
  *
  * <p>The instance owns its scratch buffers and allocates nothing while reading or writing. Callers should obtain it
  * through {@link SecretStoreFactory}, which keeps the chip choice out of application code.
@@ -69,9 +70,12 @@ public final class Se050C2 implements SecretStore {
 
     @Override
     public int clearAll() {
+        if (!available) {
+            return -1;
+        }
         int result = 0;
-        for (int i = 0; i < slots.count(); i++) {
-            if (clear(slots.nameAt(i)) != 0) {
+        for (int slot = 0; slot < SecretSlots.SLOT_COUNT; slot++) {
+            if (!transport.clear(OBJECT_ID_NAMESPACE | slot)) {
                 result = -1;
             }
         }

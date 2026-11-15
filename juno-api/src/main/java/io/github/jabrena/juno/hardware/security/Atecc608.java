@@ -117,8 +117,8 @@ public final class Atecc608 implements SecretStore {
     @Override
     public int clearAll() {
         int result = 0;
-        for (int i = 0; i < slots.count(); i++) {
-            if (clear(slots.nameAt(i)) != 0) {
+        for (int slotNumber = 0; slotNumber < SecretSlots.SLOT_COUNT; slotNumber++) {
+            if (writeSlot(slotNumber, slot, 0) != 0) {
                 result = -1;
             }
         }
@@ -130,7 +130,17 @@ public final class Atecc608 implements SecretStore {
         lastFailure = FAILURE_NONE;
         lastStatus = 0;
         int slotNumber = slots.slotOf(key);
-        if (slotNumber < 0 || length < 0 || length > MAX_VALUE_BYTES || length > value.length) {
+        if (slotNumber < 0) {
+            return -1;
+        }
+        return writeSlot(slotNumber, value, length);
+    }
+
+    /** Rewrites both blocks of {@code slotNumber}; the name-free form {@link #clearAll} walks the data zone with. */
+    private int writeSlot(int slotNumber, byte[] value, int length) {
+        lastFailure = FAILURE_NONE;
+        lastStatus = 0;
+        if (length < 0 || length > MAX_VALUE_BYTES || length > value.length) {
             return -1;
         }
         slot[0] = (byte) length;
