@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.api.hardware.security;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
@@ -10,9 +11,10 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Write, read, {@link SecretStore#clearAll()}, read on the Nano ESP32's NVS store: the last read must fail. The Nano
- * ESP32 counterpart of {@link PortentaSecretClearAllRead}. The sequence runs once at startup, and its results are
- * reprinted every two seconds so a monitor attached late still sees them:
+ * Write, read, {@link SecretStore#clearAll()}, read on an ESP32 board's NVS store (Nano ESP32,
+ * AI Thinker ESP32-CAM): the last read must fail. The ESP32 counterpart of {@link PortentaSecretClearAllRead}. The
+ * sequence runs once at startup, and its results are reprinted every two seconds so a monitor attached late still
+ * sees them:
  *
  * <ol>
  *   <li>{@code write}: the demo name is stored; the length is printed;</li>
@@ -27,13 +29,15 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
- *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.NanoEsp32SecretClearAllRead \
+ *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.Esp32SecretClearAllRead \
  *     -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
+ *
+ * # AI Thinker ESP32-CAM: -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<usb-serial port>
  * }</pre>
  */
-@Board(ArduinoNanoEsp32Board.class)
-public final class NanoEsp32SecretClearAllRead {
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class})
+public final class Esp32SecretClearAllRead {
     /** The largest value Juno's secure-store providers accept. */
     private static final int MAX_VALUE_BYTES = 63;
     private static final String NAME = "demo.clearall";
@@ -51,7 +55,7 @@ public final class NanoEsp32SecretClearAllRead {
     private int clearAllResult;
     private int readAfterResult;
 
-    private NanoEsp32SecretClearAllRead(SecretStore store) {
+    private Esp32SecretClearAllRead(SecretStore store) {
         this.store = store;
         copyAscii(VALUE, value);
     }
@@ -60,8 +64,8 @@ public final class NanoEsp32SecretClearAllRead {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         SecretSlots slots = new SecretSlots().add(NAME, SLOT);
-        NanoEsp32SecretClearAllRead example =
-                new NanoEsp32SecretClearAllRead(SecretStoreFactory.open(slots));
+        Esp32SecretClearAllRead example =
+                new Esp32SecretClearAllRead(SecretStoreFactory.open(slots));
         example.run();
         while (true) {
             example.report();
