@@ -75,7 +75,9 @@ public final class HttpClient {
 
     /** The HTTP version a client asks for; the board always speaks HTTP/1.1. */
     public enum Version {
+        /** HTTP/1.1, which the board speaks. */
         HTTP_1_1,
+        /** HTTP/2, which a JDK client prefers; the board sends HTTP/1.1 instead, as a JDK client falls back to it. */
         HTTP_2
     }
 
