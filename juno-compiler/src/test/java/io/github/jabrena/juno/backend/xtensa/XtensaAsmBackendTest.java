@@ -475,11 +475,11 @@ class XtensaAsmBackendTest {
     void shouldFoldEveryBoardModelQueryToFalse() throws Exception {
         // Given
         CompilationResult result = compile("demo.NanoModel", """
-                        Serial.println(MCU.getBoardModel().isR4() ? 1 : 0);
-                """, SERIAL_IMPORTS);
+                        Serial.println(MCU.getBoardModel() == BoardModel.UNO_R4_WIFI ? 1 : 0);
+                """, SERIAL_IMPORTS + "import io.github.jabrena.juno.hardware.BoardModel;\n");
 
         // When & Then
-        assertThat(result.assembly()).contains("_asmblock0:\n    movi a8, 0\n");
+        assertThat(result.assembly()).contains("_asmblock0:\n    movi a10, 0\n");
     }
 
     @Test

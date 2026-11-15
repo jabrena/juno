@@ -1150,7 +1150,7 @@ class JunoCompilerTest {
                     @Board(%1$s.class)
                     public final class Which {
                         public static void main(String[] args) {
-                            if (MCU.getBoardModel().isQ()) {
+                            if (MCU.getBoardModel() == BoardModel.UNO_Q) {
                                 Delay.millis(111);
                             }
                         }
@@ -1162,8 +1162,11 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Which");
 
             // Then
-            assertThat(result.assembly()).contains("movs r0, #" + isQ)
-                    .doesNotContain("NativeBoardModel_isQ", "blx");
+            if (isQ == 1) {
+                assertThat(result.assembly()).contains("#111");
+            } else {
+                assertThat(result.assembly()).doesNotContain("#111");
+            }
         }
 
         @ParameterizedTest
@@ -1176,6 +1179,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.BoardModel;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.util.Delay;
                     @Board(%1$s.class)
