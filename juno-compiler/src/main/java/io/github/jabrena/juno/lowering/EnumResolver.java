@@ -2,7 +2,9 @@ package io.github.jabrena.juno.lowering;
 
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.BytecodeDecoder;
+import io.github.jabrena.juno.bytecode.EnumSwitchMap;
 import io.github.jabrena.juno.bytecode.Instruction;
+import io.github.jabrena.juno.bytecode.IntLiterals;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
@@ -11,18 +13,14 @@ import io.github.jabrena.juno.linker.Descriptor;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.ALOAD_0;
-import static io.github.jabrena.juno.bytecode.Opcodes.GETSTATIC;
-import static io.github.jabrena.juno.bytecode.Opcodes.IASTORE;
 import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD;
 import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_0;
 import static io.github.jabrena.juno.bytecode.Opcodes.ILOAD_3;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESPECIAL;
-import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
 import static io.github.jabrena.juno.bytecode.Opcodes.PUTFIELD;
 import static io.github.jabrena.juno.bytecode.Opcodes.PUTSTATIC;
 
@@ -85,42 +83,11 @@ final class EnumResolver {
 
     /** The per-ordinal values of the synthetic {@code $SwitchMap$} array {@code requested}. */
     List<Integer> switchMap(FieldRef requested) {
-        JavaClass mappingClass = classes.get(requested.owner());
-        JavaMethod initializer = mappingClass == null ? null : mappingClass.findMethod("<clinit>", "()V");
-        if (mappingClass == null || initializer == null) {
-            throw new CompileException("Synthetic enum switch map has no initializer: " + requested.displayName());
-        }
-        IntLiterals literals = new IntLiterals(mappingClass.constantPool());
-        List<Instruction> bytecode = decoder.decode(initializer);
-        List<Integer> mapping = null;
-        for (int index = 4; index < bytecode.size(); index++) {
-            if (bytecode.get(index).opcode() != IASTORE) {
-                continue;
-            }
-            Instruction mapLoad = bytecode.get(index - 4);
-            Instruction enumLoad = bytecode.get(index - 3);
-            Instruction ordinalCall = bytecode.get(index - 2);
-            if (mapLoad.opcode() != GETSTATIC || enumLoad.opcode() != GETSTATIC
-                    || ordinalCall.opcode() != INVOKEVIRTUAL
-                    || !mappingClass.constantPool().fieldRef(mapLoad.operandA()).equals(requested)) {
-                continue;
-            }
-            FieldRef enumField = mappingClass.constantPool().fieldRef(enumLoad.operandA());
-            JavaClass enumClass = classes.get(enumField.owner());
-            int ordinal = enumClass == null ? -1 : enumClass.enumConstantNames().indexOf(enumField.name());
-            Integer switchValue = literals.pushedBy(bytecode.get(index - 1));
-            if (enumClass == null || ordinal < 0 || switchValue == null) {
-                throw new CompileException("Cannot resolve synthetic enum switch entry for " + requested.displayName());
-            }
-            if (mapping == null) {
-                mapping = new ArrayList<>(Collections.nCopies(enumClass.enumConstantNames().size(), 0));
-            }
-            mapping.set(ordinal, switchValue);
-        }
+        List<Integer> mapping = new EnumSwitchMap(classes, decoder).resolve(requested);
         if (mapping == null) {
             throw new CompileException("Cannot resolve synthetic enum switch map: " + requested.displayName());
         }
-        return List.copyOf(mapping);
+        return mapping;
     }
 
     /** The descriptor of the {@code <init>} that assigns {@code field} directly from its single int argument. */

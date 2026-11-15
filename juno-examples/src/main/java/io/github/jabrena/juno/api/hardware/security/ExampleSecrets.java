@@ -97,6 +97,6 @@ public final class ExampleSecrets {
                 .add(SUPABASE_API_HOST, 14)
                 .add(SUPABASE_API_KEY, 15)
                 .add(SUPABASE_API_URL, 1);
-        return SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots);
+        return SecretStoreFactory.open(i2c, slots);
     }
 }

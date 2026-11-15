@@ -124,6 +124,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.SE050)) {
             shim.append("#include <Arduino_SE05X.h>\n");
         }
+        if (uses(ShimFeature.NVS)) {
+            shim.append("#include <Preferences.h>\n");
+        }
         if (uses(ShimFeature.SPI)) {
             shim.append("#include <SPI.h>\n");
         }
@@ -271,6 +274,9 @@ public final class RuntimeShim {
         }
         if (uses(ShimFeature.SE050)) {
             shim.append(shimLibraries.se050Helpers());
+        }
+        if (uses(ShimFeature.NVS)) {
+            shim.append(core.nvsHelpers());
         }
         if (uses(ShimFeature.SPI)) {
             shim.append(shimLibraries.spiHelpers());

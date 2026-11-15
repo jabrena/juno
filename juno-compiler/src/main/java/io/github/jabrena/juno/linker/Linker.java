@@ -68,6 +68,7 @@ public final class Linker {
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
     private final InterfaceDispatchResolver interfaceDispatchResolver = new InterfaceDispatchResolver();
     private final ReachabilityClosure reachabilityClosure = new ReachabilityClosure();
+
     private final InvokeDynamicSupport invokeDynamicSupport = new InvokeDynamicSupport();
 
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
@@ -96,7 +97,7 @@ public final class Linker {
         List<MethodRef> clojureFunctions = new ArrayList<>();
         ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
                 mainInitializer == null ? null : mainInitializer.reference(), classes,
-                reference -> linkMethod(classes, reference, reference.equals(entryPoint)),
+                reference -> linkMethod(classes, reference, reference.equals(entryPoint), board),
                 (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
                         work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
                 method -> reachableBodySupport.hasReachableBody(method, classes),
@@ -165,7 +166,12 @@ public final class Linker {
         return boards.stream().map(Board::displayName).collect(Collectors.joining(", "));
     }
 
-    private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint) {
+    /**
+     * Decodes one reachable method. A branch on a board query is resolved against {@code board} first (see
+     * {@link BoardQueryFolding}), so the side this target can never take is neither linked nor lowered.
+     */
+    private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint,
+            Board board) {
         JavaClass owner = classes.get(reference.owner());
         if (owner == null) {
             throw new CompileException("Reachable class not found: " + reference.owner().replace('/', '.'));
@@ -175,9 +181,15 @@ public final class Linker {
             throw new CompileException("Reachable method not found: " + reference.displayName());
         }
         validateMethod(method, entryPoint, classes.keySet(), owner);
-        List<Instruction> instructions = decoder.decode(method);
+        BoardQueryFolding boardQueryFolding = new BoardQueryFolding(classes, decoder);
+        BoardQueryFolding.Folded folded = boardQueryFolding.fold(decoder.decode(method), owner, board);
+        List<Instruction> instructions = folded.instructions();
         ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
                 method.exceptionHandlers());
+        if (folded.changed()) {
+            cfg = boardQueryFolding.prune(cfg, method.exceptionHandlers());
+            instructions = boardQueryFolding.instructions(cfg);
+        }
         return new LinkedMethod(owner, method, instructions, cfg);
     }
 

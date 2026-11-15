@@ -1,38 +1,51 @@
 package io.github.jabrena.juno.hardware;
 
 import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @DisplayName("BoardModel")
 class BoardModelTest {
-    @Test
-    @DisplayName("The board's model is one shared instance")
-    void shouldHandOutOneInstanceForTheBoard() {
-        // When & Then
-        assertThat(MCU.getBoardModel()).isSameAs(MCU.getBoardModel()).isSameAs(NativeBoardModel.INSTANCE);
+
+    @AfterEach
+    void restoreDefault() {
+        NativeBoardModel.setBoardModel(BoardModel.UNO_R4_WIFI);
     }
 
     @Test
-    @DisplayName("A whole-program emulator can replace the board's model")
-    void shouldHandOutTheReplacementBoardModel() {
-        // Given
-        BoardModel unoQ = mock(BoardModel.class);
-        when(unoQ.isQ()).thenReturn(true);
+    @DisplayName("The board answers with one constant, so asking twice gives the same one")
+    void shouldAnswerWithOneConstant() {
+        // When & Then
+        assertThat(MCU.getBoardModel()).isSameAs(MCU.getBoardModel()).isInstanceOf(BoardModel.class);
+    }
 
+    @Test
+    @DisplayName("A whole-program emulator can say which board it is pretending to be")
+    void shouldHandOutTheReplacementBoardModel() {
         // When
-        NativeBoardModel.setBoardModel(unoQ);
+        NativeBoardModel.setBoardModel(BoardModel.UNO_Q);
 
         // Then
-        try {
-            assertThat(MCU.getBoardModel()).isSameAs(unoQ);
-            assertThat(MCU.getBoardModel().isQ()).isTrue();
-        } finally {
-            NativeBoardModel.setBoardModel(NativeBoardModel.INSTANCE);
-        }
+        assertThat(MCU.getBoardModel()).isEqualTo(BoardModel.UNO_Q);
+    }
+
+    @Test
+    @DisplayName("A switch over the model picks one arm per board, which is what the compiler folds")
+    void shouldSwitchOverTheModel() {
+        // Given
+        NativeBoardModel.setBoardModel(BoardModel.PORTENTA_H7);
+
+        // When
+        String chosen = switch (MCU.getBoardModel()) {
+            case PORTENTA_H7 -> "se050";
+            case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> "nvs";
+            default -> "atecc";
+        };
+
+        // Then
+        assertThat(chosen).isEqualTo("se050");
     }
 }

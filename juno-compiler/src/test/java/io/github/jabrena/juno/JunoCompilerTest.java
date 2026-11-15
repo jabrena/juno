@@ -1144,6 +1144,7 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.BoardModel;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.util.Delay;
                     @Board(%1$s.class)
@@ -1163,6 +1164,79 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("movs r0, #" + isQ)
                     .doesNotContain("NativeBoardModel_isQ", "blx");
+        }
+
+        @ParameterizedTest
+        @CsvSource({"ArduinoUnoR4WiFiBoard, false", "ArduinoUnoQBoard, true"})
+        @DisplayName("Drops the branch its target can never take, so that side's shim features go with it")
+        void shouldDropTheBranchTheTargetCannotTake(String board, boolean isQ) throws Exception {
+            // Given: the I2C bus is used only where the board is the Q, as SecretStoreFactory uses the SE050C2 only
+            // on the Portenta. The query is answered when the program is linked, so the other side is not compiled.
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.util.Delay;
+                    @Board(%1$s.class)
+                    public final class Which {
+                        public static void main(String[] args) {
+                            if (MCU.getBoardModel() == BoardModel.UNO_Q) {
+                                MCU.getI2c().begin();
+                            } else {
+                                Delay.millis(222);
+                            }
+                        }
+                    }
+                    """.formatted(board);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Which", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Which");
+
+            // Then
+            if (isQ) {
+                assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_i2c_begin");
+            } else {
+                assertThat(result.runtimeShim()).doesNotContain("#include <Wire.h>", "juno_i2c_begin");
+            }
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            // The ATECC608 driver is Java over the I2C intrinsics, so its transport shows up as juno_i2c_*.
+            "ArduinoNanoEsp32Board, juno_nvs_read, juno_se050_read, juno_i2c_read",
+            "ArduinoUnoR4WiFiBoard, juno_i2c_read, juno_se050_read, juno_nvs_read",
+            "ArduinoPortentaH7Board, juno_se050_read, juno_nvs_read, juno_i2c_read"})
+        @DisplayName("SecretStoreFactory compiles to the one store its target board has")
+        void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absentOne,
+                String absentTwo) throws Exception {
+            // Given: the factory asks two board queries and constructs one of three providers
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.security.SecretStore;
+                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(%1$s.class)
+                    public final class Secrets {
+                        public static void main(String[] args) {
+                            SecretSlots slots = new SecretSlots().add("wifi.ssid", 8);
+                            SecretStore store = SecretStoreFactory.open(MCU.getI2c(), slots);
+                            Serial.println(store.read("wifi.ssid", new byte[63]));
+                        }
+                    }
+                    """.formatted(board);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Secrets", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Secrets");
+
+            // Then: the two providers the board does not have are neither called nor given shim code
+            assertThat(result.assembly()).contains(present).doesNotContain(absentOne, absentTwo);
         }
     }
 

@@ -385,6 +385,19 @@ public interface CoreRuntime {
         return false;
     }
 
+    /**
+     * Whether this core keeps named secrets in the board's own non-volatile storage, which the ESP32-family cores do
+     * and no other core does: they have NVS and no secure element.
+     */
+    default boolean hasNvs() {
+        return false;
+    }
+
+    /** Core-specific named-secret storage in NVS; only the ESP32-family cores provide it. */
+    default String nvsHelpers() {
+        throw new IllegalStateException("This core has no NVS secret store; the linker should have rejected it");
+    }
+
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
     default String mouseIncludes() {
         return "#include <Mouse.h>\n";

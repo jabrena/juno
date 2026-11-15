@@ -61,7 +61,7 @@ public final class SecretProvisioner {
                 .add("supabase.api.host", 14)
                 .add("supabase.api.key", 15)
                 .add("supabase.api.url", 1);
-        new SecretProvisioner(SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots), slots).run();
+        new SecretProvisioner(SecretStoreFactory.open(i2c, slots), slots).run();
     }
 
     private void run() {

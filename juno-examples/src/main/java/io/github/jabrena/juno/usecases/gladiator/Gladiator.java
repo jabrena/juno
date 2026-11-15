@@ -54,7 +54,7 @@ public final class Gladiator {
     private static final Wifi WIFI = MCU.getWifi();
 
     private static final Clock CLOCK = MCU.getClock();
-    private static final BoardModel BOARD = MCU.getBoardModel();
+    private static final boolean ON_UNO_Q = MCU.getBoardModel() == BoardModel.UNO_Q;
     private static final int ARENA = 0;
 
     /** The screen's line list, which every role draws into, and the class models of the title and the Solo screens. */
@@ -78,7 +78,7 @@ public final class Gladiator {
         Opening.play(tft, list, wireframe);
         Random.seed(CLOCK.micros());
         while (true) {
-            int mode = ModeMenu.choose(tft, BOARD.isQ());
+            int mode = ModeMenu.choose(tft, ON_UNO_Q);
             if (mode == ModeMenu.SOLO) {
                 SoloFlow.run(tft, list, wireframe, FighterSetup.choose(tft));
                 Opening.play(tft, list, wireframe);
@@ -117,7 +117,7 @@ public final class Gladiator {
         }
         WifiSettings settings = WifiSettings.load(tft.getSdCard());
         if (settings == null) {
-            if (!BOARD.isQ()) {
+            if (!ON_UNO_Q) {
                 Hud.message(tft, "NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
                 waitForMenu(tft);
                 return false;

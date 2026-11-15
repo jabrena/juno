@@ -29,7 +29,7 @@ public final class SecretWifiStatus {
         Delay.millis(2000);
         I2c i2c = MCU.getI2c();
         SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
-        SecretStore secrets = SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots);
+        SecretStore secrets = SecretStoreFactory.open(i2c, slots);
 
         String ssid = secrets.getString("wifi.ssid");
         String password = secrets.getString("wifi.password");

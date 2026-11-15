@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.board;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.hardware.BoardModel;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -183,6 +184,14 @@ public enum Board {
 
     public String fqbn() {
         return fqbn;
+    }
+
+    /**
+     * The {@code BoardModel} constant a program compiled for this board sees from {@code MCU.getBoardModel()}. The
+     * names match one for one, which {@code BoardModelMappingTest} keeps true.
+     */
+    public BoardModel boardModel() {
+        return BoardModel.valueOf(name());
     }
 
     /** The Arduino core this board's sketches are built with, which decides how generated code calls into it. */

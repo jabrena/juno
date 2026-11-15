@@ -1,7 +1,12 @@
 package io.github.jabrena.juno.api.hardware.security;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
@@ -12,12 +17,15 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Checks the write, update, clear and rewrite behaviour of the board's secure store against the real chip —
- * the NXP SE050C2 on the Portenta H7 — and prints one line per check over USB serial.
+ * Checks the write, update, clear and rewrite behaviour of whatever store the board actually has, and prints one
+ * line per check over USB serial. {@link SecretStoreFactory} decides which that is — the Portenta H7's NXP SE050C2,
+ * an ESP32 board's own non-volatile storage, or an ATECC608 over I2C — so the same checks run against all three
+ * through {@link SecretStore} alone.
  *
  * <p>The checks run <b>once</b> at startup and the results are then reprinted every two seconds, so a monitor
- * attached late still sees them. Running them once is deliberate: every secure element has a finite write
- * endurance, and a loop that rewrote an object thousands of times would wear it out for no extra information.
+ * attached late still sees them. Running them once is deliberate: a secure element and a flash partition both have a
+ * finite write endurance, and a loop that rewrote an entry thousands of times would wear it out for no extra
+ * information.
  *
  * <p>This program uses a table of its own three test names on slots 2 to 4, which {@link ExampleSecrets} and
  * {@link SecretProvisioner} leave free, and it empties them with {@code clear} per name when it is done, so a run
@@ -37,7 +45,7 @@ import io.github.jabrena.juno.util.Delay;
  *       value at its new length — the old bytes must not survive;</li>
  *   <li>{@code clear}: the name is emptied and a read then reports it missing;</li>
  *   <li>{@code rewrite}: a write to the name that was just cleared succeeds and reads back. This is the check that
- *       the provider left the object <em>unlocked</em>: the SE050C2 deletes and recreates an object to replace its
+ *       the provider left the entry <em>usable</em>: the SE050C2 deletes and recreates an object to replace its
  *       value, and an object left locked or policy-restricted would refuse this write;</li>
  *   <li>{@code long-value}: the 63-byte maximum the providers share round-trips at full length;</li>
  *   <li>{@code left-clean}: every test name is emptied with {@code clear} and all three report missing.</li>
@@ -46,13 +54,14 @@ import io.github.jabrena.juno.util.Delay;
  * <p>{@code failures 0} on the summary line means every check passed. Flash it and read the output:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
- *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.PortentaSecretStore \
- *     -Djuno.board=arduino-portenta-h7
- * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-portenta-h7 -Djuno.baudRate=115200
+ *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretStoreCheck \
+ *     -Djuno.board=<board id>
+ * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<board id> -Djuno.baudRate=115200
  * }</pre>
  */
-@Board(ArduinoPortentaH7Board.class)
-public final class PortentaSecretStore {
+@Board({ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class,
+        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
+public final class SecretStoreCheck {
     /** The largest value Juno's secure-store providers accept. */
     private static final int MAX_VALUE_BYTES = 63;
     private static final int FIRST_LENGTH = 5;
@@ -74,7 +83,7 @@ public final class PortentaSecretStore {
     private boolean longRoundTrip;
     private boolean leftClean;
 
-    PortentaSecretStore(SecretStore chip) {
+    SecretStoreCheck(SecretStore chip) {
         this.chip = chip;
         for (int i = 0; i < FIRST_LENGTH; i++) {
             first[i] = (byte) (i + 1);
@@ -96,8 +105,8 @@ public final class PortentaSecretStore {
                 .add(SHORT_NAME, 2)
                 .add(LONG_NAME, 3)
                 .add(SPARE_NAME, 4);
-        PortentaSecretStore example =
-                new PortentaSecretStore(SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots));
+        SecretStoreCheck example =
+                new SecretStoreCheck(SecretStoreFactory.open(i2c, slots));
         example.check();
         example.report();
     }

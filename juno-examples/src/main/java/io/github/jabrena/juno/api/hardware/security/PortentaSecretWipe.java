@@ -28,7 +28,7 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>Nothing secret is involved on the way in: both values are dummy ASCII constants in the firmware, and the two
  * names sit on slots 5 and 6, which {@link ExampleSecrets} and {@link SecretProvisioner} leave free — the wipe reaches
- * every slot regardless. {@link PortentaSecretStore} is the non-destructive counterpart: it checks writes, updates,
+ * every slot regardless. {@link SecretStoreCheck} is the non-destructive counterpart: it checks writes, updates,
  * per-name {@code clear} and the 63-byte maximum without ever calling {@code clearAll}.
  *
  * <p>The three steps run once at startup, because a secure element has a finite write endurance, and the results are
@@ -81,7 +81,7 @@ public final class PortentaSecretWipe {
         I2c i2c = MCU.getI2c();
         // Two dummy names of this program's own; clearAll reaches every slot either way.
         SecretSlots slots = new SecretSlots().add(FIRST_NAME, 5).add(SECOND_NAME, 6);
-        PortentaSecretWipe example = new PortentaSecretWipe(SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots));
+        PortentaSecretWipe example = new PortentaSecretWipe(SecretStoreFactory.open(i2c, slots));
         example.check();
         example.report();
     }

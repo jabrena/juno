@@ -4,7 +4,8 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.runtime.MathRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
-import io.github.jabrena.juno.board.UnoGeneration;
+import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.intrinsic.BigNumberMethods;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrInstruction;
@@ -16,7 +17,6 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -126,11 +126,6 @@ public final class IntrinsicLowering {
     }
 
     /** The {@code BoardModel} queries, each true only on boards of its generation. */
-    private static final Map<Intrinsic, UnoGeneration> GENERATION_QUERIES = Map.of(
-            Intrinsic.BOARD_IS_R3, UnoGeneration.R3,
-            Intrinsic.BOARD_IS_R4, UnoGeneration.R4,
-            Intrinsic.BOARD_IS_Q, UnoGeneration.Q);
-
     private static final Operand RECEIVER = new Receiver();
     private static final Operand STRING_ARGUMENT = new StringArgument();
 
@@ -140,31 +135,34 @@ public final class IntrinsicLowering {
     private final Set<Intrinsic> usedMath;
     private final boolean socketStreamsOnly;
     private final RuntimeLockBracket lockBracket;
+    private final BoardModel boardModel;
 
     /**
-     * @param generation the target board's optional UNO generation; non-UNO families produce an empty value
+     * @param board the board being compiled for: its {@code BoardModel} constant answers {@code MCU.getBoardModel()}
+     *              and its UNO generation selects generation-specific pin handling
      * @param onboardSdChipSelect the target board's onboard microSD chip-select pin; empty when it has no socket
      * @param features collects every optional shim feature a lowered intrinsic needs
      * @param usedMath collects every {@code java.lang.Math} intrinsic lowered, for {@link MathRuntime#helpers}
      */
-    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Board board,
                       OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
                       boolean usesThreads, boolean socketStreamsOnly) {
-        this(target, coreRuntime, generation, onboardSdChipSelect, features, usedMath, usesThreads, socketStreamsOnly,
+        this(target, coreRuntime, board, onboardSdChipSelect, features, usedMath, usesThreads, socketStreamsOnly,
                 coreRuntime.carrierCount());
     }
 
     /** Creates the lowering with the effective carrier count selected by the runtime configuration. */
-    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
+    public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Board board,
                       OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
                       boolean usesThreads, boolean socketStreamsOnly, int carrierCount) {
+        this.boardModel = board.boardModel();
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
         this.socketStreamsOnly = socketStreamsOnly;
         this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
-        registerGpio(coreRuntime, generation, onboardSdChipSelect, usesThreads);
+        registerGpio(coreRuntime, onboardSdChipSelect, usesThreads);
         registerThreads(usesThreads);
         registerAtomics();
         registerStructuredTasks();
@@ -318,8 +316,8 @@ public final class IntrinsicLowering {
     }
 
     /** GPIO, clock, delay, random, and the onboard LED matrix. */
-    private void registerGpio(CoreRuntime coreRuntime, Optional<UnoGeneration> generation,
-                              OptionalInt onboardSdChipSelect, boolean usesThreads) {
+    @SuppressWarnings("EnumOrdinal") // The board ABI deliberately encodes BoardModel as its declared ordinal.
+    private void registerGpio(CoreRuntime coreRuntime, OptionalInt onboardSdChipSelect, boolean usesThreads) {
         String pinMode = coreRuntime.gpioFunction("pinMode");
         String digitalWrite = coreRuntime.gpioFunction("digitalWrite");
         shim(Intrinsic.DIGITAL_OUTPUT_OF, pinMode, Result.FIRST_ARGUMENT, List.of(arg(0), immediate(1))); // OUTPUT
@@ -361,10 +359,9 @@ public final class IntrinsicLowering {
                 value -> target.storeImmediate(output, frame, coreRuntime.builtinLedPin(), value)));
         lowerings.put(Intrinsic.LED_MATRIX_COLUMNS, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
-        GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
-                .ifPresent(value -> target.storeImmediate(output, frame, generation.filter(queried::equals).isPresent() ? 1 : 0, value))));
-        lowerings.put(Intrinsic.BOARD_IS_PORTENTA_H7, (output, frame, call) -> call.target()
-                .ifPresent(value -> target.storeImmediate(output, frame, coreRuntime.hasSe050C2() ? 1 : 0, value)));
+        // A BoardModel constant is its ordinal, so the whole query is one immediate for the target board.
+        lowerings.put(Intrinsic.BOARD_MODEL, (output, frame, call) -> call.target()
+                .ifPresent(value -> target.storeImmediate(output, frame, boardModel.ordinal(), value)));
         // Board data: the onboard socket's chip select. The capability check keeps this off boards without one.
         lowerings.put(Intrinsic.BOARD_ONBOARD_SD_CHIP_SELECT, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, onboardSdChipSelect.orElseThrow(() ->
@@ -863,6 +860,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SE050_WRITE, "juno_se050_write", Result.WORD,
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.SE050);
         shim(Intrinsic.SE050_CLEAR, "juno_se050_clear", Result.WORD, List.of(arg(0)), ShimFeature.SE050);
+        shim(Intrinsic.NVS_BEGIN, "juno_nvs_begin", Result.WORD, List.of(), ShimFeature.NVS);
+        shim(Intrinsic.NVS_READ, "juno_nvs_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.NVS);
+        shim(Intrinsic.NVS_WRITE, "juno_nvs_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.NVS);
+        shim(Intrinsic.NVS_CLEAR, "juno_nvs_clear", Result.WORD, List.of(arg(0)), ShimFeature.NVS);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
