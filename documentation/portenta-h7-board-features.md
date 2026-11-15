@@ -25,7 +25,10 @@ Ethernet is intentionally not included: the current Juno API has no Ethernet cap
 - [x] Verify station mode with the existing `SecretStore` example, flash over USB, and inspect serial output.
 - [x] Implement and compile-check access-point mode.
 - [x] Implement and compile-check HTTP/HTTPS transports.
-- [ ] Verify HTTP/HTTPS and email transports on hardware.
+- [x] Verify HTTP and HTTPS client transports on hardware.
+- [x] Implement and verify email on hardware: `Smtp.send` STARTTLS, `Smtp.sendTls` on implicit TLS, and `Pop3Client`.
+- [x] Verify SNTP time (`LocalDateTime.now()`) on hardware.
+- [ ] Verify the HTTP and HTTPS server transports on hardware.
 - [x] Implement and compile-check Bluetooth LE.
 - [x] Implement and compile-check USB HID mouse.
 - [x] Implement and compile-check double math, watchdog and cryptographic UUID.
@@ -48,10 +51,25 @@ Flashed to a Portenta H7 over USB and read back with `juno:monitor` on 2026-11-1
 | Scoped values | `PortentaScopedValues` | 19k rounds; the binding reached every subtask, nested rebinding restored the outer value, 0 failures |
 | Wi-Fi from the secure element | `SecretWifiStatus` | Joined with the SSID and password read from the SE050C2 after a reboot: `WiFi status: 3` |
 | Secure store | `SecretStoreCheck` | Write, update, per-name clear, rewrite after clear and the 63-byte maximum all pass |
+| HTTP and HTTPS client | `SingleHttpsGet`, `HttpsMethods` | `https://example.com/` returns 200; `httpbin.org` and `httpbun.com` return OK for GET, POST, DELETE, PATCH and QUERY. Plain `http://example.com/` returns 200 in the same run |
+| SNTP time | `SntpTime` | `LocalDateTime.now()` prints UTC from `pool.ntp.org` every ten seconds |
+| Email | `PortentaEmailSmoke` | `Smtp.send` STARTTLS on port 587 returns 0; `Smtp.sendTls` on implicit TLS, port 465, returns 0; `Pop3Client.messageCount` on port 995 returns the mailbox count. The account and host come from the secure store under `smtp.host`, `smtp.username` and `smtp.password`, provisioned with `juno:secret` |
 
 The arena rises and falls between 18 and 60 KiB of the Portenta's 64 KiB default in the concurrency programs, so the
 collector keeps up with the thread stacks the Mbed port allocates per round.
 
-Still unverified on hardware: HTTP/HTTPS and email transports, and `SecretStore.clearAll()`, whose whole-chip wipe
-erases the provisioned Wi-Fi credentials — `PortentaSecretWipe` exists for that run, and the credentials have to be
-provisioned again afterwards.
+Three fixes came out of that verification:
+
+- **Trusted roots.** The embedded Mozilla bundle includes one P-521 root. The Portenta's Mbed TLS build compiles out
+  `SECP521R1`, so that root made the whole list fail to load and every HTTPS connection failed. The Portenta bundle now
+  leaves it out (`CertificateBundle.pemWithoutCurve`). `JUNO_TLS_CA` replaces the bundle with a custom CA, as on the
+  ESP32 cores.
+- **Byte-count `endPacket()`.** Mbed's `MbedUDP::endPacket()` returns the number of bytes sent, where Arduino cores
+  return 1. The SNTP fetch and the UDP send now accept any positive result, so SNTP works on the Portenta.
+- **STARTTLS on Mbed.** `Smtp.send` could not link on this core, because its STARTTLS client was `ESP_SSLClient`,
+  a BearSSL client. The Portenta now upgrades a TCP socket in place with a `TLSSocketWrapper` after the server accepts
+  STARTTLS. The server certificate is checked against the same roots as HTTPS, and the host name must match.
+
+Still unverified on hardware: the HTTP and HTTPS server transports (`PortentaHttpsServer` is a compile-time skeleton),
+and `SecretStore.clearAll()`, whose whole-chip wipe erases the provisioned Wi-Fi credentials. `PortentaSecretWipe`
+exists for that run, and the credentials have to be provisioned again afterwards.
