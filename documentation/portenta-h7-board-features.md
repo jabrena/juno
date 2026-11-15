@@ -29,7 +29,7 @@ Ethernet is intentionally not included: the current Juno API has no Ethernet cap
 - [x] Implement and verify email on hardware: `Smtp.send` STARTTLS, `Smtp.sendTls` on implicit TLS, and `Pop3Client`.
 - [x] Verify SNTP time (`LocalDateTime.now()`) on hardware.
 - [x] Verify the plain HTTP server transport on hardware.
-- [ ] Verify the HTTPS server transport on hardware.
+- [x] Verify the HTTPS server transport on hardware, with the certificate and key sent over USB at boot.
 - [x] Implement and compile-check Bluetooth LE.
 - [x] Implement and compile-check USB HID mouse.
 - [x] Implement and compile-check double math, watchdog and cryptographic UUID.
@@ -53,6 +53,7 @@ Flashed to a Portenta H7 over USB and read back with `juno:monitor` on 2026-11-1
 | Wi-Fi from the secure element | `SecretWifiStatus` | Joined with the SSID and password read from the SE050C2 after a reboot: `WiFi status: 3` |
 | Secure store | `SecretStoreCheck` | Write, update, per-name clear, rewrite after clear and the 63-byte maximum all pass |
 | HTTP server | `PortentaHttpServer` | Listening on port 80 at the board's address: `GET /status` returns 200 with `ok`; an unknown path and `POST /status` return 404 |
+| HTTPS server | `PortentaHttpsServer` | Listening on port 443 with a self-signed EC P-256 certificate. `GET /status` returns 200 with `ok` to a client that trusts that certificate, and an unknown path returns 404. A client without the certificate is refused. The certificate and key come over USB at boot with `scripts/portenta-https-send-pem.sh` and stay in RAM, so a reboot needs them sent again |
 | HTTP and HTTPS client | `SingleHttpsGet`, `HttpsMethods` | `https://example.com/` returns 200; `httpbin.org` and `httpbun.com` return OK for GET, POST, DELETE, PATCH and QUERY. Plain `http://example.com/` returns 200 in the same run |
 | SNTP time | `SntpTime` | `LocalDateTime.now()` prints UTC from `pool.ntp.org` every ten seconds |
 | Email | `PortentaEmailSmoke` | `Smtp.send` STARTTLS on port 587 returns 0; `Smtp.sendTls` on implicit TLS, port 465, returns 0; `Pop3Client.messageCount` on port 995 returns the mailbox count. The account and host come from the secure store under `smtp.host`, `smtp.username` and `smtp.password`, provisioned with `juno:secret` |
@@ -72,6 +73,8 @@ Three fixes came out of that verification:
   a BearSSL client. The Portenta now upgrades a TCP socket in place with a `TLSSocketWrapper` after the server accepts
   STARTTLS. The server certificate is checked against the same roots as HTTPS, and the host name must match.
 
-Still unverified on hardware: the HTTPS server transport (`PortentaHttpsServer` is a compile-time skeleton that never
-listens), and `SecretStore.clearAll()`, whose whole-chip wipe erases the provisioned Wi-Fi credentials.
+The HTTPS server's private key is never part of the firmware or the repository. The board's TLS credentials live in
+RAM only, so they are not kept across a reboot.
+
+Still unverified on hardware: `SecretStore.clearAll()`, whose whole-chip wipe erases the provisioned Wi-Fi credentials.
 `PortentaSecretWipe` exists for that run, and the credentials have to be provisioned again afterwards.
