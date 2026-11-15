@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -11,10 +12,10 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Write, read, {@link SecretStore#clearAll()}, read on an ESP32 board's NVS store (Nano ESP32,
- * AI Thinker ESP32-CAM): the last read must fail. The ESP32 counterpart of {@link PortentaSecretClearAllRead}. The
- * sequence runs once at startup, and its results are reprinted every two seconds so a monitor attached late still
- * sees them:
+ * Write, read, {@link SecretStore#clearAll()}, read on an ESP32 board's NVS store (Nano ESP32, AI Thinker
+ * ESP32-CAM, M5Stack Cardputer): the last read must fail. The ESP32 counterpart of
+ * {@link PortentaSecretClearAllRead}. The sequence runs once at startup, and its results are reprinted every two
+ * seconds so a monitor attached late still sees them:
  *
  * <ol>
  *   <li>{@code write}: the demo name is stored; the length is printed;</li>
@@ -34,9 +35,10 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  *
  * # AI Thinker ESP32-CAM: -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<usb-serial port>
+ * # M5Stack Cardputer: -Djuno.board=m5stack-cardputer
  * }</pre>
  */
-@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class})
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class Esp32SecretClearAllRead {
     /** The largest value Juno's secure-store providers accept. */
     private static final int MAX_VALUE_BYTES = 63;

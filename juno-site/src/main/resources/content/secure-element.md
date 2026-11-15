@@ -88,7 +88,7 @@ Two examples cover the two operations from the board itself, with dummy values a
 without ever wiping the store, and [`PortentaSecretWipe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java) writes two dummy names,
 reads them back, calls `clearAll()` and checks that both are then missing.
 [`Esp32SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/Esp32SecretClearAllRead.java)
-runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store; it passed on a Nano ESP32 and an AI Thinker ESP32-CAM.
+runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM and an M5Stack Cardputer ADV.
 
 [`SecretProbe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretProbe.java) is the read-only one: it prints what each name holds, without writing
 anything, which is the first thing to run on a board whose store has never answered.
