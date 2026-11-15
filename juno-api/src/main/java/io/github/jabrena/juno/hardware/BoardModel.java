@@ -15,4 +15,7 @@ public interface BoardModel {
 
     /** Whether the program runs on an R3-format board, the UNO WiFi Rev2 with its MegaAVR core. */
     boolean isR3();
+
+    /** Whether the program runs on the Portenta H7, whose onboard secure element is an NXP SE050C2. */
+    boolean isPortentaH7();
 }

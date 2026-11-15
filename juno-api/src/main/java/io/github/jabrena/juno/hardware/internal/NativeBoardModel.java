@@ -46,6 +46,9 @@ public final class NativeBoardModel implements BoardModel {
     @Override
     public native boolean isR3();
 
+    @Override
+    public native boolean isPortentaH7();
+
     /** The selected board's onboard SD chip-select pin; only called after capability validation. */
     public static native int onboardSdChipSelect();
 }

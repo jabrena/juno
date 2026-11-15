@@ -5,14 +5,15 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.Atecc608;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
+import io.github.jabrena.juno.hardware.security.SecretStore;
+import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Writes named secrets into the ATECC608 on the board's I2C bus, on request from the host. The host sends one line per
+ * Writes named secrets into the board's secure element, on request from the host. The host sends one line per
  * request over USB serial, so the value never goes on the command line or onto the SD card:
  * <ul>
  * <li>{@code SET <name> <hex>}: stores the value, given as hex digits (at most 63 bytes), and answers {@code OK <name>}.</li>
@@ -30,8 +31,7 @@ public final class SecretProvisioner {
     private static final int VALUE_BYTES = 63;
     private static final int NAME_PREFIX_SET = 4;
     private static final int NAME_PREFIX_CLEAR = 6;
-
-    private final Atecc608 chip;
+    private final SecretStore chip;
     private final SecretSlots slots;
     private final byte[] line = new byte[LINE_BYTES];
     private final byte[] value = new byte[VALUE_BYTES];
@@ -39,7 +39,7 @@ public final class SecretProvisioner {
     private int lineLength;
     private boolean lineTooLong;
 
-    SecretProvisioner(Atecc608 chip, SecretSlots slots) {
+    SecretProvisioner(SecretStore chip, SecretSlots slots) {
         this.chip = chip;
         this.slots = slots;
     }
@@ -48,7 +48,6 @@ public final class SecretProvisioner {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         I2c i2c = MCU.getI2c();
-        i2c.begin();
         SecretSlots slots = new SecretSlots()
                 .add("wifi.ssid", 8)
                 .add("wifi.password", 9)
@@ -60,7 +59,7 @@ public final class SecretProvisioner {
                 .add("supabase.api.host", 14)
                 .add("supabase.api.key", 15)
                 .add("supabase.api.url", 1);
-        new SecretProvisioner(new Atecc608(i2c, slots), slots).run();
+        new SecretProvisioner(SecretStoreFactory.open(MCU.getBoardModel(), i2c, slots), slots).run();
     }
 
     private void run() {
@@ -135,18 +134,7 @@ public final class SecretProvisioner {
             return;
         }
         if (chip.write(name, value, hexLength / 2) < 0) {
-            if (chip.lastFailure() == Atecc608.FAILURE_UNAVAILABLE) {
-                Serial.println("ERR ATECC608 unavailable at I2C address 0x60");
-            } else if (chip.lastFailure() == Atecc608.FAILURE_REJECTED) {
-                if (chip.lastStatus() == 0x0F) {
-                    Serial.println("ERR ATECC608 execution error: slot is locked or clear-text writes are disabled");
-                } else {
-                    Serial.print("ERR ATECC608 rejected the write with status ");
-                    Serial.println(chip.lastStatus());
-                }
-            } else {
-                Serial.println("ERR ATECC608 protocol failure");
-            }
+            Serial.println("ERR secure element rejected the write");
             return;
         }
         Serial.println("OK " + name);

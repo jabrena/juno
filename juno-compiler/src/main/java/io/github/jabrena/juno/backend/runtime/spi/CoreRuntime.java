@@ -380,6 +380,11 @@ public interface CoreRuntime {
         return "Wire";
     }
 
+    /** Whether this core targets the Portenta H7 variant with an onboard NXP SE050C2. */
+    default boolean hasSe050C2() {
+        return false;
+    }
+
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
     default String mouseIncludes() {
         return "#include <Mouse.h>\n";

@@ -46,6 +46,11 @@ public final class ShimLibraries {
                 .replace("${JUNO_I2C_BUS}", bus);
     }
 
+    /** NXP SE050C2 binary-object storage through Arduino's SE05X library. */
+    String se050Helpers() {
+        return runtimeSource.load("common/se050.cpp");
+    }
+
     /** Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library. */
     String spiHelpers() {
         return runtimeSource.load("common/spi.cpp");

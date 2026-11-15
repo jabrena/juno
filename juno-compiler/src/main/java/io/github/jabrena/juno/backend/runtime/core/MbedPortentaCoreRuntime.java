@@ -35,8 +35,13 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
 
     @Override
     public String i2cBus() {
-        // The Portenta variant wires its onboard ATECC608 to the crypto bus exposed as Wire1.
+        // The Portenta variant exposes its secondary I2C bus as Wire1.
         return "Wire1";
+    }
+
+    @Override
+    public boolean hasSe050C2() {
+        return true;
     }
 
     @Override

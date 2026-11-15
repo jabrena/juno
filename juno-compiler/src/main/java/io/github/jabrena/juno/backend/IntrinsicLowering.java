@@ -363,6 +363,8 @@ public final class IntrinsicLowering {
                 value -> target.storeImmediate(output, frame, coreRuntime.ledMatrixColumns(), value)));
         GENERATION_QUERIES.forEach((query, queried) -> lowerings.put(query, (output, frame, call) -> call.target()
                 .ifPresent(value -> target.storeImmediate(output, frame, generation.filter(queried::equals).isPresent() ? 1 : 0, value))));
+        lowerings.put(Intrinsic.BOARD_IS_PORTENTA_H7, (output, frame, call) -> call.target()
+                .ifPresent(value -> target.storeImmediate(output, frame, coreRuntime.hasSe050C2() ? 1 : 0, value)));
         // Board data: the onboard socket's chip select. The capability check keeps this off boards without one.
         lowerings.put(Intrinsic.BOARD_ONBOARD_SD_CHIP_SELECT, (output, frame, call) -> call.target().ifPresent(
                 value -> target.storeImmediate(output, frame, onboardSdChipSelect.orElseThrow(() ->
@@ -855,6 +857,12 @@ public final class IntrinsicLowering {
                 ShimFeature.I2C);
         shim(Intrinsic.I2C_WRITE, "juno_i2c_write", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
         shim(Intrinsic.I2C_READ, "juno_i2c_read", Result.WORD, List.of(arg(0), arg(1), arg(2)), ShimFeature.I2C);
+        shim(Intrinsic.SE050_BEGIN, "juno_se050_begin", Result.WORD, List.of(), ShimFeature.SE050);
+        shim(Intrinsic.SE050_READ, "juno_se050_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.SE050);
+        shim(Intrinsic.SE050_WRITE, "juno_se050_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.SE050);
+        shim(Intrinsic.SE050_CLEAR, "juno_se050_clear", Result.WORD, List.of(arg(0)), ShimFeature.SE050);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
