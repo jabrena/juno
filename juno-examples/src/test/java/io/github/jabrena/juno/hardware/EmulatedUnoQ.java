@@ -32,4 +32,9 @@ public final class EmulatedUnoQ implements BoardModel {
     public boolean isR3() {
         return false;
     }
+
+    @Override
+    public boolean isPortentaH7() {
+        return false;
+    }
 }
