@@ -5,12 +5,13 @@ layout: page
 ---
 
 Juno reads named secrets through the `SecretStore` interface, so no secret is written on the SD card, in the firmware
-image or in build output. Two implementations sit behind that one interface:
+image or in build output. Three implementations sit behind that one interface:
 
 | Implementation | Boards | Strength |
 |---|---|---|
 | `Se050C2` | Portenta H7 (onboard NXP SE050C2) | The value lives in a secure element; the processor asks it for the value. |
 | `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM | Weaker: the board's own flash. See the warning below. |
+| `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
 
 `SecretStoreFactory.open(slots)` picks the one the board has, and `SecretStoreFactory.isAvailable()` says whether there
 is one. The board query is answered when the program is linked and the branches the target cannot take are dropped
@@ -23,9 +24,22 @@ output and off the SD card — a shared sketch or a copied card carries nothing 
 exposes every value unless flash encryption is enabled. Treat it as "not in the program", not as "not extractable
 from the hardware".
 
+**The Pico 2 W store is fenced, not locked.** The RP2350 has no crypto chip either, so Juno ships its own small
+TrustZone secure firmware ([`juno-pico-secure`](https://github.com/jabrena/juno/tree/main/juno-third-parties/juno-pico-secure/src/main/c)):
+it takes the 12 KB boot slot arduino-pico reserves for its OTA stage, keeps the 16 slots in a flash sector the CPU
+fences off, and starts the program in the non-secure world, which reaches the slots only through one gateway.
+`juno:flash` installs it with any program that uses the store; nothing has to be flashed first. Code on the board,
+libraries included, cannot read the sector directly — the read faults — but no fuse is written and debug stays on,
+so anyone with the board and a USB cable can still read or replace the whole flash, and the values are not encrypted.
+Such a program runs on one carrier, as the second core cannot be started from the non-secure world; its flash writes
+(BTstack's bonds, the EEPROM library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash
+reboots the board into BOOTSEL.
+
 **Status:** the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
 and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
-confirmed on a Nano ESP32.
+confirmed on a Nano ESP32. The Pico 2 W TrustZone path is confirmed on a Pico 2 W: `SecretStoreCheck` and
+`SecretClearAllRead` pass, values survive a reboot and a reflash, Wi-Fi and a BLE scan run beside it, and a direct
+read of the secure flash raises a SecureFault.
 
 ## What is protected
 
@@ -87,8 +101,9 @@ Two examples cover the two operations from the board itself, with dummy values a
 [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) checks writes, updates, per-name `clear` and the 63-byte maximum
 without ever wiping the store, and [`PortentaSecretWipe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java) writes two dummy names,
 reads them back, calls `clearAll()` and checks that both are then missing.
-[`Esp32SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/Esp32SecretClearAllRead.java)
-runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM and an M5Stack Cardputer ADV.
+[`SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretClearAllRead.java)
+runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store or the Pico 2 W's TrustZone
+store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM, an M5Stack Cardputer ADV and a Pico 2 W.
 
 [`SecretProbe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretProbe.java) is the read-only one: it prints what each name holds, without writing
 anything, which is the first thing to run on a board whose store has never answered.
@@ -98,10 +113,11 @@ anything, which is the first thing to run on a board whose store has never answe
 - **Portenta H7:** the SE050C2 is on the board; no extra hardware and no I2C bus of your own.
 - **Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM:** nothing to wire — the store is the board's own NVS
   partition.
+- **Raspberry Pi Pico 2 W:** nothing to wire or flash separately — `juno:flash` installs the secure firmware.
 
 ## Boards without a secret store
 
-The UNO R4 WiFi, UNO Q, UNO WiFi Rev2, UNO R3 and Raspberry Pi Pico 2 W have no secret store. The UNO WiFi Rev2 does carry
+The UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and UNO R3 have no secret store. The UNO WiFi Rev2 does carry
 an ATECC608 chip, but that chip refuses every read and write until its zones are locked, which is permanent, so Juno
 does not use it for secrets.
 

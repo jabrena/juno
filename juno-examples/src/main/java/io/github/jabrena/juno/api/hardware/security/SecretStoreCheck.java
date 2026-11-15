@@ -5,6 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
@@ -15,8 +16,8 @@ import io.github.jabrena.juno.util.Delay;
 /**
  * Checks the write, update, clear and rewrite behaviour of whatever store the board actually has, and prints one
  * line per check over USB serial. {@link SecretStoreFactory} decides which that is — the Portenta H7's NXP SE050C2,
- * or an ESP32 board's own non-volatile storage — so the same checks run against both
- * through {@link SecretStore} alone.
+ * an ESP32 board's own non-volatile storage, or the Pico 2 W's slots behind Juno's TrustZone secure firmware — so the
+ * same checks run against each through {@link SecretStore} alone.
  *
  * <p>The checks run <b>once</b> at startup and the results are then reprinted every two seconds, so a monitor
  * attached late still sees them. Running them once is deliberate: a secure element and a flash partition both have a
@@ -55,8 +56,8 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<board id> -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoNanoEsp32Board.class,
-        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class,
+        ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class})
 public final class SecretStoreCheck {
     /** The largest value Juno's secure-store providers accept. */
     private static final int MAX_VALUE_BYTES = 63;

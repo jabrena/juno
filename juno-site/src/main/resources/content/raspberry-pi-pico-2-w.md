@@ -38,6 +38,7 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the board's fixed arena with the JDK's rounding and text rules. | |
 | Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Uses Juno's non-FreeRTOS Thumb-2 scheduler. The arduino-pico BLE library is not compatible with its FreeRTOS menu. | |
 | `@Watchdog` | ✓ | Uses the RP2350 watchdog runtime. | |
+| `SecretStore` / TrustZone | ✓ | `Pico2WTrustZoneStore`: 16 slots fenced off by Juno's TrustZone secure firmware, which `juno:flash` installs in the boot slot; one carrier, Wi-Fi and BLE keep working. Not locked or encrypted — see [Secrets in a Secure Element](../secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
 | `UUID.randomUUID()` | — | No cryptographic random source is exposed for this board. | |
 | Wi-Fi station | ✓ | `MCU.getWifi()` provides station mode, status, addresses and TCP/UDP networking. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | |
