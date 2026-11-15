@@ -49,6 +49,34 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return runtimeSource.load("esp32/https-server-transport.cpp");
     }
 
+    /**
+     * The Portenta Mbed Wi-Fi library otherwise looks for its CA file on the module's {@code /wlan} filesystem.
+     * That filesystem is not present on every board, so keep the same Mozilla root set used by the Nano ESP32 in the
+     * generated image and install it before each TLS client connects.
+     */
+    @Override
+    public String httpsHelpers() {
+        // JUNO_TLS_CA replaces the bundle with a custom CA, as on the ESP32 cores. The Portenta's Mbed TLS build compiles
+        // out SECP521R1, so the bundle leaves out the P-521 root that would otherwise make it refuse the whole list.
+        String customCa = System.getenv("JUNO_TLS_CA");
+        String roots = customCa != null && !customCa.isBlank()
+                ? customCa
+                : CertificateBundle.pemWithoutCurve(runtimeSource.load("esp32/ca-certificates.pem"), 521);
+        String trustedRoots = CertificateBundle.cPem("juno_portenta_ca", roots);
+        return trustedRoots + """
+                struct JunoPortentaHttpsClient : WiFiSSLClient {
+                  JunoPortentaHttpsClient() {
+                    setCACert(juno_portenta_ca);
+                  }
+                };
+                """;
+    }
+
+    @Override
+    public String httpsClientDeclaration() {
+        return "JunoPortentaHttpsClient client;";
+    }
+
     @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
         return new WatchdogRuntime("#include <mbed.h>\n",
