@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.analysis;
 
-import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.MethodRef;
@@ -31,7 +30,7 @@ final class InstructionRiskScanner {
 
 
     record MethodScan(int allocatedBytes, int possibleDivisionByZero, int definiteNullDereferences,
-                       int oversizedStringBuilders, int boundsChecks, int arrayAccesses,
+                       int unboundedStringBuilders, int boundsChecks, int arrayAccesses,
                        int constantArrayBytes, boolean loopAllocation, int launchesInLoops,
                        int peakUnjoinedLaunches, boolean launchesThreads) {
     }
@@ -88,8 +87,8 @@ final class InstructionRiskScanner {
                 if (instruction instanceof IrInstruction.IntrinsicCall call
                         && call.intrinsic() == Intrinsic.STRING_BUILDER_NEW) {
                     Integer capacity = integerConstants.get(call.arguments().get(0));
-                    if (capacity == null || capacity >= RuntimeLimits.STRING_SLOT_CAPACITY_BYTES) {
-                        counters.oversizedStringBuilders++;
+                    if (capacity == null) {
+                        counters.unboundedStringBuilders++;
                     }
                 }
                 classifyInstruction(instruction, integerConstants, calls, callSites, staticFields, counters);
@@ -105,7 +104,7 @@ final class InstructionRiskScanner {
             }
         }
         return new MethodScan(allocated, counters.possibleDivisionByZero, counters.definiteNullDereferences,
-                counters.oversizedStringBuilders, counters.boundsChecks, counters.arrayAccesses,
+                counters.unboundedStringBuilders, counters.boundsChecks, counters.arrayAccesses,
                 constantArrayBytes, loopAllocation, launchesInLoops, peakUnjoinedLaunches, launchesThreads);
     }
 
@@ -205,7 +204,7 @@ final class InstructionRiskScanner {
     private static final class Counters {
         int possibleDivisionByZero;
         int definiteNullDereferences;
-        int oversizedStringBuilders;
+        int unboundedStringBuilders;
         int boundsChecks;
         int arrayAccesses;
     }

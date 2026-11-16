@@ -35,7 +35,8 @@ JVM's own heap collects it, and very large values do not fit the arena.
 
 ### Complex data types
 
-- **String** is either a literal or a runtime value of up to 31 UTF-8 bytes; a longer runtime string stops the program.
+- **String** is either a literal or a runtime value. A runtime string built with `+` or `String.valueOf` holds up to
+  31 UTF-8 bytes, and a longer one stops the program; `StringBuilder.toString()` is as long as the builder's capacity.
   Supported: `String.valueOf(int)`, `length()`, `charAt(int)` and concatenation with `+`.
 - **BigInteger** and **BigDecimal** give arbitrary precision, with results that match the JDK. Their size is limited by
   memory, not by a fixed width. Print them with `Serial.println(value.toString())`.
@@ -273,5 +274,5 @@ Juno implements a bounded set of JDK classes on top of the board's own runtime:
   `InputStream`.
 - `java.time.LocalDateTime.now()`, with the time synchronised over SNTP on boards with Wi-Fi.
 - `java.lang.StringBuilder`, with `new StringBuilder(int capacity)`, `append(char)`, `append(String)` and `toString()`.
-  Give it a small capacity: `toString()` returns a runtime String, which holds at most 31 bytes, so a longer result stops the
-  program.
+  The capacity is allocated in the arena once, and `toString()` copies the content into a new arena block of exactly its
+  length, so the result can be longer than 31 bytes; appends beyond the capacity are dropped.

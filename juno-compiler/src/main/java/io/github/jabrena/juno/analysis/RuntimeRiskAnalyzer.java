@@ -208,11 +208,10 @@ public final class RuntimeRiskAnalyzer {
                             + " keeps its frames in the arena while parked (on AVR boards at most "
                             + (RuntimeLimits.MAX_THREADS - 1) + " can be active beside the caller)"));
         }
-        if (scan.oversizedStringBuilders() > 0) {
+        if (scan.unboundedStringBuilders() > 0) {
             findings.add(new RuntimeRisk("JUNO-RISK-007", RiskSeverity.WARNING, method,
-                    scan.oversizedStringBuilders() + " StringBuilder(s) constructed with capacity >= "
-                            + RuntimeLimits.STRING_SLOT_CAPACITY_BYTES + " (or not a compile-time constant); "
-                            + "toString() panics instead of truncating once content reaches that length"));
+                    scan.unboundedStringBuilders() + " StringBuilder(s) constructed with a capacity that is not a"
+                            + " compile-time constant; the arena must hold that many bytes, or the program stops"));
         }
     }
 

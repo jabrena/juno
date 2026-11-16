@@ -214,8 +214,8 @@ public final class ShimLibraries {
      * {@code capacity}, as two {@code int32_t}s) immediately followed by its {@code capacity}-byte
      * buffer — a single {@code juno_alloc} block, addressed by the header's own pointer (cast to
      * {@code int32_t} the same way every other handle in this file is). {@code toString()} copies
-     * the written bytes into the same rotating string-slot pool {@link #runtimeStringHelpers()}
-     * uses for every other runtime string, so it needs that pool already declared.
+     * the written bytes into a new arena block of exactly their length, so its result outlives the
+     * rotating string slots and can be longer than one of them.
      */
     String stringBuilderHelpers() {
         return runtimeSource.load("common/string-builder.cpp");
