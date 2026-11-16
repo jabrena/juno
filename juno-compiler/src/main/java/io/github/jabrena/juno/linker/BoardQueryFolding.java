@@ -38,7 +38,7 @@ import static io.github.jabrena.juno.bytecode.Opcodes.TABLESWITCH;
  * <p>The backend already turns the query into its constant, but that happens when instructions are emitted, long after
  * the linker has decided which methods and shim features the program needs. A query left standing until then makes
  * every arm reachable, which costs the dead arms' code and, worse, fails outright when their shim symbols do not exist
- * for the target: {@code SecretStoreFactory} has one arm per secret store, so without this a Portenta's SE050C2 arm
+ * for the target: {@code MCU.getSecretStore()} has one arm per secret store, so without this a Portenta's SE050C2 arm
  * would demand an SE050 shim from boards whose core has none.
  *
  * <p>Two shapes are folded, both of them what javac emits for a constant the linker knows:

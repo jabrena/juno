@@ -78,6 +78,17 @@ class RenesasCoreRuntime implements CoreRuntime {
         return shimLibraries.wifiHelpers();
     }
 
+    /** The UNO R4 WiFi's ESP32-S3 keeps the NVS, reached by the core's Preferences library over the modem link. */
+    @Override
+    public boolean hasNvs() {
+        return true;
+    }
+
+    @Override
+    public String nvsHelpers() {
+        return runtimeSource.load("common/nvs.cpp");
+    }
+
     @Override
     public String flashHelpers() {
         return runtimeSource.load("renesas/flash.cpp");

@@ -278,6 +278,9 @@ public final class RuntimeShim {
         if (uses(ShimFeature.NVS)) {
             shim.append(core.nvsHelpers());
         }
+        if (uses(ShimFeature.PICO_TRUSTZONE)) {
+            shim.append(core.trustZoneHelpers());
+        }
         if (uses(ShimFeature.SPI)) {
             shim.append(shimLibraries.spiHelpers());
         }

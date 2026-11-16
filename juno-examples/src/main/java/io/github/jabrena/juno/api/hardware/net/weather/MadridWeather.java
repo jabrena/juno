@@ -17,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
  * "Madrid Weather: &lt;temp&gt;C" followed by "Madrid Time: HH:MM" across the built-in LED
  * matrix. It uses the same right-to-left one-pixel-per-tick idea as {@code LedMatrixScrollingText},
  * adapted for messages built at runtime
- * instead of a compile-time literal. Credentials come from the ATECC608 {@code SecretStore}.
+ * instead of a compile-time literal. Credentials come from {@code ExampleSecrets}.
  *
  * <p>{@link WeatherClient} fetches and parses the Open-Meteo response, {@link TimeClient} extracts
  * and formats the local time, and {@link DisplayData} builds and scrolls the runtime messages on

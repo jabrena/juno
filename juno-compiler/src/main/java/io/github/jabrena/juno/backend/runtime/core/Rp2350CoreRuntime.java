@@ -184,6 +184,11 @@ final class Rp2350CoreRuntime implements CoreRuntime {
     }
 
     @Override
+    public String trustZoneHelpers() {
+        return runtimeSource.load("rp2350/trustzone.cpp");
+    }
+
+    @Override
     public String udpDeclaration() {
         return "static WiFiUDP juno_udp;";
     }

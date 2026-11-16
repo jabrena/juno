@@ -10,30 +10,48 @@ image or in build output. Three implementations sit behind that one interface:
 | Implementation | Boards | Strength |
 |---|---|---|
 | `Se050C2` | Portenta H7 (onboard NXP SE050C2) | The value lives in a secure element; the processor asks it for the value. |
-| `Atecc608` | UNO WiFi Rev2 (onboard), UNO R4 WiFi and the other I2C boards (breakout) | As above, over I2C. |
-| `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM | Weaker: the board's own flash. See the warning below. |
+| `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, UNO R4 WiFi | Weaker: an ESP32's own flash. See the warning below. |
+| `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
+| `AvrEeprom` | UNO WiFi Rev2, UNO R3 | Weakest: plain text in the microcontroller's EEPROM. See the warning below. |
 
-`SecretStoreFactory.open(MCU.getI2c(), slots)` picks the one the board has. The board query is
-answered when the program is linked and the branches the target cannot take are dropped with it, so only the chosen
-implementation reaches the image — and a core without the others' shim code never has to supply it.
+`MCU.getSecretStore()` returns the one the board has, the same way `MCU.getWifi()` returns its Wi-Fi; a program that
+asks for it on a board without one is rejected when it is built. The board query is answered when the program is linked and the branches the target cannot take are dropped
+with it, so only the chosen implementation reaches the image — and a core without the others' shim code never has to
+supply it. The other boards have no secret store; see [Boards without a secret store](#boards-without-a-secret-store).
 
 **The ESP32 store is not a secure element.** Those boards carry no crypto chip, so `Esp32Nvs` keeps each value in an
 NVS entry in the board's own flash partition. That still takes the secret out of the firmware image, out of the build
 output and off the SD card — a shared sketch or a copied card carries nothing — but a flash readout of the board
 exposes every value unless flash encryption is enabled. Treat it as "not in the program", not as "not extractable
-from the hardware". Wire an ATECC608 breakout to the I2C pins and instantiate `Atecc608` explicitly when the stronger
-guarantee is needed.
+from the hardware". The UNO R4 WiFi uses the same store in its ESP32-S3 coprocessor, reached through the core's
+`Preferences` library over the modem link: it needs coprocessor firmware 0.4.1 or later, each call is a round trip
+to the coprocessor, so `clearAll()` takes several seconds, and the program on the main MCU can still read every value
+through that link.
+
+**The Pico 2 W store is fenced, not locked.** The RP2350 has no crypto chip either, so Juno ships its own small
+TrustZone secure firmware ([`juno-pico-secure`](https://github.com/jabrena/juno/tree/main/juno-third-parties/juno-pico-secure/src/main/c)):
+it takes the 12 KB boot slot arduino-pico reserves for its OTA stage, keeps the 16 slots in a flash sector the CPU
+fences off, and starts the program in the non-secure world, which reaches the slots only through one gateway.
+`juno:flash` installs it with any program that uses the store; nothing has to be flashed first. Code on the board,
+libraries included, cannot read the sector directly — the read faults — but no fuse is written and debug stays on,
+so anyone with the board and a USB cable can still read or replace the whole flash, and the values are not encrypted.
+Such a program runs on one carrier, as the second core cannot be started from the non-secure world; its flash writes
+(BTstack's bonds, the EEPROM library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash
+reboots the board into BOOTSEL.
 
 **Status:** the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
 and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
-confirmed on a Nano ESP32. The ATECC608 path runs on an UNO WiFi Rev2 and reads its onboard chip, but no value has
-been provisioned into one yet, so its writes are still only tested against a simulated chip.
+confirmed on a Nano ESP32, and its UNO R4 WiFi variant on an R4 with coprocessor firmware 0.4.1
+(`SecretStoreCheck` and `SecretClearAllRead`). The Pico 2 W TrustZone path is confirmed on a Pico 2 W: `SecretStoreCheck` and
+`SecretClearAllRead` pass, values survive a reboot and a reflash, Wi-Fi and a BLE scan run beside it, and a direct
+read of the secure flash raises a SecureFault. Those checks ran before secrets were looked up by name (see
+[How names are stored](#how-names-are-stored)); the name-lookup format has not been flashed yet.
 
 ## What is protected
 
 - A copied SD card or firmware image contains no secret value.
-- Code running on the board can read the chip, and physical access to the board is trusted. This is a deliberate limit: a
-  program on the board can read any slot.
+- Code running on the board can read the store, and physical access to the board is trusted. This is a deliberate
+  limit: a program on the board can read any name.
 - A secret that is missing, unreadable or fails its checksum is reported as missing. No copy is kept in plaintext anywhere.
 
 ## Provisioning
@@ -44,53 +62,68 @@ serial as hex, and never puts it on the command line or in the log:
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:secret \
   -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
-  -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.board=arduino-portenta-h7 \
   -Djuno.port=/dev/cu.usbmodemXXXX \
   -Djuno.secret.key=wifi.ssid
 ```
 
 - `-Djuno.secret.list=true` prints `STATE <name> written|missing` for every name, without values.
 - `-Djuno.secret.clear=true` asks you to type `CLEAR` before uploading anything, then empties **every data slot on the
-  chip** — see [Clearing](#clearing) below.
+  store** — see [Clearing](#clearing) below.
 - Only one of `-Djuno.secret.key`, `-Djuno.secret.list` and `-Djuno.secret.clear` may be used at a time.
 
 Once provisioning is done, upload your own program again with `juno:flash`: the provisioning program replaces it on the
 board.
 
-The chip's data zone is not locked by this tool. Locking is a permanent step and is left to a separate, reviewed process.
-
 ## Reading secrets in a program
 
 ```java
-SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
-SecretStore secrets = SecretStoreFactory.open(MCU.getI2c(), slots);
+SecretStore secrets = MCU.getSecretStore();
 
 String ssid = secrets.getString("wifi.ssid");
 String password = secrets.getString("wifi.password");
 ```
 
-`SecretSlots` maps each name to a data slot. The program owns that mapping, and the provisioning program must use the same
-slot numbers. `getString` returns `null` for a missing name. The `read(name, buffer)` form copies the bytes into your own
+A secret is asked for by its name alone: the program never picks a slot, and the provisioning program and the reading
+program only have to agree on the name. `getString` returns `null` for a missing name. The `read(name, buffer)` form copies the bytes into your own
 buffer and allocates nothing.
 
 The complete example is [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) in `juno-examples`.
+
+## How names are stored
+
+Every store has 16 slots, and each slot holds one record of at most 63 bytes: a length byte, the name, then the value.
+
+- `read` and `getString` look through the slots in order and return the first record with that name.
+- `write` replaces the record that has the name, in place, or takes the first empty slot for a new name. It fails
+  once all 16 slots hold other names.
+- A name is 1 to 31 printable, non-space ASCII characters, and the value can be up to `62 - name.length()` bytes
+  (`SecretStore.RECORD_BYTES` is the 63). `getString` values are capped at 31 characters anyway, because that is the
+  limit for runtime `String`s on the board.
+- A lookup reads up to 16 slots, so read secrets once at startup. On the UNO R4 WiFi each slot read is a round trip to
+  the coprocessor.
+
+A slot written before names were stored holds a raw value with no name, so it is never matched and never overwritten.
+A board provisioned that way has to be provisioned again, preferably after `-Djuno.secret.clear=true`.
 
 ## Clearing
 
 There are two different operations, and the difference matters:
 
-- `clear(name)` empties one name. The other names, and any slot this program's table does not list, are untouched.
-- `clearAll()` empties **every data slot on the chip**, not only the names in the table it was called through. It
-  decommissions the secure element: a credential another program provisioned under a name this table never listed is
-  erased too. To empty just the names a program owns, loop over `clear(name)`.
+- `clear(name)` empties one name. The other names are untouched.
+- `clearAll()` empties **every data slot on the store**, not only the names the calling program uses. It
+  decommissions the store: a credential another program provisioned is erased too. To empty just the names a program owns, loop over `clear(name)`.
 
 `-Djuno.secret.clear=true` is the host side of `clearAll()`, which is why it asks for the word `CLEAR` first. On a
 provisioned board the Wi-Fi credentials go with it and have to be provisioned again.
 
 Two examples cover the two operations from the board itself, with dummy values and no host provisioning:
-[`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) checks writes, updates, per-name `clear` and the 63-byte maximum
+[`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) checks writes, updates, per-name `clear` and the longest value
 without ever wiping the store, and [`PortentaSecretWipe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java) writes two dummy names,
 reads them back, calls `clearAll()` and checks that both are then missing.
+[`SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretClearAllRead.java)
+runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store or the Pico 2 W's TrustZone
+store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM, an M5Stack Cardputer ADV, a Pico 2 W and an UNO R4 WiFi.
 
 [`SecretProbe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretProbe.java) is the read-only one: it prints what each name holds, without writing
 anything, which is the first thing to run on a board whose store has never answered.
@@ -99,13 +132,34 @@ anything, which is the first thing to run on a board whose store has never answe
 
 - **Portenta H7:** the SE050C2 is on the board; no extra hardware and no I2C bus of your own.
 - **Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM:** nothing to wire — the store is the board's own NVS
-  partition. Add an ATECC608 breakout only to trade up to a real secure element.
-- **UNO WiFi Rev2:** the chip is on the board's I2C bus; no extra hardware.
-- **UNO R4 WiFi, UNO Q, Nano ESP32, Pico 2 W:** an ATECC608 breakout on the board's I2C pins, at 3.3 V for the Q, Nano
-  ESP32 and Pico 2 W, and at 5 V logic on the R4 WiFi with a level-shifting breakout.
-- **M5Stack Cardputer:** the breakout on the Grove port (GPIO2 SDA, GPIO1 SCL). GPIO1 and GPIO2 are then not available as
-  GPIO or analog pins.
-- **AI Thinker ESP32-CAM:** the breakout shares the camera's SCCB pins (GPIO26 SDA, GPIO27 SCL). Juno rejects a program that
-  uses both the camera and the I2C bus.
+  partition.
+- **UNO R4 WiFi:** nothing to wire — the store is the onboard ESP32-S3's NVS.
+- **Raspberry Pi Pico 2 W:** nothing to wire or flash separately — `juno:flash` installs the secure firmware.
+- **UNO WiFi Rev2, UNO R3:** nothing to wire — the store is the microcontroller's own EEPROM.
 
-The UNO R3 is not supported.
+**The AVR UNOs' store is plain EEPROM.** The UNO WiFi Rev2 (ATmega4809) and the UNO R3 (ATmega328P) carry no crypto
+chip, so `AvrEeprom` keeps each name and value in plain text in the microcontroller's own EEPROM, split into 64-byte
+slots: 4 names in the Rev2's 256 bytes, 16 in the R3's 1 KB. The secret stays out of the firmware image, the build
+output and the SD card, and an upload keeps it (the R3 is flashed through its bootloader, which never erases the
+EEPROM; the Rev2's core sets the EESAVE fuse, which keeps it through the chip erase). But any program flashed to the
+board can read it, and so can anyone with a UPDI or ISP programmer. Clearing a name erases its whole slot. The UNO WiFi
+Rev2 also carries an ATECC608 chip, which Juno does not use: it refuses every read and write until its zones are
+locked, which is permanent. On the UNO R3, `SecretProvisioner` does not fit in the 2 KB of RAM, so `juno:secret` cannot
+provision it yet.
+
+## Boards without a secret store
+
+The UNO Q has no secret store.
+
+On the UNO Q, the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
+SD card, using the card of the stacked UNO shield (TFT Touch, LCD Keypad or Data Logger — all wire their socket to
+chip select D10):
+
+```properties
+wifi.ssid=MyNetwork
+wifi.password=MyPassword
+```
+
+**This is not a secret store.** The values are plain text on the card, so a copied card carries them. Each value is a
+runtime `String`, so it must fit in 31 characters. The Pico 2 W takes no UNO shield, so the multi-board Wi-Fi examples
+do not target it.

@@ -55,9 +55,9 @@ Check that the file and each key exist before using them; the examples print a m
 Values loaded this way are runtime `String`s, and a runtime `String` holds 31 bytes, so keep the password, the subject
 and the body within that length.
 
-The `InboxCount` and `EmailClient` examples read the SMTP values from the ATECC608 `SecretStore` through
-`SecretStore`. SD-card properties remain supported for applications that intentionally use removable configuration;
-they are not a substitute for provisioning credentials into the secure element.
+The `InboxCount` and `EmailClient` examples read the SMTP values through `ExampleSecrets`: from the secret store on a
+board that has one, otherwise from `application.properties` on the SD card. They run on the UNO R4 WiFi, which has no
+secret store, so there the SMTP values are plain text on the card.
 
 ## SMTP
 

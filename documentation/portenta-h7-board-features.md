@@ -34,7 +34,7 @@ Ethernet is intentionally not included: the current Juno API has no Ethernet cap
 - [x] Implement and compile-check USB HID mouse.
 - [x] Implement and compile-check double math, watchdog and cryptographic UUID.
 - [x] Implement and verify `SecretStore` on the onboard SE050C2 (not the ATECC608 this line first assumed:
-  the Portenta carries an NXP SE050C2, and `SecretStoreFactory` picks the provider by board).
+  the Portenta carries an NXP SE050C2, and `MCU.getSecretStore()` picks the provider by board).
 - [x] Implement the Mbed RTOS thread port.
 - [x] Verify threads, locks, structured concurrency and scoped values on hardware.
 

@@ -414,6 +414,11 @@ public interface CoreRuntime {
         throw new IllegalStateException("This core has no NVS secret store; the linker should have rejected it");
     }
 
+    /** The gateway calls and non-secure start-up of the Pico 2 W's TrustZone store; only the RP2350 core has it. */
+    default String trustZoneHelpers() {
+        throw new IllegalStateException("This core has no TrustZone secret store; the linker should have rejected it");
+    }
+
     /** Core-specific headers of the USB HID mouse: the optional {@code Mouse} library by default. */
     default String mouseIncludes() {
         return "#include <Mouse.h>\n";

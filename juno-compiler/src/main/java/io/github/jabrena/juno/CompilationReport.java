@@ -21,6 +21,14 @@ import java.util.Set;
 public record CompilationReport(MethodRef entryPoint, Board board, int reachableMethods, int irBlocks,
                                 Set<Intrinsic> intrinsics, RuntimeRiskReport runtimeRisks,
                                 List<ConfigSuggestion> configSuggestions, ResolvedRuntimeConfig runtimeConfig) {
+    /**
+     * Whether the program uses the Pico 2 W's TrustZone secret store, so its sketch has to be built and flashed with
+     * Juno's secure firmware in the boot slot.
+     */
+    public boolean usesPicoSecureFirmware() {
+        return intrinsics.contains(Intrinsic.PICO_TZ_BEGIN);
+    }
+
     static CompilationReport from(Program program, IrProgram lowered, IrProgram optimized) {
         return from(program, lowered, optimized, RuntimeConfig.DEFAULT.resolveFor(program.board()));
     }

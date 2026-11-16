@@ -127,6 +127,9 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.SPI)) {
             shim.append("#include <SPI.h>\n");
         }
+        if (uses(ShimFeature.EEPROM)) {
+            shim.append("#include <EEPROM.h>\n");
+        }
         if (usesAny(ShimFeature.WIFI, ShimFeature.UDP, ShimFeature.TCP, ShimFeature.HTTP, ShimFeature.HTTPS,
                 ShimFeature.HTTP_SERVER, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
@@ -194,6 +197,7 @@ public final class AvrRuntimeShim {
                 new ShimFeatureBlock(ShimFeature.INFRARED, shimLibraries::infraredHelpers),
                 new ShimFeatureBlock(ShimFeature.I2C, shimLibraries::i2cHelpers),
                 new ShimFeatureBlock(ShimFeature.SPI, shimLibraries::spiHelpers),
+                new ShimFeatureBlock(ShimFeature.EEPROM, shimLibraries::eepromHelpers),
                 new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
                 new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
                 new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers)));

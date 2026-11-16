@@ -27,7 +27,7 @@ public final class SecretMojo extends AbstractJunoMojo {
     private static final Duration REPLY_TIMEOUT = Duration.ofSeconds(5);
     private static final String CONFIRMATION = "CLEAR";
 
-    /** The name to store; the board-side {@code SecretSlots} table decides whether it exists. */
+    /** The name to store; the board keeps it next to its value, so no slot number is chosen. */
     @Parameter(property = "juno.secret.key")
     private @Nullable String key;
 
@@ -129,7 +129,7 @@ public final class SecretMojo extends AbstractJunoMojo {
         verifySketch(cli, sketch);
         String port = resolvePort(cli, sketch.fqbn());
         getLog().info("Uploading the secret provisioning program");
-        cli.upload(sketch.fqbn(), port, sketch.directory());
+        upload(cli, sketch, port);
 
         try (SerialSession session = sessions.open(port, executor())) {
             awaitReady(session);
@@ -169,10 +169,22 @@ public final class SecretMojo extends AbstractJunoMojo {
         }
     }
 
+    /**
+     * The board's next answer. The board repeats {@code READY} until its first request arrives, so one may still be on
+     * its way after the request was sent; those lines are skipped.
+     */
+    private static String nextReply(SerialSession session) {
+        String line = session.nextLine(REPLY_TIMEOUT);
+        while ("READY".equals(line)) {
+            line = session.nextLine(REPLY_TIMEOUT);
+        }
+        return line;
+    }
+
     private void store(SerialSession session, String name, byte[] value) {
         session.send(SecretProtocol.setRequest(name, value));
         Arrays.fill(value, (byte) 0);
-        String reply = session.nextLine(REPLY_TIMEOUT);
+        String reply = nextReply(session);
         if (!reply.equals("OK " + name)) {
             throw new ArduinoCliException("The board did not store " + name + ": " + reply);
         }
@@ -181,16 +193,16 @@ public final class SecretMojo extends AbstractJunoMojo {
 
     private void printList(SerialSession session) {
         session.send(SecretProtocol.listRequest());
-        String line = session.nextLine(REPLY_TIMEOUT);
+        String line = nextReply(session);
         while (!"END".equals(line)) {
             getLog().info(line);
-            line = session.nextLine(REPLY_TIMEOUT);
+            line = nextReply(session);
         }
     }
 
     private void clearAll(SerialSession session) {
         session.send(SecretProtocol.clearAllRequest());
-        String reply = session.nextLine(REPLY_TIMEOUT);
+        String reply = nextReply(session);
         if (!reply.equals("OK CLEAR ALL")) {
             throw new ArduinoCliException("The board did not empty every data slot: " + reply);
         }

@@ -3,37 +3,36 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
  * Checks the write, update, clear and rewrite behaviour of whatever store the board actually has, and prints one
- * line per check over USB serial. {@link SecretStoreFactory} decides which that is — the Portenta H7's NXP SE050C2,
- * an ESP32 board's own non-volatile storage, or an ATECC608 over I2C — so the same checks run against all three
- * through {@link SecretStore} alone.
+ * line per check over USB serial. {@link MCU#getSecretStore} decides which that is — the Portenta H7's NXP SE050C2,
+ * an ESP32 board's own non-volatile storage, or the Pico 2 W's slots behind Juno's TrustZone secure firmware — so the
+ * same checks run against each through {@link SecretStore} alone.
  *
  * <p>The checks run <b>once</b> at startup and the results are then reprinted every two seconds, so a monitor
  * attached late still sees them. Running them once is deliberate: a secure element and a flash partition both have a
  * finite write endurance, and a loop that rewrote an entry thousands of times would wear it out for no extra
  * information.
  *
- * <p>This program uses a table of its own three test names on slots 2 to 4, which {@link ExampleSecrets} and
- * {@link SecretProvisioner} leave free, and it empties them with {@code clear} per name when it is done, so a run
- * leaves no test data on the chip and never touches the provisioned {@code wifi.ssid} and {@code wifi.password} on
- * slots 8 and 9. The test values are constants in the firmware, not secrets.
+ * <p>This program uses three test names of its own, which take free slots while it runs, and it empties them with
+ * {@code clear} per name when it is done, so a run leaves no test data in the store and never touches the provisioned
+ * {@code wifi.ssid} and {@code wifi.password}. The store needs three free slots. The test values are constants in
+ * the firmware, not secrets.
  *
  * <p>{@code clearAll} is deliberately <b>not</b> exercised here: it empties every data slot on the chip, not only the
- * names in a store's table, so calling it would decommission the chip and destroy the provisioned Wi-Fi credentials,
+ * names this program wrote, so calling it would decommission the chip and destroy the provisioned Wi-Fi credentials,
  * which can only be restored by typing them again at {@code juno:secret}'s hidden prompt. Verify that path on purpose
  * with {@code juno:secret -Djuno.secret.clear=true}, which asks for the word {@code CLEAR} first.
  *
@@ -47,7 +46,8 @@ import io.github.jabrena.juno.util.Delay;
  *   <li>{@code rewrite}: a write to the name that was just cleared succeeds and reads back. This is the check that
  *       the provider left the entry <em>usable</em>: the SE050C2 deletes and recreates an object to replace its
  *       value, and an object left locked or policy-restricted would refuse this write;</li>
- *   <li>{@code long-value}: the 63-byte maximum the providers share round-trips at full length;</li>
+ *   <li>{@code long-value}: the longest value that fits next to its name in a 63-byte record round-trips at full
+ *       length;</li>
  *   <li>{@code left-clean}: every test name is emptied with {@code clear} and all three report missing.</li>
  * </ol>
  *
@@ -59,17 +59,20 @@ import io.github.jabrena.juno.util.Delay;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=<board id> -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class,
-        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class,
+        ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class,
+        ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR3Board.class})
 public final class SecretStoreCheck {
-    /** The largest value Juno's secure-store providers accept. */
-    private static final int MAX_VALUE_BYTES = 63;
+    /** The bytes one stored secret takes: a length byte, its name and its value. */
+    private static final int MAX_VALUE_BYTES = SecretStore.RECORD_BYTES;
     private static final int FIRST_LENGTH = 5;
     private static final int SECOND_LENGTH = 3;
 
     private static final String SHORT_NAME = "test.short";
     private static final String LONG_NAME = "test.long";
     private static final String SPARE_NAME = "test.spare";
+    /** The longest value that fits next to {@link #LONG_NAME}, whose 9 characters share its record. */
+    private static final int LONG_LENGTH = SecretStore.RECORD_BYTES - 1 - 9;
 
     private final SecretStore chip;
     private final byte[] first = new byte[MAX_VALUE_BYTES];
@@ -99,14 +102,7 @@ public final class SecretStoreCheck {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
-        // Three names of this program's own, on slots the provisioned tables leave free.
-        SecretSlots slots = new SecretSlots()
-                .add(SHORT_NAME, 2)
-                .add(LONG_NAME, 3)
-                .add(SPARE_NAME, 4);
-        SecretStoreCheck example =
-                new SecretStoreCheck(SecretStoreFactory.open(i2c, slots));
+        SecretStoreCheck example = new SecretStoreCheck(MCU.getSecretStore());
         example.check();
         example.report();
     }
@@ -120,9 +116,9 @@ public final class SecretStoreCheck {
         cleared = chip.clear(SHORT_NAME) == 0 && isMissing(SHORT_NAME);
         rewrite = chip.write(SHORT_NAME, first, FIRST_LENGTH) == FIRST_LENGTH
                 && readsBack(SHORT_NAME, first, FIRST_LENGTH);
-        longRoundTrip = chip.write(LONG_NAME, longValue, MAX_VALUE_BYTES) == MAX_VALUE_BYTES
-                && readsBack(LONG_NAME, longValue, MAX_VALUE_BYTES);
-        // Per name, never clearAll: that would empty every slot on the chip, the provisioned Wi-Fi ones included.
+        longRoundTrip = chip.write(LONG_NAME, longValue, LONG_LENGTH) == LONG_LENGTH
+                && readsBack(LONG_NAME, longValue, LONG_LENGTH);
+        // Per name, never clearAll: that would empty every slot of the store, the provisioned Wi-Fi ones included.
         leftClean = chip.clear(SHORT_NAME) == 0 && chip.clear(LONG_NAME) == 0 && chip.clear(SPARE_NAME) == 0
                 && isMissing(SHORT_NAME) && isMissing(LONG_NAME) && isMissing(SPARE_NAME);
     }

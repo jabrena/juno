@@ -12,8 +12,8 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Reads a request header with {@link HttpServer#header}: connects to WiFi with credentials from the ATECC608
- * {@code SecretStore}, prints its {@link Wifi#localIP}, then serves {@code GET /hello}
+ * Reads a request header with {@link HttpServer#header}: connects to WiFi with credentials from
+ * {@code ExampleSecrets}, prints its {@link Wifi#localIP}, then serves {@code GET /hello}
  * on port 80. The reply greets the caller by the {@code X-Client-Name} header ({@code {"hello":"<name>"}}); a request
  * without it gets a {@code 400} RFC 7807 problem detail, and any other route a {@code 404}. Try it with
  * {@code curl -H "X-Client-Name: Ada" http://<ip>/hello}.

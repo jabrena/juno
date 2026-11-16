@@ -3,10 +3,7 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -17,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * then checks that both names report missing.
  *
  * <p><b>This program empties every data slot on the chip.</b> {@code clearAll} decommissions the secure element
- * rather than the names in one table, so a provisioned {@code wifi.ssid} and {@code wifi.password} are erased too and
+ * rather than the names one program wrote, so a provisioned {@code wifi.ssid} and {@code wifi.password} are erased too and
  * have to be provisioned again afterwards:
  *
  * <pre>{@code
@@ -27,9 +24,8 @@ import io.github.jabrena.juno.util.Delay;
  * }</pre>
  *
  * <p>Nothing secret is involved on the way in: both values are dummy ASCII constants in the firmware, and the two
- * names sit on slots 5 and 6, which {@link ExampleSecrets} and {@link SecretProvisioner} leave free — the wipe reaches
- * every slot regardless. {@link SecretStoreCheck} is the non-destructive counterpart: it checks writes, updates,
- * per-name {@code clear} and the 63-byte maximum without ever calling {@code clearAll}.
+ * names take whichever slots are free — the wipe reaches every slot regardless. {@link SecretStoreCheck} is the non-destructive counterpart: it checks writes, updates,
+ * per-name {@code clear} and the longest value without ever calling {@code clearAll}.
  *
  * <p>The three steps run once at startup, because a secure element has a finite write endurance, and the results are
  * reprinted every two seconds so a monitor attached late still sees them. Each is printed as {@code <name> 1} for
@@ -78,10 +74,8 @@ public final class PortentaSecretWipe {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
         // Two dummy names of this program's own; clearAll reaches every slot either way.
-        SecretSlots slots = new SecretSlots().add(FIRST_NAME, 5).add(SECOND_NAME, 6);
-        PortentaSecretWipe example = new PortentaSecretWipe(SecretStoreFactory.open(i2c, slots));
+        PortentaSecretWipe example = new PortentaSecretWipe(MCU.getSecretStore());
         example.check();
         example.report();
     }

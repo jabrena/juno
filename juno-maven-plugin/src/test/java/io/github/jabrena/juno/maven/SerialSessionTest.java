@@ -6,9 +6,12 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SerialSessionTest {
 
@@ -35,5 +38,60 @@ class SerialSessionTest {
         }
 
         assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST\n");
+    }
+
+    @Test
+    @DisplayName("a port that cannot be configured yet is retried, as after a Pico 2 W reboots from BOOTSEL")
+    void retriesConfigureUntilThePortIsBack() throws Exception {
+        // Given: stty fails once, as it does before the port re-enumerates, then succeeds
+        Path port = Files.createTempFile("juno-serial", ".port");
+        FakeExecutor executor = new FakeExecutor().respond(1, "No such file or directory").respond(0, "");
+
+        // When
+        try (SerialSession session = SerialSession.open(port, executor, Duration.ofSeconds(5))) {
+            // Then
+            assertThat(session).isNotNull();
+            assertThat(executor.invocations()).hasSize(2);
+        } finally {
+            Files.deleteIfExists(port);
+        }
+    }
+
+    @Test
+    @DisplayName("a port that never comes back fails once the timeout passes, saying why")
+    void failsWhenThePortNeverComesBack() {
+        // Given
+        Path port = Path.of("target/no-such-serial-port");
+        FakeExecutor executor = new FakeExecutor();
+        for (int i = 0; i < 20; i++) {
+            executor.respond(1, "No such file or directory");
+        }
+
+        // When & Then
+        assertThatThrownBy(() -> SerialSession.open(port, executor, Duration.ofMillis(300)))
+                .isInstanceOf(ArduinoCliException.class)
+                .hasMessageContaining("Could not open " + port + " for the secret session");
+        assertThat(executor.invocations()).as("stty runs only on a port that opened").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a port that opens but cannot be configured fails once the timeout passes, saying stty failed")
+    void failsWhenThePortCannotBeConfigured() throws Exception {
+        // Given
+        Path port = Files.createTempFile("juno-serial", ".port");
+        FakeExecutor executor = new FakeExecutor();
+        for (int i = 0; i < 20; i++) {
+            executor.respond(1, "Inappropriate ioctl for device");
+        }
+
+        // When & Then
+        try {
+            assertThatThrownBy(() -> SerialSession.open(port, executor, Duration.ofMillis(300)))
+                    .isInstanceOf(ArduinoCliException.class)
+                    .hasMessageContaining("Could not open " + port + " for the secret session")
+                    .hasMessageContaining("stty");
+        } finally {
+            Files.deleteIfExists(port);
+        }
     }
 }

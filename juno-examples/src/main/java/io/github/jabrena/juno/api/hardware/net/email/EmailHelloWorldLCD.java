@@ -18,7 +18,8 @@ import io.github.jabrena.juno.util.Delay;
  * accepted the message. Two views on the LCD Keypad Shield: a prompt view that connects to WiFi
  * and then waits for any button press, and a send-and-verify view — triggered by that press —
  * which reads the inbox message count with {@link Pop3Client#messageCount} <em>before</em>
- * sending, sends a "Hello World" message to the mailbox configured by the {@code smtp.*} entries in the ATECC608
+ * sending, sends a "Hello World" message to the mailbox configured by the {@code smtp.*} entries in
+ * {@code ExampleSecrets}
  * with {@link Smtp#send}, then polls the count <em>after</em>
  * sending — every {@link #DELIVERY_POLL_DELAY_SECONDS} seconds, up to {@link
  * #DELIVERY_POLL_ATTEMPTS} times — until it goes up. Every step is logged to Serial, including

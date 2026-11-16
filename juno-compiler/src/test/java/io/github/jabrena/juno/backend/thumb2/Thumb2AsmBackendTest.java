@@ -1161,14 +1161,17 @@ class Thumb2AsmBackendTest {
                 .generate(new IrProgram(entryPoint, List.of(method))).runtimeShim();
 
         // Then
-        // toString() needs the shared runtime-string-slot pool even though this program never calls
-        // String.valueOf/Json.getString itself.
+        // toString() needs the shared runtime-string-slot pool for its length limit even though this program never
+        // calls String.valueOf/Json.getString itself, but its result is heap-allocated, never a slot (#366).
         assertThat(shim).contains(
                 "extern \"C\" int32_t juno_string_builder_new(int32_t capacity)",
                 "extern \"C\" int32_t juno_string_builder_append_char(int32_t handle, int32_t value)",
                 "extern \"C\" int32_t juno_string_builder_append_string(int32_t handle, const char* text)",
                 "extern \"C\" int32_t juno_string_builder_to_string(int32_t handle)",
                 "juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE]");
+        String toString = shim.substring(shim.indexOf("extern \"C\" int32_t juno_string_builder_to_string"));
+        String toStringBody = toString.substring(0, toString.indexOf("\n}\n"));
+        assertThat(toStringBody).contains("juno_alloc(").doesNotContain("juno_string_slot_cursor");
     }
 
     @Test

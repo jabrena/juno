@@ -23,9 +23,9 @@ import io.github.jabrena.juno.util.Delay;
  * The mailbox composition root: shows the Java and Arduino intro, wires the SD-backed model,
  * HTTPS controller and TFT view, then runs the UI and HTTPS tasks together.
  *
- * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. Provision the
- * address shown on the TFT as {@code mailbox.q.ip} with {@code juno:secret}; the Q's network port is listed by
- * {@code juno:boards}. The TLS certificate and private key are read
+ * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. Write the
+ * address shown on the TFT as {@code mailbox.q.ip=<address>} in {@code /application.properties} on the SD card; the
+ * Q's network port is listed by {@code juno:boards}. The TLS certificate and private key are read
  * at startup from {@code /server.crt} and {@code /server.key} (PEM) on the SD card, so the firmware image holds no key
  * and a certificate is replaced without rebuilding (see {@link MailboxCredentials}); the certificate must name the same
  * address in its {@code subjectAltName}.
@@ -38,10 +38,9 @@ import io.github.jabrena.juno.util.Delay;
  * ignored.
  * Only the small index is kept in the board arena.
  *
- * <p>Copy {@code server.crt} and {@code server.key} to the SD card's root, then build it, for example:
+ * <p>Copy {@code server.crt}, {@code server.key} and {@code application.properties} to the SD card's root, then
+ * build it, for example:
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
- *   -Djuno.board=arduino-uno-r4-wifi -Djuno.secret.key=mailbox.q.ip
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-uno-q
  * }</pre>
@@ -60,6 +59,7 @@ public final class Mailbox {
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         SdCard sdCard = tft.getSdCard();
+        ExampleSecrets.useSdCard(sdCard);
         MailboxModel model = new MailboxModel(sdCard);
         MailboxSecurity security = new MailboxSecurity(sdCard);
         MailboxView view = new MailboxView(security);

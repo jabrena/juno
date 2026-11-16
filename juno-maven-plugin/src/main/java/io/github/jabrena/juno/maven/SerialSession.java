@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.maven;
 
+import org.jspecify.annotations.Nullable;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,18 +35,25 @@ final class SerialSession implements AutoCloseable {
     }
 
     /**
-     * Configures {@code port} for raw 115200 baud with the executor, then opens it. The board re-enumerates after an upload,
-     * so the open is retried until {@code timeout} passes.
+     * Opens {@code port}, then configures it for raw 115200 baud with the executor while it stays open. The order matters
+     * on a USB-serial adapter, such as the ESP32-CAM's: its driver resets the line settings once the last handle closes,
+     * so settings made before the port is opened are gone by the time it is read. The board re-enumerates after an upload,
+     * and a Pico 2 W flashed from BOOTSEL takes a moment to bring its port back, so both steps are retried until
+     * {@code timeout} passes.
      */
     static SerialSession open(Path port, CommandExecutor executor, Duration timeout) {
-        configure(port, executor);
         long deadline = System.nanoTime() + timeout.toNanos();
         while (true) {
+            InputStream in = null;
+            OutputStream out = null;
             try {
-                InputStream in = Files.newInputStream(port);
-                OutputStream out = Files.newOutputStream(port);
+                in = Files.newInputStream(port);
+                out = Files.newOutputStream(port);
+                configure(port, executor);
                 return new SerialSession(in, out);
-            } catch (IOException exception) {
+            } catch (IOException | ArduinoCliException exception) {
+                closeQuietly(in);
+                closeQuietly(out);
                 if (System.nanoTime() > deadline) {
                     throw new ArduinoCliException("Could not open " + port + " for the secret session: "
                             + exception.getMessage());
@@ -114,6 +124,17 @@ final class SerialSession implements AutoCloseable {
             }
         } catch (IOException exception) {
             // The session was closed or the port went away; waiting callers time out.
+        }
+    }
+
+    private static void closeQuietly(@Nullable Closeable stream) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (IOException exception) {
+            // A port that failed to open or configure is being released; nothing else to do.
         }
     }
 
