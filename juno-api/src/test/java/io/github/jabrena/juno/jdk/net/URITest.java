@@ -45,11 +45,48 @@ class URITest {
     }
 
     @Test
-    @DisplayName("another scheme, an empty or too-long host, and a too-long path are rejected")
+    @DisplayName("a host may be as long as the longest DNS name, 253 characters")
+    void acceptsAHostUpToTheDnsLimit() {
+        String longest = "h".repeat(URI.MAX_HOST_LENGTH);
+
+        assertThat(URI.create("http://" + longest + "/").getHost()).isEqualTo(longest);
+        assertThat(URI.create("https://weather.api.example-provider.com/v1").getHost())
+                .isEqualTo("weather.api.example-provider.com");
+    }
+
+    @Test
+    @DisplayName("a user info and a fragment are not part of the request, as in the JDK")
+    void dropsUserInfoAndFragment() {
+        URI uri = URI.create("http://user:pw@example.com:8080/status?q=1#top");
+
+        assertThat(uri.getHost()).isEqualTo("example.com");
+        assertThat(uri.getPort()).isEqualTo(8080);
+        assertThat(path(uri)).isEqualTo("/status?q=1");
+        assertThat(path(URI.create("http://example.com#top"))).isEqualTo("/");
+    }
+
+    @Test
+    @DisplayName("an empty port means no port, as in the JDK, so the scheme's default is used")
+    void emptyPortIsNoPort() {
+        URI uri = URI.create("http://example.com:/status");
+
+        assertThat(uri.getHost()).isEqualTo("example.com");
+        assertThat(uri.getPort()).isEqualTo(-1);
+        assertThat(uri.connectPort()).isEqualTo(80);
+        assertThat(path(uri)).isEqualTo("/status");
+        assertThat(URI.create("https://example.com:?q=1").connectPort()).isEqualTo(443);
+    }
+
+    @Test
+    @DisplayName("another scheme, an empty or too-long host, a bad port and a too-long path are rejected")
     void rejectsWhatTheBoardCannotSend() {
         assertThatThrownBy(() -> URI.create("ftp://example.com/")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> URI.create("http:///path")).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> URI.create("http://" + "h".repeat(32) + "/"))
+        assertThatThrownBy(() -> URI.create("http://user@/path")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> URI.create("http://" + "h".repeat(URI.MAX_HOST_LENGTH + 1) + "/"))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> URI.create("http://example.com:80a/")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> URI.create("http://example.com:65536/"))
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> URI.create("http://example.com/" + "p".repeat(255)))
                 .isInstanceOf(IllegalArgumentException.class);

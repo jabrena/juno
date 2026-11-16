@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -29,11 +30,12 @@ import java.net.http.HttpResponse;
  * printed is that capacity; the temperature is read straight from the bytes, since {@code Json} is more code than this
  * one value needs.
  *
- * <p>The UNO WiFi Rev2 is not a target: with its ATECC608 credentials path the program needs 102% of that board's
- * flash.
+ * <p>On the UNO WiFi Rev2 build with {@code -Djuno.Xmx=1536}: the client, request and URI need about 1.3 KB of arena,
+ * more than that board's 1 KB default.
  */
 @Board({
     ArduinoUnoR4WiFiBoard.class,
+    ArduinoUnoR3WiFiRev2Board.class,
     ArduinoNanoEsp32Board.class,
     AiThinkerEsp32CamBoard.class,
     M5StackCardputerBoard.class,
