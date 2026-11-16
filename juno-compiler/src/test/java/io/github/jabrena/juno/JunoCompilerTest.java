@@ -1254,28 +1254,30 @@ class JunoCompilerTest {
 
         @ParameterizedTest
         @CsvSource({
-            "'URI.create(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
-            "'URI.create(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            "'URI.create(\"http://example.com/status\")', juno_http_request_text, juno_https_request_text",
+            "'URI.create(\"https://example.com/status\")', juno_https_request_text, juno_http_request_text",
             // The JDK constructor names its scheme just as URI.create does.
-            "'new URI(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
-            "'new URI(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            "'new URI(\"http://example.com/status\")', juno_http_request_text, juno_https_request_text",
+            "'new URI(\"https://example.com/status\")', juno_https_request_text, juno_http_request_text",
             // A URI the linker cannot read could be either scheme, so both requests stay.
-            "'URI.create(address())', juno_http_request_buffer, juno_https_request_buffer",
-            "'new URI(address())', juno_http_request_buffer, juno_https_request_buffer"})
+            "'URI.create(address())', juno_http_request_text, juno_https_request_text",
+            "'new URI(address())', juno_http_request_text, juno_https_request_text",
+            // A scheme names its request in any case, as URI reads it.
+            "'URI.create(\"HTTPS://example.com/status\")', juno_https_request_text, juno_http_request_text"})
         @DisplayName("A program written against java.net.http links only the request shim its URIs' scheme needs")
         void shouldCompileTheJdkHttpClientSyntax(String uri, String present, String other) throws Exception {
             // Given: javac resolves java.net.http to the JDK; Juno reads the board-side classes under those names
             boolean bothSchemes = uri.contains("address()");
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     import java.net.URI;
                     import java.net.http.HttpClient;
                     import java.net.http.HttpRequest;
                     import java.net.http.HttpResponse;
-                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    @Board(ArduinoNanoEsp32Board.class)
                     public final class JdkHttp {
                         public static void main(String[] args) throws Exception {
                             HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
@@ -1381,8 +1383,76 @@ class JunoCompilerTest {
 
             // Then: Duration has its own runtime, so an HTTP timeout brings no structured-task runtime
             assertThat(result.assembly())
-                    .contains("bl juno_duration_to_millis", "bl juno_http_request_buffer", "Too many redirects")
-                    .doesNotContain("juno_https_request_buffer", "juno_task_scope");
+                    .contains("bl juno_duration_to_millis", "bl juno_http_request_text", "Too many redirects")
+                    .doesNotContain("juno_https_request_text", "juno_task_scope");
+        }
+
+        @Test
+        @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
+        void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpRev2", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    public final class JdkHttpRev2 {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When / Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpRev2"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("java.net.http")
+                    .hasMessageContaining("UNO WiFi Rev2 has too little memory for the java.net.http client");
+        }
+
+        @Test
+        @DisplayName("A java.net.http client closes in try-with-resources, and a URI answers its parts and resolves")
+        void shouldCompileTryWithResourcesAndTheUriAccessors() throws Exception {
+            // Given: a long query, a resolved reference and a client that is AutoCloseable, as in the JDK since 21
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpClose", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpClose {
+                        public static void main(String[] args) throws Exception {
+                            URI base = URI.create("http://example.com/v1/items?select=id,name,price&order=id.asc");
+                            URI next = base.resolve("../v2/items?page=2#top");
+                            Serial.println(next.getPath());
+                            Serial.println(next.getQuery());
+                            Serial.println(next.toString());
+                            Serial.println(next.equals(URI.create("HTTP://EXAMPLE.com/v2/items?page=2#top")) ? 1 : 0);
+                            try (HttpClient client = HttpClient.newHttpClient()) {
+                                HttpRequest request = HttpRequest.newBuilder(next).build();
+                                Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                            }
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpClose");
+
+            // Then: only the plain-HTTP request is linked, and the client is closed after the request
+            assertThat(result.assembly()).contains("bl juno_http_request_text", "The client is shut down")
+                    .doesNotContain("juno_https_request_text");
         }
 
         @Test
@@ -1412,8 +1482,78 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPlainGet");
 
             // Then
-            assertThat(result.assembly()).contains("bl juno_http_request_buffer")
+            assertThat(result.assembly()).contains("bl juno_http_request_text")
                     .doesNotContain("Too many redirects", "juno_duration_to_millis");
+        }
+
+        @Test
+        @DisplayName("instanceof, and its pattern, compile for a final class")
+        void shouldCompileInstanceOfAFinalClass() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Shapes", """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class Shapes {
+                        interface Shape {
+                            int size();
+                        }
+
+                        static final class Circle implements Shape {
+                            public int size() {
+                                return 3;
+                            }
+                        }
+
+                        static final class Square implements Shape {
+                            public int size() {
+                                return 4;
+                            }
+                        }
+
+                        public static void main() {
+                            Shape[] shapes = {new Circle(), new Square()};
+                            for (Shape shape : shapes) {
+                                if (shape instanceof Circle circle) {
+                                    Serial.println(circle.size());
+                                }
+                                Serial.println(shape instanceof Square ? 1 : 0);
+                            }
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Shapes");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("instanceof of a class that is not final is rejected")
+        void shouldRejectInstanceOfANonFinalClass() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.OpenShapes", """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class OpenShapes {
+                        static class Shape {
+                        }
+
+                        static class Circle extends Shape {
+                        }
+
+                        public static void main() {
+                            Shape shape = new Circle();
+                            Serial.println(shape instanceof Circle ? 1 : 0);
+                        }
+                    }
+                    """);
+
+            // When / Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OpenShapes"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("instanceof is supported only for available final classes");
         }
 
         @Test

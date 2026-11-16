@@ -87,7 +87,11 @@ public final class HttpRequest {
 
     /** Builds a {@link HttpRequest}. */
     public interface Builder {
-        /** Sets the URI the request is sent to. */
+        /**
+         * Sets the URI the request is sent to.
+         *
+         * @throws IllegalArgumentException if its scheme is not {@code http} or {@code https}, or it has no host
+         */
         Builder uri(URI uri);
 
         /**
@@ -229,6 +233,12 @@ public final class HttpRequest {
 
         @Override
         public Builder uri(URI uri) {
+            if (!uri.isHttp()) {
+                throw new IllegalArgumentException("Unsupported URI scheme: " + uri.toString());
+            }
+            if (uri.getHost() == null) {
+                throw new IllegalArgumentException("The URI has no host: " + uri.toString());
+            }
             target = uri;
             return this;
         }

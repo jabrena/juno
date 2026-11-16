@@ -70,6 +70,12 @@ final class NetworkShimLibraries {
         if (features.contains(ShimFeature.HTTP_REQUEST_BUFFER)) {
             helpers.append(runtimeSource.load("common/http-request-buffer.cpp"));
         }
+        if (features.contains(ShimFeature.HTTPS_REQUEST_TEXT)) {
+            helpers.append(runtimeSource.load("common/https-request-text.cpp"));
+        }
+        if (features.contains(ShimFeature.HTTP_REQUEST_TEXT)) {
+            helpers.append(runtimeSource.load("common/http-request-text.cpp"));
+        }
         return helpers.toString().replace("${JUNO_HTTP_CLIENT_TYPE}", httpClientType)
                 .replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)
                 .replace("${JUNO_HTTP_RUN_PREPARE}", worker ? """

@@ -132,6 +132,12 @@ Juno links the program as a closed world, so it already sees every subclass the 
 should therefore behave like an ordinary class hierarchy on the board. Juno has no example or test that uses sealed
 types yet, so this page does not list them as supported.
 
+### instanceof
+
+`instanceof`, and its pattern form `shape instanceof Circle circle`, work when the class tested for is `final`, which
+includes every record. Testing for a class that is not `final`, or for an interface, is rejected when the program is
+compiled.
+
 ### Static methods
 
 Static methods take and return primitive values, and their calls are resolved when the program is linked. Methods the

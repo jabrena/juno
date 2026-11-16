@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.jdk.net.http;
 
 import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
+import io.github.jabrena.juno.hardware.internal.NativeHttpRequests;
 import io.github.jabrena.juno.hardware.internal.NativeHttpSchemes;
 import io.github.jabrena.juno.jdk.net.URI;
 import io.github.jabrena.juno.jdk.util.Optional;
@@ -16,8 +17,13 @@ import java.time.Duration;
  * <p>What a program never uses is not linked: the request code of a scheme none of its URIs name, the redirect code
  * when it never calls {@code followRedirects}, and a full response-header buffer when it never reads
  * {@code headers()} or follows redirects.
+ *
+ * <p>As in the JDK since 21, a client is {@link AutoCloseable}, so it can be the resource of a
+ * {@code try}-with-resources statement. Every request runs to completion in the thread that sends it, so a client
+ * that is shut down has no request left to wait for: {@link #isTerminated()} is true at once, and a later
+ * {@link #send} throws {@link IOException}.
  */
-public final class HttpClient {
+public final class HttpClient implements AutoCloseable {
     /** The body buffer's size in bytes: a longer body is truncated to it. */
     public static final int BODY_CAPACITY = 384;
     /** The response-header buffer's size in bytes, in a program that reads headers or follows redirects. */
@@ -37,6 +43,7 @@ public final class HttpClient {
     /** The redirect policy, or {@code null} for {@link Redirect#NEVER}, so a program without redirects needs no enum. */
     private final @Nullable Redirect redirect;
     private final int connectTimeoutMillis;
+    private boolean shutDown;
 
     private HttpClient(@Nullable Redirect redirect, int connectTimeoutMillis) {
         // Decided when the program is linked: a full buffer only for a program that reads headers or follows redirects.
@@ -74,11 +81,15 @@ public final class HttpClient {
      * its own {@code String}. Either way its headers are read from the client's buffer, refilled by every call.
      *
      * @throws HttpTimeoutException when no response arrived within the timeout
-     * @throws IOException when the request could not be sent, or a redirect could not be followed
+     * @throws IOException when the client is shut down, the request could not be sent, or a redirect could not be
+     *                     followed
      * @throws InterruptedException never on the board; declared because the JDK method declares it
      */
     public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler)
             throws IOException, InterruptedException {
+        if (shutDown) {
+            throw new IOException("The client is shut down");
+        }
         URI target = request.uri();
         String method = request.method();
         byte[] bodyBytes = request.bodyBytes();
@@ -104,6 +115,40 @@ public final class HttpClient {
             length = exchange(request, target, method, bodyBytes, bodyLength);
         }
         return responseBodyHandler.respond(this, statusCode(), length, target);
+    }
+
+    /** Shuts the client down: a later {@link #send} throws {@link IOException}. Shutting it down again does nothing. */
+    public void shutdown() {
+        shutDown = true;
+    }
+
+    /**
+     * Shuts the client down, as {@link #shutdown()} does: there is no request in flight to interrupt, since every
+     * request runs to completion in the thread that sends it.
+     */
+    public void shutdownNow() {
+        shutDown = true;
+    }
+
+    /**
+     * Whether the client is shut down, waiting for nothing: every request runs to completion in the thread that
+     * sends it, so a shut-down client has none left.
+     *
+     * @throws InterruptedException never on the board; declared because the JDK method declares it
+     */
+    public boolean awaitTermination(Duration duration) throws InterruptedException {
+        return shutDown;
+    }
+
+    /** Whether the client is shut down, so it has no request left. */
+    public boolean isTerminated() {
+        return shutDown;
+    }
+
+    /** Shuts the client down, as {@link #shutdown()} does; the {@code try}-with-resources statement calls it. */
+    @Override
+    public void close() {
+        shutDown = true;
     }
 
     /** The client's reused byte-array response, its buffer zero-filled past the {@code length} bytes received. */
@@ -155,13 +200,16 @@ public final class HttpClient {
         if (NativeHttpFeatures.timeouts()) {
             io.github.jabrena.juno.hardware.net.http.HttpClient.setTimeout(timeoutMillis(request));
         }
-        byte[] target = uri.pathBytes();
-        int targetLength = uri.pathLength();
+        // Never null: HttpRequest.Builder.uri and redirectTarget only accept a URI with a host.
+        String host = uri.getHost();
+        if (host == null) {
+            throw new IOException("The URI has no host");
+        }
+        String target = uri.requestTarget();
         // Decided when the program is linked: only a program that calls HttpRequest.Builder.method can send a CONNECT.
         if (NativeHttpFeatures.customMethods() && method.equals("CONNECT")) {
             // A CONNECT names its tunnel's end, host:port, rather than a path.
-            target = new byte[URI.MAX_PATH_LENGTH];
-            targetLength = uri.writeAuthority(target);
+            target = uri.authorityTarget();
         }
         int length;
         // Each scheme asks its link-time query first, so a program that only ever sends to one scheme links only
@@ -170,16 +218,16 @@ public final class HttpClient {
             if (!NativeHttpSchemes.https()) {
                 throw new IOException("This program links no https request: name an https URI in it to send one");
             }
-            length = io.github.jabrena.juno.hardware.net.http.HttpClient.requestHttps(uri.getHost(), uri.connectPort(),
-                    method, target, targetLength, request.headerBytes(), request.headersLength(),
-                    bodyBytes, bodyLength, body, body.length, headers, headers.length, statusAndHeadersLength);
+            length = NativeHttpRequests.requestHttps(host, uri.connectPort(), method, target,
+                    request.headerBytes(), request.headersLength(), bodyBytes, bodyLength,
+                    body, body.length, headers, headers.length, statusAndHeadersLength);
         } else {
             if (!NativeHttpSchemes.http()) {
                 throw new IOException("This program links no http request: name an http URI in it to send one");
             }
-            length = io.github.jabrena.juno.hardware.net.http.HttpClient.requestHttp(uri.getHost(), uri.connectPort(),
-                    method, target, targetLength, request.headerBytes(), request.headersLength(),
-                    bodyBytes, bodyLength, body, body.length, headers, headers.length, statusAndHeadersLength);
+            length = NativeHttpRequests.requestHttp(host, uri.connectPort(), method, target,
+                    request.headerBytes(), request.headersLength(), bodyBytes, bodyLength,
+                    body, body.length, headers, headers.length, statusAndHeadersLength);
         }
         if (length < 0) {
             throw new IOException("The HTTP request failed");
@@ -201,8 +249,9 @@ public final class HttpClient {
     }
 
     /**
-     * Where the redirect just received points, or {@code null} when it is not followed: it has no {@code Location}, or
-     * it leaves {@code https} for {@code http} under {@link Redirect#NORMAL}.
+     * Where the redirect just received points, its {@code Location} resolved against {@code current}, or {@code null}
+     * when it is not followed: it has no {@code Location}, or it leaves {@code https} for {@code http} under
+     * {@link Redirect#NORMAL}.
      */
     private @Nullable URI redirectTarget(URI current) throws IOException {
         Optional<String> location = response.headers().firstValue("location");
@@ -211,8 +260,11 @@ public final class HttpClient {
         }
         URI next;
         try {
-            next = current.resolveRedirect(location.get());
+            next = current.resolve(location.get());
         } catch (IllegalArgumentException e) {
+            throw new IOException("Cannot follow the redirect to " + location.get());
+        }
+        if (!next.isHttp() || next.getHost() == null) {
             throw new IOException("Cannot follow the redirect to " + location.get());
         }
         if (redirect == Redirect.NORMAL && current.isSecure() && !next.isSecure()) {

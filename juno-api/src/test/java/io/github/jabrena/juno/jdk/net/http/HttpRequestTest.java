@@ -35,6 +35,20 @@ class HttpRequestTest {
     }
 
     @Test
+    @DisplayName("only an http or https URI with a host can be sent, as in the JDK")
+    void requiresAnHttpUriWithAHost() {
+        assertThat(HttpRequest.newBuilder(URI.create("HTTPS://example.com/")).build().uri().isSecure()).isTrue();
+        assertThatThrownBy(() -> HttpRequest.newBuilder(URI.create("ftp://example.com/")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Unsupported URI scheme: ftp://example.com/");
+        assertThatThrownBy(() -> HttpRequest.newBuilder().uri(URI.create("http:///path")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("The URI has no host: http:///path");
+        assertThatThrownBy(() -> HttpRequest.newBuilder().uri(URI.create("/relative")))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     @DisplayName("POST and PUT carry their body; DELETE and HEAD carry none")
     void methodsAndBodies() {
         HttpRequest.BodyPublisher json = HttpRequest.BodyPublishers.ofString("{\"a\":1}");

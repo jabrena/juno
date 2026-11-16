@@ -59,6 +59,30 @@ class HttpClientTest {
     }
 
     @Test
+    @DisplayName("a client is AutoCloseable: once closed or shut down it is terminated and sends nothing")
+    void closesAsTheJdk() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI_SENT).build();
+        HttpClient closed;
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            assertThat(client.isTerminated()).isFalse();
+            assertThat(client.awaitTermination(Duration.ofSeconds(1))).isFalse();
+            closed = client;
+        }
+        HttpClient shutDown = HttpClient.newHttpClient();
+        shutDown.shutdown();
+        shutDown.shutdown();
+        HttpClient shutDownNow = HttpClient.newHttpClient();
+        shutDownNow.shutdownNow();
+
+        assertThat(closed.isTerminated()).isTrue();
+        assertThat(shutDown.awaitTermination(Duration.ofSeconds(1))).isTrue();
+        assertThat(shutDownNow.isTerminated()).isTrue();
+        assertThatThrownBy(() -> closed.send(request, HttpResponse.BodyHandlers.ofByteArray()))
+                .isInstanceOf(java.io.IOException.class)
+                .hasMessage("The client is shut down");
+    }
+
+    @Test
     @DisplayName("301, 302, 303, 307 and 308 are the redirects a client follows")
     void knowsTheRedirects() {
         assertThat(HttpClient.isRedirect(301)).isTrue();

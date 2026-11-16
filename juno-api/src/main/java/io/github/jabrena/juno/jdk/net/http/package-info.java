@@ -4,9 +4,14 @@
  * {@code HttpRequest}, {@code HttpResponse} and {@code HttpHeaders} runs this code, which sends the request through
  * {@link io.github.jabrena.juno.hardware.net.http.HttpClient}.
  *
- * <p>It is a subset, shaped by the board's fixed memory:
+ * <p>It runs on the UNO R4 WiFi and larger boards; the compiler rejects it on the UNO WiFi Rev2. It is a subset,
+ * shaped by the board's fixed memory:
  *
  * <ul>
+ *   <li>URIs: any {@code http} or {@code https} URI with a host, of any length;</li>
+ *   <li>a client is {@link java.lang.AutoCloseable}, as in the JDK since 21: {@code close}, {@code shutdown} and
+ *       {@code shutdownNow} stop it from sending, and {@code isTerminated} and {@code awaitTermination} answer at
+ *       once, since every request runs to completion in the thread that sends it;</li>
  *   <li>synchronous {@code send} only, over HTTP/1.1 whatever {@code version} asks for; no {@code sendAsync}, cookies
  *       or authenticator;</li>
  *   <li>requests: {@code GET}, {@code POST}, {@code PUT}, {@code DELETE}, {@code HEAD} and {@code method(...)} for

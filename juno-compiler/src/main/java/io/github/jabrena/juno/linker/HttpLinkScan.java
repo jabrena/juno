@@ -4,6 +4,7 @@ import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.ConstantPool;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.linker.HttpLinkFacts.Fact;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.function.Function;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEINTERFACE;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESPECIAL;
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
 
@@ -21,8 +23,10 @@ import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
  * <ul>
  *   <li>The schemes its {@code URI.create(...)} and {@code new URI(...)} calls name. A call given a string constant —
  *       {@code ldc} just before it, which is also what javac emits for a {@code static final} constant — names that
- *       constant's scheme; a call given anything else could name either, so it counts as both. The board-side
- *       {@code URI} itself is skipped: {@code create} hands its own argument to the constructor.</li>
+ *       constant's scheme, in any case; a call given anything else could name either, so it counts as both. A
+ *       {@code uri.resolve("...")} call given a constant names that constant's scheme too: a relative one keeps the
+ *       base URI's, which its own {@code create} already named. The board-side {@code URI} itself is skipped:
+ *       {@code create} hands its own argument to the constructor.</li>
  *   <li>Whether it reads a response's headers ({@code HttpResponse.headers()}), asks a client to follow redirects
  *       ({@code HttpClient.Builder.followRedirects(...)}), sets a method of its own
  *       ({@code HttpRequest.Builder.method(...)}), or a timeout ({@code HttpRequest.Builder.timeout(...)},
@@ -36,6 +40,8 @@ final class HttpLinkScan {
     private static final MethodRef URI_CREATE = new MethodRef(URI_CLASS, "create",
             "(Ljava/lang/String;)Ljava/net/URI;");
     private static final MethodRef URI_CONSTRUCTOR = new MethodRef(URI_CLASS, "<init>", "(Ljava/lang/String;)V");
+    private static final MethodRef URI_RESOLVE = new MethodRef(URI_CLASS, "resolve",
+            "(Ljava/lang/String;)Ljava/net/URI;");
     private static final String CLIENT_BUILDER = "java/net/http/HttpClient$Builder";
     private static final String REQUEST_BUILDER = "java/net/http/HttpRequest$Builder";
     /** The program calls that ask for optional client code, and what each asks for. */
@@ -96,6 +102,8 @@ final class HttpLinkScan {
                 if (createsUri(instruction, pool)) {
                     facts = facts.with(index > 0 ? schemeOf(instructions.get(index - 1), pool)
                             : HttpLinkFacts.of(Fact.HTTP, Fact.HTTPS));
+                } else if (resolvesConstant(instruction, pool, index > 0 ? instructions.get(index - 1) : null)) {
+                    facts = facts.with(schemeOf(instructions.get(index - 1), pool));
                 } else if (instruction.opcode() == INVOKEINTERFACE) {
                     facts = facts.with(FEATURE_CALLS.getOrDefault(pool.methodRef(instruction.operandA()),
                             HttpLinkFacts.NONE));
@@ -114,6 +122,17 @@ final class HttpLinkScan {
         };
     }
 
+    /**
+     * Whether {@code instruction} is a {@code uri.resolve(String)} call given the string constant {@code loaded}
+     * pushes. A reference that is not a constant keeps the base URI's scheme or names its own: a program whose
+     * redirect or reference leaves the schemes it names gets an {@code IOException} saying so when it sends.
+     */
+    private boolean resolvesConstant(Instruction instruction, ConstantPool pool, @Nullable Instruction loaded) {
+        return loaded != null && instruction.opcode() == INVOKEVIRTUAL
+                && pool.methodRef(instruction.operandA()).equals(URI_RESOLVE)
+                && (loaded.opcode() == LDC || loaded.opcode() == LDC_W) && pool.isString(loaded.operandA());
+    }
+
     /** The scheme the argument {@code loaded} pushes names, or both when it is not a string constant. */
     private HttpLinkFacts schemeOf(Instruction loaded, ConstantPool pool) {
         boolean constant = (loaded.opcode() == LDC || loaded.opcode() == LDC_W) && pool.isString(loaded.operandA());
@@ -121,13 +140,13 @@ final class HttpLinkScan {
             return HttpLinkFacts.of(Fact.HTTP, Fact.HTTPS);
         }
         String uri = pool.string(loaded.operandA());
-        if (uri.startsWith("https://")) {
+        if (uri.regionMatches(true, 0, "https:", 0, "https:".length())) {
             return HttpLinkFacts.of(Fact.HTTPS);
         }
-        if (uri.startsWith("http://")) {
+        if (uri.regionMatches(true, 0, "http:", 0, "http:".length())) {
             return HttpLinkFacts.of(Fact.HTTP);
         }
-        // Any other scheme is rejected by URI.create when it runs, so it sends no request.
+        // Any other scheme, or a relative reference, names no request: HttpRequest.Builder.uri rejects other schemes.
         return HttpLinkFacts.NONE;
     }
 }

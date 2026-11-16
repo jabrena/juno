@@ -941,6 +941,14 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
                         arg(9), arg(10), arg(11), arg(12), arg(13)),
                 ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
+        shim(Intrinsic.HTTPS_REQUEST_TEXT, "juno_https_request_text", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
+                        arg(9), arg(10), arg(11), arg(12)),
+                ShimFeature.HTTPS, ShimFeature.HTTPS_REQUEST_TEXT);
+        shim(Intrinsic.HTTP_REQUEST_TEXT, "juno_http_request_text", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
+                        arg(9), arg(10), arg(11), arg(12)),
+                ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_TEXT);
         shim(Intrinsic.HTTP_SET_TIMEOUT, "juno_http_set_timeout", Result.NONE, List.of(arg(0)),
                 ShimFeature.HTTP_TIMEOUT);
         shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE, "juno_http_set_trusted_certificate", Result.WORD,

@@ -234,6 +234,10 @@ public enum Intrinsic {
     HTTPS_QUERY,
     HTTPS_REQUEST_BUFFER,
     HTTP_REQUEST_BUFFER,
+    /** {@code NativeHttpRequests.requestHttps}: the board-side {@code java.net.http} request, its target a String. */
+    HTTPS_REQUEST_TEXT,
+    /** {@code NativeHttpRequests.requestHttp}: the plain-HTTP counterpart of {@link #HTTPS_REQUEST_TEXT}. */
+    HTTP_REQUEST_TEXT,
     /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
     HTTP_SET_TIMEOUT,
     /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */

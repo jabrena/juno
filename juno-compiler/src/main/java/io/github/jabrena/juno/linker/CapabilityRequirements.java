@@ -11,9 +11,11 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
-/** Resolves the board capability a reachable intrinsic or public MCU service requires. */
+/** Resolves the board capability a reachable intrinsic, public MCU service or {@code java.net.http} call requires. */
 final class CapabilityRequirements {
     private static final String MCU_OWNER = "io/github/jabrena/juno/hardware/MCU";
+    /** The board-side {@code java.net.http} classes, as a program's calls name them. */
+    private static final String JDK_HTTP_PACKAGE = "java/net/http/";
 
     private static final Map<String, Capability> MCU_SERVICE_CAPABILITIES = Map.ofEntries(
             Map.entry("Lio/github/jabrena/juno/hardware/hid/Mouse;", Capability.USB_HID),
@@ -36,6 +38,9 @@ final class CapabilityRequirements {
     }
 
     Optional<Capability> forMethod(MethodRef method) {
+        if (method.owner().startsWith(JDK_HTTP_PACKAGE)) {
+            return Optional.of(Capability.JDK_HTTP_CLIENT);
+        }
         if (!method.owner().equals(MCU_OWNER)) {
             return Optional.empty();
         }
@@ -74,8 +79,8 @@ final class CapabilityRequirements {
                 Intrinsic.SOCKET_SET_SO_TIMEOUT, Intrinsic.SOCKET_CLOSE, Intrinsic.SOCKET_OUTPUT_STREAM_WRITE);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
-                Intrinsic.HTTPS_QUERY, Intrinsic.HTTPS_REQUEST_BUFFER);
-        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER);
+                Intrinsic.HTTPS_QUERY, Intrinsic.HTTPS_REQUEST_BUFFER, Intrinsic.HTTPS_REQUEST_TEXT);
+        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER, Intrinsic.HTTP_REQUEST_TEXT);
         require(required, Capability.WIFI, Intrinsic.HTTP_SET_TIMEOUT);
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,
                 Intrinsic.HTTP_URL_POST, Intrinsic.HTTP_URL_POST_BUFFER, Intrinsic.HTTP_URL_DELETE,
