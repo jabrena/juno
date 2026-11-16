@@ -86,6 +86,14 @@ static bool juno_http_connect(Client& client, const char* host, int32_t port) {
 #endif
 }
 
+static bool juno_http_method_is(const char* method, const char* name) {
+  while (*method != '\0' && *method == *name) {
+    method++;
+    name++;
+  }
+  return *method == '\0' && *name == '\0';
+}
+
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
@@ -128,6 +136,9 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   request.flush();
 
   const unsigned long deadline = millis() + juno_http_timeout_ms;
+  // A HEAD response, and a CONNECT one (whose tunnel stays open), carry no body whatever Content-Length says, so the
+  // exchange is complete at the blank line instead of waiting out the deadline.
+  const bool noResponseBody = juno_http_method_is(method, "HEAD") || juno_http_method_is(method, "CONNECT");
   // The status line ("HTTP/1.1 200 OK\r\n") is parsed for its numeric status code
   // only; everything else on it (the HTTP version and the reason phrase) is skipped.
   bool inStatusLine = true;
@@ -217,7 +228,7 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
       if (headersWritten < headersBufferLength) headersBuffer[headersWritten] = static_cast<uint8_t>(c);
       headersWritten++;
       // An empty body (a 204, say) is complete at the blank line; do not wait for the server to close.
-      if (inBody && !chunked && hasContentLength && contentLength == 0) break;
+      if (inBody && (noResponseBody || (!chunked && hasContentLength && contentLength == 0))) break;
       continue;
     }
 
