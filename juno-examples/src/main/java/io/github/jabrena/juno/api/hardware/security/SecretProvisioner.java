@@ -1,67 +1,68 @@
 package io.github.jabrena.juno.api.hardware.security;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Writes named secrets into the board's secure element, on request from the host. The host sends one line per
+ * Writes named secrets into the board's secret store, on request from the host. The host sends one line per
  * request over USB serial, so the value never goes on the command line or onto the SD card:
  * <ul>
- * <li>{@code SET <name> <hex>}: stores the value, given as hex digits (at most 63 bytes), and answers {@code OK <name>}.</li>
+ * <li>{@code SET <name> <hex>}: stores the value, given as hex digits, under any name of 1 to 31 printable characters,
+ * and answers {@code OK <name>}. The name shares a 63-byte record with the value, so the value can be up to
+ * 62 bytes minus the name's length.</li>
  * <li>{@code CLEAR <name>}: empties the name and answers {@code OK <name>}.</li>
- * <li>{@code CLEAR ALL}: empties every data slot on the chip, including names outside this program's
- * {@link SecretSlots} table, and answers {@code OK CLEAR ALL}. It decommissions the chip rather than this
+ * <li>{@code CLEAR ALL}: empties every data slot on the chip, including names other programs wrote, and
+ * answers {@code OK CLEAR ALL}. It decommissions the chip rather than this
  * program's names.</li>
- * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name, then {@code END}. No value is printed.</li>
+ * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name the examples read, then {@code END}. No
+ * value is printed.</li>
  * </ul>
  * A bad request answers {@code ERR} with a short reason and stores nothing. The board prints {@code READY} once it can
- * take requests. The name-to-slot table here must match the reading program's table: it is the only place slot numbers
- * are chosen. Upload this program with {@code juno:secret}.
+ * take requests, and again every second until the first request arrives: a board's USB serial port can come back after
+ * an upload later than the program starts, and a line printed before the host opens the port is lost. The store keeps each name next to its value, so a reading program only has to ask for the same name.
+ * Upload this program with {@code juno:secret}.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoPortentaH7Board.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class,
+        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoUnoR4WiFiBoard.class,
+        ArduinoUnoR3WiFiRev2Board.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;
     private static final int NAME_PREFIX_SET = 4;
     private static final int NAME_PREFIX_CLEAR = 6;
+    private static final int POLL_MS = 5;
+    private static final int READY_REPEAT_MS = 1000;
+    /** The names {@code LIST} reports: the ones {@link ExampleSecrets} reads. */
+    private static final String[] LISTED_NAMES = {"wifi.ssid", "wifi.password", "mailbox.apikey", "mailbox.q.ip",
+        "smtp.host", "smtp.username", "smtp.password", "supabase.api.host", "supabase.api.key", "supabase.api.url"};
+    private static final int LISTED_COUNT = 10;
     private final SecretStore chip;
-    private final SecretSlots slots;
     private final byte[] line = new byte[LINE_BYTES];
     private final byte[] value = new byte[VALUE_BYTES];
     private final byte[] readBack = new byte[VALUE_BYTES];
     private int lineLength;
     private boolean lineTooLong;
+    private boolean requested;
 
-    SecretProvisioner(SecretStore chip, SecretSlots slots) {
+    SecretProvisioner(SecretStore chip) {
         this.chip = chip;
-        this.slots = slots;
     }
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        I2c i2c = MCU.getI2c();
-        SecretSlots slots = new SecretSlots()
-                .add("wifi.ssid", 8)
-                .add("wifi.password", 9)
-                .add("mailbox.apikey", 10)
-                .add("mailbox.q.ip", 0)
-                .add("smtp.host", 11)
-                .add("smtp.username", 12)
-                .add("smtp.password", 13)
-                .add("supabase.api.host", 14)
-                .add("supabase.api.key", 15)
-                .add("supabase.api.url", 1);
-        new SecretProvisioner(SecretStoreFactory.open(i2c, slots), slots).run();
+        new SecretProvisioner(MCU.getSecretStore()).run();
     }
 
     private void run() {
@@ -81,9 +82,16 @@ public final class SecretProvisioner {
         lineLength = 0;
         lineTooLong = false;
         while (true) {
+            int idleMs = 0;
             while (Serial.available() == 0) {
-                Delay.millis(5);
+                Delay.millis(POLL_MS);
+                idleMs += POLL_MS;
+                if (!requested && idleMs >= READY_REPEAT_MS) {
+                    Serial.println("READY");
+                    idleMs = 0;
+                }
             }
+            requested = true;
             int received = Serial.read();
             if (received == '\n') {
                 return;
@@ -121,10 +129,6 @@ public final class SecretProvisioner {
             return;
         }
         String name = text(NAME_PREFIX_SET, nameEnd);
-        if (!slots.contains(name)) {
-            Serial.println("ERR unknown name");
-            return;
-        }
         int hexStart = nameEnd + 1;
         int hexLength = lineLength - hexStart;
         if (hexLength <= 0 || hexLength % 2 != 0 || hexLength / 2 > VALUE_BYTES) {
@@ -136,7 +140,7 @@ public final class SecretProvisioner {
             return;
         }
         if (chip.write(name, value, hexLength / 2) < 0) {
-            Serial.println("ERR secure element rejected the write");
+            Serial.println("ERR store rejected the write: bad name, too long or store full");
             return;
         }
         Serial.println("OK " + name);
@@ -144,10 +148,6 @@ public final class SecretProvisioner {
 
     private void clear() {
         String name = text(NAME_PREFIX_CLEAR, lineLength);
-        if (!slots.contains(name)) {
-            Serial.println("ERR unknown name");
-            return;
-        }
         if (chip.clear(name) != 0) {
             Serial.println("ERR write failed");
             return;
@@ -168,8 +168,8 @@ public final class SecretProvisioner {
     }
 
     private void list() {
-        for (int i = 0; i < slots.count(); i++) {
-            String name = slots.nameAt(i);
+        for (int i = 0; i < LISTED_COUNT; i++) {
+            String name = LISTED_NAMES[i];
             boolean written = chip.read(name, readBack) >= 0;
             Serial.println("STATE " + name + (written ? " written" : " missing"));
         }

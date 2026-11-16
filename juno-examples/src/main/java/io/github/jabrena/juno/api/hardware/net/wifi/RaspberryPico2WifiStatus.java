@@ -10,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Joins the network named by the ATECC608 {@code SecretStore} with the Raspberry Pi Pico 2 W's CYW43439 radio, then
+ * Joins the network named by {@code ExampleSecrets} with the Raspberry Pi Pico 2 W's CYW43439 radio, then
  * prints {@link Wifi#status} once a second and the station address once connected.
  */
 @Board(RaspberryPico2WifiBoard.class)

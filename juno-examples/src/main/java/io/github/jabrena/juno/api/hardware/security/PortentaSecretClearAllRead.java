@@ -3,9 +3,7 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -38,8 +36,6 @@ public final class PortentaSecretClearAllRead {
     private static final int MAX_VALUE_BYTES = 63;
     private static final String NAME = "demo.clearall";
     private static final String VALUE = "before-clearall";
-    /** Slot 4 is not used by the other examples' tables. */
-    private static final int SLOT = 4;
     private static final int REPORT_INTERVAL_MS = 2000;
 
     private final SecretStore chip;
@@ -59,9 +55,8 @@ public final class PortentaSecretClearAllRead {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        SecretSlots slots = new SecretSlots().add(NAME, SLOT);
         PortentaSecretClearAllRead example =
-                new PortentaSecretClearAllRead(SecretStoreFactory.open(MCU.getI2c(), slots));
+                new PortentaSecretClearAllRead(MCU.getSecretStore());
         example.run();
         while (true) {
             example.report();

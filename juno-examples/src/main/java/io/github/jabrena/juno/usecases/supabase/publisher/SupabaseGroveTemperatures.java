@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
  * {@link LocalDateTime#now()} once at startup and then advanced by {@link SensorClock}, so no extra time requests are
  * made; {@code id} is left to the table's default. A sensor that fails to read is sent as {@code null}.
  *
- * <p>The ATECC608 {@code SecretStore} provides {@code wifi.ssid}, {@code wifi.password}, {@code supabase.api.url}
+ * <p>{@code ExampleSecrets} provides {@code wifi.ssid}, {@code wifi.password}, {@code supabase.api.url}
  * (the table endpoint, such as {@code https://abcdefgh.supabase.co/rest/v1/sensor-data}) and {@code supabase.api.key}.
  * A board is a public client: use a publishable key protected by Row Level Security, never a secret or legacy
  * {@code service_role} key.

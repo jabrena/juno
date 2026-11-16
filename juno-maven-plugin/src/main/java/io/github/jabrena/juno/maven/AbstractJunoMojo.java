@@ -103,16 +103,47 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         configurationFormatter.format(report.runtimeConfig()).forEach(getLog()::info);
         riskFormatter.format(report.runtimeRisks()).forEach(getLog()::info);
         suggestionFormatter.format(report.configSuggestions()).forEach(getLog()::info);
-        return new CompiledSketch(layout.directory(), targetFqbn);
+        return new CompiledSketch(layout.directory(), targetFqbn, report.usesPicoSecureFirmware());
     }
 
     final void verifySketch(ArduinoCli cli, CompiledSketch sketch) {
         getLog().info("Compiling ASM Arduino sketch with arduino-cli");
-        cli.compile(sketch.fqbn(), sketch.directory());
+        if (!sketch.picoSecureFirmware()) {
+            cli.compile(sketch.fqbn(), sketch.directory());
+            return;
+        }
+        cli.compileForPicoSecureFirmware(sketch.fqbn(), sketch.directory(), sketch.buildDirectory());
+        Path uf2 = sketch.buildDirectory().resolve(sketch.directory().getFileName() + ".ino.uf2");
+        new PicoSecureFirmwareInstaller().install(uf2);
+        getLog().info("Installed Juno's TrustZone secure firmware in the boot slot of " + uf2);
     }
 
-    /** A generated sketch directory and the FQBN to build it for. */
-    record CompiledSketch(Path directory, String fqbn) {
+    /**
+     * Uploads a sketch {@link #verifySketch} built. A Pico 2 W program with the secure firmware is uploaded from its own
+     * build directory, where the firmware was installed into the UF2: Arduino CLI's default location holds no UF2 for
+     * it, and a plain upload would reset the board into BOOTSEL and then fail, leaving it there.
+     */
+    final void upload(ArduinoCli cli, CompiledSketch sketch, String port) {
+        if (sketch.picoSecureFirmware()) {
+            cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory());
+        } else {
+            cli.upload(sketch.fqbn(), port, sketch.directory());
+        }
+    }
+
+    /**
+     * A generated sketch directory and the FQBN to build it for. {@code picoSecureFirmware} marks a Pico 2 W program
+     * that uses the TrustZone secret store: it builds into {@link #buildDirectory()}, where the secure firmware is
+     * installed into its UF2, and flashes from there.
+     */
+    record CompiledSketch(Path directory, String fqbn, boolean picoSecureFirmware) {
+        CompiledSketch(Path directory, String fqbn) {
+            this(directory, fqbn, false);
+        }
+
+        Path buildDirectory() {
+            return directory.resolve("build");
+        }
     }
 
     /**

@@ -14,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with
- * credentials from the ATECC608 {@code SecretStore} (see {@link
+ * credentials from {@code ExampleSecrets} (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON
  * ({@code

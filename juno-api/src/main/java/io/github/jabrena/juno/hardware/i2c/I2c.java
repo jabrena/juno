@@ -26,7 +26,7 @@ public interface I2c {
 
     /**
      * Sends the first {@code length} bytes of {@code data} to the device at {@code address}, with no register address,
-     * for raw protocols such as the ATECC608 command frames. Returns {@code length} on success, or {@code -1} if the
+     * for raw protocols such as a secure element's command frames. Returns {@code length} on success, or {@code -1} if the
      * device did not acknowledge. A zero-length write is a wake-up probe: it addresses the device and sends nothing.
      */
     int write(int address, byte[] data, int length);

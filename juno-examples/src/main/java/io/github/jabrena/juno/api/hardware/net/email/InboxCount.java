@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Connects to WiFi and the mailbox configured by the {@code smtp.host}, {@code smtp.username}, and {@code smtp.password}
- * entries in the ATECC608 (the same account {@link Smtp} would send from — POP3S on {@link #POP3_PORT}
+ * entries in {@code ExampleSecrets} (the same account {@link Smtp} would send from — POP3S on {@link #POP3_PORT}
  * needs no separate credentials), polls {@link Pop3Client#messageCount} every {@link
  * #POLL_INTERVAL_SECONDS} seconds, and shows the current message count on the LCD Keypad Shield's first
  * row ({@code "Inbox: N"}), or {@code "Inbox: err N"} for a negative result — see {@link

@@ -6,7 +6,6 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 
 import io.github.jabrena.juno.hardware.MCU;
@@ -18,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * The Open-Meteo request from {@code MadridWeather}'s {@code WeatherClient}, sent over plain HTTP so a board without
- * TLS can make it. Credentials come from the ATECC608 {@code SecretStore}; the buffers are sized for this one response.
+ * TLS can make it. Credentials come from {@code ExampleSecrets}; the buffers are sized for this one response.
  * Prints the HTTP status, the body length and Madrid's current temperature every ten seconds, at 115200 baud. The
  * temperature is read straight from the bytes, since {@code Json} is more code than this one value needs.
  */
@@ -27,8 +26,7 @@ import io.github.jabrena.juno.util.Delay;
     ArduinoUnoR3WiFiRev2Board.class,
     ArduinoNanoEsp32Board.class,
     AiThinkerEsp32CamBoard.class,
-    M5StackCardputerBoard.class,
-    RaspberryPico2WifiBoard.class
+    M5StackCardputerBoard.class
 })
 public final class PlainHttpWeather {
     private static final Wifi WIFI = MCU.getWifi();

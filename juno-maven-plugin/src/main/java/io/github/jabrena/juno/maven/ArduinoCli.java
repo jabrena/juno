@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.maven;
 
 import io.github.jabrena.juno.thirdparty.bearssl.BearSslLibrary;
+import io.github.jabrena.juno.thirdparty.pico.secure.PicoSecureFirmware;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -76,6 +77,23 @@ final class ArduinoCli {
             throw new ArduinoCliException("Could not install " + BearSslLibrary.NAME + " into " + libraries,
                     exception);
         }
+    }
+
+    /**
+     * Compiles a Pico 2 W sketch that runs under Juno's TrustZone secure firmware: its RAM stops below the 8 KB the
+     * firmware keeps, its flash writes go through the firmware's gateway, and the build goes to
+     * {@code buildDirectory}, where the firmware is then installed into its UF2.
+     */
+    void compileForPicoSecureFirmware(String fqbn, Path sketchDirectory, Path buildDirectory) {
+        run(captured("compile", "--fqbn", requireText(fqbn, "FQBN"), "--build-property",
+                PicoSecureFirmware.RAM_LENGTH_PROPERTY, "--build-property", PicoSecureFirmware.WRAP_FLASH_PROPERTY,
+                "--build-path", absolute(buildDirectory), absolute(sketchDirectory)));
+    }
+
+    /** Uploads the build in {@code inputDirectory}, as {@link #compileForPicoSecureFirmware} left it. */
+    void upload(String fqbn, String port, Path sketchDirectory, Path inputDirectory) {
+        run(captured("upload", "--port", requireText(port, "port"), "--fqbn", requireText(fqbn, "FQBN"),
+                "--input-dir", absolute(inputDirectory), absolute(sketchDirectory)));
     }
 
     void upload(String fqbn, String port, Path sketchDirectory) {

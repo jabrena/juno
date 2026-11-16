@@ -24,7 +24,7 @@ layout: page
 | API | What it provides | Complete example |
 |---|---|---|
 | [SD Card](../sdcard) | Loading configuration and credentials from a microSD card at boot, and reading and writing files. | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |
-| [SecretStore](../secure-element) | Reading named secrets from an ATECC608 secure element without placing credentials on the SD card or in the firmware image. | [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) |
+| [SecretStore](../secure-element) | Reading named secrets from the Portenta H7's secure element or an ESP32 board's NVS, without placing credentials on the SD card or in the firmware image. | [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) |
 
 ## Internet
 

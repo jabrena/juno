@@ -42,6 +42,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
 | `UUID.randomUUID()` | ✓ | The RA4M1's Secure Crypto Engine true-random-number generator. | |
 | `@Watchdog` | ✓ | The RA4M1 hardware watchdog. | |
+| `SecretStore` | ✓ | `Esp32Nvs` in the ESP32-S3's NVS, through the core's `Preferences` library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see [Secrets in a Secure Element](../secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
 | Onboard LED matrix | ✓ | 12 × 8 through `LedMatrix` and `LedCanvas`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
 | USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
