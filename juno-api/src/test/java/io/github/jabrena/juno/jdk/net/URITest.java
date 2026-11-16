@@ -92,6 +92,46 @@ class URITest {
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
+    @Test
+    @DisplayName("a redirect location resolves as an absolute URI, a scheme-relative one, or a path on this host")
+    void resolvesRedirectLocations() {
+        URI current = URI.create("https://api.example.com:8443/v1/old?q=1");
+
+        URI absolute = current.resolveRedirect("http://other.example.com/new");
+        URI schemeRelative = current.resolveRedirect("//cdn.example.com/file");
+        URI path = current.resolveRedirect("/v2/new?q=2");
+        URI pathWithoutPort = URI.create("http://example.com/a").resolveRedirect("/b");
+
+        assertThat(absolute.isSecure()).isFalse();
+        assertThat(absolute.getHost()).isEqualTo("other.example.com");
+        assertThat(schemeRelative.isSecure()).isTrue();
+        assertThat(schemeRelative.getHost()).isEqualTo("cdn.example.com");
+        assertThat(path(schemeRelative)).isEqualTo("/file");
+        assertThat(path.getHost()).isEqualTo("api.example.com");
+        assertThat(path.getPort()).isEqualTo(8443);
+        assertThat(path(path)).isEqualTo("/v2/new?q=2");
+        assertThat(pathWithoutPort.getPort()).isEqualTo(-1);
+        assertThat(path(pathWithoutPort)).isEqualTo("/b");
+        assertThatThrownBy(() -> current.resolveRedirect("relative/path"))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    @DisplayName("a CONNECT target is host:port, with the scheme's default port when the URI names none")
+    void writesTheConnectTarget() {
+        byte[] target = new byte[URI.MAX_PATH_LENGTH];
+
+        int secure = URI.create("https://example.com/").writeAuthority(target);
+        String secureTarget = new String(target, 0, secure, StandardCharsets.US_ASCII);
+        int plain = URI.create("http://192.168.1.10:8080/led").writeAuthority(target);
+
+        assertThat(secureTarget).isEqualTo("example.com:443");
+        assertThat(new String(target, 0, plain, StandardCharsets.US_ASCII)).isEqualTo("192.168.1.10:8080");
+        assertThat(URI.create("http://h:7/").writeAuthority(target)).isEqualTo(3);
+        assertThatThrownBy(() -> URI.create("http://" + "h".repeat(URI.MAX_HOST_LENGTH) + "/").writeAuthority(target))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     private static String path(URI uri) {
         return new String(uri.pathBytes(), 0, uri.pathLength(), StandardCharsets.US_ASCII);
     }

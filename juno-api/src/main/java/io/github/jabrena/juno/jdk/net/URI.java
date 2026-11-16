@@ -86,6 +86,55 @@ public final class URI {
         return pathLength;
     }
 
+    /**
+     * Writes {@code host:port} — the request target of a {@code CONNECT} — into {@code target} and returns its length.
+     * The port is the one written in the URI, or the scheme's default. Board-side only.
+     *
+     * @throws IllegalArgumentException if it does not fit in {@code target}
+     */
+    public int writeAuthority(byte[] target) {
+        int targetPort = connectPort();
+        int digits = 1;
+        for (int rest = targetPort / 10; rest > 0; rest = rest / 10) {
+            digits++;
+        }
+        int length = host.length() + 1 + digits;
+        if (length > target.length) {
+            throw new IllegalArgumentException("The host is too long for a CONNECT request target");
+        }
+        for (int i = 0; i < host.length(); i++) {
+            target[i] = (byte) host.charAt(i);
+        }
+        target[host.length()] = ':';
+        int value = targetPort;
+        for (int i = length - 1; i > host.length(); i--) {
+            target[i] = (byte) ('0' + value % 10);
+            value = value / 10;
+        }
+        return length;
+    }
+
+    /**
+     * The URI a redirect's {@code Location} names, read against this one: an absolute {@code http}/{@code https} URI,
+     * a scheme-relative {@code //host/path}, or an absolute path {@code /path} on this URI's host and port.
+     * Board-side only; the client calls it while following redirects.
+     *
+     * @throws IllegalArgumentException for a relative path without {@code /}, or a URI outside the class limits
+     */
+    public URI resolveRedirect(String location) {
+        if (startsWith(location, HTTPS_PREFIX) || startsWith(location, HTTP_PREFIX)) {
+            return new URI(location);
+        }
+        if (startsWith(location, "//")) {
+            return new URI(getScheme() + ":" + location);
+        }
+        if (startsWith(location, "/")) {
+            String origin = port >= 0 ? getScheme() + "://" + host + ":" + port : getScheme() + "://" + host;
+            return new URI(origin + location);
+        }
+        throw new IllegalArgumentException("Unsupported redirect location: " + location);
+    }
+
     /** Where the authority starts: just after {@code https://} or {@code http://}. */
     private static int authorityStart(String text, boolean secure) {
         if (secure) {
