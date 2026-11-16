@@ -2263,6 +2263,62 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("A concatenation that always fits one slot is built in the slot ring without measuring")
+        void shouldBuildABoundedConcatenationInTheSlotRing() throws Exception {
+            // Given: "n=" and an int need at most 13 bytes
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class ShortConcat {
+                        public static void main(String[] args) {
+                            Serial.println("n=" + MCU.getClock().millis());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.ShortConcat", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ShortConcat");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_string_concat_new")
+                    .doesNotContain("juno_string_concat_new_sized", "juno_string_concat_measure_");
+        }
+
+        @Test
+        @DisplayName("A concatenation with a String argument is measured, then built in a slot or an exact arena block")
+        void shouldMeasureAConcatenationWithAStringArgument() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class LongConcat {
+                        static String host() {
+                            return MCU.getClock().millis() > 0 ? "192.168.1.10" : "10.0.0.1";
+                        }
+                        public static void main(String[] args) {
+                            long id = MCU.getClock().millis();
+                            Serial.println("https://" + host() + "/api/v1/mailbox/" + MCU.getClock().millis() + "/" + id);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongConcat", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongConcat");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_string_concat_measure_string",
+                    "bl juno_string_concat_measure_int", "bl juno_string_concat_measure_long",
+                    "bl juno_string_concat_new_sized", "bl juno_string_concat_append_string");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_string_concat_new_sized(int32_t length)",
+                    "extern \"C\" int32_t juno_string_concat_measure_string(int32_t length, const char* value)");
+        }
+
+        @Test
         @DisplayName("Lowers the string concat factory for wide and floating-point values")
         void shouldLowerTheStringConcatFactoryForWideAndFloatingPointValues() throws Exception {
             // Given

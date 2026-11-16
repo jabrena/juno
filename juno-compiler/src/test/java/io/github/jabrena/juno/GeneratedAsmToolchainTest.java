@@ -2137,8 +2137,9 @@ class GeneratedAsmToolchainTest {
                   int32_t text = juno_string_from_bytes(bytes, 9, 13);
                   if (text != static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_string_slots[0]))) return 1;
                   if (strcmp(juno_string_slots[0], "21.5") != 0) return 1;
-                  if (juno_string_from_bytes(bytes, 23, 54) == 0) return 2; // 31 bytes: the longest that fits
-                  if (juno_string_from_bytes(bytes, 23, 55) != 0) return 3; // 32 bytes: one too many
+                  if (juno_string_from_bytes(bytes, 23, 54) == 0) return 2; // 31 bytes: the longest slot
+                  // 32 bytes go to the arena, leaving the slot cursor where it was
+                  if (juno_string_from_bytes(bytes, 23, 55) == 0 || juno_string_slot_cursor != 2) return 3;
                   if (juno_string_from_bytes(bytes, 5, 4) != 0) return 4;
                   juno_string_slots[2][0] = 'x';
                   if (juno_string_from_bytes(bytes, 9, 9) == 0 || juno_string_slots[2][0] != '\\0') return 5;

@@ -109,7 +109,8 @@ while (true) {
 
 A path that depends on runtime data, such as coordinates returned by an earlier request, cannot be a literal. Build it in
 a `byte[]` and use the overload that takes a base URL (a scheme, host and optional port, with no path) plus the path
-buffer and its length. Runtime `String`s are limited to 31 bytes, so the buffer is the way to build longer paths:
+buffer and its length. The URL these methods take must be a compile-time string, so the buffer is the way to add a runtime
+path:
 
 ```java
 byte[] path = new byte[256];

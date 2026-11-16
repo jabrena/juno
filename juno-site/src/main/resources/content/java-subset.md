@@ -35,8 +35,9 @@ JVM's own heap collects it, and very large values do not fit the arena.
 
 ### Complex data types
 
-- **String** is either a literal or a runtime value. A runtime string built with `+` or `String.valueOf` holds up to
-  31 UTF-8 bytes, and a longer one stops the program; `StringBuilder.toString()` is as long as the builder's capacity.
+- **String** is either a literal or a runtime value. Concatenation with `+` has no length limit: a result of up to 31
+  UTF-8 bytes uses a rotating string slot, and a longer one is allocated in the arena at exactly its length.
+  `String.valueOf` holds up to 31 bytes, and `StringBuilder.toString()` is as long as the builder's capacity.
   Supported: `String.valueOf(int)`, `length()`, `charAt(int)` and concatenation with `+`.
 - **BigInteger** and **BigDecimal** give arbitrary precision, with results that match the JDK. Their size is limited by
   memory, not by a fixed width. Print them with `Serial.println(value.toString())`.

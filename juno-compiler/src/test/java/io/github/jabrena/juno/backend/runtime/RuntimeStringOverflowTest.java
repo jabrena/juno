@@ -23,14 +23,28 @@ class RuntimeStringOverflowTest {
     }
 
     @Test
-    @DisplayName("Concatenation overflows go through the diagnostic")
+    @DisplayName("Concatenation overflows of a slot go through the diagnostic")
     void shouldRouteConcatenationOverflowsThroughTheDiagnostic() {
         // Given
         String operations = shimLibraries.runtimeStringOperations();
 
-        // When & Then
-        assertThat(operations).contains("JUNO_STRING_SLOT_SIZE) juno_string_overflow();")
+        // When & Then: only a slot can overflow; a measured arena block is exactly as long as its content
+        assertThat(operations)
+                .contains("JUNO_STRING_SLOT_SIZE && juno_string_in_slot(buffer)) juno_string_overflow();")
                 .doesNotContain("JUNO_STRING_SLOT_SIZE) juno_panic();");
+    }
+
+    @Test
+    @DisplayName("A measured concatenation takes a slot when it fits one and an exact arena block otherwise")
+    void shouldBuildAMeasuredConcatenationInASlotOrAnExactArenaBlock() {
+        // Given
+        String operations = shimLibraries.runtimeStringOperations();
+        String sized = operations.substring(operations.indexOf("extern \"C\" int32_t juno_string_concat_new_sized"));
+
+        // When & Then
+        assertThat(sized.substring(0, sized.indexOf("\n}\n")))
+                .contains("< JUNO_STRING_SLOT_SIZE) return juno_string_concat_new();",
+                        "juno_alloc(static_cast<uint32_t>(length) + 1u, 1u)");
     }
 
     @Test
