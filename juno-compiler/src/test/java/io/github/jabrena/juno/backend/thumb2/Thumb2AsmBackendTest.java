@@ -1161,8 +1161,8 @@ class Thumb2AsmBackendTest {
                 .generate(new IrProgram(entryPoint, List.of(method))).runtimeShim();
 
         // Then
-        // toString() needs the shared runtime-string-slot pool for its length limit even though this program never
-        // calls String.valueOf/Json.getString itself, but its result is heap-allocated, never a slot (#366).
+        // The shared runtime-string-slot pool is linked with the builder even though this program never calls
+        // String.valueOf/Json.getString itself, but toString()'s result is heap-allocated, never a slot (#366).
         assertThat(shim).contains(
                 "extern \"C\" int32_t juno_string_builder_new(int32_t capacity)",
                 "extern \"C\" int32_t juno_string_builder_append_char(int32_t handle, int32_t value)",

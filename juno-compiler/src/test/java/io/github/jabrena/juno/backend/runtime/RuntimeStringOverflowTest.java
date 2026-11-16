@@ -34,13 +34,12 @@ class RuntimeStringOverflowTest {
     }
 
     @Test
-    @DisplayName("StringBuilder overflows go through the diagnostic")
-    void shouldRouteStringBuilderOverflowsThroughTheDiagnostic() {
+    @DisplayName("StringBuilder.toString() is not limited to one slot")
+    void shouldNotLimitStringBuilderResultsToOneSlot() {
         // Given
         String builders = shimLibraries.stringBuilderHelpers();
 
-        // When & Then
-        assertThat(builders).contains("JUNO_STRING_SLOT_SIZE) juno_string_overflow();")
-                .doesNotContain("JUNO_STRING_SLOT_SIZE) juno_panic();");
+        // When & Then: the result is allocated to the content's length, so only the builder's capacity bounds it
+        assertThat(builders).doesNotContain("JUNO_STRING_SLOT_SIZE", "juno_string_overflow");
     }
 }
