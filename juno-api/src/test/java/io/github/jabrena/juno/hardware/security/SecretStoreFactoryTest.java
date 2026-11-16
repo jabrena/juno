@@ -18,8 +18,9 @@ class SecretStoreFactoryTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = BoardModel.class, names = {"PORTENTA_H7", "NANO_ESP32", "M5_CARDPUTER", "AI_THINKER_ESP32_CAM", "PICO_2_W"})
-    @DisplayName("the Portenta H7, the ESP32 boards and the Pico 2 W have a secret store")
+    @EnumSource(value = BoardModel.class, names = {"PORTENTA_H7", "NANO_ESP32", "M5_CARDPUTER", "AI_THINKER_ESP32_CAM", "UNO_R4_WIFI",
+        "PICO_2_W"})
+    @DisplayName("the Portenta H7, the ESP32 boards, the UNO R4 WiFi and the Pico 2 W have a secret store")
     void storeBoardsHaveAStore(BoardModel board) {
         NativeBoardModel.setBoardModel(board);
 
@@ -27,7 +28,7 @@ class SecretStoreFactoryTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = BoardModel.class, names = {"UNO_R3", "UNO_R4_WIFI", "UNO_Q", "UNO_R3_WIFI_REV2"})
+    @EnumSource(value = BoardModel.class, names = {"UNO_R3", "UNO_Q", "UNO_R3_WIFI_REV2"})
     @DisplayName("the other boards have no secret store, and opening one fails")
     void otherBoardsHaveNone(BoardModel board) {
         NativeBoardModel.setBoardModel(board);

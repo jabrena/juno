@@ -10,7 +10,7 @@ image or in build output. Three implementations sit behind that one interface:
 | Implementation | Boards | Strength |
 |---|---|---|
 | `Se050C2` | Portenta H7 (onboard NXP SE050C2) | The value lives in a secure element; the processor asks it for the value. |
-| `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM | Weaker: the board's own flash. See the warning below. |
+| `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, UNO R4 WiFi | Weaker: an ESP32's own flash. See the warning below. |
 | `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
 
 `SecretStoreFactory.open(slots)` picks the one the board has, and `SecretStoreFactory.isAvailable()` says whether there
@@ -22,7 +22,10 @@ supply it. The other boards have no secret store; see [Boards without a secret s
 NVS entry in the board's own flash partition. That still takes the secret out of the firmware image, out of the build
 output and off the SD card — a shared sketch or a copied card carries nothing — but a flash readout of the board
 exposes every value unless flash encryption is enabled. Treat it as "not in the program", not as "not extractable
-from the hardware".
+from the hardware". The UNO R4 WiFi uses the same store in its ESP32-S3 coprocessor, reached through the core's
+`Preferences` library over the modem link: it needs coprocessor firmware 0.4.1 or later, each call is a round trip
+to the coprocessor, so `clearAll()` takes several seconds, and the program on the main MCU can still read every value
+through that link.
 
 **The Pico 2 W store is fenced, not locked.** The RP2350 has no crypto chip either, so Juno ships its own small
 TrustZone secure firmware ([`juno-pico-secure`](https://github.com/jabrena/juno/tree/main/juno-third-parties/juno-pico-secure/src/main/c)):
@@ -37,7 +40,8 @@ reboots the board into BOOTSEL.
 
 **Status:** the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
 and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
-confirmed on a Nano ESP32. The Pico 2 W TrustZone path is confirmed on a Pico 2 W: `SecretStoreCheck` and
+confirmed on a Nano ESP32, and its UNO R4 WiFi variant on an R4 with coprocessor firmware 0.4.1
+(`SecretStoreCheck` and `SecretClearAllRead`). The Pico 2 W TrustZone path is confirmed on a Pico 2 W: `SecretStoreCheck` and
 `SecretClearAllRead` pass, values survive a reboot and a reflash, Wi-Fi and a BLE scan run beside it, and a direct
 read of the secure flash raises a SecureFault.
 
@@ -103,7 +107,7 @@ without ever wiping the store, and [`PortentaSecretWipe`](https://github.com/jab
 reads them back, calls `clearAll()` and checks that both are then missing.
 [`SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretClearAllRead.java)
 runs write, read, `clearAll()` and a read that must fail against an ESP32 board's NVS store or the Pico 2 W's TrustZone
-store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM, an M5Stack Cardputer ADV and a Pico 2 W.
+store; it passed on a Nano ESP32, an AI Thinker ESP32-CAM, an M5Stack Cardputer ADV, a Pico 2 W and an UNO R4 WiFi.
 
 [`SecretProbe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretProbe.java) is the read-only one: it prints what each name holds, without writing
 anything, which is the first thing to run on a board whose store has never answered.
@@ -113,11 +117,12 @@ anything, which is the first thing to run on a board whose store has never answe
 - **Portenta H7:** the SE050C2 is on the board; no extra hardware and no I2C bus of your own.
 - **Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM:** nothing to wire — the store is the board's own NVS
   partition.
+- **UNO R4 WiFi:** nothing to wire — the store is the onboard ESP32-S3's NVS.
 - **Raspberry Pi Pico 2 W:** nothing to wire or flash separately — `juno:flash` installs the secure firmware.
 
 ## Boards without a secret store
 
-The UNO R4 WiFi, UNO Q, UNO WiFi Rev2 and UNO R3 have no secret store. The UNO WiFi Rev2 does carry
+The UNO Q, UNO WiFi Rev2 and UNO R3 have no secret store. The UNO WiFi Rev2 does carry
 an ATECC608 chip, but that chip refuses every read and write until its zones are locked, which is permanent, so Juno
 does not use it for secrets.
 

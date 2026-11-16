@@ -3,9 +3,11 @@ package io.github.jabrena.juno.hardware.security;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Named-secret storage in the non-volatile storage (NVS) of an ESP32 board, for the ESP32-family boards that carry no
- * secure element at all: each logical slot is one entry of a private NVS namespace, written through the core's
- * {@code Preferences} library. NVS lives in its own flash partition, so the values outlive a sketch upload.
+ * Named-secret storage in the non-volatile storage (NVS) of an ESP32, for the boards that carry no secure element at
+ * all: the ESP32-family boards' own chip, and the ESP32-S3 coprocessor of the UNO R4 WiFi, whose core's
+ * {@code Preferences} library has the same API and carries each call to the coprocessor over the modem link (it needs
+ * the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailable). Each logical slot is one entry
+ * of a private NVS namespace. NVS lives in its own flash partition, so the values outlive a sketch upload.
  *
  * <p><b>This is weaker than a secure element, and deliberately so.</b> The SE050C2 keeps a value in a chip that the
  * processor asks for it; NVS keeps it in the board's own flash. It takes the secret out of the firmware image, out of
