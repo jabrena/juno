@@ -79,8 +79,10 @@ final class CapabilityRequirements {
                 Intrinsic.SOCKET_SET_SO_TIMEOUT, Intrinsic.SOCKET_CLOSE, Intrinsic.SOCKET_OUTPUT_STREAM_WRITE);
         require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
                 Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
-                Intrinsic.HTTPS_QUERY, Intrinsic.HTTPS_REQUEST_BUFFER, Intrinsic.HTTPS_REQUEST_TEXT);
-        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER, Intrinsic.HTTP_REQUEST_TEXT);
+                Intrinsic.HTTPS_QUERY, Intrinsic.HTTPS_REQUEST_BUFFER, Intrinsic.HTTPS_REQUEST_TEXT,
+                Intrinsic.HTTPS_REQUEST_TEXT_BODY);
+        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER, Intrinsic.HTTP_REQUEST_TEXT,
+                Intrinsic.HTTP_REQUEST_TEXT_BODY);
         require(required, Capability.WIFI, Intrinsic.HTTP_SET_TIMEOUT);
         require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,
                 Intrinsic.HTTP_URL_POST, Intrinsic.HTTP_URL_POST_BUFFER, Intrinsic.HTTP_URL_DELETE,

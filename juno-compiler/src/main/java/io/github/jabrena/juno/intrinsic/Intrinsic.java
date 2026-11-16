@@ -238,6 +238,10 @@ public enum Intrinsic {
     HTTPS_REQUEST_TEXT,
     /** {@code NativeHttpRequests.requestHttp}: the plain-HTTP counterpart of {@link #HTTPS_REQUEST_TEXT}. */
     HTTP_REQUEST_TEXT,
+    /** {@code NativeHttpRequests.requestHttpsForText}: a {@link #HTTPS_REQUEST_TEXT} whose body comes back as a String. */
+    HTTPS_REQUEST_TEXT_BODY,
+    /** {@code NativeHttpRequests.requestHttpForText}: the plain-HTTP counterpart of {@link #HTTPS_REQUEST_TEXT_BODY}. */
+    HTTP_REQUEST_TEXT_BODY,
     /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
     HTTP_SET_TIMEOUT,
     /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */

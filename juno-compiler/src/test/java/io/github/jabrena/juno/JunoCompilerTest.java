@@ -1388,6 +1388,38 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("A java.net.http ofString() body is received into a String sized to it, with no buffer cap")
+        void shouldReceiveAnOfStringBodyIntoASizedString() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpText", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpText {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofString()).body().length());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpText");
+
+            // Then: the body goes through the String sink, collected at most once before the String exists
+            assertThat(result.assembly()).contains("bl juno_https_request_text_body");
+            assertThat(result.runtimeShim()).contains("struct JunoHttpTextSink", "juno_gc_try_allocate",
+                    "extern \"C\" int32_t juno_https_request_text_body(");
+        }
+
+        @Test
         @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
         void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
             // Given

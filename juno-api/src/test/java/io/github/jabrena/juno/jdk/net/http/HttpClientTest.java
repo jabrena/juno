@@ -4,7 +4,6 @@ import io.github.jabrena.juno.jdk.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -119,14 +118,9 @@ class HttpClientTest {
     }
 
     @Test
-    @DisplayName("a String body holds exactly the bytes received, one character per byte, without decoding them")
-    void textKeepsTheBytesReceived() {
-        byte[] buffer = new byte[HttpClient.BODY_CAPACITY];
-        byte[] json = "{\"temperature_2m\":13.5}".getBytes(StandardCharsets.US_ASCII);
-        System.arraycopy(json, 0, buffer, 0, json.length);
-
-        assertThat(HttpClient.text(buffer, json.length)).isEqualTo("{\"temperature_2m\":13.5}");
-        assertThat(HttpClient.text(buffer, 0)).isEmpty();
-        assertThat(HttpClient.text(new byte[] {(byte) 0xC3, (byte) 0xA9}, 2)).isEqualTo("Ã©");
+    @DisplayName("each handler says whether the body is received as a String sized to it or into the byte buffer")
+    void handlersChooseHowTheBodyIsReceived() {
+        assertThat(HttpResponse.BodyHandlers.ofString().receivesText()).isTrue();
+        assertThat(HttpResponse.BodyHandlers.ofByteArray().receivesText()).isFalse();
     }
 }

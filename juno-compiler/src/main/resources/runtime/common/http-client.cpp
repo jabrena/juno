@@ -94,6 +94,14 @@ static bool juno_http_method_is(const char* method, const char* name) {
   return *method == '\0' && *name == '\0';
 }
 
+// Where a response body goes instead of the caller's buffer: java.net.http's BodyHandlers.ofString() receives it into
+// a String sized to it. start runs once, at the blank line after the headers, with the Content-Length, or -1 when the
+// length is not known up front (a chunked body, or one that ends when the server closes).
+struct JunoHttpBodySink {
+  void (*start)(JunoHttpBodySink* sink, int32_t contentLength);
+  void (*put)(JunoHttpBodySink* sink, uint8_t value);
+};
+
 template <typename Client>
 static int32_t juno_http_request(Client& client, const char* method, const char* host, int32_t port,
                                   const char* path, const char* body,
@@ -101,7 +109,7 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
                                   const uint8_t* requestBodyBuffer, int32_t requestBodyLength,
                                   uint8_t* responseBuffer, int32_t responseBufferLength,
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
-                                  int32_t* statusAndHeadersLength) {
+                                  int32_t* statusAndHeadersLength, JunoHttpBodySink* sink = nullptr) {
   if (!juno_http_connect(client, host, port)) {
     statusAndHeadersLength[0] = 0;
     statusAndHeadersLength[1] = 0;
@@ -227,13 +235,18 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
       }
       if (headersWritten < headersBufferLength) headersBuffer[headersWritten] = static_cast<uint8_t>(c);
       headersWritten++;
+      if (inBody && sink != nullptr) {
+        sink->start(sink, !noResponseBody && !chunked && hasContentLength ? contentLength
+            : (noResponseBody ? 0 : -1));
+      }
       // An empty body (a 204, say) is complete at the blank line; do not wait for the server to close.
       if (inBody && (noResponseBody || (!chunked && hasContentLength && contentLength == 0))) break;
       continue;
     }
 
     if (!chunked) {
-      if (written < responseBufferLength) responseBuffer[written] = static_cast<uint8_t>(c);
+      if (sink != nullptr) sink->put(sink, static_cast<uint8_t>(value));
+      else if (written < responseBufferLength) responseBuffer[written] = static_cast<uint8_t>(c);
       written++;
       if (hasContentLength && written >= contentLength) break;
       continue;
@@ -256,7 +269,8 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
         else chunkExtension = true;
         break;
       case 1:
-        if (written < responseBufferLength) responseBuffer[written] = static_cast<uint8_t>(c);
+        if (sink != nullptr) sink->put(sink, static_cast<uint8_t>(value));
+        else if (written < responseBufferLength) responseBuffer[written] = static_cast<uint8_t>(c);
         written++;
         chunkRemaining--;
         if (chunkRemaining == 0) chunkState = 2;
@@ -290,6 +304,7 @@ struct JunoHttpJob {
   uint8_t* headersBuffer;
   int32_t headersBufferLength;
   int32_t* statusAndHeadersLength;
+  JunoHttpBodySink* sink;
   void* client;
   int32_t result;
 };
@@ -302,7 +317,7 @@ static void juno_http_job(void* argument) {
                                   job->requestHeadersBuffer, job->requestHeadersLength,
                                   job->requestBodyBuffer, job->requestBodyLength,
                                   job->responseBuffer, job->responseBufferLength, job->headersBuffer,
-                                  job->headersBufferLength, job->statusAndHeadersLength);
+                                  job->headersBufferLength, job->statusAndHeadersLength, job->sink);
 }
 
 template <typename Client>
@@ -312,12 +327,12 @@ static int32_t juno_http_run(const char* method, const char* host, int32_t port,
                              const uint8_t* requestBodyBuffer, int32_t requestBodyLength,
                              uint8_t* responseBuffer, int32_t responseBufferLength,
                              uint8_t* headersBuffer, int32_t headersBufferLength,
-                             int32_t* statusAndHeadersLength) {
+                             int32_t* statusAndHeadersLength, JunoHttpBodySink* sink = nullptr) {
   Client client;
   JunoHttpJob job = {method, host, port, path, body,
                      requestHeadersBuffer, requestHeadersLength, requestBodyBuffer, requestBodyLength,
                      responseBuffer, responseBufferLength,
-                     headersBuffer, headersBufferLength, statusAndHeadersLength, &client, 0};
+                     headersBuffer, headersBufferLength, statusAndHeadersLength, sink, &client, 0};
   ${JUNO_HTTP_RUN_PREPARE}
   juno_io_offload(juno_http_job<Client>, &job);
   return job.result;

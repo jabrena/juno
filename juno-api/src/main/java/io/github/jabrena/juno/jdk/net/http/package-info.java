@@ -23,13 +23,14 @@
  *       {@value io.github.jabrena.juno.jdk.net.http.HttpRequest.BodyPublishers#STRING_CAPACITY} bytes),
  *       {@code ofByteArray} and {@code noBody}. A body without a {@code Content-Type} header is sent as
  *       {@code application/json}, the board's default, where the JDK sends none;</li>
- *   <li>responses: {@code BodyHandlers.ofByteArray()} and {@code BodyHandlers.ofString()}. The client receives the
- *       body into a buffer of fixed capacity,
- *       {@value io.github.jabrena.juno.jdk.net.http.HttpClient#BODY_CAPACITY} bytes, so a longer body is truncated to
- *       it. With {@code ofByteArray()} the body is that buffer, refilled by each request and zero-filled past the
- *       bytes received, so {@code body().length} is the capacity rather than the size received. With
- *       {@code ofString()} the body is a {@code String} of the bytes received, not decoded, so
- *       {@code body().length()} is the size received;</li>
+ *   <li>responses: {@code BodyHandlers.ofByteArray()} and {@code BodyHandlers.ofString()}. With
+ *       {@code ofByteArray()} the client receives the body into a buffer of fixed capacity,
+ *       {@value io.github.jabrena.juno.jdk.net.http.HttpClient#BODY_CAPACITY} bytes, refilled by each request and
+ *       zero-filled past the bytes received, so a longer body is truncated and {@code body().length} is the capacity
+ *       rather than the size received; that path allocates nothing per request. With {@code ofString()} the body is a
+ *       {@code String} of every byte received, not decoded, sized to the response ({@code Content-Length}, or grown
+ *       as a chunked body arrives), with no limit but the free memory: a body that does not fit fails the request
+ *       with an {@code IOException};</li>
  *   <li>{@code headers()}: {@code firstValue} and {@code firstValueAsLong}, from a buffer of
  *       {@value io.github.jabrena.juno.jdk.net.http.HttpClient#RESPONSE_HEADERS_CAPACITY} bytes that each request
  *       refills; a program that never reads headers or follows redirects keeps a 16-byte buffer instead;</li>
