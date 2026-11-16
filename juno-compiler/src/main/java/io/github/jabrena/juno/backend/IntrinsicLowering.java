@@ -441,8 +441,11 @@ public final class IntrinsicLowering {
         shim(Intrinsic.TASK_SCOPE_CLOSE, "juno_task_scope_close", Result.NONE, List.of(RECEIVER), taskRuntime);
         shim(Intrinsic.TASK_CONFIGURATION_WITH_TIMEOUT, "juno_task_configuration_with_timeout", Result.WORD,
                 List.of(RECEIVER, arg(0)), taskRuntime);
-        shim(Intrinsic.DURATION_OF_MILLIS, "juno_duration_of_millis", Result.WORD, wide(0), taskRuntime);
-        shim(Intrinsic.DURATION_OF_SECONDS, "juno_duration_of_seconds", Result.WORD, wide(0), taskRuntime);
+        // A Duration is its own word of milliseconds, with its own small runtime: an HTTP timeout needs no task runtime.
+        shim(Intrinsic.DURATION_OF_MILLIS, "juno_duration_of_millis", Result.WORD, wide(0), ShimFeature.DURATION);
+        shim(Intrinsic.DURATION_OF_SECONDS, "juno_duration_of_seconds", Result.WORD, wide(0), ShimFeature.DURATION);
+        shim(Intrinsic.DURATION_TO_MILLIS, "juno_duration_to_millis", Result.WIDE, List.of(RECEIVER),
+                ShimFeature.DURATION);
     }
 
     /** {@code java.lang.ScopedValue}: bindings are a chain of arena records entered on the calling thread's stack. */

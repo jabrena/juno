@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.jdk.net.http;
 
+import io.github.jabrena.juno.jdk.net.URI;
+
 /**
  * The board-side {@code java.net.http.HttpResponse}: the status code and body of the last request a client sent. See
  * the package description for the subset.
@@ -17,17 +19,26 @@ public interface HttpResponse<T> {
     T body();
 
     /**
+     * The response's headers. They are read from the client's header buffer, refilled by every request, so read them
+     * before the next one; see {@link HttpHeaders} for the subset.
+     */
+    HttpHeaders headers();
+
+    /** The URI the response came from: the request's, or the last one a redirect led to. */
+    URI uri();
+
+    /**
      * Chooses how the body is delivered: {@link BodyHandlers#ofByteArray()} or {@link BodyHandlers#ofString()}.
      *
      * @param <T> the body type
      */
     interface BodyHandler<T> {
         /**
-         * Board-side only: the response for the request {@code client} has just received, with {@code statusCode}
-         * and {@code length} body bytes in the client's buffer. The JDK's handler builds a subscriber instead; a
-         * program never calls this.
+         * Board-side only: the response for the request {@code client} has just received from {@code uri}, with
+         * {@code statusCode} and {@code length} body bytes in the client's buffer. The JDK's handler builds a
+         * subscriber instead; a program never calls this.
          */
-        HttpResponse<T> respond(HttpClient client, int statusCode, int length);
+        HttpResponse<T> respond(HttpClient client, int statusCode, int length, URI uri);
     }
 
     /**
@@ -60,8 +71,8 @@ public interface HttpResponse<T> {
             static final ByteArrayHandler INSTANCE = new ByteArrayHandler();
 
             @Override
-            public HttpResponse<byte[]> respond(HttpClient client, int statusCode, int length) {
-                return client.byteArrayResponse(statusCode, length);
+            public HttpResponse<byte[]> respond(HttpClient client, int statusCode, int length, URI uri) {
+                return client.byteArrayResponse(statusCode, length, uri);
             }
         }
 
@@ -70,8 +81,8 @@ public interface HttpResponse<T> {
             static final StringHandler INSTANCE = new StringHandler();
 
             @Override
-            public HttpResponse<String> respond(HttpClient client, int statusCode, int length) {
-                return client.stringResponse(statusCode, length);
+            public HttpResponse<String> respond(HttpClient client, int statusCode, int length, URI uri) {
+                return client.stringResponse(statusCode, length, uri);
             }
         }
     }

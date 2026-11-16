@@ -1,13 +1,17 @@
 package io.github.jabrena.juno.jdk.net.http;
 
+import io.github.jabrena.juno.jdk.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HttpClientTest {
+    private static final URI URI_SENT = URI.create("http://example.com/status");
 
     @Test
     @DisplayName("the byte-array handler answers with the client's one reused response and its whole buffer")
@@ -15,8 +19,8 @@ class HttpClientTest {
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse.BodyHandler<byte[]> handler = HttpResponse.BodyHandlers.ofByteArray();
 
-        HttpResponse<byte[]> first = handler.respond(client, 200, 0);
-        HttpResponse<byte[]> second = handler.respond(client, 404, 0);
+        HttpResponse<byte[]> first = handler.respond(client, 200, 0, URI_SENT);
+        HttpResponse<byte[]> second = handler.respond(client, 404, 0, URI_SENT);
 
         assertThat(second).isSameAs(first);
         assertThat(second.statusCode()).isEqualTo(404);
@@ -29,14 +33,65 @@ class HttpClientTest {
         HttpClient client = HttpClient.newHttpClient();
         HttpResponse.BodyHandler<String> handler = HttpResponse.BodyHandlers.ofString();
 
-        HttpResponse<String> first = handler.respond(client, 200, 0);
-        HttpResponse<String> second = handler.respond(client, 503, 0);
+        HttpResponse<String> first = handler.respond(client, 200, 0, URI_SENT);
+        HttpResponse<String> second = handler.respond(client, 503, 0, URI_SENT);
 
         assertThat(HttpResponse.BodyHandlers.ofString()).isSameAs(handler);
         assertThat(second).isNotSameAs(first);
         assertThat(first.statusCode()).isEqualTo(200);
         assertThat(second.statusCode()).isEqualTo(503);
         assertThat(second.body()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("both responses answer the URI they came from and the client's headers")
+    void responsesAnswerTheirUriAndHeaders() {
+        HttpClient client = HttpClient.newHttpClient();
+        URI redirected = URI.create("https://example.com/next");
+
+        HttpResponse<byte[]> bytes = HttpResponse.BodyHandlers.ofByteArray().respond(client, 200, 0, redirected);
+        HttpResponse<String> text = HttpResponse.BodyHandlers.ofString().respond(client, 200, 0, URI_SENT);
+
+        assertThat(bytes.uri()).isSameAs(redirected);
+        assertThat(text.uri()).isSameAs(URI_SENT);
+        assertThat(text.headers()).isSameAs(bytes.headers());
+        assertThat(bytes.headers().firstValue("Location").isEmpty()).isTrue();
+    }
+
+    @Test
+    @DisplayName("301, 302, 303, 307 and 308 are the redirects a client follows")
+    void knowsTheRedirects() {
+        assertThat(HttpClient.isRedirect(301)).isTrue();
+        assertThat(HttpClient.isRedirect(302)).isTrue();
+        assertThat(HttpClient.isRedirect(303)).isTrue();
+        assertThat(HttpClient.isRedirect(307)).isTrue();
+        assertThat(HttpClient.isRedirect(308)).isTrue();
+        assertThat(HttpClient.isRedirect(200)).isFalse();
+        assertThat(HttpClient.isRedirect(304)).isFalse();
+    }
+
+    @Test
+    @DisplayName("a 303 turns any request but HEAD into a GET, a 301 or 302 only a POST, as the JDK does")
+    void changesToGetAsTheJdk() {
+        assertThat(HttpClient.changesToGet(303, "POST")).isTrue();
+        assertThat(HttpClient.changesToGet(303, "PUT")).isTrue();
+        assertThat(HttpClient.changesToGet(303, "HEAD")).isFalse();
+        assertThat(HttpClient.changesToGet(301, "POST")).isTrue();
+        assertThat(HttpClient.changesToGet(302, "POST")).isTrue();
+        assertThat(HttpClient.changesToGet(302, "PUT")).isFalse();
+        assertThat(HttpClient.changesToGet(307, "POST")).isFalse();
+        assertThat(HttpClient.changesToGet(308, "POST")).isFalse();
+    }
+
+    @Test
+    @DisplayName("a client follows no redirect unless asked, and its connect timeout must be positive")
+    void clientSettings() {
+        assertThat(HttpClient.newHttpClient().followRedirects()).isEqualTo(HttpClient.Redirect.NEVER);
+        assertThat(HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(Duration.ofSeconds(3)).build().followRedirects())
+                .isEqualTo(HttpClient.Redirect.NORMAL);
+        assertThatThrownBy(() -> HttpClient.newBuilder().connectTimeout(Duration.ZERO))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

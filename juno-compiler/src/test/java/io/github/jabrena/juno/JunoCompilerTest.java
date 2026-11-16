@@ -1343,6 +1343,80 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("A java.net.http POST with headers, timeouts and redirects compiles, without the task runtime")
+        void shouldCompileAJdkHttpPostWithHeadersTimeoutsAndRedirects() throws Exception {
+            // Given: every request feature at once, read back through headers() and Optional
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpPost", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    import java.time.Duration;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpPost {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newBuilder()
+                                    .followRedirects(HttpClient.Redirect.NORMAL)
+                                    .connectTimeout(Duration.ofSeconds(3))
+                                    .build();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/post"))
+                                    .header("Accept", "application/json")
+                                    .timeout(Duration.ofMillis(4000))
+                                    .POST(HttpRequest.BodyPublishers.ofString("{\\"board\\":1}"))
+                                    .build();
+                            HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+                            Serial.println(reply.statusCode());
+                            Serial.println(reply.headers().firstValue("content-type").orElse("none"));
+                            Serial.println((int) reply.headers().firstValueAsLong("content-length").orElse(-1L));
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPost");
+
+            // Then: Duration has its own runtime, so an HTTP timeout brings no structured-task runtime
+            assertThat(result.assembly())
+                    .contains("bl juno_duration_to_millis", "bl juno_http_request_buffer", "Too many redirects")
+                    .doesNotContain("juno_https_request_buffer", "juno_task_scope");
+        }
+
+        @Test
+        @DisplayName("A java.net.http program that never follows redirects links no redirect code")
+        void shouldLinkNoRedirectCodeWithoutFollowRedirects() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpPlainGet", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpPlainGet {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPlainGet");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_request_buffer")
+                    .doesNotContain("Too many redirects", "juno_duration_to_millis");
+        }
+
+        @Test
         @DisplayName("Only the board-side JDK classes may return Object: a program's own method still may not")
         void shouldRejectAProgramMethodReturningObject() throws Exception {
             // Given: checkcast generates no code, so nothing would catch a wrong cast of this result
