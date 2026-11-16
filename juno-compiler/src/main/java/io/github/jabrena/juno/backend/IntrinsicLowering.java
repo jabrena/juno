@@ -647,7 +647,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.STRING_BUILDER_APPEND_CHAR, "juno_string_builder_append_char", Result.WORD,
                 List.of(RECEIVER, arg(0)), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_APPEND_STRING, "juno_string_builder_append_string", Result.WORD,
-                List.of(RECEIVER, literal(0)), ShimFeature.STRING_BUILDER);
+                List.of(RECEIVER, STRING_ARGUMENT), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_TO_STRING, "juno_string_builder_to_string", Result.WORD,
                 List.of(RECEIVER), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_CONCAT_NEW, "juno_string_concat_new", Result.WORD, List.of(),

@@ -24,10 +24,11 @@ extern "C" int32_t juno_string_builder_append_char(int32_t handle, int32_t value
   return handle;
 }
 
+// A literal or a runtime String; a null one appends "null", as on the JVM.
 extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char* text) {
   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
   uint8_t* buffer = juno_string_builder_buffer(handle);
-  for (const char* c = text; *c != '\0' && header[0] < header[1]; c++) {
+  for (const char* c = text != nullptr ? text : "null"; *c != '\0' && header[0] < header[1]; c++) {
     buffer[header[0]] = static_cast<uint8_t>(*c);
     header[0]++;
   }

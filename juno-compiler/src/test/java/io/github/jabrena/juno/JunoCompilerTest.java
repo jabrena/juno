@@ -4028,6 +4028,36 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("StringBuilder.append(String) takes a runtime String, and still passes a literal by address")
+        void shouldAppendARuntimeStringToAStringBuilder() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class RuntimeAppend {
+                        public static void main(String[] args) {
+                            String host = MCU.getClock().millis() > 0 ? "192.168.1.10" : "10.0.0.1";
+                            StringBuilder builder = new StringBuilder(64);
+                            builder.append("https://");
+                            builder.append(host);
+                            builder.append(String.valueOf(MCU.getClock().millis()));
+                            Serial.println(builder.toString());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.RuntimeAppend", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeAppend");
+
+            // Then: the literal is still a .asciz address; the runtime values are passed as String handles
+            assertThat(result.assembly()).containsPattern("ldr r1, =juno_str\\d+\\s+bl juno_string_builder_append_string");
+            assertThat(result.assembly().split("bl juno_string_builder_append_string", -1)).hasSize(4);
+            assertThat(result.runtimeShim()).contains("text != nullptr ? text : \"null\"");
+        }
+
+        @Test
         @DisplayName("Compiles JSON parsing from Java rather than a shim scanner")
         void shouldCompileJsonFromJavaRatherThanAShimScanner() throws Exception {
             // Given

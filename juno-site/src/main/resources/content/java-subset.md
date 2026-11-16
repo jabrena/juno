@@ -274,5 +274,6 @@ Juno implements a bounded set of JDK classes on top of the board's own runtime:
   `InputStream`.
 - `java.time.LocalDateTime.now()`, with the time synchronised over SNTP on boards with Wi-Fi.
 - `java.lang.StringBuilder`, with `new StringBuilder(int capacity)`, `append(char)`, `append(String)` and `toString()`.
-  The capacity is allocated in the arena once, and `toString()` copies the content into a new arena block of exactly its
-  length, so the result can be longer than 31 bytes; appends beyond the capacity are dropped.
+  `append(String)` takes a literal or a runtime `String`, and a `null` one appends `"null"`. The capacity is allocated
+  in the arena once, and `toString()` copies the content into a new arena block of exactly its length, so the result
+  can be longer than 31 bytes; appends beyond the capacity are dropped.

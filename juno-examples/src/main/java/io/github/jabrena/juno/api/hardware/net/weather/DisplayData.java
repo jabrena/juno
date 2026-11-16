@@ -30,7 +30,7 @@ public final class DisplayData {
     public void showTime(String time) {
         StringBuilder text = new StringBuilder(MAX_MESSAGE_CHARS);
         text.append("Madrid Time: ");
-        appendRuntimeString(text, time);
+        text.append(time);
         scrollMessage(loadMessage(text.toString()));
     }
 
@@ -38,24 +38,9 @@ public final class DisplayData {
     public void showTemperature(String temperature) {
         StringBuilder text = new StringBuilder(MAX_MESSAGE_CHARS);
         text.append("Madrid Weather: ");
-        appendRuntimeString(text, temperature);
+        text.append(temperature);
         text.append('C');
         scrollMessage(loadMessage(text.toString()));
-    }
-
-    /**
-     * Appends {@code value} to {@code text} one {@code char} at a time — {@code StringBuilder}'s
-     * {@code append(String)} only accepts a compile-time string literal, never a runtime value
-     * like a JSON-extracted temperature or formatted time, so a literal-free runtime value has to
-     * go through {@code append(char)}/{@code String.charAt} instead.
-     */
-    private void appendRuntimeString(StringBuilder text, String value) {
-        int length = value.length();
-        int index = 0;
-        while (index < length) {
-            text.append(value.charAt(index));
-            index = index + 1;
-        }
     }
 
     /** Copies {@code text} into {@link #message} and returns its length. */
