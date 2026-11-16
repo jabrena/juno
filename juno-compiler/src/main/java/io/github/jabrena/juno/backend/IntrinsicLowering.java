@@ -647,10 +647,22 @@ public final class IntrinsicLowering {
         shim(Intrinsic.STRING_BUILDER_APPEND_CHAR, "juno_string_builder_append_char", Result.WORD,
                 List.of(RECEIVER, arg(0)), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_APPEND_STRING, "juno_string_builder_append_string", Result.WORD,
-                List.of(RECEIVER, literal(0)), ShimFeature.STRING_BUILDER);
+                List.of(RECEIVER, STRING_ARGUMENT), ShimFeature.STRING_BUILDER);
         shim(Intrinsic.STRING_BUILDER_TO_STRING, "juno_string_builder_to_string", Result.WORD,
                 List.of(RECEIVER), ShimFeature.STRING_BUILDER);
-        shim(Intrinsic.STRING_CONCAT_NEW, "juno_string_concat_new", Result.WORD, List.of(),
+        shim(Intrinsic.STRING_CONCAT_MEASURE_STRING, "juno_string_concat_measure_string", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_MEASURE_INT, "juno_string_concat_measure_int", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_MEASURE_LONG, "juno_string_concat_measure_long", Result.WORD,
+                List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
+                ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_MEASURE_FLOAT, "juno_string_concat_measure_float", Result.WORD,
+                List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_MEASURE_DOUBLE, "juno_string_concat_measure_double", Result.WORD,
+                List.of(RECEIVER, immediate(0), new ArgumentLow(0), new ArgumentHigh(0)),
+                ShimFeature.RUNTIME_STRINGS);
+        shim(Intrinsic.STRING_CONCAT_NEW_SIZED, "juno_string_concat_new_sized", Result.WORD, List.of(arg(0)),
                 ShimFeature.RUNTIME_STRINGS);
         shim(Intrinsic.STRING_CONCAT_APPEND_STRING, "juno_string_concat_append_string", Result.NONE,
                 List.of(RECEIVER, arg(0)), ShimFeature.RUNTIME_STRINGS);

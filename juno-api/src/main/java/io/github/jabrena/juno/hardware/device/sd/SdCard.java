@@ -24,13 +24,10 @@ import java.io.InputStream;
  * <p>Limits:
  * <ul>
    *   <li>Root-level paths are compile-time string literals, so their length is not limited by the runtime. Folder-aware
-   *       directory and file-stem strings each fit in a runtime string slot; the native SD layer combines them.</li>
- *   <li>A literal {@code line} passed to {@link #appendLine(String, String)} has no length limit either, but a
- *       {@code line} built while the program runs ({@code String.valueOf}, concatenation,
- *       {@code StringBuilder.toString()}) lives in a runtime-string slot of
- *       {@code io.github.jabrena.juno.RuntimeLimits#STRING_SLOT_CAPACITY_BYTES} bytes including the NUL
- *       terminator: 31 characters at most, and a longer value panics rather than truncating. Split longer
- *       records over several calls; each call ends its line with a newline.</li>
+   *       directory and file-stem strings may be runtime values; the native SD layer combines them into one path.</li>
+ *   <li>A {@code line} passed to {@link #appendLine(String, String)} has no length limit, whether a literal or built
+ *       while the program runs ({@code String.valueOf}, concatenation, {@code StringBuilder.toString()}); a built
+ *       one is an arena {@code String}. Each call ends its line with a newline.</li>
  * </ul>
  *
  * @see <a href="https://www.az-delivery.de/en/products/datenlogger-modul">AZ-Delivery data logger module</a>

@@ -23,8 +23,8 @@ import java.util.Properties;
  * Prints the status code over Serial at 115200 baud: {@code 0} means the message was accepted.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code smtp.host}, {@code smtp.username},
- * {@code smtp.password}, {@code smtp.from}, {@code smtp.to}, {@code smtp.subject} and {@code smtp.body}. A runtime
- * {@code String} holds 31 bytes, so keep the password, the subject and the body within that length. After the
+ * {@code smtp.password}, {@code smtp.from}, {@code smtp.to}, {@code smtp.subject} and {@code smtp.body}. A
+ * {@code Properties} value holds 31 bytes, so keep the password, the subject and the body within that length. After the
  * upgrade, the server's certificate chain is checked against the bundled Mozilla roots, once the clock is set over SNTP.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \

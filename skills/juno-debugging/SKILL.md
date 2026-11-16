@@ -64,8 +64,7 @@ selection. Reproduce without hardware:
 - **Out of memory** stops the board with `[juno-gc] OOM: need …`. Rebuild with `-Djuno.gcLog=true` to log every
   collection, remove allocations from loops (see the `juno-zero-allocation` skill), and only then consider
   `-Djuno.Xmx`.
-- **Silence or a reset right after printing**: a runtime string longer than 31 characters overflows its pool slot,
-  so split long `Serial` lines; a task that overflows its stack needs `-Djuno.Xss` (thread stacks are 2 KiB on the
+- **Silence or a reset right after printing**: a task that overflows its stack needs `-Djuno.Xss` (thread stacks are 2 KiB on the
   UNO R4 WiFi, 4 KiB on the UNO Q, 512 bytes on the UNO WiFi Rev2).
 - **Language or runtime behavior** (arithmetic, exceptions, strings, threads): add a small program to
   `juno-compiler/src/test/qemu/programs` and run `./mvnw -pl juno-compiler -am -Pqemu verify`. It runs the

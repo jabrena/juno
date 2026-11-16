@@ -12,12 +12,14 @@ public final class RuntimeLimits {
     public static final int AVR_MAX_ARENA_BYTES = 3072;
 
     /**
-     * Size (bytes, including the NUL terminator) of each slot in the rotating pool backing every
-     * runtime {@code String} ({@code String.valueOf}, {@code Json.getString(byte[],int,String)},
-     * {@code StringBuilder.toString()}). A value that would need {@code >= this} bytes panics
-     * rather than truncating or overflowing — see the backends' {@code runtimeStringHelpers()}.
+     * Size (bytes, including the NUL terminator) of the stack buffer a number is formatted into before it is
+     * copied into an arena {@code String} or a concatenation: room for a {@code long} or a formatted
+     * {@code double} with its sign.
      */
-    public static final int STRING_SLOT_CAPACITY_BYTES = 32;
+    public static final int NUMBER_TEXT_BYTES = 32;
+
+    /** Size (bytes) of the stack copy an I/O worker job takes of short request text. */
+    public static final int IO_TEXT_COPY_BYTES = 32;
 
     /** Bounded native storage allocated for one {@code java.util.Properties} instance. */
     public static final int PROPERTIES_STORAGE_BYTES = 4 + 16 * (32 + 64);

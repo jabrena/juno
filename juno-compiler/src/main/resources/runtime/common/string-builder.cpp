@@ -24,22 +24,22 @@ extern "C" int32_t juno_string_builder_append_char(int32_t handle, int32_t value
   return handle;
 }
 
+// A literal or a runtime String; a null one appends "null", as on the JVM.
 extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char* text) {
   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
   uint8_t* buffer = juno_string_builder_buffer(handle);
-  for (const char* c = text; *c != '\0' && header[0] < header[1]; c++) {
+  for (const char* c = text != nullptr ? text : "null"; *c != '\0' && header[0] < header[1]; c++) {
     buffer[header[0]] = static_cast<uint8_t>(*c);
     header[0]++;
   }
   return handle;
 }
 
-// The result lives on the collected heap, not in the runtime-string slot ring: a program keeps a toString() result
-// (a secret, a JSON field, a name read from SD) across a loop, and later concatenations would wrap the ring onto it.
+// The result is an arena String of exactly the content's length, like every runtime String, so a program can keep it
+// (a secret, a JSON field, a name read from SD) for as long as it likes.
 extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
   int32_t length = header[0];
-  if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
   char* text = static_cast<char*>(juno_alloc(static_cast<uint32_t>(length) + 1u, 1u));
   const uint8_t* buffer = juno_string_builder_buffer(handle);
   for (int32_t i = 0; i < length; i++) text[i] = static_cast<char>(buffer[i]);

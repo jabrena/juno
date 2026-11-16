@@ -561,13 +561,13 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("Short text the worker reads later is copied off the rotating string slots")
-    void shouldCopyShortTextOffTheRotatingStringSlotsForTheWorker() throws Exception {
+    @DisplayName("Short text the worker reads later is copied to the caller's stack")
+    void shouldCopyShortTextToTheCallersStackForTheWorker() throws Exception {
         // Given
         String shim = unoQNetworkShim(true);
 
         // When & Then
-        assertThat(shim).as("short text the worker reads later is copied off the rotating string slots")
+        assertThat(shim).as("short text the worker reads later is copied to the caller's stack")
                 .contains("job.host = juno_io_stable_text(host, hostCopy);",
                         "job.path = juno_io_stable_text(path, pathCopy);");
     }

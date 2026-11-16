@@ -2247,7 +2247,8 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains(".asciz \"ok\"",
                     "bl juno_string_value_of_int", "bl juno_string_length", "bl juno_string_char_at");
-            assertThat(result.runtimeShim()).contains("JUNO_STRING_SLOT_COUNT = 8");
+            assertThat(result.runtimeShim()).contains("static int32_t juno_string_copy(const char* text, uint32_t length)")
+                    .doesNotContain("juno_string_slots");
         }
 
         @Test
@@ -2301,14 +2302,70 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.assembly()).contains(
-                    "bl juno_string_concat_new",
+                    "bl juno_string_concat_new_sized",
                     "bl juno_string_concat_append_string",
                     "bl juno_string_concat_append_boolean",
                     "bl juno_string_concat_append_int",
                     "bl juno_serial_println_str");
             assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" int32_t juno_string_concat_new()",
+                    "extern \"C\" int32_t juno_string_concat_new_sized(int32_t length)",
                     "extern \"C\" void juno_string_concat_append_boolean(int32_t handle, int32_t value)");
+        }
+
+        @Test
+        @DisplayName("Even a short concatenation is measured and built in an arena String of its own")
+        void shouldBuildAShortConcatenationInItsOwnArenaString() throws Exception {
+            // Given: "n=" and an int, at most 13 bytes
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class ShortConcat {
+                        public static void main(String[] args) {
+                            Serial.println("n=" + MCU.getClock().millis());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.ShortConcat", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ShortConcat");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_string_concat_measure_int", "bl juno_string_concat_new_sized");
+            assertThat(result.runtimeShim()).doesNotContain("juno_string_slots");
+        }
+
+        @Test
+        @DisplayName("A concatenation with a String argument is measured, then built in an exact arena block")
+        void shouldMeasureAConcatenationWithAStringArgument() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class LongConcat {
+                        static String host() {
+                            return MCU.getClock().millis() > 0 ? "192.168.1.10" : "10.0.0.1";
+                        }
+                        public static void main(String[] args) {
+                            long id = MCU.getClock().millis();
+                            Serial.println("https://" + host() + "/api/v1/mailbox/" + MCU.getClock().millis() + "/" + id);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.LongConcat", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.LongConcat");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_string_concat_measure_string",
+                    "bl juno_string_concat_measure_int", "bl juno_string_concat_measure_long",
+                    "bl juno_string_concat_new_sized", "bl juno_string_concat_append_string");
+            assertThat(result.runtimeShim()).contains(
+                    "extern \"C\" int32_t juno_string_concat_new_sized(int32_t length)",
+                    "extern \"C\" int32_t juno_string_concat_measure_string(int32_t length, const char* value)");
         }
 
         @Test
@@ -3865,7 +3922,7 @@ class JunoCompilerTest {
                     "extern \"C\" void juno_http_server_respond_builder(",
                     "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)",
                     "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
-            // A path longer than a runtime-string slot (e.g. /api/v1/mailbox/<uuid>) must not become null.
+            // A long path (e.g. /api/v1/mailbox/<uuid>) must come back whole, not null.
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
             // A server that never reads a header gets neither the header buffer nor a leftover hook.
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_headers", "${JUNO_HTTP_SERVER_HEADER");
@@ -4071,9 +4128,38 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains(
                     "extern \"C\" int32_t juno_string_builder_new(int32_t capacity)",
                     "static uint8_t* juno_string_builder_buffer(int32_t handle)",
-                    // Needs the shared runtime-string-slot pool for toString(), even though this program never
-                    // calls String.valueOf/Json.getString itself.
-                    "juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE]");
+                    // The runtime-string helpers are linked with the builder, though toString() allocates by itself.
+                    "static int32_t juno_string_copy(const char* text, uint32_t length)");
+        }
+
+        @Test
+        @DisplayName("StringBuilder.append(String) takes a runtime String, and still passes a literal by address")
+        void shouldAppendARuntimeStringToAStringBuilder() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class RuntimeAppend {
+                        public static void main(String[] args) {
+                            String host = MCU.getClock().millis() > 0 ? "192.168.1.10" : "10.0.0.1";
+                            StringBuilder builder = new StringBuilder(64);
+                            builder.append("https://");
+                            builder.append(host);
+                            builder.append(String.valueOf(MCU.getClock().millis()));
+                            Serial.println(builder.toString());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.RuntimeAppend", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.RuntimeAppend");
+
+            // Then: the literal is still a .asciz address; the runtime values are passed as String handles
+            assertThat(result.assembly()).containsPattern("ldr r1, =juno_str\\d+\\s+bl juno_string_builder_append_string");
+            assertThat(result.assembly().split("bl juno_string_builder_append_string", -1)).hasSize(4);
+            assertThat(result.runtimeShim()).contains("text != nullptr ? text : \"null\"");
         }
 
         @Test
@@ -4131,7 +4217,7 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl juno_string_from_bytes");
             assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_string_from_bytes(",
-                    "JUNO_STRING_SLOT_SIZE = 32");
+                    "juno_string_copy(reinterpret_cast<const char*>(bytes + start)");
         }
 
         /** {@code Json.getString(byte[], int, String)} is unreachable here, so its native helper is left out. */

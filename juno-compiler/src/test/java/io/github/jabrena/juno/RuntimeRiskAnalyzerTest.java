@@ -348,16 +348,19 @@ class RuntimeRiskAnalyzerTest {
     }
 
     @Test
-    @DisplayName("Reports a StringBuilder capacity that can overflow the runtime string slot")
-    void shouldReportAStringBuilderCapacityThatCanOverflowTheRuntimeStringSlot() throws Exception {
+    @DisplayName("Reports a StringBuilder whose capacity is only known at run time")
+    void shouldReportAStringBuilderWhoseCapacityIsOnlyKnownAtRunTime() throws Exception {
         // Given
-        RuntimeRiskReport report = compileReport("demo.OversizedBuilder", """
+        RuntimeRiskReport report = compileReport("demo.UnboundedBuilder", """
                 package demo;
-                public final class OversizedBuilder {
-                    public static void main() {
-                        StringBuilder builder = new StringBuilder(40);
+                public final class UnboundedBuilder {
+                    static String build(int capacity) {
+                        StringBuilder builder = new StringBuilder(capacity);
                         builder.append('a');
-                        String ignored = builder.toString();
+                        return builder.toString();
+                    }
+                    public static void main() {
+                        build(40);
                     }
                 }
                 """);
@@ -367,14 +370,14 @@ class RuntimeRiskAnalyzerTest {
     }
 
     @Test
-    @DisplayName("Does not report a StringBuilder capacity well within the runtime string slot")
-    void shouldNotReportAStringBuilderCapacityWellWithinTheRuntimeStringSlot() throws Exception {
+    @DisplayName("Does not report a StringBuilder with a constant capacity, even a long one")
+    void shouldNotReportAStringBuilderWithAConstantCapacity() throws Exception {
         // Given
-        RuntimeRiskReport report = compileReport("demo.SafeBuilder", """
+        RuntimeRiskReport report = compileReport("demo.LongBuilder", """
                 package demo;
-                public final class SafeBuilder {
+                public final class LongBuilder {
                     public static void main() {
-                        StringBuilder builder = new StringBuilder(8);
+                        StringBuilder builder = new StringBuilder(120);
                         builder.append('a');
                         String ignored = builder.toString();
                     }
@@ -383,7 +386,7 @@ class RuntimeRiskAnalyzerTest {
 
         // When & Then
         assertThat(codes(report))
-                .as("a capacity comfortably under the string-slot size can never overflow it")
+                .as("toString() is sized to the content, so a constant capacity bounds it")
                 .doesNotContain("JUNO-RISK-007");
     }
 

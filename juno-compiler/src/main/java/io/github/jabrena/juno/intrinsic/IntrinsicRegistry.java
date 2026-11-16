@@ -88,6 +88,7 @@ public final class IntrinsicRegistry {
      * compiles, while {@code Serial.print("text")} generates exactly what it always has.
      */
     private static final Set<IntrinsicParameter> LITERAL_WHEN_KNOWN_PARAMETERS = Set.of(
+            new IntrinsicParameter(Intrinsic.STRING_BUILDER_APPEND_STRING, 0),
             new IntrinsicParameter(Intrinsic.SERIAL_PRINT_STRING, 0),
             new IntrinsicParameter(Intrinsic.SERIAL_PRINTLN_STRING, 0),
             new IntrinsicParameter(Intrinsic.M5_DISPLAY_PRINT_STRING, 0),

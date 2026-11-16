@@ -177,13 +177,13 @@ The first analysis slice reports:
 
 | Code | Meaning |
 |------|---------|
-| `JUNO-RISK-001` | Arena allocation occurs directly or transitively inside a control-flow loop. |
+| `JUNO-RISK-001` | Arena allocation occurs directly or transitively inside a control-flow loop, including a runtime `String` built with `+`, `String.valueOf`, `StringBuilder.toString()` or `Json.getString`. |
 | `JUNO-RISK-002` | The conservative startup allocation estimate exceeds the fixed arena capacity. |
 | `JUNO-RISK-003` | A recursive call cycle makes generated call depth and stack usage unbounded. |
 | `JUNO-RISK-004` | Array accesses exist for which Juno cannot emit a bounds check. |
 | `JUNO-RISK-005` | Integer/long division or remainder (including `Math.floorDiv`/`floorMod`) may receive a zero divisor and panic. |
 | `JUNO-RISK-006` | A dereference uses a value proven null at compile time. |
-| `JUNO-RISK-007` | A `StringBuilder` is created with a capacity of 32 or more (or a non-constant one); `toString()` panics once content reaches the slot size. |
+| `JUNO-RISK-007` | A `StringBuilder` is created with a capacity that is not a compile-time constant; the arena must hold that many bytes, or the program stops. |
 | `JUNO-RISK-008` | `Thread.startVirtualThread` or `StructuredTaskScope.fork` sits in a control-flow loop; only three threads can be active beside the caller. |
 | `JUNO-RISK-009` | More than three virtual threads or subtasks are started with no `join` in between. |
 | `JUNO-RISK-010` | A thread body (found where a lambda or object is passed to `startVirtualThread`/`fork` in the same method) starts a thread or opens a task scope, competing for the same four slots. |

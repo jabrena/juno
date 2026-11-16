@@ -20,12 +20,12 @@ Read `juno-site/src/main/resources/content/memory-model.md` and `limitations.md`
 | `new` of a program class, record or built-in exception | Primitives and local variables (stack) |
 | Every `new T[n]` array, including `values()`-style copies you write | `static` fields (`.bss`) and enum constants (ordinals) |
 | Capturing lambdas (each `LambdaCreate` with captured values) | String literals (flash) |
-| `BigInteger`/`BigDecimal`, atomics, `StringBuilder`, task/scope handles | `static final` arrays with an all-constant initializer, only read (flash `.rodata`) |
+| `BigInteger`/`BigDecimal`, atomics, `StringBuilder`, task/scope handles, and every runtime `String` (`+`, `String.valueOf`, `StringBuilder.toString()`, `Json.getString`) | `static final` arrays with an all-constant initializer, only read (flash `.rodata`) |
 | A `static final` table the compiler cannot keep in flash (`JUNO-RISK-012`) | `System.getenv("LITERAL")` and `LedCanvas.drawText(…, "literal", …)`, folded at compile time |
 
-String concatenation, `String.valueOf` and `StringBuilder.toString()` do not use the arena: they use the
-**runtime-string pool**, rotating 32-byte slots. A runtime string longer than 31 characters overflows its slot, so
-split long `Serial` lines into several prints.
+A runtime `String` is an arena block of exactly its length, so it can be any length and lives as long as it is
+referenced, but each one is an allocation. In a loop that runs often, print a log line in pieces
+(`Serial.print("t="); Serial.println(t);`) rather than building it with `+`; `JUNO-RISK-001` points at such loops.
 
 The optimizer can remove some allocations (it inlines small methods and scalar-replaces objects that never leave
 a method), but treat that as a bonus: write the program so it does not depend on it, and measure.

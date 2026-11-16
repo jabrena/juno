@@ -35,7 +35,10 @@ JVM's own heap collects it, and very large values do not fit the arena.
 
 ### Complex data types
 
-- **String** is either a literal or a runtime value of up to 31 UTF-8 bytes; a longer runtime string stops the program.
+- **String** is either a literal or a runtime value. A runtime string, from `+`, `String.valueOf`,
+  `StringBuilder.toString()` or `Json.getString`, is allocated in the arena at exactly its length: it has no length
+  limit and lives as long as the program refers to it, as in Java. Every one is an allocation, so building strings in
+  a loop that runs often creates garbage for the collector; the risk report flags it (`JUNO-RISK-001`).
   Supported: `String.valueOf(int)`, `length()`, `charAt(int)` and concatenation with `+`.
 - **BigInteger** and **BigDecimal** give arbitrary precision, with results that match the JDK. Their size is limited by
   memory, not by a fixed width. Print them with `Serial.println(value.toString())`.
@@ -273,5 +276,6 @@ Juno implements a bounded set of JDK classes on top of the board's own runtime:
   `InputStream`.
 - `java.time.LocalDateTime.now()`, with the time synchronised over SNTP on boards with Wi-Fi.
 - `java.lang.StringBuilder`, with `new StringBuilder(int capacity)`, `append(char)`, `append(String)` and `toString()`.
-  Give it a small capacity: `toString()` returns a runtime String, which holds at most 31 bytes, so a longer result stops the
-  program.
+  `append(String)` takes a literal or a runtime `String`, and a `null` one appends `"null"`. The capacity is allocated
+  in the arena once, and `toString()` copies the content into a new arena block of exactly its length; appends beyond
+  the capacity are dropped.
