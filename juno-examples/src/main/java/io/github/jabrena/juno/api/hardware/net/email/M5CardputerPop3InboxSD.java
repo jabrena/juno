@@ -20,7 +20,7 @@ import java.util.Properties;
  * minute. The server and the credentials come from the card. Prints the count, or the failing status, at 115200 baud.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code smtp.host}, {@code smtp.username} and
- * {@code smtp.password}. A runtime {@code String} holds 31 bytes, so keep the password within that length.
+ * {@code smtp.password}. A {@code Properties} value holds 31 bytes, so keep the password within that length.
  * The TLS client checks the server's chain against Mozilla's root certificates.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \

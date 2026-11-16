@@ -98,8 +98,7 @@ Every store has 16 slots, and each slot holds one record of at most 63 bytes: a 
 - `write` replaces the record that has the name, in place, or takes the first empty slot for a new name. It fails
   once all 16 slots hold other names.
 - A name is 1 to 31 printable, non-space ASCII characters, and the value can be up to `62 - name.length()` bytes
-  (`SecretStore.RECORD_BYTES` is the 63). `getString` values are capped at 31 characters anyway, because that is the
-  limit for runtime `String`s on the board.
+  (`SecretStore.RECORD_BYTES` is the 63).
 - A lookup reads up to 16 slots, so read secrets once at startup. On the UNO R4 WiFi each slot read is a round trip to
   the coprocessor.
 
@@ -161,5 +160,5 @@ wifi.password=MyPassword
 ```
 
 **This is not a secret store.** The values are plain text on the card, so a copied card carries them. Each value is a
-runtime `String`, so it must fit in 31 characters. The Pico 2 W takes no UNO shield, so the multi-board Wi-Fi examples
+`Properties` value, so it must fit in 31 characters. The Pico 2 W takes no UNO shield, so the multi-board Wi-Fi examples
 do not target it.

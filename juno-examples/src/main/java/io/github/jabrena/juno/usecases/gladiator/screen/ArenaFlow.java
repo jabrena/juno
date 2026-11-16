@@ -19,7 +19,7 @@ import io.github.jabrena.juno.util.Delay;
  * The ARENA role: builds the {@link Coliseum}, keeps the {@link Match} and shows it from above ({@link ArenaView}).
  * Meant for the most powerful board on the network, an UNO Q, one per network.
  *
- * <p>Log lines are printed in pieces: a {@code String} built at runtime holds at most 31 characters on the boards.
+ * <p>Log lines are printed in pieces, so they build no {@code String} in the arena.
  *
  * <p>Gladiators find it by broadcasting {@code JOIN}; each is answered once with the map and its gate, or told the
  * arena is full. Ten times a second every gladiator gets a {@code WORLD} packet with only what it may know. The

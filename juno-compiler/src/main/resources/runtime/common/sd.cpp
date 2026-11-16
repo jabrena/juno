@@ -115,7 +115,7 @@ extern "C" int32_t juno_sd_open(const char* path) {
   return 0;
 }
 
-// File stems keep a long mailbox path out of Juno's 32-byte runtime-string slots.
+// A directory and a file stem are combined here, so a program never builds the full path itself.
 static bool juno_sd_file_path(char* target, size_t capacity, const char* directory, const char* fileStem) {
   size_t directoryLength = strlen(directory);
   size_t stemLength = strlen(fileStem);

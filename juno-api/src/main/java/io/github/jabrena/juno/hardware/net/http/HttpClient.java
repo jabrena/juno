@@ -54,8 +54,8 @@ public final class HttpClient {
     /**
      * Sends a GET request to {@code baseUrl} (a scheme, host and optional port, with no path of its own) for the
      * path held in the first {@code pathLength} ASCII bytes of {@code pathBuffer}: for paths that depend on runtime
-     * data, such as coordinates read from an earlier response (a runtime {@code String} is limited to 31 bytes, far
-     * too short for a typical query string). {@code pathLength} must be less than 256; a longer or negative length
+     * data, such as coordinates read from an earlier response, since the base URL must be a compile-time string.
+     * {@code pathLength} must be less than 256; a longer or negative length
      * returns {@code -1} without connecting.
      */
     public static native int get(String baseUrl, byte[] pathBuffer, int pathLength,

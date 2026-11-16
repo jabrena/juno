@@ -7,7 +7,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-/** A StringBuilder result kept across more concatenations than the runtime-string slot ring holds (#366). */
+/** A StringBuilder result kept across many later concatenations, which once reused its slot (#366). */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
 public class StringLifetime {
 

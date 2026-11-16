@@ -7,7 +7,7 @@ layout: page
 Juno supports two email protocols: SMTP for sending mail and POP3 for reading it. Each has its own client, both are
 compiler intrinsics, and both need an active [`Wifi`](../wifi) connection. Every buffer belongs to the caller.
 
-The host, username, password, and message fields come from the microSD card, as runtime `String` values. Each one holds at
+The host, username, password, and message fields come from the microSD card, as `Properties` values. Each one holds at
 most 31 bytes, so keep them short (see [Credentials](#credentials)).
 
 ## Board support
@@ -52,8 +52,7 @@ String password = properties.getProperty("smtp.password");
 ```
 
 Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
-Values loaded this way are runtime `String`s, and a runtime `String` holds 31 bytes, so keep the password, the subject
-and the body within that length.
+A `Properties` value holds 31 bytes, so keep the password, the subject and the body within that length.
 
 The `InboxCount` and `EmailClient` examples read the SMTP values through `ExampleSecrets`: from the secret store on a
 board that has one, otherwise from `application.properties` on the SD card. They run on the UNO R4 WiFi, which has no

@@ -8,7 +8,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-/** A StringBuilder result longer than one runtime-string slot, such as a URL with a runtime query. */
+/** A StringBuilder result longer than 31 bytes, such as a URL with a runtime query. */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class,
         ArduinoNanoEsp32Board.class})
 public class LongStringBuilder {
