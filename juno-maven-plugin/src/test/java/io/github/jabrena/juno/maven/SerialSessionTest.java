@@ -70,7 +70,28 @@ class SerialSessionTest {
         // When & Then
         assertThatThrownBy(() -> SerialSession.open(port, executor, Duration.ofMillis(300)))
                 .isInstanceOf(ArduinoCliException.class)
-                .hasMessageContaining("Could not open " + port + " for the secret session")
-                .hasMessageContaining("stty");
+                .hasMessageContaining("Could not open " + port + " for the secret session");
+        assertThat(executor.invocations()).as("stty runs only on a port that opened").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a port that opens but cannot be configured fails once the timeout passes, saying stty failed")
+    void failsWhenThePortCannotBeConfigured() throws Exception {
+        // Given
+        Path port = Files.createTempFile("juno-serial", ".port");
+        FakeExecutor executor = new FakeExecutor();
+        for (int i = 0; i < 20; i++) {
+            executor.respond(1, "Inappropriate ioctl for device");
+        }
+
+        // When & Then
+        try {
+            assertThatThrownBy(() -> SerialSession.open(port, executor, Duration.ofMillis(300)))
+                    .isInstanceOf(ArduinoCliException.class)
+                    .hasMessageContaining("Could not open " + port + " for the secret session")
+                    .hasMessageContaining("stty");
+        } finally {
+            Files.deleteIfExists(port);
+        }
     }
 }
