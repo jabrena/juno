@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -12,7 +13,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Joins Wi-Fi with the SSID and password kept in the board's secret store, so no credential sits on the SD card or in
- * the firmware: {@link MCU#getSecretStore} returns the Nano ESP32's NVS store or the Pico 2 W's TrustZone store, and the
+ * the firmware: {@link MCU#getSecretStore} returns the Nano ESP32's or the Cardputer's NVS store, or the Pico 2 W's TrustZone store, and the
  * secrets are asked for by name alone. Provision them first with {@code juno:secret}, which runs
  * {@link SecretProvisioner}, once per name:
  *
@@ -25,7 +26,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p>The result is printed every two seconds, so a monitor attached late still sees it. Each value must fit in 31
  * characters, the board's runtime {@code String} limit.
  */
-@Board({ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class})
+@Board({ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, M5StackCardputerBoard.class})
 public final class NanoSecretWifi {
     private NanoSecretWifi() {
     }

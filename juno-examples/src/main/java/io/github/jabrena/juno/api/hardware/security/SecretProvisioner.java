@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.security.SecretStore;
@@ -29,7 +30,8 @@ import io.github.jabrena.juno.util.Delay;
  * an upload later than the program starts, and a line printed before the host opens the port is lost. The store keeps each name next to its value, so a reading program only has to ask for the same name.
  * Upload this program with {@code juno:secret}.
  */
-@Board({ArduinoPortentaH7Board.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class})
+@Board({ArduinoPortentaH7Board.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class,
+        M5StackCardputerBoard.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;
