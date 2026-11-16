@@ -34,14 +34,15 @@ extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char*
   return handle;
 }
 
+// The result lives on the collected heap, not in the runtime-string slot ring: a program keeps a toString() result
+// (a secret, a JSON field, a name read from SD) across a loop, and later concatenations would wrap the ring onto it.
 extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
   int32_t length = header[0];
   if (static_cast<uint32_t>(length) >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
-  char* slot = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+  char* text = static_cast<char*>(juno_alloc(static_cast<uint32_t>(length) + 1u, 1u));
   const uint8_t* buffer = juno_string_builder_buffer(handle);
-  for (int32_t i = 0; i < length; i++) slot[i] = static_cast<char>(buffer[i]);
-  slot[length] = '\0';
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(slot));
+  for (int32_t i = 0; i < length; i++) text[i] = static_cast<char>(buffer[i]);
+  text[length] = '\0';
+  return static_cast<int32_t>(reinterpret_cast<intptr_t>(text));
 }
