@@ -13,10 +13,6 @@ public final class FlashMojo extends AbstractJunoMojo {
         verifySketch(cli, sketch);
         String port = resolvePort(cli, sketch.fqbn());
         getLog().info("Flashing Arduino sketch");
-        if (sketch.picoSecureFirmware()) {
-            cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory());
-        } else {
-            cli.upload(sketch.fqbn(), port, sketch.directory());
-        }
+        upload(cli, sketch, port);
     }
 }

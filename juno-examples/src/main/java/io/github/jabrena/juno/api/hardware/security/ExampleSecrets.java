@@ -3,9 +3,7 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.DataLoggerShield;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 import java.io.IOException;
@@ -14,7 +12,7 @@ import java.util.Properties;
 
 /**
  * The credentials the connected examples share. On a board with a secret store (the Portenta H7's SE050C2, an ESP32
- * board's NVS) they are read from it, with the same table as {@link SecretProvisioner}. Every other board reads the
+ * board's NVS) they are read from it by name, the names {@link SecretProvisioner} writes. Every other board reads the
  * same names from {@value #SETTINGS_FILE} on the SD card:
  *
  * <pre>
@@ -134,18 +132,7 @@ public final class ExampleSecrets {
     private static SecretStore store() {
         SecretStore opened = store;
         if (opened == null) {
-            SecretSlots slots = new SecretSlots()
-                    .add(WIFI_SSID, 8)
-                    .add(WIFI_PASSWORD, 9)
-                    .add(MAILBOX_API_KEY, 10)
-                    .add(MAILBOX_Q_IP, 0)
-                    .add(SMTP_HOST, 11)
-                    .add(SMTP_USERNAME, 12)
-                    .add(SMTP_PASSWORD, 13)
-                    .add(SUPABASE_API_HOST, 14)
-                    .add(SUPABASE_API_KEY, 15)
-                    .add(SUPABASE_API_URL, 1);
-            opened = SecretStoreFactory.open(slots);
+            opened = MCU.getSecretStore();
             store = opened;
         }
         return opened;

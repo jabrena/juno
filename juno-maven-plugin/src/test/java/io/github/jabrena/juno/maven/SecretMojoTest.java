@@ -11,6 +11,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static io.github.jabrena.juno.maven.MojoConfig.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -159,16 +161,16 @@ class SecretMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    @DisplayName("set rejects a value over the secure-element slot before anything is uploaded")
+    @DisplayName("set rejects a value too long to share a record with its name before anything is uploaded")
     void setRejectsALongValueBeforeUpload() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
         SecretMojo mojo = mojo(executor, "wifi.password", false, false);
-        mojo.useTerminalAndSessions(terminal("a".repeat(64), ""), session("READY\n", new ByteArrayOutputStream()));
+        mojo.useTerminalAndSessions(terminal("a".repeat(50), ""), session("READY\n", new ByteArrayOutputStream()));
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
-                .hasMessageContaining("at most 63");
+                .hasMessageContaining("at most 49");
         assertThat(executor.invocations()).isEmpty();
     }
 
@@ -252,6 +254,65 @@ class SecretMojoTest extends AbstractMojoTestCase {
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
                 .hasMessageContaining("did not empty every data slot");
+    }
+
+    @Test
+    @DisplayName("a READY the board repeated while the request was on its way is skipped, not taken as the reply")
+    void skipsRepeatedReady() throws Exception {
+        // Given
+        RecordingLog log = new RecordingLog();
+        SecretMojo mojo = mojo(cliAnswers(), "wifi.ssid", false, false);
+        mojo.setLog(log);
+        mojo.useTerminalAndSessions(terminal("MyNetwork", ""),
+                session("READY\nREADY\nREADY\nOK wifi.ssid\n", new ByteArrayOutputStream()));
+
+        // When
+        mojo.execute();
+
+        // Then
+        assertThat(log.infos()).contains("Stored wifi.ssid in the chip");
+    }
+
+    @Test
+    @DisplayName("on a Pico 2 W the provisioning program is uploaded from the build that holds the secure firmware")
+    void picoUploadsFromTheSecureFirmwareBuild() throws Exception {
+        // Given: arduino-cli is faked, so the UF2 it would build is put where it would leave it
+        Path sketch = Path.of("target/juno-mojo-test/secret-pico/PicoSecretProgramAsm").toAbsolutePath().normalize();
+        Path uf2 = sketch.resolve("build/PicoSecretProgramAsm.ino.uf2");
+        Files.createDirectories(uf2.getParent());
+        Files.write(uf2, PicoSecureFirmwareInstallerTest.PicoUf2.of(49));
+        FakeExecutor executor = new FakeExecutor()
+                .respond(0, "Sketch uses 1234 bytes")
+                .respond(0, """
+                        {
+                          "detected_ports": [
+                            {
+                              "matching_boards": [{"name": "Pico 2W", "fqbn": "rp2040:rp2040:rpipico2w"}],
+                              "port": {"address": "/dev/cu.usbmodem1201"}
+                            }
+                          ]
+                        }""")
+                .respond(0, "upload complete");
+        SecretMojo mojo = (SecretMojo) lookupEmptyMojo("secret", new File("."));
+        mojo = (SecretMojo) configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.PicoSecretProgram")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .set("board", "raspberry-pi-pico-2-w")
+                .set("outputDirectory", "target/juno-mojo-test/secret-pico")
+                .set("list", "true")
+                .set("clear", "false")
+                .build());
+        mojo.setLog(new RecordingLog());
+        mojo.useExecutor(executor);
+        mojo.useTerminalAndSessions(terminal("", ""), session("READY\nEND\n", new ByteArrayOutputStream()));
+
+        // When
+        mojo.execute();
+
+        // Then: a plain upload would reset the board into BOOTSEL and find no UF2, leaving it there
+        assertThat(executor.invocations().get(2).arguments()).contains("upload", "--port", "/dev/cu.usbmodem1201",
+                "--input-dir", sketch.resolve("build").toString());
     }
 
     private static String hex(String text) {

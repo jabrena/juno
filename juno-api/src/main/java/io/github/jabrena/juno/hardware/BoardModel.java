@@ -8,12 +8,13 @@ package io.github.jabrena.juno.hardware;
  * <p>Because the answer is a constant, a {@code switch} over it is decided when the program is linked, and the arms
  * the target can never take are dropped — their code and the shim support behind it included. That is what lets one
  * method pick a board's hardware without every board paying for all of it, as
- * {@link io.github.jabrena.juno.hardware.security.SecretStoreFactory} does for the secret stores:
+ * {@link io.github.jabrena.juno.hardware.MCU#getSecretStore} does for the secret stores:
  *
  * <pre>{@code
  * return switch (MCU.getBoardModel()) {
- *     case PORTENTA_H7 -> new Se050C2(slots);
- *     case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> new Esp32Nvs(slots);
+ *     case PORTENTA_H7 -> new Se050C2();
+ *     case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM, UNO_R4_WIFI -> new Esp32Nvs();
+ *     case PICO_2_W -> new Pico2WTrustZoneStore();
  *     default -> throw new IllegalStateException("This board has no secret store");
  * };
  * }</pre>

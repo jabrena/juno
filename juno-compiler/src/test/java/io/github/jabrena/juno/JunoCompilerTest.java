@@ -1173,7 +1173,7 @@ class JunoCompilerTest {
         @CsvSource({"ArduinoUnoR4WiFiBoard, false", "ArduinoUnoQBoard, true"})
         @DisplayName("Drops the branch its target can never take, so that side's shim features go with it")
         void shouldDropTheBranchTheTargetCannotTake(String board, boolean isQ) throws Exception {
-            // Given: the I2C bus is used only where the board is the Q, as SecretStoreFactory uses the SE050C2 only
+            // Given: the I2C bus is used only where the board is the Q, as MCU.getSecretStore() uses the SE050C2 only
             // on the Portenta. The query is answered when the program is linked, so the other side is not compiled.
             String source = """
                     package demo;
@@ -1214,7 +1214,7 @@ class JunoCompilerTest {
             // A board with no secret store reaches neither provider, so a read through the store cannot compile.
             "ArduinoUnoR4WiFiBoard, juno_nvs_read, juno_se050_read",
             "ArduinoUnoQBoard, , juno_se050_read"})
-        @DisplayName("SecretStoreFactory compiles to the one store its target board has, and is rejected on a board with none")
+        @DisplayName("MCU.getSecretStore() compiles to the one store its target board has, and is rejected on a board with none")
         void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absent)
                 throws Exception {
             // Given: the factory asks one board query and constructs one of two providers, or throws
@@ -1222,15 +1222,13 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.%1$s;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.security.SecretStore;
-                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(%1$s.class)
                     public final class Secrets {
                         public static void main(String[] args) {
-                            SecretSlots slots = new SecretSlots().add("wifi.ssid", 8);
-                            SecretStore store = SecretStoreFactory.open(slots);
+                            SecretStore store = MCU.getSecretStore();
                             Serial.println(store.read("wifi.ssid", new byte[63]));
                         }
                     }
@@ -1260,14 +1258,13 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.security.SecretSlots;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.security.SecretStore;
-                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(RaspberryPico2WifiBoard.class)
                     public final class PicoSecrets {
                         public static void main(String[] args) {
-                            SecretStore store = SecretStoreFactory.open(new SecretSlots().add("wifi.ssid", 8));
+                            SecretStore store = MCU.getSecretStore();
                             store.write("wifi.ssid", new byte[] {1, 2}, 2);
                             Serial.println(store.clearAll());
                         }
@@ -1284,7 +1281,8 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("juno_pico_tz_begin", "juno_pico_tz_write", "juno_pico_tz_clear_all");
             assertThat(result.runtimeShim()).contains("0x10002F01u", "void runtime_init_early_resets(void)",
                     "void runtime_init_bootrom_reset(void)", "pico_processor_state_is_nonsecure()",
-                    "void __wrap_flash_range_erase(", "void __wrap_flash_range_program(");
+                    "void __wrap_flash_range_erase(", "void __wrap_flash_range_program(",
+                    "irq_set_exclusive_handler(IO_IRQ_BANK0_NS, juno_pico_tz_gpio_ns_irq)");
         }
 
         @Test
@@ -1323,14 +1321,12 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.MCU;
-                    import io.github.jabrena.juno.hardware.security.SecretSlots;
-                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(RaspberryPico2WifiBoard.class)
                     public final class PicoBle {
                         public static void main(String[] args) {
                             Serial.println(MCU.getBluetoothLe().isConnected());
-                            Serial.println(SecretStoreFactory.open(new SecretSlots().add("a", 2)).clearAll());
+                            Serial.println(MCU.getSecretStore().clearAll());
                         }
                     }
                     """;
@@ -1353,15 +1349,14 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.security.SecretSlots;
-                    import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
+                    import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(RaspberryPico2WifiBoard.class)
                     public final class PicoThreads {
                         public static void main(String[] args) throws InterruptedException {
                             Thread worker = Thread.startVirtualThread(() -> Serial.println(1));
                             worker.join();
-                            Serial.println(SecretStoreFactory.open(new SecretSlots().add("a", 2)).clearAll());
+                            Serial.println(MCU.getSecretStore().clearAll());
                         }
                     }
                     """;

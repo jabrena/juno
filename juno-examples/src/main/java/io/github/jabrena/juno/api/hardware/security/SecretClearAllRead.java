@@ -6,9 +6,8 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -49,8 +48,6 @@ public final class SecretClearAllRead {
     private static final int MAX_VALUE_BYTES = 63;
     private static final String NAME = "demo.clearall";
     private static final String VALUE = "before-clearall";
-    /** Slot 4 is not used by the other examples' tables. */
-    private static final int SLOT = 4;
     private static final int REPORT_INTERVAL_MS = 2000;
 
     private final SecretStore store;
@@ -70,9 +67,8 @@ public final class SecretClearAllRead {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        SecretSlots slots = new SecretSlots().add(NAME, SLOT);
         SecretClearAllRead example =
-                new SecretClearAllRead(SecretStoreFactory.open(slots));
+                new SecretClearAllRead(MCU.getSecretStore());
         example.run();
         while (true) {
             example.report();

@@ -5,9 +5,8 @@ import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.hardware.security.SecretSlots;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.security.SecretStore;
-import io.github.jabrena.juno.hardware.security.SecretStoreFactory;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -17,13 +16,13 @@ import io.github.jabrena.juno.util.Delay;
  * before trusting a program that reads credentials from it.
  *
  * <p>It is written against {@link SecretStore} alone and takes its instance from
- * {@link SecretStoreFactory#open}, so the same program runs on every board that has a store and names no chip: the
- * factory picks the Portenta H7's onboard NXP SE050C2 or the ESP32-family boards' own non-volatile storage (they have
+ * {@link MCU#getSecretStore}, so the same program runs on every board that has a store and names no chip: the
+ * board's store is the Portenta H7's onboard NXP SE050C2 or the ESP32-family boards' own non-volatile storage (they have
  * no secure element, and that store is weaker — see {@code Esp32Nvs}). The board query is answered when the
  * program is linked, so only the chosen provider reaches the image.
  *
- * <p>For each name it prints the length the chip returned, using the slot numbers of
- * {@link SecretProvisioner}'s table:
+ * <p>For each name it prints the length the store returned, looking the name up the same way
+ * {@link SecretProvisioner} stored it:
  *
  * <ul>
  *   <li>{@code read <n>} — the name holds {@code n} bytes. The value itself is never printed;</li>
@@ -60,9 +59,8 @@ public final class SecretProbe {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        SecretSlots slots = new SecretSlots().add(SSID_NAME, 8).add(PASSWORD_NAME, 9);
         Serial.println("probe start");
-        SecretProbe probe = new SecretProbe(SecretStoreFactory.open(slots));
+        SecretProbe probe = new SecretProbe(MCU.getSecretStore());
         Serial.println("store open");
         while (true) {
             probe.report(1, SSID_NAME);

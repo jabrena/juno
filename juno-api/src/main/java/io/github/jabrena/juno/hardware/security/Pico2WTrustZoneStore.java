@@ -1,11 +1,10 @@
 package io.github.jabrena.juno.hardware.security;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * Named-secret storage on the Raspberry Pi Pico 2 W, kept by Juno's own TrustZone secure firmware: the RP2350 has no
  * secure element, so a small program in the Cortex-M33's secure world holds the slots in a flash sector it fences off,
- * and this program, which runs in the non-secure world, reaches them only through that firmware's one gateway.
+ * and this program, which runs in the non-secure world, reaches them only through that firmware's one gateway. Each
+ * slot holds one name with its value.
  *
  * <p>{@code juno:flash} installs the firmware with any program that uses this store: it takes the 12 KB boot slot
  * arduino-pico normally gives its OTA stage, so nothing else has to be flashed first. A program flashed without it, for
@@ -20,28 +19,21 @@ import org.jspecify.annotations.Nullable;
  * <p>Programs that use it run on one carrier: the second core cannot be started from the non-secure world, so virtual
  * threads on two carriers are rejected when the program is compiled.
  *
- * <p>The instance owns its scratch buffers and allocates nothing while reading or writing. Callers should obtain it
- * through {@link SecretStoreFactory}, which keeps the store choice out of application code.
+ * <p>Callers should obtain it through {@link io.github.jabrena.juno.hardware.MCU#getSecretStore}, which keeps the
+ * store choice out of application code.
  */
-public final class Pico2WTrustZoneStore implements SecretStore {
-    /** Maximum value size shared by Juno's secure-store providers. */
-    static final int MAX_VALUE_BYTES = 63;
-
-    private final SecretSlots slots;
+public final class Pico2WTrustZoneStore extends NamedSlotStore {
     private final Transport transport;
-    private final byte[] scratch = new byte[MAX_VALUE_BYTES];
-    private final byte[] textBytes = new byte[MAX_VALUE_BYTES];
-    private final boolean available;
+    private final byte[] noBytes = new byte[1];
 
-    /** Connects to the secure firmware and uses {@code slots} as its stable name-to-slot mapping. */
-    public Pico2WTrustZoneStore(SecretSlots slots) {
-        this(slots, NativeTransport.INSTANCE);
+    /** Connects to the secure firmware. */
+    public Pico2WTrustZoneStore() {
+        this(NativeTransport.INSTANCE);
     }
 
-    Pico2WTrustZoneStore(SecretSlots slots, Transport transport) {
-        this.slots = slots;
+    Pico2WTrustZoneStore(Transport transport) {
+        super(transport.begin());
         this.transport = transport;
-        available = transport.begin();
     }
 
     /**
@@ -53,51 +45,24 @@ public final class Pico2WTrustZoneStore implements SecretStore {
     }
 
     @Override
-    public int read(String key, byte[] buffer) {
-        int slot = slots.slotOf(key);
-        if (!available || slot < 0) {
-            return -1;
-        }
-        int length = transport.read(slot, scratch, scratch.length);
-        if (length <= 0 || length > MAX_VALUE_BYTES || length > buffer.length) {
-            return -1;
-        }
-        for (int i = 0; i < length; i++) {
-            buffer[i] = scratch[i];
-        }
-        return length;
+    int readSlot(int slot, byte[] buffer, int capacity) {
+        return transport.read(slot, buffer, capacity);
     }
 
     @Override
-    public int write(String key, byte[] value, int length) {
-        int slot = slots.slotOf(key);
-        if (!available || slot < 0 || length < 0 || length > MAX_VALUE_BYTES || length > value.length) {
-            return -1;
-        }
-        return transport.write(slot, value, length) == length ? length : -1;
+    boolean writeSlot(int slot, byte[] bytes, int length) {
+        return transport.write(slot, bytes, length) == length;
+    }
+
+    /** The gateway clears a slot as a write of length {@code 0}. */
+    @Override
+    boolean clearSlot(int slot) {
+        return transport.write(slot, noBytes, 0) == 0;
     }
 
     @Override
-    public int clear(String key) {
-        return write(key, scratch, 0) == 0 ? 0 : -1;
-    }
-
-    @Override
-    public int clearAll() {
-        return available && transport.clearAll() ? 0 : -1;
-    }
-
-    @Override
-    public @Nullable String getString(String key) {
-        int length = read(key, textBytes);
-        if (length < 0) {
-            return null;
-        }
-        StringBuilder text = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            text.append((char) (textBytes[i] & 0xFF));
-        }
-        return text.toString();
+    boolean clearEverySlot() {
+        return transport.clearAll();
     }
 
     /** The secure firmware's gateway, addressed by slot number; a test substitutes its own. */

@@ -13,8 +13,8 @@ image or in build output. Three implementations sit behind that one interface:
 | `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, UNO R4 WiFi | Weaker: an ESP32's own flash. See the warning below. |
 | `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
 
-`SecretStoreFactory.open(slots)` picks the one the board has, and `SecretStoreFactory.isAvailable()` says whether there
-is one. The board query is answered when the program is linked and the branches the target cannot take are dropped
+`MCU.getSecretStore()` returns the one the board has, the same way `MCU.getWifi()` returns its Wi-Fi; a program that
+asks for it on a board without one is rejected when it is built. The board query is answered when the program is linked and the branches the target cannot take are dropped
 with it, so only the chosen implementation reaches the image — and a core without the others' shim code never has to
 supply it. The other boards have no secret store; see [Boards without a secret store](#boards-without-a-secret-store).
 
@@ -43,7 +43,8 @@ and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored c
 confirmed on a Nano ESP32, and its UNO R4 WiFi variant on an R4 with coprocessor firmware 0.4.1
 (`SecretStoreCheck` and `SecretClearAllRead`). The Pico 2 W TrustZone path is confirmed on a Pico 2 W: `SecretStoreCheck` and
 `SecretClearAllRead` pass, values survive a reboot and a reflash, Wi-Fi and a BLE scan run beside it, and a direct
-read of the secure flash raises a SecureFault.
+read of the secure flash raises a SecureFault. Those checks ran before secrets were looked up by name (see
+[How names are stored](#how-names-are-stored)); the name-lookup format has not been flashed yet.
 
 ## What is protected
 
@@ -76,33 +77,47 @@ board.
 ## Reading secrets in a program
 
 ```java
-SecretSlots slots = new SecretSlots().add("wifi.ssid", 8).add("wifi.password", 9);
-SecretStore secrets = SecretStoreFactory.open(slots);
+SecretStore secrets = MCU.getSecretStore();
 
 String ssid = secrets.getString("wifi.ssid");
 String password = secrets.getString("wifi.password");
 ```
 
-`SecretSlots` maps each name to a data slot. The program owns that mapping, and the provisioning program must use the same
-slot numbers. `getString` returns `null` for a missing name. The `read(name, buffer)` form copies the bytes into your own
+A secret is asked for by its name alone: the program never picks a slot, and the provisioning program and the reading
+program only have to agree on the name. `getString` returns `null` for a missing name. The `read(name, buffer)` form copies the bytes into your own
 buffer and allocates nothing.
 
 The complete example is [`SecretWifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java) in `juno-examples`.
+
+## How names are stored
+
+Every store has 16 slots, and each slot holds one record of at most 63 bytes: a length byte, the name, then the value.
+
+- `read` and `getString` look through the slots in order and return the first record with that name.
+- `write` replaces the record that has the name, in place, or takes the first empty slot for a new name. It fails
+  once all 16 slots hold other names.
+- A name is 1 to 31 printable, non-space ASCII characters, and the value can be up to `62 - name.length()` bytes
+  (`SecretStore.RECORD_BYTES` is the 63). `getString` values are capped at 31 characters anyway, because that is the
+  limit for runtime `String`s on the board.
+- A lookup reads up to 16 slots, so read secrets once at startup. On the UNO R4 WiFi each slot read is a round trip to
+  the coprocessor.
+
+A slot written before names were stored holds a raw value with no name, so it is never matched and never overwritten.
+A board provisioned that way has to be provisioned again, preferably after `-Djuno.secret.clear=true`.
 
 ## Clearing
 
 There are two different operations, and the difference matters:
 
-- `clear(name)` empties one name. The other names, and any slot this program's table does not list, are untouched.
-- `clearAll()` empties **every data slot on the store**, not only the names in the table it was called through. It
-  decommissions the store: a credential another program provisioned under a name this table never listed is
-  erased too. To empty just the names a program owns, loop over `clear(name)`.
+- `clear(name)` empties one name. The other names are untouched.
+- `clearAll()` empties **every data slot on the store**, not only the names the calling program uses. It
+  decommissions the store: a credential another program provisioned is erased too. To empty just the names a program owns, loop over `clear(name)`.
 
 `-Djuno.secret.clear=true` is the host side of `clearAll()`, which is why it asks for the word `CLEAR` first. On a
 provisioned board the Wi-Fi credentials go with it and have to be provisioned again.
 
 Two examples cover the two operations from the board itself, with dummy values and no host provisioning:
-[`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) checks writes, updates, per-name `clear` and the 63-byte maximum
+[`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) checks writes, updates, per-name `clear` and the longest value
 without ever wiping the store, and [`PortentaSecretWipe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretWipe.java) writes two dummy names,
 reads them back, calls `clearAll()` and checks that both are then missing.
 [`SecretClearAllRead`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretClearAllRead.java)

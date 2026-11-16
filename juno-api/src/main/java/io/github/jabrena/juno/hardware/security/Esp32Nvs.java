@@ -1,13 +1,12 @@
 package io.github.jabrena.juno.hardware.security;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * Named-secret storage in the non-volatile storage (NVS) of an ESP32, for the boards that carry no secure element at
  * all: the ESP32-family boards' own chip, and the ESP32-S3 coprocessor of the UNO R4 WiFi, whose core's
  * {@code Preferences} library has the same API and carries each call to the coprocessor over the modem link (it needs
- * the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailable). Each logical slot is one entry
- * of a private NVS namespace. NVS lives in its own flash partition, so the values outlive a sketch upload.
+ * the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailable). Each slot is one entry of a
+ * private NVS namespace and holds one name with its value. NVS lives in its own flash partition, so the values outlive
+ * a sketch upload.
  *
  * <p><b>This is weaker than a secure element, and deliberately so.</b> The SE050C2 keeps a value in a chip that the
  * processor asks for it; NVS keeps it in the board's own flash. It takes the secret out of the firmware image, out of
@@ -18,88 +17,35 @@ import org.jspecify.annotations.Nullable;
  * <p>A missing name is reported missing, the same as on the SE050C2, and NVS is always present: a negative length here
  * means the name holds nothing, never that the hardware failed to answer.
  *
- * <p>The instance owns its scratch buffers and allocates nothing while reading or writing. Callers should obtain it
- * through {@link SecretStoreFactory}, which keeps the chip choice out of application code.
+ * <p>Callers should obtain it through {@link io.github.jabrena.juno.hardware.MCU#getSecretStore}, which keeps the
+ * chip choice out of application code.
  */
-public final class Esp32Nvs implements SecretStore {
-    /** Maximum value size shared by Juno's secure-store providers. */
-    static final int MAX_VALUE_BYTES = 63;
-
-    private final SecretSlots slots;
+public final class Esp32Nvs extends NamedSlotStore {
     private final Transport transport;
-    private final byte[] scratch = new byte[MAX_VALUE_BYTES];
-    private final byte[] textBytes = new byte[MAX_VALUE_BYTES];
-    private final boolean available;
 
-    /** Opens the board's NVS namespace and uses {@code slots} as its stable name-to-entry mapping. */
-    public Esp32Nvs(SecretSlots slots) {
-        this(slots, NativeTransport.INSTANCE);
+    /** Opens the board's NVS namespace. */
+    public Esp32Nvs() {
+        this(NativeTransport.INSTANCE);
     }
 
-    Esp32Nvs(SecretSlots slots, Transport transport) {
-        this.slots = slots;
+    Esp32Nvs(Transport transport) {
+        super(transport.begin());
         this.transport = transport;
-        available = transport.begin();
     }
 
     @Override
-    public int read(String key, byte[] buffer) {
-        int slot = slots.slotOf(key);
-        if (!available || slot < 0) {
-            return -1;
-        }
-        int length = transport.read(slot, scratch, scratch.length);
-        if (length <= 0 || length > MAX_VALUE_BYTES || length > buffer.length) {
-            return -1;
-        }
-        for (int i = 0; i < length; i++) {
-            buffer[i] = scratch[i];
-        }
-        return length;
+    int readSlot(int slot, byte[] buffer, int capacity) {
+        return transport.read(slot, buffer, capacity);
     }
 
     @Override
-    public int write(String key, byte[] value, int length) {
-        int slot = slots.slotOf(key);
-        if (!available || slot < 0 || length < 0 || length > MAX_VALUE_BYTES || length > value.length) {
-            return -1;
-        }
-        if (length == 0) {
-            return transport.clear(slot) ? 0 : -1;
-        }
-        return transport.write(slot, value, length) ? length : -1;
+    boolean writeSlot(int slot, byte[] bytes, int length) {
+        return transport.write(slot, bytes, length);
     }
 
     @Override
-    public int clear(String key) {
-        return write(key, scratch, 0) == 0 ? 0 : -1;
-    }
-
-    @Override
-    public int clearAll() {
-        if (!available) {
-            return -1;
-        }
-        int result = 0;
-        for (int slot = 0; slot < SecretSlots.SLOT_COUNT; slot++) {
-            if (!transport.clear(slot)) {
-                result = -1;
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public @Nullable String getString(String key) {
-        int length = read(key, textBytes);
-        if (length < 0) {
-            return null;
-        }
-        StringBuilder text = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            text.append((char) (textBytes[i] & 0xFF));
-        }
-        return text.toString();
+    boolean clearSlot(int slot) {
+        return transport.clear(slot);
     }
 
     /** The NVS entries behind the slots, addressed by slot number; a test substitutes its own. */

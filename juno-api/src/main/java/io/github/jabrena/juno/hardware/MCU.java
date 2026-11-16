@@ -22,6 +22,7 @@ import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardImu;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
+import io.github.jabrena.juno.hardware.internal.NativeSecretStore;
 import io.github.jabrena.juno.hardware.internal.NativeSpi;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
@@ -29,6 +30,7 @@ import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.power.Battery;
+import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.spi.Spi;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.robotics.Accelerometer;
@@ -132,5 +134,15 @@ public final class MCU {
     /** The selected board's onboard battery monitor. */
     public static Battery getBattery() {
         return NativeBattery.battery();
+    }
+
+    /**
+     * The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
+     * SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), or
+     * the Pico 2 W's slots behind Juno's TrustZone secure firmware. Secrets are read by name; no slot numbers are
+     * chosen. Programs for a board without a store are rejected when they are built.
+     */
+    public static SecretStore getSecretStore() {
+        return NativeSecretStore.secretStore();
     }
 }

@@ -33,17 +33,18 @@ final class SerialSession implements AutoCloseable {
 
     /**
      * Configures {@code port} for raw 115200 baud with the executor, then opens it. The board re-enumerates after an upload,
-     * so the open is retried until {@code timeout} passes.
+     * and a Pico 2 W flashed from BOOTSEL takes a moment to bring its port back, so both steps are retried until
+     * {@code timeout} passes.
      */
     static SerialSession open(Path port, CommandExecutor executor, Duration timeout) {
-        configure(port, executor);
         long deadline = System.nanoTime() + timeout.toNanos();
         while (true) {
             try {
+                configure(port, executor);
                 InputStream in = Files.newInputStream(port);
                 OutputStream out = Files.newOutputStream(port);
                 return new SerialSession(in, out);
-            } catch (IOException exception) {
+            } catch (IOException | ArduinoCliException exception) {
                 if (System.nanoTime() > deadline) {
                     throw new ArduinoCliException("Could not open " + port + " for the secret session: "
                             + exception.getMessage());

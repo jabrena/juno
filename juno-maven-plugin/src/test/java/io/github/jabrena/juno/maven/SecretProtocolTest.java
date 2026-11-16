@@ -9,23 +9,23 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SecretProtocolTest {
 
     @Test
-    @DisplayName("a secret accepts the secure-element slot capacity and rejects larger values")
-    void valuesStopAtTheSlotLimit() {
-        char[] fits = "a".repeat(63).toCharArray();
-        char[] tooLong = "a".repeat(64).toCharArray();
+    @DisplayName("a value shares the 63-byte record with its name, and a longer one is rejected")
+    void valuesStopAtTheRecordLimit() {
+        char[] fits = "a".repeat(49).toCharArray();
+        char[] tooLong = "a".repeat(50).toCharArray();
 
-        assertThat(SecretProtocol.valueBytes("wifi.password", fits)).hasSize(63);
+        assertThat(SecretProtocol.valueBytes("wifi.password", fits)).hasSize(49);
         assertThatThrownBy(() -> SecretProtocol.valueBytes("wifi.password", tooLong))
                 .isInstanceOf(ArduinoCliException.class)
-                .hasMessageContaining("at most 63");
+                .hasMessageContaining("at most 49 next to that name");
     }
 
     @Test
-    @DisplayName("the mailbox key may use the full 63-byte slot")
-    void mailboxKeyUsesTheSlotLimit() {
-        assertThat(SecretProtocol.valueBytes("mailbox.apikey", "k".repeat(63).toCharArray())).hasSize(63);
-        assertThatThrownBy(() -> SecretProtocol.valueBytes("mailbox.apikey", "k".repeat(64).toCharArray()))
-                .hasMessageContaining("at most 63");
+    @DisplayName("a shorter name leaves more room for its value")
+    void shorterNameLeavesMoreRoom() {
+        assertThat(SecretProtocol.maxValueBytes("k")).isEqualTo(61);
+        assertThat(SecretProtocol.maxValueBytes("mailbox.apikey")).isEqualTo(48);
+        assertThat(SecretProtocol.valueBytes("mailbox.apikey", "k".repeat(48).toCharArray())).hasSize(48);
     }
 
     @Test

@@ -119,6 +119,19 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     }
 
     /**
+     * Uploads a sketch {@link #verifySketch} built. A Pico 2 W program with the secure firmware is uploaded from its own
+     * build directory, where the firmware was installed into the UF2: Arduino CLI's default location holds no UF2 for
+     * it, and a plain upload would reset the board into BOOTSEL and then fail, leaving it there.
+     */
+    final void upload(ArduinoCli cli, CompiledSketch sketch, String port) {
+        if (sketch.picoSecureFirmware()) {
+            cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory());
+        } else {
+            cli.upload(sketch.fqbn(), port, sketch.directory());
+        }
+    }
+
+    /**
      * A generated sketch directory and the FQBN to build it for. {@code picoSecureFirmware} marks a Pico 2 W program
      * that uses the TrustZone secret store: it builds into {@link #buildDirectory()}, where the secure firmware is
      * installed into its UF2, and flashes from there.
