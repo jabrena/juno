@@ -145,9 +145,8 @@ ${JUNO_HTTP_SERVER_HEADER_LOOKUP}extern "C" int32_t juno_http_server_content_len
   return juno_http_server_content_length_value;
 }
 
-// The request buffers are already null-terminated and outlive the call, so they are returned as-is:
-// copying into a runtime-string slot would turn any path of JUNO_STRING_SLOT_SIZE bytes or more
-// (e.g. /api/v1/mailbox/<uuid>) into null and panic the caller before it could respond.
+// The request buffers are already null-terminated and outlive the call, so they are returned as-is
+// rather than copied into the arena.
 extern "C" int32_t juno_http_server_method() {
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_method_buf));
 }

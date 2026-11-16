@@ -22,7 +22,7 @@ import org.jspecify.annotations.Nullable;
  * <code>&#92;uXXXX</code> surrogate pairs, to UTF-8 in {@code out}. It writes at most {@code outLength} bytes and
  * never appends a NUL byte.
  *
- * <p>{@link #getString(byte[], int, String)} instead returns a bounded runtime {@link String} holding the value's raw
+ * <p>{@link #getString(byte[], int, String)} instead returns a runtime {@link String} holding the value's raw
  * JSON text (quotes stripped for an actual JSON string, no escape decoding) — useful for a JSON number when its exact
  * source text matters more than its value parsed through {@link #getDouble}, which loses precision for values not
  * exactly representable in binary floating point.
@@ -113,7 +113,7 @@ public final class Json {
     /**
      * Returns the raw JSON text of any scalar value at {@code path} (a JSON string's content with its surrounding
      * quotes stripped, or a number/boolean/{@code null} literal exactly as written), or {@code null} when the path is
-     * missing, resolves to an object or array, or the raw text is too long for Juno's bounded runtime-string pool.
+     * missing or resolves to an object or array. The text is copied into a new arena {@code String}.
      */
     public static @Nullable String getString(byte[] buffer, int bufferLength, String path) {
         int start = JsonPath.locate(buffer, bufferLength, path);
@@ -145,7 +145,7 @@ public final class Json {
     }
 
     /**
-     * Copies {@code buffer[start, end)} into a runtime-string slot, or returns {@code null} when it does not fit one.
+     * Copies {@code buffer[start, end)} into a new arena {@code String}.
      * The only part of {@code Json} that is a compiler intrinsic: Java has no allocation-free way to make a String.
      */
     private static native @Nullable String rawText(byte[] buffer, int start, int end);

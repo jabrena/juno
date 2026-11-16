@@ -26,17 +26,42 @@ extern "C" int32_t juno_string_hash_code(int32_t value) {
   return hash;
 }
 
-extern "C" int32_t juno_string_concat_new() {
-  char* buffer = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+// A concatenation is measured before it is built: each measure adds one argument's formatted length to the running
+// total, and juno_string_concat_new_sized takes an arena block of exactly that length, which the appends then fill.
+extern "C" int32_t juno_string_concat_new_sized(int32_t length) {
+  if (length < 0) juno_panic();
+  char* buffer = static_cast<char*>(juno_alloc(static_cast<uint32_t>(length) + 1u, 1u));
   buffer[0] = '\0';
   return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+}
+
+extern "C" int32_t juno_string_concat_measure_string(int32_t length, const char* value) {
+  return length + static_cast<int32_t>(strlen(value != nullptr ? value : "null"));
+}
+
+extern "C" int32_t juno_string_concat_measure_int(int32_t length, int32_t value) {
+  uint32_t magnitude = value < 0 ? 0u - static_cast<uint32_t>(value) : static_cast<uint32_t>(value);
+  int32_t digits = value < 0 ? 2 : 1;
+  while (magnitude >= 10u) {
+    magnitude /= 10u;
+    digits++;
+  }
+  return length + digits;
+}
+
+extern "C" int32_t juno_string_concat_measure_long(int32_t length, int64_t value) {
+  uint64_t magnitude = value < 0 ? 0ull - static_cast<uint64_t>(value) : static_cast<uint64_t>(value);
+  int32_t digits = value < 0 ? 2 : 1;
+  while (magnitude >= 10ull) {
+    magnitude /= 10ull;
+    digits++;
+  }
+  return length + digits;
 }
 
 static void juno_string_concat_append_byte(int32_t handle, char value) {
   char* buffer = reinterpret_cast<char*>(static_cast<intptr_t>(handle));
   uint32_t length = static_cast<uint32_t>(strlen(buffer));
-  if (length + 1u >= JUNO_STRING_SLOT_SIZE) juno_string_overflow();
   buffer[length] = value;
   buffer[length + 1u] = '\0';
 }

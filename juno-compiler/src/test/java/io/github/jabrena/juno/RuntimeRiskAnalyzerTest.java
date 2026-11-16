@@ -370,7 +370,7 @@ class RuntimeRiskAnalyzerTest {
     }
 
     @Test
-    @DisplayName("Does not report a StringBuilder with a constant capacity, even one longer than a string slot")
+    @DisplayName("Does not report a StringBuilder with a constant capacity, even a long one")
     void shouldNotReportAStringBuilderWithAConstantCapacity() throws Exception {
         // Given
         RuntimeRiskReport report = compileReport("demo.LongBuilder", """

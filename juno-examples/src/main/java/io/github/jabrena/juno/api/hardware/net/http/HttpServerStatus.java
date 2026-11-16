@@ -21,12 +21,9 @@ import io.github.jabrena.juno.util.Delay;
  * {"uptime_ms":<clock.millis()>}}) on port 80, and replies to everything else with an RFC 7807
  * problem detail ({@code application/problem+json}). Demonstrates {@link HttpServer}'s
  * non-blocking {@code accept()}/{@code respond()} pair, {@link String#equals} route matching, and
- * building a runtime JSON body in a {@link StringBuilder} (a literal part appended whole, a
- * computed number or the request path appended char-by-char via {@link String#charAt}, since a
- * {@code StringBuilder}'s {@code append(String)} only accepts a compile-time literal) — returned
- * either as a plain {@code String} ({@link #buildStatusResponse}, short enough for {@code
- * toString()}'s bounded pool) or as the {@code StringBuilder} itself ({@link
- * #buildNotFoundProblem}, long enough that it can't be). Every {@link #HEARTBEAT_INTERVAL_MS}
+ * building a runtime JSON body in a {@link StringBuilder} from literals, a computed number and the
+ * request path — returned either as a plain {@code String} ({@link #buildStatusResponse}) or as the
+ * {@code StringBuilder} itself ({@link #buildNotFoundProblem}). Every {@link #HEARTBEAT_INTERVAL_MS}
  * also prints request count and {@link Memory#arenaUsedBytes} over Serial, for spotting a leak
  * (arena usage that only ever grows) versus healthy reclamation (usage that rises and falls).
  */
@@ -98,27 +95,20 @@ public final class HttpServerStatus {
     private String buildStatusResponse() {
         StringBuilder json = new StringBuilder(48);
         json.append("{\"uptime_ms\":");
-        String uptime = String.valueOf(clock.millis());
-        for (int i = 0; i < uptime.length(); i++) {
-            json.append(uptime.charAt(i));
-        }
+        json.append(String.valueOf(clock.millis()));
         json.append('}');
         return json.toString();
     }
 
     /**
      * An RFC 7807 problem detail ({@code application/problem+json}). Its {@code instance} echoes
-     * the unmatched request path, so the full body can run well past 32 bytes — too long for
-     * {@link #buildStatusResponse}'s {@code String}-returning, {@code toString()}-based approach,
-     * which panics instead of truncating past that pool size. Returning the {@link StringBuilder}
-     * itself for {@link HttpServer#respond(int, String, StringBuilder)} to stream has no such cap.
+     * the unmatched request path. Returning the {@link StringBuilder} itself lets
+     * {@link HttpServer#respond(int, String, StringBuilder)} stream it without a {@code toString()} copy.
      */
     private StringBuilder buildNotFoundProblem(String path) {
         StringBuilder problem = new StringBuilder(128);
         problem.append("{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404,\"instance\":\"");
-        for (int i = 0; i < path.length(); i++) {
-            problem.append(path.charAt(i));
-        }
+        problem.append(path);
         problem.append("\"}");
         return problem;
     }

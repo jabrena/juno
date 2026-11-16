@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 abstract class NamedSlotStore implements SecretStore {
     /** How many slots most stores have, 0 to 15; a lookup and a whole-store {@code clearAll} walk all of them. */
     static final int SLOT_COUNT = 16;
-    /** The longest name: the board's runtime {@code String}s hold at most 31 characters. */
+    /** The longest name, as {@code juno:secret} also checks before it uploads one. */
     static final int MAX_NAME_BYTES = 31;
 
     final boolean available;

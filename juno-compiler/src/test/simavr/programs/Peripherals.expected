@@ -17,16 +17,16 @@ Subject: Hello Rev2
 Line one
 .dot line
 First
-listening
-4
-/10.0.0.7:4210
-pg
 sd ready
 42
 juno
 8080
 Rev2
 fallback
+listening
+4
+/10.0.0.7:4210
+pg
 10
 log exists
 first

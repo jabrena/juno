@@ -2097,7 +2097,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    @DisplayName("The generated string-from-bytes shim copies a bounded range at runtime")
+    @DisplayName("The generated string-from-bytes shim copies a range into the arena at runtime")
     void shouldCopyABoundedRangeInTheGeneratedStringFromBytesShimAtRuntime() throws Exception {
         // Given
         String compiler = availableCppCompiler();
@@ -2132,16 +2132,20 @@ class GeneratedAsmToolchainTest {
                   juno_gc_stack_top = reinterpret_cast<uintptr_t>(&stackTopMarker);
                   const char json[] = R"json({"temp":"21.5","long":"0123456789012345678901234567890123"})json";
                   const uint8_t* bytes = reinterpret_cast<const uint8_t*>(json);
-                  // A runtime String is a 32-bit handle: on this 64-bit host it is not a usable pointer, so the
-                  // checks read the slots it rotates through instead (first call, first slot).
-                  int32_t text = juno_string_from_bytes(bytes, 9, 13);
-                  if (text != static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_string_slots[0]))) return 1;
-                  if (strcmp(juno_string_slots[0], "21.5") != 0) return 1;
-                  if (juno_string_from_bytes(bytes, 23, 54) == 0) return 2; // 31 bytes: the longest that fits
-                  if (juno_string_from_bytes(bytes, 23, 55) != 0) return 3; // 32 bytes: one too many
+                  // A runtime String is a 32-bit handle: on this 64-bit host it is the low half of a pointer into
+                  // juno_arena, so the checks put the arena's high half back to read the copy.
+                  auto text = [](int32_t handle) {
+                    uintptr_t high = reinterpret_cast<uintptr_t>(juno_arena) & ~static_cast<uintptr_t>(0xFFFFFFFFu);
+                    return reinterpret_cast<const char*>(high | static_cast<uint32_t>(handle));
+                  };
+                  int32_t temp = juno_string_from_bytes(bytes, 9, 13);
+                  if (temp == 0 || strcmp(text(temp), "21.5") != 0) return 1;
+                  int32_t digits = juno_string_from_bytes(bytes, 23, 55); // 32 bytes: longer than a slot ever was
+                  if (digits == 0 || strcmp(text(digits), "01234567890123456789012345678901") != 0) return 2;
+                  if (strcmp(text(temp), "21.5") != 0) return 3; // an earlier copy is never overwritten
                   if (juno_string_from_bytes(bytes, 5, 4) != 0) return 4;
-                  juno_string_slots[2][0] = 'x';
-                  if (juno_string_from_bytes(bytes, 9, 9) == 0 || juno_string_slots[2][0] != '\\0') return 5;
+                  int32_t empty = juno_string_from_bytes(bytes, 9, 9);
+                  if (empty == 0 || text(empty)[0] != '\\0') return 5;
                   return 0;
                 }
                 """;

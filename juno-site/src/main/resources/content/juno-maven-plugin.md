@@ -177,7 +177,7 @@ The first analysis slice reports:
 
 | Code | Meaning |
 |------|---------|
-| `JUNO-RISK-001` | Arena allocation occurs directly or transitively inside a control-flow loop. |
+| `JUNO-RISK-001` | Arena allocation occurs directly or transitively inside a control-flow loop, including a runtime `String` built with `+`, `String.valueOf`, `StringBuilder.toString()` or `Json.getString`. |
 | `JUNO-RISK-002` | The conservative startup allocation estimate exceeds the fixed arena capacity. |
 | `JUNO-RISK-003` | A recursive call cycle makes generated call depth and stack usage unbounded. |
 | `JUNO-RISK-004` | Array accesses exist for which Juno cannot emit a bounds check. |

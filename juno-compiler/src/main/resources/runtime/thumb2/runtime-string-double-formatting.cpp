@@ -2,7 +2,7 @@
 // fractional part is truncated toward zero at 6 digits (trailing zeros trimmed), so a
 // value whose exact binary representation sits just below the intended decimal (e.g.
 // 21.2 stored as 21.199999999999999...) can format one unit low in the last digit.
-// Formats into a caller-owned buffer so string concatenation can format without taking a pool slot.
+// Formats into a caller-owned buffer, so string concatenation can format straight into its result.
 static void juno_format_double(char* buffer, double value) {
   if (isnan(value) || isinf(value)) juno_panic();
   bool negative = value < 0.0;
@@ -14,7 +14,7 @@ static void juno_format_double(char* buffer, double value) {
   double fraction = magnitude - static_cast<double>(integerPart);
   auto fractionDigits = static_cast<uint32_t>(fraction * static_cast<double>(FRACTION_SCALE));
   if (fractionDigits >= FRACTION_SCALE) fractionDigits = FRACTION_SCALE - 1u;
-  char reversed[JUNO_STRING_SLOT_SIZE];
+  char reversed[JUNO_NUMBER_TEXT_BYTES];
   uint32_t count = 0;
   uint32_t integerDigits = integerPart;
   do {
@@ -43,9 +43,8 @@ static void juno_format_double(char* buffer, double value) {
 }
 
 extern "C" JUNO_ASM_ABI int32_t juno_string_value_of_double(double value) {
-  char* buffer = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+  char buffer[JUNO_NUMBER_TEXT_BYTES];
   juno_format_double(buffer, value);
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+  return juno_string_copy(buffer, static_cast<uint32_t>(strlen(buffer)));
 }
 

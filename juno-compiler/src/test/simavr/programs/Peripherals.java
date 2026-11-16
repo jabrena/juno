@@ -73,14 +73,9 @@ public final class Peripherals {
         int subject = Pop3Client.readSubject("pop.example.com", 995, "rev2", "secret", 1, body, body.length);
         printBytes(body, subject);
         Serial.println("");
-        byte[] payload = new byte[4];
-        payload[0] = 'p';
-        payload[1] = 'i';
-        payload[2] = 'n';
-        payload[3] = 'g';
-        byte[] received = new byte[8];
-        udpLoopback(payload, received);
 
+        // Properties takes most of the Rev2's 1 KB arena, so it is loaded before the UDP loopback: whether that
+        // method's objects are reclaimed in time depends on what the conservative stack scan happens to find.
         Serial.println(SD_CARD.begin() ? "sd ready" : "sd failed");
         Serial.println(SD_CARD.size("config.txt"));
         Properties config = new Properties();
@@ -91,6 +86,15 @@ public final class Peripherals {
         Serial.println(config.getProperty("port"));
         Serial.println(config.getProperty("name"));
         Serial.println(config.getProperty("missing", "fallback"));
+
+        byte[] payload = new byte[4];
+        payload[0] = 'p';
+        payload[1] = 'i';
+        payload[2] = 'n';
+        payload[3] = 'g';
+        byte[] received = new byte[8];
+        udpLoopback(payload, received);
+
         SD_CARD.remove("log.txt");
         SD_CARD.appendLine("log.txt", "first");
         SD_CARD.appendText("log.txt", "x=" + 42);

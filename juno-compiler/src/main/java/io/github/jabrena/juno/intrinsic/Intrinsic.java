@@ -39,7 +39,12 @@ public enum Intrinsic {
     STRING_BUILDER_APPEND_CHAR,
     STRING_BUILDER_APPEND_STRING,
     STRING_BUILDER_TO_STRING,
-    STRING_CONCAT_NEW,
+    STRING_CONCAT_MEASURE_STRING,
+    STRING_CONCAT_MEASURE_INT,
+    STRING_CONCAT_MEASURE_LONG,
+    STRING_CONCAT_MEASURE_FLOAT,
+    STRING_CONCAT_MEASURE_DOUBLE,
+    STRING_CONCAT_NEW_SIZED,
     STRING_CONCAT_APPEND_STRING,
     STRING_CONCAT_APPEND_BOOLEAN,
     STRING_CONCAT_APPEND_CHAR,
@@ -242,7 +247,7 @@ public enum Intrinsic {
     HTTP_URL_DELETE,
     HTTP_URL_PATCH,
     HTTP_URL_QUERY,
-    /** {@code Json.rawText}: a byte range copied into a runtime-string slot, or {@code null} when it does not fit. */
+    /** {@code Json.rawText}: a byte range copied into a new arena {@code String}. */
     STRING_FROM_BYTES,
     HTTP_SERVER_BEGIN,
     HTTP_SERVER_ACCEPT,

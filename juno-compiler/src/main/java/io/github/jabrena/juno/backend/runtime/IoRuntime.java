@@ -131,7 +131,7 @@ public final class IoRuntime {
      * @param runtimeLock whether threads run on several carriers, so a wait or guard releases the runtime lock
      */
     String prelude(boolean threads, boolean worker, boolean runtimeLock) {
-        String offload = threads && worker ? runtimeSource.load("common/io-stable-text.cpp").replace("${JUNO_SLOT_BYTES}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
+        String offload = threads && worker ? runtimeSource.load("common/io-stable-text.cpp").replace("${JUNO_IO_TEXT_COPY_BYTES}", Integer.toString(RuntimeLimits.IO_TEXT_COPY_BYTES))
                 : """
                 static void juno_io_offload(void (*job)(void*), void* argument) {
                   job(argument);

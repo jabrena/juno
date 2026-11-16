@@ -171,19 +171,17 @@ public final class ShimLibraries {
     }
 
     String runtimeStringHelpers() {
-        return runtimeStringSlots(8) + runtimeStringDoubleFormatting() + runtimeStringOperations()
+        return runtimeStrings() + runtimeStringDoubleFormatting() + runtimeStringOperations()
                 + runtimeStringFloatingAppends();
     }
 
     /**
-     * The rotating pool of {@code slots} runtime-string buffers and {@code String.valueOf(int)}: the first part of
-     * {@link #runtimeStringHelpers()}, which an architecture without a binary64 {@code double} (AVR) combines with
-     * its own floating-point formatting.
+     * Arena copies of runtime text and {@code String.valueOf(int)}: the first part of {@link #runtimeStringHelpers()},
+     * which an architecture without a binary64 {@code double} (AVR) combines with its own floating-point formatting.
      */
-    String runtimeStringSlots(int slots) {
-        return runtimeSource.load("common/runtime-string-slots.cpp").replace("${JUNO_STRING_SLOT_SIZE}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES))
-                .replace("${JUNO_STRING_SLOT_COUNT}", Integer.toString(slots))
-                .replace("${JUNO_STRING_MAX_LENGTH}", Integer.toString(RuntimeLimits.STRING_SLOT_CAPACITY_BYTES - 1));
+    String runtimeStrings() {
+        return runtimeSource.load("common/runtime-strings.cpp")
+                .replace("${JUNO_NUMBER_TEXT_BYTES}", Integer.toString(RuntimeLimits.NUMBER_TEXT_BYTES));
     }
 
     /** {@code juno_format_double} and {@code String.valueOf(double)} on the C {@code double}. */
@@ -202,8 +200,8 @@ public final class ShimLibraries {
     }
 
     /**
-     * {@code Json.rawText}: a byte range copied into the rotating string-slot pool of {@link #runtimeStringHelpers()},
-     * so it needs that pool already declared.
+     * {@code Json.rawText}: a byte range copied into a new arena {@code String} by {@link #runtimeStringHelpers()}'s
+     * {@code juno_string_copy}, so it needs those helpers already declared.
      */
     String stringFromBytesHelpers() {
         return runtimeSource.load("common/runtime-string-from-bytes.cpp");
@@ -214,8 +212,7 @@ public final class ShimLibraries {
      * {@code capacity}, as two {@code int32_t}s) immediately followed by its {@code capacity}-byte
      * buffer — a single {@code juno_alloc} block, addressed by the header's own pointer (cast to
      * {@code int32_t} the same way every other handle in this file is). {@code toString()} copies
-     * the written bytes into a new arena block of exactly their length, so its result outlives the
-     * rotating string slots and can be longer than one of them.
+     * the written bytes into a new arena block of exactly their length, like every runtime {@code String}.
      */
     String stringBuilderHelpers() {
         return runtimeSource.load("common/string-builder.cpp");

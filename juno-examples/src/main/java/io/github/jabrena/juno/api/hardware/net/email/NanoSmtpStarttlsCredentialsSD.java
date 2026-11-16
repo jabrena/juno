@@ -27,7 +27,7 @@ import java.util.Properties;
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code smtp.host}, {@code smtp.username} and
  * {@code smtp.password}. The port is fixed at 587. Prints the status over Serial at 115200 baud: {@code 0} means the
- * message was accepted. A runtime {@code String} holds 31 bytes, so keep the password within that length.
+ * message was accepted. A {@code Properties} value holds 31 bytes, so keep the password within that length.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.NanoSmtpStarttlsCredentialsSD -Djuno.board=arduino-nano-esp32
@@ -59,7 +59,7 @@ public final class NanoSmtpStarttlsCredentialsSD {
 
         Serial.println("Sending mail through STARTTLS");
         // Smtp.send takes all its String arguments as literals or all as runtime values, and the card's values are
-        // runtime ones; a runtime String holds at most 31 bytes, so both stay short.
+        // runtime ones, so the subject and body are made runtime values too.
         String subject = new StringBuilder(32).append("juno STARTTLS test").toString();
         String body = new StringBuilder(32).append("Test message from juno").toString();
         int status = Smtp.send(account.host(), STARTTLS_SMTP_PORT, account.username(), account.smtpPassword(),

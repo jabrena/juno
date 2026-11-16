@@ -22,7 +22,7 @@ import java.util.Properties;
  * status, the body length and the first bytes of the body at 115200 baud.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password}, {@code https.host} (a DNS name under 31 characters,
- * since it is a runtime {@code String}) and {@code https.path}, for example {@code https.host=api.open-meteo.com}
+ * the longest {@code Properties} value) and {@code https.path}, for example {@code https.host=api.open-meteo.com}
  * and {@code https.path=/v1/forecast?latitude=40.4168&longitude=-3.7038&current=temperature_2m}.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \

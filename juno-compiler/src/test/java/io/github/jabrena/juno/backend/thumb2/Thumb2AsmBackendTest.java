@@ -1150,7 +1150,7 @@ class Thumb2AsmBackendTest {
     }
 
     @Test
-    @DisplayName("The string builder shim declares the builder functions and the shared string slots")
+    @DisplayName("The string builder shim declares the builder functions and the runtime-string helpers")
     void shouldDeclareTheStringBuilderFunctionsAndSharedStringSlotsInTheShim() {
         // Given
         MethodRef entryPoint = new MethodRef("demo/Builder", "main", "([Ljava/lang/String;)V");
@@ -1161,17 +1161,17 @@ class Thumb2AsmBackendTest {
                 .generate(new IrProgram(entryPoint, List.of(method))).runtimeShim();
 
         // Then
-        // The shared runtime-string-slot pool is linked with the builder even though this program never calls
-        // String.valueOf/Json.getString itself, but toString()'s result is heap-allocated, never a slot (#366).
+        // The runtime-string helpers are linked with the builder; toString() allocates its result itself (#366).
         assertThat(shim).contains(
                 "extern \"C\" int32_t juno_string_builder_new(int32_t capacity)",
                 "extern \"C\" int32_t juno_string_builder_append_char(int32_t handle, int32_t value)",
                 "extern \"C\" int32_t juno_string_builder_append_string(int32_t handle, const char* text)",
                 "extern \"C\" int32_t juno_string_builder_to_string(int32_t handle)",
-                "juno_string_slots[JUNO_STRING_SLOT_COUNT][JUNO_STRING_SLOT_SIZE]");
+                "static int32_t juno_string_copy(const char* text, uint32_t length)");
         String toString = shim.substring(shim.indexOf("extern \"C\" int32_t juno_string_builder_to_string"));
         String toStringBody = toString.substring(0, toString.indexOf("\n}\n"));
-        assertThat(toStringBody).contains("juno_alloc(").doesNotContain("juno_string_slot_cursor");
+        assertThat(toStringBody).contains("juno_alloc(");
+        assertThat(shim).doesNotContain("juno_string_slots");
     }
 
     @Test
@@ -1330,7 +1330,7 @@ class Thumb2AsmBackendTest {
 
         // Then
         assertThat(generated.runtimeShim()).contains("extern \"C\" int32_t juno_string_from_bytes(",
-                "JUNO_STRING_SLOT_SIZE = 32");
+                "JUNO_NUMBER_TEXT_BYTES = 32").doesNotContain("juno_string_slots");
     }
 
     /**

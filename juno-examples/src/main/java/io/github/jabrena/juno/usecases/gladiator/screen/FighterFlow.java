@@ -94,7 +94,7 @@ public final class FighterFlow {
         if (nodeId == 0) {
             nodeId = 1;
         }
-        // In pieces: a String built at runtime holds at most 31 characters on the boards.
+        // In pieces, so the log line builds no String in the arena.
         Serial.print("Role: ");
         Serial.print(Figure.name(behaviour));
         Serial.print(" gladiator, node ");
