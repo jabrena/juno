@@ -2,6 +2,7 @@
 // firmware takes the 12 KB boot slot, fences off the store and starts this sketch non-secure; the sketch reaches the
 // slots only through its gateway at 0x10002F00: int juno_secure_call(int op, int a, int b, int c). ----
 #include <hardware/boot_lock.h>
+#include <hardware/irq.h>
 #include <hardware/resets.h>
 #include <pico/bootrom.h>
 
@@ -53,6 +54,22 @@ void runtime_init_early_resets(void) {
 
 void runtime_init_post_clock_resets(void) {
   unreset_block_mask_wait_blocking(juno_pico_tz_visible_resets(RESETS_RESET_BITS));
+}
+
+// GPIO interrupts. The firmware hands every user GPIO to the non-secure world (GPIO_NSMASK), and the RP2350 signals a
+// non-secure GPIO's interrupt on IO_IRQ_BANK0_NS, not IO_IRQ_BANK0. The SDK only ever installs and enables its GPIO
+// handler on IO_IRQ_BANK0, so without this the CYW43's host-wake interrupt on GPIO 24 never arrives: the radio still
+// joins, as the driver polls while it sends commands, but received packets, DHCP's answer among them, are never read.
+// Whatever handler the SDK has on IO_IRQ_BANK0 is run from IO_IRQ_BANK0_NS. A GPIO interrupt is only enabled after
+// the SDK installs that handler, so there is always one to run.
+static void juno_pico_tz_gpio_ns_irq(void) {
+  if (irq_has_handler(IO_IRQ_BANK0)) irq_get_vtable_handler(IO_IRQ_BANK0)();
+}
+
+__attribute__((constructor)) static void juno_pico_tz_route_gpio_irq(void) {
+  if (!pico_processor_state_is_nonsecure()) return;
+  irq_set_exclusive_handler(IO_IRQ_BANK0_NS, juno_pico_tz_gpio_ns_irq);
+  irq_set_enabled(IO_IRQ_BANK0_NS, true);
 }
 
 // Only a non-secure sketch has the firmware behind it: flashed without it, the sketch runs secure and the gateway
