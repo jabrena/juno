@@ -35,13 +35,13 @@ public final class HttpClient {
     }
 
     /**
-     * Sends {@code request} and waits for the reply. The response is the client's own object, refilled by every call,
-     * so read it before the next request.
+     * Sends {@code request} and waits for the reply. With {@link HttpResponse.BodyHandlers#ofByteArray()} the response
+     * is the client's own object, refilled by every call, so read it before the next request; with
+     * {@link HttpResponse.BodyHandlers#ofString()} it is a new object holding its own {@code String}.
      *
      * @throws IOException when the request could not be sent or no reply arrived
      * @throws InterruptedException never on the board; declared because the JDK method declares it
      */
-    @SuppressWarnings("unchecked")
     public <T> HttpResponse<T> send(HttpRequest request, HttpResponse.BodyHandler<T> responseBodyHandler)
             throws IOException, InterruptedException {
         URI uri = request.uri();
@@ -66,11 +66,31 @@ public final class HttpClient {
         if (length < 0) {
             throw new IOException("The HTTP request failed");
         }
+        return responseBodyHandler.respond(this, statusAndHeadersLength[0], length);
+    }
+
+    /** The client's reused byte-array response, its buffer zero-filled past the {@code length} bytes received. */
+    HttpResponse<byte[]> byteArrayResponse(int statusCode, int length) {
         for (int i = length; i < body.length; i++) {
             body[i] = 0;
         }
-        response.statusCode = statusAndHeadersLength[0];
-        return (HttpResponse<T>) response;
+        response.statusCode = statusCode;
+        return response;
+    }
+
+    /** A new response holding the {@code length} bytes received as a {@code String}. */
+    HttpResponse<String> stringResponse(int statusCode, int length) {
+        return new StringResponse(statusCode, text(body, length));
+    }
+
+    /** The first {@code length} of {@code bytes} as a {@code String}, one character per byte. */
+    static String text(byte[] bytes, int length) {
+        // Sized to the body received, not to the buffer, so a short body costs the arena only its own bytes.
+        StringBuilder text = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            text.append((char) (bytes[i] & 0xFF));
+        }
+        return text.toString();
     }
 
     /** The HTTP version a client asks for; the board always speaks HTTP/1.1. */
@@ -118,6 +138,27 @@ public final class HttpClient {
 
         @Override
         public byte[] body() {
+            return body;
+        }
+    }
+
+    /** A response to {@link HttpResponse.BodyHandlers#ofString()}: its status, and its body as a {@code String}. */
+    private static final class StringResponse implements HttpResponse<String> {
+        private final int statusCode;
+        private final String body;
+
+        StringResponse(int statusCode, String body) {
+            this.statusCode = statusCode;
+            this.body = body;
+        }
+
+        @Override
+        public int statusCode() {
+            return statusCode;
+        }
+
+        @Override
+        public String body() {
             return body;
         }
     }

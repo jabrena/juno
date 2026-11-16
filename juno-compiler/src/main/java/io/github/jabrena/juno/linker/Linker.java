@@ -354,7 +354,9 @@ public final class Linker {
                 && descriptor.returnsVoid();
         boolean generatedRecordEquals = owner.isRecord() && method.name().equals("equals")
                 && method.descriptor().equals("(Ljava/lang/Object;)Z");
-        if (!conventionalMain && !generatedRecordEquals && !descriptor.usesOnlyV01Types(referenceClassNames)
+        if (!conventionalMain && !generatedRecordEquals
+                && !BoardJdkErasedReturn.accepts(owner, descriptor, referenceClassNames)
+                && !descriptor.usesOnlyV01Types(referenceClassNames)
                 && !ClojureSupport.acceptsFunctionDescriptor(owner.superClassName(), descriptor)
                 && !ClojureSupport.acceptsDeftypeConstructor(owner, method, referenceClassNames)) {
             throw new CompileException("Juno methods may use only supported scalar, array, or closed-world reference parameters and returns: "

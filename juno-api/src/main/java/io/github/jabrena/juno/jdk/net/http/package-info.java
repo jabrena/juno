@@ -8,11 +8,15 @@
  *
  * <ul>
  *   <li>synchronous {@code GET} only, over HTTP/1.1 whatever {@code version} asks for;</li>
- *   <li>{@code BodyHandlers.ofByteArray()} only. The body is a buffer of fixed capacity,
- *       {@value io.github.jabrena.juno.jdk.net.http.HttpClient#BODY_CAPACITY} bytes, that each request refills and
- *       zero-fills past the bytes received, so a longer body is truncated and {@code body().length} is that capacity
- *       rather than the size received;</li>
- *   <li>the client allocates its response and buffers once, when it is built, so {@code send} allocates nothing;</li>
+ *   <li>{@code BodyHandlers.ofByteArray()} and {@code BodyHandlers.ofString()}. The client receives the body into a
+ *       buffer of fixed capacity, {@value io.github.jabrena.juno.jdk.net.http.HttpClient#BODY_CAPACITY} bytes, so a
+ *       longer body is truncated to it. With {@code ofByteArray()} the body is that buffer, refilled by each request
+ *       and zero-filled past the bytes received, so {@code body().length} is the capacity rather than the size
+ *       received. With {@code ofString()} the body is a {@code String} of the bytes received, not decoded, so
+ *       {@code body().length()} is the size received;</li>
+ *   <li>the client allocates its buffers once, when it is built. With {@code ofByteArray()} {@code send} allocates
+ *       nothing, as the response is the client's own; with {@code ofString()} each response allocates its
+ *       {@code String};</li>
  *   <li>a request that fails throws {@link java.io.IOException}, as the JDK does; there are no timeouts, redirects,
  *       request headers, cookies or {@code sendAsync}.</li>
  * </ul>
