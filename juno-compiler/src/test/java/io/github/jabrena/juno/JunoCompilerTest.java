@@ -1254,14 +1254,18 @@ class JunoCompilerTest {
 
         @ParameterizedTest
         @CsvSource({
-            "'\"http://example.com/status\"', juno_http_request_buffer, juno_https_request_buffer",
-            "'\"https://example.com/status\"', juno_https_request_buffer, juno_http_request_buffer",
+            "'URI.create(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
+            "'URI.create(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            // The JDK constructor names its scheme just as URI.create does.
+            "'new URI(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
+            "'new URI(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
             // A URI the linker cannot read could be either scheme, so both requests stay.
-            "'address()', juno_http_request_buffer, juno_https_request_buffer"})
+            "'URI.create(address())', juno_http_request_buffer, juno_https_request_buffer",
+            "'new URI(address())', juno_http_request_buffer, juno_https_request_buffer"})
         @DisplayName("A program written against java.net.http links only the request shim its URIs' scheme needs")
-        void shouldCompileTheJdkHttpClientSyntax(String uriArgument, String present, String other) throws Exception {
+        void shouldCompileTheJdkHttpClientSyntax(String uri, String present, String other) throws Exception {
             // Given: javac resolves java.net.http to the JDK; Juno reads the board-side classes under those names
-            boolean bothSchemes = uriArgument.equals("address()");
+            boolean bothSchemes = uri.contains("address()");
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
@@ -1276,7 +1280,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) throws Exception {
                             HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
                             HttpRequest request = HttpRequest.newBuilder()
-                                    .uri(URI.create(%s)).GET().build();
+                                    .uri(%s).GET().build();
                             HttpResponse<byte[]> reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
                             Serial.println(reply.statusCode());
                             Serial.println(reply.body().length);
@@ -1286,7 +1290,7 @@ class JunoCompilerTest {
                             return "http://example.com/status";
                         }
                     }
-                    """.formatted(uriArgument);
+                    """.formatted(uri);
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttp", source);
 
             // When
