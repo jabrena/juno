@@ -1213,6 +1213,8 @@ class JunoCompilerTest {
             "RaspberryPico2WifiBoard, juno_pico_tz_read, juno_nvs_read",
             // A board with no secret store reaches neither provider, so a read through the store cannot compile.
             "ArduinoUnoR4WiFiBoard, juno_nvs_read, juno_se050_read",
+            "ArduinoUnoR3WiFiRev2Board, juno_eeprom_read, juno_nvs_read",
+            "ArduinoUnoR3Board, juno_eeprom_read, juno_nvs_read",
             "ArduinoUnoQBoard, , juno_se050_read"})
         @DisplayName("MCU.getSecretStore() compiles to the one store its target board has, and is rejected on a board with none")
         void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absent)

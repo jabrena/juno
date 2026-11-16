@@ -33,7 +33,7 @@ class NativeSecretStoreTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = BoardModel.class, names = {"UNO_R3", "UNO_Q", "UNO_R3_WIFI_REV2"})
+    @EnumSource(value = BoardModel.class, names = {"UNO_Q"})
     @DisplayName("a board without a secret store fails to open one")
     void otherBoardsHaveNone(BoardModel board) {
         // Given

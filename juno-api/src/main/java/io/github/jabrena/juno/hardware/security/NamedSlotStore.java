@@ -15,19 +15,26 @@ import org.jspecify.annotations.Nullable;
  * {@link #getString} allocates its result.
  */
 abstract class NamedSlotStore implements SecretStore {
-    /** The stores' slots run from 0 to 15; a lookup and a whole-store {@code clearAll} walk all of them. */
+    /** How many slots most stores have, 0 to 15; a lookup and a whole-store {@code clearAll} walk all of them. */
     static final int SLOT_COUNT = 16;
     /** The longest name: the board's runtime {@code String}s hold at most 31 characters. */
     static final int MAX_NAME_BYTES = 31;
 
     final boolean available;
+    private final int slotCount;
     private final byte[] record = new byte[RECORD_BYTES];
     private final byte[] textBytes = new byte[RECORD_BYTES];
     private int recordLength;
     private int firstEmptySlot;
 
     NamedSlotStore(boolean available) {
+        this(available, SLOT_COUNT);
+    }
+
+    /** A store with {@code slotCount} slots, for one whose storage holds fewer than {@link #SLOT_COUNT}. */
+    NamedSlotStore(boolean available, int slotCount) {
         this.available = available;
+        this.slotCount = slotCount;
     }
 
     /** Copies slot {@code slot} into {@code buffer} and returns its length, or a value {@code <= 0} when it is empty. */
@@ -42,7 +49,7 @@ abstract class NamedSlotStore implements SecretStore {
     /** Empties every slot, trying each one even after a failure. */
     boolean clearEverySlot() {
         boolean cleared = true;
-        for (int slot = 0; slot < SLOT_COUNT; slot++) {
+        for (int slot = 0; slot < slotCount; slot++) {
             if (!clearSlot(slot)) {
                 cleared = false;
             }
@@ -125,7 +132,7 @@ abstract class NamedSlotStore implements SecretStore {
      */
     private int locate(String key) {
         firstEmptySlot = -1;
-        for (int slot = 0; slot < SLOT_COUNT; slot++) {
+        for (int slot = 0; slot < slotCount; slot++) {
             int length = readSlot(slot, record, RECORD_BYTES);
             if (length <= 0) {
                 if (firstEmptySlot < 0) {

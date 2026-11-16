@@ -60,7 +60,8 @@ secret store: their examples read `application.properties` from the SD card, in 
 |---|---|---|
 | Built in | Portenta H7 | The board includes an NXP SE050C2; `MCU.getSecretStore()` selects it by board, so programs use the same `SecretStore` API. |
 | Built in, in flash | Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM | No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. |
-| None: SD-card settings | UNO R4 WiFi, UNO Q, UNO WiFi Rev2, UNO R3 and Raspberry Pi Pico 2 W | No secret store. The examples read `application.properties` from a UNO shield's SD card, in plain text. The UNO WiFi Rev2's ATECC608 is not used: it refuses every read and write until it is permanently locked. |
+| Built in, in EEPROM | UNO WiFi Rev2 and UNO R3 | No crypto chip: `MCU.getSecretStore()` uses the microcontroller's EEPROM, plain text that any flashed program or a programmer can read. The UNO WiFi Rev2's ATECC608 is not used: it refuses every read and write until it is permanently locked. |
+| None: SD-card settings | UNO Q | No secret store. The examples read `application.properties` from a UNO shield's SD card, in plain text. |
 
 The chip must be provisioned with `juno:secret` before the application reads its secrets by name. The [secure-element
 guide](../secure-element) covers provisioning, wiring, missing-secret handling and the current hardware-validation

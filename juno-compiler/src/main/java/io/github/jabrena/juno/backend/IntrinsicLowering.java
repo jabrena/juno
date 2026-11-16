@@ -866,6 +866,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.NVS_WRITE, "juno_nvs_write", Result.WORD,
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.NVS);
         shim(Intrinsic.NVS_CLEAR, "juno_nvs_clear", Result.WORD, List.of(arg(0)), ShimFeature.NVS);
+        shim(Intrinsic.EEPROM_SLOT_COUNT, "juno_eeprom_slot_count", Result.WORD, List.of(), ShimFeature.EEPROM);
+        shim(Intrinsic.EEPROM_READ, "juno_eeprom_read", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.EEPROM);
+        shim(Intrinsic.EEPROM_WRITE, "juno_eeprom_write", Result.WORD,
+                List.of(arg(0), arg(1), arg(2)), ShimFeature.EEPROM);
+        shim(Intrinsic.EEPROM_CLEAR, "juno_eeprom_clear", Result.WORD, List.of(arg(0)), ShimFeature.EEPROM);
         shim(Intrinsic.PICO_TZ_BEGIN, "juno_pico_tz_begin", Result.WORD, List.of(), ShimFeature.PICO_TRUSTZONE);
         shim(Intrinsic.PICO_TZ_READ, "juno_pico_tz_read", Result.WORD,
                 List.of(arg(0), arg(1), arg(2)), ShimFeature.PICO_TRUSTZONE);

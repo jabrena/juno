@@ -11,6 +11,8 @@ import java.util.Set;
 public final class IntrinsicRegistry {
     private static final String PICO_TZ_TRANSPORT =
             "io/github/jabrena/juno/hardware/security/Pico2WTrustZoneStore$NativeTransport";
+    private static final String AVR_EEPROM_TRANSPORT =
+            "io/github/jabrena/juno/hardware/security/AvrEeprom$NativeTransport";
 
     /**
      * (intrinsic, declared-parameter-index) pairs exempt from the default rule that every
@@ -348,6 +350,10 @@ public final class IntrinsicRegistry {
                     Intrinsic.NVS_WRITE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/security/Esp32Nvs$NativeTransport", "clear", "(I)Z"),
                     Intrinsic.NVS_CLEAR),
+            Map.entry(new MethodRef(AVR_EEPROM_TRANSPORT, "slotCount", "()I"), Intrinsic.EEPROM_SLOT_COUNT),
+            Map.entry(new MethodRef(AVR_EEPROM_TRANSPORT, "read", "(I[BI)I"), Intrinsic.EEPROM_READ),
+            Map.entry(new MethodRef(AVR_EEPROM_TRANSPORT, "write", "(I[BI)Z"), Intrinsic.EEPROM_WRITE),
+            Map.entry(new MethodRef(AVR_EEPROM_TRANSPORT, "clear", "(I)Z"), Intrinsic.EEPROM_CLEAR),
             Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "begin", "()Z"), Intrinsic.PICO_TZ_BEGIN),
             Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "read", "(I[BI)I"), Intrinsic.PICO_TZ_READ),
             Map.entry(new MethodRef(PICO_TZ_TRANSPORT, "write", "(I[BI)I"), Intrinsic.PICO_TZ_WRITE),

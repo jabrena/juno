@@ -41,6 +41,8 @@ public enum ShimFeature {
     NVS,
     /** Named secrets behind Juno's TrustZone secure firmware on the Pico 2 W, through its gateway. */
     PICO_TRUSTZONE,
+    /** Named secrets in an AVR UNO's on-chip EEPROM, through the core's EEPROM library. */
+    EEPROM,
     /** {@code Spi}: full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled library. */
     SPI,
     /** Runtime parsing and board-specific resolution of {@code Gpio.digitalPin}/{@code analogPin} names. */

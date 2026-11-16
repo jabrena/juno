@@ -12,6 +12,7 @@ image or in build output. Three implementations sit behind that one interface:
 | `Se050C2` | Portenta H7 (onboard NXP SE050C2) | The value lives in a secure element; the processor asks it for the value. |
 | `Esp32Nvs` | Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, UNO R4 WiFi | Weaker: an ESP32's own flash. See the warning below. |
 | `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
+| `AvrEeprom` | UNO WiFi Rev2, UNO R3 | Weakest: plain text in the microcontroller's EEPROM. See the warning below. |
 
 `MCU.getSecretStore()` returns the one the board has, the same way `MCU.getWifi()` returns its Wi-Fi; a program that
 asks for it on a board without one is rejected when it is built. The board query is answered when the program is linked and the branches the target cannot take are dropped
@@ -134,14 +135,24 @@ anything, which is the first thing to run on a board whose store has never answe
   partition.
 - **UNO R4 WiFi:** nothing to wire — the store is the onboard ESP32-S3's NVS.
 - **Raspberry Pi Pico 2 W:** nothing to wire or flash separately — `juno:flash` installs the secure firmware.
+- **UNO WiFi Rev2, UNO R3:** nothing to wire — the store is the microcontroller's own EEPROM.
+
+**The AVR UNOs' store is plain EEPROM.** The UNO WiFi Rev2 (ATmega4809) and the UNO R3 (ATmega328P) carry no crypto
+chip, so `AvrEeprom` keeps each name and value in plain text in the microcontroller's own EEPROM, split into 64-byte
+slots: 4 names in the Rev2's 256 bytes, 16 in the R3's 1 KB. The secret stays out of the firmware image, the build
+output and the SD card, and an upload keeps it (the R3 is flashed through its bootloader, which never erases the
+EEPROM; the Rev2's core sets the EESAVE fuse, which keeps it through the chip erase). But any program flashed to the
+board can read it, and so can anyone with a UPDI or ISP programmer. Clearing a name erases its whole slot. The UNO WiFi
+Rev2 also carries an ATECC608 chip, which Juno does not use: it refuses every read and write until its zones are
+locked, which is permanent. On the UNO R3, `SecretProvisioner` does not fit in the 2 KB of RAM, so `juno:secret` cannot
+provision it yet.
 
 ## Boards without a secret store
 
-The UNO Q, UNO WiFi Rev2 and UNO R3 have no secret store. The UNO WiFi Rev2 does carry
-an ATECC608 chip, but that chip refuses every read and write until its zones are locked, which is permanent, so Juno
-does not use it for secrets.
+The UNO Q has no secret store.
 
-On those boards the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
+On the UNO Q, and for now on the UNO WiFi Rev2 and UNO R3 too (`ExampleSecrets` does not read their EEPROM store yet),
+the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
 SD card, using the card of the stacked UNO shield (TFT Touch, LCD Keypad or Data Logger — all wire their socket to
 chip select D10):
 

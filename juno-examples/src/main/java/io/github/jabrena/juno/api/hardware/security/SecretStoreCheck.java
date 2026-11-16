@@ -3,6 +3,8 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -59,7 +61,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class,
         ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class,
-        ArduinoUnoR4WiFiBoard.class})
+        ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR3Board.class})
 public final class SecretStoreCheck {
     /** The bytes one stored secret takes: a length byte, its name and its value. */
     private static final int MAX_VALUE_BYTES = SecretStore.RECORD_BYTES;

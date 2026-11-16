@@ -46,6 +46,11 @@ public final class ShimLibraries {
                 .replace("${JUNO_I2C_BUS}", bus);
     }
 
+    /** Named-secret slots in an AVR UNO's on-chip EEPROM, through the core's EEPROM library. */
+    String eepromHelpers() {
+        return runtimeSource.load("common/eeprom.cpp");
+    }
+
     /** NXP SE050C2 binary-object storage through Arduino's SE05X library. */
     String se050Helpers() {
         return runtimeSource.load("common/se050.cpp");
