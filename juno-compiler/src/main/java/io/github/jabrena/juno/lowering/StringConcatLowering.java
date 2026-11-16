@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.lowering;
 
-import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -13,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
-/** Lowers a validated {@code StringConcatFactory} recipe into runtime-string append calls. */
+/** Lowers a validated {@code StringConcatFactory} recipe into a measured arena {@code String} and its appends. */
 final class StringConcatLowering {
     private static final String STRING = "Ljava/lang/String;";
     /** {@code "false"}: a {@code boolean} is counted at its longer spelling rather than measured. */
@@ -36,20 +35,14 @@ final class StringConcatLowering {
     }
 
     /**
-     * A recipe whose longest result fits one runtime-string slot is built in the slot ring, as it always was. Any
-     * other is measured first: the literals' lengths and the {@code boolean}/{@code char} bounds are added to the
-     * formatted length of every other argument, and the runtime builds the result in a slot when that fits, or in
-     * an arena block of exactly that size otherwise, so only a long result costs an allocation.
+     * Measures the recipe, takes an arena block of exactly that length, and appends every part into it: the
+     * literals' lengths and the {@code boolean}/{@code char} bounds are added to the formatted length of every other
+     * argument, so the result is a {@code String} of any length that lives as long as something refers to it.
      */
     Value emitConcat(List<StringConcatSite.Part> parts, List<Value> arguments) {
         Value builder = context.values().int32();
-        if (maximumLength(parts) < RuntimeLimits.STRING_SLOT_CAPACITY_BYTES) {
-            context.emit(new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_CONCAT_NEW,
-                    Optional.empty(), List.of(), List.of()));
-        } else {
-            context.emit(new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_CONCAT_NEW_SIZED,
-                    Optional.empty(), List.of(measure(parts, arguments)), List.of()));
-        }
+        context.emit(new IrInstruction.IntrinsicCall(Optional.of(builder), Intrinsic.STRING_CONCAT_NEW_SIZED,
+                Optional.empty(), List.of(measure(parts, arguments)), List.of()));
         for (StringConcatSite.Part part : parts) {
             switch (part) {
                 case StringConcatSite.LiteralPart literal -> {
@@ -62,28 +55,6 @@ final class StringConcatLowering {
             }
         }
         return builder;
-    }
-
-    /** The result's longest length in bytes; {@link Integer#MAX_VALUE} when a {@code String} argument is unbounded. */
-    private static int maximumLength(List<StringConcatSite.Part> parts) {
-        long length = 0;
-        for (StringConcatSite.Part part : parts) {
-            length += switch (part) {
-                case StringConcatSite.LiteralPart literal -> literalLength(literal);
-                case StringConcatSite.ArgumentPart argument -> switch (argument.type()) {
-                    case STRING -> Integer.MAX_VALUE;
-                    case "Z" -> BOOLEAN_BOUND;
-                    case "C" -> 1;
-                    case "B", "S", "I" -> String.valueOf(Integer.MIN_VALUE).length();
-                    case "J" -> String.valueOf(Long.MIN_VALUE).length();
-                    // A float or double is formatted into one slot.
-                    case "F", "D" -> RuntimeLimits.STRING_SLOT_CAPACITY_BYTES - 1;
-                    default -> throw new IllegalArgumentException(
-                            "Unsupported validated string-concat type " + argument.type());
-                };
-            };
-        }
-        return (int) Math.min(length, Integer.MAX_VALUE);
     }
 
     /**

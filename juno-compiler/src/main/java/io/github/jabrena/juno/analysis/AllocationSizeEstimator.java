@@ -29,6 +29,13 @@ final class AllocationSizeEstimator {
             Intrinsic.TASK_SCOPE_OPEN_CONFIG, Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG);
     private static final Set<Intrinsic> CONFIGURED_SCOPE_OPENS = Set.of(
             Intrinsic.TASK_SCOPE_OPEN_CONFIG, Intrinsic.TASK_SCOPE_OPEN_WITH_CONFIG);
+    /**
+     * The intrinsics that return a new arena {@code String}. Its length is known only at run time, so each counts as
+     * one word: enough to mark the call as an allocation, so a loop that builds strings gets {@code JUNO-RISK-001}.
+     */
+    private static final Set<Intrinsic> STRING_RESULTS = Set.of(
+            Intrinsic.STRING_CONCAT_NEW_SIZED, Intrinsic.STRING_VALUE_OF_INT, Intrinsic.STRING_VALUE_OF_DOUBLE,
+            Intrinsic.STRING_FROM_BYTES, Intrinsic.STRING_BUILDER_TO_STRING);
 
 
     int allocationBytes(IrInstruction instruction, Map<String, JavaClass> classes,
@@ -90,6 +97,9 @@ final class AllocationSizeEstimator {
         }
         if (intrinsic == Intrinsic.ATOMIC_LONG_NEW_DEFAULT || intrinsic == Intrinsic.ATOMIC_LONG_NEW) {
             return allocationUpperBound(2 * Integer.BYTES, Integer.BYTES);
+        }
+        if (STRING_RESULTS.contains(intrinsic)) {
+            return allocationUpperBound(Integer.BYTES, 1);
         }
         return 0;
     }

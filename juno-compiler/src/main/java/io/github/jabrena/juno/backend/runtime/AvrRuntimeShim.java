@@ -22,8 +22,8 @@ import java.util.Set;
  * Arduino core function is reached through a wrapper taking Java-width parameters. The generated assembly calls all
  * of it through the thunks {@link AvrShimThunks} appends, built from the prototypes in this very source.
  *
- * <p>RAM is the scarce resource (the ATmega4809 has 6 KB), so the pools are smaller than on the 32-bit boards: four
- * runtime-string slots, two open SD files and {@code Properties} of eight short entries.
+ * <p>RAM is the scarce resource (the ATmega4809 has 6 KB), so the pools are smaller than on the 32-bit boards: two
+ * open SD files and {@code Properties} of eight short entries.
  */
 public final class AvrRuntimeShim {
     private final SoftFloatRuntime softFloatRuntime = new SoftFloatRuntime();
@@ -44,8 +44,6 @@ public final class AvrRuntimeShim {
     private final AllocatorRuntime allocatorRuntime = new AllocatorRuntime();
     private final GpioPinRuntime gpioPinRuntime = new GpioPinRuntime();
 
-    /** Runtime-string slots; each is {@code RuntimeLimits.STRING_SLOT_CAPACITY_BYTES} bytes. */
-    static final int STRING_SLOTS = 4;
     static final int SD_OPEN_FILES = 2;
     static final int PROPERTIES_ENTRIES = 8;
     static final int PROPERTIES_KEY_BYTES = 16;
@@ -182,7 +180,7 @@ public final class AvrRuntimeShim {
 
     private void appendHelpers(StringBuilder shim) {
         if (usesAny(ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER)) {
-            shim.append(shimLibraries.runtimeStringSlots(STRING_SLOTS))
+            shim.append(shimLibraries.runtimeStrings())
                     .append(doubleFormatting())
                     .append(shimLibraries.runtimeStringOperations())
                     .append(floatingAppends());

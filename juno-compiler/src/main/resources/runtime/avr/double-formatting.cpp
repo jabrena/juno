@@ -13,7 +13,7 @@ static void juno_format_double(char* buffer, juno_f64 value) {
   juno_f64 fraction = juno_f64_sub(magnitude, juno_f64_from_i64(integerPart));
   uint32_t fractionDigits = static_cast<uint32_t>(juno_f64_to_i64(juno_f64_mul(fraction, ${MILLION})));
   if (fractionDigits >= FRACTION_SCALE) fractionDigits = FRACTION_SCALE - 1u;
-  char reversed[JUNO_STRING_SLOT_SIZE];
+  char reversed[JUNO_NUMBER_TEXT_BYTES];
   uint32_t count = 0;
   uint32_t integerDigits = integerPart;
   do {
@@ -42,8 +42,7 @@ static void juno_format_double(char* buffer, juno_f64 value) {
 }
 
 extern "C" int32_t juno_string_value_of_double(juno_f64 value) {
-  char* buffer = juno_string_slots[juno_string_slot_cursor];
-  juno_string_slot_cursor = (juno_string_slot_cursor + 1u) % JUNO_STRING_SLOT_COUNT;
+  char buffer[JUNO_NUMBER_TEXT_BYTES];
   juno_format_double(buffer, value);
-  return static_cast<int32_t>(reinterpret_cast<intptr_t>(buffer));
+  return juno_string_copy(buffer, static_cast<uint32_t>(strlen(buffer)));
 }

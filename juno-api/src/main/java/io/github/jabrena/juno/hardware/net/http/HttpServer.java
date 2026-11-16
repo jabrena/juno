@@ -22,10 +22,9 @@ package io.github.jabrena.juno.hardware.net.http;
  * {@code body} may be a literal or any runtime {@code String} (e.g. a {@code StringBuilder}'s
  * {@code toString()}) — unlike every other intrinsic {@code String} parameter in Juno, it is not
  * restricted to a compile-time literal, since a literal's address and a runtime {@code String}'s
- * pooled address are both just a null-terminated {@code const char*} to this method's shim. That
- * runtime {@code String} is still bounded by Juno's small runtime-string pool, though; for a body
- * that might not fit, {@link #respond(int, String, StringBuilder)} instead streams a {@link
- * StringBuilder}'s current contents directly, with no such cap.
+ * arena address are both just a null-terminated {@code const char*} to this method's shim.
+ * {@link #respond(int, String, StringBuilder)} instead streams a {@link StringBuilder}'s current
+ * contents directly, without copying them into a {@code String} first.
  */
 public final class HttpServer {
     /** A reasonable default size for a caller's request-body buffer, in bytes. */

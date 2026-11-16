@@ -113,7 +113,7 @@ public final class Json {
     /**
      * Returns the raw JSON text of any scalar value at {@code path} (a JSON string's content with its surrounding
      * quotes stripped, or a number/boolean/{@code null} literal exactly as written), or {@code null} when the path is
-     * missing or resolves to an object or array. Text longer than 31 bytes is copied into the arena.
+     * missing or resolves to an object or array. The text is copied into a new arena {@code String}.
      */
     public static @Nullable String getString(byte[] buffer, int bufferLength, String path) {
         int start = JsonPath.locate(buffer, bufferLength, path);
@@ -145,7 +145,7 @@ public final class Json {
     }
 
     /**
-     * Copies {@code buffer[start, end)} into a runtime-string slot, or into the arena when it does not fit one.
+     * Copies {@code buffer[start, end)} into a new arena {@code String}.
      * The only part of {@code Json} that is a compiler intrinsic: Java has no allocation-free way to make a String.
      */
     private static native @Nullable String rawText(byte[] buffer, int start, int end);

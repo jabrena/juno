@@ -35,9 +35,8 @@ extern "C" int32_t juno_string_builder_append_string(int32_t handle, const char*
   return handle;
 }
 
-// The result lives on the collected heap, not in the runtime-string slot ring: a program keeps a toString() result
-// (a secret, a JSON field, a name read from SD) across a loop, and later concatenations would wrap the ring onto it.
-// Sized to the content, it is as long as the builder's own capacity allows rather than one slot.
+// The result is an arena String of exactly the content's length, like every runtime String, so a program can keep it
+// (a secret, a JSON field, a name read from SD) for as long as it likes.
 extern "C" int32_t juno_string_builder_to_string(int32_t handle) {
   auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(handle));
   int32_t length = header[0];

@@ -8,7 +8,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-/** Concatenations longer than one runtime-string slot, built in a loop until the arena must reclaim them. */
+/** Concatenations longer than 31 bytes, built in a loop until the arena must reclaim them. */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class,
         ArduinoNanoEsp32Board.class})
 public class LongStringConcat {
