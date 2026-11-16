@@ -151,8 +151,7 @@ provision it yet.
 
 The UNO Q has no secret store.
 
-On the UNO Q, and for now on the UNO WiFi Rev2 and UNO R3 too (`ExampleSecrets` does not read their EEPROM store yet),
-the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
+On the UNO Q, the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
 SD card, using the card of the stacked UNO shield (TFT Touch, LCD Keypad or Data Logger — all wire their socket to
 chip select D10):
 

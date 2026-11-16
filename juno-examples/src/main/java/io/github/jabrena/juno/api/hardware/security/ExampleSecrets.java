@@ -11,9 +11,10 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * The credentials the connected examples share. On a board with a secret store (the Portenta H7's SE050C2, an ESP32
- * board's NVS) they are read from it by name, the names {@link SecretProvisioner} writes. Every other board reads the
- * same names from {@value #SETTINGS_FILE} on the SD card:
+ * The credentials the connected examples share. On a board whose secret store they use (the Portenta H7's SE050C2,
+ * an ESP32 board's NVS, the UNO WiFi Rev2's and UNO R3's EEPROM) they are read from it by name, the names
+ * {@link SecretProvisioner} writes; the UNO WiFi Rev2's EEPROM holds 4 of them. Every other board reads the same names
+ * from {@value #SETTINGS_FILE} on the SD card:
  *
  * <pre>
  * wifi.ssid=MyNetwork
@@ -119,7 +120,8 @@ public final class ExampleSecrets {
      */
     private static String required(String name) {
         String value = switch (MCU.getBoardModel()) {
-            case PORTENTA_H7, NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -> store().getString(name);
+            case PORTENTA_H7, NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM, UNO_R3, UNO_R3_WIFI_REV2 ->
+                    store().getString(name);
             default -> setting(name);
         };
         if (value == null) {
