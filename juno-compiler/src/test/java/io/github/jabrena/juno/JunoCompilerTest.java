@@ -1252,6 +1252,196 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains(present).doesNotContain(absent);
         }
 
+        @ParameterizedTest
+        @CsvSource({
+            "'URI.create(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
+            "'URI.create(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            // The JDK constructor names its scheme just as URI.create does.
+            "'new URI(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
+            "'new URI(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            // A URI the linker cannot read could be either scheme, so both requests stay.
+            "'URI.create(address())', juno_http_request_buffer, juno_https_request_buffer",
+            "'new URI(address())', juno_http_request_buffer, juno_https_request_buffer"})
+        @DisplayName("A program written against java.net.http links only the request shim its URIs' scheme needs")
+        void shouldCompileTheJdkHttpClientSyntax(String uri, String present, String other) throws Exception {
+            // Given: javac resolves java.net.http to the JDK; Juno reads the board-side classes under those names
+            boolean bothSchemes = uri.contains("address()");
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    public final class JdkHttp {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+                            HttpRequest request = HttpRequest.newBuilder()
+                                    .uri(%s).GET().build();
+                            HttpResponse<byte[]> reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+                            Serial.println(reply.statusCode());
+                            Serial.println(reply.body().length);
+                        }
+
+                        private static String address() {
+                            return "http://example.com/status";
+                        }
+                    }
+                    """.formatted(uri);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttp", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttp");
+
+            // Then: the request is sent through the board's own buffered request, and only for the schemes in use
+            assertThat(result.assembly()).contains(present);
+            if (bothSchemes) {
+                assertThat(result.assembly()).contains(other);
+            } else {
+                assertThat(result.assembly()).doesNotContain(other);
+            }
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "ofString, String, 'length()', BodyHandlers_StringHandler_INSTANCE, BodyHandlers_ByteArrayHandler_INSTANCE",
+            "ofByteArray, byte[], length, BodyHandlers_ByteArrayHandler_INSTANCE, BodyHandlers_StringHandler_INSTANCE"})
+        @DisplayName("A java.net.http program links only the body handler it asks for")
+        void shouldLinkOnlyTheBodyHandlerInUse(String handler, String bodyType, String length, String present,
+                String absent) throws Exception {
+            // Given: the handlers live in their own classes, so the one never asked for is never instantiated
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpBody {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                            HttpResponse<%2$s> reply = client.send(request, HttpResponse.BodyHandlers.%1$s());
+                            %2$s body = reply.body();
+                            Serial.println(body.%3$s);
+                        }
+                    }
+                    """.formatted(handler, bodyType, length);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpBody", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpBody");
+
+            // Then: a handler's static instance is emitted only when its class, and so its response code, is linked
+            assertThat(result.assembly()).contains(present).doesNotContain(absent);
+        }
+
+        @Test
+        @DisplayName("A java.net.http POST with headers, timeouts and redirects compiles, without the task runtime")
+        void shouldCompileAJdkHttpPostWithHeadersTimeoutsAndRedirects() throws Exception {
+            // Given: every request feature at once, read back through headers() and Optional
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpPost", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    import java.time.Duration;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpPost {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newBuilder()
+                                    .followRedirects(HttpClient.Redirect.NORMAL)
+                                    .connectTimeout(Duration.ofSeconds(3))
+                                    .build();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/post"))
+                                    .header("Accept", "application/json")
+                                    .timeout(Duration.ofMillis(4000))
+                                    .POST(HttpRequest.BodyPublishers.ofString("{\\"board\\":1}"))
+                                    .build();
+                            HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+                            Serial.println(reply.statusCode());
+                            Serial.println(reply.headers().firstValue("content-type").orElse("none"));
+                            Serial.println((int) reply.headers().firstValueAsLong("content-length").orElse(-1L));
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPost");
+
+            // Then: Duration has its own runtime, so an HTTP timeout brings no structured-task runtime
+            assertThat(result.assembly())
+                    .contains("bl juno_duration_to_millis", "bl juno_http_request_buffer", "Too many redirects")
+                    .doesNotContain("juno_https_request_buffer", "juno_task_scope");
+        }
+
+        @Test
+        @DisplayName("A java.net.http program that never follows redirects links no redirect code")
+        void shouldLinkNoRedirectCodeWithoutFollowRedirects() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpPlainGet", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpPlainGet {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPlainGet");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_http_request_buffer")
+                    .doesNotContain("Too many redirects", "juno_duration_to_millis");
+        }
+
+        @Test
+        @DisplayName("Only the board-side JDK classes may return Object: a program's own method still may not")
+        void shouldRejectAProgramMethodReturningObject() throws Exception {
+            // Given: checkcast generates no code, so nothing would catch a wrong cast of this result
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.ObjectResult", """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class ObjectResult {
+                        public static void main() {
+                            String text = (String) pick();
+                            Serial.println(text);
+                        }
+
+                        private static Object pick() {
+                            return "board";
+                        }
+                    }
+                    """);
+
+            // When & Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ObjectResult"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("supported scalar, array, or closed-world reference")
+                    .hasMessageContaining("pick");
+        }
+
         @Test
         @DisplayName("The Pico 2 W's TrustZone store brings its gateway shim, its non-secure start-up and the firmware flag")
         void shouldCompileThePico2WTrustZoneStore() throws Exception {

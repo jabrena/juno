@@ -98,6 +98,8 @@ public enum ShimFeature {
     SCOPED_VALUES,
     /** A reachable {@code ScopedValue.CallableOp} entry point behind {@code Carrier.call}. */
     SCOPED_CALL_ENTRY,
+    /** {@code java.time.Duration}: a one-word handle holding milliseconds, for scope and HTTP timeouts. */
+    DURATION,
     /** {@code java.util.UUID}: immutable 128-bit values stored in arena blocks. */
     UUID,
     /** A board-native cryptographic random source used by {@code UUID.randomUUID()}. */

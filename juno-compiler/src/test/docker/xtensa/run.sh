@@ -41,14 +41,28 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Espressif's QEMU occasionally crashes while the guest boots (seen as exit 139 with the boot log and no [juno-begin]).
-# Such a run never reached the program, so it is retried once; a crash after [juno-begin], a guest-triggered crash that
-# repeats, or a hang stopped by the watchdog still fails.
+# Such a run never reached the program, so it is retried, at most twice; a crash after [juno-begin], a crash on every
+# attempt, or a hang stopped by the watchdog still fails. The crash repeats on a retry with the same settings on the
+# same runner, while other runners boot the same image: it follows the host, not the program. So a retry changes how
+# QEMU runs the guest: the first attempt keeps QEMU's default, which on a multi-core host runs the two ESP32-S3 cores on
+# their own host threads (multi-threaded TCG); a retry runs them in turn on one thread, which the program cannot tell
+# apart, only slower.
+max_attempts=3
 attempt=1
 while :; do
     begun=0
     attempt_flash="$tmpdir/flash-attempt-$attempt.bin"
     cp "$base_flash" "$attempt_flash"
-    qemu-system-xtensa -nographic -machine esp32s3 -m 8M \
+    if [ "$attempt" -eq 1 ]; then
+        tcg_threads=default
+        accel_option=
+    else
+        tcg_threads=single
+        accel_option="-accel tcg,thread=single"
+    fi
+    # accel_option is unquoted on purpose: empty, it adds no argument; set, it splits into the option and its value.
+    # shellcheck disable=SC2086
+    qemu-system-xtensa -nographic -machine esp32s3 -m 8M $accel_option \
         -global driver=ssi_psram,property=is_octal,value=true \
         -global driver=timer.esp32s3.timg,property=wdt_disable,value=true \
         -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
@@ -93,9 +107,10 @@ while :; do
     # 134 SIGABRT, 135 SIGBUS, 136 SIGFPE, 139 SIGSEGV: QEMU itself crashed.
     case "$qemu_status" in
         134|135|136|139)
-            if [ "$begun" -eq 0 ] && [ "$attempt" -eq 1 ]; then
-                echo "run.sh: QEMU crashed (exit $qemu_status) before [juno-begin]; retrying once" >&2
-                attempt=2
+            if [ "$begun" -eq 0 ] && [ "$attempt" -lt "$max_attempts" ]; then
+                echo "run.sh: QEMU crashed (exit $qemu_status, thread=$tcg_threads) before [juno-begin];" \
+                    "retrying with single-threaded TCG" >&2
+                attempt=$((attempt + 1))
                 continue
             fi
             ;;

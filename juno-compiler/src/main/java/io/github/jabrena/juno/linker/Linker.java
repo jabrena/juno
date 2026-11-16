@@ -12,6 +12,7 @@ import io.github.jabrena.juno.classfile.JavaClass;
 import io.github.jabrena.juno.classfile.JavaMethod;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,9 @@ public final class Linker {
 
     private final InvokeDynamicSupport invokeDynamicSupport = new InvokeDynamicSupport();
 
+    private final HttpLinkScan httpLinkScan = new HttpLinkScan();
+    private final HttpQueryFolding httpQueryFolding = new HttpQueryFolding();
+
     public Program link(Map<String, JavaClass> classes, String mainClassName) {
         return link(classes, mainClassName, Optional.empty());
     }
@@ -95,13 +99,12 @@ public final class Linker {
         MethodRef entryPoint = main.reference();
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
         List<MethodRef> clojureFunctions = new ArrayList<>();
-        ReachabilityClosure.Result reachability = reachabilityClosure.resolve(entryPoint,
-                mainInitializer == null ? null : mainInitializer.reference(), classes,
-                reference -> linkMethod(classes, reference, reference.equals(entryPoint), board),
-                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
-                        work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
-                method -> reachableBodySupport.hasReachableBody(method, classes),
-                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
+        // Linked once, or twice when the program sends HTTP requests, so only what it uses is linked.
+        ReachabilityClosure.Result reachability = httpLinkScan.link(httpFacts -> {
+            clojureFunctions.clear();
+            return resolveReachability(classes, entryPoint, mainInitializer, board, declaredBoards, httpFacts,
+                    clojureFunctions);
+        });
         structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
                 reachability.lambdaSites().values(), classes);
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
@@ -119,6 +122,19 @@ public final class Linker {
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
                 clojureFunctions);
+    }
+
+    /** Walks every method reachable from the entry point, deciding HTTP link-time queries with {@code httpFacts}. */
+    private ReachabilityClosure.Result resolveReachability(Map<String, JavaClass> classes, MethodRef entryPoint,
+            @Nullable JavaMethod mainInitializer, Board board, List<Board> declaredBoards, HttpLinkFacts httpFacts,
+            List<MethodRef> clojureFunctions) {
+        return reachabilityClosure.resolve(entryPoint,
+                mainInitializer == null ? null : mainInitializer.reference(), classes,
+                reference -> linkMethod(classes, reference, reference.equals(entryPoint), board, httpFacts),
+                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
+                        work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
+                method -> reachableBodySupport.hasReachableBody(method, classes),
+                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -171,7 +187,7 @@ public final class Linker {
      * {@link BoardQueryFolding}), so the side this target can never take is neither linked nor lowered.
      */
     private LinkedMethod linkMethod(Map<String, JavaClass> classes, MethodRef reference, boolean entryPoint,
-            Board board) {
+            Board board, HttpLinkFacts httpFacts) {
         JavaClass owner = classes.get(reference.owner());
         if (owner == null) {
             throw new CompileException("Reachable class not found: " + reference.owner().replace('/', '.'));
@@ -182,7 +198,8 @@ public final class Linker {
         }
         validateMethod(method, entryPoint, classes.keySet(), owner);
         BoardQueryFolding boardQueryFolding = new BoardQueryFolding(classes, decoder);
-        BoardQueryFolding.Folded folded = boardQueryFolding.fold(decoder.decode(method), owner, board);
+        BoardQueryFolding.Folded folded = httpQueryFolding.foldAfter(
+                boardQueryFolding.fold(decoder.decode(method), owner, board), owner, httpFacts);
         List<Instruction> instructions = folded.instructions();
         ControlFlowGraph cfg = cfgBuilder.build(method.reference().displayName(), instructions,
                 method.exceptionHandlers());
@@ -337,7 +354,9 @@ public final class Linker {
                 && descriptor.returnsVoid();
         boolean generatedRecordEquals = owner.isRecord() && method.name().equals("equals")
                 && method.descriptor().equals("(Ljava/lang/Object;)Z");
-        if (!conventionalMain && !generatedRecordEquals && !descriptor.usesOnlyV01Types(referenceClassNames)
+        if (!conventionalMain && !generatedRecordEquals
+                && !BoardJdkClasses.acceptsMethod(owner, descriptor, referenceClassNames)
+                && !descriptor.usesOnlyV01Types(referenceClassNames)
                 && !ClojureSupport.acceptsFunctionDescriptor(owner.superClassName(), descriptor)
                 && !ClojureSupport.acceptsDeftypeConstructor(owner, method, referenceClassNames)) {
             throw new CompileException("Juno methods may use only supported scalar, array, or closed-world reference parameters and returns: "

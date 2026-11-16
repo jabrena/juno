@@ -12,6 +12,7 @@ import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
 import io.github.jabrena.juno.linker.BigNumberSupport;
+import io.github.jabrena.juno.linker.BoardJdkClasses;
 import io.github.jabrena.juno.linker.ClojureSupport;
 import io.github.jabrena.juno.linker.ConcurrencySupport;
 import io.github.jabrena.juno.linker.ConstantTables;
@@ -236,7 +237,8 @@ final class FieldLowering implements InstructionLowering {
             return JunoType.INT32;
         }
         JavaClass owner = context.classes().get(field.owner());
-        if (owner != null && ClojureSupport.isClojureObjectField(owner, descriptor)) {
+        if (owner != null && (ClojureSupport.isClojureObjectField(owner, descriptor)
+                || BoardJdkClasses.isObjectField(owner, descriptor))) {
             return JunoType.INT32;
         }
         throw new CompileException(context.at(instruction) + ": unsupported field type: " + field.displayName());

@@ -228,6 +228,7 @@ public final class AvrRuntimeShim {
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.ATOMICS, atomicRuntime::helpers),
+                new ShimFeatureBlock(ShimFeature.DURATION, () -> runtimeSource.load("common/duration.cpp")),
                 new ShimFeatureBlock(ShimFeature.UUID_RANDOM, core::uuidRandomHelpers),
                 new ShimFeatureBlock(ShimFeature.UUID, () -> uuidRuntime.helpers(
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"),
