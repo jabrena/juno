@@ -650,6 +650,7 @@ public final class IntrinsicRegistry {
                     Intrinsic.DURATION_OF_MILLIS),
             Map.entry(new MethodRef("java/time/Duration", "ofSeconds", "(J)Ljava/time/Duration;"),
                     Intrinsic.DURATION_OF_SECONDS),
+            Map.entry(new MethodRef("java/time/Duration", "toMillis", "()J"), Intrinsic.DURATION_TO_MILLIS),
             Map.entry(new MethodRef("java/lang/ScopedValue", "newInstance", "()Ljava/lang/ScopedValue;"), Intrinsic.SCOPED_VALUE_NEW),
             Map.entry(new MethodRef("java/lang/ScopedValue", "where", "(Ljava/lang/ScopedValue;Ljava/lang/Object;)Ljava/lang/ScopedValue$Carrier;"),
                     Intrinsic.SCOPED_VALUE_WHERE),

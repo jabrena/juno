@@ -191,22 +191,6 @@ extern "C" int32_t juno_task_configuration_with_timeout(int32_t configurationHan
   return configurationHandle;
 }
 
-extern "C" int32_t juno_duration_of_millis(int64_t millisValue) {
-  if (millisValue <= 0 || millisValue > 0x7FFFFFFFLL) {
-    juno_task_raise_illegal_state("StructuredTaskScope timeout is outside the supported range");
-    return 0;
-  }
-  return static_cast<int32_t>(millisValue);
-}
-
-extern "C" int32_t juno_duration_of_seconds(int64_t seconds) {
-  if (seconds <= 0 || seconds > 0x7FFFFFFFLL / 1000LL) {
-    juno_task_raise_illegal_state("StructuredTaskScope timeout is outside the supported range");
-    return 0;
-  }
-  return static_cast<int32_t>(seconds * 1000LL);
-}
-
 static int32_t juno_task_scope_open_configured(int32_t policy, int32_t operatorHandle) {
   int32_t configuration = juno_task_configuration_default();
   int32_t configured = juno_task_configuration_entry(operatorHandle, configuration);
