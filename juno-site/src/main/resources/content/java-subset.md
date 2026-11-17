@@ -36,7 +36,7 @@ JVM's own heap collects it, and very large values do not fit the arena.
 ### Complex data types
 
 - **String** is either a literal or a runtime value. A runtime string, from `+`, `String.valueOf`,
-  `StringBuilder.toString()` or `Json.getString`, is allocated in the arena at exactly its length: it has no length
+  `StringBuilder.toString()` or `JsonValue.asString()`, is allocated in the arena at exactly its length: it has no length
   limit and lives as long as the program refers to it, as in Java. Every one is an allocation, so building strings in
   a loop that runs often creates garbage for the collector; the risk report flags it (`JUNO-RISK-001`).
   Supported: `String.valueOf(int)`, `length()`, `charAt(int)` and concatenation with `+`.

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.usecases.lichess.challenge;
 
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 
 /** The MVC model: one downloaded Lichess puzzle and the bounded state of the current attempt. */
 public final class LichessModel {
@@ -40,15 +41,18 @@ public final class LichessModel {
             loaded = false;
             return false;
         }
-        int fenLength = Json.getString(response, "puzzle.fen", fen, fen.length);
+        JsonValue document = Json.parse(response);
+        JsonValue puzzle = document.get("puzzle");
+        int fenLength = puzzle.get("fen").copyString(fen);
         boolean positionLoaded = fenLength > 0 && board.loadFen(fen, fenLength);
         if (!positionLoaded) {
-            int pgnLength = Json.getString(response, "game.pgn", pgn, pgn.length);
-            int initialPly = Json.getInt(response, "puzzle.initialPly");
+            int pgnLength = document.get("game").get("pgn").copyString(pgn);
+            int initialPly = puzzle.get("initialPly").asInt();
             positionLoaded = pgnLength > 0 && initialPly < Integer.MAX_VALUE
                     && board.loadPgnPosition(pgn, pgnLength, initialPly + 1);
         }
-        int count = Json.arraySize(response, "puzzle.solution");
+        JsonValue moves = puzzle.get("solution");
+        int count = moves.isArray() ? moves.size() : -1;
         if (!positionLoaded || count <= 0 || count > solution.length) {
             loadError = LOAD_BAD_RESPONSE;
             loaded = false;
@@ -56,7 +60,7 @@ public final class LichessModel {
         }
         int parsed = 0;
         for (; parsed < count; parsed++) {
-            int uciLength = Json.getString(response, solutionPath(parsed), uci, uci.length);
+            int uciLength = moves.get(parsed).copyString(uci);
             solution[parsed] = PuzzleBoard.parseUci(uci, uciLength);
             if (solution[parsed] < 0) {
                 loadError = LOAD_BAD_RESPONSE;
@@ -65,9 +69,9 @@ public final class LichessModel {
             }
         }
         solutionCount = parsed;
-        rating = Json.getInt(response, "puzzle.rating");
-        plays = Json.getInt(response, "puzzle.plays");
-        themeLength = Json.getString(response, "puzzle.themes[0]", theme, theme.length);
+        rating = puzzle.get("rating").asInt();
+        plays = puzzle.get("plays").asInt();
+        themeLength = puzzle.get("themes").get(0).copyString(theme);
         this.source = source;
         loadError = LOAD_OK;
         loaded = true;
@@ -188,26 +192,5 @@ public final class LichessModel {
     /** The destination square of the next solution move, used by the view to show a hint after a wrong move. */
     int hintTo() {
         return loaded && solutionIndex < solutionCount ? PuzzleBoard.to(solution[solutionIndex]) : -1;
-    }
-
-    private static String solutionPath(int index) {
-        return switch (index) {
-            case 0 -> "puzzle.solution[0]";
-            case 1 -> "puzzle.solution[1]";
-            case 2 -> "puzzle.solution[2]";
-            case 3 -> "puzzle.solution[3]";
-            case 4 -> "puzzle.solution[4]";
-            case 5 -> "puzzle.solution[5]";
-            case 6 -> "puzzle.solution[6]";
-            case 7 -> "puzzle.solution[7]";
-            case 8 -> "puzzle.solution[8]";
-            case 9 -> "puzzle.solution[9]";
-            case 10 -> "puzzle.solution[10]";
-            case 11 -> "puzzle.solution[11]";
-            case 12 -> "puzzle.solution[12]";
-            case 13 -> "puzzle.solution[13]";
-            case 14 -> "puzzle.solution[14]";
-            default -> "puzzle.solution[15]";
-        };
     }
 }

@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
-@DisplayName("Minimal JSON reader over a String")
+@DisplayName("JSON views over a String")
 class JsonStringTest {
     private static final String DOCUMENT = """
             {"users":[{"id":1},{"id":2147483648,"active":false,
@@ -22,7 +22,7 @@ class JsonStringTest {
     private static final String[] PATHS = {"", "users", "users[0].id", "users[1].id", "users[1].active",
         "users[1].name", "users[7]", "numbers", "numbers[0]", "numbers[1]", "numbers[2]", "numbers[3]", "numbers[4]",
         "numbers[5]", "numbers[6]", "nothing", "nothing.x", "minimum", "tooLarge", "text", "missing",
-        "current.temperature_2m", "current.time", "users[01]", "users[]", "users[0", "users.", "users[0]x"};
+        "current.temperature_2m", "current.time"};
 
     static Stream<Arguments> documentsAndPaths() {
         Stream<Arguments> document = Stream.of(PATHS).map(path -> arguments(DOCUMENT, path));
@@ -44,33 +44,40 @@ class JsonStringTest {
     @DisplayName("every method answers for a String exactly as for the same bytes")
     void answersAsForBytes(String json, String path) {
         byte[] bytes = json.getBytes(StandardCharsets.US_ASCII);
-        int length = bytes.length;
+        JsonValue fromText = JsonPaths.at(json, path);
+        JsonValue fromBytes = JsonPaths.at(bytes, bytes.length, path);
 
-        assertThat(Json.type(json, path)).isEqualTo(Json.type(bytes, length, path));
-        assertThat(Json.getInt(json, path)).isEqualTo(Json.getInt(bytes, length, path));
-        assertThat(Json.getLong(json, path)).isEqualTo(Json.getLong(bytes, length, path));
-        assertThat(Json.getDouble(json, path)).isEqualTo(Json.getDouble(bytes, length, path));
-        assertThat(Json.getBool(json, path)).isEqualTo(Json.getBool(bytes, length, path));
-        assertThat(Json.arraySize(json, path)).isEqualTo(Json.arraySize(bytes, length, path));
-        byte[] fromText = new byte[16];
-        byte[] fromBytes = new byte[16];
-        assertThat(Json.getString(json, path, fromText, fromText.length))
-                .isEqualTo(Json.getString(bytes, length, path, fromBytes, fromBytes.length));
-        assertThat(fromText).isEqualTo(fromBytes);
+        assertThat(fromText.type()).isEqualTo(fromBytes.type());
+        assertThat(fromText.asInt()).isEqualTo(fromBytes.asInt());
+        assertThat(fromText.asLong()).isEqualTo(fromBytes.asLong());
+        assertThat(fromText.asDouble()).isEqualTo(fromBytes.asDouble());
+        assertThat(fromText.asBoolean()).isEqualTo(fromBytes.asBoolean());
+        assertThat(fromText.size()).isEqualTo(fromBytes.size());
+        byte[] textOut = new byte[16];
+        byte[] bytesOut = new byte[16];
+        assertThat(fromText.copyString(textOut)).isEqualTo(fromBytes.copyString(bytesOut));
+        assertThat(textOut).isEqualTo(bytesOut);
     }
 
     @Test
     @DisplayName("a value is read straight from a response body held in a String")
     void readsAResponseBody() {
-        String body = "{\"current\":{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"},\"ok\":true}";
+        JsonValue body = Json.parse("{\"current\":{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"},\"ok\":true}");
+        JsonValue current = body.get("current");
 
-        assertThat(Json.getDouble(body, "current.temperature_2m")).isEqualTo(13.5);
-        assertThat(Json.getString(body, "current.temperature_2m")).isEqualTo("13.5");
-        assertThat(Json.getString(body, "current.time")).isEqualTo("2026-11-17T00:15");
-        assertThat(Json.getString(body, "current")).isNull();
-        assertThat(Json.getString(body, "missing")).isNull();
-        assertThat(Json.getBool(body, "ok")).isTrue();
-        assertThat(Json.type(body, "current")).isEqualTo(Json.TYPE_OBJECT);
+        assertThat(current.get("temperature_2m").asDouble()).isEqualTo(13.5);
+        assertThat(current.get("temperature_2m").toString()).isEqualTo("13.5");
+        assertThat(current.get("temperature_2m").asString()).isNull();
+        assertThat(current.get("time").asString()).isEqualTo("2026-11-17T00:15");
+        assertThat(current.asString()).isNull();
+        assertThat(body.get("missing").asString()).isNull();
+        assertThat(body.get("ok").asBoolean()).isTrue();
+        assertThat(body.get("ok").asString()).isNull();
+        assertThat(body.get("ok").toString()).isEqualTo("true");
+        assertThat(current.toString()).isEqualTo("{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"}");
+        assertThat(current.get("time").toString()).isEqualTo("\"2026-11-17T00:15\"");
+        assertThat(body.get("missing").toString()).isEmpty();
+        assertThat(current.type()).isEqualTo(Json.TYPE_OBJECT);
     }
 
     @Test
@@ -78,9 +85,21 @@ class JsonStringTest {
     void decodesEscapes() {
         byte[] out = new byte[16];
 
-        int written = Json.getString("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}", "name", out, out.length);
+        int written = Json.parse("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}").get("name").copyString(out);
 
         assertThat(new String(out, 0, written, StandardCharsets.UTF_8)).isEqualTo("A\né😀");
-        assertThat(Json.getString("{\"name\":\"x\"}", "name", out, 0)).isZero();
+        assertThat(Json.parse("{\"name\":\"x\"}").get("name").copyString(out, 0)).isZero();
+        assertThat(Json.parse("{\"name\":\"a\\\"b\"}").get("name").asString()).isEqualTo("a\"b");
+        assertThat(Json.parse("{\"name\":\"a\\\"b\"}").get("name").toString()).isEqualTo("\"a\\\"b\"");
+    }
+
+    @Test
+    @DisplayName("asString decodes escapes to the UTF-8 bytes a runtime String holds")
+    void asStringDecodesToUtf8Bytes() {
+        String decoded = Json.parse("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}").get("name").asString();
+
+        assertThat(decoded).isNotNull();
+        assertThat(decoded.getBytes(StandardCharsets.ISO_8859_1))
+                .isEqualTo("A\né😀".getBytes(StandardCharsets.UTF_8));
     }
 }

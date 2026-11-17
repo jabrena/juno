@@ -48,6 +48,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
 | `java.net.http` (HTTP and HTTPS) | ✓ | TLS runs in the ESP32-S3 coprocessor, with its firmware's root certificates; an `SSLContext` cannot add its own. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
+| `Json`, `JsonValue`, `JsonWriter` | ✓ | The smallest board with JSON support: read responses and request bodies with `Json.parse`, write bodies with `JsonWriter`. | [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java) |
 | `HttpServer` | ✓ | | [`HttpServerBacklight`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java) |
 | `Smtp`, `Pop3Client` | ✓ | Implicit TLS and STARTTLS (STARTTLS needs the `ESP_SSLClient` library). | [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java) |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `ArduinoBLE`; see [LEGO](../lego-ecosystem). | |

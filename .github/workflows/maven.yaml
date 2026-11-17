@@ -365,7 +365,7 @@ jobs:
         env:
           # Ratchet: undocumented public members and empty package descriptions may not grow past this count.
           # Lower it as members are documented; never raise it.
-          NO_COMMENT_BASELINE: "232"
+          NO_COMMENT_BASELINE: "223"
         shell: bash
         run: |
           set -euo pipefail

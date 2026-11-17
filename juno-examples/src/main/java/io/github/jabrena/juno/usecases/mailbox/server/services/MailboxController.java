@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.server.services;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
+import io.github.jabrena.juno.hardware.net.http.JsonWriter;
 import io.github.jabrena.juno.usecases.mailbox.server.commons.MailboxUiState;
 import io.github.jabrena.juno.usecases.mailbox.server.security.MailboxSecurity;
 
@@ -19,6 +20,8 @@ public final class MailboxController {
     private final MailboxModel model;
     private final MailboxSecurity security;
     private final MailboxUiState uiState;
+    /** An RFC 7807 problem body, written again for each error response. */
+    private final JsonWriter problem = new JsonWriter(new byte[160]);
 
     public MailboxController(MailboxModel model, MailboxSecurity security, MailboxUiState uiState) {
         this.model = model;
@@ -157,40 +160,8 @@ public final class MailboxController {
     }
 
     private void respondProblem(int status, String detail) {
-        StringBuilder response = new StringBuilder(160);
-        response.append("{\"type\":\"about:blank\",\"title\":");
-        appendJsonString(response, detail);
-        response.append(",\"status\":");
-        appendInt(response, status);
-        response.append('}');
-        HttpServer.respond(status, PROBLEM_JSON, response);
-    }
-
-    private void appendJsonString(StringBuilder response, String value) {
-        response.append('"');
-        for (int i = 0; i < value.length(); i++) {
-            char character = value.charAt(i);
-            if (character == '"' || character == '\\') {
-                response.append('\\');
-            } else if (character == '\n') {
-                response.append('\\').append('n');
-                continue;
-            } else if (character == '\r') {
-                response.append('\\').append('r');
-                continue;
-            } else if (character == '\t') {
-                response.append('\\').append('t');
-                continue;
-            }
-            response.append(character);
-        }
-        response.append('"');
-    }
-
-    private void appendInt(StringBuilder response, int value) {
-        String text = String.valueOf(value);
-        for (int i = 0; i < text.length(); i++) {
-            response.append(text.charAt(i));
-        }
+        problem.reset().beginObject().name("type").value("about:blank").name("title").value(detail)
+                .name("status").value(status).endObject();
+        HttpServer.respond(status, PROBLEM_JSON, problem.toString());
     }
 }

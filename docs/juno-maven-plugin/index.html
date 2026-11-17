@@ -585,7 +585,7 @@ programmatically as immutable records with stable diagnostic codes.</p>
 <tbody>
 <tr>
 <td><code>JUNO-RISK-001</code></td>
-<td>Arena allocation occurs directly or transitively inside a control-flow loop, including a runtime <code>String</code> built with <code>+</code>, <code>String.valueOf</code>, <code>StringBuilder.toString()</code> or <code>Json.getString</code>.</td>
+<td>Arena allocation occurs directly or transitively inside a control-flow loop, including a runtime <code>String</code> built with <code>+</code>, <code>String.valueOf</code>, <code>StringBuilder.toString()</code> or <code>JsonValue.asString()</code>.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-002</code></td>

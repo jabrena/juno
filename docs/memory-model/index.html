@@ -352,7 +352,7 @@ costs no RAM.</li>
 <tr>
 <td>Arena</td>
 <td>RAM</td>
-<td>Objects, records, arrays, capturing closures, runtime strings (<code>+</code>, <code>String.valueOf</code>, <code>StringBuilder.toString()</code>, <code>Json.getString</code>), <code>UUID</code>, <code>BigInteger</code> and <code>BigDecimal</code> values, atomic cells, scheduler metadata and parked continuation chunks. Its size depends on the board, see the <a href="#board-memory-profiles">board profiles</a></td>
+<td>Objects, records, arrays, capturing closures, runtime strings (<code>+</code>, <code>String.valueOf</code>, <code>StringBuilder.toString()</code>, <code>JsonValue.asString()</code>), <code>JsonValue</code> steps, <code>UUID</code>, <code>BigInteger</code> and <code>BigDecimal</code> values, atomic cells, scheduler metadata and parked continuation chunks. Its size depends on the board, see the <a href="#board-memory-profiles">board profiles</a></td>
 <td>Until the garbage collector reclaims it</td>
 </tr>
 <tr>

@@ -22,7 +22,7 @@ The microcontroller has two kinds of memory:
 | Code | Flash | The compiled methods of the program and the runtime shim | The whole program |
 | Constant data (`.rodata`) | Flash | String literals and `static final` tables with an all-constant initializer | The whole program |
 | Static data (`.bss`) | RAM | Mutable `static` fields, one symbol per field | The whole program |
-| Arena | RAM | Objects, records, arrays, capturing closures, runtime strings (`+`, `String.valueOf`, `StringBuilder.toString()`, `Json.getString`), `UUID`, `BigInteger` and `BigDecimal` values, atomic cells, scheduler metadata and parked continuation chunks. Its size depends on the board, see the [board profiles](#board-memory-profiles) | Until the garbage collector reclaims it |
+| Arena | RAM | Objects, records, arrays, capturing closures, runtime strings (`+`, `String.valueOf`, `StringBuilder.toString()`, `JsonValue.asString()`), `JsonValue` steps, `UUID`, `BigInteger` and `BigDecimal` values, atomic cells, scheduler metadata and parked continuation chunks. Its size depends on the board, see the [board profiles](#board-memory-profiles) | Until the garbage collector reclaims it |
 | Stack | RAM | Local variables, operand slots and call frames of the running method | One call |
 | Carrier and task stacks | RAM | The stack each carrier runs on, and one stack for each extra thread where the board needs one. See [concurrency by board](#concurrency-by-board) | The program |
 

@@ -11,11 +11,15 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Optional;
 
-/** Resolves the board capability a reachable intrinsic, public MCU service or {@code java.net.http} call requires. */
+/**
+ * Resolves the board capability a reachable intrinsic, public MCU service, {@code java.net.http} or JSON call requires.
+ */
 final class CapabilityRequirements {
     private static final String MCU_OWNER = "io/github/jabrena/juno/hardware/MCU";
     /** The board-side {@code java.net.http} classes, as a program's calls name them. */
     private static final String JDK_HTTP_PACKAGE = "java/net/http/";
+    /** The JSON classes; their package also holds {@code HttpServer}, so they are matched by name. */
+    private static final String JSON_CLASS_PREFIX = "io/github/jabrena/juno/hardware/net/http/Json";
 
     private static final Map<String, Capability> MCU_SERVICE_CAPABILITIES = Map.ofEntries(
             Map.entry("Lio/github/jabrena/juno/hardware/hid/Mouse;", Capability.USB_HID),
@@ -40,6 +44,9 @@ final class CapabilityRequirements {
     Optional<Capability> forMethod(MethodRef method) {
         if (method.owner().startsWith(JDK_HTTP_PACKAGE)) {
             return Optional.of(Capability.JDK_HTTP_CLIENT);
+        }
+        if (method.owner().startsWith(JSON_CLASS_PREFIX)) {
+            return Optional.of(Capability.JSON);
         }
         if (!method.owner().equals(MCU_OWNER)) {
             return Optional.empty();

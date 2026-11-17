@@ -4122,17 +4122,19 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.hardware.net.http.Json;
+                    import io.github.jabrena.juno.hardware.net.http.JsonValue;
                     public final class JsonDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
                             byte[] name = new byte[32];
-                            int valueType = Json.type(buffer, buffer.length, "items[0].value");
-                            int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
-                            long sequence = Json.getLong(buffer, buffer.length, "sequence");
-                            double precise = Json.getDouble(buffer, buffer.length, "precise");
-                            boolean ok = Json.getBool(buffer, buffer.length, "ok");
-                            int nameLength = Json.getString(buffer, buffer.length, "name", name, name.length);
-                            int itemCount = Json.arraySize(buffer, buffer.length, "items");
+                            JsonValue root = Json.parse(buffer, buffer.length);
+                            int valueType = root.get("items").get(0).get("value").type();
+                            int temperature = root.get("data").get("sensor").get("temp").asInt();
+                            long sequence = root.get("sequence").asLong();
+                            double precise = root.get("precise").asDouble();
+                            boolean ok = root.get("ok").asBoolean();
+                            int nameLength = root.get("name").copyString(name);
+                            int itemCount = root.get("items").size();
                         }
                     }
                     """;
@@ -4143,13 +4145,13 @@ class JunoCompilerTest {
 
             // Then
             assertThat(result.assembly()).as("JSON parsing alone needs no WiFi").doesNotContain("WiFiS3.h");
-            assertThat(result.assembly()).contains(".asciz \"data.sensor.temp\"", "bl juno_fn")
+            assertThat(result.assembly()).contains(".asciz \"sensor\"", "bl juno_fn")
                     .doesNotContain("bl juno_json");
             assertThat(result.runtimeShim()).doesNotContain("juno_json", "juno_string_from_bytes");
         }
 
         @Test
-        @DisplayName("Lowers a JSON string value through the string-from-bytes intrinsic")
+        @DisplayName("Lowers a JSON value's text from a buffer through the string-from-bytes intrinsic")
         void shouldLowerJsonGetStringValueThroughTheStringFromBytesIntrinsic() throws Exception {
             // Given
             String source = """
@@ -4158,7 +4160,7 @@ class JunoCompilerTest {
                     public final class JsonStringValueDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
-                            String temperature = Json.getString(buffer, buffer.length, "data.sensor.temp");
+                            String temperature = Json.parse(buffer, buffer.length).get("temp").toString();
                         }
                     }
                     """;
@@ -4173,7 +4175,7 @@ class JunoCompilerTest {
                     "juno_string_copy(reinterpret_cast<const char*>(bytes + start)");
         }
 
-        /** {@code Json.getString(byte[], int, String)} is unreachable here, so its native helper is left out. */
+        /** {@code JsonValue.asString()} is unreachable here, so its native helper is left out. */
         @Test
         @DisplayName("Omits the string-from-bytes helper when only other JSON methods are used")
         void shouldOmitStringFromBytesHelperWhenOnlyOtherJsonMethodsAreUsed() throws Exception {
@@ -4184,7 +4186,7 @@ class JunoCompilerTest {
                     public final class JsonIntOnlyDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
-                            int temperature = Json.getInt(buffer, buffer.length, "data.sensor.temp");
+                            int temperature = Json.parse(buffer, buffer.length).get("temp").asInt();
                         }
                     }
                     """;
@@ -4196,6 +4198,60 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).doesNotContain("juno_string_from_bytes");
             assertThat(result.runtimeShim()).doesNotContain("juno_string_from_bytes");
+        }
+
+        @ParameterizedTest(name = "{0}")
+        @CsvSource({"ArduinoUnoR3WiFiRev2Board, UNO WiFi Rev2", "ArduinoUnoR3Board, UNO R3"})
+        @DisplayName("JSON is rejected below the UNO R4 WiFi, the smallest board that runs it")
+        void shouldRejectJsonBelowTheUnoR4Wifi(String annotation, String displayName) throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonSmallBoard", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.%s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.net.http.Json;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(%s.class)
+                    public final class JsonSmallBoard {
+                        public static void main(String[] args) {
+                            Serial.println(Json.parse("{\\"n\\":1}").get("n").asInt());
+                        }
+                    }
+                    """.formatted(annotation, annotation));
+
+            // When / Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonSmallBoard"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining(displayName + " has too little memory for JSON support; the UNO R4 WiFi is"
+                            + " the smallest board that runs it");
+        }
+
+        @Test
+        @DisplayName("JSON compiles for the UNO R4 WiFi")
+        void shouldCompileJsonForTheUnoR4Wifi() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JsonR4", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.net.http.Json;
+                    import io.github.jabrena.juno.hardware.net.http.JsonWriter;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JsonR4 {
+                        public static void main(String[] args) {
+                            byte[] body = new byte[32];
+                            JsonWriter writer = new JsonWriter(body).beginObject().name("n").value(1).endObject();
+                            Serial.println(Json.parse(body, writer.length()).get("n").asInt());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JsonR4");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_fn");
         }
 
         @Test

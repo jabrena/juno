@@ -20,7 +20,7 @@ Read `juno-site/src/main/resources/content/memory-model.md` and `limitations.md`
 | `new` of a program class, record or built-in exception | Primitives and local variables (stack) |
 | Every `new T[n]` array, including `values()`-style copies you write | `static` fields (`.bss`) and enum constants (ordinals) |
 | Capturing lambdas (each `LambdaCreate` with captured values) | String literals (flash) |
-| `BigInteger`/`BigDecimal`, atomics, `StringBuilder`, task/scope handles, and every runtime `String` (`+`, `String.valueOf`, `StringBuilder.toString()`, `Json.getString`) | `static final` arrays with an all-constant initializer, only read (flash `.rodata`) |
+| `BigInteger`/`BigDecimal`, atomics, `StringBuilder`, task/scope handles, each `JsonValue` step (20 bytes), and every runtime `String` (`+`, `String.valueOf`, `StringBuilder.toString()`, `JsonValue.asString()`) | `static final` arrays with an all-constant initializer, only read (flash `.rodata`) |
 | A `static final` table the compiler cannot keep in flash (`JUNO-RISK-012`) | `System.getenv("LITERAL")` and `LedCanvas.drawText(…, "literal", …)`, folded at compile time |
 
 A runtime `String` is an arena block of exactly its length, so it can be any length and lives as long as it is
@@ -42,8 +42,9 @@ a method), but treat that as a bonus: write the program so it does not depend on
    takes them once, at startup, and passes them in; tests pass `mock(Gpio.class)`/`mock(I2c.class)`/
    `mock(Mouse.class)`/`mock(LedMatrix.class)`/`mock(Clock.class)`/`mock(BoardModel.class)`/`mock(BoardMemory.class)`.
 2. **Let the caller own every buffer.** Take a `byte[]`/`int[]` plus an offset or length and fill it; never return a
-   new array or a `String` built at run time. `Udp` (`int[5]` endpoint, caller-owned payload) and the bounded
-   `Json` reader are the reference designs.
+   new array or a `String` built at run time. `Udp` (`int[5]` endpoint, caller-owned payload) and
+   `JsonWriter` (a caller-owned output buffer) are the reference designs. `JsonValue` is a deliberate exception:
+   it follows JEP 540's shape and spends one small, short-lived arena object per navigation step.
 3. **Return primitives**: a `boolean` for success, an `int` count or status code. Do not throw on the hot path.
 4. **Take compile-time text where it is configuration**: a parameter the intrinsic needs as a literal is declared
    in `IntrinsicRegistry` (`requiresLiteralStringArgument`/`prefersLiteralStringArgument`), so it costs no runtime

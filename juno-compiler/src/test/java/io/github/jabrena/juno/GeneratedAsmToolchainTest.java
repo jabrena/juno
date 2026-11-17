@@ -745,7 +745,7 @@ class GeneratedAsmToolchainTest {
                         HttpResponse<String> text = client.send(
                                 HttpRequest.newBuilder(URI.create("https://example.com/status")).build(),
                                 HttpResponse.BodyHandlers.ofString());
-                        int temperature = Json.getInt(text.body(), "data.temp");
+                        int temperature = Json.parse(text.body()).get("data").get("temp").asInt();
                         byte[] row = new byte[32];
                         HttpResponse<byte[]> bytes = client.send(
                                 HttpRequest.newBuilder(URI.create("http://example.com/rest/v1/sensor-data"))
@@ -2071,7 +2071,7 @@ class GeneratedAsmToolchainTest {
                 public final class JsonRuntime {
                     public static void main(String[] args) {
                         byte[] buffer = new byte[1];
-                        String text = Json.getString(buffer, 0, "x");
+                        String text = Json.parse(buffer, 0).get("x").asString();
                     }
                 }
                 """;

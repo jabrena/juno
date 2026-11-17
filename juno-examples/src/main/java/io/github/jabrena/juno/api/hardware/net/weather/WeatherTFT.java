@@ -7,6 +7,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -205,22 +206,23 @@ public final class WeatherTFT {
             Serial.println(body.length());
             return -1;
         }
-        int locationLength = Json.getString(body, "loc", location, 31);
-        if (Json.type(body, "loc") != Json.TYPE_STRING || locationLength <= 0) {
+        JsonValue ipInfo = Json.parse(body);
+        int locationLength = ipInfo.get("loc").copyString(location, 31);
+        if (!ipInfo.get("loc").isString() || locationLength <= 0) {
             Serial.println("ipinfo.io response has no location");
             return -1;
         }
         location[locationLength] = 0;
-        int ipLength = Json.getString(body, "ip", publicIp, 47);
+        int ipLength = ipInfo.get("ip").copyString(publicIp, 47);
         if (ipLength < 0) {
             ipLength = 0;
         }
         publicIp[ipLength] = 0;
         Serial.print("Public IP: ");
-        Serial.println(Json.getString(body, "ip"));
+        Serial.println(ipInfo.get("ip").asString());
         Serial.print("Location: ");
-        Serial.println(Json.getString(body, "loc"));
-        int cityLength = Json.getString(body, "city", city, 32);
+        Serial.println(ipInfo.get("loc").asString());
+        int cityLength = ipInfo.get("city").copyString(city, 32);
         if (cityLength < 0) {
             cityLength = 0;
         }
@@ -262,19 +264,21 @@ public final class WeatherTFT {
             Serial.println("Open-Meteo request failed");
             return false;
         }
-        if (Json.type(body, "current.temperature_2m") != Json.TYPE_NUMBER) {
+        JsonValue forecast = Json.parse(body);
+        JsonValue current = forecast.get("current");
+        if (!current.get("temperature_2m").isNumber()) {
             Serial.println("Open-Meteo response has no temperature");
             return false;
         }
-        temperature = round(Json.getDouble(body, "current.temperature_2m"));
-        humidity = Json.getInt(body, "current.relative_humidity_2m");
-        windSpeed = round(Json.getDouble(body, "current.wind_speed_10m"));
-        condition = WeatherConditions.of(Json.getInt(body, "current.weather_code"));
-        isDay = Json.getInt(body, "current.is_day") == 1;
+        temperature = round(current.get("temperature_2m").asDouble());
+        humidity = current.get("relative_humidity_2m").asInt();
+        windSpeed = round(current.get("wind_speed_10m").asDouble());
+        condition = WeatherConditions.of(current.get("weather_code").asInt());
+        isDay = current.get("is_day").asInt() == 1;
 
         int utcSeconds = HttpDate.parseDate(reply.headers().firstValue("date").orElse(""));
         if (utcSeconds != 0) {
-            clockBaseSeconds = utcSeconds + Json.getInt(body, "utc_offset_seconds");
+            clockBaseSeconds = utcSeconds + forecast.get("utc_offset_seconds").asInt();
             clockBaseMillis = clock.millis();
             clockSet = true;
         }

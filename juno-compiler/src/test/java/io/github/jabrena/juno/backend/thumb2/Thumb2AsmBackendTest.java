@@ -799,7 +799,7 @@ class Thumb2AsmBackendTest {
     }
 
     /**
-     * Mirrors {@code WeatherClient}'s exact {@code (int) Json.getDouble(...)} pattern: a double immediately
+     * Mirrors a JSON reader's {@code (int) view.asDouble()} pattern: a double immediately
      * truncated to int (see
      * {@code juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherClient.java}).
      */

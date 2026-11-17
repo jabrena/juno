@@ -479,7 +479,13 @@ library; the <code>MCU</code> facade is the entry point for the board's peripher
 <tr>
 <td><code>java.net.http</code></td>
 <td align="center">✗</td>
-<td>Not supported: the HTTP client starts at the UNO R4 WiFi. <code>Json</code> still reads <code>HttpServer</code> request bodies.</td>
+<td>Not supported: the HTTP client starts at the UNO R4 WiFi.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Json</code>, <code>JsonValue</code>, <code>JsonWriter</code></td>
+<td align="center">✗</td>
+<td>Not supported: JSON support starts at the UNO R4 WiFi, so <code>HttpServer</code> request bodies are read as plain bytes.</td>
 <td></td>
 </tr>
 <tr>

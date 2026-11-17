@@ -12,7 +12,6 @@ import java.net.http.HttpResponse;
 public final class TimeClient {
     private static final String API_URL = "https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
-    private static final String CURRENT_TIME_PATH = "current.time";
     private static final int HOUR_INDEX = 11;
     private static final int MINUTE_INDEX = 14;
     private static final int MINIMUM_TIME_LENGTH = MINUTE_INDEX + 2;
@@ -36,7 +35,7 @@ public final class TimeClient {
         if (reply.statusCode() != HTTP_STATUS_OK) {
             return null;
         }
-        String time = Json.getString(reply.body(), CURRENT_TIME_PATH);
+        String time = Json.parse(reply.body()).get("current").get("time").asString();
         if (time == null || time.length() < MINIMUM_TIME_LENGTH) {
             return null;
         }
