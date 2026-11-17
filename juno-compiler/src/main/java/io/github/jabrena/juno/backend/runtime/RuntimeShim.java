@@ -327,6 +327,10 @@ public final class RuntimeShim {
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
                 new ShimFeatureBlock(ShimFeature.STRING_FROM_BYTES, shimLibraries::stringFromBytesHelpers)));
+        if (usesAny(ShimFeature.HTTPS, ShimFeature.HTTPS_TRUSTED_CERTIFICATE, ShimFeature.SMTP, ShimFeature.SMTP_TLS,
+                ShimFeature.POP3)) {
+            shim.append(core.tlsClockHelpers());
+        }
         if (usesAny(ShimFeature.HTTPS, ShimFeature.HTTPS_TRUSTED_CERTIFICATE, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             if (uses(ShimFeature.HTTPS_TRUSTED_CERTIFICATE)) {
                 shim.append(core.httpsTrustHelpers());

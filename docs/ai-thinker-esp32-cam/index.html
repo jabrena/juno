@@ -372,7 +372,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <tr>
 <td><code>java.net.http</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
-<td>Mozilla root certificates; an <code>SSLContext</code> can add its own. Certificate dates are not checked.</td>
+<td>Mozilla root certificates; an <code>SSLContext</code> can add its own. Certificate dates are checked once SNTP sets the clock.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java"><code>ParallelHttpsGet</code></a></td>
 </tr>
 <tr>

@@ -100,7 +100,7 @@ int sent = Smtp.send(
 | `-10` | Base64 encoding overflowed its buffer |
 | `-11` | `STARTTLS` |
 | `-12` | TLS upgrade, for example an untrusted certificate |
-| `-13` | Clock not set: on the Nano ESP32 the certificate dates cannot be checked without it |
+| `-13` | Clock not set: the certificate dates cannot be checked without it |
 
 ### Sending over implicit TLS
 

@@ -1486,6 +1486,11 @@ class JunoCompilerTest {
             assertThat(custom.runtimeShim()).contains("juno_runtime_trusted_ca = nullptr;\n    return 1;");
             assertThat(board.assembly()).doesNotContain("juno_http_set_trusted_certificate");
             assertThat(board.runtimeShim()).contains("setCACertBundle(juno_ca_bundle)");
+            assertThat(board.runtimeShim()).contains(
+                    "static bool juno_esp_tls_clock() {",
+                    "configTime(0, 0, \"pool.ntp.org\", \"time.google.com\");",
+                    "if (!juno_esp_tls_clock()) return 0;",
+                    "return WiFiClientSecure::connect(host, port);");
         }
 
         @Test
@@ -3777,8 +3782,8 @@ class JunoCompilerTest {
             // Then
             assertThat(result.runtimeShim()).contains(
                     "static const char juno_smtp_ca[]", "-----BEGIN CERTIFICATE-----",
-                    "configTime(0, 0, \"pool.ntp.org\", \"time.google.com\");",
-                    "if (time(nullptr) < 1700000000) return -13;",
+                    "static bool juno_esp_tls_clock() {",
+                    "if (!juno_esp_tls_clock()) return -13;",
                     "client.setCACert(juno_smtp_ca);")
                     .doesNotContain("client.setInsecure();");
         }

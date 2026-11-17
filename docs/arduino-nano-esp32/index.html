@@ -474,7 +474,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td><code>java.net.http</code> (HTTPS)</td>
 <td align="center">✓</td>
-<td>Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash), or an <code>SSLContext</code>'s own; validity dates are not checked.</td>
+<td>Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash), or an <code>SSLContext</code>'s own; validity dates are checked once SNTP sets the clock.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpsGetSD.java"><code>NanoHttpsGetSD</code></a></td>
 </tr>
 <tr>

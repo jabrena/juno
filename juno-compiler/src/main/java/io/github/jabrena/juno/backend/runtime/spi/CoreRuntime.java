@@ -214,6 +214,14 @@ public interface CoreRuntime {
                 + "  client.setClient(&plainClient, false);";
     }
 
+    /**
+     * Helpers that set the system clock before a certificate's validity dates are checked. Emitted once for every
+     * program that checks a certificate, HTTPS or STARTTLS; a core whose TLS checks no dates keeps the empty default.
+     */
+    default String tlsClockHelpers() {
+        return "";
+    }
+
     /** Runtime setter for a caller-owned HTTPS trust anchor; unsupported cores fail closed. */
     default String httpsTrustHelpers() {
         return """

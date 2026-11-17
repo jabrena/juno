@@ -533,7 +533,7 @@ host name against the board's trusted root certificates. A certificate that fail
 <td>Nano ESP32, ESP32-CAM, M5Stack Cardputer</td>
 <td>Mozilla's root certificates, bundled into the program (about 55 KB of flash).</td>
 <td>Supported.</td>
-<td>No: the core's TLS library is built without date checks.</td>
+<td>Yes: the clock is set over SNTP before each connection. A connection fails if the clock cannot be set.</td>
 </tr>
 <tr>
 <td>Raspberry Pi Pico 2 W</td>
@@ -549,8 +549,8 @@ host name against the board's trusted root certificates. A certificate that fail
 </tr>
 </tbody>
 </table>
-<p>On the boards that do not check dates, an expired certificate that still chains to a trusted root is accepted. Do not
-rely on the date check for security there.</p>
+<p>On the UNO R4 WiFi, Juno cannot see whether the coprocessor checks certificate dates, so do not rely on a date check
+there. On the other boards, an expired certificate is rejected even when it chains to a trusted root.</p>
 <h3 id="trusting-your-own-certificate">Trusting your own certificate</h3>
 <p>A program can trust its own certificate, such as the CA of a server on the local network, the way the JDK does it: load
 the PEM certificate into a <code>KeyStore</code>, turn it into trust managers, and give the client an <code>SSLContext</code>:</p>
