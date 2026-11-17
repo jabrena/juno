@@ -130,9 +130,9 @@ must follow to reply and close that connection before the next <code>accept()</c
 <code>body</code> may be a literal or any runtime <code>String</code> (e.g. a <code>StringBuilder</code>'s
 <code>toString()</code>) — unlike every other intrinsic <code>String</code> parameter in Juno, it is not
 restricted to a compile-time literal, since a literal's address and a runtime <code>String</code>'s
-pooled address are both just a null-terminated <code>const char*</code> to this method's shim. That
-runtime <code>String</code> is still bounded by Juno's small runtime-string pool, though; for a body
-that might not fit, <a href="#respond(int,java.lang.String,java.lang.StringBuilder)"><code>respond(int, String, StringBuilder)</code></a> instead streams a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/StringBuilder.html" title="class in java.lang" class="external-link"><code>StringBuilder</code></a>'s current contents directly, with no such cap.</div>
+arena address are both just a null-terminated <code>const char*</code> to this method's shim.
+<a href="#respond(int,java.lang.String,java.lang.StringBuilder)"><code>respond(int, String, StringBuilder)</code></a> instead streams a <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/StringBuilder.html" title="class in java.lang" class="external-link"><code>StringBuilder</code></a>'s current
+contents directly, without copying them into a <code>String</code> first.</div>
 </div>
 </section>
 <section class="summary">

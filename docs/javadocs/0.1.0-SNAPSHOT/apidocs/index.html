@@ -213,7 +213,7 @@ plain-text body into caller-owned buffers.</div>
 <div class="col-first even-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></div>
 <div class="col-last even-row-color all-packages-table all-packages-table-tab1">
 <div class="block">HTTP(S) client and server support built on <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s
-connection: <a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a> to send <code>http://</code> and <code>https://</code>
+connection: <a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a> to send <code>http://</code> and <code>https://</code>
 requests into a caller-owned <code>byte[]</code> response buffer, <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> to read typed
 values directly out of a response buffer without building a parsed document, and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
 <a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
@@ -229,8 +229,9 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 </div>
 <div class="col-first odd-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></div>
 <div class="col-last odd-row-color all-packages-table all-packages-table-tab1">
-<div class="block">Secrets kept in a secure element: <a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
+<div class="block">Secrets kept off the SD card and out of the firmware: <a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a>
+reads named values, and <a href="io/github/jabrena/juno/hardware/MCU.html#getSecretStore()"><code>MCU.getSecretStore()</code></a> selects the board's
+store — the Portenta H7's SE050C2, an ESP32 board's NVS, the Pico 2 W's TrustZone firmware or an AVR UNO's EEPROM.</div>
 </div>
 <div class="col-first even-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/hardware/serial/package-summary.html">io.github.jabrena.juno.hardware.serial</a></div>
 <div class="col-last even-row-color all-packages-table all-packages-table-tab1">
@@ -244,6 +245,33 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 <div class="col-last even-row-color all-packages-table all-packages-table-tab1">
 <div class="block">Time: <a href="io/github/jabrena/juno/hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time"><code>Clock</code></a> is the monotonic uptime clock, for measuring elapsed time
 without blocking.</div>
+</div>
+<div class="col-first odd-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdk/net/package-summary.html">io.github.jabrena.juno.jdk.net</a></div>
+<div class="col-last odd-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>java.net</code> classes.</div>
+</div>
+<div class="col-first even-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></div>
+<div class="col-last even-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
+</div>
+<div class="col-first odd-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></div>
+<div class="col-last odd-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
+client's trusted certificates, and the exceptions its API declares.</div>
+</div>
+<div class="col-first even-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdk/security/cert/package-summary.html">io.github.jabrena.juno.jdk.security.cert</a></div>
+<div class="col-last even-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>java.security.cert</code>: enough to read a PEM certificate for a
+<code>java.net.http</code> client's <code>SSLContext</code>.</div>
+</div>
+<div class="col-first odd-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdk/util/package-summary.html">io.github.jabrena.juno.jdk.util</a></div>
+<div class="col-last odd-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>java.util</code> classes.</div>
+</div>
+<div class="col-first even-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></div>
+<div class="col-last even-row-color all-packages-table all-packages-table-tab1">
+<div class="block">Board-side implementations of <code>javax.net.ssl</code>: an <code>SSLContext</code> that carries the trust anchors of a
+<code>java.net.http</code> client.</div>
 </div>
 <div class="col-first odd-row-color all-packages-table all-packages-table-tab1"><a href="io/github/jabrena/juno/remote/lego/pf/package-summary.html">io.github.jabrena.juno.remote.lego.pf</a></div>
 <div class="col-last odd-row-color all-packages-table all-packages-table-tab1">

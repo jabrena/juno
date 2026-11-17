@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -585,7 +585,7 @@ programmatically as immutable records with stable diagnostic codes.</p>
 <tbody>
 <tr>
 <td><code>JUNO-RISK-001</code></td>
-<td>Arena allocation occurs directly or transitively inside a control-flow loop.</td>
+<td>Arena allocation occurs directly or transitively inside a control-flow loop, including a runtime <code>String</code> built with <code>+</code>, <code>String.valueOf</code>, <code>StringBuilder.toString()</code> or <code>Json.getString</code>.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-002</code></td>
@@ -609,7 +609,7 @@ programmatically as immutable records with stable diagnostic codes.</p>
 </tr>
 <tr>
 <td><code>JUNO-RISK-007</code></td>
-<td>A <code>StringBuilder</code> is created with a capacity of 32 or more (or a non-constant one); <code>toString()</code> panics once content reaches the slot size.</td>
+<td>A <code>StringBuilder</code> is created with a capacity that is not a compile-time constant; the arena must hold that many bytes, or the program stops.</td>
 </tr>
 <tr>
 <td><code>JUNO-RISK-008</code></td>

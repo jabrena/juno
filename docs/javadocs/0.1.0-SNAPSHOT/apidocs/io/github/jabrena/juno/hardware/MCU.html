@@ -91,6 +91,7 @@ initTheme();
 <li><a href="#getKeyboard()" tabindex="0">getKeyboard()</a></li>
 <li><a href="#getAudio()" tabindex="0">getAudio()</a></li>
 <li><a href="#getBattery()" tabindex="0">getBattery()</a></li>
+<li><a href="#getSecretStore()" tabindex="0">getSecretStore()</a></li>
 </ol>
 </li>
 </ol>
@@ -207,14 +208,22 @@ can substitute mocks.</div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The card in the selected board's onboard SD socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSpi()" class="member-name-link">getSpi</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSecretStore()" class="member-name-link">getSecretStore</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
+SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), the
+Pico 2 W's slots behind Juno's TrustZone secure firmware, or the AVR UNOs' on-chip EEPROM (UNO R3, UNO WiFi
+Rev2), the weakest of them.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSpi()" class="member-name-link">getSpi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's primary SPI bus.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's onboard Wi-Fi service.</div>
 </div>
 </div>
@@ -393,6 +402,19 @@ can substitute mocks.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="power/Battery.html" title="interface in io.github.jabrena.juno.hardware.power">Battery</a></span>&nbsp;<span class="element-name">getBattery</span>()</div>
 <div class="block">The selected board's onboard battery monitor.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getSecretStore()">
+<h3>getSecretStore</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></span>&nbsp;<span class="element-name">getSecretStore</span>()</div>
+<div class="block">The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
+SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), the
+Pico 2 W's slots behind Juno's TrustZone secure firmware, or the AVR UNOs' on-chip EEPROM (UNO R3, UNO WiFi
+Rev2), the weakest of them. Secrets are read by name; no slot numbers are chosen. Programs for a board without a
+store are rejected when they are built.</div>
 </div>
 </section>
 </li>

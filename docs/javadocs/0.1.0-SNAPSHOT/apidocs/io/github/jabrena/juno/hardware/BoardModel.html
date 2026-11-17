@@ -120,12 +120,13 @@ board and each one answers for itself.
 <p>Because the answer is a constant, a <code>switch</code> over it is decided when the program is linked, and the arms
 the target can never take are dropped — their code and the shim support behind it included. That is what lets one
 method pick a board's hardware without every board paying for all of it, as
-<a href="security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> does for the three secret stores:
+<a href="MCU.html#getSecretStore()"><code>MCU.getSecretStore()</code></a> does for the secret stores:
 
 <pre><code>return switch (MCU.getBoardModel()) {
-    case PORTENTA_H7 -&gt; new Se050C2(slots);
-    case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM -&gt; new Esp32Nvs(slots);
-    default -&gt; new Atecc608(i2c, slots);
+    case PORTENTA_H7 -&gt; new Se050C2();
+    case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM, UNO_R4_WIFI -&gt; new Esp32Nvs();
+    case PICO_2_W -&gt; new Pico2WTrustZoneStore();
+    default -&gt; throw new IllegalStateException("This board has no secret store");
 };
 </code></pre>
 
@@ -183,7 +184,7 @@ step.</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#UNO_R3_WIFI_REV2" class="member-name-link">UNO_R3_WIFI_REV2</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Arduino UNO WiFi Rev2: megaAVR core, with an onboard ATECC608 and IMU.</div>
+<div class="block">Arduino UNO WiFi Rev2: megaAVR core, with an onboard IMU.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#UNO_R4_WIFI" class="member-name-link">UNO_R4_WIFI</a></code></div>
 <div class="col-last even-row-color">
@@ -266,7 +267,7 @@ the order they are declared.</div>
 <h3>UNO_R3_WIFI_REV2</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></span>&nbsp;<span class="element-name">UNO_R3_WIFI_REV2</span></div>
-<div class="block">Arduino UNO WiFi Rev2: megaAVR core, with an onboard ATECC608 and IMU.</div>
+<div class="block">Arduino UNO WiFi Rev2: megaAVR core, with an onboard IMU.</div>
 </div>
 </section>
 </li>

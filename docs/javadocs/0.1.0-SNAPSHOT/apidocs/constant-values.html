@@ -444,6 +444,19 @@ initTheme();
 </ul>
 <ul class="block-list">
 <li>
+<div class="caption"><span>io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.internal.NativeHttpClient.DEFAULT_RESPONSE_BUFFER_SIZE">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#DEFAULT_RESPONSE_BUFFER_SIZE">DEFAULT_RESPONSE_BUFFER_SIZE</a></code></div>
+<div class="col-last even-row-color"><code>1024</code></div>
+</div>
+</li>
+</ul>
+<ul class="block-list">
+<li>
 <div class="caption"><span>io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
@@ -564,17 +577,6 @@ initTheme();
 </li>
 </ul>
 <ul class="block-list">
-<li>
-<div class="caption"><span>io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpClient</a></span></div>
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Constant Field</div>
-<div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.net.http.HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html#DEFAULT_RESPONSE_BUFFER_SIZE">DEFAULT_RESPONSE_BUFFER_SIZE</a></code></div>
-<div class="col-last even-row-color"><code>1024</code></div>
-</div>
-</li>
 <li>
 <div class="caption"><span>io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></span></div>
 <div class="summary-table three-column-summary">
@@ -740,37 +742,58 @@ initTheme();
 </ul>
 <ul class="block-list">
 <li>
-<div class="caption"><span>io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></span></div>
+<div class="caption"><span>io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Constant Field</div>
 <div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.security.Atecc608.ADDRESS">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#ADDRESS">ADDRESS</a></code></div>
-<div class="col-last even-row-color"><code>96</code></div>
-<div class="col-first odd-row-color"><code id="io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_NONE">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second odd-row-color"><code><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_NONE">FAILURE_NONE</a></code></div>
-<div class="col-last odd-row-color"><code>0</code></div>
-<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_PROTOCOL">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_PROTOCOL">FAILURE_PROTOCOL</a></code></div>
-<div class="col-last even-row-color"><code>3</code></div>
-<div class="col-first odd-row-color"><code id="io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_REJECTED">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second odd-row-color"><code><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_REJECTED">FAILURE_REJECTED</a></code></div>
-<div class="col-last odd-row-color"><code>2</code></div>
-<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.security.Atecc608.FAILURE_UNAVAILABLE">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/security/Atecc608.html#FAILURE_UNAVAILABLE">FAILURE_UNAVAILABLE</a></code></div>
-<div class="col-last even-row-color"><code>1</code></div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.security.SecretStore.RECORD_BYTES">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#RECORD_BYTES">RECORD_BYTES</a></code></div>
+<div class="col-last even-row-color"><code>63</code></div>
+</div>
+</li>
+</ul>
+<ul class="block-list">
+<li>
+<div class="caption"><span>io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpClient</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpClient.BODY_CAPACITY">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#BODY_CAPACITY">BODY_CAPACITY</a></code></div>
+<div class="col-last even-row-color"><code>384</code></div>
+<div class="col-first odd-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpClient.DEFAULT_TIMEOUT_MILLIS">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second odd-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#DEFAULT_TIMEOUT_MILLIS">DEFAULT_TIMEOUT_MILLIS</a></code></div>
+<div class="col-last odd-row-color"><code>5000</code></div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpClient.MAX_REDIRECTS">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#MAX_REDIRECTS">MAX_REDIRECTS</a></code></div>
+<div class="col-last even-row-color"><code>5</code></div>
+<div class="col-first odd-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpClient.RESPONSE_HEADERS_CAPACITY">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second odd-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#RESPONSE_HEADERS_CAPACITY">RESPONSE_HEADERS_CAPACITY</a></code></div>
+<div class="col-last odd-row-color"><code>512</code></div>
 </div>
 </li>
 <li>
-<div class="caption"><span>io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a></span></div>
+<div class="caption"><span>io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Constant Field</div>
 <div class="table-header col-last">Value</div>
-<div class="col-first even-row-color"><code id="io.github.jabrena.juno.hardware.security.SecretSlots.MAX_NAMES">public&nbsp;static&nbsp;final&nbsp;int</code></div>
-<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/hardware/security/SecretSlots.html#MAX_NAMES">MAX_NAMES</a></code></div>
-<div class="col-last even-row-color"><code>16</code></div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpRequest.HEADERS_CAPACITY">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html#HEADERS_CAPACITY">HEADERS_CAPACITY</a></code></div>
+<div class="col-last even-row-color"><code>512</code></div>
+</div>
+</li>
+<li>
+<div class="caption"><span>io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest.BodyPublishers</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Constant Field</div>
+<div class="table-header col-last">Value</div>
+<div class="col-first even-row-color"><code id="io.github.jabrena.juno.jdk.net.http.HttpRequest.BodyPublishers.STRING_CAPACITY">public&nbsp;static&nbsp;final&nbsp;int</code></div>
+<div class="col-second even-row-color"><code><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html#STRING_CAPACITY">STRING_CAPACITY</a></code></div>
+<div class="col-last even-row-color"><code>512</code></div>
 </div>
 </li>
 </ul>

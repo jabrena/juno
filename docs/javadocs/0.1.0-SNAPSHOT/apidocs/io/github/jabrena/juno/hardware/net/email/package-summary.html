@@ -93,7 +93,7 @@ common mail-submission port), which the UNO R4 WiFi's native <code>WiFiSSLClient
 it only ever negotiates TLS from the first byte. This needs the third-party <code>
 ESP_SSLClient</code> library (<code>arduino-cli lib install ESP_SSLClient</code>), the same manual-install
 pattern as <a href="../../hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>. <code>Pop3Client</code> instead uses
-implicit TLS on port 995 (POP3S), so it reuses <code>WiFiSSLClient</code> exactly like <a href="../http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests and needs no extra library.
+implicit TLS on port 995 (POP3S), so it reuses <code>WiFiSSLClient</code> exactly like <a href="../../internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a>'s <code>https://</code> requests and needs no extra library.
 
 <p>Host and credential fields accept runtime strings read from a board-side <code>SecretStore</code>; message fields may
 also be literals or caller-owned runtime strings. Values are passed directly to the bounded transport and are not
@@ -123,7 +123,7 @@ deliberate tradeoff to fit STARTTLS in the UNO R4 WiFi's 32KB of RAM.</div>
 <div class="col-first odd-row-color"><a href="../http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></div>
 <div class="col-last odd-row-color">
 <div class="block">HTTP(S) client and server support built on <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s
-connection: <a href="../http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a> to send <code>http://</code> and <code>https://</code>
+connection: <a href="../../internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a> to send <code>http://</code> and <code>https://</code>
 requests into a caller-owned <code>byte[]</code> response buffer, <a href="../http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> to read typed
 values directly out of a response buffer without building a parsed document, and <a href="../http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
 <a href="../http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="../http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
@@ -146,7 +146,7 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
 board-specific implicit-TLS transport as
-<a href="../http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests.</div>
+<a href="../../internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a>'s <code>https://</code> requests.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">

@@ -31,6 +31,12 @@ io.github.jabrena.juno.hardware.security
 io.github.jabrena.juno.hardware.serial
 io.github.jabrena.juno.hardware.spi
 io.github.jabrena.juno.hardware.time
+io.github.jabrena.juno.jdk.net
+io.github.jabrena.juno.jdk.net.http
+io.github.jabrena.juno.jdk.security
+io.github.jabrena.juno.jdk.security.cert
+io.github.jabrena.juno.jdk.util
+io.github.jabrena.juno.jdkx.net.ssl
 io.github.jabrena.juno.remote.lego.pf
 io.github.jabrena.juno.remote.lego.poweredup
 io.github.jabrena.juno.remote.lego.rcx
