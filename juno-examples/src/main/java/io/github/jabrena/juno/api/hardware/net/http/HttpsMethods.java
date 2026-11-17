@@ -44,6 +44,9 @@ public final class HttpsMethods {
             Serial.println("WiFi connection failed");
             return;
         }
+        // The Wi-Fi reports connected before its DHCP/DNS is ready: on the UNO R4 WiFi the first request right after it
+        // fails, so the network gets a moment to settle first.
+        Delay.millis(2000);
 
         HttpClient client = HttpClient.newHttpClient();
         check(client, "GET", HttpRequest.newBuilder(HTTPBIN).GET().build());
