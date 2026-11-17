@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -38,7 +39,8 @@ import java.time.Duration;
     ArduinoNanoEsp32Board.class,
     AiThinkerEsp32CamBoard.class,
     M5StackCardputerBoard.class,
-    RaspberryPico2WifiBoard.class
+    RaspberryPico2WifiBoard.class,
+    ArduinoPortentaH7Board.class
 })
 public final class JdkHttpRequests {
     private static final Wifi WIFI = MCU.getWifi();

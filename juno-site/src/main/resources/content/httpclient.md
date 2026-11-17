@@ -193,7 +193,7 @@ host name against the board's trusted root certificates. A certificate that fail
 | UNO R4 WiFi | The root CA bundle in the ESP32-S3 coprocessor's firmware, which also runs the TLS. Arduino documents how to update it. | Not supported. | Up to the coprocessor firmware. Juno cannot see the certificates. |
 | Nano ESP32, ESP32-CAM, M5Stack Cardputer | Mozilla's root certificates, bundled into the program (about 55 KB of flash). | Supported. | No: the core's TLS library is built without date checks. |
 | Raspberry Pi Pico 2 W | Mozilla's root certificates, through BearSSL. | Supported. | Yes, after the first HTTPS connection sets the clock over SNTP. |
-| Portenta H7 | Juno's root bundle, through Mbed TLS. | Not supported. | No: Mbed's TLS library is built without date checks. |
+| Portenta H7 | Juno's root bundle, through Mbed TLS. | Not supported. | Yes: after the handshake, each certificate's dates are compared with the clock, which is set over SNTP first. A connection fails if the clock cannot be set. |
 
 On the boards that do not check dates, an expired certificate that still chains to a trusted root is accepted. Do not
 rely on the date check for security there.

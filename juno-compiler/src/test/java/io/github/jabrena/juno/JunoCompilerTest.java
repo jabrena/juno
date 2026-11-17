@@ -1489,6 +1489,40 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("A Portenta HTTPS client sets the clock and checks each certificate's dates after the handshake")
+        void shouldCheckCertificateDatesOnThePortenta() throws Exception {
+            // Given: the Mbed TLS date helpers are prebuilt without working dates, so the shim compares them itself
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaDates", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoPortentaH7Board.class)
+                    public final class PortentaDates {
+                        public static void main(String[] args) throws Exception {
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(HttpClient.newHttpClient().send(request,
+                                    HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PortentaDates");
+
+            // Then: the clock is set over SNTP, and every peer certificate is compared with it before the connection is used
+            assertThat(result.runtimeShim()).contains("static bool juno_portenta_tls_clock()", "set_time(static_cast<time_t>(",
+                    "gmtime_r(&nowSeconds, &now);", "bool juno_certificates_current() {",
+                    "mbedtls_ssl_get_peer_cert(tls->get_ssl_context())",
+                    "if (WiFiSSLClient::connect(host, port) != 1) return 0;")
+                    .doesNotContain("mbedtls_x509_time_is_past(");
+        }
+
+        @Test
         @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
         void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
             // Given
