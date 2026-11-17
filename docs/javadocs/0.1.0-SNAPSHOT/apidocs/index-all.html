@@ -256,18 +256,32 @@ NINA-W102 module and the <code>WiFiNINA</code> library.</div>
 <div class="block">Arms the session: the brick reconfigures its sensors, clears its motion history and faults, and reports
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#READY"><code>RcxRegulatedState.READY</code></a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#arraySize(byte%5B%5D,int,java.lang.String)" class="member-name-link">arraySize(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns the number of direct array elements, or <code>-1</code> on failure or a type mismatch.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#arraySize(java.lang.String,java.lang.String)" class="member-name-link">arraySize(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#arraySize(byte%5B%5D,int,java.lang.String)"><code>Json.arraySize(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/robotics/cv/aruco/ArucoMarker.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.cv.aruco">ArucoMarker</a> - Class in <a href="io/github/jabrena/juno/robotics/cv/aruco/package-summary.html">io.github.jabrena.juno.robotics.cv.aruco</a></dt>
 <dd>
 <div class="block">An ArUco fiducial marker from the <code>DICT_4X4_50</code> dictionary: ids 0 to 49, each a 6x6 grid of cells
 whose outer ring is black and whose inner 4x4 cells encode the id.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#asBoolean()" class="member-name-link">asBoolean()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">A boolean value, or <code>false</code> when this is not a boolean.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#asDouble()" class="member-name-link">asDouble()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">A JSON number, including fractions and exponents, or <code>0.0</code> when this is not a number or it overflows a
+<code>double</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#asInt()" class="member-name-link">asInt()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">An integral number as an <code>int</code>, or <code>0</code> when this is not one or it overflows.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#asLong()" class="member-name-link">asLong()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">An integral number as a <code>long</code>, or <code>0</code> when this is not one or it overflows.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#asString()" class="member-name-link">asString()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">A JSON string's content with its escapes decoded, as a new arena <code>String</code> holding its UTF-8 bytes, or
+<code>null</code> when this is not a string.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#atWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">atWaypoint(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>&nbsp;</dd>
@@ -523,6 +537,10 @@ reported it.</div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
 directly (typically to serve a provisioning page through <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#beginArray()" class="member-name-link">beginArray()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Opens an array: <code>'['</code>, preceded by a comma when needed.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#beginGrove(int,int,int)" class="member-name-link">beginGrove(int, int, int)</a> - Static method in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block">Configures Grove infrared modules.</div>
@@ -530,6 +548,10 @@ directly (typically to serve a provisioning page through <a href="io/github/jabr
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#beginHX(int,int,int)" class="member-name-link">beginHX(int, int, int)</a> - Static method in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block">Configures HX-53/HX-M121 pins and the bit rate, e.g.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#beginObject()" class="member-name-link">beginObject()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Opens an object with an opening brace, preceded by a comma when needed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#beginPixels(int,int,int,int)" class="member-name-link">beginPixels(int, int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></dt>
 <dd>
@@ -1024,6 +1046,15 @@ had none.</div>
 <div class="block">The brick's count of regulator control cycles since it booted, 0 to 65535 and wrapping, or <code>-1</code> when it did
 not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#copyString(byte%5B%5D)" class="member-name-link">copyString(byte[])</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Decodes a JSON string, escapes included, to UTF-8 in <code>out</code> and returns the number of bytes written; <code>0</code>
+when this is not a string.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#copyString(byte%5B%5D,int)" class="member-name-link">copyString(byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#copyString(byte%5B%5D)"><code>JsonValue.copyString(byte[])</code></a> writing at most <code>capacity</code> bytes, for instance to keep room for a NUL.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html#correction()" class="member-name-link">correction()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/HeadingHoldController.html" title="class in io.github.jabrena.juno.robotics.navigation">HeadingHoldController</a></dt>
 <dd>
 <div class="block">Returns the current bounded turn-power correction, as <a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html#drive(int,int)"><code>DifferentialDrive.drive(int, int)</code></a> takes it: positive speeds up
@@ -1509,6 +1540,14 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 <div class="block">A motor with basic position feedback: open-loop power control from <a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> and the position reported by
 <a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#endArray()" class="member-name-link">endArray()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Closes the innermost array with <code>']'</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#endObject()" class="member-name-link">endObject()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Closes the innermost object with a closing brace.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#endStream()" class="member-name-link">endStream()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
 <dd>
 <div class="block">Ends the open stream and closes the client connection.</div>
@@ -1844,6 +1883,14 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">The value.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#get(int)" class="member-name-link">get(int)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">The element <code>index</code> of this array; a missing value when out of range or when this is not an array.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#get(java.lang.String)" class="member-name-link">get(String)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">The member <code>name</code> of this object; a missing value when absent or when this is not an object.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#GET" class="member-name-link">GET</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html#GET()" class="member-name-link">GET()</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.Builder</a></dt>
@@ -1987,14 +2034,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">Which board the program was compiled for.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getBool(byte%5B%5D,int,java.lang.String)" class="member-name-link">getBool(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns a boolean value, or <code>false</code> when the value is absent or not a boolean.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getBool(java.lang.String,java.lang.String)" class="member-name-link">getBool(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getBool(byte%5B%5D,int,java.lang.String)"><code>Json.getBool(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getBuiltinLed()" class="member-name-link">getBuiltinLed()</a> - Method in interface io.github.jabrena.juno.hardware.gpio.<a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></dt>
 <dd>
 <div class="block">The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q.</div>
@@ -2084,14 +2123,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/hardware/MCU.html#getDisplay()" class="member-name-link">getDisplay()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
 <dd>
 <div class="block">The selected board's onboard display.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getDouble(byte%5B%5D,int,java.lang.String)" class="member-name-link">getDouble(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns a JSON number, including fractions and exponents, or <code>0.0</code> on failure.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getDouble(java.lang.String,java.lang.String)" class="member-name-link">getDouble(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getDouble(byte%5B%5D,int,java.lang.String)"><code>Json.getDouble(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getFirmware()" class="member-name-link">getFirmware()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
@@ -2218,14 +2249,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">An empty store of any <code>type</code>; call <code>load(null, null)</code> before adding to it.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getInt(byte%5B%5D,int,java.lang.String)" class="member-name-link">getInt(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns a strictly integral 32-bit value, or <code>0</code> on failure or overflow.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getInt(java.lang.String,java.lang.String)" class="member-name-link">getInt(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getInt(byte%5B%5D,int,java.lang.String)"><code>Json.getInt(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/MCU.html#getKeyboard()" class="member-name-link">getKeyboard()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
 <dd>
 <div class="block">The selected board's onboard keyboard.</div>
@@ -2245,14 +2268,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/robotics/LightDetector.html#getLightValue()" class="member-name-link">getLightValue()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/LightDetector.html" title="interface in io.github.jabrena.juno.robotics">LightDetector</a></dt>
 <dd>
 <div class="block">Returns the calibrated brightness as a percentage: 0 is darkness and 100 is intense sunlight.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getLong(byte%5B%5D,int,java.lang.String)" class="member-name-link">getLong(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns a strictly integral 64-bit value, or <code>0</code> on failure or overflow.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getLong(java.lang.String,java.lang.String)" class="member-name-link">getLong(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getLong(byte%5B%5D,int,java.lang.String)"><code>Json.getLong(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html#getLow()" class="member-name-link">getLow()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveLightV12</a></dt>
 <dd>
@@ -2486,16 +2501,6 @@ Rev2), the weakest of them.</div>
 <dd>
 <div class="block">The microSD slot's SPI clock, D13, which is also the Nano's built-in LED.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(byte%5B%5D,int,java.lang.String)" class="member-name-link">getString(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Returns the raw JSON text of any scalar value at <code>path</code> (a JSON string's content with its surrounding
-quotes stripped, or a number/boolean/<code>null</code> literal exactly as written), or <code>null</code> when the path is
-missing or resolves to an object or array.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)" class="member-name-link">getString(byte[], int, String, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block">Decodes a JSON string to UTF-8 and returns the number of bytes written.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Esp32Nvs.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/Esp32Nvs.html" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a></dt>
@@ -2507,14 +2512,6 @@ missing or resolves to an object or array.</div>
 <dt><a href="io/github/jabrena/juno/hardware/security/SecretStore.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in interface io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></dt>
 <dd>
 <div class="block">Returns the value of <code>key</code> as a <code>String</code>, or <code>null</code> when it is missing.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(java.lang.String,java.lang.String)" class="member-name-link">getString(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(byte%5B%5D,int,java.lang.String)"><code>Json.getString(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(java.lang.String,java.lang.String,byte%5B%5D,int)" class="member-name-link">getString(String, String, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)"><code>Json.getString(byte[], int, String, byte[], int)</code></a> for a document held in a <code>String</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html#getSystemInfo(java.net.InetAddress,byte%5B%5D,byte%5B%5D,int)" class="member-name-link">getSystemInfo(InetAddress, byte[], byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.device.kasa.<a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></dt>
 <dd>
@@ -3522,7 +3519,9 @@ plain-text body into caller-owned buffers.</div>
 <dd>
 <div class="block">HTTP support built on <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s connection, next to the JDK's
 <code>java.net.http</code> client that programs send requests with: <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>
-to read typed values directly out of a response body or a request buffer without building a parsed document, and
+and <a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a> to read values directly out of a response body or a
+request buffer without building a parsed document, <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> to
+write JSON into a buffer, and
 <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> to serve requests, with
 <a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
 </dd>
@@ -3630,6 +3629,10 @@ boards.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isAltPressed()" class="member-name-link">isAltPressed()</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isArray()" class="member-name-link">isArray()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is a JSON array.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#isAvailable()" class="member-name-link">isAvailable()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Whether the runtime currently exposes usable PSRAM.</div>
@@ -3638,6 +3641,10 @@ boards.</div>
 <dd>
 <div class="block">Whether the secure firmware answered: false when this program runs without it, which also means the store
 reads every name as missing and refuses every write.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isBoolean()" class="member-name-link">isBoolean()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is <code>true</code> or <code>false</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isChanged()" class="member-name-link">isChanged()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
@@ -3685,11 +3692,19 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">Whether the URI's scheme is <code>http</code> or <code>https</code>, in any case.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isInvalid()" class="member-name-link">isInvalid()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether the document this value came from is malformed or truncated.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isKeyPressed(int)" class="member-name-link">isKeyPressed(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isKeyPressed(int)" class="member-name-link">isKeyPressed(int)</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>
 <div class="block">Whether <code>key</code> is currently pressed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isMissing()" class="member-name-link">isMissing()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether no value exists here: an absent member, an index out of range, or a step into a non-container.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html#isMotionDetected()" class="member-name-link">isMotionDetected()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a></dt>
 <dd>
@@ -3741,6 +3756,18 @@ reads every name as missing and refuses every write.</div>
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#isMoving()" class="member-name-link">isMoving()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
 <dd>
 <div class="block">Returns whether a coordinated movement is in progress.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isNull()" class="member-name-link">isNull()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is the JSON literal <code>null</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isNumber()" class="member-name-link">isNumber()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is a JSON number.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isObject()" class="member-name-link">isObject()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is a JSON object.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#isOpaque()" class="member-name-link">isOpaque()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
@@ -3802,6 +3829,10 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">Returns whether the controller has detected that a side cannot complete its movement.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isString()" class="member-name-link">isString()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">Whether this is a JSON string.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#isTerminated()" class="member-name-link">isTerminated()</a> - Method in class io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpClient</a></dt>
 <dd>
 <div class="block">Whether the client is shut down, so it has no request left.</div>
@@ -3817,7 +3848,23 @@ reads every name as missing and refuses every write.</div>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">Json</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
 <dd>
-<div class="block">A bounded, non-allocating JSON field reader.</div>
+<div class="block">Entry point of Juno's JSON support, after JDK 28's <code>jdk.incubator.json</code> (JEP 540): <a href="io/github/jabrena/juno/hardware/net/http/Json.html#parse(java.lang.String)"><code>Json.parse(String)</code></a> validates a
+document once and returns its root <a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a>, navigated with <code>get(String)</code> and <code>get(int)</code> and read
+with <code>asInt()</code>, <code>asDouble()</code>, <code>asString()</code> and similar methods; <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> produces JSON.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
+<dd>
+<div class="block">One value inside a JSON document, with the navigation and conversion methods of JDK 28's <code>JsonValue</code>
+(JEP 540): <code>get(String)</code>, <code>get(int)</code>, <code>asInt()</code>, <code>asString()</code>, <code>toString()</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
+<dd>
+<div class="block">Writes JSON into a caller-owned <code>byte[]</code>, placing commas and escaping strings, so request and response bodies
+need no hand-written quotes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#%3Cinit%3E(byte%5B%5D)" class="member-name-link">JsonWriter(byte[])</a> - Constructor for class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">A writer that fills <code>out</code> from its first byte; allocate it once and <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#reset()"><code>JsonWriter.reset()</code></a> it per body.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:K">K</h2>
@@ -4017,6 +4064,10 @@ glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT 
 <dt><a href="io/github/jabrena/juno/robotics/RegulatedPair.html#leftTachoCount()" class="member-name-link">leftTachoCount()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/RegulatedPair.html" title="interface in io.github.jabrena.juno.robotics">RegulatedPair</a></dt>
 <dd>
 <div class="block">The left side's position in encoder-shaft degrees, as the last read of the controller found it.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#length()" class="member-name-link">length()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The number of JSON bytes written to the buffer.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/led/LedMatrixFont.html#letterPixel(int,int,int)" class="member-name-link">letterPixel(int, int, int)</a> - Static method in class io.github.jabrena.juno.hardware.led.<a href="io/github/jabrena/juno/hardware/led/LedMatrixFont.html" title="class in io.github.jabrena.juno.hardware.led">LedMatrixFont</a></dt>
 <dd>
@@ -4395,6 +4446,10 @@ the <code>REMOTE_*</code> values.</div>
 </dl>
 <h2 class="title" id="I:N">N</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#name(java.lang.String)" class="member-name-link">name(String)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The member name for the next value; only valid directly inside an object.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#NANO_ESP32" class="member-name-link">NANO_ESP32</a> - Enum constant in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
 <dd>
 <div class="block">Arduino Nano ESP32: an ESP32-S3 in a NORA-W106 module, with no secure element.</div>
@@ -4637,6 +4692,10 @@ in a unit test.</div>
 <dd>
 <div class="block">Normal but significant condition.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#nullValue()" class="member-name-link">nullValue()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The JSON literal <code>null</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#number(int)" class="member-name-link">number(int)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">Appends <code>value</code> in decimal, with a leading <code>-</code> when negative.</div>
@@ -4777,6 +4836,10 @@ written against the JDK's <code>Optional</code> runs this code on the board.</di
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#OUTPUT_C" class="member-name-link">OUTPUT_C</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#overflowed()" class="member-name-link">overflowed()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Whether some output was dropped or the calls did not form valid JSON.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
@@ -4793,6 +4856,14 @@ left-to-right/top-to-bottom, exactly as <a href="io/github/jabrena/juno/hardware
 <dd>
 <div class="block">An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write
 strobe pulsed low then high.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#parse(byte%5B%5D,int)" class="member-name-link">parse(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#parse(java.lang.String)"><code>Json.parse(String)</code></a> for the first <code>bufferLength</code> bytes of <code>buffer</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#parse(java.lang.String)" class="member-name-link">parse(String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
+<dd>
+<div class="block">Validates <code>json</code> once and returns its root value, invalid when the document is malformed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#parseGga(byte%5B%5D,int,int%5B%5D,int)" class="member-name-link">parseGga(byte[], int, int[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
 <dd>
@@ -5851,6 +5922,10 @@ URI is <code>http</code> or <code>https</code> with a host.</div>
 <dd>
 <div class="block">Makes the current heading the zero of <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngle()"><code>NineAxisMotionShield.getAngle()</code></a>; does nothing if the read failed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">Empties the writer so the next body starts at the beginning of the buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/PoweredUpGyroscope.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">PoweredUpGyroscope</a></dt>
 <dd>
 <div class="block">Sets the heading to zero at the current tilt yaw.</div>
@@ -6744,6 +6819,10 @@ request runs to completion in the thread that sends it.</div>
 <dd>
 <div class="block">With <code>yes</code>, the navigator stops after each waypoint, until the next <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html#followPath()"><code>Navigator.followPath()</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#size()" class="member-name-link">size()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">The number of members of an object or elements of an array, or <code>-1</code> for any other value.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#size()" class="member-name-link">size()</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
 <dd>
 <div class="block">How many certificates the store holds.</div>
@@ -7170,6 +7249,15 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html#tone(int,int)" class="member-name-link">tone(int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeAudio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeAudio</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#toString()" class="member-name-link">toString()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
+<dd>
+<div class="block">This value's JSON text exactly as the document writes it, as a new arena <code>String</code>: a number keeps every
+digit (<code>"21.2"</code>), a string keeps its quotes and escapes, an object or array its members.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#toString()" class="member-name-link">toString()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The bytes written so far as a new arena <code>String</code>, for APIs that take a body as text.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#toString()" class="member-name-link">toString()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">The text the URI was created from.</div>
@@ -7320,40 +7408,52 @@ the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="inte
 <dd>
 <div class="block">Turns a discovered HS100/HS110 relay on and returns its decrypted JSON response length.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#type(byte%5B%5D,int,java.lang.String)" class="member-name-link">type(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()" class="member-name-link">type()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
 <dd>
-<div class="block">Returns one of the <code>TYPE_*</code> constants for the value at <code>path</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#type(java.lang.String,java.lang.String)" class="member-name-link">type(String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>
-<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/Json.html#type(byte%5B%5D,int,java.lang.String)"><code>Json.type(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
+<div class="block">One of <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>'s <code>TYPE_*</code> constants.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_ARRAY" class="member-name-link">TYPE_ARRAY</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: an array.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_BOOLEAN" class="member-name-link">TYPE_BOOLEAN</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: <code>true</code> or <code>false</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_CITY_HUB" class="member-name-link">TYPE_CITY_HUB</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_DUPLO_TRAIN_HUB" class="member-name-link">TYPE_DUPLO_TRAIN_HUB</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_INVALID" class="member-name-link">TYPE_INVALID</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: the document is malformed or truncated.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_MARIO" class="member-name-link">TYPE_MARIO</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_MISSING" class="member-name-link">TYPE_MISSING</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: no value exists at that step.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_MOVE_HUB" class="member-name-link">TYPE_MOVE_HUB</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_NULL" class="member-name-link">TYPE_NULL</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: the literal <code>null</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_NUMBER" class="member-name-link">TYPE_NUMBER</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: a number.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_OBJECT" class="member-name-link">TYPE_OBJECT</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: an object.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_REMOTE_CONTROL" class="member-name-link">TYPE_REMOTE_CONTROL</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#TYPE_STRING" class="member-name-link">TYPE_STRING</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#type()"><code>JsonValue.type()</code></a>: a string.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_TECHNIC_HUB" class="member-name-link">TYPE_TECHNIC_HUB</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#TYPE_UNKNOWN" class="member-name-link">TYPE_UNKNOWN</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
@@ -7437,6 +7537,31 @@ the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="inte
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/annotations/Board.html#value()" class="member-name-link">value()</a> - Element in annotation interface io.github.jabrena.juno.annotations.<a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations">Board</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(boolean)" class="member-name-link">value(boolean)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The JSON literal <code>true</code> or <code>false</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(char%5B%5D,int)" class="member-name-link">value(char[], int)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">The first <code>count</code> characters of <code>text</code> as a JSON string, escaped like <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(java.lang.String)"><code>JsonWriter.value(String)</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(double)" class="member-name-link">value(double)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">A JSON number with up to 15 significant digits, written as <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Double.html#toString(double)" class="external-link"><code>Double.toString(double)</code></a> lays it out:
+<code>21.4</code>, <code>100.0</code>, <code>0.001</code>, <code>1.5E300</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(int)" class="member-name-link">value(int)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">A JSON number written in decimal.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(long)" class="member-name-link">value(long)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">A JSON number written in decimal, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Long.html#MIN_VALUE" class="external-link"><code>Long.MIN_VALUE</code></a> included.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#value(java.lang.String)" class="member-name-link">value(String)</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
+<dd>
+<div class="block">A JSON string, with quotes, backslashes and control characters escaped.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>

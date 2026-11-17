@@ -475,7 +475,19 @@ bit-banged on two plain pins, with no Arduino library.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">A bounded, non-allocating JSON field reader.</div>
+<div class="block">Entry point of Juno's JSON support, after JDK 28's <code>jdk.incubator.json</code> (JEP 540): <a href="io/github/jabrena/juno/hardware/net/http/Json.html#parse(java.lang.String)"><code>Json.parse(String)</code></a> validates a
+document once and returns its root <a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a>, navigated with <code>get(String)</code> and <code>get(int)</code> and read
+with <code>asInt()</code>, <code>asDouble()</code>, <code>asString()</code> and similar methods; <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> produces JSON.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">One value inside a JSON document, with the navigation and conversion methods of JDK 28's <code>JsonValue</code>
+(JEP 540): <code>get(String)</code>, <code>get(int)</code>, <code>asInt()</code>, <code>asString()</code>, <code>toString()</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Writes JSON into a caller-owned <code>byte[]</code>, placing commas and escaping strings, so request and response bodies
+need no hand-written quotes.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/kasa/KasaSmartPlug.html" title="class in io.github.jabrena.juno.hardware.device.kasa">KasaSmartPlug</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">

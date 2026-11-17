@@ -324,7 +324,7 @@ HttpRequest request = HttpRequest.newBuilder(URI.create(&quot;https://api.open-m
 
 HttpResponse&lt;String&gt; reply = client.send(request, HttpResponse.BodyHandlers.ofString());
 Serial.println(reply.statusCode());
-Serial.println(Json.getDouble(reply.body(), &quot;current.temperature_2m&quot;));
+Serial.println(Json.parse(reply.body()).get(&quot;current&quot;).get(&quot;temperature_2m&quot;).asDouble());
 </code></pre>
 <p><code>send</code> declares <code>IOException</code> and <code>InterruptedException</code>, as in the JDK. It throws <code>IOException</code> when the request
 cannot be sent, and <code>HttpTimeoutException</code> when no response arrives in time. The board never interrupts a request.</p>
@@ -413,43 +413,53 @@ its <code>.</code> and <code>..</code> segments.</li>
 <li>A port above 65535 is rejected.</li>
 </ul>
 <h2 id="reading-json-responses">Reading JSON responses</h2>
-<p><code>Json</code> reads values straight from a body, with no parsing into objects. It takes the body as a <code>String</code>:</p>
-<pre><code class="language-java">String body = reply.body();
-double temperature = Json.getDouble(body, &quot;current.temperature_2m&quot;);
+<p><code>Json.parse</code> reads values straight from a body, without building a tree of objects. Its names follow JDK 28's
+JSON API (JEP 540): <code>get(String)</code> steps into an object member, <code>get(int)</code> into an array element, and <code>asInt()</code>,
+<code>asDouble()</code> and the other conversions read the value.</p>
+<pre><code class="language-java">JsonValue current = Json.parse(reply.body()).get(&quot;current&quot;);
+double temperature = current.get(&quot;temperature_2m&quot;).asDouble();
+int humidity = current.get(&quot;relative_humidity_2m&quot;).asInt();
 </code></pre>
-<p>Every method also takes a <code>byte[]</code> and the number of bytes in it, which is how <code>HttpServer</code> programs read a request
-body. The parser checks the whole document before it reads a value. It supports objects, arrays, strings, numbers,
+<p><code>Json.parse</code> also takes a <code>byte[]</code> and the number of bytes in it, which is how <code>HttpServer</code> programs read a request
+body. It checks the whole document once, before any value is read. It supports objects, arrays, strings, numbers,
 booleans and <code>null</code>, nested up to 32 levels deep.</p>
-<h3 id="paths">Paths</h3>
-<p>Object fields are separated by dots, and array elements use zero-based indexes in brackets:</p>
+<p>JSON needs the UNO R4 WiFi or a larger board. The compiler rejects it on the UNO R3 and the UNO WiFi Rev2.</p>
+<h3 id="navigating">Navigating</h3>
 <table>
 <thead>
 <tr>
 <th>JSON</th>
-<th>Path</th>
+<th>Steps</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>{&quot;temperature&quot;: 21}</code></td>
-<td><code>&quot;temperature&quot;</code></td>
+<td><code>.get(&quot;temperature&quot;)</code></td>
 </tr>
 <tr>
 <td><code>{&quot;current&quot;:{&quot;temperature&quot;:21}}</code></td>
-<td><code>&quot;current.temperature&quot;</code></td>
+<td><code>.get(&quot;current&quot;).get(&quot;temperature&quot;)</code></td>
 </tr>
 <tr>
 <td><code>{&quot;users&quot;:[{&quot;name&quot;:&quot;Ada&quot;}]}</code></td>
-<td><code>&quot;users[0].name&quot;</code></td>
+<td><code>.get(&quot;users&quot;).get(0).get(&quot;name&quot;)</code></td>
 </tr>
 <tr>
 <td><code>[{&quot;id&quot;:7}]</code></td>
-<td><code>&quot;[0].id&quot;</code></td>
+<td><code>.get(0).get(&quot;id&quot;)</code></td>
 </tr>
 </tbody>
 </table>
-<p>A path can be built at run time, as in <code>&quot;[&quot; + index + &quot;].uuid&quot;</code>. Field names that contain <code>.</code>, <code>[</code> or <code>]</code>, and names
-written with JSON escapes, cannot be addressed yet.</p>
+<p>An index is a plain <code>int</code>, so a loop needs no path string:</p>
+<pre><code class="language-java">JsonValue solution = Json.parse(body).get(&quot;puzzle&quot;).get(&quot;solution&quot;);
+for (int i = 0; i &lt; solution.size(); i++) {
+    int length = solution.get(i).copyString(move);
+}
+</code></pre>
+<p>Each step returns a new <code>JsonValue</code>: a 20-byte arena object that the collector reclaims. Keep a value you use more than
+once in a local variable. A member name is matched as written; names that the document writes with JSON escapes cannot
+be matched yet, and when a name appears twice the first one wins.</p>
 <h3 id="reading-values">Reading values</h3>
 <table>
 <thead>
@@ -460,40 +470,46 @@ written with JSON escapes, cannot be addressed yet.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>Json.getInt(...)</code></td>
-<td>an <code>int</code></td>
+<td><code>asInt()</code></td>
+<td>an <code>int</code>, or <code>0</code> unless the value is an integral number that fits: <code>123</code>, <code>123.0</code> and <code>2.3E2</code> all read as integers, <code>1.5</code> does not</td>
 </tr>
 <tr>
-<td><code>Json.getLong(...)</code></td>
-<td>a <code>long</code></td>
+<td><code>asLong()</code></td>
+<td>a <code>long</code>, with the same rule</td>
 </tr>
 <tr>
-<td><code>Json.getDouble(...)</code></td>
-<td>a <code>double</code></td>
+<td><code>asDouble()</code></td>
+<td>a <code>double</code>, or <code>0.0</code></td>
 </tr>
 <tr>
-<td><code>Json.getBool(...)</code></td>
-<td>a <code>boolean</code></td>
+<td><code>asBoolean()</code></td>
+<td>a <code>boolean</code>, or <code>false</code></td>
 </tr>
 <tr>
-<td><code>Json.getString(json, path)</code></td>
-<td>the value's raw text as a <code>String</code>, or <code>null</code> for a missing value, an object or an array</td>
+<td><code>asString()</code></td>
+<td>a string's content with its escapes decoded, or <code>null</code> when the value is not a string</td>
 </tr>
 <tr>
-<td><code>Json.getString(json, path, byte[] out, int outLength)</code></td>
-<td>the number of UTF-8 bytes decoded into <code>out</code></td>
+<td><code>copyString(byte[] out)</code></td>
+<td>the number of UTF-8 bytes a string decodes to in <code>out</code>, with no <code>String</code> allocated</td>
 </tr>
 <tr>
-<td><code>Json.arraySize(...)</code></td>
-<td>the number of elements in an array, or <code>-1</code> when the path is missing, invalid or not an array</td>
+<td><code>toString()</code></td>
+<td>the value's JSON text exactly as written: a number keeps every digit, a string keeps its quotes</td>
+</tr>
+<tr>
+<td><code>size()</code></td>
+<td>the number of elements of an array or members of an object, or <code>-1</code> for any other value</td>
 </tr>
 </tbody>
 </table>
-<p>Typed getters return zero or <code>false</code> when the value cannot be read, so <code>getInt(...) == 0</code> is ambiguous by itself. Use
-<code>Json.type</code> when the difference matters:</p>
-<pre><code class="language-java">int valueType = Json.type(body, &quot;current.temperature_2m&quot;);
+<p>Nothing throws, unlike JEP 540: conversions return zero or <code>false</code> when the value cannot be read, so <code>asInt() == 0</code> is
+ambiguous by itself. Use <code>type()</code>, or <code>isNumber()</code>, <code>isString()</code>, <code>isNull()</code>, <code>isMissing()</code> and the other checks,
+when the difference matters:</p>
+<pre><code class="language-java">JsonValue temperature = Json.parse(body).get(&quot;current&quot;).get(&quot;temperature_2m&quot;);
+int valueType = temperature.type();
 if (valueType == Json.TYPE_NUMBER) {
-    double temperature = Json.getDouble(body, &quot;current.temperature_2m&quot;);
+    Serial.println(temperature.asDouble());
 } else if (valueType == Json.TYPE_NULL) {
     Serial.println(&quot;Temperature is null&quot;);
 } else if (valueType == Json.TYPE_MISSING) {
@@ -503,11 +519,28 @@ if (valueType == Json.TYPE_NUMBER) {
 }
 </code></pre>
 <p>The type constants are <code>TYPE_MISSING</code>, <code>TYPE_NULL</code>, <code>TYPE_BOOLEAN</code>, <code>TYPE_NUMBER</code>, <code>TYPE_STRING</code>, <code>TYPE_OBJECT</code>,
-<code>TYPE_ARRAY</code> and <code>TYPE_INVALID</code>.</p>
-<p><code>Json.getString(json, path)</code> returns the text as written, with no escape decoding. That keeps a number such as <code>21.2</code>
-exactly as the server wrote it. <code>Json.getString(json, path, out, outLength)</code> decodes escapes such as <code>\n</code>, <code>\&quot;</code> and
-<code>é</code>, including surrogate pairs, into the program's own buffer. It writes at most <code>outLength</code> bytes and adds no
-terminating NUL.</p>
+<code>TYPE_ARRAY</code> and <code>TYPE_INVALID</code>. A missing or invalid value stays that way through every later step.</p>
+<p><code>asString()</code> and <code>copyString(out)</code> decode escapes such as <code>\n</code>, <code>\&quot;</code> and <code>\u00e9</code>, including surrogate pairs, to UTF-8.
+<code>copyString</code> writes into the program's own buffer, at most <code>out.length</code> bytes (or the capacity passed to
+<code>copyString(out, capacity)</code>), and adds no terminating NUL. <code>toString()</code> keeps a number such as <code>21.2</code> exactly as the
+server wrote it, which a <code>double</code> cannot always do.</p>
+<h2 id="writing-json">Writing JSON</h2>
+<p><code>JsonWriter</code> writes JSON into a <code>byte[]</code> the program owns, placing the commas and escaping strings. Create it once and
+call <code>reset()</code> for each body; writing allocates nothing:</p>
+<pre><code class="language-java">JsonWriter json = new JsonWriter(new byte[64]);
+
+json.reset().beginObject()
+        .name(&quot;uptime_ms&quot;).value(clock.millis())
+        .name(&quot;temperature&quot;).value(21.4)
+        .name(&quot;ok&quot;).value(true)
+        .endObject();
+HttpServer.respond(HttpStatus.OK, &quot;application/json&quot;, json.toString());
+</code></pre>
+<p><code>value</code> takes a <code>String</code>, a <code>char[]</code> with a length, an <code>int</code>, a <code>long</code>, a <code>double</code> (up to 15 significant digits, laid
+out as <code>Double.toString</code> does) or a <code>boolean</code>; <code>nullValue()</code> writes <code>null</code>. <code>toString()</code> copies the body into a
+<code>String</code> for <code>HttpServer.respond</code> or <code>HttpRequest.BodyPublishers.ofString</code>; <code>length()</code> gives its size in the buffer.</p>
+<p>Output that does not fit the buffer is dropped, and <code>overflowed()</code> turns <code>true</code>. It also turns <code>true</code> for a name
+outside an object, an unbalanced <code>end...</code> call, or a NaN or infinite <code>double</code>, which JSON cannot write.</p>
 <h2 id="interacting-with-https-endpoints">Interacting with HTTPS endpoints</h2>
 <p>An <code>https</code> URI makes the client use TLS. Before it sends anything, the client checks the server's certificate chain and
 host name against the board's trusted root certificates. A certificate that fails the check makes <code>send</code> throw an

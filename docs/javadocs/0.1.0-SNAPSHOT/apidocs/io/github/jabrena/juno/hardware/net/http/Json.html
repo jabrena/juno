@@ -86,22 +86,8 @@ initTheme();
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
-<li><a href="#type(byte%5B%5D,int,java.lang.String)" tabindex="0">type(byte[], int, String)</a></li>
-<li><a href="#type(java.lang.String,java.lang.String)" tabindex="0">type(String, String)</a></li>
-<li><a href="#getInt(byte%5B%5D,int,java.lang.String)" tabindex="0">getInt(byte[], int, String)</a></li>
-<li><a href="#getInt(java.lang.String,java.lang.String)" tabindex="0">getInt(String, String)</a></li>
-<li><a href="#getLong(byte%5B%5D,int,java.lang.String)" tabindex="0">getLong(byte[], int, String)</a></li>
-<li><a href="#getLong(java.lang.String,java.lang.String)" tabindex="0">getLong(String, String)</a></li>
-<li><a href="#getDouble(byte%5B%5D,int,java.lang.String)" tabindex="0">getDouble(byte[], int, String)</a></li>
-<li><a href="#getDouble(java.lang.String,java.lang.String)" tabindex="0">getDouble(String, String)</a></li>
-<li><a href="#getBool(byte%5B%5D,int,java.lang.String)" tabindex="0">getBool(byte[], int, String)</a></li>
-<li><a href="#getBool(java.lang.String,java.lang.String)" tabindex="0">getBool(String, String)</a></li>
-<li><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)" tabindex="0">getString(byte[], int, String, byte[], int)</a></li>
-<li><a href="#getString(java.lang.String,java.lang.String,byte%5B%5D,int)" tabindex="0">getString(String, String, byte[], int)</a></li>
-<li><a href="#getString(byte%5B%5D,int,java.lang.String)" tabindex="0">getString(byte[], int, String)</a></li>
-<li><a href="#getString(java.lang.String,java.lang.String)" tabindex="0">getString(String, String)</a></li>
-<li><a href="#arraySize(byte%5B%5D,int,java.lang.String)" tabindex="0">arraySize(byte[], int, String)</a></li>
-<li><a href="#arraySize(java.lang.String,java.lang.String)" tabindex="0">arraySize(String, String)</a></li>
+<li><a href="#parse(java.lang.String)" tabindex="0">parse(String)</a></li>
+<li><a href="#parse(byte%5B%5D,int)" tabindex="0">parse(byte[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -119,34 +105,19 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Json</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">A bounded, non-allocating JSON field reader. Reads directly out of a <code>java.net.http</code> response body held in a
-<code>String</code>, or a <code>byte[]</code> buffer such as an <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> request body, without ever building a parsed
-document — Juno has no heap, so there is no DOM to build. The
-scanner is plain Java that Juno compiles into the program only when a <code>Json</code> method is reachable; only
-<a href="#getString(byte%5B%5D,int,java.lang.String)"><code>getString(byte[], int, String)</code></a>'s copy into a runtime <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link"><code>String</code></a> is a compiler intrinsic.
+<div class="block">Entry point of Juno's JSON support, after JDK 28's <code>jdk.incubator.json</code> (JEP 540): <a href="#parse(java.lang.String)"><code>parse(String)</code></a> validates a
+document once and returns its root <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a>, navigated with <code>get(String)</code> and <code>get(int)</code> and read
+with <code>asInt()</code>, <code>asDouble()</code>, <code>asString()</code> and similar methods; <a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> produces JSON.
+The document is read where it is, from a <code>java.net.http</code> response body held in a <code>String</code> or from a
+<code>byte[]</code> buffer such as an <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> request body; there is no parsed tree.
 
-<p>Object fields use dot notation and arrays use zero-based bracket indexes, for example
-<code>"data.sensor.temp"</code>, <code>"users[0].name"</code>, or <code>"[2]"</code> for a root array. The empty path addresses
-the root value. Field names containing <code>'.'</code>, <code>'['</code>, or <code>']'</code> cannot currently be addressed, and
-escaped JSON member names are not decoded while matching paths.
+<p>Unlike JEP 540 nothing throws: a missing member, a type mismatch or an invalid document gives a value whose
+<a href="JsonValue.html#type()"><code>JsonValue.type()</code></a> says so, and its conversions return zero values or <code>null</code>. The scanner validates
+strictly (RFC 8259, nesting up to 32 levels), but the first of duplicate member names wins and escaped member names
+are not decoded while matching.
 
-<p>The scanner validates the complete bounded document before returning a value. Call <a href="#type(byte%5B%5D,int,java.lang.String)"><code>type(byte[], int, String)</code></a> when a missing
-value, JSON <code>null</code>, a type mismatch, and a malformed or truncated document must be distinguished. Typed getters
-retain convenient zero-value failure results and never allocate or throw. <code>bufferLength</code> must be the number of
-JSON bytes in the buffer (for example, the value returned by <a href="HttpServer.html#accept(byte%5B%5D,int)"><code>HttpServer.accept(byte[], int)</code></a>), not the buffer capacity.
-
-<p><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)"><code>getString(byte[], int, String, byte[], int)</code></a> decodes JSON escapes, including UTF-16
-<code>&#92;uXXXX</code> surrogate pairs, to UTF-8 in <code>out</code>. It writes at most <code>outLength</code> bytes and
-never appends a NUL byte.
-
-<p>Every method also takes the document as a <code>String</code>, such as a <code>java.net.http</code> response body read with
-<code>BodyHandlers.ofString()</code>: <code>Json.getDouble(reply.body(), "current.temperature_2m")</code>. The same scanner
-reads both; a runtime <code>String</code> holds bytes, so it is read as the bytes it holds.
-
-<p><a href="#getString(byte%5B%5D,int,java.lang.String)"><code>getString(byte[], int, String)</code></a> instead returns a runtime <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link"><code>String</code></a> holding the value's raw
-JSON text (quotes stripped for an actual JSON string, no escape decoding) — useful for a JSON number when its exact
-source text matters more than its value parsed through <a href="#getDouble(byte%5B%5D,int,java.lang.String)"><code>getDouble(byte[], int, String)</code></a>, which loses precision for values not
-exactly representable in binary floating point.</div>
+<p>JSON needs the UNO R4 WiFi or a larger board: the compiler rejects it on the UNO R3 and the UNO WiFi Rev2. Each
+<a href="JsonValue.html#get(java.lang.String)"><code>JsonValue.get(String)</code></a> step allocates one small value (20 bytes) that the collector reclaims.</div>
 </div>
 </section>
 <section class="summary">
@@ -162,28 +133,44 @@ exactly representable in binary floating point.</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#TYPE_ARRAY" class="member-name-link">TYPE_ARRAY</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: an array.</div>
+</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#TYPE_BOOLEAN" class="member-name-link">TYPE_BOOLEAN</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: <code>true</code> or <code>false</code>.</div>
+</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#TYPE_INVALID" class="member-name-link">TYPE_INVALID</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: the document is malformed or truncated.</div>
+</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#TYPE_MISSING" class="member-name-link">TYPE_MISSING</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: no value exists at that step.</div>
+</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#TYPE_NULL" class="member-name-link">TYPE_NULL</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: the literal <code>null</code>.</div>
+</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#TYPE_NUMBER" class="member-name-link">TYPE_NUMBER</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: a number.</div>
+</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#TYPE_OBJECT" class="member-name-link">TYPE_OBJECT</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: an object.</div>
+</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#TYPE_STRING" class="member-name-link">TYPE_STRING</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: a string.</div>
+</div>
 </div>
 </section>
 </li>
@@ -198,115 +185,16 @@ exactly representable in binary floating point.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#arraySize(byte%5B%5D,int,java.lang.String)" class="member-name-link">arraySize</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#parse(byte%5B%5D,int)" class="member-name-link">parse</a><wbr>(byte[]&nbsp;buffer,
+ int&nbsp;bufferLength)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns the number of direct array elements, or <code>-1</code> on failure or a type mismatch.</div>
+<div class="block"><a href="#parse(java.lang.String)"><code>parse(String)</code></a> for the first <code>bufferLength</code> bytes of <code>buffer</code>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#arraySize(java.lang.String,java.lang.String)" class="member-name-link">arraySize</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#parse(java.lang.String)" class="member-name-link">parse</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#arraySize(byte%5B%5D,int,java.lang.String)"><code>arraySize(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBool(byte%5B%5D,int,java.lang.String)" class="member-name-link">getBool</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns a boolean value, or <code>false</code> when the value is absent or not a boolean.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getBool(java.lang.String,java.lang.String)" class="member-name-link">getBool</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getBool(byte%5B%5D,int,java.lang.String)"><code>getBool(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static double</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getDouble(byte%5B%5D,int,java.lang.String)" class="member-name-link">getDouble</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns a JSON number, including fractions and exponents, or <code>0.0</code> on failure.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static double</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getDouble(java.lang.String,java.lang.String)" class="member-name-link">getDouble</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getDouble(byte%5B%5D,int,java.lang.String)"><code>getDouble(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getInt(byte%5B%5D,int,java.lang.String)" class="member-name-link">getInt</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns a strictly integral 32-bit value, or <code>0</code> on failure or overflow.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getInt(java.lang.String,java.lang.String)" class="member-name-link">getInt</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getInt(byte%5B%5D,int,java.lang.String)"><code>getInt(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static long</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getLong(byte%5B%5D,int,java.lang.String)" class="member-name-link">getLong</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns a strictly integral 64-bit value, or <code>0</code> on failure or overflow.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static long</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getLong(java.lang.String,java.lang.String)" class="member-name-link">getLong</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getLong(byte%5B%5D,int,java.lang.String)"><code>getLong(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getString(byte%5B%5D,int,java.lang.String)" class="member-name-link">getString</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns the raw JSON text of any scalar value at <code>path</code> (a JSON string's content with its surrounding
-quotes stripped, or a number/boolean/<code>null</code> literal exactly as written), or <code>null</code> when the path is
-missing or resolves to an object or array.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)" class="member-name-link">getString</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
- byte[]&nbsp;out,
- int&nbsp;outLength)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Decodes a JSON string to UTF-8 and returns the number of bytes written.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static @Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getString(java.lang.String,java.lang.String)" class="member-name-link">getString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getString(byte%5B%5D,int,java.lang.String)"><code>getString(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getString(java.lang.String,java.lang.String,byte%5B%5D,int)" class="member-name-link">getString</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
- byte[]&nbsp;out,
- int&nbsp;outLength)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)"><code>getString(byte[], int, String, byte[], int)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#type(byte%5B%5D,int,java.lang.String)" class="member-name-link">type</a><wbr>(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Returns one of the <code>TYPE_*</code> constants for the value at <code>path</code>.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#type(java.lang.String,java.lang.String)" class="member-name-link">type</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block"><a href="#type(byte%5B%5D,int,java.lang.String)"><code>type(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
+<div class="block">Validates <code>json</code> once and returns its root value, invalid when the document is malformed.</div>
 </div>
 </div>
 </div>
@@ -330,6 +218,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_MISSING</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_MISSING</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: no value exists at that step.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -346,6 +235,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_NULL</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_NULL</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: the literal <code>null</code>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -362,6 +252,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_BOOLEAN</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_BOOLEAN</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: <code>true</code> or <code>false</code>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -378,6 +269,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_NUMBER</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_NUMBER</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: a number.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -394,6 +286,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_STRING</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_STRING</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: a string.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -410,6 +303,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_OBJECT</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_OBJECT</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: an object.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -426,6 +320,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_ARRAY</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_ARRAY</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: an array.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -442,6 +337,7 @@ missing or resolves to an object or array.</div>
 <h3>TYPE_INVALID</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">TYPE_INVALID</span></div>
+<div class="block"><a href="JsonValue.html#type()"><code>JsonValue.type()</code></a>: the document is malformed or truncated.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>
@@ -462,176 +358,21 @@ missing or resolves to an object or array.</div>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="type(byte[],int,java.lang.String)">
-<h3>type</h3>
+<section class="detail" id="parse(java.lang.String)">
+<h3>parse</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">type</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns one of the <code>TYPE_*</code> constants for the value at <code>path</code>.</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></span>&nbsp;<span class="element-name">parse</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json)</span></div>
+<div class="block">Validates <code>json</code> once and returns its root value, invalid when the document is malformed.</div>
 </div>
 </section>
 </li>
 <li>
-<section class="detail" id="type(java.lang.String,java.lang.String)">
-<h3>type</h3>
+<section class="detail" id="parse(byte[],int)">
+<h3>parse</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">type</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#type(byte%5B%5D,int,java.lang.String)"><code>type(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getInt(byte[],int,java.lang.String)">
-<h3>getInt</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInt</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns a strictly integral 32-bit value, or <code>0</code> on failure or overflow.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getInt(java.lang.String,java.lang.String)">
-<h3>getInt</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getInt</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#getInt(byte%5B%5D,int,java.lang.String)"><code>getInt(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getLong(byte[],int,java.lang.String)">
-<h3>getLong</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">long</span>&nbsp;<span class="element-name">getLong</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns a strictly integral 64-bit value, or <code>0</code> on failure or overflow.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getLong(java.lang.String,java.lang.String)">
-<h3>getLong</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">long</span>&nbsp;<span class="element-name">getLong</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#getLong(byte%5B%5D,int,java.lang.String)"><code>getLong(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getDouble(byte[],int,java.lang.String)">
-<h3>getDouble</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">getDouble</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns a JSON number, including fractions and exponents, or <code>0.0</code> on failure.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getDouble(java.lang.String,java.lang.String)">
-<h3>getDouble</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">double</span>&nbsp;<span class="element-name">getDouble</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#getDouble(byte%5B%5D,int,java.lang.String)"><code>getDouble(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getBool(byte[],int,java.lang.String)">
-<h3>getBool</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">getBool</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns a boolean value, or <code>false</code> when the value is absent or not a boolean.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getBool(java.lang.String,java.lang.String)">
-<h3>getBool</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">getBool</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#getBool(byte%5B%5D,int,java.lang.String)"><code>getBool(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getString(byte[],int,java.lang.String,byte[],int)">
-<h3>getString</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getString</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
- byte[]&nbsp;out,
- int&nbsp;outLength)</span></div>
-<div class="block">Decodes a JSON string to UTF-8 and returns the number of bytes written.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getString(java.lang.String,java.lang.String,byte[],int)">
-<h3>getString</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getString</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path,
- byte[]&nbsp;out,
- int&nbsp;outLength)</span></div>
-<div class="block"><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)"><code>getString(byte[], int, String, byte[], int)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getString(byte[],int,java.lang.String)">
-<h3>getString</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getString</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns the raw JSON text of any scalar value at <code>path</code> (a JSON string's content with its surrounding
-quotes stripped, or a number/boolean/<code>null</code> literal exactly as written), or <code>null</code> when the path is
-missing or resolves to an object or array. The text is copied into a new arena <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="getString(java.lang.String,java.lang.String)">
-<h3>getString</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getString</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#getString(byte%5B%5D,int,java.lang.String)"><code>getString(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="arraySize(byte[],int,java.lang.String)">
-<h3>arraySize</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">arraySize</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
- int&nbsp;bufferLength,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block">Returns the number of direct array elements, or <code>-1</code> on failure or a type mismatch.</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="arraySize(java.lang.String,java.lang.String)">
-<h3>arraySize</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">arraySize</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;json,
- <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</span></div>
-<div class="block"><a href="#arraySize(byte%5B%5D,int,java.lang.String)"><code>arraySize(byte[], int, String)</code></a> for a document held in a <code>String</code>.</div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></span>&nbsp;<span class="element-name">parse</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
+ int&nbsp;bufferLength)</span></div>
+<div class="block"><a href="#parse(java.lang.String)"><code>parse(String)</code></a> for the first <code>bufferLength</code> bytes of <code>buffer</code>.</div>
 </div>
 </section>
 </li>
