@@ -111,6 +111,8 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
                                   uint8_t* headersBuffer, int32_t headersBufferLength,
                                   int32_t* statusAndHeadersLength, JunoHttpBodySink* sink = nullptr) {
   if (!juno_http_connect(client, host, port)) {
+    // A refused handshake can leave its socket open, and the next connect then fails, so close it here too.
+    client.stop();
     statusAndHeadersLength[0] = 0;
     statusAndHeadersLength[1] = 0;
     return -1;

@@ -527,7 +527,7 @@ host name against the board's trusted root certificates. A certificate that fail
 <td>UNO R4 WiFi</td>
 <td>The root CA bundle in the ESP32-S3 coprocessor's firmware, which also runs the TLS. Arduino documents how to update it.</td>
 <td>Not supported.</td>
-<td>Up to the coprocessor firmware. Juno cannot see the certificates.</td>
+<td>Yes, as the coprocessor does it: an expired certificate that chains to a trusted root is rejected (tested on the board).</td>
 </tr>
 <tr>
 <td>Nano ESP32, ESP32-CAM, M5Stack Cardputer</td>
@@ -549,8 +549,7 @@ host name against the board's trusted root certificates. A certificate that fail
 </tr>
 </tbody>
 </table>
-<p>On the UNO R4 WiFi, Juno cannot see whether the coprocessor checks certificate dates, so do not rely on a date check
-there. On the other boards, an expired certificate is rejected even when it chains to a trusted root.</p>
+<p>On the UNO R4 WiFi and the Nano ESP32, an expired certificate that chains to a trusted root is rejected, as tested on the board.</p>
 <h3 id="trusting-your-own-certificate">Trusting your own certificate</h3>
 <p>A program can trust its own certificate, such as the CA of a server on the local network, the way the JDK does it: load
 the PEM certificate into a <code>KeyStore</code>, turn it into trust managers, and give the client an <code>SSLContext</code>:</p>
