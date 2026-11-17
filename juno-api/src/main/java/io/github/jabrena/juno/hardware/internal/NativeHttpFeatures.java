@@ -35,4 +35,12 @@ public final class NativeHttpFeatures {
     public static boolean timeouts() {
         return true;
     }
+
+    /**
+     * Whether the program gives a client trust anchors of its own, with {@code HttpClient.Builder.sslContext}; any
+     * other program keeps the board's own trust, and links no code to change it.
+     */
+    public static boolean customTrust() {
+        return true;
+    }
 }

@@ -1420,6 +1420,75 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("A java.net.http client with an SSLContext installs its trust anchors; one without links no trust code")
+        void shouldInstallTheTrustAnchorsOfAnSslContext() throws Exception {
+            // Given: the JDK's trust-my-CA recipe, reading the CA from the SD card
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpTrust", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.io.InputStream;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    import java.security.KeyStore;
+                    import java.security.cert.CertificateFactory;
+                    import javax.net.ssl.SSLContext;
+                    import javax.net.ssl.TrustManagerFactory;
+                    @Board(M5StackCardputerBoard.class)
+                    public final class JdkHttpTrust {
+                        public static void main(String[] args) throws Exception {
+                            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+                            store.load(null, null);
+                            try (InputStream file = MCU.getSdCard().open("ca.crt")) {
+                                store.setCertificateEntry("ca", CertificateFactory.getInstance("X.509")
+                                        .generateCertificate(file));
+                            }
+                            TrustManagerFactory trust = TrustManagerFactory.getInstance(
+                                    TrustManagerFactory.getDefaultAlgorithm());
+                            trust.init(store);
+                            SSLContext context = SSLContext.getInstance("TLS");
+                            context.init(null, trust.getTrustManagers(), null);
+                            HttpClient client = HttpClient.newBuilder().sslContext(context).build();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://192.168.1.20/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpBoardTrust", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class JdkHttpBoardTrust {
+                        public static void main(String[] args) throws Exception {
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(HttpClient.newHttpClient().send(request,
+                                    HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult custom = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpTrust");
+            CompilationResult board = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpBoardTrust");
+
+            // Then
+            assertThat(custom.assembly()).contains("juno_http_set_trusted_certificate");
+            assertThat(custom.runtimeShim()).contains("juno_runtime_trusted_ca = nullptr;\n    return 1;");
+            assertThat(board.assembly()).doesNotContain("juno_http_set_trusted_certificate");
+            assertThat(board.runtimeShim()).contains("setCACertBundle(juno_ca_bundle)");
+        }
+
+        @Test
         @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
         void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
             // Given

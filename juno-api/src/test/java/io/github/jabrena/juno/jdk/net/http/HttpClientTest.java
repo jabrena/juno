@@ -118,6 +118,17 @@ class HttpClientTest {
     }
 
     @Test
+    @DisplayName("a client answers the SSLContext it was given, or the board's default")
+    void answersItsSslContext() throws Exception {
+        io.github.jabrena.juno.jdkx.net.ssl.SSLContext context =
+                io.github.jabrena.juno.jdkx.net.ssl.SSLContext.getInstance("TLS");
+
+        assertThat(HttpClient.newBuilder().sslContext(context).build().sslContext()).isSameAs(context);
+        assertThat(HttpClient.newHttpClient().sslContext())
+                .isSameAs(io.github.jabrena.juno.jdkx.net.ssl.SSLContext.getDefault());
+    }
+
+    @Test
     @DisplayName("each handler says whether the body is received as a String sized to it or into the byte buffer")
     void handlersChooseHowTheBodyIsReceived() {
         assertThat(HttpResponse.BodyHandlers.ofString().receivesText()).isTrue();

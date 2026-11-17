@@ -246,6 +246,11 @@ public enum Intrinsic {
     HTTP_SET_TIMEOUT,
     /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */
     HTTP_SET_TRUSTED_CERTIFICATE,
+    /**
+     * {@code NativeHttpRequests.setTrustedCertificate}: the PEM trust anchors of a {@code java.net.http} client's
+     * {@code SSLContext}, held in a String, or {@code null} for the board's own.
+     */
+    HTTP_SET_TRUSTED_CERTIFICATE_TEXT,
     HTTP_GET_PATH_BUFFER,
     /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
     HTTP_URL_GET,

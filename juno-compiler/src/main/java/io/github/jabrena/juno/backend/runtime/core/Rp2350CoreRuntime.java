@@ -256,8 +256,13 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         return """
                 static const char* juno_runtime_trusted_ca = nullptr;
 
+                // A null certificate goes back to the board's own trust.
                 extern "C" int32_t juno_http_set_trusted_certificate(const uint8_t* certificate, int32_t length) {
-                  if (certificate == nullptr || length <= 0) return 0;
+                  if (certificate == nullptr) {
+                    juno_runtime_trusted_ca = nullptr;
+                    return 1;
+                  }
+                  if (length <= 0) return 0;
                   juno_runtime_trusted_ca = reinterpret_cast<const char*>(certificate);
                   return 1;
                 }

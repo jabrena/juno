@@ -3,6 +3,7 @@ package io.github.jabrena.juno.jdk.net.http;
 import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
 import io.github.jabrena.juno.jdk.net.URI;
 import io.github.jabrena.juno.jdk.util.Optional;
+import io.github.jabrena.juno.jdkx.net.ssl.SSLContext;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
@@ -47,9 +48,11 @@ public final class HttpClient implements AutoCloseable {
     /** The redirect policy, or {@code null} for {@link Redirect#NEVER}, so a program without redirects needs no enum. */
     private final @Nullable Redirect redirect;
     private final int connectTimeoutMillis;
+    /** The trust anchors given with {@link Builder#sslContext}, or {@code null} for the board's own. */
+    private final @Nullable SSLContext sslContext;
     private boolean shutDown;
 
-    private HttpClient(@Nullable Redirect redirect, int connectTimeoutMillis) {
+    private HttpClient(@Nullable Redirect redirect, int connectTimeoutMillis, @Nullable SSLContext sslContext) {
         // Decided when the program is linked: a full buffer only for a program that reads headers or follows redirects.
         if (NativeHttpFeatures.responseHeaders()) {
             headers = new byte[RESPONSE_HEADERS_CAPACITY];
@@ -60,16 +63,23 @@ public final class HttpClient implements AutoCloseable {
         }
         this.redirect = redirect;
         this.connectTimeoutMillis = connectTimeoutMillis;
+        this.sslContext = sslContext;
     }
 
     /** A client with the default settings: no redirects, and the default timeout. */
     public static HttpClient newHttpClient() {
-        return new HttpClient(null, 0);
+        return new HttpClient(null, 0, null);
     }
 
     /** A builder for a client. */
     public static Builder newBuilder() {
         return new ClientBuilder();
+    }
+
+    /** The {@code SSLContext} the client checks servers against: its own, or the board's default. */
+    public SSLContext sslContext() {
+        SSLContext context = sslContext;
+        return context == null ? SSLContext.boardDefault() : context;
     }
 
     /** The client's redirect policy. */
@@ -215,6 +225,9 @@ public final class HttpClient implements AutoCloseable {
         if (host == null) {
             throw new IOException("The URI has no host");
         }
+        if (uri.isSecure()) {
+            BoardRequests.installTrust(sslContext);
+        }
         String target = uri.requestTarget();
         // Decided when the program is linked: only a program that calls HttpRequest.Builder.method can send a CONNECT.
         if (NativeHttpFeatures.customMethods() && method.equals("CONNECT")) {
@@ -314,6 +327,14 @@ public final class HttpClient implements AutoCloseable {
          */
         Builder connectTimeout(Duration duration);
 
+        /**
+         * Sets the trust anchors the client checks HTTPS servers against. In a program that sets one, the board's own
+         * roots are no longer linked on the ESP32 boards, so every client there needs an {@code SSLContext} with
+         * trust anchors to reach an HTTPS server; on a board that cannot change its trust at runtime, a request through
+         * this client fails with an {@code IOException}.
+         */
+        Builder sslContext(SSLContext sslContext);
+
         /** Builds the client, with its response and buffers. */
         HttpClient build();
     }
@@ -321,6 +342,7 @@ public final class HttpClient implements AutoCloseable {
     private static final class ClientBuilder implements Builder {
         private @Nullable Redirect redirect;
         private int connectTimeoutMillis;
+        private @Nullable SSLContext sslContext;
 
         @Override
         public Builder version(Version version) {
@@ -344,8 +366,14 @@ public final class HttpClient implements AutoCloseable {
         }
 
         @Override
+        public Builder sslContext(SSLContext context) {
+            sslContext = context;
+            return this;
+        }
+
+        @Override
         public HttpClient build() {
-            return new HttpClient(redirect, connectTimeoutMillis);
+            return new HttpClient(redirect, connectTimeoutMillis, sslContext);
         }
     }
 

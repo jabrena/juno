@@ -1,8 +1,11 @@
 package io.github.jabrena.juno.jdk.net.http;
 
+import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
 import io.github.jabrena.juno.hardware.internal.NativeHttpRequests;
 import io.github.jabrena.juno.hardware.internal.NativeHttpSchemes;
 import io.github.jabrena.juno.jdk.net.URI;
+import io.github.jabrena.juno.jdkx.net.ssl.SSLContext;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 
@@ -17,6 +20,23 @@ final class BoardRequests {
     private static final String NO_HTTP = "This program links no http request: name an http URI in it to send one";
 
     private BoardRequests() {
+    }
+
+    /**
+     * Makes the next HTTPS request trust {@code context}'s certificates, or the board's own when it is {@code null}
+     * or carries none. Decided when the program is linked: a program that never calls
+     * {@code HttpClient.Builder.sslContext} returns at once, and links no code to change the board's trust.
+     *
+     * @throws IOException when the board cannot change its trust at runtime
+     */
+    static void installTrust(@Nullable SSLContext context) throws IOException {
+        if (!NativeHttpFeatures.customTrust()) {
+            return;
+        }
+        String pem = context == null ? null : context.trustedCertificates();
+        if (!NativeHttpRequests.setTrustedCertificate(pem, pem == null ? 0 : pem.length())) {
+            throw new IOException("This board cannot change its trusted certificates at runtime");
+        }
     }
 
     /** Sends the request with the body received into {@code body}, and returns how many bytes it holds. */

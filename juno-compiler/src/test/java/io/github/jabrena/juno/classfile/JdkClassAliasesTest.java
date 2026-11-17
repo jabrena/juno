@@ -34,4 +34,13 @@ class JdkClassAliasesTest {
         assertThat(aliases.apply(hardware)).isSameAs(hardware);
         assertThat(aliases.apply("GET")).isEqualTo("GET");
     }
+
+    @Test
+    @DisplayName("a board-side javax class is read as the javax one, alone or next to a java one")
+    void readsJdkxAsJavax() {
+        assertThat(aliases.apply("io/github/jabrena/juno/jdkx/net/ssl/SSLContext")).isEqualTo("javax/net/ssl/SSLContext");
+        assertThat(aliases.apply("(Lio/github/jabrena/juno/jdkx/net/ssl/SSLContext;)"
+                + "Lio/github/jabrena/juno/jdk/net/http/HttpClient$Builder;"))
+                .isEqualTo("(Ljavax/net/ssl/SSLContext;)Ljava/net/http/HttpClient$Builder;");
+    }
 }

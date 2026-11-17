@@ -959,6 +959,8 @@ public final class IntrinsicLowering {
                 ShimFeature.HTTP_TIMEOUT);
         shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE, "juno_http_set_trusted_certificate", Result.WORD,
                 List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
+        shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE_TEXT, "juno_http_set_trusted_certificate", Result.WORD,
+                List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
     }
 
     private void registerEmail() {

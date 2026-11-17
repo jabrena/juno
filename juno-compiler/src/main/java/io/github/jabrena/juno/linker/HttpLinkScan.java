@@ -30,8 +30,9 @@ import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
  *   <li>Whether it reads a response's headers ({@code HttpResponse.headers()}), asks a client to follow redirects
  *       ({@code HttpClient.Builder.followRedirects(...)}), sets a method of its own
  *       ({@code HttpRequest.Builder.method(...)}), or a timeout ({@code HttpRequest.Builder.timeout(...)},
- *       {@code HttpClient.Builder.connectTimeout(...)}). Only the program's own calls count: the board-side
- *       {@code java.*} classes never decide this for it.</li>
+ *       {@code HttpClient.Builder.connectTimeout(...)}), or gives a client trust anchors of its own
+ *       ({@code HttpClient.Builder.sslContext(...)}). Only the program's own calls count: the board-side
+ *       {@code java.*} and {@code javax.*} classes never decide this for it.</li>
  * </ul>
  */
 final class HttpLinkScan {
@@ -58,7 +59,9 @@ final class HttpLinkScan {
             new MethodRef(REQUEST_BUILDER, "timeout", "(Ljava/time/Duration;)Ljava/net/http/HttpRequest$Builder;"),
             HttpLinkFacts.of(Fact.TIMEOUTS),
             new MethodRef(CLIENT_BUILDER, "connectTimeout", "(Ljava/time/Duration;)Ljava/net/http/HttpClient$Builder;"),
-            HttpLinkFacts.of(Fact.TIMEOUTS));
+            HttpLinkFacts.of(Fact.TIMEOUTS),
+            new MethodRef(CLIENT_BUILDER, "sslContext", "(Ljavax/net/ssl/SSLContext;)Ljava/net/http/HttpClient$Builder;"),
+            HttpLinkFacts.of(Fact.CUSTOM_TRUST));
 
     /**
      * Links the program with {@code pass}, once or twice. The first pass assumes {@link HttpLinkFacts#NONE}, so neither
@@ -92,7 +95,7 @@ final class HttpLinkScan {
     HttpLinkFacts factsOf(List<LinkedMethod> methods) {
         HttpLinkFacts facts = HttpLinkFacts.NONE;
         for (LinkedMethod method : methods) {
-            if (method.owner().name().startsWith(BOARD_JDK_PREFIX)) {
+            if (method.owner().name().startsWith(BOARD_JDK_PREFIX) || method.owner().name().startsWith("javax/")) {
                 continue;
             }
             ConstantPool pool = method.owner().constantPool();

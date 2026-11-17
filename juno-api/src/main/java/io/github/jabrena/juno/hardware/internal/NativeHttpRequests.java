@@ -45,6 +45,14 @@ public final class NativeHttpRequests {
             byte[] headersBuffer, int headersBufferLength,
             int[] statusAndHeadersLength);
 
+    /**
+     * Makes later HTTPS requests trust only the certificates in {@code pem}, a PEM chain {@code length} characters
+     * long, or, when it is {@code null}, the board's own trust again. The board keeps a pointer to {@code pem}, so it
+     * must stay reachable while it is in use. Returns {@code false} when the board cannot take trust anchors at
+     * runtime: only the ESP32 boards and the Raspberry Pi Pico 2 W can.
+     */
+    public static native boolean setTrustedCertificate(@Nullable String pem, int length);
+
     /** The HTTPS counterpart of {@link #requestHttp}. */
     public static native int requestHttps(String host, int port, String method, String target,
             byte[] requestHeadersBuffer, int requestHeadersLength,
