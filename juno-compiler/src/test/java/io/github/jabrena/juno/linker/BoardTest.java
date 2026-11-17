@@ -1077,8 +1077,8 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO Q supports portable Wi-Fi, UDP, HTTPS and secure email")
-    void shouldSupportPortableWifiUdpHttpsAndSecureEmailOnTheUnoQ() throws Exception {
+    @DisplayName("The UNO Q supports portable Wi-Fi, UDP and secure email")
+    void shouldSupportPortableWifiUdpAndSecureEmailOnTheUnoQ() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -1088,7 +1088,6 @@ class BoardTest {
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.io.IOException;
                 import java.net.DatagramSocket;
-                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQBoard.class)
@@ -1100,10 +1099,6 @@ class BoardTest {
                         } catch (IOException e) {
                             return;
                         }
-                        byte[] body = new byte[8];
-                        byte[] headers = new byte[8];
-                        int[] result = new int[2];
-                        NativeHttpClient.get("https://example.com/", body, 8, headers, 8, result);
                         Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
                                 "me@example.com", "me@example.com", "Hello", "Hello");
                         Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");

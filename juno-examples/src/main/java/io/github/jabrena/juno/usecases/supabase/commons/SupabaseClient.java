@@ -1,17 +1,10 @@
 package io.github.jabrena.juno.usecases.supabase.commons;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-
 /**
  * Example bounded client for Supabase's PostgREST data API. One instance is created at startup with caller-owned path,
  * request-header, request-body, and response buffers; fluent operations mutate those buffers and {@link #execute()}
  * returns the same {@link SupabaseResponse} instance every time. The request itself goes through the JDK's
- * {@code java.net.http} client: {@link #execute()} builds it from the buffers, and copies the reply's body, and its
- * {@code Content-Range} header, back into the response buffers.
+ * {@code java.net.http} client, in {@link SupabaseTransport}.
  *
  * <p>{@code projectHost} is the project's DNS host, such as {@code "abcdefgh.supabase.co"}, without an
  * {@code https://} prefix or path. The key belongs in the {@code apikey} header. Firmware is a public client, so use
@@ -40,7 +33,7 @@ public final class SupabaseClient {
     private final byte[] requestBodyBuffer;
     private final int requestBodyCapacity;
     private final SupabaseResponse response;
-    private final HttpClient client = HttpClient.newHttpClient();
+    private final SupabaseTransport transport = new SupabaseTransport();
 
     private int baseHeadersLength;
     private int requestHeadersLength;
@@ -301,77 +294,9 @@ public final class SupabaseClient {
         return requestHeadersLength;
     }
 
-    /** Sends the built request and returns the body bytes copied into the response, or -1 when it failed. */
     private int request(String method, int bodyLength) {
-        HttpRequest.Builder builder = HttpRequest.newBuilder(
-                URI.create("https://" + projectHost + text(path.buffer(), path.length())));
-        addHeaders(builder);
-        if (bodyLength < 0) {
-            builder = method.equals("DELETE") ? builder.DELETE() : builder.GET();
-        } else {
-            HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofByteArray(requestBodyBuffer, 0, bodyLength);
-            builder = method.equals("POST") ? builder.POST(body) : builder.method(method, body);
-        }
-        int[] status = response.statusAndHeadersLength();
-        try {
-            HttpResponse<String> reply = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-            status[0] = reply.statusCode();
-            status[1] = copyContentRange(reply.headers().firstValue("content-range").orElse(null));
-            return copy(reply.body(), response.bodyBuffer(), response.bodyCapacity());
-        } catch (IOException | InterruptedException e) {
-            // The board never interrupts a request; either way there is no response.
-            status[0] = 0;
-            status[1] = 0;
-            return -1;
-        }
-    }
-
-    /** Adds each {@code Name: value} line of the request-header buffer to {@code builder}. */
-    private void addHeaders(HttpRequest.Builder builder) {
-        int line = 0;
-        while (line < requestHeadersLength) {
-            int colon = line;
-            while (colon < requestHeadersLength && requestHeadersBuffer[colon] != ':') {
-                colon = colon + 1;
-            }
-            int end = colon;
-            while (end < requestHeadersLength && requestHeadersBuffer[end] != '\r') {
-                end = end + 1;
-            }
-            if (colon + 2 <= end) {
-                builder.header(text(requestHeadersBuffer, line, colon), text(requestHeadersBuffer, colon + 2, end));
-            }
-            line = end + 2;
-        }
-    }
-
-    /** Writes {@code Content-Range: value} into the response-header buffer, where SupabaseContentRange reads it. */
-    private int copyContentRange(String value) {
-        if (value == null) {
-            return 0;
-        }
-        return copy("Content-Range: " + value + "\r\n", response.headersBuffer(), response.headersCapacity());
-    }
-
-    /** Copies at most {@code capacity} characters of {@code text} into {@code target} and returns how many. */
-    private static int copy(String text, byte[] target, int capacity) {
-        int length = text.length() < capacity ? text.length() : capacity;
-        for (int index = 0; index < length; index++) {
-            target[index] = (byte) text.charAt(index);
-        }
-        return length;
-    }
-
-    private static String text(byte[] buffer, int length) {
-        return text(buffer, 0, length);
-    }
-
-    private static String text(byte[] buffer, int start, int end) {
-        StringBuilder text = new StringBuilder(end - start);
-        for (int index = start; index < end; index++) {
-            text.append((char) buffer[index]);
-        }
-        return text.toString();
+        return transport.send(method, projectHost, path.buffer(), path.length(), requestHeadersBuffer,
+                requestHeadersLength, requestBodyBuffer, bodyLength, response);
     }
 
     private SupabaseClient bodyOperation(int nextOperation, String json) {

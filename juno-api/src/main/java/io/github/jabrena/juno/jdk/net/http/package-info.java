@@ -2,7 +2,7 @@
  * Board-side implementations of {@code java.net.http}: the JDK's HTTP client syntax on the board. The compiler reads
  * every class here under {@code java.net.http}, so a program written against the JDK's {@code HttpClient},
  * {@code HttpRequest}, {@code HttpResponse} and {@code HttpHeaders} runs this code, which sends the request through
- * {@link io.github.jabrena.juno.hardware.internal.NativeHttpClient}.
+ * {@link io.github.jabrena.juno.hardware.internal.NativeHttpRequests}.
  *
  * <p>It runs on the UNO R4 WiFi and larger boards; the compiler rejects it on the UNO WiFi Rev2. It is a subset,
  * shaped by the board's fixed memory:

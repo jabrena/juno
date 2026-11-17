@@ -301,16 +301,9 @@ public final class AvrRuntimeShim {
         if (uses(ShimFeature.STRING_FROM_BYTES)) {
             shim.append(shimLibraries.stringFromBytesHelpers());
         }
-        if (usesAny(ShimFeature.HTTPS, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
+        // No HTTP client here: java.net.http starts at the UNO R4 WiFi, so an 8-bit program never reaches one.
+        if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(core.httpsHelpers());
-        }
-        if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            // A plain-HTTP-only program never names the TLS client, which a core without one cannot provide.
-            String httpsClientType = uses(ShimFeature.HTTPS) ? core.httpsClientType() : "";
-            shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), httpsClientType,
-                    ioRuntime.usesWorker(core, features)));
-        } else if (uses(ShimFeature.HTTP_TIMEOUT)) {
-            shim.append(networkShimLibraries.httpTimeoutStub());
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),

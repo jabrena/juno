@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.jdk.net.http;
 
 import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
+import io.github.jabrena.juno.hardware.internal.NativeHttpRequests;
 import io.github.jabrena.juno.jdk.net.URI;
 import io.github.jabrena.juno.jdk.util.Optional;
 import io.github.jabrena.juno.jdkx.net.ssl.SSLContext;
@@ -11,7 +12,7 @@ import java.time.Duration;
 
 /**
  * The board-side {@code java.net.http.HttpClient}: sends a {@link HttpRequest} through the board's own
- * {@link io.github.jabrena.juno.hardware.internal.NativeHttpClient}. See the package description for the subset.
+ * {@link io.github.jabrena.juno.hardware.internal.NativeHttpRequests}. See the package description for the subset.
  *
  * <p>What a program never uses is not linked: the request code of a scheme none of its URIs name, the redirect code
  * when it never calls {@code followRedirects}, and a full response-header buffer when it never reads
@@ -218,7 +219,7 @@ public final class HttpClient implements AutoCloseable {
             throws IOException {
         // Decided when the program is linked: a program that sets no timeout keeps the board's own.
         if (NativeHttpFeatures.timeouts()) {
-            io.github.jabrena.juno.hardware.internal.NativeHttpClient.setTimeout(timeoutMillis(request));
+            NativeHttpRequests.setTimeout(timeoutMillis(request));
         }
         // Never null: HttpRequest.Builder.uri and redirectTarget only accept a URI with a host.
         String host = uri.getHost();

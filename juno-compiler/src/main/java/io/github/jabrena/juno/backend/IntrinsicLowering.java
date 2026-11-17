@@ -905,42 +905,10 @@ public final class IntrinsicLowering {
     }
 
     /**
-     * {@code HttpClient}'s plain and TLS requests, which {@code HttpUrlCall} derives from the call's URL: host literal,
-     * port, path literal (plus a body literal for requests that carry one), then response/headers buffers and their
-     * lengths.
+     * The requests behind the board-side {@code java.net.http} client ({@code NativeHttpRequests}): host, port, method
+     * and request target as Strings, then the request headers and body, and the response buffers, or a String body.
      */
     private void registerHttpClients() {
-        List<Operand> bodiless = List.of(literal(0), arg(0), literal(1), arg(1), arg(2), arg(3), arg(4), arg(5));
-        List<Operand> withBody = List.of(literal(0), arg(0), literal(1), literal(2),
-                arg(1), arg(2), arg(3), arg(4), arg(5));
-        shim(Intrinsic.HTTP_GET, "juno_http_get", Result.WORD, bodiless, ShimFeature.HTTP);
-        shim(Intrinsic.HTTP_DELETE, "juno_http_delete", Result.WORD, bodiless, ShimFeature.HTTP);
-        shim(Intrinsic.HTTP_POST, "juno_http_post", Result.WORD, withBody, ShimFeature.HTTP);
-        List<Operand> bufferedPost = List.of(literal(0), arg(0), literal(1),
-                arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8), arg(9));
-        shim(Intrinsic.HTTP_POST_BUFFER, "juno_http_post_buffer", Result.WORD, bufferedPost, ShimFeature.HTTP);
-        shim(Intrinsic.HTTP_PATCH, "juno_http_patch", Result.WORD, withBody, ShimFeature.HTTP);
-        shim(Intrinsic.HTTP_QUERY, "juno_http_query", Result.WORD, withBody, ShimFeature.HTTP);
-        shim(Intrinsic.HTTPS_GET, "juno_https_get", Result.WORD, bodiless, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTPS_DELETE, "juno_https_delete", Result.WORD, bodiless, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTP_GET_PATH_BUFFER, "juno_http_get_path_buffer", Result.WORD,
-                List.of(literal(0), arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7)),
-                ShimFeature.HTTP, ShimFeature.HTTP_PATH_BUFFER);
-        shim(Intrinsic.HTTPS_GET_PATH_BUFFER, "juno_https_get_path_buffer", Result.WORD,
-                List.of(literal(0), arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7)),
-                ShimFeature.HTTPS, ShimFeature.HTTPS_PATH_BUFFER);
-        shim(Intrinsic.HTTPS_POST, "juno_https_post", Result.WORD, withBody, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTPS_POST_BUFFER, "juno_https_post_buffer", Result.WORD, bufferedPost, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTPS_PATCH, "juno_https_patch", Result.WORD, withBody, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTPS_QUERY, "juno_https_query", Result.WORD, withBody, ShimFeature.HTTPS);
-        shim(Intrinsic.HTTPS_REQUEST_BUFFER, "juno_https_request_buffer", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
-                        arg(9), arg(10), arg(11), arg(12), arg(13)),
-                ShimFeature.HTTPS, ShimFeature.HTTPS_REQUEST_BUFFER);
-        shim(Intrinsic.HTTP_REQUEST_BUFFER, "juno_http_request_buffer", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
-                        arg(9), arg(10), arg(11), arg(12), arg(13)),
-                ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_BUFFER);
         shim(Intrinsic.HTTPS_REQUEST_TEXT, "juno_https_request_text", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8),
                         arg(9), arg(10), arg(11), arg(12)),
@@ -957,8 +925,6 @@ public final class IntrinsicLowering {
                 ShimFeature.HTTP, ShimFeature.HTTP_REQUEST_TEXT_BODY);
         shim(Intrinsic.HTTP_SET_TIMEOUT, "juno_http_set_timeout", Result.NONE, List.of(arg(0)),
                 ShimFeature.HTTP_TIMEOUT);
-        shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE, "juno_http_set_trusted_certificate", Result.WORD,
-                List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
         shim(Intrinsic.HTTP_SET_TRUSTED_CERTIFICATE_TEXT, "juno_http_set_trusted_certificate", Result.WORD,
                 List.of(arg(0), arg(1)), ShimFeature.HTTPS_TRUSTED_CERTIFICATE);
     }

@@ -269,6 +269,13 @@ class XtensaAsmBackendTest {
     @TempDir
     Path temporaryDirectory;
 
+    private static final String JDK_HTTP_IMPORTS = """
+            import java.net.URI;
+            import java.net.http.HttpClient;
+            import java.net.http.HttpRequest;
+            import java.net.http.HttpResponse;
+            """;
+
     private CompilationResult compile(String className, String body, String imports) throws Exception {
         return compileSource(className, """
                 package demo;
@@ -516,43 +523,43 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Lowers a plain HTTP GET through the shared HTTP codec over the WiFi.h client")
+    @DisplayName("Lowers a java.net.http plain GET through the shared HTTP codec over the WiFi.h client")
     void shouldLowerPlainHttpOnTheWifiClient() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHttp", """
-                        byte[] body = new byte[64];
-                        byte[] headers = new byte[32];
-                        int[] statusAndHeadersLength = new int[2];
-                        NativeHttpClient.get("http://example.com/", body, body.length, headers, headers.length,
-                                statusAndHeadersLength);
-                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;");
+                        try {
+                            HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create("http://example.com/")).build(),
+                                    HttpResponse.BodyHandlers.ofByteArray());
+                        } catch (Exception e) {
+                            return;
+                        }
+                """, JDK_HTTP_IMPORTS);
 
         // Then
-        assertThat(result.runtimeShim()).contains("juno_http_get(");
+        assertThat(result.runtimeShim()).contains("juno_http_request_text(");
         assertThat(result.runtimeShim()).contains("#include <WiFi.h>");
         assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
     }
 
     @Test
-    @DisplayName("Lowers an HTTPS request through a WiFiClientSecure that checks Mozilla's root certificates")
+    @DisplayName("Lowers a java.net.http HTTPS request through a WiFiClientSecure that checks Mozilla's root certificates")
     void shouldLowerHttpsOnTheWifiClientSecure() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHttps", """
-                        byte[] path = new byte[16];
-                        byte[] noHeaders = new byte[1];
-                        byte[] body = new byte[64];
-                        byte[] headers = new byte[32];
-                        int[] statusAndHeadersLength = new int[2];
-                        NativeHttpClient.requestHttps("example.com", 443, "GET", path, 1, noHeaders, 0, null, -1, body,
-                                body.length, headers, headers.length, statusAndHeadersLength);
-                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;");
+                        try {
+                            HttpClient.newHttpClient().send(HttpRequest.newBuilder(URI.create("https://example.com/")).build(),
+                                    HttpResponse.BodyHandlers.ofString());
+                        } catch (Exception e) {
+                            return;
+                        }
+                """, JDK_HTTP_IMPORTS);
 
         // Then
         assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",
                 "struct JunoEspTlsClient : WiFiClientSecure",
                 "setCACertBundle(juno_ca_bundle);",
                 "static const char* juno_runtime_trusted_ca = nullptr;",
-                "static const uint8_t juno_ca_bundle[] = {", "juno_https_");
+                "static const uint8_t juno_ca_bundle[] = {", "juno_https_request_text_body(");
         assertThat(result.runtimeShim()).doesNotContain("setInsecure()");
         assertThat(result.runtimeShim()).doesNotContain("WiFiSSLClient");
     }

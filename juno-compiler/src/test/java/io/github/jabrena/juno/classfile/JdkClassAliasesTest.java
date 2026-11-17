@@ -29,7 +29,7 @@ class JdkClassAliasesTest {
     @Test
     @DisplayName("any other string is returned as it was read")
     void leavesOtherStringsAlone() {
-        String hardware = "io/github/jabrena/juno/hardware/internal/NativeHttpClient";
+        String hardware = "io/github/jabrena/juno/hardware/net/http/Json";
 
         assertThat(aliases.apply(hardware)).isSameAs(hardware);
         assertThat(aliases.apply("GET")).isEqualTo("GET");
