@@ -28,7 +28,7 @@ import io.github.jabrena.juno.util.Delay;
  * <p><b>{@code @Watchdog}:</b> rather than hanging forever, this class also carries
  * {@code @Watchdog(timeoutMillis = 3000)}, so once {@code juno_panic()} stops kicking it (see
  * {@link Watchdog}), the target's hardware watchdog resets the board after its nearest supported
- * period (about 3 seconds on UNO R4 WiFi, 4 seconds on UNO R3, or 4.1 seconds on UNO WiFi Rev2) —
+ * period (about 3 seconds on UNO R4 WiFi or 4 seconds on UNO R3) —
  * printing
  * a {@code [juno-watchdog]} diagnostic first — and the whole cycle (ticks 0-999 reclaiming fine,
  * then exhaustion, then reboot) starts over from {@code tick 0} indefinitely.

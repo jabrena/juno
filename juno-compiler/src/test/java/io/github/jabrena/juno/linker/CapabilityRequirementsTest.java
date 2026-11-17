@@ -22,8 +22,6 @@ class CapabilityRequirementsTest {
             "getBluetoothLe, BLUETOOTH_LE, Lio/github/jabrena/juno/hardware/net/BluetoothLe;",
             "getMouse, USB_HID, Lio/github/jabrena/juno/hardware/hid/Mouse;",
             "getLedMatrix, LED_MATRIX, Lio/github/jabrena/juno/hardware/led/LedMatrix;",
-            "getAccelerometer, ONBOARD_IMU, Lio/github/jabrena/juno/robotics/Accelerometer;",
-            "getGyroscope, ONBOARD_IMU, Lio/github/jabrena/juno/robotics/Gyroscope;",
             "getCamera, CAMERA, Lio/github/jabrena/juno/hardware/device/camera/Camera;",
             "getSdCard, ONBOARD_SD_CARD, Lio/github/jabrena/juno/hardware/device/sd/SdCard;",
             "getDisplay, M5_DISPLAY, Lio/github/jabrena/juno/hardware/display/Display;",

@@ -24,7 +24,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
  * The thread runtime behind preemptive virtual threads and {@code StructuredTaskScope} subtasks, which share one scheduler: the closed-world
  * {@code Runnable.run()} entry function, the runtime in the shim, each board's preemption tick, what a program
  * without subtasks does not pay for, and the rejection of {@code java.lang.Thread} itself. Behavior of the compiled
- * code is covered under QEMU and simavr ({@code src/test/qemu/programs}, notably {@code Preemption} and
+ * code is covered under QEMU ({@code src/test/qemu/programs}, notably {@code Preemption} and
  * {@code PreemptionStress}); this checks the generated text.
  */
 @DisplayName("Thread runtime and structured subtasks")
@@ -203,24 +203,6 @@ class ThreadsTest {
                 .doesNotContain("SysTick_Handler", "juno_thread_safepoint");
     }
 
-    @Test
-    @DisplayName("AVR context switches preserve the native heap boundary")
-    void shouldPreserveTheNativeHeapBoundaryOnAvrContextSwitches() throws Exception {
-        // Given
-        String shim = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
-
-        // When & Then
-        assertThat(shim).contains("extern char* __malloc_heap_end;",
-                "juno_main_malloc_heap_end = __malloc_heap_end;",
-                "__malloc_heap_end = juno_main_malloc_heap_end;",
-                "static void juno_port_switch(uint32_t from, uint32_t to) {\n"
-                        + "  juno_port_check_stack(from);\n"
-                        + "  juno_port_set_limit(to);\n"
-                        + "  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);",
-                "static void juno_port_exit(uint32_t from, uint32_t to) {\n"
-                        + "  juno_port_set_limit(to);\n"
-                        + "  juno_port_malloc_switch(from, to, SP - JUNO_SWITCH_FRAME_BYTES - JUNO_RETURN_ADDRESS_BYTES);");
-    }
 
     static Stream<Arguments> preemptionSections() {
         String tick = "extern \"C\" const uint8_t juno_java_code_start[];";
@@ -228,7 +210,6 @@ class ThreadsTest {
         return Stream.of(
                 arguments("ArduinoUnoR4WiFiBoard", tick),
                 arguments("ArduinoUnoQBoard", tick),
-                arguments("ArduinoUnoR3WiFiRev2Board", safepoints),
                 arguments("ArduinoNanoEsp32Board", safepoints));
     }
 
@@ -272,7 +253,7 @@ class ThreadsTest {
     }
 
     @ParameterizedTest(name = "every method entry is a safepoint on {0}")
-    @ValueSource(strings = {"ArduinoUnoR3WiFiRev2Board", "ArduinoNanoEsp32Board"})
+    @ValueSource(strings = {"ArduinoNanoEsp32Board"})
     @DisplayName("Every method entry is a safepoint, a subtask's included, on the safepoint-preempted boards")
     void shouldTakeTheMethodEntrySafepointUnconditionally(String board) throws Exception {
         // Given
@@ -285,17 +266,6 @@ class ThreadsTest {
                 }""");
     }
 
-    @Test
-    @DisplayName("Every thread switches at a backedge once its slice is over on AVR")
-    void shouldSwitchEveryThreadAtABackedgeOnceItsSliceIsOverOnAvr() throws Exception {
-        // Given
-        String avr = compile("ArduinoUnoR3WiFiRev2Board", START_AND_JOIN).runtimeShim();
-        String backedge = avr.substring(avr.indexOf("extern \"C\" void juno_thread_backedge() {"));
-
-        // When & Then
-        assertThat(backedge.substring(0, backedge.indexOf("\n}\n")))
-                .contains("juno_thread_slice_over();");
-    }
 
     @Test
     @DisplayName("The tick starts with the first thread")

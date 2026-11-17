@@ -26,8 +26,6 @@ final class CapabilityRequirements {
             Map.entry("Lio/github/jabrena/juno/hardware/led/LedMatrix;", Capability.LED_MATRIX),
             Map.entry("Lio/github/jabrena/juno/hardware/net/Wifi;", Capability.ONBOARD_WIFI),
             Map.entry("Lio/github/jabrena/juno/hardware/net/BluetoothLe;", Capability.BLUETOOTH_LE),
-            Map.entry("Lio/github/jabrena/juno/robotics/Accelerometer;", Capability.ONBOARD_IMU),
-            Map.entry("Lio/github/jabrena/juno/robotics/Gyroscope;", Capability.ONBOARD_IMU),
             Map.entry("Lio/github/jabrena/juno/hardware/device/camera/Camera;", Capability.CAMERA),
             Map.entry("Lio/github/jabrena/juno/hardware/device/sd/SdCard;", Capability.ONBOARD_SD_CARD),
             Map.entry("Lio/github/jabrena/juno/hardware/display/Display;", Capability.M5_DISPLAY),

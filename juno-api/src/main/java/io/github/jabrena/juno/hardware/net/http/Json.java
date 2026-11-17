@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
  * strictly (RFC 8259, nesting up to 32 levels), but the first of duplicate member names wins and escaped member names
  * are not decoded while matching.
  *
- * <p>JSON needs the UNO R4 WiFi or a larger board: the compiler rejects it on the UNO R3 and the UNO WiFi Rev2. Each
+ * <p>JSON needs the UNO R4 WiFi or a larger board: the compiler rejects it on the UNO R3. Each
  * {@link JsonValue#get} step allocates one small value (20 bytes) that the collector reclaims.
  */
 public final class Json {

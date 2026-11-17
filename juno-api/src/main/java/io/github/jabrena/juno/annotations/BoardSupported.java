@@ -5,7 +5,6 @@ public sealed interface BoardSupported permits
         ArduinoUnoR3Board,
         ArduinoUnoR4WiFiBoard,
         ArduinoUnoQBoard,
-        ArduinoUnoR3WiFiRev2Board,
         ArduinoNanoEsp32Board,
         AiThinkerEsp32CamBoard,
         M5StackCardputerBoard,

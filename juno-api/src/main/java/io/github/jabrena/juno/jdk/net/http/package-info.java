@@ -4,7 +4,7 @@
  * {@code HttpRequest}, {@code HttpResponse} and {@code HttpHeaders} runs this code, which sends the request through
  * {@link io.github.jabrena.juno.hardware.internal.NativeHttpRequests}.
  *
- * <p>It runs on the UNO R4 WiFi and larger boards; the compiler rejects it on the UNO WiFi Rev2. It is a subset,
+ * <p>It runs on the UNO R4 WiFi and larger boards; the compiler rejects it on the UNO R3. It is a subset,
  * shaped by the board's fixed memory:
  *
  * <ul>

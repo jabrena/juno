@@ -10,7 +10,7 @@ layout: page
 | [Storage](#storage) | [SD Card](../sdcard), [SecretStore](../secure-element) | Files and credentials kept outside the program image. |
 | [Internet](#internet) | [Wifi](../wifi), [Time](../time), [HTTP client](../httpclient), [HTTP server](../httpserver), [Email](../email) | Network connectivity, services and Internet protocols. |
 | [Utils](#utils) | [Delay](../delay), [MVC](../mvc) | Timing and application structure. |
-| [Hardware](#hardware) | [Gpio](../gpio), [IMU](../arduino-uno-r3-wifi#read-the-onboard-imu) | Direct access to pins and board-mounted devices. |
+| [Hardware](#hardware) | [Gpio](../gpio) | Direct access to pins and board-mounted devices. |
 
 ## Telemetry
 
@@ -48,4 +48,3 @@ layout: page
 | API | What it provides | Complete example |
 |---|---|---|
 | [Gpio](../gpio) | Driving and reading the board's pins, with `DigitalOutput` and the Blink example. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
-| [IMU](../arduino-uno-r3-wifi#read-the-onboard-imu) | Reading the UNO WiFi Rev2's onboard accelerometer and gyroscope with `MCU.getGyroscope()` and `MCU.getAccelerometer()`, over the `Spi` bus from `MCU.getSpi()`; see the UNO WiFi Rev2 page. | [`OnboardImuSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/OnboardImuSerial.java) |

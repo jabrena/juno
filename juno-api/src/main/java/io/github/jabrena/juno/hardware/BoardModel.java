@@ -30,8 +30,6 @@ public enum BoardModel {
     UNO_R4_WIFI,
     /** Arduino UNO Q: the most memory, and the 13-column LED matrix. */
     UNO_Q,
-    /** Arduino UNO WiFi Rev2: megaAVR core, with an onboard IMU. */
-    UNO_R3_WIFI_REV2,
     /** Arduino Nano ESP32: an ESP32-S3 in a NORA-W106 module, with no secure element. */
     NANO_ESP32,
     /** AI Thinker ESP32-CAM: an ESP32 with PSRAM and the OV2640 camera. */

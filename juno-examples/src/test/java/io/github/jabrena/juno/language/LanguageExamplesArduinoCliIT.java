@@ -108,10 +108,6 @@ class LanguageExamplesArduinoCliIT {
         ARDUINO_CLI.copyFileToContainer(MountableFile.forHostPath(sketch.directory()), target);
 
         List<String> command = new ArrayList<>(List.of("arduino-cli", "compile", "--fqbn", sketch.fqbn()));
-        if (board == Board.UNO_R3_WIFI_REV2) {
-            command.add("--build-property");
-            command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
-        }
         command.add(target);
         ExecResult result = compile(sketch.fqbn(), command.toArray(String[]::new));
 

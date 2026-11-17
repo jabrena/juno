@@ -71,22 +71,22 @@ class RuntimeConfigTest {
     }
 
     @Test
-    @DisplayName("An explicit 8 KiB arena is rejected on the UNO WiFi Rev2 instead of silently replaced")
-    void shouldRejectAnExplicitEightKilobyteArenaOnTheRev2() {
+    @DisplayName("An explicit 8 KiB arena is rejected on the UNO R3 instead of silently replaced")
+    void shouldRejectAnExplicitEightKilobyteArenaOnTheUnoR3() {
         // When & Then
         assertThatThrownBy(() -> RuntimeConfig.of(Optional.of("8k"), Optional.empty())
-                .resolveFor(Board.UNO_R3_WIFI_REV2))
+                .resolveFor(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO WiFi Rev2")
+                .hasMessageContaining("UNO R3")
                 .hasMessageContaining("8192-byte arena")
-                .hasMessageContaining("at most 3072");
+                .hasMessageContaining("juno.Xmx can be at most 1024 bytes");
     }
 
     @Test
-    @DisplayName("The UNO WiFi Rev2 takes its own 1 KiB default arena")
-    void shouldApplyTheRev2DefaultArena() {
+    @DisplayName("The UNO R3 takes the AVR default arena")
+    void shouldApplyTheAvrDefaultArena() {
         // When
-        ResolvedRuntimeConfig resolved = RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R3_WIFI_REV2);
+        ResolvedRuntimeConfig resolved = RuntimeConfig.DEFAULT.resolveFor(Board.UNO_R3);
 
         // Then
         assertThat(resolved.arenaBytes()).isEqualTo(RuntimeLimits.AVR_ARENA_CAPACITY_BYTES);
@@ -202,12 +202,12 @@ class RuntimeConfigTest {
     }
 
     @Test
-    @DisplayName("Rejects a task stack above the UNO WiFi Rev2's maximum")
-    void shouldRejectATaskStackAboveTheRev2Maximum() {
+    @DisplayName("Rejects a task stack above the UNO R3's maximum")
+    void shouldRejectATaskStackAboveTheUnoR3Maximum() {
         // When & Then
-        assertThatThrownBy(() -> new RuntimeConfig(1024, OptionalInt.of(1032)).resolveFor(Board.UNO_R3_WIFI_REV2))
+        assertThatThrownBy(() -> new RuntimeConfig(1024, OptionalInt.of(1032)).resolveFor(Board.UNO_R3))
                 .isInstanceOf(CompileException.class)
-                .hasMessageContaining("juno.Xss can be at most 1024");
+                .hasMessageContaining("juno.Xss can be at most 512");
     }
 
     @Test

@@ -5,7 +5,7 @@ public final class RuntimeLimits {
     public static final int ARENA_CAPACITY_BYTES = 8192;
 
     /**
-     * The arena of an AVR board (the UNO WiFi Rev2's ATmega4809 has 6 KB of RAM in all) when the build sets none;
+     * The arena of an AVR board when the build sets none;
      * {@link #AVR_MAX_ARENA_BYTES} is the most it accepts, leaving the rest for the stack, the core and its libraries.
      */
     public static final int AVR_ARENA_CAPACITY_BYTES = 1024;
@@ -38,7 +38,7 @@ public final class RuntimeLimits {
     public static final int MAX_DUAL_CARRIER_THREADS = 16;
 
     /**
-     * Stack bytes of each extra task on an AVR board (the UNO WiFi Rev2's 6 KB of RAM), and the most
+     * Stack bytes of each extra task on an AVR board, and the most
      * {@code juno.Xss} may ask for there.
      */
     public static final int AVR_THREAD_STACK_BYTES = 512;

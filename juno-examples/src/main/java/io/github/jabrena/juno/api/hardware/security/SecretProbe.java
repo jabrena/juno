@@ -37,8 +37,8 @@ import io.github.jabrena.juno.util.Delay;
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProbe \
- *     -Djuno.board=arduino-uno-r3-wifi-rev2
- * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r3-wifi-rev2 -Djuno.baudRate=115200
+ *     -Djuno.board=arduino-uno-r4-wifi
+ * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi -Djuno.baudRate=115200
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class,

@@ -16,8 +16,6 @@ public enum ArduinoCore {
      * {@code delayMicroseconds()}, so generated code must reach those through shim functions.
      */
     ZEPHYR("Zephyr", Architecture.THUMB2),
-    /** {@code arduino:megaavr}: the UNO WiFi Rev2's ATmega4809 core, with no RTOS and 6 KB of RAM. */
-    MEGAAVR("megaAVR", Architecture.AVR),
     /**
      * {@code arduino:esp32}: the Nano ESP32's FreeRTOS-based core, whose {@code pinMode}/{@code digitalWrite} are
      * macros mapping the board's printed pin numbers to ESP32-S3 GPIO numbers.

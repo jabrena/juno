@@ -20,7 +20,6 @@ import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
 import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
-import io.github.jabrena.juno.hardware.internal.NativeOnboardImu;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeSecretStore;
 import io.github.jabrena.juno.hardware.internal.NativeSpi;
@@ -33,8 +32,6 @@ import io.github.jabrena.juno.hardware.power.Battery;
 import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.spi.Spi;
 import io.github.jabrena.juno.hardware.time.Clock;
-import io.github.jabrena.juno.robotics.Accelerometer;
-import io.github.jabrena.juno.robotics.Gyroscope;
 
 /**
  * The selected board's onboard services. {@code @Board} or the build's board option chooses the target; reachable
@@ -96,16 +93,6 @@ public final class MCU {
         return NativeBoardMemory.boardMemory();
     }
 
-    /** The selected board's onboard accelerometer. */
-    public static Accelerometer getAccelerometer() {
-        return NativeOnboardImu.accelerometer();
-    }
-
-    /** The selected board's onboard gyroscope. */
-    public static Gyroscope getGyroscope() {
-        return NativeOnboardImu.gyroscope();
-    }
-
     /** The selected board's onboard camera. */
     public static Camera getCamera() {
         return NativeCamera.camera();
@@ -139,9 +126,9 @@ public final class MCU {
     /**
      * The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
      * SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), the
-     * Pico 2 W's slots behind Juno's TrustZone secure firmware, or the AVR UNOs' on-chip EEPROM (UNO R3, UNO WiFi
-     * Rev2), the weakest of them. Secrets are read by name; no slot numbers are chosen. Programs for a board without a
-     * store are rejected when they are built.
+     * Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chip EEPROM, the weakest of them.
+     * Secrets are read by name; no slot numbers are chosen. Programs for a board without a store are rejected when they
+     * are built.
      */
     public static SecretStore getSecretStore() {
         return NativeSecretStore.secretStore();

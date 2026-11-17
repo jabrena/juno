@@ -2,7 +2,6 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import java.math.BigDecimal;
@@ -10,10 +9,10 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 
 /**
- * java.math as a small board uses it: exact counters past long, and money-style decimals. Sized to run in the UNO WiFi
- * Rev2's default 1 KB arena, so every board must give the JVM's answers within it.
+ * java.math as a small board uses it: exact counters past long, and money-style decimals. Sized to run in the UNO
+ * R3's default 1 KB arena, so every board must give the JVM's answers within it.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class BigTypical {
     static BigInteger factorial(int n) {
         BigInteger result = BigInteger.ONE;

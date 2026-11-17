@@ -72,10 +72,6 @@ class CoreDriftIT {
         // When: compile it with the core the container has installed
         List<String> command = new ArrayList<>(List.of("env", "LC_ALL=C", "LANG=C", "arduino-cli",
                 "compile", "--fqbn", fqbn));
-        if (baseline.board() == Board.UNO_R3_WIFI_REV2) {
-            command.add("--build-property");
-            command.add("compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3");
-        }
         command.add(target);
         ExecResult compile = ARDUINO_CLI.execInContainer(command.toArray(String[]::new));
         String output = compile.getStdout() + compile.getStderr();

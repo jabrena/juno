@@ -16,8 +16,7 @@ import java.util.Set;
  * Arduino libraries tolerate halfway through a transaction. So each waiting entry point holds a device guard
  * ({@code JunoIoGuard}) for its whole call: a second thread waits its turn, like a {@code synchronized} method, while
  * threads that do not touch the device keep running. HTTP requests instead use core-bounded, independently owned
- * {@code JunoHttpGuard} leases: two on R4/Q and one on WiFi Rev2, whose blocking TLS handshake can starve another
- * response. Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
+ * {@code JunoHttpGuard} leases: two on R4/Q, whose blocking TLS handshake can starve another response. Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
  * owns one runs the guard's abort hook (closing a half-used client) and releases it, so the device does not stay
  * locked by a thread that will never run again.
  *

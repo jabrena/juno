@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class=" active" href="/juno/hardware-apis" >APIs</a>
@@ -339,7 +338,7 @@ image or in build output. Three implementations sit behind that one interface:</
 </tr>
 <tr>
 <td><code>AvrEeprom</code></td>
-<td>UNO WiFi Rev2, UNO R3</td>
+<td>UNO R3</td>
 <td>Weakest: plain text in the microcontroller's EEPROM. See the warning below.</td>
 </tr>
 </tbody>
@@ -445,17 +444,9 @@ anything, which is the first thing to run on a board whose store has never answe
 partition.</li>
 <li><strong>UNO R4 WiFi:</strong> nothing to wire — the store is the onboard ESP32-S3's NVS.</li>
 <li><strong>Raspberry Pi Pico 2 W:</strong> nothing to wire or flash separately — <code>juno:flash</code> installs the secure firmware.</li>
-<li><strong>UNO WiFi Rev2, UNO R3:</strong> nothing to wire — the store is the microcontroller's own EEPROM.</li>
+<li><strong>UNO R3:</strong> nothing to wire — the store is the microcontroller's own EEPROM.</li>
 </ul>
-<p><strong>The AVR UNOs' store is plain EEPROM.</strong> The UNO WiFi Rev2 (ATmega4809) and the UNO R3 (ATmega328P) carry no crypto
-chip, so <code>AvrEeprom</code> keeps each name and value in plain text in the microcontroller's own EEPROM, split into 64-byte
-slots: 4 names in the Rev2's 256 bytes, 16 in the R3's 1 KB. The secret stays out of the firmware image, the build
-output and the SD card, and an upload keeps it (the R3 is flashed through its bootloader, which never erases the
-EEPROM; the Rev2's core sets the EESAVE fuse, which keeps it through the chip erase). But any program flashed to the
-board can read it, and so can anyone with a UPDI or ISP programmer. Clearing a name erases its whole slot. The UNO WiFi
-Rev2 also carries an ATECC608 chip, which Juno does not use: it refuses every read and write until its zones are
-locked, which is permanent. On the UNO R3, <code>SecretProvisioner</code> does not fit in the 2 KB of RAM, so <code>juno:secret</code> cannot
-provision it yet.</p>
+<p><strong>The UNO R3's store is plain EEPROM.</strong> The UNO R3 (ATmega328P) carries no crypto chip, so <code>AvrEeprom</code> keeps each name and value in plain text in the microcontroller's own EEPROM, split into 64-byte slots: 16 names in its 1 KB. The secret stays out of the firmware image, the build output and the SD card, and an upload keeps it, since the R3 is flashed through its bootloader, which never erases the EEPROM. But any program flashed to the board can read it, and so can anyone with an ISP programmer. Clearing a name erases its whole slot. On the UNO R3, <code>SecretProvisioner</code> does not fit in the 2 KB of RAM, so <code>juno:secret</code> cannot provision it yet.</p>
 <h2 id="boards-without-a-secret-store">Boards without a secret store</h2>
 <p>The UNO Q has no secret store. The connected examples read their credentials with
 <code>MCU.getSecretStore().getString(name)</code>, so the ones that need a credential do not target the Q. The UNO Q examples

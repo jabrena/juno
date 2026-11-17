@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -389,7 +388,7 @@ so it advertises, and call <code>connect</code>. It scans for the first hub it f
 forever). The clock is used for BLE and sensor waits. The hub drops the link when it switches off or goes out of range,
 so check <code>isConnected()</code> in long-running loops and connect again. A Technic Hub's built-in sensors (see
 <a href="#read-the-sensors">Read the sensors</a>) are subscribed on every connect. Only the UNO R4 WiFi, UNO Q, Nano ESP32,
-AI Thinker ESP32-CAM and M5Stack Cardputer have <code>getBluetoothLe()</code>; on the UNO R3 or UNO WiFi Rev2 the compiler
+AI Thinker ESP32-CAM and M5Stack Cardputer have <code>getBluetoothLe()</code>; on the UNO R3 the compiler
 rejects the call:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;

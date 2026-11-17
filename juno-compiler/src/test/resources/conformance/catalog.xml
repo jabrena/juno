@@ -36,7 +36,6 @@
     -->
     <backends>
         <backend id="thumb2" title="Thumb-2 under QEMU (Cortex-M4)"/>
-        <backend id="avr" title="AVR under simavr"/>
         <backend id="xtensa" title="Xtensa under Espressif QEMU (Nano ESP32)"/>
     </backends>
     <!--
@@ -221,7 +220,6 @@
             <jls section="3.10.8" skipped="true" reason="Out of scope: the null literal is a reference-type value"/>
             <program ref="primitive-literals"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.integral-types" title="Integral types and operations">
@@ -231,7 +229,6 @@
             <program ref="integral-conversions"/>
             <program ref="long-arithmetic"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.floating-point-types" title="Floating-point types and operations">
@@ -240,14 +237,12 @@
             <program ref="floating-point-arithmetic"/>
             <program ref="floating-point-conversions"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.boolean" title="Boolean type and values">
             <jls section="4.2.5"/>
             <program ref="boolean-expressions"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.conversions" title="Primitive conversions and numeric promotion">
@@ -272,7 +267,6 @@
             <program ref="integral-conversions"/>
             <program ref="floating-point-conversions"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.integral-expressions" title="Integral expressions and operators">
@@ -300,7 +294,6 @@
             <program ref="integral-arithmetic"/>
             <program ref="long-arithmetic"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.floating-point-expressions" title="Floating-point expressions and operators">
@@ -315,7 +308,6 @@
             <jls section="15.21"/>
             <program ref="floating-point-arithmetic"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="primitives.boolean-and-conditional" title="Boolean and conditional expressions">
@@ -328,7 +320,6 @@
             <jls section="5.7" skipped="true" reason="Gap: testing contexts are not catalogued"/>
             <program ref="boolean-expressions"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.blocks-and-labels" title="Blocks, local declarations, and labeled statements">
@@ -344,7 +335,6 @@
             <program ref="branches-and-blocks"/>
             <program ref="jumps-and-labels"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.conditional" title="Conditional statements and assertions">
@@ -353,7 +343,6 @@
             <jls section="14.10" skipped="true" reason="Gap: javac compiles assert to a class literal, which Juno rejects in user code"/>
             <program ref="branches-and-blocks"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.loops" title="Loops">
@@ -363,7 +352,6 @@
             <jls section="14.14.2" skipped="true" reason="Other category: collections/ (Iterable form); the array form is exercised by Loops"/>
             <program ref="loops"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.jumps" title="Jump statements">
@@ -375,7 +363,6 @@
             <jls section="14.20" skipped="true" reason="Other category: exceptions/"/>
             <program ref="jumps-and-labels"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.switch-statements" title="Switch statements">
@@ -384,7 +371,6 @@
             <jls section="14.11.3"/>
             <program ref="switch-statement"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.switch-expressions" title="Switch expressions and yield">
@@ -392,7 +378,6 @@
             <jls section="14.21"/>
             <program ref="switch-expression"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="controlflow.patterns" title="Pattern matching">
@@ -401,7 +386,6 @@
             <jls section="15.20.2" skipped="true" reason="Gap: instanceof (opcode 0xC1) is rejected by BytecodeDecoder"/>
             <jls section="6.3.2" skipped="true" reason="Gap: pattern-variable flow scoping needs instanceof (opcode 0xC1)"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="records.components-members-and-constructors" title="Record components, members, and canonical constructors">
@@ -414,7 +398,6 @@
             <jls section="8.10.4.2"/>
             <program ref="record-classes"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="sealed.classes-and-interfaces" title="Sealed classes, interfaces, and permitted subclasses">
@@ -424,7 +407,6 @@
             <jls section="9.1.4"/>
             <program ref="sealed-types"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="inheritance.class-and-interface-dispatch" title="Class inheritance, overriding, and interface dispatch">
@@ -434,7 +416,6 @@
             <jls section="15.12.4.4"/>
             <program ref="inheritance-dispatch"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="generics.classes-methods-and-erasure" title="Generic classes, methods, and erasure">
@@ -445,7 +426,6 @@
             <jls section="8.4.4"/>
             <program ref="generic-types"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="arrays.creation-access-and-length" title="Array creation, access, bounds, and length">
@@ -461,7 +441,6 @@
             <jls section="15.10.3"/>
             <program ref="array-semantics"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="strings.concatenation-and-conversion" title="String literals, concatenation, and primitive conversion">
@@ -472,7 +451,6 @@
             <jls section="15.18.1"/>
             <program ref="string-semantics"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="exceptions.kinds-and-causes" title="Exception kinds and the causes the target raises">
@@ -480,7 +458,6 @@
             <jls section="11.1.2"/>
             <program ref="exception-causes"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="exceptions.throw-and-catch" title="Throw statements and catch clause matching">
@@ -489,7 +466,6 @@
             <jls section="14.20.1"/>
             <program ref="throw-and-catch"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="exceptions.finally-and-unwinding" title="Finally blocks and unwinding across calls">
@@ -497,7 +473,6 @@
             <jls section="14.20.2"/>
             <program ref="finally-and-unwinding"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="exceptions.try-with-resources" title="Try-with-resources, basic and extended">
@@ -506,7 +481,6 @@
             <jls section="14.20.3.2"/>
             <program ref="try-with-resources"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
         <area id="exceptions.compile-time-and-asynchronous" title="Compile-time exception checking and asynchronous exceptions">
@@ -516,7 +490,6 @@
             <jls section="11.2.2" skipped="true" reason="Out of scope: compile-time exception analysis is performed by javac"/>
             <jls section="11.2.3" skipped="true" reason="Out of scope: compile-time exception checking is performed by javac"/>
             <backend ref="thumb2" status="REQUIRED"/>
-            <backend ref="avr" status="REQUIRED"/>
             <backend ref="xtensa" status="REQUIRED"/>
         </area>
     </areas>

@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.robotics.cv.aruco;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.robotics.cv.aruco.ArucoMarker;
@@ -11,7 +12,7 @@ import io.github.jabrena.juno.robotics.cv.aruco.ArucoMarker;
  *
  * <p>The marker is 6 cells of 24 pixels with a one-cell white quiet zone, centered on the 240x320 portrait screen.
  */
-@Board(ArduinoUnoR3WiFiRev2Board.class)
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class ArucoMarkerTFT {
     private static final int MARKER_ID = 0;
     private static final int CELL = 24;

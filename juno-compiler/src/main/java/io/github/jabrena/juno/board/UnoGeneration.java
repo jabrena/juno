@@ -6,7 +6,7 @@ package io.github.jabrena.juno.board;
  * comparing values, never by asking which board or core it is generating for.
  */
 public enum UnoGeneration implements BoardFamily {
-    /** The R3-format boards: the classic UNO R3 (ATmega328P) and the UNO WiFi Rev2 (ATmega4809). */
+    /** The R3-format boards: the classic UNO R3 (ATmega328P). */
     R3,
     /** The UNO R4 boards. */
     R4,

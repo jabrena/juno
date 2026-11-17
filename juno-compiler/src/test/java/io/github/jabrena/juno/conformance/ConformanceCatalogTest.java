@@ -77,16 +77,16 @@ class ConformanceCatalogTest {
         String catalog = Files.readString(CATALOG);
         int start = catalog.indexOf("<area id=\"controlflow.");
         String mutated = catalog.substring(0, start)
-                + catalog.substring(start).replaceFirst("ref=\"avr\"", "ref=\"avx\"");
+                + catalog.substring(start).replaceFirst("ref=\"xtensa\"", "ref=\"avx\"");
         assertRejectedCatalog(mutated, "Cannot load conformance catalog");
     }
 
     @Test
-    void rejectsControlflowAreaWithFewerThanThreeBackends() throws Exception {
+    void rejectsControlflowAreaWithFewerThanTwoBackends() throws Exception {
         String catalog = Files.readString(CATALOG);
         int start = catalog.indexOf("<area id=\"controlflow.");
         String mutated = catalog.substring(0, start)
-                + catalog.substring(start).replaceFirst("            <backend ref=\"avr\" status=\"REQUIRED\"/>\n", "");
+                + catalog.substring(start).replaceFirst("            <backend ref=\"thumb2\" status=\"REQUIRED\"/>\n", "");
         assertRejectedCatalog(mutated, "Cannot load conformance catalog");
     }
 

@@ -27,7 +27,7 @@ import java.net.http.HttpResponse;
  * allocates nothing. Prints the HTTP status, the body length and the temperature every ten seconds, at 115200 baud.
  * On the board {@code body()} is a fixed-capacity buffer, so the length printed is that capacity; the temperature is
  * read straight from the bytes, since {@code Json} is more code than this one value needs. The UNO R4 WiFi is the
- * smallest board that runs {@code java.net.http}: Juno rejects it on the UNO WiFi Rev2.
+ * smallest board that runs {@code java.net.http}: Juno rejects it on the UNO R3.
  */
 @Board({
     ArduinoUnoR4WiFiBoard.class,

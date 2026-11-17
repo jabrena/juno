@@ -91,8 +91,8 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 }
 ```
 
-[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings; it is written
-for the UNO WiFi Rev2, and the snippet above is the same read for the R3. See [Grove](../grove-system) for the
+[`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings; it runs on the UNO R3,
+UNO R4 WiFi and UNO Q, and the snippet above is the same read for the R3. See [Grove](../grove-system) for the
 sensor drivers.
 
 ### Arduino 9 Axis Motion Shield

@@ -2,7 +2,6 @@ package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -11,8 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * try-with-resources: resources close in reverse order of creation, a null resource is never closed, the extended form
  * with catch and finally clauses sees a body failure, and a failure in close() does not replace the body's exception.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3WiFiRev2Board.class,
-        ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
 public final class TryWithResources {
     static final class Resource implements AutoCloseable {
         private final String name;

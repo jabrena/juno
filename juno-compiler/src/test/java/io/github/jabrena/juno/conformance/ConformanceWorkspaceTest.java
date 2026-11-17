@@ -23,15 +23,15 @@ class ConformanceWorkspaceTest {
         ProgramSource everywhere = write("Everywhere.java", "package demo; class Everywhere {}");
         ProgramSource avrOnly = write("AvrOnly.java", """
                 package demo;
-                @Board(ArduinoUnoR3WiFiRev2Board.class)
+                @Board(ArduinoUnoR3Board.class)
                 class AvrOnly {}
                 """);
 
         assertThat(everywhere.targets(Board.UNO_R4_WIFI)).isTrue();
         assertThat(everywhere.declares(Board.UNO_R4_WIFI)).isFalse();
         assertThat(avrOnly.targets(Board.UNO_R4_WIFI)).isFalse();
-        assertThat(avrOnly.targets(Board.UNO_R3_WIFI_REV2)).isTrue();
-        assertThat(avrOnly.declares(Board.UNO_R3_WIFI_REV2)).isTrue();
+        assertThat(avrOnly.targets(Board.UNO_R3)).isTrue();
+        assertThat(avrOnly.declares(Board.UNO_R3)).isTrue();
         assertThat(avrOnly.mainClass()).isEqualTo("demo.AvrOnly");
         assertThat(avrOnly.simpleName()).isEqualTo("AvrOnly");
     }
@@ -63,14 +63,14 @@ class ConformanceWorkspaceTest {
 
     @Test
     void keepsEachBackendUnderItsOwnTargetDirectory() {
-        ConformanceWorkspace workspace = new ConformanceWorkspace(temporary, "simavr", API_CLASSES);
+        ConformanceWorkspace workspace = new ConformanceWorkspace(temporary, "qemu", API_CLASSES);
 
-        assertThat(workspace.generated(Board.UNO_R3_WIFI_REV2, "demo.IntegralArithmetic"))
-                .isEqualTo(temporary.resolve("target/simavr/generated/arduino-uno-r3-wifi-rev2/IntegralArithmetic"));
-        assertThat(workspace.generated(Board.UNO_R3_WIFI_REV2, "IntegralArithmetic"))
-                .isEqualTo(workspace.generated(Board.UNO_R3_WIFI_REV2, "demo.IntegralArithmetic"));
+        assertThat(workspace.generated(Board.UNO_R4_WIFI, "demo.IntegralArithmetic"))
+                .isEqualTo(temporary.resolve("target/qemu/generated/arduino-uno-r4-wifi/IntegralArithmetic"));
+        assertThat(workspace.generated(Board.UNO_R4_WIFI, "IntegralArithmetic"))
+                .isEqualTo(workspace.generated(Board.UNO_R4_WIFI, "demo.IntegralArithmetic"));
         assertThat(workspace.junoClasspath())
-                .containsExactly(temporary.resolve("target/simavr/program-classes"), API_CLASSES);
+                .containsExactly(temporary.resolve("target/qemu/program-classes"), API_CLASSES);
     }
 
     @Test

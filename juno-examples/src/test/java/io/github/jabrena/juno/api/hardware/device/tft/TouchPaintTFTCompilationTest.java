@@ -19,15 +19,15 @@ class TouchPaintTFTCompilationTest {
 
     @Test
     void touchLoggingDoesNotBuildABoundedRuntimeString() throws Exception {
-        CompilationResult result = compileForUnoWifiRev2();
+        CompilationResult result = compileForUnoR4WiFi();
 
         assertThat(result.assembly()).doesNotContain("juno_string_concat");
     }
 
-    private static CompilationResult compileForUnoWifiRev2() throws URISyntaxException {
+    private static CompilationResult compileForUnoR4WiFi() throws URISyntaxException {
         Path examples = Path.of("target/classes");
         Path api = Path.of(Watchdog.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         return new JunoCompiler().compile(new CompilationRequest(List.of(examples, api), MAIN, false,
-                Optional.of(Board.UNO_R3_WIFI_REV2.id())));
+                Optional.of(Board.UNO_R4_WIFI.id())));
     }
 }

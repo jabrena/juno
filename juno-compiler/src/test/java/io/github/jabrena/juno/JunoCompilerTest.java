@@ -1035,43 +1035,6 @@ class JunoCompilerTest {
                     .doesNotContain("noInterrupts();\n  for (;;) {}");
         }
 
-        @Test
-        @DisplayName("The UNO WiFi Rev2 serves plain HTTP through a WiFiNINA server on its station address")
-        void shouldServePlainHttpOnTheUnoWifiRev2WithWifiNina() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
-                    @Board(ArduinoUnoR3WiFiRev2Board.class)
-                    public final class Rev2HttpServer {
-                        public static void main(String[] args) {
-                            HttpServer.begin(80);
-                            byte[] body = new byte[16];
-                            while (true) {
-                                if (HttpServer.accept(body, body.length) >= 0) {
-                                    HttpServer.respond(200, "text/plain", "online");
-                                }
-                            }
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Rev2HttpServer", source);
-            Path assembly = temporaryDirectory.resolve("Rev2HttpServer.S");
-            Path shim = temporaryDirectory.resolve("Rev2HttpServerShim.cpp");
-
-            // When
-            CompilationResult result = new JunoCompiler().compileTo(
-                    CompilerTestSupport.classpath(temporaryDirectory), "demo.Rev2HttpServer", assembly, shim);
-
-            // Then
-            assertThat(result.runtimeShim()).contains(
-                    "#include <WiFiNINA.h>",
-                    "WiFiServer(static_cast<uint16_t>(port))",
-                    "extern \"C\" int32_t juno_http_server_accept(",
-                    "extern \"C\" void juno_http_server_respond(");
-        }
 
         @Test
         @DisplayName("A watchdog annotation without an explicit timeout uses its declared default")
@@ -1213,7 +1176,6 @@ class JunoCompilerTest {
             "RaspberryPico2WifiBoard, juno_pico_tz_read, juno_nvs_read",
             // A board with no secret store reaches neither provider, so a read through the store cannot compile.
             "ArduinoUnoR4WiFiBoard, juno_nvs_read, juno_se050_read",
-            "ArduinoUnoR3WiFiRev2Board, juno_eeprom_read, juno_nvs_read",
             "ArduinoUnoR3Board, juno_eeprom_read, juno_nvs_read",
             "ArduinoUnoQBoard, , juno_se050_read"})
         @DisplayName("MCU.getSecretStore() compiles to the one store its target board has, and is rejected on a board with none")
@@ -1527,35 +1489,6 @@ class JunoCompilerTest {
                     .doesNotContain("mbedtls_x509_time_is_past(");
         }
 
-        @Test
-        @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
-        void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
-            // Given
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpRev2", """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.serial.Serial;
-                    import java.net.URI;
-                    import java.net.http.HttpClient;
-                    import java.net.http.HttpRequest;
-                    import java.net.http.HttpResponse;
-                    @Board(ArduinoUnoR3WiFiRev2Board.class)
-                    public final class JdkHttpRev2 {
-                        public static void main(String[] args) throws Exception {
-                            HttpClient client = HttpClient.newHttpClient();
-                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
-                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
-                        }
-                    }
-                    """);
-
-            // When / Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpRev2"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("java.net.http")
-                    .hasMessageContaining("UNO WiFi Rev2 has too little memory for the java.net.http client");
-        }
 
         @Test
         @DisplayName("A java.net.http client closes in try-with-resources, and a URI answers its parts and resolves")
@@ -4201,7 +4134,7 @@ class JunoCompilerTest {
         }
 
         @ParameterizedTest(name = "{0}")
-        @CsvSource({"ArduinoUnoR3WiFiRev2Board, UNO WiFi Rev2", "ArduinoUnoR3Board, UNO R3"})
+        @CsvSource({"ArduinoUnoR3Board, UNO R3"})
         @DisplayName("JSON is rejected below the UNO R4 WiFi, the smallest board that runs it")
         void shouldRejectJsonBelowTheUnoR4Wifi(String annotation, String displayName) throws Exception {
             // Given

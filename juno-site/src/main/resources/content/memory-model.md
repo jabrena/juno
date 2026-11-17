@@ -136,7 +136,6 @@ upper limits. Every board uses its default arena unless `juno.Xmx` says otherwis
 | Board | Arena (default) | `int[100]` arrays that fit (408 bytes each) | `byte[1000]` arrays that fit (1008 bytes each) |
 |---|---|---|---|
 | UNO R3 | 1 KB | 2 | 1 |
-| UNO WiFi Rev2 | 1 KB (up to 3 KB with `juno.Xmx=3k`: 7 and 3) | 2 | 1 |
 | UNO R4 WiFi | 8 KB | 20 | 8 |
 | UNO Q | 8 KB | 20 | 8 |
 | Nano ESP32 | 8 KB | 20 | 8 |
@@ -155,7 +154,6 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 | Board | Usable RAM | Arena: default / max | Stack per carrier: default / max | Carriers | What decides whether a larger arena fits | PSRAM |
 |---|---|---|---|---|---|---|
 | UNO R3 | 2 KB | 1024 / 1024 bytes | 512 / 512 bytes | 1 | The linker | None |
-| UNO WiFi Rev2 | 6 KB | 1024 / 3072 bytes | 512 / 1024 bytes | 1 | The linker | None |
 | UNO R4 WiFi | 32 KB | 8192 / 25736 bytes | 2048 / 8192 bytes | 1 | The linker | None |
 | UNO Q | 256 KB | 8192 / 226928 bytes | 4096 / 16384 bytes | 1 | The loader pool: the sketch's code shares it | None |
 | Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
@@ -239,7 +237,6 @@ gives the limit each board applies.
 | Board | Limit on threads alive at once | Stack per extra thread (default / max) | Structured concurrency and locks |
 |---|---|---|---|
 | UNO R3 | Four slots, including `main` | 512 / 512 bytes | No: use `synchronized` and atomics |
-| UNO WiFi Rev2 | Four slots, including `main` | 512 / 1024 bytes | Yes |
 | UNO R4 WiFi | No slot count: the arena bounds the threads | 2048 / 8192 bytes | Yes |
 | UNO Q | No slot count: the arena bounds the threads | 4096 / 16384 bytes | Yes |
 | Nano ESP32 | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |

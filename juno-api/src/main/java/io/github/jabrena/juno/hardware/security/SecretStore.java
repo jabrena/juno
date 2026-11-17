@@ -9,8 +9,7 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>A secret is addressed by its name alone. The store keeps each name next to its value and finds it again by
  * looking through its slots, so the reading program and the provisioning program only have to agree on the name. A
- * name is 1 to 31 printable, non-space ASCII characters; the store holds up to 16 names (4 in the UNO WiFi Rev2's
- * 256-byte EEPROM).
+ * name is 1 to 31 printable, non-space ASCII characters; the store holds up to 16 names.
  */
 public interface SecretStore {
 

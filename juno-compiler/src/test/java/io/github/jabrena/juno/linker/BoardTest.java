@@ -42,7 +42,6 @@ class BoardTest {
         assertThat(Board.UNO_R3.family()).isEqualTo(UnoGeneration.R3);
         assertThat(Board.UNO_R4_WIFI.family()).isEqualTo(UnoGeneration.R4);
         assertThat(Board.UNO_Q.family()).isEqualTo(UnoGeneration.Q);
-        assertThat(Board.UNO_R3_WIFI_REV2.family()).isEqualTo(UnoGeneration.R3);
         assertThat(Board.NANO_ESP32.family()).isEqualTo(NanoFamily.NANO_ESP32);
         assertThat(Board.AI_THINKER_ESP32_CAM.family()).isEqualTo(Esp32Family.AI_THINKER_ESP32_CAM);
         assertThat(Board.M5_CARDPUTER.family()).isEqualTo(M5StackFamily.CARDPUTER_ADV);
@@ -103,7 +102,6 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.PICO_2_W, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.PORTENTA_H7, Capability.JDK_HTTP_CLIENT, true),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_Q, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_R3, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_R4_WIFI, Capability.JSON, true),
@@ -113,17 +111,8 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.JSON, true),
                 arguments(Board.PICO_2_W, Capability.JSON, true),
                 arguments(Board.PORTENTA_H7, Capability.JSON, true),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.JSON, false),
                 arguments(Board.UNO_R3, Capability.JSON, false),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTP_SERVER, true),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTPS_SERVER, false),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.ONBOARD_IMU, true),
                 arguments(Board.UNO_R3, Capability.BLUETOOTH_LE, false),
-                arguments(Board.UNO_R3_WIFI_REV2, Capability.BLUETOOTH_LE, false),
-                arguments(Board.UNO_R4_WIFI, Capability.ONBOARD_IMU, false),
-                arguments(Board.UNO_Q, Capability.ONBOARD_IMU, false),
                 arguments(Board.NANO_ESP32, Capability.WIFI, true),
                 arguments(Board.NANO_ESP32, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.NANO_ESP32, Capability.ONBOARD_WIFI, true),
@@ -203,7 +192,6 @@ class BoardTest {
     void shouldResolveTheUnoBoardsFromTheirIds() {
         assertThat(Board.fromId("arduino-uno-q")).isEqualTo(Board.UNO_Q);
         assertThat(Board.fromId("arduino-uno-r4-wifi")).isEqualTo(Board.UNO_R4_WIFI);
-        assertThat(Board.fromId("arduino-uno-r3-wifi-rev2")).isEqualTo(Board.UNO_R3_WIFI_REV2);
         assertThat(Board.fromId("arduino-uno-r3")).isEqualTo(Board.UNO_R3);
         assertThatThrownBy(() -> Board.fromId("arduino-one-q"))
                 .isInstanceOf(CompileException.class)
@@ -272,7 +260,6 @@ class BoardTest {
         assertThat(board.supports(Capability.DOUBLE_MATH)).isTrue();
         assertThat(board.supports(Capability.USB_HID)).isFalse();
         assertThat(board.supports(Capability.LED_MATRIX)).isFalse();
-        assertThat(board.supports(Capability.ONBOARD_IMU)).isFalse();
     }
 
     @Test
@@ -1136,7 +1123,7 @@ class BoardTest {
         assertThat(Capability.values()).filteredOn(capability -> capability != Capability.M5_DISPLAY
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
                         && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
-                        && capability != Capability.ONBOARD_IMU && capability != Capability.CAMERA
+                        && capability != Capability.CAMERA
                         && capability != Capability.HTTP_STREAM && capability != Capability.PSRAM
                         && capability != Capability.ONBOARD_SD_CARD)
                 .allMatch(Board.UNO_R4_WIFI::supports);

@@ -1,10 +1,9 @@
 package io.github.jabrena.juno.hardware.security;
 
 /**
- * Named-secret storage in the on-chip EEPROM of an AVR board: the UNO WiFi Rev2's ATmega4809 (256 bytes) and the UNO
- * R3's ATmega328P (1 KB). The EEPROM is split into 64-byte slots, a length byte and up to 63 bytes each, so the Rev2
- * holds 4 names and the R3 16. The EEPROM keeps its contents through a sketch upload: the R3 is flashed through its
- * bootloader, which never erases it, and the Rev2's core sets the EESAVE fuse, which keeps it through the chip erase.
+ * Named-secret storage in the on-chip EEPROM of the UNO R3's ATmega328P (1 KB). The EEPROM is split into 64-byte
+ * slots, a length byte and up to 63 bytes each, so the UNO R3 holds 16 names. The EEPROM keeps its contents through a
+ * sketch upload: the R3 is flashed through its bootloader, which never erases it.
  *
  * <p><b>This is the weakest store, and deliberately so.</b> The value sits in plain text in the microcontroller's
  * EEPROM: it keeps the secret out of the firmware image, out of the build output and off the SD card, but any program

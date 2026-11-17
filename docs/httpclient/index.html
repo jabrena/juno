@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class=" active" href="/juno/hardware-apis" >APIs</a>
@@ -315,8 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
 connected to Wi-Fi. The program is written and compiled against the JDK. On the board, Juno runs its own implementation
 of the same classes, which fits in the board's memory.</p>
 <p><code>java.net.http</code> runs on the UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer, Raspberry Pi Pico 2 W and
-Portenta H7. The UNO R4 WiFi is the smallest board that can run it, so the compiler rejects it on the UNO WiFi Rev2, the
-UNO R3 and the UNO Q.</p>
+Portenta H7. The UNO R4 WiFi is the smallest board that can run it, so the compiler rejects it on the UNO R3 and the UNO Q.</p>
 <h2 id="making-a-get-request">Making a GET request</h2>
 <pre><code class="language-java">HttpClient client = HttpClient.newHttpClient();
 HttpRequest request = HttpRequest.newBuilder(URI.create(&quot;https://api.open-meteo.com/v1/forecast?latitude=40.4168&quot;
@@ -423,7 +421,7 @@ int humidity = current.get(&quot;relative_humidity_2m&quot;).asInt();
 <p><code>Json.parse</code> also takes a <code>byte[]</code> and the number of bytes in it, which is how <code>HttpServer</code> programs read a request
 body. It checks the whole document once, before any value is read. It supports objects, arrays, strings, numbers,
 booleans and <code>null</code>, nested up to 32 levels deep.</p>
-<p>JSON needs the UNO R4 WiFi or a larger board. The compiler rejects it on the UNO R3 and the UNO WiFi Rev2.</p>
+<p>JSON needs the UNO R4 WiFi or a larger board. The compiler rejects it on the UNO R3.</p>
 <h3 id="navigating">Navigating</h3>
 <table>
 <thead>

@@ -96,7 +96,7 @@ class QemuRunIT {
     }
 
     /**
-     * Every program under src/test/qemu/programs, once per Thumb-2 board it targets (SimavrRunIT runs the AVR ones).
+     * Every program under src/test/qemu/programs, once per Thumb-2 board it targets.
      * The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small stand-in
      * ({@code src/test/docker/qemu/zephyr/kernel.h}: baton semaphores, and a {@code k_timer} on SysTick for the preemption
      * tick, with threads on the process stack), so it covers the port's logic but not Zephyr's real scheduler.

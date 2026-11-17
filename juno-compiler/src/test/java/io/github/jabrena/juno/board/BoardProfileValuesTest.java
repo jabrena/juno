@@ -18,7 +18,6 @@ class BoardProfileValuesTest {
     static Stream<Arguments> pinnedProfiles() {
         return Stream.of(
                 arguments(Board.UNO_R3, 2048, 1024, 1024, 512, 512, MemoryAuthority.LINKER, 1),
-                arguments(Board.UNO_R3_WIFI_REV2, 6144, 1024, 3072, 512, 1024, MemoryAuthority.LINKER, 1),
                 arguments(Board.UNO_R4_WIFI, 32768, 8192, 25736, 2048, 8192, MemoryAuthority.LINKER, 1),
                 arguments(Board.UNO_Q, 262144, 8192, 226928, 4096, 16384, MemoryAuthority.LOADER_POOL, 1),
                 arguments(Board.NANO_ESP32, 327680, 8192, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
@@ -53,7 +52,6 @@ class BoardProfileValuesTest {
         assertThat(Board.AI_THINKER_ESP32_CAM.memoryProfile().psramBytes()).isEqualTo(OptionalInt.of(4 * 1024 * 1024));
         assertThat(Board.M5_CARDPUTER.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.UNO_R3.memoryProfile().psramBytes()).isEmpty();
-        assertThat(Board.UNO_R3_WIFI_REV2.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.UNO_R4_WIFI.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.UNO_Q.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.PICO_2_W.memoryProfile().psramBytes()).isEmpty();

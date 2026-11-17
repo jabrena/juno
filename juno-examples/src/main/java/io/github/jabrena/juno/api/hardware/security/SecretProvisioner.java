@@ -3,7 +3,6 @@ package io.github.jabrena.juno.api.hardware.security;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -34,8 +33,7 @@ import io.github.jabrena.juno.util.Delay;
  * Upload this program with {@code juno:secret}.
  */
 @Board({ArduinoPortentaH7Board.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class,
-        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoUnoR4WiFiBoard.class,
-        ArduinoUnoR3WiFiRev2Board.class})
+        M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoUnoR4WiFiBoard.class})
 public final class SecretProvisioner {
     private static final int LINE_BYTES = 160;
     private static final int VALUE_BYTES = 63;

@@ -17,11 +17,11 @@ class ArduinoCliBoardsTest {
 
     @Test
     void includesOnlyTheSelectedBoards() {
-        ArduinoCliBoards boards = ArduinoCliBoards.parse(" arduino-uno-r3, arduino-uno-r3-wifi-rev2 ");
+        ArduinoCliBoards boards = ArduinoCliBoards.parse(" arduino-uno-r3, arduino-uno-r4-wifi ");
 
         assertThat(boards.includes(Board.UNO_R3)).isTrue();
-        assertThat(boards.includes(Board.UNO_R3_WIFI_REV2)).isTrue();
-        assertThat(boards.includes(Board.UNO_R4_WIFI)).isFalse();
+        assertThat(boards.includes(Board.UNO_R4_WIFI)).isTrue();
+        assertThat(boards.includes(Board.UNO_Q)).isFalse();
     }
 
     @Test

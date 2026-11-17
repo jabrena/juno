@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -317,7 +316,7 @@ with any pin-mapped shield or carrier.</p>
 <h3 id="grove-base-shield-on-the-uno-boards">Grove Base Shield, on the UNO boards</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
 <p>The <a href="https://wiki.seeedstudio.com/Base_Shield_V2/">Grove Base Shield</a> is a passive adapter for the UNO headers, used
-on the UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
+on the UNO R3, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
 <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java"><code>GroveBaseShield</code></a>
 names them. Seat it on the board's UNO headers and plug the module into a socket; the diagram is a socket map, not the
 shield's physical layout:</p>
@@ -331,7 +330,7 @@ shield's physical layout:</p>
 +------------------------------+------------------------------+
                                | seated on the UNO headers
 +------------------------------v------------------------------+
-|      UNO R3  /  UNO WiFi Rev2  /  UNO R4 WiFi  /  UNO Q     |
+|      UNO R3  /  UNO R4 WiFi  /  UNO Q                       |
 +-------------------------------------------------------------+
 
  Grove DHT22 ---- cable ----&gt; [D4]
