@@ -37,15 +37,6 @@ class JsonTest {
                 arguments("nothing.x", Json.TYPE_MISSING));
     }
 
-    static Stream<Arguments> malformedPaths() {
-        return Stream.of(
-                arguments("users[01]"),
-                arguments("users[]"),
-                arguments("users[0"),
-                arguments("users."),
-                arguments("users[0]x"));
-    }
-
     static Stream<Arguments> malformedDocuments() {
         return Stream.of(
                 arguments("truncated array", "{\"x\":[1,2", "x"),
@@ -103,7 +94,6 @@ class JsonTest {
                 arguments("b[1].d", Json.TYPE_MISSING),
                 arguments("a[0]", Json.TYPE_MISSING),
                 arguments("a.x", Json.TYPE_MISSING),
-                arguments("b[2147483648]", Json.TYPE_INVALID),
                 arguments("n.x", Json.TYPE_MISSING));
     }
 
@@ -122,21 +112,21 @@ class JsonTest {
     @DisplayName("Counts the elements of an array")
     void shouldCountTheElementsOfAnArray() {
         // When & Then
-        assertThat(Json.arraySize(DOCUMENT, DOCUMENT.length, "users")).isEqualTo(2);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users").size()).isEqualTo(2);
     }
 
     @Test
     @DisplayName("Reads an integer member")
     void shouldReadAnIntegerMember() {
         // When & Then
-        assertThat(Json.getInt(DOCUMENT, DOCUMENT.length, "users[0].id")).isEqualTo(1);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[0].id").asInt()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("Reads a boolean member")
     void shouldReadABooleanMember() {
         // When & Then
-        assertThat(Json.getBool(DOCUMENT, DOCUMENT.length, "users[1].active")).isFalse();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].active").asBoolean()).isFalse();
     }
 
     @ParameterizedTest(name = "reports missing for path \"{0}\"")
@@ -150,78 +140,67 @@ class JsonTest {
         assertThat(type).isEqualTo(expected);
     }
 
-    @ParameterizedTest(name = "reports invalid for path \"{0}\"")
-    @MethodSource("malformedPaths")
-    @DisplayName("Reports a malformed path as invalid")
-    void shouldReportMalformedPathsAsInvalid(String path) {
-        // When
-        int type = type(path);
-
-        // Then
-        assertThat(type).isEqualTo(Json.TYPE_INVALID);
-    }
-
     @Test
     @DisplayName("Returns zero for an integer too large for an int")
     void shouldReturnZeroForAnIntegerTooLargeForAnInt() {
         // When & Then
-        assertThat(Json.getInt(DOCUMENT, DOCUMENT.length, "users[1].id")).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].id").asInt()).isZero();
     }
 
     @Test
     @DisplayName("Reads an integer too large for an int as a long")
     void shouldReadAnIntegerTooLargeForAnIntAsALong() {
         // When & Then
-        assertThat(Json.getLong(DOCUMENT, DOCUMENT.length, "users[1].id")).isEqualTo(2147483648L);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].id").asLong()).isEqualTo(2147483648L);
     }
 
     @Test
     @DisplayName("Reads a negative integer")
     void shouldReadANegativeInteger() {
         // When & Then
-        assertThat(Json.getInt(DOCUMENT, DOCUMENT.length, "numbers[0]")).isEqualTo(-12);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[0]").asInt()).isEqualTo(-12);
     }
 
     @Test
     @DisplayName("Returns zero for a number with an exponent read as an int")
     void shouldReturnZeroForANumberWithAnExponentReadAsAnInt() {
         // When & Then
-        assertThat(Json.getInt(DOCUMENT, DOCUMENT.length, "numbers[1]")).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[1]").asInt()).isZero();
     }
 
     @Test
     @DisplayName("Reads the minimum long value")
     void shouldReadTheMinimumLongValue() {
         // When & Then
-        assertThat(Json.getLong(DOCUMENT, DOCUMENT.length, "minimum")).isEqualTo(Long.MIN_VALUE);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "minimum").asLong()).isEqualTo(Long.MIN_VALUE);
     }
 
     @Test
     @DisplayName("Returns zero for an integer too large for a long")
     void shouldReturnZeroForAnIntegerTooLargeForALong() {
         // When & Then
-        assertThat(Json.getLong(DOCUMENT, DOCUMENT.length, "tooLarge")).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "tooLarge").asLong()).isZero();
     }
 
     @Test
     @DisplayName("Reads a double with an exponent")
     void shouldReadADoubleWithAnExponent() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[1]")).isEqualTo(125.0);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[1]").asDouble()).isEqualTo(125.0);
     }
 
     @Test
     @DisplayName("Reads a decimal fraction")
     void shouldReadADecimalFraction() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[2]")).isEqualTo(0.1);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[2]").asDouble()).isEqualTo(0.1);
     }
 
     @Test
     @DisplayName("Preserves the sign of negative zero")
     void shouldPreserveTheSignOfNegativeZero() {
         // When
-        double value = Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[3]");
+        double value = JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[3]").asDouble();
 
         // Then
         assertThat(Double.doubleToRawLongBits(value)).isEqualTo(Double.doubleToRawLongBits(-0.0));
@@ -231,21 +210,21 @@ class JsonTest {
     @DisplayName("Returns zero for an overflowing double")
     void shouldReturnZeroForAnOverflowingDouble() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[4]")).as("overflow").isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[4]").asDouble()).as("overflow").isZero();
     }
 
     @Test
     @DisplayName("Returns zero for an underflowing double")
     void shouldReturnZeroForAnUnderflowingDouble() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[5]")).as("underflow").isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[5]").asDouble()).as("underflow").isZero();
     }
 
     @Test
     @DisplayName("Approximates a large power of ten, which rounds")
     void shouldApproximateALargePowerOfTen() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "numbers[6]"))
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[6]").asDouble())
                 .as("the power of ten is built by repeated multiplication, so it rounds")
                 .isCloseTo(1.5e300, withinPercentage(1e-12));
     }
@@ -254,7 +233,7 @@ class JsonTest {
     @DisplayName("Returns zero when a double is read from an array")
     void shouldReturnZeroWhenADoubleIsReadFromAnArray() {
         // When & Then
-        assertThat(Json.getDouble(DOCUMENT, DOCUMENT.length, "users")).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "users").asDouble()).isZero();
     }
 
     @Test
@@ -264,7 +243,7 @@ class JsonTest {
         byte[] out = new byte[16];
 
         // When
-        int written = Json.getString(DOCUMENT, DOCUMENT.length, "users[1].name", out, out.length);
+        int written = JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].name").copyString(out, out.length);
 
         // Then
         assertThat(written).isEqualTo(8);
@@ -275,7 +254,7 @@ class JsonTest {
     void shouldDecodeAStringToUtf8() {
         // Given
         byte[] out = new byte[16];
-        int written = Json.getString(DOCUMENT, DOCUMENT.length, "users[1].name", out, out.length);
+        int written = JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].name").copyString(out, out.length);
 
         // When
         String decoded = new String(out, 0, written, StandardCharsets.UTF_8);
@@ -289,7 +268,7 @@ class JsonTest {
     @DisplayName("Stops before a character that does not fit in the buffer")
     void shouldStopBeforeACharacterThatDoesNotFit(int capacity, int expected) {
         // When
-        int written = Json.getString(DOCUMENT, DOCUMENT.length, "users[1].name", new byte[16], capacity);
+        int written = JsonPaths.at(DOCUMENT, DOCUMENT.length, "users[1].name").copyString(new byte[16], capacity);
 
         // Then
         assertThat(written).as("stops before a character that does not fit").isEqualTo(expected);
@@ -299,21 +278,21 @@ class JsonTest {
     @DisplayName("Writes a short string fully")
     void shouldWriteAShortStringFully() {
         // When & Then
-        assertThat(Json.getString(DOCUMENT, DOCUMENT.length, "text", new byte[16], 16)).isEqualTo(3);
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "text").copyString(new byte[16], 16)).isEqualTo(3);
     }
 
     @Test
     @DisplayName("Writes nothing for a non-string value")
     void shouldWriteNothingForANonStringValue() {
         // When & Then
-        assertThat(Json.getString(DOCUMENT, DOCUMENT.length, "numbers", new byte[16], 16)).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers").copyString(new byte[16], 16)).isZero();
     }
 
     @Test
     @DisplayName("Writes nothing into an empty buffer")
     void shouldWriteNothingIntoAnEmptyBuffer() {
         // When & Then
-        assertThat(Json.getString(DOCUMENT, DOCUMENT.length, "text", new byte[0], 0)).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "text").copyString(new byte[0], 0)).isZero();
     }
 
     @ParameterizedTest(name = "rejects {0}")
@@ -338,7 +317,7 @@ class JsonTest {
     @DisplayName("Rejects a negative document length")
     void shouldRejectANegativeDocumentLength() {
         // When & Then
-        assertThat(Json.type(DOCUMENT, -1, "")).isEqualTo(Json.TYPE_INVALID);
+        assertThat(JsonPaths.at(DOCUMENT, -1, "").type()).isEqualTo(Json.TYPE_INVALID);
     }
 
     @Test
@@ -348,7 +327,7 @@ class JsonTest {
         byte[] root = bytes("  [true, 3] ");
 
         // When & Then
-        assertThat(Json.type(root, root.length, "[0]")).isEqualTo(Json.TYPE_BOOLEAN);
+        assertThat(JsonPaths.at(root, root.length, "[0]").type()).isEqualTo(Json.TYPE_BOOLEAN);
     }
 
     @Test
@@ -358,7 +337,7 @@ class JsonTest {
         byte[] root = bytes("  [true, 3] ");
 
         // When & Then
-        assertThat(Json.getBool(root, root.length, "[0]")).isTrue();
+        assertThat(JsonPaths.at(root, root.length, "[0]").asBoolean()).isTrue();
     }
 
     @Test
@@ -368,7 +347,7 @@ class JsonTest {
         byte[] root = bytes("  [true, 3] ");
 
         // When & Then
-        assertThat(Json.getInt(root, root.length, "[1]")).isEqualTo(3);
+        assertThat(JsonPaths.at(root, root.length, "[1]").asInt()).isEqualTo(3);
     }
 
     @Test
@@ -378,7 +357,7 @@ class JsonTest {
         byte[] root = bytes("  [true, 3] ");
 
         // When & Then
-        assertThat(Json.arraySize(root, root.length, "")).isEqualTo(2);
+        assertThat(JsonPaths.at(root, root.length, "").size()).isEqualTo(2);
     }
 
     @Test
@@ -388,7 +367,7 @@ class JsonTest {
         byte[] root = bytes("  [true, 3] ");
 
         // When & Then
-        assertThat(Json.arraySize(root, root.length, "[1]")).isEqualTo(-1);
+        assertThat(JsonPaths.at(root, root.length, "[1]").size()).isEqualTo(-1);
     }
 
     @Test
@@ -399,7 +378,7 @@ class JsonTest {
         byte[] out = new byte[16];
 
         // When
-        int written = Json.getString(buffer, buffer.length, "e", out, out.length);
+        int written = JsonPaths.at(buffer, buffer.length, "e").copyString(out, out.length);
 
         // Then
         assertThat(written).isEqualTo(7);
@@ -411,7 +390,7 @@ class JsonTest {
         // Given
         byte[] buffer = bytes("{\"e\":\"\\b\\f\\r\\t\\/\\\\\\u0041\"}");
         byte[] out = new byte[16];
-        int written = Json.getString(buffer, buffer.length, "e", out, out.length);
+        int written = JsonPaths.at(buffer, buffer.length, "e").copyString(out, out.length);
 
         // When
         byte[] decoded = Arrays.copyOf(out, written);
@@ -426,7 +405,7 @@ class JsonTest {
         // Given
         byte[] buffer = bytes("{\"e\":\"\\u20AC\",\"high\":\"\\uD83D\",\"low\":\"\\uDE00\",\"pair\":\"\\uD83D\\u0041\"}");
         byte[] out = new byte[8];
-        int written = Json.getString(buffer, buffer.length, "e", out, out.length);
+        int written = JsonPaths.at(buffer, buffer.length, "e").copyString(out, out.length);
 
         // When
         byte[] decoded = Arrays.copyOf(out, written);
@@ -442,7 +421,7 @@ class JsonTest {
         byte[] buffer = bytes("{\"e\":\"\\u20AC\",\"high\":\"\\uD83D\",\"low\":\"\\uDE00\",\"pair\":\"\\uD83D\\u0041\"}");
 
         // When
-        int type = Json.type(buffer, buffer.length, "high");
+        int type = JsonPaths.at(buffer, buffer.length, "high").type();
 
         // Then
         assertThat(type).as("surrogates are scanned as text").isEqualTo(Json.TYPE_STRING);
@@ -456,7 +435,7 @@ class JsonTest {
         byte[] buffer = bytes("{\"e\":\"\\u20AC\",\"high\":\"\\uD83D\",\"low\":\"\\uDE00\",\"pair\":\"\\uD83D\\u0041\"}");
 
         // When
-        int written = Json.getString(buffer, buffer.length, member, new byte[8], 8);
+        int written = JsonPaths.at(buffer, buffer.length, member).copyString(new byte[8], 8);
 
         // Then
         assertThat(written).isZero();
@@ -561,20 +540,22 @@ class JsonTest {
         byte[] buffer = bytes("{\"a\":1,\"b\":[true,{\"c\":null}],\"n\":{}}");
 
         // When
-        int type = Json.type(buffer, buffer.length, path);
+        int type = JsonPaths.at(buffer, buffer.length, path).type();
 
         // Then
         assertThat(type).isEqualTo(expected);
     }
 
     @Test
-    @DisplayName("Returns minus one for the size of an object")
-    void shouldReturnMinusOneForTheSizeOfAnObject() {
+    @DisplayName("Counts the members of an object, and minus one for a scalar")
+    void shouldCountTheMembersOfAnObject() {
         // Given
         byte[] buffer = bytes("{\"a\":1,\"b\":[true,{\"c\":null}],\"n\":{}}");
 
         // When & Then
-        assertThat(Json.arraySize(buffer, buffer.length, "n")).isEqualTo(-1);
+        assertThat(JsonPaths.at(buffer, buffer.length, "").size()).isEqualTo(3);
+        assertThat(JsonPaths.at(buffer, buffer.length, "n").size()).isZero();
+        assertThat(JsonPaths.at(buffer, buffer.length, "a").size()).isEqualTo(-1);
     }
 
     @Test
@@ -584,7 +565,7 @@ class JsonTest {
         byte[] buffer = bytes("{\"a\":1,\"b\":[true,{\"c\":null}],\"n\":{}}");
 
         // When & Then
-        assertThat(Json.arraySize(buffer, buffer.length, "missing")).isEqualTo(-1);
+        assertThat(JsonPaths.at(buffer, buffer.length, "missing").size()).isEqualTo(-1);
     }
 
     @ParameterizedTest(name = "rejects {1}")
@@ -605,7 +586,7 @@ class JsonTest {
         byte[] buffer = bytes("\r\n{\t\"x\"\r\n:\t[ \r\n]\t,\"y\":false\r\n}\r\n");
 
         // When & Then
-        assertThat(Json.type(buffer, buffer.length, "x")).isEqualTo(Json.TYPE_ARRAY);
+        assertThat(JsonPaths.at(buffer, buffer.length, "x").type()).isEqualTo(Json.TYPE_ARRAY);
     }
 
     @Test
@@ -615,7 +596,7 @@ class JsonTest {
         byte[] buffer = bytes("\r\n{\t\"x\"\r\n:\t[ \r\n]\t,\"y\":false\r\n}\r\n");
 
         // When & Then
-        assertThat(Json.arraySize(buffer, buffer.length, "x")).isZero();
+        assertThat(JsonPaths.at(buffer, buffer.length, "x").size()).isZero();
     }
 
     @Test
@@ -625,7 +606,7 @@ class JsonTest {
         byte[] buffer = bytes("\r\n{\t\"x\"\r\n:\t[ \r\n]\t,\"y\":false\r\n}\r\n");
 
         // When & Then
-        assertThat(Json.getBool(buffer, buffer.length, "y")).isFalse();
+        assertThat(JsonPaths.at(buffer, buffer.length, "y").asBoolean()).isFalse();
     }
 
     @Test
@@ -635,24 +616,24 @@ class JsonTest {
         byte[] buffer = bytes("\r\n{\t\"x\"\r\n:\t[ \r\n]\t,\"y\":false\r\n}\r\n");
 
         // When & Then
-        assertThat(Json.type(buffer, buffer.length, "")).isEqualTo(Json.TYPE_OBJECT);
+        assertThat(JsonPaths.at(buffer, buffer.length, "").type()).isEqualTo(Json.TYPE_OBJECT);
     }
 
     private static int type(String path) {
-        return Json.type(DOCUMENT, DOCUMENT.length, path);
+        return JsonPaths.at(DOCUMENT, DOCUMENT.length, path).type();
     }
 
     private static double getDouble(byte[] buffer, String path) {
-        return Json.getDouble(buffer, buffer.length, path);
+        return JsonPaths.at(buffer, buffer.length, path).asDouble();
     }
 
     private static long getLong(byte[] buffer, String path) {
-        return Json.getLong(buffer, buffer.length, path);
+        return JsonPaths.at(buffer, buffer.length, path).asLong();
     }
 
     private static int typeOf(String document, String path) {
         byte[] buffer = bytes(document);
-        return Json.type(buffer, buffer.length, path);
+        return JsonPaths.at(buffer, buffer.length, path).type();
     }
 
     private static byte[] bytes(String text) {

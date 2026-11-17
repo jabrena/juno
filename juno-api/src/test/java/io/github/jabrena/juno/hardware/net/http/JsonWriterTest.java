@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("SPIKE #285: JSON writer into a caller buffer")
+@DisplayName("JSON writer into a caller buffer")
 class JsonWriterTest {
 
     @Test

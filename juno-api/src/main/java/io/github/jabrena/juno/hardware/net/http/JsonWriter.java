@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.net.http;
 
 /**
- * SPIKE (#285): writes JSON into a caller-owned {@code byte[]}, placing commas and escaping strings, so request and
+ * Writes JSON into a caller-owned {@code byte[]}, placing commas and escaping strings, so request and
  * response bodies need no hand-written quotes and no {@code StringBuilder}. Create one writer at startup and
  * {@link #reset()} it per body: writing allocates nothing.
  *
@@ -88,15 +88,21 @@ public final class JsonWriter {
         if (value < 0) {
             put('-');
         }
-        long magnitude = value;
-        long divisor = 1;
-        while (magnitude / divisor > 9 || magnitude / divisor < -9) {
-            divisor *= 10;
+        int digits = 1;
+        for (long rest = value / 10; rest != 0; rest /= 10) {
+            digits++;
         }
-        while (divisor > 0) {
-            long digit = magnitude / divisor % 10;
-            put((char) ('0' + (digit < 0 ? -digit : digit)));
-            divisor /= 10;
+        int first = length;
+        for (int i = 0; i < digits; i++) {
+            put('0');
+        }
+        long rest = value;
+        for (int i = digits - 1; i >= 0; i--) {
+            long digit = rest % 10;
+            if (first + i < out.length) {
+                out[first + i] = (byte) ('0' + (digit < 0 ? -digit : digit));
+            }
+            rest /= 10;
         }
         return this;
     }

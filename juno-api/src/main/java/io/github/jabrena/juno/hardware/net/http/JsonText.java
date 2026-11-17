@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.net.http;
 
 import org.jspecify.annotations.Nullable;
 
-/** {@link Json}'s JSON strings: validating one, and decoding its escapes to UTF-8 for {@link Json#getString(byte[], int, String, byte[], int)}. */
+/** {@link Json}'s JSON strings: validating one, and decoding its escapes to UTF-8 for {@link JsonView#copyString(byte[], int)}. */
 final class JsonText {
     private JsonText() {
     }

@@ -65,7 +65,7 @@ public final class HttpsMethods {
         Serial.print(method);
         Serial.print(": ");
         try {
-            String echoed = Json.getString(client.send(request, HttpResponse.BodyHandlers.ofString()).body(), "method");
+            String echoed = Json.view(client.send(request, HttpResponse.BodyHandlers.ofString()).body()).get("method").asString();
             Serial.println(method.equals(echoed) ? "OK" : "FAILED");
         } catch (IOException e) {
             Serial.println("FAILED");

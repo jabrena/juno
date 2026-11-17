@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.server.services;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.JsonView;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
@@ -96,12 +97,12 @@ public final class MailboxModel {
         if (messageCount == MAX_MESSAGES) {
             return fail(HttpStatus.CONFLICT, "Mailbox is full");
         }
-        if (Json.type(requestBody, bodyLength, "title") != Json.TYPE_STRING
-                || Json.type(requestBody, bodyLength, "body") != Json.TYPE_STRING) {
+        JsonView request = Json.view(requestBody, bodyLength);
+        if (!request.get("title").isString() || !request.get("body").isString()) {
             return fail(HttpStatus.BAD_REQUEST, "title and body must be JSON strings");
         }
-        int uuidType = Json.type(requestBody, bodyLength, "uuid");
-        int createAtType = Json.type(requestBody, bodyLength, "createAt");
+        int uuidType = request.get("uuid").type();
+        int createAtType = request.get("createAt").type();
         if (!isOptionalStringType(uuidType) || !isOptionalStringType(createAtType)) {
             return fail(HttpStatus.BAD_REQUEST, "uuid and createAt must be JSON strings");
         }
@@ -110,21 +111,21 @@ public final class MailboxModel {
         byte[] title = titles[messageCount];
         byte[] body = bodies[messageCount];
         byte[] createAt = createAts[messageCount];
-        int titleLength = Json.getString(requestBody, bodyLength, "title", title, title.length);
-        int bodyTextLength = Json.getString(requestBody, bodyLength, "body", body, body.length);
+        int titleLength = request.get("title").copyString(title);
+        int bodyTextLength = request.get("body").copyString(body);
         if (titleLength > MAX_TITLE_BYTES || bodyTextLength > MAX_BODY_BYTES) {
             return fail(HttpStatus.CONTENT_TOO_LARGE, "title or body is too long");
         }
         UUID uuid = UUID.randomUUID();
         if (uuidType == Json.TYPE_STRING) {
             uuid = uuidFromBytes(decodedUuid,
-                    Json.getString(requestBody, bodyLength, "uuid", decodedUuid, decodedUuid.length));
+                    request.get("uuid").copyString(decodedUuid));
             if (uuid == null) {
                 return fail(HttpStatus.BAD_REQUEST, "uuid must be a valid UUID");
             }
         }
         int createAtLength = createAtType == Json.TYPE_STRING
-                ? Json.getString(requestBody, bodyLength, "createAt", createAt, createAt.length)
+                ? request.get("createAt").copyString(createAt)
                 : copyText(LocalDateTime.now().toString(), createAt);
         if (containsMessage(uuid)) {
             return fail(HttpStatus.CONFLICT, "A mailbox message with this uuid already exists");
@@ -381,19 +382,22 @@ public final class MailboxModel {
     }
 
     private MailboxMessage parseMessage(int length, UUID uuid, long directoryDate) {
-        if (Json.type(storedMessage, length, "uuid") != Json.TYPE_STRING
-                || Json.type(storedMessage, length, "title") != Json.TYPE_STRING
-                || Json.type(storedMessage, length, "body") != Json.TYPE_STRING
-                || Json.type(storedMessage, length, "createAt") != Json.TYPE_STRING) {
+        JsonView stored = Json.view(storedMessage, length);
+        JsonView storedUuid = stored.get("uuid");
+        JsonView storedTitle = stored.get("title");
+        JsonView storedBody = stored.get("body");
+        JsonView storedCreateAt = stored.get("createAt");
+        if (!storedUuid.isString() || !storedTitle.isString() || !storedBody.isString()
+                || !storedCreateAt.isString()) {
             return null;
         }
         byte[] title = titles[messageCount];
         byte[] body = bodies[messageCount];
         byte[] createAt = createAts[messageCount];
-        int uuidLength = Json.getString(storedMessage, length, "uuid", decodedUuid, decodedUuid.length);
-        int titleLength = Json.getString(storedMessage, length, "title", title, title.length);
-        int bodyLength = Json.getString(storedMessage, length, "body", body, body.length);
-        int createAtLength = Json.getString(storedMessage, length, "createAt", createAt, createAt.length);
+        int uuidLength = storedUuid.copyString(decodedUuid);
+        int titleLength = storedTitle.copyString(title);
+        int bodyLength = storedBody.copyString(body);
+        int createAtLength = storedCreateAt.copyString(createAt);
         if (!uuid.equals(uuidFromBytes(decodedUuid, uuidLength))
                 || titleLength > MAX_TITLE_BYTES || bodyLength > MAX_BODY_BYTES) {
             return null;

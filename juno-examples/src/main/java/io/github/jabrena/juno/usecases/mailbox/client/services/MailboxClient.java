@@ -3,6 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.client.services;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.JsonView;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxModel;
@@ -158,7 +159,8 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Mailbox unavailable; retrying");
             return FAILED;
         }
-        int count = Json.arraySize(list, "");
+        JsonView messages = Json.view(list);
+        int count = messages.isArray() ? messages.size() : -1;
         Serial.print("Mailbox client: list count ");
         Serial.println(count);
         if (count < 0 || count > MailboxModel.MAX_MESSAGES) {
@@ -168,7 +170,7 @@ public final class MailboxClient implements MailboxApi, Task {
         }
         model.clear();
         for (int index = 0; index < count; index++) {
-            int uuidLength = Json.getString(list, "[" + index + "].uuid", model.uuid(index), UUID_LENGTH);
+            int uuidLength = messages.get(index).get("uuid").copyString(model.uuid(index), UUID_LENGTH);
             if (uuidLength != UUID_LENGTH) {
                 Serial.print("Mailbox client: invalid UUID length ");
                 Serial.println(uuidLength);
@@ -201,8 +203,9 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Message read failed; retrying");
             return false;
         }
-        int titleLength = Json.getString(message, "title", model.title(index), MailboxModel.MAX_TITLE_BYTES);
-        int messageBodyLength = Json.getString(message, "body", model.body(index), MailboxModel.MAX_BODY_BYTES);
+        JsonView detail = Json.view(message);
+        int titleLength = detail.get("title").copyString(model.title(index), MailboxModel.MAX_TITLE_BYTES);
+        int messageBodyLength = detail.get("body").copyString(model.body(index), MailboxModel.MAX_BODY_BYTES);
         model.add(uuid, UUID_LENGTH, titleLength, messageBodyLength);
         return true;
     }
@@ -216,7 +219,7 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.print(status);
         Serial.print(" ms ");
         Serial.println(clock.millis() - started);
-        return info != null && status == HttpStatus.OK && SERVICE_NAME.equals(Json.getString(info, "info"));
+        return info != null && status == HttpStatus.OK && SERVICE_NAME.equals(Json.view(info).get("info").asString());
     }
 
     @Override

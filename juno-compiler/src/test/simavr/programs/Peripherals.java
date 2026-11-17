@@ -14,7 +14,6 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
-import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,30 +41,7 @@ public final class Peripherals {
         MCU.getWifi().localIP(ip);
         Serial.println(ip[0] + "." + ip[1] + "." + ip[2] + "." + ip[3]);
 
-        byte[] body = new byte[64];
-        byte[] headers = new byte[96];
-        int[] status = new int[2];
-        // Json reads a document held in a String as it reads one in a buffer.
-        String reading = "{\"n\":-42,\"ok\":true,\"temp\":21.5}";
-        Serial.println(Json.getInt(reading, "n"));
-        Serial.println(Json.getBool(reading, "ok") ? "ok" : "not ok");
-        double temp = Json.getDouble(reading, "temp");
-        Serial.println((int) (temp * 10));
-        Serial.println("temp=" + temp);
-
-        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "secret", "rev2@example.com",
-                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
-        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "wrong", "rev2@example.com",
-                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
-        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "secret"));
-        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "wrong"));
-        int mailBody = Pop3Client.readLatest("pop.example.com", 995, "rev2", "secret", headers, headers.length, body,
-                body.length, status);
-        printBytes(headers, status[0]);
-        printBytes(body, mailBody);
-        int subject = Pop3Client.readSubject("pop.example.com", 995, "rev2", "secret", 1, body, body.length);
-        printBytes(body, subject);
-        Serial.println("");
+        email();
 
         // Properties takes most of the Rev2's 1 KB arena, so it is loaded before the UDP loopback: whether that
         // method's objects are reclaimed in time depends on what the conservative stack scan happens to find.
@@ -110,6 +86,26 @@ public final class Peripherals {
         tft.println("Rev2");
         Serial.println(tft.readTouch() ? "touched" : "untouched");
         Serial.println("done");
+    }
+
+    /** SMTP and POP3: its buffers and strings live only in this method, so they are not held by the caller's stack. */
+    private static void email() {
+        byte[] body = new byte[64];
+        byte[] headers = new byte[96];
+        int[] status = new int[2];
+        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "secret", "rev2@example.com",
+                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
+        Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "wrong", "rev2@example.com",
+                "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));
+        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "secret"));
+        Serial.println(Pop3Client.messageCount("pop.example.com", 995, "rev2", "wrong"));
+        int mailBody = Pop3Client.readLatest("pop.example.com", 995, "rev2", "secret", headers, headers.length, body,
+                body.length, status);
+        printBytes(headers, status[0]);
+        printBytes(body, mailBody);
+        int subject = Pop3Client.readSubject("pop.example.com", 995, "rev2", "secret", 1, body, body.length);
+        printBytes(body, subject);
+        Serial.println("");
     }
 
     /** A loopback datagram: its objects live only in this method, so they are not held by the caller's stack. */

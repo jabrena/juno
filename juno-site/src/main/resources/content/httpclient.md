@@ -21,7 +21,7 @@ HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.open-meteo.
 
 HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
 Serial.println(reply.statusCode());
-Serial.println(Json.getDouble(reply.body(), "current.temperature_2m"));
+Serial.println(Json.view(reply.body()).get("current").get("temperature_2m").asDouble());
 ```
 
 `send` declares `IOException` and `InterruptedException`, as in the JDK. It throws `IOException` when the request
@@ -119,50 +119,65 @@ It has `getScheme`, `getHost`, `getPort`, `getPath`, `getQuery`, `getFragment`, 
 
 ## Reading JSON responses
 
-`Json` reads values straight from a body, with no parsing into objects. It takes the body as a `String`:
+`Json.view` reads values straight from a body, with no parsing into objects. Its method names follow JDK 28's
+JSON API (JEP 540): `get(String)` steps into an object member, `get(int)` into an array element, and `asInt()`,
+`asDouble()` and the other conversions read the value.
 
 ```java
-String body = reply.body();
-double temperature = Json.getDouble(body, "current.temperature_2m");
+JsonView current = Json.view(reply.body()).get("current");
+double temperature = current.get("temperature_2m").asDouble();
+int humidity = current.get("relative_humidity_2m").asInt();
 ```
 
-Every method also takes a `byte[]` and the number of bytes in it, which is how `HttpServer` programs read a request
-body. The parser checks the whole document before it reads a value. It supports objects, arrays, strings, numbers,
+`Json.view` also takes a `byte[]` and the number of bytes in it, which is how `HttpServer` programs read a request
+body. It checks the whole document once, before any value is read. It supports objects, arrays, strings, numbers,
 booleans and `null`, nested up to 32 levels deep.
 
-### Paths
+JSON needs the UNO R4 WiFi or a larger board. The compiler rejects it on the UNO R3 and the UNO WiFi Rev2.
 
-Object fields are separated by dots, and array elements use zero-based indexes in brackets:
+### Navigating
 
-| JSON | Path |
+| JSON | Steps |
 |---|---|
-| `{"temperature": 21}` | `"temperature"` |
-| `{"current":{"temperature":21}}` | `"current.temperature"` |
-| `{"users":[{"name":"Ada"}]}` | `"users[0].name"` |
-| `[{"id":7}]` | `"[0].id"` |
+| `{"temperature": 21}` | `.get("temperature")` |
+| `{"current":{"temperature":21}}` | `.get("current").get("temperature")` |
+| `{"users":[{"name":"Ada"}]}` | `.get("users").get(0).get("name")` |
+| `[{"id":7}]` | `.get(0).get("id")` |
 
-A path can be built at run time, as in `"[" + index + "].uuid"`. Field names that contain `.`, `[` or `]`, and names
-written with JSON escapes, cannot be addressed yet.
+An index is a plain `int`, so a loop needs no path string:
+
+```java
+JsonView solution = Json.view(body).get("puzzle").get("solution");
+for (int i = 0; i < solution.size(); i++) {
+    int length = solution.get(i).copyString(move);
+}
+```
+
+Each step returns a new `JsonView`: a 20-byte arena object that the collector reclaims. Keep a view you use more than
+once in a local variable. A member name is matched as written; names that the document writes with JSON escapes cannot
+be matched yet, and when a name appears twice the first one wins.
 
 ### Reading values
 
 | Method | Returns |
 |---|---|
-| `Json.getInt(...)` | an `int` |
-| `Json.getLong(...)` | a `long` |
-| `Json.getDouble(...)` | a `double` |
-| `Json.getBool(...)` | a `boolean` |
-| `Json.getString(json, path)` | the value's raw text as a `String`, or `null` for a missing value, an object or an array |
-| `Json.getString(json, path, byte[] out, int outLength)` | the number of UTF-8 bytes decoded into `out` |
-| `Json.arraySize(...)` | the number of elements in an array, or `-1` when the path is missing, invalid or not an array |
+| `asInt()` | an `int`, or `0` unless the value is an integral number that fits |
+| `asLong()` | a `long`, or `0` unless the value is an integral number that fits |
+| `asDouble()` | a `double`, or `0.0` |
+| `asBoolean()` | a `boolean`, or `false` |
+| `asString()` | the value's raw text as a `String`, or `null` for a missing value, an object or an array |
+| `copyString(byte[] out)` | the number of UTF-8 bytes decoded into `out` |
+| `size()` | the number of elements of an array or members of an object, or `-1` for any other value |
 
-Typed getters return zero or `false` when the value cannot be read, so `getInt(...) == 0` is ambiguous by itself. Use
-`Json.type` when the difference matters:
+Nothing throws, unlike JEP 540: conversions return zero or `false` when the value cannot be read, so `asInt() == 0` is
+ambiguous by itself. Use `type()`, or `isNumber()`, `isString()`, `isNull()`, `isMissing()` and the other checks,
+when the difference matters:
 
 ```java
-int valueType = Json.type(body, "current.temperature_2m");
+JsonView temperature = Json.view(body).get("current").get("temperature_2m");
+int valueType = temperature.type();
 if (valueType == Json.TYPE_NUMBER) {
-    double temperature = Json.getDouble(body, "current.temperature_2m");
+    Serial.println(temperature.asDouble());
 } else if (valueType == Json.TYPE_NULL) {
     Serial.println("Temperature is null");
 } else if (valueType == Json.TYPE_MISSING) {
@@ -173,12 +188,31 @@ if (valueType == Json.TYPE_NUMBER) {
 ```
 
 The type constants are `TYPE_MISSING`, `TYPE_NULL`, `TYPE_BOOLEAN`, `TYPE_NUMBER`, `TYPE_STRING`, `TYPE_OBJECT`,
-`TYPE_ARRAY` and `TYPE_INVALID`.
+`TYPE_ARRAY` and `TYPE_INVALID`. A missing or invalid view stays that way through every later step.
 
-`Json.getString(json, path)` returns the text as written, with no escape decoding. That keeps a number such as `21.2`
-exactly as the server wrote it. `Json.getString(json, path, out, outLength)` decodes escapes such as `\n`, `\"` and
-`é`, including surrogate pairs, into the program's own buffer. It writes at most `outLength` bytes and adds no
-terminating NUL.
+`asString()` returns the text as written, with no escape decoding. That keeps a number such as `21.2` exactly as the
+server wrote it. `copyString(out)` decodes escapes such as `\n`, `\"` and `\u00e9`, including surrogate pairs, into the
+program's own buffer. It writes at most `out.length` bytes (or the capacity passed to `copyString(out, capacity)`) and
+adds no terminating NUL.
+
+## Writing JSON
+
+`JsonWriter` writes JSON into a `byte[]` the program owns, placing the commas and escaping strings. Create it once and
+call `reset()` for each body; writing allocates nothing:
+
+```java
+byte[] body = new byte[64];
+JsonWriter json = new JsonWriter(body);
+
+json.reset().beginObject()
+        .name("uptime_ms").value(clock.millis())
+        .name("ok").value(true)
+        .endObject();
+int length = json.length();
+```
+
+Output that does not fit the buffer is dropped, and `overflowed()` turns `true`. It also turns `true` for a name
+outside an object or an unbalanced `end...` call.
 
 ## Interacting with HTTPS endpoints
 

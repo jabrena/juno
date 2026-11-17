@@ -26,7 +26,7 @@ import io.github.jabrena.juno.util.Delay;
  * positions (11-12 and 14-15) rather than parsed generically. Open-Meteo's
  * {@code current.temperature_2m} is a JSON number with a decimal fraction (e.g. {@code 21.2});
  * {@link WeatherClient} reads its raw JSON text directly via {@link
- * io.github.jabrena.juno.hardware.net.http.Json#getString(String, String)} rather than parsing it
+ * io.github.jabrena.juno.hardware.net.http.JsonView#asString()} rather than parsing it
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */

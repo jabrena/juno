@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("SPIKE #285: JSON view with JEP 540 names")
+@DisplayName("JSON view with JEP 540 names")
 class JsonViewTest {
     private static final String PUZZLE = """
             {"puzzle":{"fen":"8/8 w","rating":1500,"solution":["e2e4","e7e5", "g1f3"],"themes":[]},

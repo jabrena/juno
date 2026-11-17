@@ -45,6 +45,7 @@ startup and stay small.
 | Grove Base Shield | ✓ | Passive: every socket is an UNO pin. | |
 | 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line is D7. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
 | LCD Keypad Shield | ✓ | Uses D4-D10 for the LCD and backlight. | [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) |
+| `Json`, `JsonView`, `JsonWriter` | ✗ | Not supported: JSON support starts at the UNO R4 WiFi. | |
 
 ## Features
 
