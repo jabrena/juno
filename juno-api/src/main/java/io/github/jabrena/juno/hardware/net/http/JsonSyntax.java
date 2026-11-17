@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.hardware.net.http;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * {@link Json}'s validating scanner: each method takes the index where a piece of JSON starts and returns the index
  * just past it, or {@link #FAILED}, so a scan needs no out-parameters and allocates nothing.
@@ -14,97 +16,97 @@ final class JsonSyntax {
     }
 
     /** Where the already-validated value starting at {@code start} ends. */
-    static int valueEnd(byte[] buffer, int start, int end) {
-        return parseValue(buffer, start, end, 0);
+    static int valueEnd(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        return parseValue(buffer, text, start, end, 0);
     }
 
     /** The index just past the value starting at or after {@code start}, or {@link #FAILED}. */
-    static int parseValue(byte[] buffer, int start, int end, int depth) {
+    static int parseValue(byte @Nullable [] buffer, @Nullable String text, int start, int end, int depth) {
         if (depth > MAX_DEPTH) {
             return FAILED;
         }
-        int p = skipSpace(buffer, start, end);
+        int p = skipSpace(buffer, text, start, end);
         if (p >= end) {
             return FAILED;
         }
-        int first = buffer[p];
+        int first = JsonChars.at(buffer, text, p);
         if (first == '"') {
-            return JsonText.parseString(buffer, p, end);
+            return JsonText.parseString(buffer, text, p, end);
         }
         if (first == '{') {
-            return parseObject(buffer, p, end, depth);
+            return parseObject(buffer, text, p, end, depth);
         }
         if (first == '[') {
-            return parseArray(buffer, p, end, depth);
+            return parseArray(buffer, text, p, end, depth);
         }
-        if (isWord(buffer, p, end, 't', 'r', 'u', 'e') || isWord(buffer, p, end, 'n', 'u', 'l', 'l')) {
+        if (isWord(buffer, text, p, end, 't', 'r', 'u', 'e') || isWord(buffer, text, p, end, 'n', 'u', 'l', 'l')) {
             return p + 4;
         }
-        if (end - p >= 5 && isWord(buffer, p, end, 'f', 'a', 'l', 's') && buffer[p + 4] == 'e') {
+        if (end - p >= 5 && isWord(buffer, text, p, end, 'f', 'a', 'l', 's') && JsonChars.at(buffer, text, p + 4) == 'e') {
             return p + 5;
         }
-        return JsonNumbers.parseNumber(buffer, p, end);
+        return JsonNumbers.parseNumber(buffer, text, p, end);
     }
 
-    static int skipSpace(byte[] buffer, int start, int end) {
+    static int skipSpace(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         int p = start;
-        while (p < end && (buffer[p] == ' ' || buffer[p] == '\t' || buffer[p] == '\r' || buffer[p] == '\n')) {
+        while (p < end && (JsonChars.at(buffer, text, p) == ' ' || JsonChars.at(buffer, text, p) == '\t' || JsonChars.at(buffer, text, p) == '\r' || JsonChars.at(buffer, text, p) == '\n')) {
             p++;
         }
         return p;
     }
 
     /** Past a member or element separator and the space after it, or {@code start} when there is none. */
-    static int skipComma(byte[] buffer, int start, int end) {
-        return start < end && buffer[start] == ',' ? skipSpace(buffer, start + 1, end) : start;
+    static int skipComma(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        return start < end && JsonChars.at(buffer, text, start) == ',' ? skipSpace(buffer, text, start + 1, end) : start;
     }
 
     static boolean isDigit(int c) {
         return c >= '0' && c <= '9';
     }
 
-    private static int parseObject(byte[] buffer, int start, int end, int depth) {
-        int p = skipSpace(buffer, start + 1, end);
-        if (p < end && buffer[p] == '}') {
+    private static int parseObject(byte @Nullable [] buffer, @Nullable String text, int start, int end, int depth) {
+        int p = skipSpace(buffer, text, start + 1, end);
+        if (p < end && JsonChars.at(buffer, text, p) == '}') {
             return p + 1;
         }
         while (p != FAILED && p < end) {
-            p = JsonText.parseString(buffer, p, end);
+            p = JsonText.parseString(buffer, text, p, end);
             if (p == FAILED) {
                 return FAILED;
             }
-            p = skipSpace(buffer, p, end);
-            if (p >= end || buffer[p] != ':') {
+            p = skipSpace(buffer, text, p, end);
+            if (p >= end || JsonChars.at(buffer, text, p) != ':') {
                 return FAILED;
             }
-            p = parseValue(buffer, skipSpace(buffer, p + 1, end), end, depth + 1);
+            p = parseValue(buffer, text, skipSpace(buffer, text, p + 1, end), end, depth + 1);
             if (p == FAILED) {
                 return FAILED;
             }
-            p = skipSpace(buffer, p, end);
-            if (p < end && buffer[p] == '}') {
+            p = skipSpace(buffer, text, p, end);
+            if (p < end && JsonChars.at(buffer, text, p) == '}') {
                 return p + 1;
             }
-            p = nextItem(buffer, p, end, '}');
+            p = nextItem(buffer, text, p, end, '}');
         }
         return FAILED;
     }
 
-    private static int parseArray(byte[] buffer, int start, int end, int depth) {
-        int p = skipSpace(buffer, start + 1, end);
-        if (p < end && buffer[p] == ']') {
+    private static int parseArray(byte @Nullable [] buffer, @Nullable String text, int start, int end, int depth) {
+        int p = skipSpace(buffer, text, start + 1, end);
+        if (p < end && JsonChars.at(buffer, text, p) == ']') {
             return p + 1;
         }
         while (p != FAILED && p < end) {
-            p = parseValue(buffer, p, end, depth + 1);
+            p = parseValue(buffer, text, p, end, depth + 1);
             if (p == FAILED) {
                 return FAILED;
             }
-            p = skipSpace(buffer, p, end);
-            if (p < end && buffer[p] == ']') {
+            p = skipSpace(buffer, text, p, end);
+            if (p < end && JsonChars.at(buffer, text, p) == ']') {
                 return p + 1;
             }
-            p = nextItem(buffer, p, end, ']');
+            p = nextItem(buffer, text, p, end, ']');
         }
         return FAILED;
     }
@@ -113,15 +115,15 @@ final class JsonSyntax {
      * Past the {@code ','} at {@code start} and the space after it, or {@link #FAILED} when there is no comma or a
      * {@code close} follows it (a trailing comma).
      */
-    private static int nextItem(byte[] buffer, int start, int end, char close) {
-        if (start >= end || buffer[start] != ',') {
+    private static int nextItem(byte @Nullable [] buffer, @Nullable String text, int start, int end, char close) {
+        if (start >= end || JsonChars.at(buffer, text, start) != ',') {
             return FAILED;
         }
-        int p = skipSpace(buffer, start + 1, end);
-        return p < end && buffer[p] == close ? FAILED : p;
+        int p = skipSpace(buffer, text, start + 1, end);
+        return p < end && JsonChars.at(buffer, text, p) == close ? FAILED : p;
     }
 
-    private static boolean isWord(byte[] buffer, int p, int end, char a, char b, char c, char d) {
-        return end - p >= 4 && buffer[p] == a && buffer[p + 1] == b && buffer[p + 2] == c && buffer[p + 3] == d;
+    private static boolean isWord(byte @Nullable [] buffer, @Nullable String text, int p, int end, char a, char b, char c, char d) {
+        return end - p >= 4 && JsonChars.at(buffer, text, p) == a && JsonChars.at(buffer, text, p + 1) == b && JsonChars.at(buffer, text, p + 2) == c && JsonChars.at(buffer, text, p + 3) == d;
     }
 }

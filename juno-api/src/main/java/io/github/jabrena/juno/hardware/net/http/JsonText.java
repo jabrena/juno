@@ -1,18 +1,20 @@
 package io.github.jabrena.juno.hardware.net.http;
 
+import org.jspecify.annotations.Nullable;
+
 /** {@link Json}'s JSON strings: validating one, and decoding its escapes to UTF-8 for {@link Json#getString(byte[], int, String, byte[], int)}. */
 final class JsonText {
     private JsonText() {
     }
 
     /** The index just past the JSON string starting at {@code start}, or {@link JsonSyntax#FAILED}. */
-    static int parseString(byte[] buffer, int start, int end) {
-        if (start >= end || buffer[start] != '"') {
+    static int parseString(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        if (start >= end || JsonChars.at(buffer, text, start) != '"') {
             return JsonSyntax.FAILED;
         }
         int p = start + 1;
         while (p < end) {
-            int c = buffer[p++] & 0xFF;
+            int c = JsonChars.at(buffer, text, p++) & 0xFF;
             if (c == '"') {
                 return p;
             }
@@ -20,7 +22,7 @@ final class JsonText {
                 return JsonSyntax.FAILED;
             }
             if (c == '\\') {
-                p = escapeEnd(buffer, p, end);
+                p = escapeEnd(buffer, text, p, end);
                 if (p == JsonSyntax.FAILED) {
                     return JsonSyntax.FAILED;
                 }
@@ -33,22 +35,22 @@ final class JsonText {
      * Decodes the string content {@code buffer[start, end)} into {@code out}, stopping before a character that would
      * not fit {@code capacity}, and returns the number of bytes written; {@code 0} for a lone or unpaired surrogate.
      */
-    static int decode(byte[] buffer, int start, int end, byte[] out, int capacity) {
+    static int decode(byte @Nullable [] buffer, @Nullable String text, int start, int end, byte[] out, int capacity) {
         int p = start;
         int written = 0;
         while (p < end) {
-            int c = buffer[p++] & 0xFF;
-            if (c != '\\' || buffer[p] != 'u') {
+            int c = JsonChars.at(buffer, text, p++) & 0xFF;
+            if (c != '\\' || JsonChars.at(buffer, text, p) != 'u') {
                 if (written >= capacity) {
                     break;
                 }
-                out[written++] = (byte) (c == '\\' ? unescape(buffer[p++]) : c);
+                out[written++] = (byte) (c == '\\' ? unescape(JsonChars.at(buffer, text, p++)) : c);
                 continue;
             }
-            int codePoint = hex4(buffer, p + 1);
+            int codePoint = hex4(buffer, text, p + 1);
             p += 5;
             if (codePoint >= 0xD800 && codePoint <= 0xDBFF) {
-                int low = end - p < 6 || buffer[p] != '\\' || buffer[p + 1] != 'u' ? 0 : hex4(buffer, p + 2);
+                int low = end - p < 6 || JsonChars.at(buffer, text, p) != '\\' || JsonChars.at(buffer, text, p + 1) != 'u' ? 0 : hex4(buffer, text, p + 2);
                 if (low < 0xDC00 || low > 0xDFFF) {
                     return 0;
                 }
@@ -65,10 +67,10 @@ final class JsonText {
         return written;
     }
 
-    private static int hex4(byte[] buffer, int p) {
+    private static int hex4(byte @Nullable [] buffer, @Nullable String text, int p) {
         int value = 0;
         for (int i = 0; i < 4; i++) {
-            value = value * 16 + hexValue(buffer[p + i]);
+            value = value * 16 + hexValue(JsonChars.at(buffer, text, p + i));
         }
         return value;
     }
@@ -128,11 +130,11 @@ final class JsonText {
     }
 
     /** Past the escape whose backslash precedes {@code start}, or {@link JsonSyntax#FAILED} for an invalid one. */
-    private static int escapeEnd(byte[] buffer, int start, int end) {
+    private static int escapeEnd(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         if (start >= end) {
             return JsonSyntax.FAILED;
         }
-        int escape = buffer[start];
+        int escape = JsonChars.at(buffer, text, start);
         if (escape == '"' || escape == '\\' || escape == '/' || escape == 'b' || escape == 'f' || escape == 'n'
                 || escape == 'r' || escape == 't') {
             return start + 1;
@@ -142,7 +144,7 @@ final class JsonText {
             return JsonSyntax.FAILED;
         }
         for (int i = 0; i < 4; i++) {
-            if (!isHex(buffer[p + i])) {
+            if (!isHex(JsonChars.at(buffer, text, p + i))) {
                 return JsonSyntax.FAILED;
             }
         }

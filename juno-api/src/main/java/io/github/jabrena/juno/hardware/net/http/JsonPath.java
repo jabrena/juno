@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.hardware.net.http;
 
+import org.jspecify.annotations.Nullable;
+
 /** {@link Json}'s path lookup: validates the whole document, then walks a path's members and elements to a value. */
 final class JsonPath {
     /** {@link #locate}: a step found no such member or element. */
@@ -11,13 +13,13 @@ final class JsonPath {
     }
 
     /** The index where the value at {@code path} starts, or {@link #MISSING} or {@link #INVALID}. */
-    static int locate(byte[] buffer, int length, String path) {
-        if (buffer == null || path == null || length < 0) {
+    static int locate(byte @Nullable [] buffer, @Nullable String text, int length, String path) {
+        if ((buffer == null && text == null) || path == null || length < 0) {
             return INVALID;
         }
-        int rootStart = JsonSyntax.skipSpace(buffer, 0, length);
-        int rootEnd = JsonSyntax.parseValue(buffer, rootStart, length, 0);
-        if (rootEnd == JsonSyntax.FAILED || JsonSyntax.skipSpace(buffer, rootEnd, length) != length) {
+        int rootStart = JsonSyntax.skipSpace(buffer, text, 0, length);
+        int rootEnd = JsonSyntax.parseValue(buffer, text, rootStart, length, 0);
+        if (rootEnd == JsonSyntax.FAILED || JsonSyntax.skipSpace(buffer, text, rootEnd, length) != length) {
             return INVALID;
         }
         int current = rootStart;
@@ -26,7 +28,7 @@ final class JsonPath {
         while (cursor < path.length()) {
             int next;
             if (path.charAt(cursor) == '[') {
-                if (buffer[current] != '[') {
+                if (JsonChars.at(buffer, text, current) != '[') {
                     return MISSING;
                 }
                 int index = index(path, cursor + 1);
@@ -34,21 +36,21 @@ final class JsonPath {
                     return INVALID;
                 }
                 next = digitsEnd(path, cursor + 1) + 1;
-                current = element(buffer, current, currentEnd, index);
+                current = element(buffer, text, current, currentEnd, index);
             } else {
-                if (buffer[current] != '{') {
+                if (JsonChars.at(buffer, text, current) != '{') {
                     return MISSING;
                 }
                 next = nameEnd(path, cursor);
                 if (next == cursor) {
                     return INVALID;
                 }
-                current = member(buffer, current, currentEnd, path, cursor, next);
+                current = member(buffer, text, current, currentEnd, path, cursor, next);
             }
             if (current == JsonSyntax.FAILED) {
                 return MISSING;
             }
-            currentEnd = JsonSyntax.valueEnd(buffer, current, currentEnd);
+            currentEnd = JsonSyntax.valueEnd(buffer, text, current, currentEnd);
             cursor = nextStep(path, next);
             if (cursor == INVALID) {
                 return INVALID;
@@ -111,50 +113,50 @@ final class JsonPath {
         return next;
     }
 
-    private static int member(byte[] buffer, int objectStart, int objectEnd, String path, int keyStart, int keyEnd) {
-        int p = JsonSyntax.skipSpace(buffer, objectStart + 1, objectEnd);
-        while (p < objectEnd && buffer[p] != '}') {
-            int nameEnd = JsonText.parseString(buffer, p, objectEnd);
+    private static int member(byte @Nullable [] buffer, @Nullable String text, int objectStart, int objectEnd, String path, int keyStart, int keyEnd) {
+        int p = JsonSyntax.skipSpace(buffer, text, objectStart + 1, objectEnd);
+        while (p < objectEnd && JsonChars.at(buffer, text, p) != '}') {
+            int nameEnd = JsonText.parseString(buffer, text, p, objectEnd);
             if (nameEnd == JsonSyntax.FAILED) {
                 return JsonSyntax.FAILED;
             }
-            boolean matches = nameMatches(buffer, p + 1, nameEnd - 1, path, keyStart, keyEnd);
-            p = JsonSyntax.skipSpace(buffer, nameEnd, objectEnd);
-            if (p >= objectEnd || buffer[p] != ':') {
+            boolean matches = nameMatches(buffer, text, p + 1, nameEnd - 1, path, keyStart, keyEnd);
+            p = JsonSyntax.skipSpace(buffer, text, nameEnd, objectEnd);
+            if (p >= objectEnd || JsonChars.at(buffer, text, p) != ':') {
                 return JsonSyntax.FAILED;
             }
-            int candidate = JsonSyntax.skipSpace(buffer, p + 1, objectEnd);
-            p = JsonSyntax.parseValue(buffer, candidate, objectEnd, 1);
+            int candidate = JsonSyntax.skipSpace(buffer, text, p + 1, objectEnd);
+            p = JsonSyntax.parseValue(buffer, text, candidate, objectEnd, 1);
             if (p == JsonSyntax.FAILED || matches) {
                 return p == JsonSyntax.FAILED ? JsonSyntax.FAILED : candidate;
             }
-            p = JsonSyntax.skipComma(buffer, JsonSyntax.skipSpace(buffer, p, objectEnd), objectEnd);
+            p = JsonSyntax.skipComma(buffer, text, JsonSyntax.skipSpace(buffer, text, p, objectEnd), objectEnd);
         }
         return JsonSyntax.FAILED;
     }
 
-    private static int element(byte[] buffer, int arrayStart, int arrayEnd, int index) {
-        int p = JsonSyntax.skipSpace(buffer, arrayStart + 1, arrayEnd);
+    private static int element(byte @Nullable [] buffer, @Nullable String text, int arrayStart, int arrayEnd, int index) {
+        int p = JsonSyntax.skipSpace(buffer, text, arrayStart + 1, arrayEnd);
         int current = 0;
-        while (p < arrayEnd && buffer[p] != ']') {
+        while (p < arrayEnd && JsonChars.at(buffer, text, p) != ']') {
             int candidate = p;
-            p = JsonSyntax.parseValue(buffer, p, arrayEnd, 1);
+            p = JsonSyntax.parseValue(buffer, text, p, arrayEnd, 1);
             if (p == JsonSyntax.FAILED || current == index) {
                 return p == JsonSyntax.FAILED ? JsonSyntax.FAILED : candidate;
             }
             current++;
-            p = JsonSyntax.skipComma(buffer, JsonSyntax.skipSpace(buffer, p, arrayEnd), arrayEnd);
+            p = JsonSyntax.skipComma(buffer, text, JsonSyntax.skipSpace(buffer, text, p, arrayEnd), arrayEnd);
         }
         return JsonSyntax.FAILED;
     }
 
-    private static boolean nameMatches(byte[] buffer, int nameStart, int nameEnd, String path, int keyStart,
+    private static boolean nameMatches(byte @Nullable [] buffer, @Nullable String text, int nameStart, int nameEnd, String path, int keyStart,
             int keyEnd) {
         if (nameEnd - nameStart != keyEnd - keyStart) {
             return false;
         }
         for (int i = 0; i < nameEnd - nameStart; i++) {
-            if ((buffer[nameStart + i] & 0xFF) != path.charAt(keyStart + i)) {
+            if ((JsonChars.at(buffer, text, nameStart + i) & 0xFF) != path.charAt(keyStart + i)) {
                 return false;
             }
         }
