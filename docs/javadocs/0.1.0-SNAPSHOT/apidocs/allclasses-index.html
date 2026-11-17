@@ -497,9 +497,9 @@ bit-banged on two plain pins, with no Arduino library.</div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab5">
 <div class="block">The board-side <code>java.security.KeyManagementException</code>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdkx/net/ssl/KeyManager.html" title="interface in io.github.jabrena.juno.jdkx.net.ssl">KeyManager</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/javax/net/ssl/KeyManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl">KeyManager</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
-<div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#init(io.github.jabrena.juno.jdkx.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.jdkx.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
+<div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
 client certificates are not supported, so a program passes <code>null</code>.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></div>
@@ -1030,7 +1030,7 @@ millisecond counter.</div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
 given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
@@ -1056,14 +1056,14 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.jdkx.net.ssl">TrustManager</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl">TrustManager</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
-<div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>SSLContext</code></a>.</div>
+<div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The board-side <code>javax.net.ssl.TrustManagerFactory</code>: turns a <a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security"><code>KeyStore</code></a> of trusted certificates into
-the <a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.jdkx.net.ssl"><code>TrustManager</code></a> an <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>SSLContext</code></a> takes.</div>
+the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl"><code>TrustManager</code></a> an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a> takes.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">

@@ -603,9 +603,9 @@ exchanges messages with one characteristic of that service.</div>
 <dd>
 <div class="block">Declares which Arduino board(s) a Juno program targets, e.g.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#boardDefault()" class="member-name-link">boardDefault()</a> - Static method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#boardDefault()" class="member-name-link">boardDefault()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
-<div class="block"><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#getDefault()"><code>SSLContext.getDefault()</code></a> without its checked exception.</div>
+<div class="block"><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getDefault()"><code>SSLContext.getDefault()</code></a> without its checked exception.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html#boardMemory()" class="member-name-link">boardMemory()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></dt>
 <dd>
@@ -1902,7 +1902,7 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">The Technic Hub's accelerometer, which returns the same object on every call.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#getAlgorithm()" class="member-name-link">getAlgorithm()</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#getAlgorithm()" class="member-name-link">getAlgorithm()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
 <dd>
 <div class="block">The algorithm the factory was asked for.</div>
 </dd>
@@ -2061,11 +2061,11 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">The UNO pin behind the D8 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#getDefault()" class="member-name-link">getDefault()</a> - Static method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getDefault()" class="member-name-link">getDefault()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
 <div class="block">The context that trusts the board's own roots.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#getDefaultAlgorithm()" class="member-name-link">getDefaultAlgorithm()</a> - Static method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#getDefaultAlgorithm()" class="member-name-link">getDefaultAlgorithm()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
 <dd>
 <div class="block"><code>"PKIX"</code>, as in the JDK.</div>
 </dd>
@@ -2202,6 +2202,14 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getInputPullup()" class="member-name-link">getInputPullup()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
+<dd>
+<div class="block">An uninitialised context for <code>protocol</code>, such as <code>"TLS"</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
+<dd>
+<div class="block">A factory for <code>algorithm</code>; every algorithm checks the chain the same way, with the board's TLS client.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/cert/CertificateFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdk.security.cert.<a href="io/github/jabrena/juno/jdk/security/cert/CertificateFactory.html" title="class in io.github.jabrena.juno.jdk.security.cert">CertificateFactory</a></dt>
 <dd>
 <div class="block">A factory for <code>type</code>.</div>
@@ -2209,14 +2217,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
 <dd>
 <div class="block">An empty store of any <code>type</code>; call <code>load(null, null)</code> before adding to it.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
-<dd>
-<div class="block">An uninitialised context for <code>protocol</code>, such as <code>"TLS"</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></dt>
-<dd>
-<div class="block">A factory for <code>algorithm</code>; every algorithm checks the chain the same way, with the board's TLS client.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/Json.html#getInt(byte%5B%5D,int,java.lang.String)" class="member-name-link">getInt(byte[], int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></dt>
 <dd>
@@ -2350,7 +2350,7 @@ high values are bright.</div>
 <dd>
 <div class="block">Returns the current power setting, <code>0..100</code>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#getProtocol()" class="member-name-link">getProtocol()</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getProtocol()" class="member-name-link">getProtocol()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
 <div class="block">The protocol the context was created for.</div>
 </dd>
@@ -2553,9 +2553,9 @@ either ADC rail.</div>
 <dd>
 <div class="block">The Technic Hub's tilt sensor, which returns the same object on every call.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#getTrustManagers()" class="member-name-link">getTrustManagers()</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#getTrustManagers()" class="member-name-link">getTrustManagers()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
 <dd>
-<div class="block">The trust manager for the certificates <a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore)"><code>TrustManagerFactory.init(KeyStore)</code></a> was given.</div>
+<div class="block">The trust manager for the certificates <a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore)"><code>TrustManagerFactory.init(KeyStore)</code></a> was given.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/cert/Certificate.html#getType()" class="member-name-link">getType()</a> - Method in class io.github.jabrena.juno.jdk.security.cert.<a href="io/github/jabrena/juno/jdk/security/cert/Certificate.html" title="class in io.github.jabrena.juno.jdk.security.cert">Certificate</a></dt>
 <dd>
@@ -3286,14 +3286,14 @@ bit-banged on two plain pins, with no Arduino library.</div>
 <dd>
 <div class="block">A demodulating infrared receiver module connected to one signal pin.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore)" class="member-name-link">init(KeyStore)</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></dt>
-<dd>
-<div class="block">Trusts the certificates in <code>store</code>, or the board's own roots when it is <code>null</code>.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#init(io.github.jabrena.juno.jdkx.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.jdkx.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)" class="member-name-link">init(KeyManager[], TrustManager[], SecureRandom)</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)" class="member-name-link">init(KeyManager[], TrustManager[], SecureRandom)</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
 <div class="block">Trusts the certificates of the first trust manager in <code>trustManagers</code>, or the board's own roots when there
 is none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore)" class="member-name-link">init(KeyStore)</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
+<dd>
+<div class="block">Trusts the certificates in <code>store</code>, or the board's own roots when it is <code>null</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html#INPUT_1" class="member-name-link">INPUT_1</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxSensorPort</a></dt>
 <dd>
@@ -3554,6 +3554,11 @@ store — the Portenta H7's SE050C2, an ESP32 board's NVS, the Pico 2 W's TrustZ
 <div class="block">Time: <a href="io/github/jabrena/juno/hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time"><code>Clock</code></a> is the monotonic uptime clock, for measuring elapsed time
 without blocking.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a> - package io.github.jabrena.juno.javax.net.ssl</dt>
+<dd>
+<div class="block">Board-side implementations of <code>javax.net.ssl</code>: an <code>SSLContext</code> that carries the trust anchors of a
+<code>java.net.http</code> client.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/package-summary.html">io.github.jabrena.juno.jdk.net</a> - package io.github.jabrena.juno.jdk.net</dt>
 <dd>
 <div class="block">Board-side implementations of <code>java.net</code> classes.</div>
@@ -3575,11 +3580,6 @@ client's trusted certificates, and the exceptions its API declares.</div>
 <dt><a href="io/github/jabrena/juno/jdk/util/package-summary.html">io.github.jabrena.juno.jdk.util</a> - package io.github.jabrena.juno.jdk.util</dt>
 <dd>
 <div class="block">Board-side implementations of <code>java.util</code> classes.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a> - package io.github.jabrena.juno.jdkx.net.ssl</dt>
-<dd>
-<div class="block">Board-side implementations of <code>javax.net.ssl</code>: an <code>SSLContext</code> that carries the trust anchors of a
-<code>java.net.http</code> client.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/pf/package-summary.html">io.github.jabrena.juno.remote.lego.pf</a> - package io.github.jabrena.juno.remote.lego.pf</dt>
 <dd>
@@ -3874,9 +3874,9 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">An exception with <code>message</code>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/KeyManager.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdkx.net.ssl">KeyManager</a> - Interface in <a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManager.html" class="type-name-link" title="interface in io.github.jabrena.juno.javax.net.ssl">KeyManager</a> - Interface in <a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></dt>
 <dd>
-<div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#init(io.github.jabrena.juno.jdkx.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.jdkx.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
+<div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
 client certificates are not supported, so a program passes <code>null</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a> - Class in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
@@ -5257,12 +5257,7 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 <dl class="index">
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#QUERY" class="member-name-link">QUERY</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>
-<div class="block">Safe, idempotent request with a body, as already supported by 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>HttpClient#query</code></pre>
-</details>
-.</div>
+<div class="block">Safe, idempotent request with a body (RFC 10008), sent with <code>HttpRequest.Builder.method("QUERY", body)</code>.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:R">R</h2>
@@ -6815,11 +6810,11 @@ millisecond counter.</div>
 <dd>
 <div class="block">The <code>SSLContext</code> the client checks servers against: its own, or the board's default.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html#sslContext(io.github.jabrena.juno.jdkx.net.ssl.SSLContext)" class="member-name-link">sslContext(SSLContext)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></dt>
+<dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html#sslContext(io.github.jabrena.juno.javax.net.ssl.SSLContext)" class="member-name-link">sslContext(SSLContext)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></dt>
 <dd>
 <div class="block">Sets the trust anchors the client checks HTTPS servers against.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" class="type-name-link" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a> - Class in <a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" class="type-name-link" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a> - Class in <a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></dt>
 <dd>
 <div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
 given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
@@ -7280,18 +7275,18 @@ after each one corrects the heading back to the one held.</div>
 <dd>
 <div class="block">Drives straight by <code>millimetres</code>, returning at once when <code>immediateReturn</code> is set.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html#trustedCertificates()" class="member-name-link">trustedCertificates()</a> - Method in class io.github.jabrena.juno.jdkx.net.ssl.<a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#trustedCertificates()" class="member-name-link">trustedCertificates()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
 <div class="block">The trusted certificates as one PEM chain, or <code>null</code> for the board's own roots.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManager.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdkx.net.ssl">TrustManager</a> - Interface in <a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" class="type-name-link" title="interface in io.github.jabrena.juno.javax.net.ssl">TrustManager</a> - Interface in <a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></dt>
 <dd>
-<div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>SSLContext</code></a>.</div>
+<div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManagerFactory.html" class="type-name-link" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a> - Class in <a href="io/github/jabrena/juno/jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></dt>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" class="type-name-link" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a> - Class in <a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></dt>
 <dd>
 <div class="block">The board-side <code>javax.net.ssl.TrustManagerFactory</code>: turns a <a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security"><code>KeyStore</code></a> of trusted certificates into
-the <a href="io/github/jabrena/juno/jdkx/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.jdkx.net.ssl"><code>TrustManager</code></a> an <a href="io/github/jabrena/juno/jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl"><code>SSLContext</code></a> takes.</div>
+the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl"><code>TrustManager</code></a> an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a> takes.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html#tryArm()" class="member-name-link">tryArm()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedDifferentialDrive</a></dt>
 <dd>

@@ -74,19 +74,45 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.security">io.github.jabrena.juno.jdk.security</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.javax.net.ssl">io.github.jabrena.juno.javax.net.ssl</a></div>
 <div class="col-last even-row-color">
-<div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
-client's trusted certificates, and the exceptions its API declares.</div>
-</div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.jdkx.net.ssl">io.github.jabrena.juno.jdkx.net.ssl</a></div>
-<div class="col-last odd-row-color">
 <div class="block">Board-side implementations of <code>javax.net.ssl</code>: an <code>SSLContext</code> that carries the trust anchors of a
 <code>java.net.http</code> client.</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.jdk.security">io.github.jabrena.juno.jdk.security</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
+client's trusted certificates, and the exceptions its API declares.</div>
 </div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.javax.net.ssl">
+<h2>Uses of <a href="../NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a> in <a href="../../../javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></h2>
+<div class="caption"><span>Methods in <a href="../../../javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a> that throw <a href="../NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>static <a href="../../../javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">SSLContext.</span><code><a href="../../../javax/net/ssl/SSLContext.html#getDefault()" class="member-name-link">getDefault</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The context that trusts the board's own roots.</div>
+</div>
+<div class="col-first odd-row-color"><code>static <a href="../../../javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">SSLContext.</span><code><a href="../../../javax/net/ssl/SSLContext.html#getInstance(java.lang.String)" class="member-name-link">getInstance</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;protocol)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">An uninitialised context for <code>protocol</code>, such as <code>"TLS"</code>.</div>
+</div>
+<div class="col-first even-row-color"><code>static <a href="../../../javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">TrustManagerFactory.</span><code><a href="../../../javax/net/ssl/TrustManagerFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;algorithm)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A factory for <code>algorithm</code>; every algorithm checks the chain the same way, with the board's TLS client.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.jdk.security">
 <h2>Uses of <a href="../NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a> in <a href="../package-summary.html">io.github.jabrena.juno.jdk.security</a></h2>
@@ -100,32 +126,6 @@ client's trusted certificates, and the exceptions its API declares.</div>
  char @Nullable []&nbsp;password)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Starts the store empty when <code>stream</code> is <code>null</code>.</div>
-</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="io.github.jabrena.juno.jdkx.net.ssl">
-<h2>Uses of <a href="../NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a> in <a href="../../../jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></h2>
-<div class="caption"><span>Methods in <a href="../../../jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a> that throw <a href="../NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a></span></div>
-<div class="summary-table three-column-summary">
-<div class="table-header col-first">Modifier and Type</div>
-<div class="table-header col-second">Method</div>
-<div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>static <a href="../../../jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">SSLContext.</span><code><a href="../../../jdkx/net/ssl/SSLContext.html#getDefault()" class="member-name-link">getDefault</a>()</code></div>
-<div class="col-last even-row-color">
-<div class="block">The context that trusts the board's own roots.</div>
-</div>
-<div class="col-first odd-row-color"><code>static <a href="../../../jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a></code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">SSLContext.</span><code><a href="../../../jdkx/net/ssl/SSLContext.html#getInstance(java.lang.String)" class="member-name-link">getInstance</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;protocol)</code></div>
-<div class="col-last odd-row-color">
-<div class="block">An uninitialised context for <code>protocol</code>, such as <code>"TLS"</code>.</div>
-</div>
-<div class="col-first even-row-color"><code>static <a href="../../../jdkx/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">TrustManagerFactory</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">TrustManagerFactory.</span><code><a href="../../../jdkx/net/ssl/TrustManagerFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;algorithm)</code></div>
-<div class="col-last even-row-color">
-<div class="block">A factory for <code>algorithm</code>; every algorithm checks the chain the same way, with the board's TLS client.</div>
 </div>
 </div>
 </section>

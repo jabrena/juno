@@ -119,12 +119,9 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">Json</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">A bounded, non-allocating JSON field reader. Reads directly out of a <code>byte[]</code> buffer (typically one filled by
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>HttpClient</code></pre>
-</details>
-) without ever building a parsed document — Juno has no heap, so there is no DOM to build. The
+<div class="block">A bounded, non-allocating JSON field reader. Reads directly out of a <code>java.net.http</code> response body held in a
+<code>String</code>, or a <code>byte[]</code> buffer such as an <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> request body, without ever building a parsed
+document — Juno has no heap, so there is no DOM to build. The
 scanner is plain Java that Juno compiles into the program only when a <code>Json</code> method is reachable; only
 <a href="#getString(byte%5B%5D,int,java.lang.String)"><code>getString(byte[], int, String)</code></a>'s copy into a runtime <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link"><code>String</code></a> is a compiler intrinsic.
 
@@ -136,12 +133,7 @@ escaped JSON member names are not decoded while matching paths.
 <p>The scanner validates the complete bounded document before returning a value. Call <a href="#type(byte%5B%5D,int,java.lang.String)"><code>type(byte[], int, String)</code></a> when a missing
 value, JSON <code>null</code>, a type mismatch, and a malformed or truncated document must be distinguished. Typed getters
 retain convenient zero-value failure results and never allocate or throw. <code>bufferLength</code> must be the number of
-JSON bytes in the buffer (for example, the value returned by 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>HttpClient#get</code></pre>
-</details>
-), not the buffer capacity.
+JSON bytes in the buffer (for example, the value returned by <a href="HttpServer.html#accept(byte%5B%5D,int)"><code>HttpServer.accept(byte[], int)</code></a>), not the buffer capacity.
 
 <p><a href="#getString(byte%5B%5D,int,java.lang.String,byte%5B%5D,int)"><code>getString(byte[], int, String, byte[], int)</code></a> decodes JSON escapes, including UTF-16
 <code>&#92;uXXXX</code> surrogate pairs, to UTF-8 in <code>out</code>. It writes at most <code>outLength</code> bytes and

@@ -77,7 +77,7 @@ initTheme();
 <li><a href="#version(io.github.jabrena.juno.jdk.net.http.HttpClient.Version)" tabindex="0">version(HttpClient.Version)</a></li>
 <li><a href="#followRedirects(io.github.jabrena.juno.jdk.net.http.HttpClient.Redirect)" tabindex="0">followRedirects(HttpClient.Redirect)</a></li>
 <li><a href="#connectTimeout(java.time.Duration)" tabindex="0">connectTimeout(Duration)</a></li>
-<li><a href="#sslContext(io.github.jabrena.juno.jdkx.net.ssl.SSLContext)" tabindex="0">sslContext(SSLContext)</a></li>
+<li><a href="#sslContext(io.github.jabrena.juno.javax.net.ssl.SSLContext)" tabindex="0">sslContext(SSLContext)</a></li>
 <li><a href="#build()" tabindex="0">build()</a></li>
 </ol>
 </li>
@@ -128,7 +128,7 @@ initTheme();
 <div class="block">Sets the redirect policy.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#sslContext(io.github.jabrena.juno.jdkx.net.ssl.SSLContext)" class="member-name-link">sslContext</a><wbr>(<a href="../../../jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a>&nbsp;sslContext)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#sslContext(io.github.jabrena.juno.javax.net.ssl.SSLContext)" class="member-name-link">sslContext</a><wbr>(<a href="../../../javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a>&nbsp;sslContext)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Sets the trust anchors the client checks HTTPS servers against.</div>
 </div>
@@ -185,10 +185,10 @@ exchange, so this is not only the connect time.</div>
 </section>
 </li>
 <li>
-<section class="detail" id="sslContext(io.github.jabrena.juno.jdkx.net.ssl.SSLContext)">
+<section class="detail" id="sslContext(io.github.jabrena.juno.javax.net.ssl.SSLContext)">
 <h3>sslContext</h3>
 <div class="horizontal-scroll">
-<div class="member-signature"><span class="return-type"><a href="HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></span>&nbsp;<span class="element-name">sslContext</span><wbr><span class="parameters">(<a href="../../../jdkx/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.jdkx.net.ssl">SSLContext</a>&nbsp;sslContext)</span></div>
+<div class="member-signature"><span class="return-type"><a href="HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></span>&nbsp;<span class="element-name">sslContext</span><wbr><span class="parameters">(<a href="../../../javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a>&nbsp;sslContext)</span></div>
 <div class="block">Sets the trust anchors the client checks HTTPS servers against. In a program that sets one, the board's own
 roots are no longer linked on the ESP32 boards, so every client there needs an <code>SSLContext</code> with
 trust anchors to reach an HTTPS server; on a board that cannot change its trust at runtime, a request through

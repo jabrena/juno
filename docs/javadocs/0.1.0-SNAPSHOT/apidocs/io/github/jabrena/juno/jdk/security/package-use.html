@@ -73,24 +73,55 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.security">io.github.jabrena.juno.jdk.security</a></div>
-<div class="col-last even-row-color">
-<div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
-client's trusted certificates, and the exceptions its API declares.</div>
-</div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.jdk.security.cert">io.github.jabrena.juno.jdk.security.cert</a></div>
-<div class="col-last odd-row-color">
-<div class="block">Board-side implementations of <code>java.security.cert</code>: enough to read a PEM certificate for a
-<code>java.net.http</code> client's <code>SSLContext</code>.</div>
-</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdkx.net.ssl">io.github.jabrena.juno.jdkx.net.ssl</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.javax.net.ssl">io.github.jabrena.juno.javax.net.ssl</a></div>
 <div class="col-last even-row-color">
 <div class="block">Board-side implementations of <code>javax.net.ssl</code>: an <code>SSLContext</code> that carries the trust anchors of a
 <code>java.net.http</code> client.</div>
 </div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.jdk.security">io.github.jabrena.juno.jdk.security</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
+client's trusted certificates, and the exceptions its API declares.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.security.cert">io.github.jabrena.juno.jdk.security.cert</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side implementations of <code>java.security.cert</code>: enough to read a PEM certificate for a
+<code>java.net.http</code> client's <code>SSLContext</code>.</div>
+</div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.javax.net.ssl">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.jdk.security</a> used by <a href="../../javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/KeyManagementException.html#io.github.jabrena.juno.javax.net.ssl">KeyManagementException</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board-side <code>java.security.KeyManagementException</code>.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/KeyStore.html#io.github.jabrena.juno.javax.net.ssl">KeyStore</a></div>
+<div class="col-last odd-row-color">
+<div class="block">The board-side <code>java.security.KeyStore</code>: an in-memory store of trusted certificates for a
+<code>java.net.http</code> client's <code>SSLContext</code>.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/KeyStoreException.html#io.github.jabrena.juno.javax.net.ssl">KeyStoreException</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board-side <code>java.security.KeyStoreException</code>.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/NoSuchAlgorithmException.html#io.github.jabrena.juno.javax.net.ssl">NoSuchAlgorithmException</a></div>
+<div class="col-last odd-row-color">
+<div class="block">The board-side <code>java.security.NoSuchAlgorithmException</code>.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/SecureRandom.html#io.github.jabrena.juno.javax.net.ssl">SecureRandom</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board-side <code>java.security.SecureRandom</code>, only as the type of <code>SSLContext.init</code>'s last parameter,
+which a program passes <code>null</code>: the board's TLS client brings its own randomness.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.jdk.security">
 <div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.jdk.security</a> used by <a href="package-summary.html">io.github.jabrena.juno.jdk.security</a></span></div>
@@ -126,37 +157,6 @@ client's trusted certificates, and the exceptions its API declares.</div>
 <div class="col-first even-row-color"><a href="class-use/GeneralSecurityException.html#io.github.jabrena.juno.jdk.security.cert">GeneralSecurityException</a></div>
 <div class="col-last even-row-color">
 <div class="block">The board-side <code>java.security.GeneralSecurityException</code>.</div>
-</div>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="io.github.jabrena.juno.jdkx.net.ssl">
-<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.jdk.security</a> used by <a href="../../jdkx/net/ssl/package-summary.html">io.github.jabrena.juno.jdkx.net.ssl</a></span></div>
-<div class="summary-table two-column-summary">
-<div class="table-header col-first">Class</div>
-<div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="class-use/KeyManagementException.html#io.github.jabrena.juno.jdkx.net.ssl">KeyManagementException</a></div>
-<div class="col-last even-row-color">
-<div class="block">The board-side <code>java.security.KeyManagementException</code>.</div>
-</div>
-<div class="col-first odd-row-color"><a href="class-use/KeyStore.html#io.github.jabrena.juno.jdkx.net.ssl">KeyStore</a></div>
-<div class="col-last odd-row-color">
-<div class="block">The board-side <code>java.security.KeyStore</code>: an in-memory store of trusted certificates for a
-<code>java.net.http</code> client's <code>SSLContext</code>.</div>
-</div>
-<div class="col-first even-row-color"><a href="class-use/KeyStoreException.html#io.github.jabrena.juno.jdkx.net.ssl">KeyStoreException</a></div>
-<div class="col-last even-row-color">
-<div class="block">The board-side <code>java.security.KeyStoreException</code>.</div>
-</div>
-<div class="col-first odd-row-color"><a href="class-use/NoSuchAlgorithmException.html#io.github.jabrena.juno.jdkx.net.ssl">NoSuchAlgorithmException</a></div>
-<div class="col-last odd-row-color">
-<div class="block">The board-side <code>java.security.NoSuchAlgorithmException</code>.</div>
-</div>
-<div class="col-first even-row-color"><a href="class-use/SecureRandom.html#io.github.jabrena.juno.jdkx.net.ssl">SecureRandom</a></div>
-<div class="col-last even-row-color">
-<div class="block">The board-side <code>java.security.SecureRandom</code>, only as the type of <code>SSLContext.init</code>'s last parameter,
-which a program passes <code>null</code>: the board's TLS client brings its own randomness.</div>
 </div>
 </div>
 </section>

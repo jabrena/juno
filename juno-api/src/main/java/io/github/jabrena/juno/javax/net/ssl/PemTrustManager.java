@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.jdkx.net.ssl;
+package io.github.jabrena.juno.javax.net.ssl;
 
 import org.jspecify.annotations.Nullable;
 

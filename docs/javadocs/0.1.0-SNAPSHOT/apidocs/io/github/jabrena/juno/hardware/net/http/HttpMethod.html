@@ -141,12 +141,7 @@ the same bytecode as <code>method.equals("GET")</code>.</div>
 <div class="col-first odd-row-color"><code>static final <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#QUERY" class="member-name-link">QUERY</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">Safe, idempotent request with a body, as already supported by 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>HttpClient#query</code></pre>
-</details>
-.</div>
+<div class="block">Safe, idempotent request with a body (RFC 10008), sent with <code>HttpRequest.Builder.method("QUERY", body)</code>.</div>
 </div>
 </div>
 </section>
@@ -286,12 +281,7 @@ the same bytecode as <code>method.equals("GET")</code>.</div>
 <h3>QUERY</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">QUERY</span></div>
-<div class="block">Safe, idempotent request with a body, as already supported by 
-<details class="invalid-tag">
-<summary>invalid reference</summary>
-<pre><code>HttpClient#query</code></pre>
-</details>
-.</div>
+<div class="block">Safe, idempotent request with a body (RFC 10008), sent with <code>HttpRequest.Builder.method("QUERY", body)</code>.</div>
 <dl class="notes">
 <dt>See Also:</dt>
 <dd>

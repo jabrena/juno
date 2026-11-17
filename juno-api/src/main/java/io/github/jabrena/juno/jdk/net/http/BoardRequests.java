@@ -3,8 +3,8 @@ package io.github.jabrena.juno.jdk.net.http;
 import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
 import io.github.jabrena.juno.hardware.internal.NativeHttpRequests;
 import io.github.jabrena.juno.hardware.internal.NativeHttpSchemes;
+import io.github.jabrena.juno.javax.net.ssl.SSLContext;
 import io.github.jabrena.juno.jdk.net.URI;
-import io.github.jabrena.juno.jdkx.net.ssl.SSLContext;
 import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
