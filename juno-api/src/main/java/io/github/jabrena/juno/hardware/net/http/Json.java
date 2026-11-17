@@ -3,8 +3,9 @@ package io.github.jabrena.juno.hardware.net.http;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A bounded, non-allocating JSON field reader. Reads directly out of a {@code byte[]} buffer (typically one filled by
- * {@link HttpClient}) without ever building a parsed document — Juno has no heap, so there is no DOM to build. The
+ * A bounded, non-allocating JSON field reader. Reads directly out of a {@code java.net.http} response body held in a
+ * {@code String}, or a {@code byte[]} buffer such as an {@link HttpServer} request body, without ever building a parsed
+ * document — Juno has no heap, so there is no DOM to build. The
  * scanner is plain Java that Juno compiles into the program only when a {@code Json} method is reachable; only
  * {@link #getString(byte[], int, String)}'s copy into a runtime {@link String} is a compiler intrinsic.
  *
@@ -16,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * <p>The scanner validates the complete bounded document before returning a value. Call {@link #type} when a missing
  * value, JSON {@code null}, a type mismatch, and a malformed or truncated document must be distinguished. Typed getters
  * retain convenient zero-value failure results and never allocate or throw. {@code bufferLength} must be the number of
- * JSON bytes in the buffer (for example, the value returned by {@link HttpClient#get}), not the buffer capacity.
+ * JSON bytes in the buffer (for example, the value returned by {@link HttpServer#accept}), not the buffer capacity.
  *
  * <p>{@link #getString(byte[], int, String, byte[], int)} decodes JSON escapes, including UTF-16
  * <code>&#92;uXXXX</code> surrogate pairs, to UTF-8 in {@code out}. It writes at most {@code outLength} bytes and
