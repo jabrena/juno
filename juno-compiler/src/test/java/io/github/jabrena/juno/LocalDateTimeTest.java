@@ -219,55 +219,7 @@ class LocalDateTimeTest {
                 .hasMessageContaining("UNO R3");
     }
 
-    @Test
-    @DisplayName("Supports the UNO WiFi Rev2 through AVR thunks")
-    void shouldSupportTheUnoWifiRev2ThroughAvrThunks() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-                import io.github.jabrena.juno.annotations.Board;
-                import java.time.LocalDateTime;
-                @Board(ArduinoUnoR3WiFiRev2Board.class)
-                public final class WifiRev2Clock {
-                    public static void main() {
-                        LocalDateTime value = LocalDateTime.now();
-                        int second = value.getSecond();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiRev2Clock", source, "25");
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiRev2Clock");
 
-        // When & Then
-        assertThat(result.assembly()).contains(
-                "call juno_avr_thunk_juno_local_date_time_now",
-                "call juno_avr_thunk_juno_local_date_time_get_second");
-    }
-
-    @Test
-    @DisplayName("The UNO WiFi Rev2 shim includes WiFiNINA and the SNTP server")
-    void shouldIncludeWifiNinaAndTheTimeApiInTheRev2Shim() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
-                import io.github.jabrena.juno.annotations.Board;
-                import java.time.LocalDateTime;
-                @Board(ArduinoUnoR3WiFiRev2Board.class)
-                public final class WifiRev2Clock {
-                    public static void main() {
-                        LocalDateTime value = LocalDateTime.now();
-                        int second = value.getSecond();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiRev2Clock", source, "25");
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.WifiRev2Clock");
-
-        // When & Then
-        assertThat(result.runtimeShim()).contains("#include <WiFiNINA.h>", "#include <WiFiUdp.h>", "pool.ntp.org");
-    }
 
     private CompilationResult compile(String members) throws Exception {
         String source = """

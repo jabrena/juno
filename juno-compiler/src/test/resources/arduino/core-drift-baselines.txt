@@ -9,7 +9,6 @@
 #
 # board                        core                          baseline  margin
 arduino-uno-r3                 arduino:avr@1.8.8                  198      64
-arduino-uno-r3-wifi-rev2       arduino:megaavr@1.8.8              189      64
 arduino-uno-r4-wifi            arduino:renesas_uno@1.6.0         6744     327
 arduino-uno-q                  arduino:zephyr@1.0.0             32984    2621
 arduino-nano-esp32             arduino:esp32@2.0.18-arduino.5   30560    3276

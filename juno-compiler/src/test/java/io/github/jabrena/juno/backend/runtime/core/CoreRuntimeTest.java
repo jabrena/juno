@@ -35,14 +35,13 @@ class CoreRuntimeTest {
         assertThat(coreRuntimes.of(ArduinoCore.MBED_PORTENTA).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
-        assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).carrierCount()).isEqualTo(1);
     }
 
     @Test
     @DisplayName("Single-carrier core port selection remains byte-identical")
     void shouldKeepTheOriginalPortForSingleCarrierCores() {
         for (ArduinoCore core : new ArduinoCore[] {
-                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR, ArduinoCore.MEGAAVR
+                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR
         }) {
             CoreRuntime runtime = coreRuntimes.of(core);
             assertThat(runtime.threadPort(resolvedFor(core), 1)).isEqualTo(runtime.threadPort(resolvedFor(core)));
@@ -305,15 +304,6 @@ class CoreRuntimeTest {
                 .containsExactly("#include <avr/wdt.h>\n", "wdt_enable(WDTO_4S);", "wdt_reset();", 4000);
     }
 
-    @Test
-    @DisplayName("The megaAVR core has its own watchdog sequence")
-    void shouldProvideTheMegaAvrWatchdogSequence() {
-        assertThat(coreRuntimes.of(ArduinoCore.MEGAAVR).watchdog(3000))
-                .extracting("includes", "begin", "refresh", "effectiveTimeoutMillis")
-                .containsExactly("#include <avr/io.h>\n",
-                        "_PROTECTED_WRITE(WDT.CTRLA, WDT_PERIOD_4KCLK_gc);",
-                        "__asm__ __volatile__(\"wdr\");", 4100);
-    }
 
     @Test
     @DisplayName("The Renesas core has its own watchdog sequence")

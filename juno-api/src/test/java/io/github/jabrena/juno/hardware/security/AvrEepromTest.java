@@ -15,15 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AvrEepromTest {
 
-    /** The UNO WiFi Rev2's 256-byte EEPROM holds four 64-byte slots. */
-    private static final int REV2_SLOTS = 4;
+    /** A 256-byte EEPROM holds four 64-byte slots. */
+    private static final int SLOTS = 4;
 
     private FakeEeprom eeprom;
     private SecretStore secrets;
 
     @BeforeEach
     void setUp() {
-        eeprom = new FakeEeprom(REV2_SLOTS);
+        eeprom = new FakeEeprom(SLOTS);
         secrets = new AvrEeprom(eeprom);
     }
 
@@ -40,12 +40,12 @@ class AvrEepromTest {
     @Test
     @DisplayName("the store holds as many names as the EEPROM has slots, and no more")
     void holdsOneNamePerSlot() {
-        for (int i = 0; i < REV2_SLOTS; i++) {
+        for (int i = 0; i < SLOTS; i++) {
             assertThat(secrets.write("name." + i, new byte[] {1}, 1)).isEqualTo(1);
         }
 
         assertThat(secrets.write("one.too.many", new byte[] {1}, 1)).isEqualTo(-1);
-        assertThat(eeprom.reads).as("a lookup never reads past the EEPROM's last slot").allMatch(slot -> slot < REV2_SLOTS);
+        assertThat(eeprom.reads).as("a lookup never reads past the EEPROM's last slot").allMatch(slot -> slot < SLOTS);
     }
 
     @Test

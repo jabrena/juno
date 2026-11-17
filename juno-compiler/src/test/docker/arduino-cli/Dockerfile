@@ -18,14 +18,13 @@ RUN case "$(dpkg --print-architecture)" in \
     && curl -fsSL "https://github.com/arduino/arduino-cli/releases/download/v${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_${asset}.tar.gz" \
         | tar -xz -C /usr/local/bin arduino-cli
 
-# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, UNO WiFi Rev2, Nano ESP32, M5Stack
+# The platforms of every @Board target (UNO R3, UNO R4 WiFi, UNO Q, Nano ESP32, M5Stack
 # Cardputer, AI Thinker ESP32-CAM, Raspberry Pi Pico 2 W and Portenta H7); pin any with
 # --build-arg CORE=arduino:renesas_uno@<version> / ZEPHYR_CORE=arduino:zephyr@<version> /
-# MEGAAVR_CORE=arduino:megaavr@<version> / AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version> /
+# AVR_CORE=arduino:avr@<version> / ESP32_CORE=arduino:esp32@<version> /
 # M5STACK_ESP32_CORE=m5stack:esp32@<version> / PORTENTA_CORE=arduino:mbed_portenta@<version>.
 ARG CORE=arduino:renesas_uno
 ARG ZEPHYR_CORE=arduino:zephyr
-ARG MEGAAVR_CORE=arduino:megaavr
 ARG AVR_CORE=arduino:avr
 ARG ESP32_CORE=arduino:esp32
 ARG M5STACK_ESP32_CORE=m5stack:esp32
@@ -39,7 +38,7 @@ ARG PICO_PACKAGE_INDEX_URL=https://github.com/earlephilhower/arduino-pico/releas
 ARG PORTENTA_CORE=arduino:mbed_portenta
 RUN arduino-cli core update-index \
         --additional-urls "${M5STACK_PACKAGE_INDEX_URL},${ESPRESSIF_PACKAGE_INDEX_URL},${PICO_PACKAGE_INDEX_URL}" \
-    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${MEGAAVR_CORE}" "${AVR_CORE}" "${ESP32_CORE}" \
+    && arduino-cli core install "${CORE}" "${ZEPHYR_CORE}" "${AVR_CORE}" "${ESP32_CORE}" \
     && arduino-cli core install "${M5STACK_ESP32_CORE}" --additional-urls "${M5STACK_PACKAGE_INDEX_URL}" \
     && arduino-cli core install "${ESPRESSIF_CORE}" --additional-urls "${ESPRESSIF_PACKAGE_INDEX_URL}" \
     && arduino-cli core install "${PICO_CORE}" --additional-urls "${PICO_PACKAGE_INDEX_URL}" \
@@ -62,10 +61,6 @@ RUN arduino-cli lib install Servo SdFat
 # M5Unified's declared >=0.2.31 requirement.
 RUN arduino-cli lib install M5Cardputer@1.1.1 \
     && arduino-cli lib install M5GFX@0.2.31
-
-# The UNO WiFi Rev2 reaches its NINA-W102 Wi-Fi module (Wi-Fi, UDP, HTTP, HTTPS, TLS mail) through WiFiNINA,
-# which the megaavr core does not bundle.
-RUN arduino-cli lib install WiFiNINA
 
 # The UNO R3 reaches the retired shield's HDG104 module through the legacy WiFi library.
 RUN arduino-cli lib install WiFi@1.2.7

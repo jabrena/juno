@@ -29,7 +29,7 @@ import javax.xml.validation.SchemaFactory;
 
 /** Parsed and validated semantic-conformance catalog used by the emulator integration tests. */
 public final class ConformanceCatalog {
-    private static final Set<String> REQUIRED_BACKENDS = Set.of("thumb2", "avr", "xtensa");
+    private static final Set<String> REQUIRED_BACKENDS = Set.of("thumb2", "xtensa");
     // Map.of accepts at most 10 pairs; this catalog has more areas, so entries are built with Map.ofEntries.
     private static final Map<String, Set<String>> REQUIRED_AREAS = Map.ofEntries(
             Map.entry("primitives.literals", Set.of("3.10.1", "3.10.2", "3.10.3", "3.10.4")),

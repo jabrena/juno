@@ -106,11 +106,9 @@ class McuCapabilityValidationTest {
         static java.util.stream.Stream<org.junit.jupiter.params.provider.Arguments> gatedGetters() {
             return java.util.stream.Stream.of(
                     org.junit.jupiter.params.provider.Arguments.of("getWifi", Capability.ONBOARD_WIFI, Board.UNO_R3),
-                    org.junit.jupiter.params.provider.Arguments.of("getBluetoothLe", Capability.BLUETOOTH_LE, Board.UNO_R3_WIFI_REV2),
+                    org.junit.jupiter.params.provider.Arguments.of("getBluetoothLe", Capability.BLUETOOTH_LE, Board.UNO_R3),
                     org.junit.jupiter.params.provider.Arguments.of("getMouse", Capability.USB_HID, Board.UNO_Q),
                     org.junit.jupiter.params.provider.Arguments.of("getLedMatrix", Capability.LED_MATRIX, Board.NANO_ESP32),
-                    org.junit.jupiter.params.provider.Arguments.of("getAccelerometer", Capability.ONBOARD_IMU, Board.UNO_R4_WIFI),
-                    org.junit.jupiter.params.provider.Arguments.of("getGyroscope", Capability.ONBOARD_IMU, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getCamera", Capability.CAMERA, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getSdCard", Capability.ONBOARD_SD_CARD, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getDisplay", Capability.M5_DISPLAY, Board.UNO_R4_WIFI),

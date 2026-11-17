@@ -176,7 +176,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "a UUID program's shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoUnoR3Board", "ArduinoUnoR3WiFiRev2Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR3Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("A UUID program's shim is valid C++ on every board")
     void shouldCompileAUuidProgramsShimWithACppCompiler(String board) throws Exception {
         // Given
@@ -210,7 +210,7 @@ class GeneratedAsmToolchainTest {
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         // Then
-        if (board.equals("ArduinoUnoR3Board") || board.equals("ArduinoUnoR3WiFiRev2Board")) {
+        if (board.equals("ArduinoUnoR3Board")) {
             assertThat(result.runtimeShim()).contains(
                     "juno_uuid_new", "juno_avr_thunk_juno_uuid_new",
                     "juno_avr_thunk_juno_uuid_get_most_significant_bits");
@@ -220,7 +220,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "random UUID shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoUnoR3WiFiRev2Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
     @DisplayName("Random UUID shims compile for boards with native entropy")
     void shouldCompileRandomUuidShimsForBoardsWithNativeEntropy(String board) throws Exception {
         // Given
@@ -247,13 +247,9 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.assembly()).contains("juno_uuid_random");
-        if (board.equals("ArduinoUnoR3WiFiRev2Board")) {
-            assertThat(result.runtimeShim()).contains("juno_atecc608_crc", "juno_avr_thunk_juno_uuid_random");
-        } else {
-            Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
-            Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-            syntaxCheckCpp(compiler, shim);
-        }
+        Path shim = temporaryDirectory.resolve(name + "Shim.cpp");
+        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
+        syntaxCheckCpp(compiler, shim);
     }
 
     @Test

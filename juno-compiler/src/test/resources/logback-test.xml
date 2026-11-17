@@ -15,7 +15,6 @@
     <logger name="org.testcontainers" level="INFO"/>
     <!-- Per-program progress of the emulator ITs: each run takes up to a minute, so CI shows these lines live. -->
     <logger name="io.github.jabrena.juno.qemu" level="INFO"/>
-    <logger name="io.github.jabrena.juno.simavr" level="INFO"/>
     <logger name="io.github.jabrena.juno.xtensa" level="INFO"/>
     <logger name="tc" level="INFO"/>
     <logger name="com.github.dockerjava" level="WARN"/>

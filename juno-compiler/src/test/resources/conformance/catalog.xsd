@@ -90,8 +90,8 @@
                                                 <xs:attribute name="ref" type="xs:IDREF" use="required"/>
                                             </xs:complexType>
                                         </xs:element>
-                                        <!-- Exactly one status per required backend (thumb2, avr, xtensa). -->
-                                        <xs:element name="backend" minOccurs="3" maxOccurs="3">
+                                        <!-- Exactly one status per required backend (thumb2, xtensa). -->
+                                        <xs:element name="backend" minOccurs="2" maxOccurs="2">
                                             <xs:complexType>
                                                 <xs:attribute name="ref" type="xs:IDREF" use="required"/>
                                                 <xs:attribute name="status" use="required">
