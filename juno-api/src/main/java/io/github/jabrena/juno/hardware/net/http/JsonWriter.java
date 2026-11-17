@@ -21,6 +21,7 @@ public final class JsonWriter {
     private boolean afterName;
     private boolean overflow;
 
+    /** A writer that fills {@code out} from its first byte; allocate it once and {@link #reset()} it per body. */
     public JsonWriter(byte[] out) {
         this.out = out;
     }
@@ -36,18 +37,22 @@ public final class JsonWriter {
         return this;
     }
 
+    /** Opens an object with an opening brace, preceded by a comma when needed. */
     public JsonWriter beginObject() {
         return open('{', true);
     }
 
+    /** Closes the innermost object with a closing brace. */
     public JsonWriter endObject() {
         return close('}');
     }
 
+    /** Opens an array: {@code '['}, preceded by a comma when needed. */
     public JsonWriter beginArray() {
         return open('[', false);
     }
 
+    /** Closes the innermost array with {@code ']'}. */
     public JsonWriter endArray() {
         return close(']');
     }
@@ -65,16 +70,19 @@ public final class JsonWriter {
         return this;
     }
 
+    /** A JSON string, with quotes, backslashes and control characters escaped. */
     public JsonWriter value(String value) {
         separator();
         string(value);
         return this;
     }
 
+    /** A JSON number written in decimal. */
     public JsonWriter value(int value) {
         return value((long) value);
     }
 
+    /** A JSON number written in decimal, {@link Long#MIN_VALUE} included. */
     public JsonWriter value(long value) {
         separator();
         if (value < 0) {
@@ -93,11 +101,13 @@ public final class JsonWriter {
         return this;
     }
 
+    /** The JSON literal {@code true} or {@code false}. */
     public JsonWriter value(boolean value) {
         separator();
         return word(value ? "true" : "false");
     }
 
+    /** The JSON literal {@code null}. */
     public JsonWriter nullValue() {
         separator();
         return word("null");

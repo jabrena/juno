@@ -78,18 +78,22 @@ public final class JsonView {
         return first == '[' ? Json.TYPE_ARRAY : Json.TYPE_NUMBER;
     }
 
+    /** Whether no value exists here: an absent member, an index out of range, or a step into a non-container. */
     public boolean isMissing() {
         return start == JsonPath.MISSING;
     }
 
+    /** Whether this is the JSON literal {@code null}. */
     public boolean isNull() {
         return type() == Json.TYPE_NULL;
     }
 
+    /** Whether this is a JSON number. */
     public boolean isNumber() {
         return type() == Json.TYPE_NUMBER;
     }
 
+    /** Whether this is a JSON string. */
     public boolean isString() {
         return type() == Json.TYPE_STRING;
     }
