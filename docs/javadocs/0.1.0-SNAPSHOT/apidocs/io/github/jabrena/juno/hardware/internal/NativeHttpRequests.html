@@ -73,6 +73,7 @@ initTheme();
 <li><a href="#method-summary" tabindex="0">Method Summary</a></li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
+<li><a href="#setTimeout(int)" tabindex="0">setTimeout(int)</a></li>
 <li><a href="#requestHttp(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" tabindex="0">requestHttp(String, int, String, String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a></li>
 <li><a href="#requestHttpForText(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" tabindex="0">requestHttpForText(String, int, String, String, byte[], int, byte[], int, byte[], int, int[])</a></li>
 <li><a href="#requestHttpsForText(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" tabindex="0">requestHttpsForText(String, int, String, String, byte[], int, byte[], int, byte[], int, int[])</a></li>
@@ -95,10 +96,9 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">NativeHttpRequests</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">The board's HTTP and HTTPS request for the board-side <code>java.net.http</code> client: like
-<a href="NativeHttpClient.html#requestHttp(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>NativeHttpClient.requestHttp(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a>, but the request target (<code>path?query</code>)
-is a <code>String</code>, so its length is limited only by the arena rather than by a fixed buffer. Both are intrinsics;
-they have no body on the JVM.</div>
+<div class="block">The board's HTTP and HTTPS requests behind the board-side <code>java.net.http</code> client. The request target
+(<code>path?query</code>) is a <code>String</code>, so its length is limited only by the arena. Each method is a compiler
+intrinsic with no body on the JVM; a program sends requests with <code>java.net.http.HttpClient</code> instead.</div>
 </div>
 </section>
 <section class="summary">
@@ -181,10 +181,16 @@ at that size, one without it grows as it arrives.</div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The HTTPS counterpart of <a href="#requestHttpForText(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>requestHttpForText(String, int, String, String, byte[], int, byte[], int, byte[], int, int[])</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setTrustedCertificate(java.lang.String,int)" class="member-name-link">setTrustedCertificate</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;pem,
- int&nbsp;length)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setTimeout(int)" class="member-name-link">setTimeout</a><wbr>(int&nbsp;millis)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sets how long every later request waits, in milliseconds: on ESP32 boards to connect and then again for the
+response, elsewhere for the response only.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setTrustedCertificate(java.lang.String,int)" class="member-name-link">setTrustedCertificate</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;pem,
+ int&nbsp;length)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Makes later HTTPS requests trust only the certificates in <code>pem</code>, a PEM chain <code>length</code> characters
 long, or, when it is <code>null</code>, the board's own trust again.</div>
 </div>
@@ -206,6 +212,16 @@ long, or, when it is <code>null</code>, the board's own trust again.</div>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="setTimeout(int)">
+<h3>setTimeout</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTimeout</span><wbr><span class="parameters">(int&nbsp;millis)</span></div>
+<div class="block">Sets how long every later request waits, in milliseconds: on ESP32 boards to connect and then again for the
+response, elsewhere for the response only. A value of <code>0</code> or less is ignored; the default is 5000.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="requestHttp(java.lang.String,int,java.lang.String,java.lang.String,byte[],int,byte[],int,byte[],int,byte[],int,int[])">
 <h3>requestHttp</h3>
 <div class="horizontal-scroll">
@@ -223,8 +239,10 @@ long, or, when it is <code>null</code>, the board's own trust again.</div>
  int&nbsp;headersBufferLength,
  int[]&nbsp;statusAndHeadersLength)</span></div>
 <div class="block">Sends a plain-HTTP request for <code>target</code> to <code>host:port</code> and returns how many body bytes it wrote
-into <code>bodyBuffer</code>, or <code>-1</code> when it could not be sent. The other arguments are those of
-<a href="NativeHttpClient.html#requestHttp(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>NativeHttpClient.requestHttp(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a>.</div>
+into <code>bodyBuffer</code>, or <code>-1</code> when it could not be sent. The first <code>requestHeadersLength</code> bytes of
+<code>requestHeadersBuffer</code> are complete header lines, each ending in <code>\r\n</code>; a negative
+<code>requestBodyLength</code> sends no body. <code>statusAndHeadersLength</code> receives the status at index 0 and the
+header bytes written into <code>headersBuffer</code> at index 1.</div>
 </div>
 </section>
 </li>

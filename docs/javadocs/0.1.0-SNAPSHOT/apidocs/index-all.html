@@ -1143,10 +1143,6 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">A practical caller-owned response buffer size for an HS100/HS110 system-information reply.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#DEFAULT_RESPONSE_BUFFER_SIZE" class="member-name-link">DEFAULT_RESPONSE_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">A reasonable default size for a caller's body/headers buffer, in bytes.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#DEFAULT_TIMEOUT_MILLIS" class="member-name-link">DEFAULT_TIMEOUT_MILLIS</a> - Static variable in class io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpClient</a></dt>
 <dd>
 <div class="block">How long a request waits when neither it nor its client sets a timeout, in milliseconds.</div>
@@ -1162,10 +1158,6 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#delete()" class="member-name-link">delete()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></dt>
 <dd>
 <div class="block">Deletes the firmware the brick holds, if any.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#delete(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">delete(String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a bodyless DELETE request to <code>url</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#DELETE" class="member-name-link">DELETE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
@@ -1851,16 +1843,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/jdk/util/Optional.html#get()" class="member-name-link">get()</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Optional.html" title="class in io.github.jabrena.juno.jdk.util">Optional</a></dt>
 <dd>
 <div class="block">The value.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#get(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">get(String, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a GET request to <code>baseUrl</code> (a scheme, host and optional port, with no path of its own) for the
-path held in the first <code>pathLength</code> ASCII bytes of <code>pathBuffer</code>: for paths that depend on runtime
-data, such as coordinates read from an earlier response, since the base URL must be a compile-time string.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#get(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">get(String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a GET request to <code>url</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#GET" class="member-name-link">GET</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
@@ -3078,7 +3060,7 @@ such header.</div>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.http">HttpClient</a> - Class in <a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></dt>
 <dd>
 <div class="block">The board-side <code>java.net.http.HttpClient</code>: sends a <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http"><code>HttpRequest</code></a> through the board's own
-<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a>.</div>
+<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpRequests</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a> - Interface in <a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></dt>
 <dd>
@@ -3538,10 +3520,10 @@ plain-text body into caller-owned buffers.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a> - package io.github.jabrena.juno.hardware.net.http</dt>
 <dd>
-<div class="block">HTTP(S) client and server support built on <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s
-connection: <a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a> to send <code>http://</code> and <code>https://</code>
-requests into a caller-owned <code>byte[]</code> response buffer, <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> to read typed
-values directly out of a response buffer without building a parsed document, and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
+<div class="block">HTTP support built on <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s connection, next to the JDK's
+<code>java.net.http</code> client that programs send requests with: <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>
+to read typed values directly out of a response body or a request buffer without building a parsed document, and
+<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> to serve requests, with
 <a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a> - package io.github.jabrena.juno.hardware.net.udp</dt>
@@ -4483,19 +4465,13 @@ pin mode and returns the pin number as the handle.</div>
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a>: each method is a GPIO intrinsic the compiler lowers to the Arduino core call, so it has no
 Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
-<dd>
-<div class="block">The board's own HTTP/1.1 requests, behind the board-side <code>java.net.http</code> client and Juno's runtime tests.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpFeatures.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpFeatures</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
 <div class="block">What a program does with <code>java.net.http</code> responses, answered when the program is linked.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
-<div class="block">The board's HTTP and HTTPS request for the board-side <code>java.net.http</code> client: like
-<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#requestHttp(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>NativeHttpClient.requestHttp(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a>, but the request target (<code>path?query</code>)
-is a <code>String</code>, so its length is limited only by the arena rather than by a fixed buffer.</div>
+<div class="block">The board's HTTP and HTTPS requests behind the board-side <code>java.net.http</code> client.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpSchemes.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpSchemes</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -4822,10 +4798,6 @@ strobe pulsed low then high.</div>
 <dd>
 <div class="block">Decodes one checksum-valid GGA sentence into a caller-owned five-int position array.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#patch(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">patch(String, String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a PATCH request to <code>url</code> with a compile-time JSON body.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#PATCH" class="member-name-link">PATCH</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#path()" class="member-name-link">path()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
@@ -4988,8 +4960,7 @@ movement started with <code>immediateReturn</code> runs, to watch something else
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a> - Class in <a href="io/github/jabrena/juno/hardware/net/email/package-summary.html">io.github.jabrena.juno.hardware.net.email</a></dt>
 <dd>
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
-board-specific implicit-TLS transport as
-<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a>'s <code>https://</code> requests.</div>
+board-specific implicit-TLS transport as the board's HTTPS requests.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html#port()" class="member-name-link">port()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLight</a></dt>
 <dd>
@@ -5067,14 +5038,6 @@ grows counter-clockwise, and +y is to the left of heading zero.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#POSITION_LENGTH" class="member-name-link">POSITION_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#post(java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">post(String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a POST request to <code>url</code> with caller-owned request headers and a caller-owned JSON body.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#post(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">post(String, String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a POST request to <code>url</code> with a compile-time body.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#POST" class="member-name-link">POST</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html#POST(io.github.jabrena.juno.jdk.net.http.HttpRequest.BodyPublisher)" class="member-name-link">POST(HttpRequest.BodyPublisher)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.Builder</a></dt>
@@ -5292,10 +5255,6 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 </dl>
 <h2 class="title" id="I:Q">Q</h2>
 <dl class="index">
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#query(java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">query(String, String, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a safe, idempotent QUERY request to <code>url</code> with a compile-time JSON body, as defined by RFC 10008.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#QUERY" class="member-name-link">QUERY</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>
 <div class="block">Safe, idempotent request with a body, as already supported by 
@@ -5861,11 +5820,6 @@ creates the brick's parts from the link — its motors (<a href="io/github/jabre
 <dd>
 <div class="block">Size needed for the length-prefixed TCP request buffer.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#requestHttp(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">requestHttp(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends a plain-HTTP request whose host, path, request headers, and optional body are held in caller-owned
-storage.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#requestHttp(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">requestHttp(String, int, String, String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></dt>
 <dd>
 <div class="block">Sends a plain-HTTP request for <code>target</code> to <code>host:port</code> and returns how many body bytes it wrote
@@ -5876,10 +5830,6 @@ into <code>bodyBuffer</code>, or <code>-1</code> when it could not be sent.</div
 <div class="block">Sends a plain-HTTP request as <a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#requestHttp(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>NativeHttpRequests.requestHttp(String, int, String, String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a> does, but returns the body as a <code>String</code> of exactly
 the bytes received, with no size limit but the arena's: a body with a <code>Content-Length</code> is allocated once,
 at that size, one without it grows as it arrives.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#requestHttps(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">requestHttps(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sends an HTTPS request whose host, path, request headers, and optional body are held in caller-owned storage.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#requestHttps(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">requestHttps(String, int, String, String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></dt>
 <dd>
@@ -6654,11 +6604,10 @@ would get, so 270 is 3 power per degree, and <code>maximumCorrection</code> boun
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html#setTextSize(int)" class="member-name-link">setTextSize(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#setTimeout(int)" class="member-name-link">setTimeout(int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#setTimeout(int)" class="member-name-link">setTimeout(int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></dt>
 <dd>
-<div class="block">Sets how long every later request waits, in milliseconds: on ESP32 boards (Nano ESP32, M5Stack Cardputer) to
-connect and then again for the response, elsewhere for the response only, as those boards' WiFi clients take no
-connect timeout.</div>
+<div class="block">Sets how long every later request waits, in milliseconds: on ESP32 boards to connect and then again for the
+response, elsewhere for the response only.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTimeoutMillis(int)" class="member-name-link">setTimeoutMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>
@@ -6688,10 +6637,6 @@ otherwise.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setTravelPowers(int,int)" class="member-name-link">setTravelPowers(int, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>
 <div class="block">The travel's cruise power and the power it starts and ends at, percent; the minimum must still move the robot.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html#setTrustedCertificate(byte%5B%5D,int)" class="member-name-link">setTrustedCertificate(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpClient</a></dt>
-<dd>
-<div class="block">Sets a caller-owned PEM trust anchor for later HTTPS requests.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#setTrustedCertificate(java.lang.String,int)" class="member-name-link">setTrustedCertificate(String, int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></dt>
 <dd>

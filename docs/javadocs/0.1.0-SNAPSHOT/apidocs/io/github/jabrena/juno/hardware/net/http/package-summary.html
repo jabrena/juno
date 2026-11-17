@@ -82,17 +82,14 @@ initTheme();
 <div class="package-signature"><span class="annotations">@NullMarked
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.net.http</span></div>
 <section class="package-description" id="package-description">
-<div class="block">HTTP(S) client and server support built on <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s
-connection: <a href="../../internal/NativeHttpClient.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpClient</code></a> to send <code>http://</code> and <code>https://</code>
-requests into a caller-owned <code>byte[]</code> response buffer, <a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> to read typed
-values directly out of a response buffer without building a parsed document, and <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (plain HTTP only) to serve requests, with
+<div class="block">HTTP support built on <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s connection, next to the JDK's
+<code>java.net.http</code> client that programs send requests with: <a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>
+to read typed values directly out of a response body or a request buffer without building a parsed document, and
+<a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> to serve requests, with
 <a href="HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.
 
-<p>The convenience client's URL/body and every JSON path may be literals or runtime strings loaded from a board-side
-<code>SecretStore</code>. <a href="../../internal/NativeHttpClient.html#requestHttps(java.lang.String,int,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)"><code>NativeHttpClient.requestHttps(String, int, String, byte[], int, byte[], int, byte[], int, byte[], int, byte[], int, int[])</code></a> is the lower-level
-exception for protocol drivers: it accepts runtime paths, multiple request-header lines, and bodies in bounded,
-caller-owned byte buffers. <a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a> also
-accepts a runtime response body.</div>
+<p>Every JSON path may be a literal or a runtime string. <a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a> also accepts a runtime response
+body.</div>
 </section>
 </div>
 <section class="summary">
