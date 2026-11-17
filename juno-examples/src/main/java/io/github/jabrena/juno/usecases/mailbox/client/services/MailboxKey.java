@@ -8,21 +8,18 @@ import java.io.InputStream;
 /**
  * The mailbox API key the client sends in a {@code Mailbox-API-Key} header on every mailbox request. It starts as
  * {@link #DEFAULT_KEY}, the board's own starting key, and once typed in Settings it is kept in {@code /api-key.txt} on
- * the SD card. The header line is encoded once per change, so a request only passes the ready bytes on.
+ * the SD card.
  */
 public final class MailboxKey {
     public static final String DEFAULT_KEY = "1234567890";
     public static final int MAX_KEY_CHARS = 16;
-    private static final String HEADER_PREFIX = "Mailbox-API-Key: ";
+    /** The request header the mailbox board checks the key in. */
+    public static final String HEADER = "Mailbox-API-Key";
     private static final String KEY_FILE = "api-key.txt";
-    /** "Mailbox-API-Key: " (17 bytes), the longest key and the closing {@code \r\n}. */
-    private static final int HEADER_CAPACITY = 17 + MAX_KEY_CHARS + 2;
 
     private final SdCard sdCard;
     private final char[] key = new char[MAX_KEY_CHARS];
-    private final byte[] header = new byte[HEADER_CAPACITY];
     private int keyLength;
-    private int headerLength;
 
     public MailboxKey(SdCard sdCard) {
         this.sdCard = sdCard;
@@ -56,7 +53,6 @@ public final class MailboxKey {
             return;
         }
         keyLength = length;
-        encodeHeader();
     }
 
     /**
@@ -73,7 +69,6 @@ public final class MailboxKey {
             text.append(value[index]);
         }
         keyLength = length;
-        encodeHeader();
         sdCard.remove(KEY_FILE);
         return sdCard.appendText(KEY_FILE, text.toString());
     }
@@ -86,13 +81,13 @@ public final class MailboxKey {
         return keyLength;
     }
 
-    /** The {@code Mailbox-API-Key} header line, ending in {@code \r\n}; its length is {@link #headerLength()}. */
-    public byte[] header() {
-        return header;
-    }
-
-    public int headerLength() {
-        return headerLength;
+    /** The key, the value of the {@link #HEADER} request header. */
+    public String value() {
+        StringBuilder value = new StringBuilder(keyLength);
+        for (int index = 0; index < keyLength; index++) {
+            value.append(key[index]);
+        }
+        return value.toString();
     }
 
     private void useDefault() {
@@ -100,19 +95,5 @@ public final class MailboxKey {
             key[index] = DEFAULT_KEY.charAt(index);
         }
         keyLength = DEFAULT_KEY.length();
-        encodeHeader();
-    }
-
-    private void encodeHeader() {
-        int position = 0;
-        for (int index = 0; index < HEADER_PREFIX.length(); index++) {
-            header[position++] = (byte) HEADER_PREFIX.charAt(index);
-        }
-        for (int index = 0; index < keyLength; index++) {
-            header[position++] = (byte) key[index];
-        }
-        header[position++] = '\r';
-        header[position++] = '\n';
-        headerLength = position;
     }
 }

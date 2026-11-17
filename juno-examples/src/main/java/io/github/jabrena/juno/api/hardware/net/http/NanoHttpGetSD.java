@@ -6,20 +6,23 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Properties;
 
 /**
  * Joins the Wi-Fi network named in {@code application.properties} on the microSD card of a Nano Connector Carrier,
- * then sends a plain HTTP GET every ten seconds with the Nano ESP32's {@link HttpClient}. The host is compiled in
- * ({@link #BASE_URL}: the client takes a literal host); the request path comes from the card. Prints the status,
- * the body length and the first bytes of the body at 115200 baud.
+ * then sends a plain HTTP GET every ten seconds with the JDK's {@code java.net.http} client. The host is compiled in
+ * ({@link #BASE_URL}); the request path comes from the card, so the URI is built at runtime. Prints the status, the
+ * body length and the first bytes of the body at 115200 baud.
  *
  * <p>The card needs {@code wifi.ssid}, {@code wifi.password} and {@code http.path}, for example
  * {@code http.path=/v1/forecast?latitude=40.4168&longitude=-3.7038&current=temperature_2m}.
@@ -36,13 +39,12 @@ public final class NanoHttpGetSD {
 
     private static final String BASE_URL = "http://api.open-meteo.com";
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
-    private static final int MAX_PATH_BYTES = 255;
     private static final int PREVIEW_BYTES = 80;
 
     private NanoHttpGetSD() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
@@ -54,23 +56,19 @@ public final class NanoHttpGetSD {
             return;
         }
 
-        byte[] path = new byte[MAX_PATH_BYTES];
-        int pathLength = copyPath(settings.path(), path);
-        if (pathLength < 0) {
-            Serial.println("http.path is too long");
-            return;
-        }
-        byte[] response = new byte[512];
-        byte[] headers = new byte[256];
-        int[] statusAndHeadersLength = new int[2];
+        HttpClient client = HttpClient.newHttpClient();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(BASE_URL + settings.path())).build();
         while (true) {
-            int bodyLength = HttpClient.get(BASE_URL, path, pathLength, response, response.length, headers,
-                    headers.length, statusAndHeadersLength);
-            Serial.print("status=");
-            Serial.print(statusAndHeadersLength[0]);
-            Serial.print(" body=");
-            Serial.println(bodyLength);
-            printPreview(response, bodyLength);
+            try {
+                HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+                Serial.print("status=");
+                Serial.print(reply.statusCode());
+                Serial.print(" body=");
+                Serial.println(reply.body().length());
+                printPreview(reply.body());
+            } catch (IOException e) {
+                Serial.println("request failed");
+            }
             Delay.millis(10000);
         }
     }
@@ -90,21 +88,10 @@ public final class NanoHttpGetSD {
         return true;
     }
 
-    /** Copies the request path into {@code buffer} as ASCII; returns its length, or -1 when it does not fit. */
-    private static int copyPath(String path, byte[] buffer) {
-        if (path.length() > buffer.length) {
-            return -1;
-        }
-        for (int i = 0; i < path.length(); i++) {
-            buffer[i] = (byte) path.charAt(i);
-        }
-        return path.length();
-    }
-
-    private static void printPreview(byte[] body, int length) {
+    private static void printPreview(String body) {
         Serial.print("body: ");
-        for (int i = 0; i < length && i < PREVIEW_BYTES; i++) {
-            Serial.print((char) body[i]);
+        for (int i = 0; i < body.length() && i < PREVIEW_BYTES; i++) {
+            Serial.print(body.charAt(i));
         }
         Serial.println("");
     }

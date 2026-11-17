@@ -1,13 +1,11 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -16,6 +14,10 @@ import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Properties;
 
 /**
@@ -27,21 +29,20 @@ import java.util.Properties;
  * {@link io.github.jabrena.juno.api.hardware.net.wifi.WifiStatusSDTFT}). Once connected, the board's public IP
  * is geolocated with <a href="https://ipinfo.io">ipinfo.io</a> ({@code city} and {@code loc}), and
  * those coordinates are passed to <a href="https://open-meteo.com">Open-Meteo</a> for the current
- * weather and the location's UTC offset. The request path depends on runtime data, so it is built
- * in a {@code byte[]} and sent with {@link HttpClient#get(String, byte[], int, byte[], int, byte[],
- * int, int[])} and an {@code https://} base URL.
+ * weather and the location's UTC offset, with the JDK's {@code java.net.http} client. The weather URI depends on
+ * the coordinates, so it is built at runtime.
  *
  * <p>The clock is set from the HTTPS response's {@code Date} header plus Open-Meteo's
  * {@code utc_offset_seconds}, then kept running with {@link Clock#millis()}. Weather refreshes
  * every ten minutes, or immediately when the screen is tapped.
- * On UNO Q, Linux must already be connected to Wi-Fi; the credentials loaded from the SD card
- * are used only by the UNO R4 WiFi.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class WeatherTFT {
     private static final Wifi WIFI = MCU.getWifi();
 
     private final Clock clock = MCU.getClock();
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final HttpRequest locationRequest = HttpRequest.newBuilder(URI.create("https://ipinfo.io/json")).build();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int REFRESH_MILLIS = 10 * 60 * 1000;
     private static final int RETRY_MILLIS = 60 * 1000;
@@ -66,22 +67,18 @@ public final class WeatherTFT {
     private WeatherTFT() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         TftTouchShield tft = new TftTouchShield();
         new WeatherTFT().run(tft);
     }
 
-    private void run(TftTouchShield tft) throws IOException {
+    private void run(TftTouchShield tft) throws IOException, InterruptedException {
         Serial.begin(BaudRate.BAUD_115200);
         tft.setRotation(TftTouchShield.LANDSCAPE);
         tft.fillScreen(TftTouchShield.BLACK);
 
-        byte[] response = new byte[1024];
-        byte[] headers = new byte[512];
-        int[] statusAndHeaders = new int[2];
         byte[] city = new byte[32];
         byte[] location = new byte[32];
-        byte[] path = new byte[256];
         byte[] publicIp = new byte[48];
 
         WeatherScreen.showStatus(tft, "Connecting WiFi...");
@@ -95,7 +92,7 @@ public final class WeatherTFT {
         int cityLength = -1;
         int locateAttempts = 0;
         while (cityLength < 0) {
-            cityLength = locate(response, headers, statusAndHeaders, city, location, publicIp);
+            cityLength = locate(city, location, publicIp);
             if (cityLength < 0) {
                 locateAttempts = locateAttempts + 1;
                 WeatherScreen.showStatus(tft, "Location retry ");
@@ -103,7 +100,7 @@ public final class WeatherTFT {
                 Delay.millis(LOCATION_RETRY_MILLIS);
             }
         }
-        int pathLength = buildWeatherPath(path, location);
+        HttpRequest weatherRequest = HttpRequest.newBuilder(URI.create(weatherUri(location))).build();
         WeatherScreen.drawCity(tft, city, cityLength);
         WeatherScreen.drawNetworkInfo(tft, publicIp, location);
 
@@ -123,7 +120,7 @@ public final class WeatherTFT {
             }
             if (due) {
                 WeatherScreen.showStatus(tft, "Updating...       ");
-                if (fetchWeather(path, pathLength, response, headers, statusAndHeaders)) {
+                if (fetchWeather(weatherRequest)) {
                     haveWeather = true;
                     WeatherScreen.drawWeather(tft, temperature, humidity, windSpeed, condition, isDay);
                     WeatherScreen.showStatus(tft, "                  ");
@@ -192,93 +189,92 @@ public final class WeatherTFT {
      * NUL-terminated public IP address ipinfo.io saw into {@code publicIp}. Returns the city's
      * length, or -1 on failure.
      */
-    private int locate(byte[] response, byte[] headers, int[] statusAndHeaders,
-            byte[] city, byte[] location, byte[] publicIp) {
-        int bodyLength = HttpClient.get("https://ipinfo.io/json", response, 1024,
-                headers, 512, statusAndHeaders);
-        if (statusAndHeaders[0] != HTTP_STATUS_OK || bodyLength <= 0) {
-            Serial.print("ipinfo.io request failed, status ");
-            Serial.print(statusAndHeaders[0]);
-            Serial.print(", body bytes ");
-            Serial.println(bodyLength);
+    private int locate(byte[] city, byte[] location, byte[] publicIp) throws InterruptedException {
+        HttpResponse<String> reply;
+        try {
+            reply = client.send(locationRequest, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            Serial.println("ipinfo.io request failed");
             return -1;
         }
-        int locationLength = Json.getString(response, bodyLength, "loc", location, 31);
-        if (Json.type(response, bodyLength, "loc") != Json.TYPE_STRING || locationLength <= 0) {
+        String body = reply.body();
+        if (reply.statusCode() != HTTP_STATUS_OK || body.length() == 0) {
+            Serial.print("ipinfo.io request failed, status ");
+            Serial.print(reply.statusCode());
+            Serial.print(", body bytes ");
+            Serial.println(body.length());
+            return -1;
+        }
+        int locationLength = Json.getString(body, "loc", location, 31);
+        if (Json.type(body, "loc") != Json.TYPE_STRING || locationLength <= 0) {
             Serial.println("ipinfo.io response has no location");
             return -1;
         }
         location[locationLength] = 0;
-        int ipLength = Json.getString(response, bodyLength, "ip", publicIp, 47);
+        int ipLength = Json.getString(body, "ip", publicIp, 47);
         if (ipLength < 0) {
             ipLength = 0;
         }
         publicIp[ipLength] = 0;
         Serial.print("Public IP: ");
-        Serial.println(Json.getString(response, bodyLength, "ip"));
+        Serial.println(Json.getString(body, "ip"));
         Serial.print("Location: ");
-        Serial.println(Json.getString(response, bodyLength, "loc"));
-        int cityLength = Json.getString(response, bodyLength, "city", city, 32);
+        Serial.println(Json.getString(body, "loc"));
+        int cityLength = Json.getString(body, "city", city, 32);
         if (cityLength < 0) {
             cityLength = 0;
         }
         return AsciiText.toAscii(city, cityLength);
     }
 
-    /**
-     * Writes the Open-Meteo request path for the NUL-terminated {@code "lat,lon"} in
-     * {@code location} into {@code path}, returning its length.
-     */
-    private int buildWeatherPath(byte[] path, byte[] location) {
-        int length = append(path, 0, "/v1/forecast?latitude=");
+    /** The Open-Meteo URI for the NUL-terminated {@code "lat,lon"} in {@code location}. */
+    private String weatherUri(byte[] location) {
+        StringBuilder uri = new StringBuilder(192);
+        uri.append("https://api.open-meteo.com/v1/forecast?latitude=");
         int i = 0;
         while (location[i] != 0 && location[i] != ',') {
-            path[length] = location[i];
-            length = length + 1;
+            uri.append((char) location[i]);
             i = i + 1;
         }
-        length = append(path, length, "&longitude=");
+        uri.append("&longitude=");
         if (location[i] == ',') {
             i = i + 1;
         }
         while (location[i] != 0) {
-            path[length] = location[i];
-            length = length + 1;
+            uri.append((char) location[i]);
             i = i + 1;
         }
-        length = append(path, length, "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,");
-        return append(path, length, "weather_code,is_day&timezone=auto");
+        uri.append("&current=temperature_2m,relative_humidity_2m,wind_speed_10m,");
+        uri.append("weather_code,is_day&timezone=auto");
+        return uri.toString();
     }
 
-    private int append(byte[] buffer, int offset, String text) {
-        int length = text.length();
-        for (int i = 0; i < length; i++) {
-            buffer[offset + i] = (byte) text.charAt(i);
-        }
-        return offset + length;
-    }
-
-    private boolean fetchWeather(byte[] path, int pathLength, byte[] response, byte[] headers,
-            int[] statusAndHeaders) {
-        int bodyLength = HttpClient.get("https://api.open-meteo.com", path, pathLength,
-                response, 1024, headers, 512, statusAndHeaders);
-        if (statusAndHeaders[0] != HTTP_STATUS_OK || bodyLength <= 0) {
+    private boolean fetchWeather(HttpRequest request) throws InterruptedException {
+        HttpResponse<String> reply;
+        try {
+            reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
             Serial.println("Open-Meteo request failed");
             return false;
         }
-        if (Json.type(response, bodyLength, "current.temperature_2m") != Json.TYPE_NUMBER) {
+        String body = reply.body();
+        if (reply.statusCode() != HTTP_STATUS_OK || body.length() == 0) {
+            Serial.println("Open-Meteo request failed");
+            return false;
+        }
+        if (Json.type(body, "current.temperature_2m") != Json.TYPE_NUMBER) {
             Serial.println("Open-Meteo response has no temperature");
             return false;
         }
-        temperature = round(Json.getDouble(response, bodyLength, "current.temperature_2m"));
-        humidity = Json.getInt(response, bodyLength, "current.relative_humidity_2m");
-        windSpeed = round(Json.getDouble(response, bodyLength, "current.wind_speed_10m"));
-        condition = WeatherConditions.of(Json.getInt(response, bodyLength, "current.weather_code"));
-        isDay = Json.getInt(response, bodyLength, "current.is_day") == 1;
+        temperature = round(Json.getDouble(body, "current.temperature_2m"));
+        humidity = Json.getInt(body, "current.relative_humidity_2m");
+        windSpeed = round(Json.getDouble(body, "current.wind_speed_10m"));
+        condition = WeatherConditions.of(Json.getInt(body, "current.weather_code"));
+        isDay = Json.getInt(body, "current.is_day") == 1;
 
-        int utcSeconds = HttpDate.parseDateHeader(headers, statusAndHeaders[1]);
+        int utcSeconds = HttpDate.parseDate(reply.headers().firstValue("date").orElse(""));
         if (utcSeconds != 0) {
-            clockBaseSeconds = utcSeconds + Json.getInt(response, bodyLength, "utc_offset_seconds");
+            clockBaseSeconds = utcSeconds + Json.getInt(body, "utc_offset_seconds");
             clockBaseMillis = clock.millis();
             clockSet = true;
         }

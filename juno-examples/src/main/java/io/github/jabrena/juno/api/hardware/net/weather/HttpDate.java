@@ -6,37 +6,25 @@ final class HttpDate {
     }
 
     /**
-     * Finds the {@code Date: Sun, 27 Sep 2026 17:06:14 GMT} response header and returns it as
-     * seconds since the Unix epoch, or 0 when it is missing or malformed.
+     * Returns the value of an HTTP {@code Date} header, such as {@code Sun, 27 Sep 2026 17:06:14 GMT}, as seconds
+     * since the Unix epoch, or 0 when it is malformed.
      */
-    static int parseDateHeader(byte[] headers, int length) {
-        int start = -1;
-        for (int i = 0; i + 5 < length && start < 0; i++) {
-            if ((i == 0 || headers[i - 1] == '\n')
-                    && lower(headers[i]) == 'd' && lower(headers[i + 1]) == 'a'
-                    && lower(headers[i + 2]) == 't' && lower(headers[i + 3]) == 'e'
-                    && headers[i + 4] == ':') {
-                start = i + 5;
-            }
-        }
-        if (start < 0) {
-            return 0;
-        }
-        // Skip the space and "Sun, " to reach "27 Sep 2026 17:06:14".
-        int p = start;
-        while (p < length && headers[p] != ',') {
+    static int parseDate(String value) {
+        // Skip "Sun, " to reach "27 Sep 2026 17:06:14".
+        int p = 0;
+        while (p < value.length() && value.charAt(p) != ',') {
             p = p + 1;
         }
         p = p + 2;
-        if (p + 20 > length) {
+        if (p + 20 > value.length()) {
             return 0;
         }
-        int day = number(headers, p, 2);
-        int month = monthOf(lower(headers[p + 3]), lower(headers[p + 4]), lower(headers[p + 5]));
-        int year = number(headers, p + 7, 4);
-        int hour = number(headers, p + 12, 2);
-        int minute = number(headers, p + 15, 2);
-        int second = number(headers, p + 18, 2);
+        int day = number(value, p, 2);
+        int month = monthOf(lower(value.charAt(p + 3)), lower(value.charAt(p + 4)), lower(value.charAt(p + 5)));
+        int year = number(value, p + 7, 4);
+        int hour = number(value, p + 12, 2);
+        int minute = number(value, p + 15, 2);
+        int second = number(value, p + 18, 2);
         if (day < 1 || month < 1 || year < 2020 || hour < 0 || minute < 0 || second < 0) {
             return 0;
         }
@@ -50,10 +38,10 @@ final class HttpDate {
         return character;
     }
 
-    private static int number(byte[] text, int offset, int digits) {
+    private static int number(String text, int offset, int digits) {
         int value = 0;
         for (int i = 0; i < digits; i++) {
-            int digit = text[offset + i] - '0';
+            int digit = text.charAt(offset + i) - '0';
             if (digit < 0 || digit > 9) {
                 return -1;
             }

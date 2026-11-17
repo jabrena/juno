@@ -1,55 +1,54 @@
 package io.github.jabrena.juno.usecases.mailbox.client.services;
 
-/** The JSON body of a new mailbox message, encoded into one buffer allocated once. */
+/** The JSON body of a new mailbox message. */
 public final class MessageRequest {
+    /** The longest body, in bytes, the mailbox board accepts. */
     private static final int CAPACITY = 430;
 
-    private final byte[] body = new byte[CAPACITY];
-
-    byte[] body() {
-        return body;
+    /** Encodes {@code {"title":...,"body":...}}, or returns {@code null} when it is longer than the board accepts. */
+    String encode(char[] title, int titleLength, char[] body, int bodyLength) {
+        int length = 0;
+        StringBuilder json = new StringBuilder(CAPACITY);
+        length = appendAscii(json, length, "{\"title\":\"");
+        length = appendJson(json, length, title, titleLength);
+        length = appendAscii(json, length, "\",\"body\":\"");
+        length = appendJson(json, length, body, bodyLength);
+        length = appendAscii(json, length, "\"}");
+        return length < 0 ? null : json.toString();
     }
 
-    /** Encodes {@code {"title":...,"body":...}} into {@link #body()} and returns its length, or -1 if it does not fit. */
-    int encode(char[] title, int titleLength, char[] body, int bodyLength) {
-        int position = 0;
-        position = appendAscii(position, "{\"title\":\"");
-        position = appendJson(position, title, titleLength);
-        position = appendAscii(position, "\",\"body\":\"");
-        position = appendJson(position, body, bodyLength);
-        position = appendAscii(position, "\"}");
-        return position < 0 ? -1 : position;
-    }
-
-    private int appendJson(int position, char[] value, int length) {
-        for (int index = 0; index < length; index++) {
+    private int appendJson(StringBuilder json, int length, char[] value, int valueLength) {
+        int position = length;
+        for (int index = 0; index < valueLength; index++) {
             char character = value[index];
             if (character == '"' || character == '\\') {
-                position = appendByte(position, '\\');
+                position = append(json, position, '\\');
             } else if (character == '\n') {
-                position = appendAscii(position, "\\n");
+                position = appendAscii(json, position, "\\n");
                 continue;
             } else if (character == '\r') {
-                position = appendAscii(position, "\\r");
+                position = appendAscii(json, position, "\\r");
                 continue;
             }
-            position = appendByte(position, character);
+            position = append(json, position, character);
         }
         return position;
     }
 
-    private int appendAscii(int position, String value) {
+    private int appendAscii(StringBuilder json, int length, String value) {
+        int position = length;
         for (int index = 0; index < value.length(); index++) {
-            position = appendByte(position, value.charAt(index));
+            position = append(json, position, value.charAt(index));
         }
         return position;
     }
 
-    private int appendByte(int position, int value) {
-        if (position < 0 || position >= body.length) {
+    /** Appends {@code character} and returns the new length, or -1 once the body would pass {@link #CAPACITY}. */
+    private int append(StringBuilder json, int length, char character) {
+        if (length < 0 || length >= CAPACITY) {
             return -1;
         }
-        body[position] = (byte) value;
-        return position + 1;
+        json.append(character);
+        return length + 1;
     }
 }

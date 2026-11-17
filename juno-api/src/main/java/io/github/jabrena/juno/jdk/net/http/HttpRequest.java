@@ -194,6 +194,24 @@ public final class HttpRequest {
             return new ByteArrayPublisher(body, body.length);
         }
 
+        /**
+         * The first {@code length} bytes of {@code body}, sent as they are when the request is sent: a body encoded
+         * into a buffer allocated once. Unlike the JDK, {@code offset} must be {@code 0}: the board sends straight
+         * from the start of the array and cannot make a copy of a runtime size.
+         *
+         * @throws IndexOutOfBoundsException if {@code length} is negative or passes the end of {@code body}
+         * @throws IllegalArgumentException if {@code offset} is not {@code 0}
+         */
+        public static BodyPublisher ofByteArray(byte[] body, int offset, int length) {
+            if (length < 0 || offset < 0 || offset + length > body.length) {
+                throw new IndexOutOfBoundsException("The body range is outside the array");
+            }
+            if (offset != 0) {
+                throw new IllegalArgumentException("A body range must start at offset 0 on the board");
+            }
+            return new ByteArrayPublisher(body, length);
+        }
+
         /** No body: a {@code POST} or {@code PUT} of nothing, with {@code Content-Length: 0}. */
         public static BodyPublisher noBody() {
             return new ByteArrayPublisher(EMPTY, 0);

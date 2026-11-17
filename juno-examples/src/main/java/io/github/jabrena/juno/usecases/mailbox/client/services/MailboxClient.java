@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.client.services;
 
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -9,9 +8,18 @@ import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxModel;
 import io.github.jabrena.juno.util.mvc.Task;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import javax.net.ssl.SSLContext;
+
 /**
- * Allocation-free, retrying HTTPS client for the mailbox API. Every mailbox request carries the {@link MailboxKey}'s
- * header; only the probe of {@code /actuator/info}, which the board leaves open, goes without it.
+ * Retrying HTTPS client for the mailbox API, with the JDK's {@code java.net.http} client. Every mailbox request
+ * carries the {@link MailboxKey}'s header; only the probe of {@code /actuator/info}, which the board leaves open, goes
+ * without it. The client trusts the mailbox's own CA, given as an {@link SSLContext}.
  */
 public final class MailboxClient implements MailboxApi, Task {
     /** The mailbox board can be slow to accept a connection while it serves another client or writes the SD card. */
@@ -23,14 +31,9 @@ public final class MailboxClient implements MailboxApi, Task {
      */
     private static final int PROBE_TIMEOUT_MILLIS = 2000;
     private static final String SERVICE_NAME = "Juno Mailbox";
-    /** One byte longer than {@link #SERVICE_NAME}, so a longer "info" value is told apart from it. */
-    private static final int INFO_CAPACITY = 13;
-    private static final int HTTPS_PORT = 443;
+    private static final String MAILBOX_PATH = "/api/v1/mailbox/";
     private static final int MINUTE_MILLIS = 60 * 1000;
     private static final int RETRY_MILLIS = 5 * 1000;
-    private static final int RESPONSE_CAPACITY = 1536;
-    private static final int HEADERS_CAPACITY = 256;
-    private static final int PATH_CAPACITY = 256;
     private static final int UUID_LENGTH = 36;
 
     private static final String WRONG_KEY = "Wrong API key; check Settings";
@@ -44,38 +47,31 @@ public final class MailboxClient implements MailboxApi, Task {
     private final MailboxKey key;
     private final int pollingMillis;
     private final Clock clock;
-    private final byte[] path = new byte[PATH_CAPACITY];
-    private final byte[] noHeaders = new byte[1];
+    private final HttpClient client;
     private final MessageRequest request = new MessageRequest();
-    private final byte[] response = new byte[RESPONSE_CAPACITY];
-    private final byte[] headers = new byte[HEADERS_CAPACITY];
-    private final int[] statusAndHeadersLength = new int[2];
-    private final byte[] info = new byte[INFO_CAPACITY];
     private String host;
+    /** The status of the last request, or 0 when it got no response. */
+    private int status;
     private int nextRefresh;
     private boolean refreshNow;
     private boolean foregroundRefresh;
 
-    /** A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. */
-    public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling) {
-        this(model, connection, key, polling, MCU.getClock());
-    }
-
-    MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, Clock clock) {
-        this(model, connection, key, MailboxPolling.DEFAULT_MINUTES, clock);
-    }
-
-    MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling, Clock clock) {
-        this(model, connection, key, polling.minutes(), clock);
-    }
-
-    private MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, int pollingMinutes,
-            Clock clock) {
+    /**
+     * A client with no mailbox yet; the Settings view supplies the host with {@link #host(String)}. {@code trust} is
+     * the mailbox CA's context, or {@code null} when it could not be loaded, which leaves every request to fail.
+     */
+    public MailboxClient(MailboxModel model, MailboxConnection connection, MailboxKey key, MailboxPolling polling,
+            SSLContext trust) {
         this.model = model;
         this.connection = connection;
         this.key = key;
-        this.pollingMillis = pollingMinutes * MINUTE_MILLIS;
-        this.clock = clock;
+        this.pollingMillis = polling.minutes() * MINUTE_MILLIS;
+        this.clock = MCU.getClock();
+        HttpClient.Builder builder = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(REQUEST_TIMEOUT_MILLIS));
+        if (trust != null) {
+            builder.sslContext(trust);
+        }
+        this.client = builder.build();
         refreshNow = true;
     }
 
@@ -144,25 +140,25 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.print("Mailbox client: GET host [");
         Serial.print(host);
         Serial.println("]");
-        int listLength = getPath("/api/v1/mailbox/", 16);
+        String list = send(withKey(MAILBOX_PATH).GET().build());
         Serial.print("Mailbox client: list status ");
-        Serial.print(statusAndHeadersLength[0]);
+        Serial.print(status);
         Serial.print(" bytes ");
-        Serial.println(listLength);
+        Serial.println(list == null ? -1 : list.length());
         // Retrying cannot fix a wrong key, so this waits for the periodic refresh; changing the key refreshes at once.
-        if (listLength >= 0 && statusAndHeadersLength[0] == HttpStatus.UNAUTHORIZED) {
+        if (status == HttpStatus.UNAUTHORIZED) {
             Serial.println("Mailbox client: API key rejected");
             model.clear();
             model.status(WRONG_KEY);
             model.finishRefresh();
             return REJECTED;
         }
-        if (listLength < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
+        if (list == null || status != HttpStatus.OK) {
             Serial.println("Mailbox client: list request failed");
             model.status("Mailbox unavailable; retrying");
             return FAILED;
         }
-        int count = Json.arraySize(response, listLength, "");
+        int count = Json.arraySize(list, "");
         Serial.print("Mailbox client: list count ");
         Serial.println(count);
         if (count < 0 || count > MailboxModel.MAX_MESSAGES) {
@@ -171,9 +167,8 @@ public final class MailboxClient implements MailboxApi, Task {
             return FAILED;
         }
         model.clear();
-        // Every detail request reuses the response buffer, so take all the uuids from the list before the first one.
         for (int index = 0; index < count; index++) {
-            int uuidLength = uuidAt(listLength, index);
+            int uuidLength = Json.getString(list, "[" + index + "].uuid", model.uuid(index), UUID_LENGTH);
             if (uuidLength != UUID_LENGTH) {
                 Serial.print("Mailbox client: invalid UUID length ");
                 Serial.println(uuidLength);
@@ -192,72 +187,36 @@ public final class MailboxClient implements MailboxApi, Task {
         model.finishRefresh();
     }
 
-    /** Copies the list's uuid at {@code index} into the model's uuid slot for that message. */
-    private int uuidAt(int listLength, int index) {
-        byte[] uuid = model.uuid(index);
-        if (index == 0) {
-            return Json.getString(response, listLength, "[0].uuid", uuid, UUID_LENGTH);
-        }
-        if (index == 1) {
-            return Json.getString(response, listLength, "[1].uuid", uuid, UUID_LENGTH);
-        }
-        if (index == 2) {
-            return Json.getString(response, listLength, "[2].uuid", uuid, UUID_LENGTH);
-        }
-        return Json.getString(response, listLength, "[3].uuid", uuid, UUID_LENGTH);
-    }
-
     @Override
     public boolean readMessage(int index) {
         byte[] uuid = model.uuid(index);
-        int pathLength = copyMessagePath(uuid, UUID_LENGTH);
-        int bodyLength = getPath(path, pathLength);
+        String message = send(withKey(messagePath(uuid, UUID_LENGTH)).GET().build());
         Serial.print("Mailbox client: detail status ");
-        Serial.print(statusAndHeadersLength[0]);
+        Serial.print(status);
         Serial.print(" bytes ");
-        Serial.println(bodyLength);
-        if (bodyLength < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
+        Serial.println(message == null ? -1 : message.length());
+        if (message == null || status != HttpStatus.OK) {
             Serial.print("Mailbox client: detail request failed for index ");
             Serial.println(index);
             model.status("Message read failed; retrying");
             return false;
         }
-        int titleLength = Json.getString(
-                response, bodyLength, "title", model.title(index), MailboxModel.MAX_TITLE_BYTES);
-        int messageBodyLength = Json.getString(
-                response, bodyLength, "body", model.body(index), MailboxModel.MAX_BODY_BYTES);
+        int titleLength = Json.getString(message, "title", model.title(index), MailboxModel.MAX_TITLE_BYTES);
+        int messageBodyLength = Json.getString(message, "body", model.body(index), MailboxModel.MAX_BODY_BYTES);
         model.add(uuid, UUID_LENGTH, titleLength, messageBodyLength);
         return true;
     }
 
     @Override
     public boolean probe(String candidate) {
-        int pathLength = copyPath("/actuator/info");
         int started = clock.millis();
-        HttpClient.setTimeout(PROBE_TIMEOUT_MILLIS);
-        int length = HttpClient.requestHttps(candidate, HTTPS_PORT, "GET", path, pathLength,
-                noHeaders, 0, null, -1, response, response.length,
-                headers, headers.length, statusAndHeadersLength);
-        HttpClient.setTimeout(REQUEST_TIMEOUT_MILLIS);
-        Serial.print("Mailbox client: probe result ");
-        Serial.print(length);
-        Serial.print(" status ");
-        Serial.print(statusAndHeadersLength[0]);
+        String info = send(HttpRequest.newBuilder(URI.create("https://" + candidate + "/actuator/info"))
+                .timeout(Duration.ofMillis(PROBE_TIMEOUT_MILLIS)).GET().build());
+        Serial.print("Mailbox client: probe status ");
+        Serial.print(status);
         Serial.print(" ms ");
         Serial.println(clock.millis() - started);
-        if (length < 0 || statusAndHeadersLength[0] != HttpStatus.OK) {
-            return false;
-        }
-        int infoLength = Json.getString(response, length, "info", info, info.length);
-        if (infoLength != SERVICE_NAME.length()) {
-            return false;
-        }
-        for (int index = 0; index < infoLength; index++) {
-            if (info[index] != SERVICE_NAME.charAt(index)) {
-                return false;
-            }
-        }
-        return true;
+        return info != null && status == HttpStatus.OK && SERVICE_NAME.equals(Json.getString(info, "info"));
     }
 
     @Override
@@ -266,15 +225,12 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Set mailbox IP in Settings");
             return false;
         }
-        int pathLength = copyMessagePath(uuid, uuidLength);
         Serial.println("Mailbox client: DELETE message");
-        int responseLength = HttpClient.requestHttps(host, HTTPS_PORT, "DELETE", path, pathLength,
-                key.header(), key.headerLength(), null, -1, response, response.length,
-                headers, headers.length, statusAndHeadersLength);
+        String reply = send(withKey(messagePath(uuid, uuidLength)).DELETE().build());
         Serial.print("Mailbox client: delete status ");
-        Serial.println(statusAndHeadersLength[0]);
-        boolean deleted = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.NO_CONTENT;
-        model.status(deleted ? "Message deleted" : failure(responseLength, "Delete failed"));
+        Serial.println(status);
+        boolean deleted = reply != null && status == HttpStatus.NO_CONTENT;
+        model.status(deleted ? "Message deleted" : failure("Delete failed"));
         return deleted;
     }
 
@@ -284,55 +240,48 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Set mailbox IP in Settings");
             return false;
         }
-        int requestLength = request.encode(title, titleLength, body, bodyLength);
-        if (requestLength < 0) {
+        String json = request.encode(title, titleLength, body, bodyLength);
+        if (json == null) {
             model.status("Message is too large");
             return false;
         }
-        int pathLength = copyPath("/api/v1/mailbox/");
-        int responseLength = HttpClient.requestHttps(host, HTTPS_PORT, "POST", path, pathLength,
-                key.header(), key.headerLength(), request.body(), requestLength, response, response.length,
-                headers, headers.length, statusAndHeadersLength);
-        boolean sent = responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.CREATED;
-        model.status(sent ? "Message sent" : failure(responseLength, "Send failed; check IP"));
+        String reply = send(withKey(MAILBOX_PATH).header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(json)).build());
+        boolean sent = reply != null && status == HttpStatus.CREATED;
+        model.status(sent ? "Message sent" : failure("Send failed; check IP"));
         return sent;
     }
 
-    private int getPath(String requestPath, int pathLength) {
-        int length = copyPath(requestPath);
-        return getPath(path, length);
+    /** A request to {@code path} on the mailbox, with the key header. */
+    private HttpRequest.Builder withKey(String path) {
+        return HttpRequest.newBuilder(URI.create("https://" + host + path)).header(MailboxKey.HEADER, key.value());
     }
 
-    private int getPath(byte[] requestPath, int pathLength) {
-        return HttpClient.requestHttps(host, HTTPS_PORT, "GET", requestPath, pathLength,
-                key.header(), key.headerLength(), null, -1, response, response.length,
-                headers, headers.length, statusAndHeadersLength);
+    /** Sends {@code request} and returns its body, or {@code null} when no response came; {@link #status} follows. */
+    private String send(HttpRequest request) {
+        try {
+            HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+            status = reply.statusCode();
+            return reply.body();
+        } catch (IOException | InterruptedException e) {
+            // The board never interrupts a request; either way there is no response.
+            status = 0;
+            return null;
+        }
     }
 
     /** The status to show for a failed request: the board's 401 means the key, anything else {@code otherwise}. */
-    private String failure(int responseLength, String otherwise) {
-        return responseLength >= 0 && statusAndHeadersLength[0] == HttpStatus.UNAUTHORIZED ? WRONG_KEY : otherwise;
+    private String failure(String otherwise) {
+        return status == HttpStatus.UNAUTHORIZED ? WRONG_KEY : otherwise;
     }
 
-    private int copyMessagePath(byte[] uuid, int uuidLength) {
-        int length = copyPath("/api/v1/mailbox/");
-        if (length < 0 || uuidLength < 0 || length + uuidLength > path.length) {
-            return -1;
-        }
+    /** {@code /api/v1/mailbox/<uuid>}. */
+    private static String messagePath(byte[] uuid, int uuidLength) {
+        StringBuilder path = new StringBuilder(MAILBOX_PATH.length() + uuidLength);
+        path.append(MAILBOX_PATH);
         for (int index = 0; index < uuidLength; index++) {
-            path[length] = uuid[index];
-            length = length + 1;
+            path.append((char) uuid[index]);
         }
-        return length;
-    }
-
-    private int copyPath(String value) {
-        if (value.length() >= path.length) {
-            return -1;
-        }
-        for (int index = 0; index < value.length(); index++) {
-            path[index] = (byte) value.charAt(index);
-        }
-        return value.length();
+        return path.toString();
     }
 }

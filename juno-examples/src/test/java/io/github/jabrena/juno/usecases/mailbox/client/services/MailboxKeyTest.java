@@ -3,8 +3,6 @@ package io.github.jabrena.juno.usecases.mailbox.client.services;
 import io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MailboxKeyTest {
@@ -60,6 +58,6 @@ class MailboxKeyTest {
     }
 
     private String header(MailboxKey key) {
-        return new String(key.header(), 0, key.headerLength(), StandardCharsets.US_ASCII);
+        return MailboxKey.HEADER + ": " + key.value() + "\r\n";
     }
 }

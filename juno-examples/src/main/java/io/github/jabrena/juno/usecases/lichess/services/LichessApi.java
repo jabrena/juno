@@ -3,7 +3,6 @@ package io.github.jabrena.juno.usecases.lichess.services;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.lichess.challenge.LichessModel;
 import io.github.jabrena.juno.usecases.lichess.tv.TvModel;
@@ -11,20 +10,28 @@ import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Properties;
 
-/** The network model service for the public Lichess puzzle endpoints. */
+/**
+ * The network model service for the public Lichess puzzle endpoints, with the JDK's {@code java.net.http} client.
+ * Each response body is a {@code String} sized to it; the TV feed never ends, so its request times out after
+ * {@value #TV_HTTP_TIMEOUT} ms and keeps the lines received by then.
+ */
 public final class LichessApi {
     private static final int WIFI_ATTEMPTS = 30;
-    private static final int DEFAULT_HTTP_TIMEOUT = 5000;
     private static final int TV_HTTP_TIMEOUT = 1500;
-    private static final int RESPONSE_CAPACITY = 2048;
-    private static final int RESPONSE_HEADERS_CAPACITY = 256;
 
     private final Wifi wifi = MCU.getWifi();
-    private final byte[] response = new byte[RESPONSE_CAPACITY];
-    private final byte[] responseHeaders = new byte[RESPONSE_HEADERS_CAPACITY];
-    private final int[] status = new int[2];
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final HttpRequest daily = HttpRequest.newBuilder(URI.create("https://lichess.org/api/puzzle/daily")).build();
+    private final HttpRequest fresh = HttpRequest.newBuilder(URI.create("https://lichess.org/api/puzzle/next")).build();
+    private final HttpRequest tv = HttpRequest.newBuilder(URI.create("https://lichess.org/api/tv/feed"))
+            .timeout(Duration.ofMillis(TV_HTTP_TIMEOUT)).build();
 
     /** Reads wifi.ssid and wifi.password from the TFT shield's application.properties and joins that network. */
     public boolean connect(SdCard sdCard) {
@@ -58,24 +65,31 @@ public final class LichessApi {
 
     /** Downloads the current daily puzzle. */
     public boolean loadDaily(LichessModel model) {
-        int length = HttpClient.get("https://lichess.org/api/puzzle/daily", response, response.length,
-                responseHeaders, responseHeaders.length, status);
-        return model.loadResponse(response, length, status[0], LichessModel.DAILY);
+        HttpResponse<String> reply = send(daily);
+        return model.loadResponse(reply == null ? "" : reply.body(), reply == null ? 0 : reply.statusCode(),
+                LichessModel.DAILY);
     }
 
     /** Downloads a public fresh puzzle, useful when the player wants another challenge. */
     public boolean loadFresh(LichessModel model) {
-        int length = HttpClient.get("https://lichess.org/api/puzzle/next", response, response.length,
-                responseHeaders, responseHeaders.length, status);
-        return model.loadResponse(response, length, status[0], LichessModel.FRESH);
+        HttpResponse<String> reply = send(fresh);
+        return model.loadResponse(reply == null ? "" : reply.body(), reply == null ? 0 : reply.statusCode(),
+                LichessModel.FRESH);
     }
 
     /** Reads the current game and recent positions from the public Lichess TV stream. */
     public boolean loadTv(TvModel model) {
-        HttpClient.setTimeout(TV_HTTP_TIMEOUT);
-        int length = HttpClient.get("https://lichess.org/api/tv/feed", response, response.length,
-                responseHeaders, responseHeaders.length, status);
-        HttpClient.setTimeout(DEFAULT_HTTP_TIMEOUT);
-        return model.loadResponse(response, length, status[0]);
+        HttpResponse<String> reply = send(tv);
+        return reply != null && model.loadResponse(reply.body(), reply.statusCode());
+    }
+
+    /** The reply to {@code request}, or {@code null} when it could not be sent. */
+    private HttpResponse<String> send(HttpRequest request) {
+        try {
+            return client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException | InterruptedException e) {
+            // The board never interrupts a request; either way there is no reply to show.
+            return null;
+        }
     }
 }

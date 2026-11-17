@@ -7,7 +7,6 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxModel;
@@ -69,8 +68,7 @@ public final class MailboxCardputer {
         MailboxPolling polling = new MailboxPolling(sd);
         MailboxSettings settings = loadSettings(sd, key, polling);
         trustedCertificate = new MailboxTrustedCertificate(sd);
-        boolean trusted = trustedCertificate.load()
-                && HttpClient.setTrustedCertificate(trustedCertificate.value(), trustedCertificate.length());
+        boolean trusted = trustedCertificate.load();
         if (!trusted) {
             Serial.println("Mailbox client: mailbox-ca.crt missing or invalid");
         }
@@ -79,9 +77,8 @@ public final class MailboxCardputer {
         }
         MailboxConnection connection = new MailboxConnection(WIFI, settings != null && trusted);
 
-        HttpClient.setTimeout(MailboxClient.REQUEST_TIMEOUT_MILLIS);
         MailboxModel model = new MailboxModel();
-        MailboxClient client = new MailboxClient(model, connection, key, polling);
+        MailboxClient client = new MailboxClient(model, connection, key, polling, trustedCertificate.context());
         KeyboardViewRouter router = new KeyboardViewRouter(FRAME_MILLIS, keyboard);
         Footer footer = new Footer(display);
         NumberedList messages = new NumberedList(display, model);
