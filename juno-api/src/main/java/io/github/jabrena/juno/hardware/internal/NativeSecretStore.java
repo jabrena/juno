@@ -41,7 +41,7 @@ public final class NativeSecretStore {
             case PORTENTA_H7 -> new Se050C2();
             case NANO_ESP32, M5_CARDPUTER, AI_THINKER_ESP32_CAM, UNO_R4_WIFI -> new Esp32Nvs();
             case PICO_2_W -> new Pico2WTrustZoneStore();
-            case UNO_R3, UNO_R3_WIFI_REV2 -> new AvrEeprom();
+            case UNO_R3 -> new AvrEeprom();
             default -> throw new IllegalStateException("This board has no secret store");
         };
     }

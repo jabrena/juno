@@ -6,8 +6,8 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Demonstrates {@code java.lang.Math} on {@code float} values. Every call here builds on every board:
- * it avoids the double-precision libm functions that {@link MathFunctionsDoublePrecision} uses, which the UNO R3 and
- * UNO WiFi Rev2 toolchains do not provide.
+ * it avoids the double-precision libm functions that {@link MathFunctionsDoublePrecision} uses, which the UNO R3
+ * toolchain does not provide.
  */
 public final class MathFunctionsSinglePrecision {
 

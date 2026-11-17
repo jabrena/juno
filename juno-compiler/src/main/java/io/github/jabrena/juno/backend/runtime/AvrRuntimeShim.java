@@ -22,7 +22,7 @@ import java.util.Set;
  * Arduino core function is reached through a wrapper taking Java-width parameters. The generated assembly calls all
  * of it through the thunks {@link AvrShimThunks} appends, built from the prototypes in this very source.
  *
- * <p>RAM is the scarce resource (the ATmega4809 has 6 KB), so the pools are smaller than on the 32-bit boards: two
+ * <p>RAM is the scarce resource (the ATmega328P has 2 KB), so the pools are smaller than on the 32-bit boards: two
  * open SD files and {@code Properties} of eight short entries.
  */
 public final class AvrRuntimeShim {

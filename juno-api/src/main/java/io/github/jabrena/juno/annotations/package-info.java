@@ -10,15 +10,14 @@
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoR3Board} (its classic 8-bit ATmega328P, under Arduino's AVR
  *       core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard},
  *       {@link io.github.jabrena.juno.annotations.ArduinoUnoQBoard} (its STM32U585 microcontroller,
- *       under Arduino's Zephyr core), {@link io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board}
- *       (its 8-bit ATmega4809, under Arduino's megaAVR core) and
+ *       under Arduino's Zephyr core) and
  *       {@link io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board} (its Xtensa ESP32-S3, under Arduino's ESP32
  *       core) and {@link io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard} (its original Xtensa ESP32, under
  *       Espressif's Arduino ESP32 core) and {@link io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard} (its RP2350
  *       Cortex-M33, under Earle Philhower's arduino-pico core); the linker resolves the selection into a
  *       {@code io.github.jabrena.juno.board.Board} compilation target.</li>
  *   <li>{@link io.github.jabrena.juno.annotations.Watchdog @Watchdog} enables the hardware watchdog
- *       on UNO R3, UNO WiFi Rev2 and UNO R4 WiFi, rebooting the board if generated code ever stops
+ *       on UNO R3 and UNO R4 WiFi, rebooting the board if generated code ever stops
  *       kicking it (including on a {@code juno_panic()}) instead of hanging forever. UNO Q's current
  *       Arduino Zephyr firmware does not enable its watchdog subsystem.</li>
  * </ul>

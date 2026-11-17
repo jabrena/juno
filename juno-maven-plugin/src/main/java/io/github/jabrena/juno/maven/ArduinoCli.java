@@ -13,9 +13,7 @@ import java.util.function.Consumer;
 
 /** The {@code arduino-cli} commands the Maven goals run, behind a {@link CommandExecutor}. */
 final class ArduinoCli {
-    private static final String UNO_R3_WIFI_REV2_FQBN = "arduino:megaavr:uno2018";
     private static final String UNO_Q_FQBN = "arduino:zephyr:unoq";
-    private static final String SDFAT_SOFTWARE_SPI = "compiler.cpp.extra_flags=-DSPI_DRIVER_SELECT=3";
     private static final String SDFAT_WITHOUT_ARDUINO_SERIAL =
             "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0";
 
@@ -56,9 +54,7 @@ final class ArduinoCli {
     void compile(String fqbn, Path sketchDirectory) {
         String requiredFqbn = requireText(fqbn, "FQBN");
         List<String> arguments = new ArrayList<>(List.of("compile", "--fqbn", requiredFqbn));
-        if (UNO_R3_WIFI_REV2_FQBN.equals(requiredFqbn)) {
-            arguments.addAll(List.of("--build-property", SDFAT_SOFTWARE_SPI));
-        } else if (UNO_Q_FQBN.equals(requiredFqbn)) {
+        if (UNO_Q_FQBN.equals(requiredFqbn)) {
             // The Zephyr core has no TLS server, so HttpServer.beginTls compiles against the bundled BearSSL.
             arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL,
                     "--library", absolute(bundledBearSsl(sketchDirectory))));

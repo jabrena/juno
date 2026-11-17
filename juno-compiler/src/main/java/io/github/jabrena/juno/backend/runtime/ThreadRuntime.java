@@ -25,7 +25,7 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * preempted thread includes the registers the trampoline saved, and the pending exception and scoped-value bindings
  * are swapped on each switch.
  *
- * <p>The UNO WiFi Rev2 (AVR) cannot be interrupted at an arbitrary instruction: a reference or {@code int} is
+ * <p>An AVR board cannot be interrupted at an arbitrary instruction: a reference or {@code int} is
  * loaded and stored a byte at a time, and generated calls pass arguments through one global area. Its threads are
  * preempted at safepoints instead: on every loop backedge and every method entry the running thread hands over the
  * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others.
@@ -62,10 +62,10 @@ public final class ThreadRuntime {
     }
 
     /**
-     * The UNO WiFi Rev2's port: like the UNO R4's, its own stacks and a context switch, here saving avr-gcc's
+     * The AVR port: like the UNO R4's, its own stacks and a context switch, here saving avr-gcc's
      * call-saved registers ({@code r2}-{@code r17} and the frame pointer {@code Y}) before swapping {@code SP}. The
-     * return address a fresh stack starts from is two bytes on the ATmega4809 and three on a part with more than
-     * 128 KB of flash, which the simulator's ATmega2560 is.
+     * return address a fresh stack starts from is two bytes on a part with up to 128 KB of flash, such as the ATmega328P, and
+     * three on a larger one.
      *
      * <p>A task's stack is small and sits next to the scheduler's own state, so a deep recursion must stop before it
      * writes past the stack: every generated function compares its new SP with {@code juno_stack_limit}, which keeps

@@ -1,4 +1,4 @@
-// ---- Juno named secrets in an AVR UNO's on-chip EEPROM (UNO R3, UNO WiFi Rev2), through the core's EEPROM library.
+// ---- Juno named secrets in an AVR UNO's on-chip EEPROM (UNO R3), through the core's EEPROM library.
 // The EEPROM is split into 64-byte slots: a length byte, then up to 63 bytes. A length of 0 or 0xFF (erased EEPROM)
 // means the slot is empty. The values are plain text in the microcontroller (see AvrEeprom). EEPROM.update writes
 // only the bytes that change, which spares the EEPROM's limited write endurance. ----

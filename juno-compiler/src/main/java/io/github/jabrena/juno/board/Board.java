@@ -40,15 +40,6 @@ public enum Board {
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE,
                     Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     /**
-     * The ATmega4809 board: Wi-Fi, UDP, HTTP, HTTPS and TLS email through its NINA-W102 module ({@code WiFiNINA}), a
-     * plain-HTTP server on its station address, and the GPIO, SPI and analog pins shields such as the SD card, TFT touch
-     * and LCD keypad shields use.
-     */
-    UNO_R3_WIFI_REV2("io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board", "arduino-uno-r3-wifi-rev2", "UNO WiFi Rev2",
-            "arduino:megaavr:uno2018", ArduinoCore.MEGAAVR, UnoGeneration.R3, new BoardMemoryProfile(6144, 1024, 3072, 512, 1024, MemoryAuthority.LINKER, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
-                    Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.TLS_EMAIL, Capability.HTTP_SERVER,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.WATCHDOG, Capability.ONBOARD_IMU)),
-    /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
      * access-point modes, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root
      * certificates), an HTTP and HTTPS server on station Wi-Fi, email over implicit TLS and STARTTLS (SMTP and

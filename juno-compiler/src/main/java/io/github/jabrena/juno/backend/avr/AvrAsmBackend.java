@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Emits GNU AVR assembly (avrxmega3, the UNO WiFi Rev2's ATmega4809) straight from Juno IR — the 8-bit counterpart of
+ * Emits GNU AVR assembly (the UNO R3's ATmega328P) straight from Juno IR — the 8-bit counterpart of
  * {@link Thumb2AsmBackend}, with the same storage model: every IR value and JVM local lives in a fixed stack slot
  * (see {@link FrameLayout#packed}) and registers are only scratch within one instruction, so a method can never run
  * out of registers.
@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
  * <p>Threads and forked tasks run on the shared preemptive scheduler ({@link ThreadRuntime}). An AVR thread cannot be
  * interrupted at an arbitrary instruction (a word is stored a byte at a time and calls share one argument area), so
  * it is preempted at safepoints: every loop backedge and every method entry hands the CPU over once its time slice
- * is over. The double-precision transcendental {@code Math} functions are a capability the UNO WiFi Rev2
+ * is over. The double-precision transcendental {@code Math} functions are a capability the UNO R3
  * does not have (see {@code Board}), so the linker rejects them before code generation; anything else this backend
  * cannot lower fails with a {@link CompileException}.
  */

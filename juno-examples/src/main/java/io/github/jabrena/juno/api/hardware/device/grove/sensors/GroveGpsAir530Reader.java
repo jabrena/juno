@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -14,7 +13,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 
 /** Reads signed latitude, longitude and altitude from a Grove GPS Air530 on the Grove Base Shield's D2 socket. */
-@Board({ArduinoUnoR3Board.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class GroveGpsAir530Reader {
     private GroveGpsAir530Reader() {
     }
