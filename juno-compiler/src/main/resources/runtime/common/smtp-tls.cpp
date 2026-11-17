@@ -3,7 +3,7 @@ extern "C" int32_t juno_smtp_send_tls(const char* host, int32_t port,
                                        const char* from, const char* to,
                                        const char* subject, const char* body) {
   ${JUNO_TLS_CLIENT_DECLARATION}
-  if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+  if (!client.connect(host, static_cast<uint16_t>(port))) { client.stop(); return -1; }
   unsigned long deadline = millis() + 15000;
 
   if (juno_smtp_read_reply(client, deadline) != 220) { client.stop(); return -2; }
