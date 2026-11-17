@@ -43,42 +43,6 @@ final class JsonNumbers {
         return p;
     }
 
-    /** Whether {@code [start, end)} is an optional minus sign followed only by digits. */
-    static boolean isInteger(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
-        if (parseNumber(buffer, text, start, end) != end) {
-            return false;
-        }
-        for (int p = JsonChars.at(buffer, text, start) == '-' ? start + 1 : start; p < end; p++) {
-            if (!JsonSyntax.isDigit(JsonChars.at(buffer, text, p))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * {@code [start, end)} as a {@code long}, or {@code 0} when it overflows. Accumulates negatively, like
-     * {@link Long#parseLong(String)}, so {@link Long#MIN_VALUE} parses without overflowing on the way.
-     */
-    static long parseLong(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
-        boolean negative = JsonChars.at(buffer, text, start) == '-';
-        long limit = negative ? Long.MIN_VALUE : -Long.MAX_VALUE;
-        long minimumBeforeDigit = limit / 10;
-        long result = 0L;
-        for (int p = negative ? start + 1 : start; p < end; p++) {
-            int digit = JsonChars.at(buffer, text, p) - '0';
-            if (result < minimumBeforeDigit) {
-                return 0L;
-            }
-            result *= 10;
-            if (result < limit + digit) {
-                return 0L;
-            }
-            result -= digit;
-        }
-        return negative ? result : -result;
-    }
-
     /**
      * {@code [start, end)} as a {@code double}: up to 18 significant digits scaled by a power of ten, the same
      * operations in the same order on every board, or {@code 0.0} when it overflows.
@@ -109,7 +73,7 @@ final class JsonNumbers {
         return scaled(significand, decimalExponent, negative);
     }
 
-    private static int exponentStart(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+    static int exponentStart(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         int p = start;
         while (p < end && JsonChars.at(buffer, text, p) != 'e' && JsonChars.at(buffer, text, p) != 'E') {
             p++;
@@ -118,7 +82,7 @@ final class JsonNumbers {
     }
 
     /** The signed exponent whose optional sign starts at {@code start}, its magnitude capped near 1,000,000. */
-    private static int exponent(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+    static int exponent(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         boolean negative = JsonChars.at(buffer, text, start) == '-';
         int exponent = 0;
         for (int p = JsonChars.at(buffer, text, start) == '+' || negative ? start + 1 : start; p < end; p++) {

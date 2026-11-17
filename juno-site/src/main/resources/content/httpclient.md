@@ -21,7 +21,7 @@ HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.open-meteo.
 
 HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
 Serial.println(reply.statusCode());
-Serial.println(Json.view(reply.body()).get("current").get("temperature_2m").asDouble());
+Serial.println(Json.parse(reply.body()).get("current").get("temperature_2m").asDouble());
 ```
 
 `send` declares `IOException` and `InterruptedException`, as in the JDK. It throws `IOException` when the request
@@ -119,17 +119,17 @@ It has `getScheme`, `getHost`, `getPort`, `getPath`, `getQuery`, `getFragment`, 
 
 ## Reading JSON responses
 
-`Json.view` reads values straight from a body, with no parsing into objects. Its method names follow JDK 28's
+`Json.parse` reads values straight from a body, without building a tree of objects. Its names follow JDK 28's
 JSON API (JEP 540): `get(String)` steps into an object member, `get(int)` into an array element, and `asInt()`,
 `asDouble()` and the other conversions read the value.
 
 ```java
-JsonView current = Json.view(reply.body()).get("current");
+JsonValue current = Json.parse(reply.body()).get("current");
 double temperature = current.get("temperature_2m").asDouble();
 int humidity = current.get("relative_humidity_2m").asInt();
 ```
 
-`Json.view` also takes a `byte[]` and the number of bytes in it, which is how `HttpServer` programs read a request
+`Json.parse` also takes a `byte[]` and the number of bytes in it, which is how `HttpServer` programs read a request
 body. It checks the whole document once, before any value is read. It supports objects, arrays, strings, numbers,
 booleans and `null`, nested up to 32 levels deep.
 
@@ -147,13 +147,13 @@ JSON needs the UNO R4 WiFi or a larger board. The compiler rejects it on the UNO
 An index is a plain `int`, so a loop needs no path string:
 
 ```java
-JsonView solution = Json.view(body).get("puzzle").get("solution");
+JsonValue solution = Json.parse(body).get("puzzle").get("solution");
 for (int i = 0; i < solution.size(); i++) {
     int length = solution.get(i).copyString(move);
 }
 ```
 
-Each step returns a new `JsonView`: a 20-byte arena object that the collector reclaims. Keep a view you use more than
+Each step returns a new `JsonValue`: a 20-byte arena object that the collector reclaims. Keep a value you use more than
 once in a local variable. A member name is matched as written; names that the document writes with JSON escapes cannot
 be matched yet, and when a name appears twice the first one wins.
 
@@ -161,12 +161,13 @@ be matched yet, and when a name appears twice the first one wins.
 
 | Method | Returns |
 |---|---|
-| `asInt()` | an `int`, or `0` unless the value is an integral number that fits |
-| `asLong()` | a `long`, or `0` unless the value is an integral number that fits |
+| `asInt()` | an `int`, or `0` unless the value is an integral number that fits: `123`, `123.0` and `2.3E2` all read as integers, `1.5` does not |
+| `asLong()` | a `long`, with the same rule |
 | `asDouble()` | a `double`, or `0.0` |
 | `asBoolean()` | a `boolean`, or `false` |
-| `asString()` | the value's raw text as a `String`, or `null` for a missing value, an object or an array |
-| `copyString(byte[] out)` | the number of UTF-8 bytes decoded into `out` |
+| `asString()` | a string's content with its escapes decoded, or `null` when the value is not a string |
+| `copyString(byte[] out)` | the number of UTF-8 bytes a string decodes to in `out`, with no `String` allocated |
+| `toString()` | the value's JSON text exactly as written: a number keeps every digit, a string keeps its quotes |
 | `size()` | the number of elements of an array or members of an object, or `-1` for any other value |
 
 Nothing throws, unlike JEP 540: conversions return zero or `false` when the value cannot be read, so `asInt() == 0` is
@@ -174,7 +175,7 @@ ambiguous by itself. Use `type()`, or `isNumber()`, `isString()`, `isNull()`, `i
 when the difference matters:
 
 ```java
-JsonView temperature = Json.view(body).get("current").get("temperature_2m");
+JsonValue temperature = Json.parse(body).get("current").get("temperature_2m");
 int valueType = temperature.type();
 if (valueType == Json.TYPE_NUMBER) {
     Serial.println(temperature.asDouble());
@@ -188,12 +189,12 @@ if (valueType == Json.TYPE_NUMBER) {
 ```
 
 The type constants are `TYPE_MISSING`, `TYPE_NULL`, `TYPE_BOOLEAN`, `TYPE_NUMBER`, `TYPE_STRING`, `TYPE_OBJECT`,
-`TYPE_ARRAY` and `TYPE_INVALID`. A missing or invalid view stays that way through every later step.
+`TYPE_ARRAY` and `TYPE_INVALID`. A missing or invalid value stays that way through every later step.
 
-`asString()` returns the text as written, with no escape decoding. That keeps a number such as `21.2` exactly as the
-server wrote it. `copyString(out)` decodes escapes such as `\n`, `\"` and `\u00e9`, including surrogate pairs, into the
-program's own buffer. It writes at most `out.length` bytes (or the capacity passed to `copyString(out, capacity)`) and
-adds no terminating NUL.
+`asString()` and `copyString(out)` decode escapes such as `\n`, `\"` and `\u00e9`, including surrogate pairs, to UTF-8.
+`copyString` writes into the program's own buffer, at most `out.length` bytes (or the capacity passed to
+`copyString(out, capacity)`), and adds no terminating NUL. `toString()` keeps a number such as `21.2` exactly as the
+server wrote it, which a `double` cannot always do.
 
 ## Writing JSON
 
@@ -201,18 +202,22 @@ adds no terminating NUL.
 call `reset()` for each body; writing allocates nothing:
 
 ```java
-byte[] body = new byte[64];
-JsonWriter json = new JsonWriter(body);
+JsonWriter json = new JsonWriter(new byte[64]);
 
 json.reset().beginObject()
         .name("uptime_ms").value(clock.millis())
+        .name("temperature").value(21.4)
         .name("ok").value(true)
         .endObject();
-int length = json.length();
+HttpServer.respond(HttpStatus.OK, "application/json", json.toString());
 ```
 
+`value` takes a `String`, a `char[]` with a length, an `int`, a `long`, a `double` (up to 15 significant digits, laid
+out as `Double.toString` does) or a `boolean`; `nullValue()` writes `null`. `toString()` copies the body into a
+`String` for `HttpServer.respond` or `HttpRequest.BodyPublishers.ofString`; `length()` gives its size in the buffer.
+
 Output that does not fit the buffer is dropped, and `overflowed()` turns `true`. It also turns `true` for a name
-outside an object or an unbalanced `end...` call.
+outside an object, an unbalanced `end...` call, or a NaN or infinite `double`, which JSON cannot write.
 
 ## Interacting with HTTPS endpoints
 

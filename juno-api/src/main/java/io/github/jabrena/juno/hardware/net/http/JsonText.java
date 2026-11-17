@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.net.http;
 
 import org.jspecify.annotations.Nullable;
 
-/** {@link Json}'s JSON strings: validating one, and decoding its escapes to UTF-8 for {@link JsonView#copyString(byte[], int)}. */
+/** {@link Json}'s JSON strings: validating one, and decoding its escapes to UTF-8 for {@link JsonValue}. */
 final class JsonText {
     private JsonText() {
     }
@@ -32,10 +32,12 @@ final class JsonText {
     }
 
     /**
-     * Decodes the string content {@code buffer[start, end)} into {@code out}, stopping before a character that would
-     * not fit {@code capacity}, and returns the number of bytes written; {@code 0} for a lone or unpaired surrogate.
+     * Decodes the string content {@code [start, end)} to UTF-8 into {@code out}, or else appends each byte to
+     * {@code builder} (a runtime {@code String} holds bytes), stopping before a character that would not fit
+     * {@code capacity}, and returns the number of bytes written; {@code 0} for a lone or unpaired surrogate.
      */
-    static int decode(byte @Nullable [] buffer, @Nullable String text, int start, int end, byte[] out, int capacity) {
+    static int decode(byte @Nullable [] buffer, @Nullable String text, int start, int end, byte @Nullable [] out,
+            @Nullable StringBuilder builder, int capacity) {
         int p = start;
         int written = 0;
         while (p < end) {
@@ -44,7 +46,7 @@ final class JsonText {
                 if (written >= capacity) {
                     break;
                 }
-                out[written++] = (byte) (c == '\\' ? unescape(JsonChars.at(buffer, text, p++)) : c);
+                written = put(out, builder, written, c == '\\' ? unescape(JsonChars.at(buffer, text, p++)) : c);
                 continue;
             }
             int codePoint = hex4(buffer, text, p + 1);
@@ -62,7 +64,7 @@ final class JsonText {
             if (written > capacity - utf8Length(codePoint)) {
                 break;
             }
-            written = writeUtf8(codePoint, out, written);
+            written = writeUtf8(codePoint, out, builder, written);
         }
         return written;
     }
@@ -108,25 +110,35 @@ final class JsonText {
         return codePoint <= 0xFFFF ? 3 : 4;
     }
 
-    /** Writes {@code codePoint} as UTF-8 at {@code out[written]} and returns the new written count. */
-    private static int writeUtf8(int codePoint, byte[] out, int written) {
+    /** Writes {@code codePoint} as UTF-8 at position {@code written} and returns the new written count. */
+    private static int writeUtf8(int codePoint, byte @Nullable [] out, @Nullable StringBuilder builder, int written) {
         int p = written;
         if (codePoint <= 0x7F) {
-            out[p++] = (byte) codePoint;
+            p = put(out, builder, p, codePoint);
         } else if (codePoint <= 0x7FF) {
-            out[p++] = (byte) (0xC0 | (codePoint >> 6));
-            out[p++] = (byte) (0x80 | (codePoint & 0x3F));
+            p = put(out, builder, p, 0xC0 | (codePoint >> 6));
+            p = put(out, builder, p, 0x80 | (codePoint & 0x3F));
         } else if (codePoint <= 0xFFFF) {
-            out[p++] = (byte) (0xE0 | (codePoint >> 12));
-            out[p++] = (byte) (0x80 | ((codePoint >> 6) & 0x3F));
-            out[p++] = (byte) (0x80 | (codePoint & 0x3F));
+            p = put(out, builder, p, 0xE0 | (codePoint >> 12));
+            p = put(out, builder, p, 0x80 | ((codePoint >> 6) & 0x3F));
+            p = put(out, builder, p, 0x80 | (codePoint & 0x3F));
         } else {
-            out[p++] = (byte) (0xF0 | (codePoint >> 18));
-            out[p++] = (byte) (0x80 | ((codePoint >> 12) & 0x3F));
-            out[p++] = (byte) (0x80 | ((codePoint >> 6) & 0x3F));
-            out[p++] = (byte) (0x80 | (codePoint & 0x3F));
+            p = put(out, builder, p, 0xF0 | (codePoint >> 18));
+            p = put(out, builder, p, 0x80 | ((codePoint >> 12) & 0x3F));
+            p = put(out, builder, p, 0x80 | ((codePoint >> 6) & 0x3F));
+            p = put(out, builder, p, 0x80 | (codePoint & 0x3F));
         }
         return p;
+    }
+
+    /** Writes one byte at {@code out[index]}, or appends it to {@code builder}, and returns {@code index + 1}. */
+    private static int put(byte @Nullable [] out, @Nullable StringBuilder builder, int index, int value) {
+        if (out != null) {
+            out[index] = (byte) value;
+        } else if (builder != null) {
+            builder.append((char) (value & 0xFF));
+        }
+        return index + 1;
     }
 
     /** Past the escape whose backslash precedes {@code start}, or {@link JsonSyntax#FAILED} for an invalid one. */

@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 
 import java.io.IOException;
 import java.net.URI;
@@ -22,7 +22,7 @@ public final class WeatherClient {
      * Returns Madrid's current temperature in Celsius as runtime text, exactly as Open-Meteo wrote it (e.g.
      * {@code "21.2"}), or {@code null} when the request failed, the status wasn't {@code 200}, or the response didn't
      * contain a numeric temperature. Reads the field's raw JSON text rather than parsing it through
-     * {@link JsonView#asDouble()} and reformatting it, which would lose precision in binary floating point.
+     * {@link JsonValue#asDouble()} and reformatting it, which would lose precision in binary floating point.
      */
     public String fetchTemperature() throws InterruptedException {
         HttpResponse<String> reply;
@@ -32,10 +32,10 @@ public final class WeatherClient {
             return null;
         }
         String body = reply.body();
-        JsonView temperature = Json.view(body).get("current").get("temperature_2m");
+        JsonValue temperature = Json.parse(body).get("current").get("temperature_2m");
         if (reply.statusCode() != HTTP_STATUS_OK || !temperature.isNumber()) {
             return null;
         }
-        return temperature.asString();
+        return temperature.toString();
     }
 }

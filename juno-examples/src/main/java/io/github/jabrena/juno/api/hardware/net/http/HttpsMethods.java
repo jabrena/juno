@@ -6,6 +6,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.Json;
+import io.github.jabrena.juno.hardware.net.http.JsonWriter;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -26,6 +27,8 @@ public final class HttpsMethods {
     private static final Wifi WIFI = MCU.getWifi();
 
     private static final URI HTTPBIN = URI.create("https://httpbin.org/anything");
+    /** One request body, written again for each verb. */
+    private static final JsonWriter BODY = new JsonWriter(new byte[32]);
     private static final URI HTTPBUN = URI.create("https://httpbun.com/anything");
 
     private HttpsMethods() {
@@ -56,7 +59,8 @@ public final class HttpsMethods {
     }
 
     private static HttpRequest.BodyPublisher json(String verb) {
-        return HttpRequest.BodyPublishers.ofString("{\"verb\":\"" + verb + "\"}");
+        BODY.reset().beginObject().name("verb").value(verb).endObject();
+        return HttpRequest.BodyPublishers.ofString(BODY.toString());
     }
 
     /** Sends {@code request} and prints whether the service echoed {@code method}. */
@@ -65,7 +69,8 @@ public final class HttpsMethods {
         Serial.print(method);
         Serial.print(": ");
         try {
-            String echoed = Json.view(client.send(request, HttpResponse.BodyHandlers.ofString()).body()).get("method").asString();
+            String body = client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            String echoed = Json.parse(body).get("method").asString();
             Serial.println(method.equals(echoed) ? "OK" : "FAILED");
         } catch (IOException e) {
             Serial.println("FAILED");

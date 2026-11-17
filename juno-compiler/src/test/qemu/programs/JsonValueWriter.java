@@ -5,13 +5,13 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.net.http.JsonWriter;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
-/** JsonView navigation and JsonWriter output, compiled from Java like the program. */
+/** JsonValue navigation and JsonWriter output, compiled from Java like the program. */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
-public final class JsonViewWriter {
+public final class JsonValueWriter {
     private static final byte[] BODY = new byte[96];
     private static final byte[] TEXT = new byte[8];
 
@@ -31,12 +31,12 @@ public final class JsonViewWriter {
         }
         Serial.println(checksum);
 
-        JsonView root = Json.view(BODY, writer.length());
+        JsonValue root = Json.parse(BODY, writer.length());
         Serial.println(root.type());
         Serial.println(root.size());
         Serial.println(root.get("uptime_ms").asInt());
         Serial.println(root.get("min").asLong() == Long.MIN_VALUE);
-        JsonView moves = root.get("moves");
+        JsonValue moves = root.get("moves");
         Serial.println(moves.size());
         int length = moves.get(1).copyString(TEXT);
         Serial.println(length);
@@ -47,7 +47,22 @@ public final class JsonViewWriter {
         Serial.println(moves.get(3).asBoolean());
         Serial.println(moves.get(4).isMissing());
         Serial.println(root.get("empty").size());
-        Serial.println(Json.view(BODY, writer.length() - 1).type());
+        Serial.println(Json.parse(BODY, writer.length() - 1).type());
+
+        writer.reset().beginArray().value(21.4).value(1.5E300).value(0.001).value(-0.0).value(100.0)
+                .value(new char[] {'a', '\t', 'b'}, 3).endArray();
+        String numbers = writer.toString();
+        Serial.println(numbers);
+        JsonValue parsed = Json.parse(numbers);
+        Serial.println(parsed.get(0).toString());
+        Serial.println(parsed.get(0).asDouble() == 21.4);
+        Serial.println(parsed.get(5).asString());
+        Serial.println(Json.parse("[2.3E2, 123.0, 1.5, \"q\\\"x\"]").get(0).asInt());
+        Serial.println(Json.parse("[2.3E2, 123.0, 1.5, \"q\\\"x\"]").get(1).asLong());
+        Serial.println(Json.parse("[2.3E2, 123.0, 1.5, \"q\\\"x\"]").get(2).asInt());
+        Serial.println(Json.parse("[2.3E2, 123.0, 1.5, \"q\\\"x\"]").get(3).asString());
+        Serial.println(Json.parse("[2.3E2, 123.0, 1.5, \"q\\\"x\"]").get(3).toString());
+        Serial.println(writer.reset().value(Double.NaN).overflowed());
 
         Serial.println(writer.reset().beginArray().name("x").overflowed());
         Serial.println(new JsonWriter(TEXT).beginObject().name("long").value(1).endObject().overflowed());

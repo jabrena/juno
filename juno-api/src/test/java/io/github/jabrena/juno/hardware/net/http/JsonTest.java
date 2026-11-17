@@ -162,10 +162,20 @@ class JsonTest {
     }
 
     @Test
-    @DisplayName("Returns zero for a number with an exponent read as an int")
-    void shouldReturnZeroForANumberWithAnExponentReadAsAnInt() {
+    @DisplayName("Reads an integral number with an exponent as an int, as JEP 540 does")
+    void shouldReadAnIntegralNumberWithAnExponentAsAnInt() {
         // When & Then
-        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[1]").asInt()).isZero();
+        assertThat(JsonPaths.at(DOCUMENT, DOCUMENT.length, "numbers[1]").asInt()).isEqualTo(125);
+    }
+
+    @ParameterizedTest(name = "{0} reads as {1}")
+    @CsvSource({"123, 123", "123.0, 123", "2.3E2, 230", "1500e-1, 150", "-4.00, -4", "0.0e-5, 0", "-0.0, 0",
+        "1.5, 0", "1e-1, 0", "0.5e1, 5", "9.223372036854775807E18, 9223372036854775807",
+        "-9.223372036854775808E18, -9223372036854775808", "9.3E18, 0", "1e400, 0", "12.30e1, 123"})
+    @DisplayName("Accepts any integral number as a long and rejects fractions and overflows")
+    void shouldReadIntegralNumbersAsALong(String number, long expected) {
+        // When & Then
+        assertThat(Json.parse("[" + number + "]").get(0).asLong()).isEqualTo(expected);
     }
 
     @Test

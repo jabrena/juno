@@ -2,21 +2,21 @@ package io.github.jabrena.juno.hardware.net.http;
 
 import java.nio.charset.StandardCharsets;
 
-/** Test helper: walks a {@code "users[1].name"}-style path with {@link JsonView#get} steps, keeping cases short. */
+/** Test helper: walks a {@code "users[1].name"}-style path with {@link JsonValue#get} steps, keeping cases short. */
 final class JsonPaths {
     private JsonPaths() {
     }
 
-    static JsonView at(byte[] buffer, int length, String path) {
-        return at(Json.view(buffer, length), path);
+    static JsonValue at(byte[] buffer, int length, String path) {
+        return at(Json.parse(buffer, length), path);
     }
 
-    static JsonView at(String json, String path) {
-        return at(Json.view(json), path);
+    static JsonValue at(String json, String path) {
+        return at(Json.parse(json), path);
     }
 
-    static JsonView at(JsonView root, String path) {
-        JsonView current = root;
+    static JsonValue at(JsonValue root, String path) {
+        JsonValue current = root;
         int p = 0;
         while (p < path.length()) {
             if (path.charAt(p) == '[') {

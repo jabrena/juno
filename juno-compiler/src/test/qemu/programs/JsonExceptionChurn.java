@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
@@ -25,7 +25,7 @@ public final class JsonExceptionChurn {
     }
 
     /** JEP 540's {@code asInt()}: throws instead of returning a zero value. */
-    static int requireInt(JsonView value) {
+    static int requireInt(JsonValue value) {
         if (value.isMissing()) {
             throw new JsonValueException("missing member");
         }
@@ -35,12 +35,12 @@ public final class JsonExceptionChurn {
         return value.asInt();
     }
 
-    static int read(JsonView root, String name) {
+    static int read(JsonValue root, String name) {
         return requireInt(root.get(name));
     }
 
     public static void main(String[] args) {
-        JsonView root = Json.view(DOCUMENT);
+        JsonValue root = Json.parse(DOCUMENT);
         int sum = 0;
         int notNumbers = 0;
         int missing = 0;

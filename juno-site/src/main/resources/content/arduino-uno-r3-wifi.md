@@ -49,7 +49,7 @@ library; the `MCU` facade is the entry point for the board's peripherals.
 | `Wifi`, `Udp`, SNTP | ✓ | Through `WiFiNINA`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
 | `HttpServer` (plain HTTP) | ✓ | A WiFiNINA server on the station address, one request at a time; no HTTPS. Build with `-Djuno.Xmx=3k`. | [`HttpServerStatusSDTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatusSDTFT.java) |
 | `java.net.http` | ✗ | Not supported: the HTTP client starts at the UNO R4 WiFi. | |
-| `Json`, `JsonView`, `JsonWriter` | ✗ | Not supported: JSON support starts at the UNO R4 WiFi, so `HttpServer` request bodies are read as plain bytes. | |
+| `Json`, `JsonValue`, `JsonWriter` | ✗ | Not supported: JSON support starts at the UNO R4 WiFi, so `HttpServer` request bodies are read as plain bytes. | |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on the NINA-W102 (usually ports 465 and 995). | |
 | `SdCard`, `Properties` | ✓ | On a shield's microSD slot; at most 2 open files, `Properties` of 8 entries. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
 | TFT Touch, Grove Base, 9 Axis Motion, LCD Keypad and Data Logger shields | ✓ | See [Shields](#shields). | |

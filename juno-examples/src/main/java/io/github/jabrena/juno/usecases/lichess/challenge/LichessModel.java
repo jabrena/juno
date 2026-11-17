@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.usecases.lichess.challenge;
 
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 
 /** The MVC model: one downloaded Lichess puzzle and the bounded state of the current attempt. */
 public final class LichessModel {
@@ -41,8 +41,8 @@ public final class LichessModel {
             loaded = false;
             return false;
         }
-        JsonView document = Json.view(response);
-        JsonView puzzle = document.get("puzzle");
+        JsonValue document = Json.parse(response);
+        JsonValue puzzle = document.get("puzzle");
         int fenLength = puzzle.get("fen").copyString(fen);
         boolean positionLoaded = fenLength > 0 && board.loadFen(fen, fenLength);
         if (!positionLoaded) {
@@ -51,7 +51,7 @@ public final class LichessModel {
             positionLoaded = pgnLength > 0 && initialPly < Integer.MAX_VALUE
                     && board.loadPgnPosition(pgn, pgnLength, initialPly + 1);
         }
-        JsonView moves = puzzle.get("solution");
+        JsonValue moves = puzzle.get("solution");
         int count = moves.isArray() ? moves.size() : -1;
         if (!positionLoaded || count <= 0 || count > solution.length) {
             loadError = LOAD_BAD_RESPONSE;

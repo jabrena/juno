@@ -4122,12 +4122,12 @@ class JunoCompilerTest {
             String source = """
                     package demo;
                     import io.github.jabrena.juno.hardware.net.http.Json;
-                    import io.github.jabrena.juno.hardware.net.http.JsonView;
+                    import io.github.jabrena.juno.hardware.net.http.JsonValue;
                     public final class JsonDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
                             byte[] name = new byte[32];
-                            JsonView root = Json.view(buffer, buffer.length);
+                            JsonValue root = Json.parse(buffer, buffer.length);
                             int valueType = root.get("items").get(0).get("value").type();
                             int temperature = root.get("data").get("sensor").get("temp").asInt();
                             long sequence = root.get("sequence").asLong();
@@ -4160,7 +4160,7 @@ class JunoCompilerTest {
                     public final class JsonStringValueDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
-                            String temperature = Json.view(buffer, buffer.length).get("temp").asString();
+                            String temperature = Json.parse(buffer, buffer.length).get("temp").toString();
                         }
                     }
                     """;
@@ -4175,7 +4175,7 @@ class JunoCompilerTest {
                     "juno_string_copy(reinterpret_cast<const char*>(bytes + start)");
         }
 
-        /** {@code JsonView.asString()} is unreachable here, so its native helper is left out. */
+        /** {@code JsonValue.asString()} is unreachable here, so its native helper is left out. */
         @Test
         @DisplayName("Omits the string-from-bytes helper when only other JSON methods are used")
         void shouldOmitStringFromBytesHelperWhenOnlyOtherJsonMethodsAreUsed() throws Exception {
@@ -4186,7 +4186,7 @@ class JunoCompilerTest {
                     public final class JsonIntOnlyDemo {
                         public static void main(String[] args) {
                             byte[] buffer = new byte[64];
-                            int temperature = Json.view(buffer, buffer.length).get("temp").asInt();
+                            int temperature = Json.parse(buffer, buffer.length).get("temp").asInt();
                         }
                     }
                     """;
@@ -4214,7 +4214,7 @@ class JunoCompilerTest {
                     @Board(%s.class)
                     public final class JsonSmallBoard {
                         public static void main(String[] args) {
-                            Serial.println(Json.view("{\\"n\\":1}").get("n").asInt());
+                            Serial.println(Json.parse("{\\"n\\":1}").get("n").asInt());
                         }
                     }
                     """.formatted(annotation, annotation));
@@ -4242,7 +4242,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) {
                             byte[] body = new byte[32];
                             JsonWriter writer = new JsonWriter(body).beginObject().name("n").value(1).endObject();
-                            Serial.println(Json.view(body, writer.length()).get("n").asInt());
+                            Serial.println(Json.parse(body, writer.length()).get("n").asInt());
                         }
                     }
                     """);

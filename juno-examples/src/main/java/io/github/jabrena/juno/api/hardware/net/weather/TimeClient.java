@@ -35,7 +35,7 @@ public final class TimeClient {
         if (reply.statusCode() != HTTP_STATUS_OK) {
             return null;
         }
-        String time = Json.view(reply.body()).get("current").get("time").asString();
+        String time = Json.parse(reply.body()).get("current").get("time").asString();
         if (time == null || time.length() < MINIMUM_TIME_LENGTH) {
             return null;
         }

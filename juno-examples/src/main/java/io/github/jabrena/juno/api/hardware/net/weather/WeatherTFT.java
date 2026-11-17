@@ -7,7 +7,7 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -206,7 +206,7 @@ public final class WeatherTFT {
             Serial.println(body.length());
             return -1;
         }
-        JsonView ipInfo = Json.view(body);
+        JsonValue ipInfo = Json.parse(body);
         int locationLength = ipInfo.get("loc").copyString(location, 31);
         if (!ipInfo.get("loc").isString() || locationLength <= 0) {
             Serial.println("ipinfo.io response has no location");
@@ -264,8 +264,8 @@ public final class WeatherTFT {
             Serial.println("Open-Meteo request failed");
             return false;
         }
-        JsonView forecast = Json.view(body);
-        JsonView current = forecast.get("current");
+        JsonValue forecast = Json.parse(body);
+        JsonValue current = forecast.get("current");
         if (!current.get("temperature_2m").isNumber()) {
             Serial.println("Open-Meteo response has no temperature");
             return false;

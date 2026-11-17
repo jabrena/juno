@@ -3,64 +3,65 @@ package io.github.jabrena.juno.hardware.net.http;
 import org.jspecify.annotations.Nullable;
 
 /**
- * One value inside a JSON document, navigated with JEP 540's method names ({@code get(String)}, {@code get(int)},
- * {@code asInt()}, ...). A view is the document plus the index where its value starts: it never copies the document or
- * parses it into a tree. {@link Json#view(String)} validates the whole document once, so each later step only scans
- * the value it starts from.
+ * One value inside a JSON document, with the navigation and conversion methods of JDK 28's {@code JsonValue}
+ * (JEP 540): {@code get(String)}, {@code get(int)}, {@code asInt()}, {@code asString()}, {@code toString()}. A value is
+ * the document plus the index where it starts: it never copies the document or parses it into a tree.
+ * {@link Json#parse(String)} validates the whole document once, so each later step only scans the value it starts
+ * from.
  *
  * <pre>{@code
- * JsonView puzzle = Json.view(response.body()).get("puzzle");
+ * JsonValue puzzle = Json.parse(response.body()).get("puzzle");
  * int rating = puzzle.get("rating").asInt();
- * JsonView solution = puzzle.get("solution");
+ * JsonValue solution = puzzle.get("solution");
  * for (int i = 0; i < solution.size(); i++) {
  *     int length = solution.get(i).copyString(uci);
  * }
  * }</pre>
  *
- * <p>Nothing throws: a missing member, an index out of range, a step into a non-container or an invalid document gives
- * a view whose {@link #type()} says so, every later step keeps that answer, and the {@code as*} conversions return zero
- * values. Integer conversions accept only integral literals ({@code 123}, not {@code 123.0}) and return {@code 0} on
- * overflow.
+ * <p>Unlike JEP 540 nothing throws: a missing member, an index out of range, a step into a non-container or an invalid
+ * document gives a value whose {@link #type()} says so, every later step keeps that answer, and the {@code as*}
+ * conversions return zero values or {@code null}. As in JEP 540, {@code asInt()} and {@code asLong()} accept any
+ * integral number ({@code 123}, {@code 123.0}, {@code 2.3E2}) and reject a fraction or an overflow.
  *
- * <p>Each {@code get} returns a new view, one 20-byte arena object that the collector reclaims; keep a view in a local
- * variable rather than repeating a step. A view reads the document where it is, so a {@code byte[]} buffer must not be
- * reused for another document while its views are still read.
+ * <p>Each {@code get} returns a new value, one 20-byte arena object that the collector reclaims; keep a value in a local
+ * variable rather than repeating a step. A value reads the document where it is, so a {@code byte[]} buffer must not
+ * be reused for another document while its values are still read.
  */
-public final class JsonView {
+public final class JsonValue {
     private final byte @Nullable [] buffer;
     private final @Nullable String text;
     private final int length;
     /** Where the value starts, or {@link JsonLookup#MISSING} or {@link JsonLookup#INVALID}. */
     private final int start;
 
-    JsonView(byte @Nullable [] buffer, @Nullable String text, int length, int start) {
+    JsonValue(byte @Nullable [] buffer, @Nullable String text, int length, int start) {
         this.buffer = buffer;
         this.text = text;
         this.length = length;
         this.start = start;
     }
 
-    /** The member {@code name} of this object; a missing view when absent or when this is not an object. */
-    public JsonView get(String name) {
+    /** The member {@code name} of this object; a missing value when absent or when this is not an object. */
+    public JsonValue get(String name) {
         if (start < 0) {
             return this;
         }
         if (JsonChars.at(buffer, text, start) != '{') {
             return at(JsonLookup.MISSING);
         }
-        int member = JsonLookup.member(buffer, text, start, end(), name);
+        int member = JsonLookup.member(buffer, text, start, length, name);
         return at(member == JsonSyntax.FAILED ? JsonLookup.MISSING : member);
     }
 
-    /** The element {@code index} of this array; a missing view when out of range or when this is not an array. */
-    public JsonView get(int index) {
+    /** The element {@code index} of this array; a missing value when out of range or when this is not an array. */
+    public JsonValue get(int index) {
         if (start < 0) {
             return this;
         }
         if (JsonChars.at(buffer, text, start) != '[' || index < 0) {
             return at(JsonLookup.MISSING);
         }
-        int element = JsonLookup.element(buffer, text, start, end(), index);
+        int element = JsonLookup.element(buffer, text, start, length, index);
         return at(element == JsonSyntax.FAILED ? JsonLookup.MISSING : element);
     }
 
@@ -93,7 +94,7 @@ public final class JsonView {
         return start == JsonLookup.MISSING;
     }
 
-    /** Whether the document this view came from is malformed or truncated. */
+    /** Whether the document this value came from is malformed or truncated. */
     public boolean isInvalid() {
         return start == JsonLookup.INVALID;
     }
@@ -134,33 +135,34 @@ public final class JsonView {
         if (type != Json.TYPE_OBJECT && type != Json.TYPE_ARRAY) {
             return -1;
         }
-        int end = end();
-        int p = JsonSyntax.skipSpace(buffer, text, start + 1, end);
+        int close = type == Json.TYPE_OBJECT ? '}' : ']';
+        int p = JsonSyntax.skipSpace(buffer, text, start + 1, length);
         int size = 0;
-        while (p < end - 1) {
+        while (p < length && JsonChars.at(buffer, text, p) != close) {
             if (type == Json.TYPE_OBJECT) {
-                p = JsonSyntax.skipSpace(buffer, text, JsonText.parseString(buffer, text, p, end), end) + 1;
+                p = JsonSyntax.skipSpace(buffer, text, JsonText.parseString(buffer, text, p, length), length) + 1;
             }
-            p = JsonSyntax.parseValue(buffer, text, JsonSyntax.skipSpace(buffer, text, p, end), end, 1);
+            p = JsonSyntax.parseValue(buffer, text, JsonSyntax.skipSpace(buffer, text, p, length), length, 1);
             size++;
-            p = JsonSyntax.skipComma(buffer, text, JsonSyntax.skipSpace(buffer, text, p, end), end);
+            p = JsonSyntax.skipComma(buffer, text, JsonSyntax.skipSpace(buffer, text, p, length), length);
         }
         return size;
     }
 
-    /** A strictly integral 32-bit value, or {@code 0} when this is not one or it overflows. */
+    /** An integral number as an {@code int}, or {@code 0} when this is not one or it overflows. */
     public int asInt() {
         long value = asLong();
         return value < Integer.MIN_VALUE || value > Integer.MAX_VALUE ? 0 : (int) value;
     }
 
-    /** A strictly integral 64-bit value, or {@code 0} when this is not one or it overflows. */
+    /** An integral number as a {@code long}, or {@code 0} when this is not one or it overflows. */
     public long asLong() {
         if (type() != Json.TYPE_NUMBER) {
             return 0L;
         }
         int end = end();
-        return JsonNumbers.isInteger(buffer, text, start, end) ? JsonNumbers.parseLong(buffer, text, start, end) : 0L;
+        return JsonIntegers.isIntegral(buffer, text, start, end)
+                ? JsonIntegers.parseIntegral(buffer, text, start, end) : 0L;
     }
 
     /**
@@ -180,25 +182,20 @@ public final class JsonView {
     }
 
     /**
-     * The raw JSON text of a scalar as a new arena {@code String}: a string's content without its quotes (escapes are
-     * not decoded), or a number, boolean or {@code null} literal exactly as written, which keeps a number's precision.
-     * {@code null} for an object, an array or a missing value.
+     * A JSON string's content with its escapes decoded, as a new arena {@code String} holding its UTF-8 bytes, or
+     * {@code null} when this is not a string. {@link #copyString(byte[])} decodes into a caller buffer instead.
      */
     public @Nullable String asString() {
-        int type = type();
-        if (type == Json.TYPE_MISSING || type == Json.TYPE_INVALID || type == Json.TYPE_OBJECT
-                || type == Json.TYPE_ARRAY) {
+        if (type() != Json.TYPE_STRING) {
             return null;
         }
-        int end = end();
-        int from = type == Json.TYPE_STRING ? start + 1 : start;
-        int to = type == Json.TYPE_STRING ? end - 1 : end;
-        byte[] bytes = buffer;
-        if (bytes != null) {
-            return Json.rawText(bytes, from, to);
+        int contentEnd = end() - 1;
+        if (!hasEscape(start + 1, contentEnd)) {
+            return raw(start + 1, contentEnd);
         }
-        String document = text;
-        return document == null ? null : copy(document, from, to);
+        StringBuilder decoded = new StringBuilder(contentEnd - start - 1);
+        JsonText.decode(buffer, text, start + 1, contentEnd, null, decoded, contentEnd - start - 1);
+        return decoded.toString();
     }
 
     /**
@@ -214,19 +211,50 @@ public final class JsonView {
         if (type() != Json.TYPE_STRING || capacity <= 0) {
             return 0;
         }
-        return JsonText.decode(buffer, text, start + 1, end() - 1, out, capacity);
+        return JsonText.decode(buffer, text, start + 1, end() - 1, out, null, capacity);
+    }
+
+    /**
+     * This value's JSON text exactly as the document writes it, as a new arena {@code String}: a number keeps every
+     * digit ({@code "21.2"}), a string keeps its quotes and escapes, an object or array its members. Empty for a missing
+     * value or an invalid document.
+     */
+    @Override
+    public String toString() {
+        if (start < 0) {
+            return "";
+        }
+        String copy = raw(start, end());
+        return copy == null ? "" : copy;
     }
 
     private int end() {
         return JsonSyntax.valueEnd(buffer, text, start, length);
     }
 
-    private JsonView at(int valueStart) {
-        return new JsonView(buffer, text, length, valueStart);
+    private JsonValue at(int valueStart) {
+        return new JsonValue(buffer, text, length, valueStart);
     }
 
-    /** {@code document}'s characters {@code [from, to)} as a new arena {@code String}, sized to them. */
-    private static String copy(String document, int from, int to) {
+    private boolean hasEscape(int from, int to) {
+        for (int i = from; i < to; i++) {
+            if (JsonChars.at(buffer, text, i) == '\\') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The document's bytes {@code [from, to)} as a new arena {@code String}, sized to them. */
+    private @Nullable String raw(int from, int to) {
+        byte[] bytes = buffer;
+        if (bytes != null) {
+            return Json.rawText(bytes, from, to);
+        }
+        String document = text;
+        if (document == null) {
+            return null;
+        }
         StringBuilder copy = new StringBuilder(to - from);
         for (int i = from; i < to; i++) {
             copy.append(document.charAt(i));

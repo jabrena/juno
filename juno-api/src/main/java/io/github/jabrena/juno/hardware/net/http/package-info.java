@@ -1,7 +1,7 @@
 /**
  * HTTP support built on {@link io.github.jabrena.juno.hardware.net.Wifi}'s connection, next to the JDK's
  * {@code java.net.http} client that programs send requests with: {@link io.github.jabrena.juno.hardware.net.http.Json}
- * and {@link io.github.jabrena.juno.hardware.net.http.JsonView} to read values directly out of a response body or a
+ * and {@link io.github.jabrena.juno.hardware.net.http.JsonValue} to read values directly out of a response body or a
  * request buffer without building a parsed document, {@link io.github.jabrena.juno.hardware.net.http.JsonWriter} to
  * write JSON into a buffer, and
  * {@link io.github.jabrena.juno.hardware.net.http.HttpServer} to serve requests, with

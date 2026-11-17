@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.client.services;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.usecases.mailbox.client.commons.MailboxModel;
@@ -159,7 +159,7 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Mailbox unavailable; retrying");
             return FAILED;
         }
-        JsonView messages = Json.view(list);
+        JsonValue messages = Json.parse(list);
         int count = messages.isArray() ? messages.size() : -1;
         Serial.print("Mailbox client: list count ");
         Serial.println(count);
@@ -203,7 +203,7 @@ public final class MailboxClient implements MailboxApi, Task {
             model.status("Message read failed; retrying");
             return false;
         }
-        JsonView detail = Json.view(message);
+        JsonValue detail = Json.parse(message);
         int titleLength = detail.get("title").copyString(model.title(index), MailboxModel.MAX_TITLE_BYTES);
         int messageBodyLength = detail.get("body").copyString(model.body(index), MailboxModel.MAX_BODY_BYTES);
         model.add(uuid, UUID_LENGTH, titleLength, messageBodyLength);
@@ -219,7 +219,7 @@ public final class MailboxClient implements MailboxApi, Task {
         Serial.print(status);
         Serial.print(" ms ");
         Serial.println(clock.millis() - started);
-        return info != null && status == HttpStatus.OK && SERVICE_NAME.equals(Json.view(info).get("info").asString());
+        return info != null && status == HttpStatus.OK && SERVICE_NAME.equals(Json.parse(info).get("info").asString());
     }
 
     @Override

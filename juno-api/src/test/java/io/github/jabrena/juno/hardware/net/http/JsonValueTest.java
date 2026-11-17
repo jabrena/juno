@@ -9,14 +9,14 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("JSON view with JEP 540 names")
-class JsonViewTest {
+class JsonValueTest {
     private static final String PUZZLE = """
             {"puzzle":{"fen":"8/8 w","rating":1500,"solution":["e2e4","e7e5", "g1f3"],"themes":[]},
              "weird.name":{"a[0]":true},"nothing":null,"score":-1.25e2,"big":2147483648}""";
 
     @Test
     void navigatesMembersAndElementsWithoutPathStrings() {
-        JsonView puzzle = Json.view(PUZZLE).get("puzzle");
+        JsonValue puzzle = Json.parse(PUZZLE).get("puzzle");
         byte[] uci = new byte[8];
 
         assertThat(puzzle.get("rating").asInt()).isEqualTo(1500);
@@ -27,12 +27,12 @@ class JsonViewTest {
 
     @Test
     void matchesMemberNamesThatPathsCannotAddress() {
-        assertThat(Json.view(PUZZLE).get("weird.name").get("a[0]").asBoolean()).isTrue();
+        assertThat(Json.parse(PUZZLE).get("weird.name").get("a[0]").asBoolean()).isTrue();
     }
 
     @Test
     void reportsTypesAndCountsMembers() {
-        JsonView root = Json.view(PUZZLE);
+        JsonValue root = Json.parse(PUZZLE);
 
         assertThat(root.type()).isEqualTo(Json.TYPE_OBJECT);
         assertThat(root.size()).isEqualTo(5);
@@ -45,27 +45,28 @@ class JsonViewTest {
 
     @Test
     void missingStepsStayMissingAndConvertToZeroValues() {
-        JsonView missing = Json.view(PUZZLE).get("puzzle").get("absent").get(3).get("deeper");
+        JsonValue missing = Json.parse(PUZZLE).get("puzzle").get("absent").get(3).get("deeper");
 
         assertThat(missing.isMissing()).isTrue();
         assertThat(missing.asInt()).isZero();
         assertThat(missing.size()).isEqualTo(-1);
         assertThat(missing.copyString(new byte[4])).isZero();
-        assertThat(Json.view(PUZZLE).get(0).isMissing()).isTrue();
-        assertThat(Json.view(PUZZLE).get("puzzle").get("solution").get(-1).isMissing()).isTrue();
+        assertThat(Json.parse(PUZZLE).get(0).isMissing()).isTrue();
+        assertThat(Json.parse(PUZZLE).get("puzzle").get("solution").get(-1).isMissing()).isTrue();
     }
 
     @Test
     void keepsTheGettersFailureRules() {
-        assertThat(Json.view(PUZZLE).get("big").asInt()).isZero();
-        assertThat(Json.view(PUZZLE).get("big").asLong()).isEqualTo(2147483648L);
-        assertThat(Json.view(PUZZLE).get("score").asInt()).isZero();
-        assertThat(Json.view(PUZZLE).get("puzzle").asInt()).isZero();
+        assertThat(Json.parse(PUZZLE).get("big").asInt()).isZero();
+        assertThat(Json.parse(PUZZLE).get("big").asLong()).isEqualTo(2147483648L);
+        assertThat(Json.parse(PUZZLE).get("score").asInt()).isEqualTo(-125);
+        assertThat(Json.parse("[0.5]").get(0).asInt()).isZero();
+        assertThat(Json.parse(PUZZLE).get("puzzle").asInt()).isZero();
     }
 
     @Test
     void anInvalidDocumentGivesInvalidViewsAllTheWayDown() {
-        JsonView invalid = Json.view("{\"x\":[1,]}");
+        JsonValue invalid = Json.parse("{\"x\":[1,]}");
 
         assertThat(invalid.type()).isEqualTo(Json.TYPE_INVALID);
         assertThat(invalid.get("x").get(0).type()).isEqualTo(Json.TYPE_INVALID);
@@ -78,7 +79,7 @@ class JsonViewTest {
         System.arraycopy(json, 0, buffer, 0, 15);
         byte[] uuid = new byte[4];
 
-        assertThat(Json.view(buffer, 15).get(0).get("uuid").copyString(uuid)).isEqualTo(2);
-        assertThat(Json.view(buffer, 16).type()).isEqualTo(Json.TYPE_INVALID);
+        assertThat(Json.parse(buffer, 15).get(0).get("uuid").copyString(uuid)).isEqualTo(2);
+        assertThat(Json.parse(buffer, 16).type()).isEqualTo(Json.TYPE_INVALID);
     }
 }

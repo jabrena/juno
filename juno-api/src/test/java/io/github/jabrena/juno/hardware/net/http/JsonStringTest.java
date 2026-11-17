@@ -44,8 +44,8 @@ class JsonStringTest {
     @DisplayName("every method answers for a String exactly as for the same bytes")
     void answersAsForBytes(String json, String path) {
         byte[] bytes = json.getBytes(StandardCharsets.US_ASCII);
-        JsonView fromText = JsonPaths.at(json, path);
-        JsonView fromBytes = JsonPaths.at(bytes, bytes.length, path);
+        JsonValue fromText = JsonPaths.at(json, path);
+        JsonValue fromBytes = JsonPaths.at(bytes, bytes.length, path);
 
         assertThat(fromText.type()).isEqualTo(fromBytes.type());
         assertThat(fromText.asInt()).isEqualTo(fromBytes.asInt());
@@ -62,16 +62,21 @@ class JsonStringTest {
     @Test
     @DisplayName("a value is read straight from a response body held in a String")
     void readsAResponseBody() {
-        JsonView body = Json.view("{\"current\":{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"},\"ok\":true}");
-        JsonView current = body.get("current");
+        JsonValue body = Json.parse("{\"current\":{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"},\"ok\":true}");
+        JsonValue current = body.get("current");
 
         assertThat(current.get("temperature_2m").asDouble()).isEqualTo(13.5);
-        assertThat(current.get("temperature_2m").asString()).isEqualTo("13.5");
+        assertThat(current.get("temperature_2m").toString()).isEqualTo("13.5");
+        assertThat(current.get("temperature_2m").asString()).isNull();
         assertThat(current.get("time").asString()).isEqualTo("2026-11-17T00:15");
         assertThat(current.asString()).isNull();
         assertThat(body.get("missing").asString()).isNull();
         assertThat(body.get("ok").asBoolean()).isTrue();
-        assertThat(body.get("ok").asString()).isEqualTo("true");
+        assertThat(body.get("ok").asString()).isNull();
+        assertThat(body.get("ok").toString()).isEqualTo("true");
+        assertThat(current.toString()).isEqualTo("{\"temperature_2m\":13.5,\"time\":\"2026-11-17T00:15\"}");
+        assertThat(current.get("time").toString()).isEqualTo("\"2026-11-17T00:15\"");
+        assertThat(body.get("missing").toString()).isEmpty();
         assertThat(current.type()).isEqualTo(Json.TYPE_OBJECT);
     }
 
@@ -80,10 +85,21 @@ class JsonStringTest {
     void decodesEscapes() {
         byte[] out = new byte[16];
 
-        int written = Json.view("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}").get("name").copyString(out);
+        int written = Json.parse("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}").get("name").copyString(out);
 
         assertThat(new String(out, 0, written, StandardCharsets.UTF_8)).isEqualTo("A\né😀");
-        assertThat(Json.view("{\"name\":\"x\"}").get("name").copyString(out, 0)).isZero();
-        assertThat(Json.view("{\"name\":\"a\\\"b\"}").get("name").asString()).isEqualTo("a\\\"b");
+        assertThat(Json.parse("{\"name\":\"x\"}").get("name").copyString(out, 0)).isZero();
+        assertThat(Json.parse("{\"name\":\"a\\\"b\"}").get("name").asString()).isEqualTo("a\"b");
+        assertThat(Json.parse("{\"name\":\"a\\\"b\"}").get("name").toString()).isEqualTo("\"a\\\"b\"");
+    }
+
+    @Test
+    @DisplayName("asString decodes escapes to the UTF-8 bytes a runtime String holds")
+    void asStringDecodesToUtf8Bytes() {
+        String decoded = Json.parse("{\"name\":\"A\\n\\u00e9\\uD83D\\uDE00\"}").get("name").asString();
+
+        assertThat(decoded).isNotNull();
+        assertThat(decoded.getBytes(StandardCharsets.ISO_8859_1))
+                .isEqualTo("A\né😀".getBytes(StandardCharsets.UTF_8));
     }
 }

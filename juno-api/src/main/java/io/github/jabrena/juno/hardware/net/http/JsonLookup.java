@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.net.http;
 
 import org.jspecify.annotations.Nullable;
 
-/** {@link JsonView}'s lookups: validates a whole document, and finds a member or an element of a validated value. */
+/** {@link JsonValue}'s lookups: validates a whole document, and finds a member or an element of a validated value. */
 final class JsonLookup {
     /** No value exists at a step. */
     static final int MISSING = -1;

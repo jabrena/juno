@@ -1,17 +1,27 @@
 package io.github.jabrena.juno.hardware.net.http;
 
 /**
- * Writes JSON into a caller-owned {@code byte[]}, placing commas and escaping strings, so request and
- * response bodies need no hand-written quotes and no {@code StringBuilder}. Create one writer at startup and
- * {@link #reset()} it per body: writing allocates nothing.
+ * Writes JSON into a caller-owned {@code byte[]}, placing commas and escaping strings, so request and response bodies
+ * need no hand-written quotes. Create one writer at startup and {@link #reset()} it per body: writing allocates
+ * nothing. {@link #toString()} copies the body into a {@code String} for APIs that take one, such as
+ * {@link HttpServer#respond(int, String, String)} or {@code HttpRequest.BodyPublishers.ofString}.
+ *
+ * <pre>{@code
+ * JsonWriter json = new JsonWriter(new byte[64]);
+ * json.reset().beginObject().name("uptime_ms").value(clock.millis()).name("ok").value(true).endObject();
+ * HttpServer.respond(HttpStatus.OK, "application/json", json.toString());
+ * }</pre>
  *
  * <p>Output that does not fit the buffer is dropped and {@link #overflowed()} turns true. Nesting deeper than
- * {@value #MAX_DEPTH} levels, or a name outside an object, also marks the writer overflowed instead of throwing.
+ * {@value #MAX_DEPTH} levels, a name outside an object, an unbalanced close, or a NaN or infinite {@code double}
+ * (JSON has no literal for them) also mark the writer overflowed instead of throwing.
  */
 public final class JsonWriter {
     private static final int MAX_DEPTH = 31;
 
     private final byte[] out;
+    /** Scratch for the digits of a number, so writing one allocates nothing. */
+    private final byte[] digits = new byte[20];
     private int length;
     private int depth;
     /** Bit {@code d} set: the container at depth {@code d} already holds an item, so the next one needs a comma. */
@@ -64,7 +74,11 @@ public final class JsonWriter {
             return this;
         }
         separator();
-        string(name);
+        put('"');
+        for (int i = 0; i < name.length(); i++) {
+            escaped(name.charAt(i));
+        }
+        put('"');
         put(':');
         afterName = true;
         return this;
@@ -73,7 +87,22 @@ public final class JsonWriter {
     /** A JSON string, with quotes, backslashes and control characters escaped. */
     public JsonWriter value(String value) {
         separator();
-        string(value);
+        put('"');
+        for (int i = 0; i < value.length(); i++) {
+            escaped(value.charAt(i));
+        }
+        put('"');
+        return this;
+    }
+
+    /** The first {@code count} characters of {@code text} as a JSON string, escaped like {@link #value(String)}. */
+    public JsonWriter value(char[] text, int count) {
+        separator();
+        put('"');
+        for (int i = 0; i < count; i++) {
+            escaped(text[i]);
+        }
+        put('"');
         return this;
     }
 
@@ -85,25 +114,30 @@ public final class JsonWriter {
     /** A JSON number written in decimal, {@link Long#MIN_VALUE} included. */
     public JsonWriter value(long value) {
         separator();
-        if (value < 0) {
+        integer(value);
+        return this;
+    }
+
+    /**
+     * A JSON number with up to 15 significant digits, written as {@link Double#toString(double)} lays it out:
+     * {@code 21.4}, {@code 100.0}, {@code 0.001}, {@code 1.5E300}. A NaN or infinite value writes nothing and marks the
+     * writer overflowed.
+     */
+    public JsonWriter value(double value) {
+        if (!(value >= -Double.MAX_VALUE && value <= Double.MAX_VALUE)) { // NaN and the infinities
+            overflow = true;
+            return this;
+        }
+        separator();
+        double magnitude = value;
+        if (value < 0.0 || (value == 0.0 && 1.0 / value < 0.0)) {
             put('-');
+            magnitude = -value;
         }
-        int digits = 1;
-        for (long rest = value / 10; rest != 0; rest /= 10) {
-            digits++;
+        if (magnitude == 0.0) {
+            return word("0.0");
         }
-        int first = length;
-        for (int i = 0; i < digits; i++) {
-            put('0');
-        }
-        long rest = value;
-        for (int i = digits - 1; i >= 0; i--) {
-            long digit = rest % 10;
-            if (first + i < out.length) {
-                out[first + i] = (byte) ('0' + (digit < 0 ? -digit : digit));
-            }
-            rest /= 10;
-        }
+        JsonDoubles.write(this, magnitude, digits);
         return this;
     }
 
@@ -127,6 +161,16 @@ public final class JsonWriter {
     /** Whether some output was dropped or the calls did not form valid JSON. */
     public boolean overflowed() {
         return overflow;
+    }
+
+    /** The bytes written so far as a new arena {@code String}, for APIs that take a body as text. */
+    @Override
+    public String toString() {
+        StringBuilder copy = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            copy.append((char) (out[i] & 0xFF));
+        }
+        return copy.toString();
     }
 
     private JsonWriter open(char bracket, boolean object) {
@@ -164,25 +208,60 @@ public final class JsonWriter {
         hasItem |= 1 << depth;
     }
 
-    private void string(String text) {
-        put('"');
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            if (c == '"' || c == '\\') {
-                put('\\');
-                put(c);
-            } else if (c < 0x20) {
-                put('\\');
-                put('u');
-                put('0');
-                put('0');
-                put(hex(c >> 4));
-                put(hex(c & 0xF));
-            } else {
-                put(c);
-            }
+    /** One string character, with JSON's short escapes and <code>&#92;u00XX</code> for other control characters. */
+    private void escaped(char c) {
+        if (c == '"' || c == '\\') {
+            put('\\');
+            put(c);
+        } else if (c >= 0x20) {
+            put(c);
+        } else if (c == '\n' || c == '\r' || c == '\t' || c == '\b' || c == '\f') {
+            put('\\');
+            put(shortEscape(c));
+        } else {
+            put('\\');
+            put('u');
+            put('0');
+            put('0');
+            put(hex(c >> 4));
+            put(hex(c & 0xF));
         }
-        put('"');
+    }
+
+    private static char shortEscape(char c) {
+        if (c == '\n') {
+            return 'n';
+        }
+        if (c == '\r') {
+            return 'r';
+        }
+        if (c == '\t') {
+            return 't';
+        }
+        return c == '\b' ? 'b' : 'f';
+    }
+
+    /** {@code value} in decimal, through {@link #digits} from the last digit back, so no divisor varies. */
+    private void integer(long value) {
+        if (value < 0) {
+            put('-');
+        }
+        int count = 0;
+        long rest = value;
+        do {
+            long digit = rest % 10;
+            digits[count] = (byte) (digit < 0 ? -digit : digit);
+            count++;
+            rest /= 10;
+        } while (rest != 0);
+        while (count > 0) {
+            count--;
+            put(digit(count));
+        }
+    }
+
+    private char digit(int index) {
+        return (char) ('0' + digits[index]);
     }
 
     private JsonWriter word(String word) {
@@ -196,7 +275,8 @@ public final class JsonWriter {
         return (char) (nibble < 10 ? '0' + nibble : 'a' + nibble - 10);
     }
 
-    private void put(char c) {
+    /** Appends one byte, or marks the writer overflowed when the buffer is full. */
+    void put(char c) {
         if (length < out.length) {
             out[length] = (byte) c;
             length++;

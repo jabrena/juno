@@ -101,7 +101,7 @@ public enum Capability {
                     + " smallest board that runs it";
         }
     },
-    JSON("Json, JsonView and JsonWriter") {
+    JSON("Json, JsonValue and JsonWriter") {
         @Override
         public String unsupportedReason(Board board) {
             return board.displayName() + " has too little memory for JSON support; the UNO R4 WiFi is the smallest"

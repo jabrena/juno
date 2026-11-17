@@ -3,7 +3,7 @@ package io.github.jabrena.juno.usecases.mailbox.server.services;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.net.http.Json;
-import io.github.jabrena.juno.hardware.net.http.JsonView;
+import io.github.jabrena.juno.hardware.net.http.JsonValue;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
@@ -97,7 +97,7 @@ public final class MailboxModel {
         if (messageCount == MAX_MESSAGES) {
             return fail(HttpStatus.CONFLICT, "Mailbox is full");
         }
-        JsonView request = Json.view(requestBody, bodyLength);
+        JsonValue request = Json.parse(requestBody, bodyLength);
         if (!request.get("title").isString() || !request.get("body").isString()) {
             return fail(HttpStatus.BAD_REQUEST, "title and body must be JSON strings");
         }
@@ -382,11 +382,11 @@ public final class MailboxModel {
     }
 
     private MailboxMessage parseMessage(int length, UUID uuid, long directoryDate) {
-        JsonView stored = Json.view(storedMessage, length);
-        JsonView storedUuid = stored.get("uuid");
-        JsonView storedTitle = stored.get("title");
-        JsonView storedBody = stored.get("body");
-        JsonView storedCreateAt = stored.get("createAt");
+        JsonValue stored = Json.parse(storedMessage, length);
+        JsonValue storedUuid = stored.get("uuid");
+        JsonValue storedTitle = stored.get("title");
+        JsonValue storedBody = stored.get("body");
+        JsonValue storedCreateAt = stored.get("createAt");
         if (!storedUuid.isString() || !storedTitle.isString() || !storedBody.isString()
                 || !storedCreateAt.isString()) {
             return null;
