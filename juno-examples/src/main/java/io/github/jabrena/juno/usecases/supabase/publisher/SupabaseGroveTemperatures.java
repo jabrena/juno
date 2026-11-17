@@ -2,7 +2,6 @@ package io.github.jabrena.juno.usecases.supabase.publisher;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.grove.GroveBaseShield;
 import io.github.jabrena.juno.hardware.device.grove.sensors.GroveDht11;
@@ -28,7 +27,7 @@ import java.time.LocalDateTime;
  * {@link LocalDateTime#now()} once at startup and then advanced by {@link SensorClock}, so no extra time requests are
  * made; {@code id} is left to the table's default. A sensor that fails to read is sent as {@code null}.
  *
- * <p>{@code ExampleSecrets} provides {@code wifi.ssid}, {@code wifi.password}, {@code supabase.api.url}
+ * <p>The board's secret store provides {@code wifi.ssid}, {@code wifi.password}, {@code supabase.api.url}
  * (the table endpoint, such as {@code https://abcdefgh.supabase.co/rest/v1/sensor-data}) and {@code supabase.api.key}.
  * A board is a public client: use a publishable key protected by Row Level Security, never a secret or legacy
  * {@code service_role} key.
@@ -87,7 +86,7 @@ public final class SupabaseGroveTemperatures {
     private boolean connect() {
         Serial.begin(BaudRate.BAUD_115200);
 
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
 
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < WIFI_ATTEMPTS) {
@@ -147,7 +146,7 @@ public final class SupabaseGroveTemperatures {
     /** Serializes one reading and inserts it into Supabase. */
     private void insertToSupabase(GroveTemperatureRecord reading) {
         if (endpoint == null) {
-            endpoint = URI.create(ExampleSecrets.supabaseApiUrl());
+            endpoint = URI.create(MCU.getSecretStore().getString("supabase.api.url"));
         }
         int bodyLength = row.write(reading.temp1(), reading.temp2(), reading.temp3(),
                 reading.year(), reading.month(), reading.day(),
@@ -157,7 +156,7 @@ public final class SupabaseGroveTemperatures {
             return;
         }
         HttpRequest insert = HttpRequest.newBuilder(endpoint)
-                .header("apikey", ExampleSecrets.supabaseApiKey())
+                .header("apikey", MCU.getSecretStore().getString("supabase.api.key"))
                 .header("Content-Type", "application/json")
                 .header("Prefer", "return=minimal")
                 .POST(HttpRequest.BodyPublishers.ofByteArray(row.buffer(), 0, bodyLength))

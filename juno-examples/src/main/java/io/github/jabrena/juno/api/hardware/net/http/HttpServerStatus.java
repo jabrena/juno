@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -14,7 +13,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * A minimal REST endpoint for the experimental {@code Thumb2AsmBackend}: connects to WiFi with
- * credentials from {@code ExampleSecrets} (see {@link
+ * credentials from the board's secret store (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), prints its {@link Wifi#localIP} once connected
  * so the endpoint can actually be found on the network, then serves {@code GET /status} as JSON
  * ({@code
@@ -115,7 +114,7 @@ public final class HttpServerStatus {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

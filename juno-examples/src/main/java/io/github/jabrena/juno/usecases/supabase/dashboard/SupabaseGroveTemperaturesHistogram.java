@@ -2,7 +2,7 @@ package io.github.jabrena.juno.usecases.supabase.dashboard;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -30,7 +30,7 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  *       exact count with the first page, then reads pairs of bounded pages concurrently.</li>
  * </ul>
  *
- * <p>This class only wires those pieces together. {@code ExampleSecrets} provides {@code wifi.ssid},
+ * <p>This class only wires those pieces together. The board's secret store provides {@code wifi.ssid},
  * {@code wifi.password}, {@code supabase.api.host} (without {@code https://}), and {@code supabase.api.key}. The table
  * needs a Row Level Security policy granting the public client {@code SELECT} access. Never embed a secret or legacy
  * {@code service_role} key in firmware.
@@ -74,8 +74,8 @@ public final class SupabaseGroveTemperaturesHistogram {
                 responseHeaders, RESPONSE_HEADERS_CAPACITY,
                 status);
         SupabaseClient supabase = new SupabaseClient(
-                ExampleSecrets.supabaseApiHost(),
-                ExampleSecrets.supabaseApiKey(),
+                MCU.getSecretStore().getString("supabase.api.host"),
+                MCU.getSecretStore().getString("supabase.api.key"),
                 path, PATH_CAPACITY,
                 requestHeaders, REQUEST_HEADERS_CAPACITY,
                 requestBody, REQUEST_BODY_CAPACITY,
@@ -92,8 +92,8 @@ public final class SupabaseGroveTemperaturesHistogram {
                 nextResponseHeaders, RESPONSE_HEADERS_CAPACITY,
                 nextStatus);
         SupabaseClient nextSupabase = new SupabaseClient(
-                ExampleSecrets.supabaseApiHost(),
-                ExampleSecrets.supabaseApiKey(),
+                MCU.getSecretStore().getString("supabase.api.host"),
+                MCU.getSecretStore().getString("supabase.api.key"),
                 nextPath, PATH_CAPACITY,
                 nextRequestHeaders, REQUEST_HEADERS_CAPACITY,
                 nextRequestBody, REQUEST_BODY_CAPACITY,

@@ -349,10 +349,9 @@ String password = properties.getProperty(&quot;smtp.password&quot;);
 </code></pre>
 <p>Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
 A <code>Properties</code> value holds 31 bytes, so keep the password, the subject and the body within that length.</p>
-<p>The <code>InboxCount</code> and <code>EmailClient</code> examples read the SMTP values through <code>ExampleSecrets</code>: from the secret store on a
-board that has one, otherwise from <code>application.properties</code> on the SD card. They run on the UNO R4 WiFi, which reads
-them from its coprocessor's NVS store: provision <code>smtp.host</code>, <code>smtp.username</code> and <code>smtp.password</code> there with
-<code>juno:secret</code>.</p>
+<p>The email examples read the SMTP values from the board's secret store, with
+<code>MCU.getSecretStore().getString(&quot;smtp.host&quot;)</code> and the like. On the UNO R4 WiFi that is its coprocessor's NVS store:
+provision <code>smtp.host</code>, <code>smtp.username</code> and <code>smtp.password</code> there with <code>juno:secret</code>.</p>
 <h2 id="smtp">SMTP</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java"><code>Smtp</code></a>
 sends one plain-text message to one recipient. It offers two ways to start the encrypted connection:</p>

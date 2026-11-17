@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.hardware.net.weather;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -15,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
  * "Madrid Weather: &lt;temp&gt;C" followed by "Madrid Time: HH:MM" across the built-in LED
  * matrix. It uses the same right-to-left one-pixel-per-tick idea as {@code LedMatrixScrollingText},
  * adapted for messages built at runtime
- * instead of a compile-time literal. Credentials come from {@code ExampleSecrets}.
+ * instead of a compile-time literal. Credentials come from the board's secret store.
  *
  * <p>{@link WeatherClient} fetches and parses the Open-Meteo response, {@link TimeClient} extracts
  * and formats the local time, and {@link DisplayData} builds and scrolls the runtime messages on
@@ -61,7 +60,7 @@ public final class MadridWeather {
 
     private static void connectWifi(DisplayData display) {
         display.showMessage("Connecting");
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
 
         int waitedSeconds = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {

@@ -457,16 +457,13 @@ Rev2 also carries an ATECC608 chip, which Juno does not use: it refuses every re
 locked, which is permanent. On the UNO R3, <code>SecretProvisioner</code> does not fit in the 2 KB of RAM, so <code>juno:secret</code> cannot
 provision it yet.</p>
 <h2 id="boards-without-a-secret-store">Boards without a secret store</h2>
-<p>The UNO Q has no secret store.</p>
-<p>On the UNO Q, the connected examples read the same names through <code>ExampleSecrets</code> from <code>application.properties</code> on the
-SD card, using the card of the stacked UNO shield (TFT Touch, LCD Keypad or Data Logger — all wire their socket to
-chip select D10):</p>
-<pre><code class="language-properties">wifi.ssid=MyNetwork
-wifi.password=MyPassword
+<p>The UNO Q has no secret store. The connected examples read their credentials with
+<code>MCU.getSecretStore().getString(name)</code>, so the ones that need a credential do not target the Q. The UNO Q examples
+read <code>application.properties</code> from the SD card of the stacked UNO shield themselves, as <code>SntpTimeSD</code>,
+<code>WifiStatusSDTFT</code> and <code>Mailbox</code> do:</p>
+<pre><code class="language-properties">mailbox.q.ip=192.168.1.20
 </code></pre>
-<p><strong>This is not a secret store.</strong> The values are plain text on the card, so a copied card carries them. Each value is a
-<code>Properties</code> value, so it must fit in 31 characters. The Pico 2 W takes no UNO shield, so the multi-board Wi-Fi examples
-do not target it.</p>
+<p><strong>This is not a secret store.</strong> The values are plain text on the card, so a copied card carries them.</p>
     </div>
   </section>
 </article>

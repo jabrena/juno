@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.BoardMemory;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
@@ -15,7 +14,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Demonstrates {@link HttpServer}'s {@code POST} handling: connects to WiFi with credentials from
- * {@code ExampleSecrets} (see {@link
+ * the board's secret store (see {@link
  * io.github.jabrena.juno.api.hardware.net.wifi.WifiStatus}), starts the LCD Keypad Shield with its backlight
  * off — {@link LcdKeypadShield#begin} turns it on as part of its own init sequence, so this
  * immediately overrides that — then, on every {@code
@@ -107,7 +106,7 @@ public final class HttpServerBacklight {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

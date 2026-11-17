@@ -3,7 +3,6 @@ package io.github.jabrena.juno.api.hardware.net.http;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.Json;
@@ -34,7 +33,7 @@ public final class HttpsMethods {
 
     public static void main(String[] args) throws InterruptedException {
         Serial.begin(BaudRate.BAUD_115200);
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);

@@ -545,7 +545,7 @@ host name against the board's trusted root certificates. A certificate that fail
 <td>Portenta H7</td>
 <td>Juno's root bundle, through Mbed TLS.</td>
 <td>Not supported.</td>
-<td>No: Mbed's TLS library is built without date checks.</td>
+<td>Yes: after the handshake, each certificate's dates are compared with the clock, which is set over SNTP first. A connection fails if the clock cannot be set.</td>
 </tr>
 </tbody>
 </table>

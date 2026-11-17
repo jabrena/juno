@@ -7,7 +7,6 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -24,7 +23,7 @@ import java.net.http.HttpResponse;
  * Madrid's current temperature from Open-Meteo, over plain HTTP, with the JDK's {@code java.net.http} client. On the
  * board it runs Juno's board-side implementation of that API (package {@code io.github.jabrena.juno.jdk.net.http}),
  * and only the plain-HTTP request is linked, since the one URI is {@code http}. Credentials come from
- * {@code ExampleSecrets}. The client, request and response are created once, before the loop, so each request
+ * the board's secret store. The client, request and response are created once, before the loop, so each request
  * allocates nothing. Prints the HTTP status, the body length and the temperature every ten seconds, at 115200 baud.
  * On the board {@code body()} is a fixed-capacity buffer, so the length printed is that capacity; the temperature is
  * read straight from the bytes, since {@code Json} is more code than this one value needs. The UNO R4 WiFi is the
@@ -114,7 +113,7 @@ public final class JdkHttpWeather {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);

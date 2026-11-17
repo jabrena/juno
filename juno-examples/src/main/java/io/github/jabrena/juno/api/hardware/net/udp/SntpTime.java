@@ -3,12 +3,10 @@ package io.github.jabrena.juno.api.hardware.net.udp;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -19,12 +17,11 @@ import java.time.LocalDateTime;
 
 /**
  * Prints UTC from {@link LocalDateTime#now()} every ten seconds at 115200 baud. Joins Wi-Fi with
- * credentials from {@code ExampleSecrets}; the clock synchronizes over SNTP with the default
+ * credentials from the board's secret store; the clock synchronizes over SNTP with the default
  * {@code pool.ntp.org} host and port 123.
  */
 @Board({
     ArduinoUnoR4WiFiBoard.class,
-    ArduinoUnoQBoard.class,
     ArduinoUnoR3WiFiRev2Board.class,
     ArduinoNanoEsp32Board.class,
     ArduinoPortentaH7Board.class,
@@ -42,7 +39,7 @@ public final class SntpTime {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
