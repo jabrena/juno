@@ -42,8 +42,6 @@ items:
         path: "/raspberry-pi-pico-2-w"
       - title: "UNO R4 WiFi"
         path: "/arduino-uno-r4-wifi"
-      - title: "UNO R3 WiFi"
-        path: "/arduino-uno-r3-wifi"
       - title: "UNO R3"
         path: "/arduino-uno-r3"
   - title: "APIs"

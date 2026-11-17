@@ -16,7 +16,7 @@ with any pin-mapped shield or carrier.
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
 
 The [Grove Base Shield](https://wiki.seeedstudio.com/Base_Shield_V2/) is a passive adapter for the UNO headers, used
-on the UNO R3, UNO WiFi Rev2, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
+on the UNO R3, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
 [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java)
 names them. Seat it on the board's UNO headers and plug the module into a socket; the diagram is a socket map, not the
 shield's physical layout:
@@ -32,7 +32,7 @@ shield's physical layout:
 +------------------------------+------------------------------+
                                | seated on the UNO headers
 +------------------------------v------------------------------+
-|      UNO R3  /  UNO WiFi Rev2  /  UNO R4 WiFi  /  UNO Q     |
+|      UNO R3  /  UNO R4 WiFi  /  UNO Q                       |
 +-------------------------------------------------------------+
 
  Grove DHT22 ---- cable ----> [D4]

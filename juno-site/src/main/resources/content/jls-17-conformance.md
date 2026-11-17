@@ -79,14 +79,13 @@ a focused executable example and a deterministic assertion.
 |---|---|---|
 | UNO R4 WiFi | Supported; one carrier | Physical board, or Cortex-M4 QEMU for the language/runtime layer |
 | UNO Q | Supported; one carrier | Physical board; Cortex-M4 QEMU uses a stand-in for the Zephyr scheduling port |
-| UNO WiFi Rev2 | Supported; one carrier | Physical board, or simavr for the AVR language/runtime layer |
-| Nano ESP32 | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in |
-| AI Thinker ESP32-CAM | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in |
-| M5Stack Cardputer | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU/simavr stand-in |
-| Raspberry Pi Pico 2 W | Supported; two carriers by default | Physical board; RP2350 toolchain coverage, no QEMU/simavr stand-in |
+| Nano ESP32 | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |
+| AI Thinker ESP32-CAM | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |
+| M5Stack Cardputer | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |
+| Raspberry Pi Pico 2 W | Supported; two carriers by default | Physical board; RP2350 toolchain coverage, no QEMU stand-in |
 | Classic UNO R3 | Not applicable | The board has only 2 KiB SRAM and intentionally exposes no task scheduler; Juno rejects monitor/lock concurrency for it instead of silently weakening the semantics |
 
 Each board-ready example declares its own target set, while the compiler capability covers every scheduler board listed
 above. The Arduino CLI integration profile builds and links the generated sketches with each target's real Arduino
-core. QEMU and simavr compare generated-code output with OpenJDK where a stand-in exists; real hardware remains the
+core. QEMU compares generated-code output with OpenJDK where a stand-in exists; real hardware remains the
 final check for each scheduler port.

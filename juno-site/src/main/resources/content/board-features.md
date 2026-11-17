@@ -12,32 +12,31 @@ language itself, see the [Java subset](../java-subset) page.
 
 ✓ supported · — not supported by Juno on this board
 
-| Juno API or feature | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — | — |
-| Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — | — |
-| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi station | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP client | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
-| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
-| HTTPS server | ✓ | ✓ | ✓ | — | ✓ | ✓ | — | — | — |
-| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — | — | — |
-| Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — | — | — |
-| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | ✓ | — |
-| Email over STARTTLS (`Smtp.send`) | ✓ | ✓ | — | — | — | — | ✓ | — | — |
-| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
-| USB HID mouse | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | — | — |
-| Onboard LED matrix | — | — | — | — | ✓ | — | ✓ | — | — |
-| Onboard IMU (`MCU.getGyroscope()`, `MCU.getAccelerometer()`) | — | — | — | — | — | — | — | ✓ | — |
-| Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — | — |
-| `@Watchdog` | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | ✓ | ✓ |
-| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | — | ✓ | ✓ | — |
-| `SecretStore` over an onboard secure element | ✓ | — | — | — | — | — | ✓ | — | — |
-| Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — | — |
+| Juno API or feature | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO R3 |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| GPIO and board-context pin resolution | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Explicit PSRAM byte buffers (`Psram`) | — | ✓ | — | ✓ | — | — | — | — |
+| Double-precision `Math` functions | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi station | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| Wi-Fi access point | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| HTTP client | ✓ | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
+| HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| HTTPS server | ✓ | ✓ | ✓ | — | ✓ | ✓ | — | — |
+| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — | — |
+| Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — | — |
+| Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | ✓ | — |
+| Email over STARTTLS (`Smtp.send`) | ✓ | ✓ | — | — | — | — | ✓ | — |
+| Bluetooth LE (LEGO Powered Up) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
+| USB HID mouse | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | — |
+| Onboard LED matrix | — | — | — | — | ✓ | — | ✓ | — |
+| Camera (`MCU.getCamera()`) | — | — | — | ✓ | — | — | — | — |
+| `@Watchdog` | ✓ | ✓ | ✓ | — | — | ✓ | ✓ | ✓ |
+| Cryptographic `UUID.randomUUID()` | ✓ | ✓ | ✓ | — | ✓ | — | ✓ | — |
+| `SecretStore` over an onboard secure element | ✓ | — | — | — | — | — | ✓ | — |
+| Display, keyboard, speaker, battery | — | — | ✓ | — | — | — | — | — |
 
 The AI Thinker ESP32-CAM supports Wi-Fi station and access-point modes, HTTPS server sessions, both implicit-TLS and
 STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response
@@ -60,7 +59,7 @@ secret store: their examples read `application.properties` from the SD card, in 
 |---|---|---|
 | Built in | Portenta H7 | The board includes an NXP SE050C2; `MCU.getSecretStore()` selects it by board, so programs use the same `SecretStore` API. |
 | Built in, in flash | Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM | No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. |
-| Built in, in EEPROM | UNO WiFi Rev2 and UNO R3 | No crypto chip: `MCU.getSecretStore()` uses the microcontroller's EEPROM, plain text that any flashed program or a programmer can read. The UNO WiFi Rev2's ATECC608 is not used: it refuses every read and write until it is permanently locked. |
+| Built in, in EEPROM | UNO R3 | No crypto chip: `MCU.getSecretStore()` uses the microcontroller's EEPROM, plain text that any flashed program or a programmer can read. |
 | None: SD-card settings | UNO Q | No secret store. The examples read `application.properties` from a UNO shield's SD card, in plain text. |
 
 The chip must be provisioned with `juno:secret` before the application reads its secrets by name. The [secure-element
@@ -71,14 +70,14 @@ status.
 
 ✓ supported · — not available
 
-| Expansion | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO WiFi Rev2 | UNO R3 |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| SD card | — | Carrier | Built-in | Built-in | — | — | Shield | Shield | Shield |
-| Grove sockets | — | Carrier | — | — | Shield | Shield | Shield | Shield | Shield |
-| 9 Axis Motion Shield | — | — | — | — | Shield | — | Shield | Shield | Shield |
-| LCD Keypad Shield | — | — | — | — | Shield | — | Shield | Shield | Shield |
-| TFT Touch Shield | — | — | — | — | Shield | — | Shield | — | — |
-| Infrared link to LEGO RCX | — | ✓ | — | — | ✓ | — | ✓ | — | — |
+| Expansion | Portenta H7 | Nano ESP32 | M5Stack Cardputer | AI Thinker ESP32-CAM | UNO Q | Raspberry Pi Pico 2 W | UNO R4 WiFi | UNO R3 |
+| --- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| SD card | — | Carrier | Built-in | Built-in | — | — | Shield | Shield |
+| Grove sockets | — | Carrier | — | — | Shield | Shield | Shield | Shield |
+| 9 Axis Motion Shield | — | — | — | — | Shield | — | Shield | Shield |
+| LCD Keypad Shield | — | — | — | — | Shield | — | Shield | Shield |
+| TFT Touch Shield | — | — | — | — | Shield | — | Shield | — |
+| Infrared link to LEGO RCX | — | ✓ | — | — | ✓ | — | ✓ | — |
 
 Notes:
 
@@ -87,8 +86,7 @@ Notes:
   [Arduino Shields](../arduino-shields).
 - **Carrier** means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
   [Nano ESP32](../arduino-nano-esp32#shields) page.
-- **Structured concurrency** is available on every board except the UNO R3. The UNO R3 WiFi Rev2, UNO R4 WiFi and
-  UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
+- **Structured concurrency** is available on every board except the UNO R3. The UNO R4 WiFi and UNO Q run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
   carriers concurrently. See [Concurrency behaviour](../java-subset#concurrency-behaviour) for scheduling and memory
   limits.
 - **Email STARTTLS** needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.

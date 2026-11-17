@@ -90,7 +90,7 @@ class JunoSiteTest {
     void boardsOverviewComparesEveryBoard() {
         RestAssured.given().when().get("/boards/").then().statusCode(200)
                 .body(containsString("Hardware at a glance"))
-                .body(containsString("arduino-uno-r3-wifi-rev2"))
+                .body(containsString("arduino-uno-r3"))
                 .body(containsString("m5stack-cardputer"))
                 .body(containsString("juno-subnav"));
     }

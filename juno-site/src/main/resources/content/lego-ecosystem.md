@@ -36,7 +36,7 @@ so it advertises, and call `connect`. It scans for the first hub it finds, for u
 forever). The clock is used for BLE and sensor waits. The hub drops the link when it switches off or goes out of range,
 so check `isConnected()` in long-running loops and connect again. A Technic Hub's built-in sensors (see
 [Read the sensors](#read-the-sensors)) are subscribed on every connect. Only the UNO R4 WiFi, UNO Q, Nano ESP32,
-AI Thinker ESP32-CAM and M5Stack Cardputer have `getBluetoothLe()`; on the UNO R3 or UNO WiFi Rev2 the compiler
+AI Thinker ESP32-CAM and M5Stack Cardputer have `getBluetoothLe()`; on the UNO R3 the compiler
 rejects the call:
 
 ```java

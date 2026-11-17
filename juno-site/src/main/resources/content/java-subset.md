@@ -206,7 +206,7 @@ blink.run();
 - `Thread.startVirtualThread(Runnable)`, `join()`, `isAlive()`, `Thread.sleep` and `Thread.yield()`.
 - `interrupt()` and `isInterrupted()` on a virtual thread. An interrupt ends a `sleep`, `wait`, `await` or `acquire` that
   the thread is blocked in with `InterruptedException`, as on the JDK.
-- On the UNO R3 and UNO R3 WiFi Rev2, at most four scheduler slots exist, including `main`. On the UNO R4 WiFi and
+- On the UNO R3, at most four scheduler slots exist, including `main`. On the UNO R4 WiFi and
   UNO Q, the single-carrier slot table grows in the arena. The Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and
   Raspberry Pi Pico 2 W use dual-carrier tables with at most 16 slots, including `main`; a `juno.carriers=1` build uses
   the single-carrier table instead.
@@ -249,7 +249,7 @@ ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two tasks concurr
 
 - **Every task is preemptive.** When a slice is over, the scheduler takes the processor away from the task. On the UNO R4
   WiFi, the UNO Q and the Raspberry Pi Pico 2 W, a periodic tick can switch generated Java between instructions. On the
-  UNO R3, UNO R3 WiFi Rev2 and ESP32-family boards, a task is switched at loop back-edges and method entries instead,
+  UNO R3 and ESP32-family boards, a task is switched at loop back-edges and method entries instead,
   so a loop with no calls is still switched.
 - **Tasks give up the processor when they block.** That happens on `Delay.millis`, `Thread.sleep`, `Thread.yield`,
   `join`, entering a monitor that another task holds, or waiting on a latch, semaphore, barrier, condition or phaser.
