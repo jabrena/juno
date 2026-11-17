@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="active" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -301,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
     <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="active" href="/juno/arduino-uno-r3">UNO R3</a>
   </div>
 </nav>
@@ -503,8 +501,8 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
     Serial.println(&quot; tenths of a degree&quot;);
 }
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java"><code>GroveDht22Monitor</code></a> prints a DHT22's readings; it is written
-for the UNO WiFi Rev2, and the snippet above is the same read for the R3. See <a href="../grove-system">Grove</a> for the
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java"><code>GroveDht22Monitor</code></a> prints a DHT22's readings; it runs on the UNO R3,
+UNO R4 WiFi and UNO Q, and the snippet above is the same read for the R3. See <a href="../grove-system">Grove</a> for the
 sensor drivers.</p>
 <h3 id="arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</h3>
 <img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">

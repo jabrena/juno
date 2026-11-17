@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -301,7 +300,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/arduino-uno-q">UNO Q</a>
     <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-    <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
   </div>
 </nav>
@@ -315,8 +313,8 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Boards</h1>
 </header>
     <div class="content-prose">
-<p>Juno compiles the same Java program for nine boards through four backends: <strong>AVR</strong> for the 8-bit
-UNO R3 and UNO WiFi Rev2, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi, UNO Q, Raspberry Pi Pico 2 W and Portenta H7,
+<p>Juno compiles the same Java program for eight boards through four backends: <strong>AVR</strong> for the 8-bit
+UNO R3, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi, UNO Q, Raspberry Pi Pico 2 W and Portenta H7,
 and <strong>Xtensa</strong> for the Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM. Pick the target with the entry point's
 <code>@Board</code> annotation or with <code>-Djuno.board=&lt;id&gt;</code>.</p>
 <h2 id="hardware-at-a-glance">Hardware at a glance</h2>
@@ -335,7 +333,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <th>UNO Q</th>
 <th>Raspberry Pi Pico 2 W</th>
 <th>UNO R4 WiFi</th>
-<th>UNO WiFi Rev2</th>
 <th>UNO R3</th>
 </tr>
 </thead>
@@ -349,7 +346,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>STM32U585</td>
 <td>RP2350A</td>
 <td>Renesas RA4M1</td>
-<td>ATmega4809</td>
 <td>ATmega328P</td>
 </tr>
 <tr>
@@ -361,7 +357,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>32-bit Cortex-M33F</td>
 <td>Dual-core 32-bit Cortex-M33F</td>
 <td>32-bit Cortex-M4F</td>
-<td>8-bit megaAVR</td>
 <td>8-bit AVR</td>
 </tr>
 <tr>
@@ -374,7 +369,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>150 MHz</td>
 <td>48 MHz</td>
 <td>16 MHz</td>
-<td>16 MHz</td>
 </tr>
 <tr>
 <td>Flash</td>
@@ -385,7 +379,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>2 MB</td>
 <td>4 MB</td>
 <td>256 kB</td>
-<td>48 kB</td>
 <td>32 kB</td>
 </tr>
 <tr>
@@ -397,13 +390,11 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>786 kB</td>
 <td>520 kB</td>
 <td>32 kB</td>
-<td>6 kB</td>
 <td>2 kB</td>
 </tr>
 <tr>
 <td>SDRAM</td>
 <td>8 MB</td>
-<td>—</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
@@ -422,7 +413,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>—</td>
 <td>—</td>
 <td>—</td>
-<td>—</td>
 </tr>
 <tr>
 <td>Logic level</td>
@@ -432,7 +422,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
-<td>5 V</td>
 <td>5 V</td>
 <td>5 V</td>
 </tr>
@@ -445,7 +434,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>Wi-Fi/BLE on the Linux side</td>
 <td>CYW43439 Wi-Fi/BLE</td>
 <td>ESP32-S3 Wi-Fi/BLE</td>
-<td>NINA-W102 Wi-Fi/BLE</td>
 <td>None</td>
 </tr>
 <tr>
@@ -457,7 +445,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>13×8 LED matrix, Linux MPU</td>
 <td>Built-in LED on the radio chip</td>
 <td>12×8 LED matrix</td>
-<td>Secure element, IMU</td>
 <td></td>
 </tr>
 <tr>
@@ -469,7 +456,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td><code>arduino: zephyr</code></td>
 <td><code>rp2040: rp2040</code></td>
 <td><code>arduino: renesas_uno</code></td>
-<td><code>arduino: megaavr</code></td>
 <td><code>arduino: avr</code></td>
 </tr>
 <tr>
@@ -481,7 +467,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td><code>arduino-uno-q</code></td>
 <td><code>raspberry-pi-pico-2-w</code></td>
 <td><code>arduino-uno-r4-wifi</code></td>
-<td><code>arduino-uno-r3-wifi-rev2</code></td>
 <td><code>arduino-uno-r3</code></td>
 </tr>
 </tbody>

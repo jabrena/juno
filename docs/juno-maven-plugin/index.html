@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -403,7 +402,7 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>flash
 <td><code>juno.board</code></td>
 <td><code>compile</code>, <code>verify</code>, <code>flash</code>, <code>monitor</code></td>
 <td><em>(required without a single-board <code>@Board</code> declaration)</em></td>
-<td>Which board to build for (<code>arduino-uno-r4-wifi</code>, <code>arduino-uno-q</code>, <code>arduino-uno-r3</code>, <code>arduino-uno-r3-wifi-rev2</code>, <code>arduino-nano-esp32</code>, <code>m5stack-cardputer</code>).</td>
+<td>Which board to build for (<code>arduino-uno-r4-wifi</code>, <code>arduino-uno-q</code>, <code>arduino-uno-r3</code>, <code>arduino-nano-esp32</code>, <code>m5stack-cardputer</code>).</td>
 </tr>
 <tr>
 <td><code>juno.arduinoCli</code></td>
@@ -461,10 +460,6 @@ Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code
 <tr>
 <td>Arduino UNO R3</td>
 <td><code>arduino-uno-r3</code></td>
-</tr>
-<tr>
-<td>Arduino UNO R3 WiFi Rev2</td>
-<td><code>arduino-uno-r3-wifi-rev2</code></td>
 </tr>
 <tr>
 <td>Arduino UNO R4 WiFi</td>
@@ -535,7 +530,7 @@ them with <code>-D</code>:</p>
 <tbody>
 <tr>
 <td><code>juno.Xmx</code></td>
-<td>8 KB on most boards; 1 KB on the UNO R3 and UNO WiFi Rev2 (at most 3 KB there)</td>
+<td>8 KB on most boards; 1 KB on the UNO R3</td>
 <td>The size of the garbage-collected arena, where every <code>new</code>, array, string and object lives. Each board has a maximum; see the <a href="../memory-model#board-memory-profiles">Memory Model</a>.</td>
 </tr>
 <tr>

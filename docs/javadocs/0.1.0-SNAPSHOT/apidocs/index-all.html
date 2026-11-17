@@ -97,10 +97,6 @@ initTheme();
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControlButton.html#A_UP" class="member-name-link">A_UP</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControlButton.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRemoteControlButton</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html#accelerometer()" class="member-name-link">accelerometer()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></dt>
-<dd>
-<div class="block">The selected board's onboard accelerometer.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Accelerometer.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Accelerometer</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">An acceleration sensor.</div>
@@ -229,12 +225,6 @@ microcontroller (Cortex-M33) under Arduino's Zephyr core.</div>
 <div class="block">Selects the classic Arduino UNO R3 as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target: Juno programs run on its ATmega328P, an 8-bit
 AVR with 2 KB SRAM and 32 KB flash, under Arduino's <code>arduino:avr</code> core.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/annotations/ArduinoUnoR3WiFiRev2Board.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">ArduinoUnoR3WiFiRev2Board</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
-<dd>
-<div class="block">Selects the Arduino UNO WiFi Rev2 as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target: Juno programs run on its ATmega4809, an 8-bit
-megaAVR (6 KB SRAM, 48 KB flash), under Arduino's <code>arduino:megaavr</code> core, with Wi-Fi through the u-blox
-NINA-W102 module and the <code>WiFiNINA</code> library.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/annotations/ArduinoUnoR4WiFiBoard.html" class="type-name-link" title="class in io.github.jabrena.juno.annotations">ArduinoUnoR4WiFiBoard</a> - Class in <a href="io/github/jabrena/juno/annotations/package-summary.html">io.github.jabrena.juno.annotations</a></dt>
 <dd>
 <div class="block">Selects the Arduino UNO R4 WiFi as <a href="io/github/jabrena/juno/annotations/Board.html" title="annotation interface in io.github.jabrena.juno.annotations"><code>@Board</code></a>'s target; has the onboard 12x8 LED matrix.</div>
@@ -308,8 +298,7 @@ none.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a> - Class in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
 <dd>
-<div class="block">Named-secret storage in the on-chip EEPROM of an AVR board: the UNO WiFi Rev2's ATmega4809 (256 bytes) and the UNO
-R3's ATmega328P (1 KB).</div>
+<div class="block">Named-secret storage in the on-chip EEPROM of the UNO R3's ATmega328P (1 KB).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html#%3Cinit%3E()" class="member-name-link">AvrEeprom()</a> - Constructor for class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a></dt>
 <dd>
@@ -1665,11 +1654,6 @@ both are <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/j
 <dd>
 <div class="block">Writes X, Y and Z acceleration in metres per second squared into the caller-owned buffer.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; all zero before
-construction.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">Writes the X, Y and Z acceleration in metres per second squared, starting at <code>offset</code>; an axis whose read
@@ -1941,10 +1925,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">The UNO pin behind the A3 socket.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/MCU.html#getAccelerometer()" class="member-name-link">getAccelerometer()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
-<dd>
-<div class="block">The selected board's onboard accelerometer.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getAccelerometer()" class="member-name-link">getAccelerometer()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The Technic Hub's accelerometer, which returns the same object on every call.</div>
@@ -1956,10 +1936,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Returns heading in clockwise whole degrees, modulo 360.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The heading in whole degrees, <code>0..359</code>, growing clockwise since construction or the last <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()"><code>Lsm6ds3.reset()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngle()" class="member-name-link">getAngle()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -1977,10 +1953,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Returns the clockwise Z angular velocity in degrees per second, or zero if initialization failed.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The yaw rate in degrees per second, clockwise positive; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngularVelocity()" class="member-name-link">getAngularVelocity()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -2147,10 +2119,6 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getGroveUart()" class="member-name-link">getGroveUart()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The signal pin of a module in the Grove UART socket: RX, D0.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/MCU.html#getGyroscope()" class="member-name-link">getGyroscope()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
-<dd>
-<div class="block">The selected board's onboard gyroscope.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#getGyroscope()" class="member-name-link">getGyroscope()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -2454,8 +2422,7 @@ high values are bright.</div>
 <dd>
 <div class="block">The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
 SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), the
-Pico 2 W's slots behind Juno's TrustZone secure firmware, or the AVR UNOs' on-chip EEPROM (UNO R3, UNO WiFi
-Rev2), the weakest of them.</div>
+Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chip EEPROM, the weakest of them.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getSensor1()" class="member-name-link">getSensor1()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
@@ -2622,10 +2589,6 @@ either ADC rail.</div>
 <dd>
 <div class="block">Returns X acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The acceleration along the board's X axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getXAccel()" class="member-name-link">getXAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">The acceleration along the sensor's X axis in whole metres per second squared; <code>0</code> if the read failed.</div>
@@ -2642,10 +2605,6 @@ either ADC rail.</div>
 <dd>
 <div class="block">Returns Y acceleration in whole metres per second squared, or zero if initialization failed.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The acceleration along the board's Y axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getYAccel()" class="member-name-link">getYAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">The acceleration along the sensor's Y axis in whole metres per second squared; <code>0</code> if the read failed.</div>
@@ -2661,10 +2620,6 @@ either ADC rail.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Returns Z acceleration in whole metres per second squared, or zero if initialization failed.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The acceleration along the board's Z axis in whole metres per second squared; <code>0</code> if initialization failed.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getZAccel()" class="member-name-link">getZAccel()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -2926,10 +2881,6 @@ else, such as an infrared round trip to an RCX.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#%3Cinit%3E(io.github.jabrena.juno.robotics.navigation.RegulatedDifferentialDrive,io.github.jabrena.juno.robotics.DirectionFinder,int,int,int)" class="member-name-link">GyroRegulatedDifferentialDrive(RegulatedDifferentialDrive, DirectionFinder, int, int, int)</a> - Constructor for class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
 <dd>
 <div class="block">Creates the drive.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html#gyroscope()" class="member-name-link">gyroscope()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></dt>
-<dd>
-<div class="block">The selected board's onboard gyroscope.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/Gyroscope.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Gyroscope</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
@@ -3504,7 +3455,7 @@ with shape and text drawing helpers that render into it and send it to the board
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/package-summary.html">io.github.jabrena.juno.hardware.net</a> - package io.github.jabrena.juno.hardware.net</dt>
 <dd>
-<div class="block">Wi-Fi connectivity for the UNO R4 WiFi, UNO Q and UNO WiFi Rev2:
+<div class="block">Wi-Fi connectivity for the UNO R4 WiFi and UNO Q:
 <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> connects and reads the board's address.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/package-summary.html">io.github.jabrena.juno.hardware.net.email</a> - package io.github.jabrena.juno.hardware.net.email</dt>
@@ -4158,15 +4109,6 @@ entries), one byte value (0-255) per element, most significant first — e.g.</d
 <dd>
 <div class="block">Drives the pin low.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a> - Class in <a href="io/github/jabrena/juno/hardware/device/imu/package-summary.html">io.github.jabrena.juno.hardware.device.imu</a></dt>
-<dd>
-<div class="block">The STMicroelectronics LSM6DS3TR six-axis inertial sensor on the Arduino UNO WiFi Rev2, read over SPI as plain Java on
-top of <a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi"><code>Spi</code></a> (so it needs no Arduino library).</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">Lsm6ds3(Gpio, Spi, Clock)</a> - Constructor for class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">The IMU on the board's own pins, bus and clock.</div>
-</dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
 <dl class="index">
@@ -4550,10 +4492,6 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <dd>
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>: each method is a USB HID intrinsic the compiler lowers to the Arduino <code>Mouse</code>
 library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
-<dd>
-<div class="block">Owns the one lazily initialized onboard IMU without putting mutable state on the public MCU facade.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardSdCard.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -5699,10 +5637,6 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <div class="block">Measures the stationary Z-axis gyro bias over 64 samples.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">Measures the gyroscope's bias again; keep the board still for about 2 s.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#recalibrateOffset()" class="member-name-link">recalibrateOffset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">Does nothing: the BNO055 calibrates its gyroscope itself while the sensor stands still, so there is no bias to set.</div>
@@ -5913,10 +5847,6 @@ URI is <code>http</code> or <code>https</code> with a host.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Resets the integrated heading to zero.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">Sets the heading back to zero, so <a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#getAngle()"><code>Lsm6ds3.getAngle()</code></a> counts the turns made from now on.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -6162,10 +6092,6 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Bmi088.html" title="class in io.github.jabrena.juno.hardware.device.imu">Bmi088</a></dt>
 <dd>
 <div class="block">Returns three acceleration components (X, Y, Z), in metres per second squared.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/Lsm6ds3.html" title="class in io.github.jabrena.juno.hardware.device.imu">Lsm6ds3</a></dt>
-<dd>
-<div class="block">Returns 3: the X, Y and Z acceleration in metres per second squared.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#sampleSize()" class="member-name-link">sampleSize()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
@@ -7490,10 +7416,6 @@ the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="inte
 <dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#UNO_R3" class="member-name-link">UNO_R3</a> - Enum constant in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
 <dd>
 <div class="block">Arduino UNO R3, with no radio of its own.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#UNO_R3_WIFI_REV2" class="member-name-link">UNO_R3_WIFI_REV2</a> - Enum constant in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
-<dd>
-<div class="block">Arduino UNO WiFi Rev2: megaAVR core, with an onboard IMU.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#UNO_R4_WIFI" class="member-name-link">UNO_R4_WIFI</a> - Enum constant in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
 <dd>

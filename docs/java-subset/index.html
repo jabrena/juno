@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -511,7 +510,7 @@ blink.run();
 <li><code>Thread.startVirtualThread(Runnable)</code>, <code>join()</code>, <code>isAlive()</code>, <code>Thread.sleep</code> and <code>Thread.yield()</code>.</li>
 <li><code>interrupt()</code> and <code>isInterrupted()</code> on a virtual thread. An interrupt ends a <code>sleep</code>, <code>wait</code>, <code>await</code> or <code>acquire</code> that
 the thread is blocked in with <code>InterruptedException</code>, as on the JDK.</li>
-<li>On the UNO R3 and UNO R3 WiFi Rev2, at most four scheduler slots exist, including <code>main</code>. On the UNO R4 WiFi and
+<li>On the UNO R3, at most four scheduler slots exist, including <code>main</code>. On the UNO R4 WiFi and
 UNO Q, the single-carrier slot table grows in the arena. The Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and
 Raspberry Pi Pico 2 W use dual-carrier tables with at most 16 slots, including <code>main</code>; a <code>juno.carriers=1</code> build uses
 the single-carrier table instead.</li>
@@ -551,7 +550,7 @@ ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two tasks concurr
 <ul>
 <li><strong>Every task is preemptive.</strong> When a slice is over, the scheduler takes the processor away from the task. On the UNO R4
 WiFi, the UNO Q and the Raspberry Pi Pico 2 W, a periodic tick can switch generated Java between instructions. On the
-UNO R3, UNO R3 WiFi Rev2 and ESP32-family boards, a task is switched at loop back-edges and method entries instead,
+UNO R3 and ESP32-family boards, a task is switched at loop back-edges and method entries instead,
 so a loop with no calls is still switched.</li>
 <li><strong>Tasks give up the processor when they block.</strong> That happens on <code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code>,
 <code>join</code>, entering a monitor that another task holds, or waiting on a latch, semaphore, barrier, condition or phaser.

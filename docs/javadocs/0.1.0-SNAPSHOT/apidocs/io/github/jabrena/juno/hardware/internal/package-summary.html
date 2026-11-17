@@ -191,30 +191,26 @@ library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.<
 <div class="block">The board's <a href="../hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>: each method is a USB HID intrinsic the compiler lowers to the Arduino <code>Mouse</code>
 library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">Owns the one lazily initialized onboard IMU without putting mutable state on the public MCU facade.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Owns the one card in the selected board's onboard microSD socket.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The card in a shield's SD socket: each method but <a href="NativeSdCard.html#begin()"><code>NativeSdCard.begin()</code></a> is an SD intrinsic the compiler lowers to the
 <code>SdFat</code> library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSecretStore.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSecretStore</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeSecretStore.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSecretStore</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The selected board's secret store, opened on first use and shared after that.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeSpi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSpi</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeSpi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSpi</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi"><code>Spi</code></a> bus: each method is an SPI intrinsic the compiler lowers to the core-bundled <code>SPI</code>
 library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board's <a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>: each method is a Wi-Fi intrinsic the compiler lowers to the board's networking library,
 so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>

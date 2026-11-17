@@ -99,7 +99,6 @@
         <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3-wifi">UNO R3 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
       </div>
       <a class="" href="/juno/hardware-apis" >APIs</a>
@@ -473,12 +472,6 @@ upper limits. Every board uses its default arena unless <code>juno.Xmx</code> sa
 <td>1</td>
 </tr>
 <tr>
-<td>UNO WiFi Rev2</td>
-<td>1 KB (up to 3 KB with <code>juno.Xmx=3k</code>: 7 and 3)</td>
-<td>2</td>
-<td>1</td>
-</tr>
-<tr>
 <td>UNO R4 WiFi</td>
 <td>8 KB</td>
 <td>20</td>
@@ -539,15 +532,6 @@ with, and the largest sizes it accepts. The build checks every explicit <code>ju
 <td>2 KB</td>
 <td>1024 / 1024 bytes</td>
 <td>512 / 512 bytes</td>
-<td>1</td>
-<td>The linker</td>
-<td>None</td>
-</tr>
-<tr>
-<td>UNO WiFi Rev2</td>
-<td>6 KB</td>
-<td>1024 / 3072 bytes</td>
-<td>512 / 1024 bytes</td>
 <td>1</td>
 <td>The linker</td>
 <td>None</td>
@@ -721,12 +705,6 @@ gives the limit each board applies.</p>
 <td>Four slots, including <code>main</code></td>
 <td>512 / 512 bytes</td>
 <td>No: use <code>synchronized</code> and atomics</td>
-</tr>
-<tr>
-<td>UNO WiFi Rev2</td>
-<td>Four slots, including <code>main</code></td>
-<td>512 / 1024 bytes</td>
-<td>Yes</td>
 </tr>
 <tr>
 <td>UNO R4 WiFi</td>
