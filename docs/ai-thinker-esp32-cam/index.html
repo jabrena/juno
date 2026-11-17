@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -370,10 +370,10 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <td></td>
 </tr>
 <tr>
-<td><code>HttpClient</code> (HTTP and HTTPS)</td>
+<td><code>java.net.http</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
-<td></td>
-<td></td>
+<td>Mozilla root certificates; an <code>SSLContext</code> can add its own. Certificate dates are checked once SNTP sets the clock.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java"><code>ParallelHttpsGet</code></a></td>
 </tr>
 <tr>
 <td><code>HttpServer</code> (HTTP)</td>

@@ -94,6 +94,13 @@ public enum Capability {
             return board.displayName() + " does not provide a supported TLS client";
         }
     },
+    JDK_HTTP_CLIENT("java.net.http") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has too little memory for the java.net.http client; the UNO R4 WiFi is the"
+                    + " smallest board that runs it";
+        }
+    },
     TLS_EMAIL("Smtp.sendTls and Pop3Client") {
         @Override
         public String unsupportedReason(Board board) {

@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -466,16 +466,16 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java"><code>NanoSntpTimeSD</code></a></td>
 </tr>
 <tr>
-<td><code>HttpClient</code> (HTTP)</td>
+<td><code>java.net.http</code> (HTTP)</td>
 <td align="center">✓</td>
-<td>Host is a literal in the program; the path can come from the card.</td>
+<td>The URI can be built from the card's settings.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java"><code>NanoHttpGetSD</code></a></td>
 </tr>
 <tr>
-<td><code>HttpClient.requestHttps</code></td>
+<td><code>java.net.http</code> (HTTPS)</td>
 <td align="center">✓</td>
-<td>Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash); validity dates are not checked.</td>
-<td></td>
+<td>Checks the chain against Mozilla's root certificates, bundled into the program (about 55 KB of flash), or an <code>SSLContext</code>'s own; validity dates are checked once SNTP sets the clock.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpsGetSD.java"><code>NanoHttpsGetSD</code></a></td>
 </tr>
 <tr>
 <td><code>HttpServer</code></td>
@@ -486,7 +486,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <tr>
 <td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
 <td align="center">✓</td>
-<td>Implicit TLS on ports 465 and 995, checked against the bundled roots. Password, subject and body must fit in 31 bytes each.</td>
+<td>Implicit TLS on ports 465 and 995, checked against the bundled roots. The examples read the password, subject and body from SD <code>Properties</code> values, of up to 31 bytes each.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java"><code>NanoSmtpSendSD</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java"><code>NanoPop3InboxSD</code></a></td>
 </tr>
 <tr>

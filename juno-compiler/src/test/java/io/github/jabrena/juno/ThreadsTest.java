@@ -81,9 +81,7 @@ class ThreadsTest {
 
     static Stream<Arguments> httpSubtaskBoards() {
         return Stream.of(
-                arguments("ArduinoUnoR4WiFiBoard", 2),
-                arguments("ArduinoUnoR3WiFiRev2Board", 1),
-                arguments("ArduinoUnoQBoard", 2));
+                arguments("ArduinoUnoR4WiFiBoard", 2));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
@@ -375,16 +373,17 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import java.net.URI;
+                import java.net.http.HttpClient;
+                import java.net.http.HttpRequest;
+                import java.net.http.HttpResponse;
                 @Board(%s.class)
                 public final class Fetch {
                     public static void main() throws Exception {
-                        byte[] body = new byte[32];
-                        byte[] headers = new byte[32];
-                        int[] status = new int[2];
                         %s
-                        Serial.println(HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
-                                status));
+                        HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                        Serial.println(HttpClient.newHttpClient().send(request,
+                                HttpResponse.BodyHandlers.ofByteArray()).statusCode());
                     }
                 }
                 """.formatted(board, board, threads ? "Thread.startVirtualThread(() -> Serial.println(1)).join();" : "");
@@ -397,30 +396,26 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import java.net.URI;
+                import java.net.http.HttpClient;
+                import java.net.http.HttpRequest;
+                import java.net.http.HttpResponse;
                 @Board(%1$s.class)
                 public final class ParallelFetch {
-                    static final class First {
-                        private final byte[] body = new byte[32];
-                        private final byte[] headers = new byte[32];
-                        private final int[] status = new int[2];
-                        First fetch() {
-                            HttpClient.get("https://one.example/", body, body.length, headers, headers.length, status);
-                            return this;
+                    static final class Fetch {
+                        private final HttpClient client = HttpClient.newHttpClient();
+                        private final HttpRequest request;
+                        Fetch(String uri) {
+                            request = HttpRequest.newBuilder(URI.create(uri)).build();
                         }
-                    }
-                    static final class Second {
-                        private final byte[] body = new byte[32];
-                        private final byte[] headers = new byte[32];
-                        private final int[] status = new int[2];
-                        Second fetch() {
-                            HttpClient.get("https://two.example/", body, body.length, headers, headers.length, status);
+                        Fetch fetch() throws Exception {
+                            client.send(request, HttpResponse.BodyHandlers.ofByteArray());
                             return this;
                         }
                     }
                     public static void main() throws Exception {
-                        First first = new First();
-                        Second second = new Second();
+                        Fetch first = new Fetch("https://one.example/");
+                        Fetch second = new Fetch("https://two.example/");
                         try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
                             var firstTask = scope.fork(() -> first.fetch());
                             var secondTask = scope.fork(() -> second.fetch());
@@ -450,19 +445,8 @@ class ThreadsTest {
                 .doesNotContain("JunoIoGuard guard(JUNO_IO_NETWORK, &client,");
     }
 
-    @Test
-    @DisplayName("The UNO Q HTTPS subtasks use two I/O workers and a waiting predicate")
-    void shouldUseTwoIoWorkersAndAWaitingPredicateForHttpsSubtasksOnTheUnoQ() throws Exception {
-        // Given
-        String shim = parallelHttpsProgramShim("ArduinoUnoQBoard");
-
-        // When & Then
-        assertThat(shim).contains("static constexpr uint32_t JUNO_IO_WORKER_COUNT = 2u;",
-                "static bool juno_io_waiting(uint32_t slot)");
-    }
-
     @ParameterizedTest(name = "an HTTP request waits without holding up the other threads on {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoR3WiFiRev2Board"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("An HTTP request waits without holding up the other threads")
     void shouldWaitForAnHttpRequestWithoutHoldingUpTheOtherThreads(String board) throws Exception {
         // Given
@@ -519,18 +503,16 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.net.http.HttpServer;
                 @Board(ArduinoUnoQBoard.class)
                 public final class Fetch {
                     public static void main() throws Exception {
                         byte[] body = new byte[32];
-                        byte[] headers = new byte[32];
-                        int[] status = new int[2];
                         %s
                         MCU.getWifi().begin("juno", "secret");
-                        Serial.println(HttpClient.get("https://example.com/", body, body.length, headers,
-                                headers.length, status));
+                        HttpServer.begin(80);
+                        Serial.println(HttpServer.accept(body, body.length));
+                        HttpServer.respond(200, "text/plain", "ok");
                     }
                 }
                 """.formatted(threads ? """
@@ -556,8 +538,7 @@ class ThreadsTest {
                         "juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;",
                         "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);",
                         "juno_io_offload(juno_wifi_bridge_begin, nullptr);",
-                        "juno_io_offload(juno_http_job<Client>, &job);",
-                        "using JunoHttpsClient = JunoBridgeSSLClient;");
+                        "juno_io_offload(juno_http_server_accept_job, &job);");
     }
 
     @Test
@@ -568,8 +549,7 @@ class ThreadsTest {
 
         // When & Then
         assertThat(shim).as("short text the worker reads later is copied to the caller's stack")
-                .contains("job.host = juno_io_stable_text(host, hostCopy);",
-                        "job.path = juno_io_stable_text(path, pathCopy);");
+                .contains("job.contentType = juno_io_stable_text(contentType, contentTypeCopy);");
     }
 
     @Test
@@ -791,7 +771,7 @@ class ThreadsTest {
     }
 
     @ParameterizedTest(name = "parallel HTTPS shim compiles as C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("Parallel HTTPS shims compile as C++ on ARM boards")
     void shouldCompileParallelHttpsShimsAsCppOnArmBoards(String board) throws Exception {
         // Given

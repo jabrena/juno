@@ -1254,28 +1254,30 @@ class JunoCompilerTest {
 
         @ParameterizedTest
         @CsvSource({
-            "'URI.create(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
-            "'URI.create(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            "'URI.create(\"http://example.com/status\")', juno_http_request_text, juno_https_request_text",
+            "'URI.create(\"https://example.com/status\")', juno_https_request_text, juno_http_request_text",
             // The JDK constructor names its scheme just as URI.create does.
-            "'new URI(\"http://example.com/status\")', juno_http_request_buffer, juno_https_request_buffer",
-            "'new URI(\"https://example.com/status\")', juno_https_request_buffer, juno_http_request_buffer",
+            "'new URI(\"http://example.com/status\")', juno_http_request_text, juno_https_request_text",
+            "'new URI(\"https://example.com/status\")', juno_https_request_text, juno_http_request_text",
             // A URI the linker cannot read could be either scheme, so both requests stay.
-            "'URI.create(address())', juno_http_request_buffer, juno_https_request_buffer",
-            "'new URI(address())', juno_http_request_buffer, juno_https_request_buffer"})
+            "'URI.create(address())', juno_http_request_text, juno_https_request_text",
+            "'new URI(address())', juno_http_request_text, juno_https_request_text",
+            // A scheme names its request in any case, as URI reads it.
+            "'URI.create(\"HTTPS://example.com/status\")', juno_https_request_text, juno_http_request_text"})
         @DisplayName("A program written against java.net.http links only the request shim its URIs' scheme needs")
         void shouldCompileTheJdkHttpClientSyntax(String uri, String present, String other) throws Exception {
             // Given: javac resolves java.net.http to the JDK; Juno reads the board-side classes under those names
             boolean bothSchemes = uri.contains("address()");
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     import java.net.URI;
                     import java.net.http.HttpClient;
                     import java.net.http.HttpRequest;
                     import java.net.http.HttpResponse;
-                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    @Board(ArduinoNanoEsp32Board.class)
                     public final class JdkHttp {
                         public static void main(String[] args) throws Exception {
                             HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
@@ -1381,8 +1383,216 @@ class JunoCompilerTest {
 
             // Then: Duration has its own runtime, so an HTTP timeout brings no structured-task runtime
             assertThat(result.assembly())
-                    .contains("bl juno_duration_to_millis", "bl juno_http_request_buffer", "Too many redirects")
-                    .doesNotContain("juno_https_request_buffer", "juno_task_scope");
+                    .contains("bl juno_duration_to_millis", "bl juno_http_request_text", "Too many redirects")
+                    .doesNotContain("juno_https_request_text", "juno_task_scope");
+        }
+
+        @Test
+        @DisplayName("A java.net.http ofString() body is received into a String sized to it, with no buffer cap")
+        void shouldReceiveAnOfStringBodyIntoASizedString() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpText", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpText {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofString()).body().length());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpText");
+
+            // Then: the body goes through the String sink, collected at most once before the String exists
+            assertThat(result.assembly()).contains("bl juno_https_request_text_body");
+            assertThat(result.runtimeShim()).contains("struct JunoHttpTextSink", "juno_gc_try_allocate",
+                    "extern \"C\" int32_t juno_https_request_text_body(");
+        }
+
+        @Test
+        @DisplayName("A java.net.http client with an SSLContext installs its trust anchors; one without links no trust code")
+        void shouldInstallTheTrustAnchorsOfAnSslContext() throws Exception {
+            // Given: the JDK's trust-my-CA recipe, reading the CA from the SD card
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpTrust", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.io.InputStream;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    import java.security.KeyStore;
+                    import java.security.cert.CertificateFactory;
+                    import javax.net.ssl.SSLContext;
+                    import javax.net.ssl.TrustManagerFactory;
+                    @Board(M5StackCardputerBoard.class)
+                    public final class JdkHttpTrust {
+                        public static void main(String[] args) throws Exception {
+                            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+                            store.load(null, null);
+                            try (InputStream file = MCU.getSdCard().open("ca.crt")) {
+                                store.setCertificateEntry("ca", CertificateFactory.getInstance("X.509")
+                                        .generateCertificate(file));
+                            }
+                            TrustManagerFactory trust = TrustManagerFactory.getInstance(
+                                    TrustManagerFactory.getDefaultAlgorithm());
+                            trust.init(store);
+                            SSLContext context = SSLContext.getInstance("TLS");
+                            context.init(null, trust.getTrustManagers(), null);
+                            HttpClient client = HttpClient.newBuilder().sslContext(context).build();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://192.168.1.20/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpBoardTrust", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class JdkHttpBoardTrust {
+                        public static void main(String[] args) throws Exception {
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(HttpClient.newHttpClient().send(request,
+                                    HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When
+            CompilationResult custom = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpTrust");
+            CompilationResult board = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpBoardTrust");
+
+            // Then
+            assertThat(custom.assembly()).contains("juno_http_set_trusted_certificate");
+            assertThat(custom.runtimeShim()).contains("juno_runtime_trusted_ca = nullptr;\n    return 1;");
+            assertThat(board.assembly()).doesNotContain("juno_http_set_trusted_certificate");
+            assertThat(board.runtimeShim()).contains("setCACertBundle(juno_ca_bundle)");
+            assertThat(board.runtimeShim()).contains(
+                    "static bool juno_esp_tls_clock() {",
+                    "configTime(0, 0, \"pool.ntp.org\", \"time.google.com\");",
+                    "if (!juno_esp_tls_clock()) return 0;",
+                    "return WiFiClientSecure::connect(host, port);");
+        }
+
+        @Test
+        @DisplayName("A Portenta HTTPS client sets the clock and checks each certificate's dates after the handshake")
+        void shouldCheckCertificateDatesOnThePortenta() throws Exception {
+            // Given: the Mbed TLS date helpers are prebuilt without working dates, so the shim compares them itself
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaDates", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoPortentaH7Board.class)
+                    public final class PortentaDates {
+                        public static void main(String[] args) throws Exception {
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("https://example.com/")).build();
+                            Serial.println(HttpClient.newHttpClient().send(request,
+                                    HttpResponse.BodyHandlers.ofString()).statusCode());
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PortentaDates");
+
+            // Then: the clock is set over SNTP, and every peer certificate is compared with it before the connection is used
+            assertThat(result.runtimeShim()).contains("static bool juno_portenta_tls_clock()", "set_time(static_cast<time_t>(",
+                    "gmtime_r(&nowSeconds, &now);", "bool juno_certificates_current() {",
+                    "mbedtls_ssl_get_peer_cert(tls->get_ssl_context())",
+                    "if (WiFiSSLClient::connect(host, port) != 1) return 0;")
+                    .doesNotContain("mbedtls_x509_time_is_past(");
+        }
+
+        @Test
+        @DisplayName("java.net.http is rejected on the UNO WiFi Rev2: the UNO R4 WiFi is the smallest board for it")
+        void shouldRejectTheJdkHttpClientOnTheUnoWifiRev2() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpRev2", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR3WiFiRev2Board.class)
+                    public final class JdkHttpRev2 {
+                        public static void main(String[] args) throws Exception {
+                            HttpClient client = HttpClient.newHttpClient();
+                            HttpRequest request = HttpRequest.newBuilder(URI.create("http://example.com/")).build();
+                            Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                        }
+                    }
+                    """);
+
+            // When / Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpRev2"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("java.net.http")
+                    .hasMessageContaining("UNO WiFi Rev2 has too little memory for the java.net.http client");
+        }
+
+        @Test
+        @DisplayName("A java.net.http client closes in try-with-resources, and a URI answers its parts and resolves")
+        void shouldCompileTryWithResourcesAndTheUriAccessors() throws Exception {
+            // Given: a long query, a resolved reference and a client that is AutoCloseable, as in the JDK since 21
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.JdkHttpClose", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    import java.net.URI;
+                    import java.net.http.HttpClient;
+                    import java.net.http.HttpRequest;
+                    import java.net.http.HttpResponse;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class JdkHttpClose {
+                        public static void main(String[] args) throws Exception {
+                            URI base = URI.create("http://example.com/v1/items?select=id,name,price&order=id.asc");
+                            URI next = base.resolve("../v2/items?page=2#top");
+                            Serial.println(next.getPath());
+                            Serial.println(next.getQuery());
+                            Serial.println(next.toString());
+                            Serial.println(next.equals(URI.create("HTTP://EXAMPLE.com/v2/items?page=2#top")) ? 1 : 0);
+                            try (HttpClient client = HttpClient.newHttpClient()) {
+                                HttpRequest request = HttpRequest.newBuilder(next).build();
+                                Serial.println(client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode());
+                            }
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpClose");
+
+            // Then: only the plain-HTTP request is linked, and the client is closed after the request
+            assertThat(result.assembly()).contains("bl juno_http_request_text", "The client is shut down")
+                    .doesNotContain("juno_https_request_text");
         }
 
         @Test
@@ -1412,8 +1622,78 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.JdkHttpPlainGet");
 
             // Then
-            assertThat(result.assembly()).contains("bl juno_http_request_buffer")
+            assertThat(result.assembly()).contains("bl juno_http_request_text")
                     .doesNotContain("Too many redirects", "juno_duration_to_millis");
+        }
+
+        @Test
+        @DisplayName("instanceof, and its pattern, compile for a final class")
+        void shouldCompileInstanceOfAFinalClass() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.Shapes", """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class Shapes {
+                        interface Shape {
+                            int size();
+                        }
+
+                        static final class Circle implements Shape {
+                            public int size() {
+                                return 3;
+                            }
+                        }
+
+                        static final class Square implements Shape {
+                            public int size() {
+                                return 4;
+                            }
+                        }
+
+                        public static void main() {
+                            Shape[] shapes = {new Circle(), new Square()};
+                            for (Shape shape : shapes) {
+                                if (shape instanceof Circle circle) {
+                                    Serial.println(circle.size());
+                                }
+                                Serial.println(shape instanceof Square ? 1 : 0);
+                            }
+                        }
+                    }
+                    """, "21");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Shapes");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+        }
+
+        @Test
+        @DisplayName("instanceof of a class that is not final is rejected")
+        void shouldRejectInstanceOfANonFinalClass() throws Exception {
+            // Given
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.OpenShapes", """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class OpenShapes {
+                        static class Shape {
+                        }
+
+                        static class Circle extends Shape {
+                        }
+
+                        public static void main() {
+                            Shape shape = new Circle();
+                            Serial.println(shape instanceof Circle ? 1 : 0);
+                        }
+                    }
+                    """);
+
+            // When / Then
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OpenShapes"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("instanceof is supported only for available final classes");
         }
 
         @Test
@@ -3421,474 +3701,6 @@ class JunoCompilerTest {
         @TempDir
         Path temporaryDirectory;
 
-        @Test
-        @DisplayName("Lowers the plain HTTP method intrinsics")
-        void shouldLowerHttpMethodIntrinsics() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpDemo {
-                        public static void main(String[] args) {
-                            byte[] response = new byte[128];
-                            byte[] headers = new byte[128];
-                            int[] out = new int[2];
-                            int getBytes = HttpClient.get("http://example.com/status", response, response.length,
-                                    headers, headers.length, out);
-                            int postBytes = HttpClient.post("http://example.com/submit", "{\\"ok\\":true}",
-                                    response, response.length, headers, headers.length, out);
-                            int deleteBytes = HttpClient.delete("http://example.com/items/7",
-                                    response, response.length, headers, headers.length, out);
-                            int patchBytes = HttpClient.patch("http://example.com/items/7", "{\\"value\\":2}",
-                                    response, response.length, headers, headers.length, out);
-                            int queryBytes = HttpClient.query("http://example.com/items/search",
-                                    "{\\"tag\\":\\"new\\"}", response, response.length,
-                                    headers, headers.length, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpDemo");
-
-            // Then
-            assertThat(result.assembly()).contains(".asciz \"example.com\"", ".asciz \"/status\"",
-                    ".asciz \"{\\\"ok\\\":true}\"", ".asciz \"{\\\"value\\\":2}\"", ".asciz \"{\\\"tag\\\":\\\"new\\\"}\"",
-                    "bl juno_http_get", "bl juno_http_post", "bl juno_http_delete", "bl juno_http_patch",
-                    "bl juno_http_query");
-            assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>",
-                    "static int32_t juno_http_request(",
-                    "juno_http_run<WiFiClient>(\"DELETE\", host, port, path, nullptr",
-                    "juno_http_run<WiFiClient>(\"PATCH\", host, port, path, body",
-                    "juno_http_run<WiFiClient>(\"QUERY\", host, port, path, body")
-                    .doesNotContain("#include <WiFiSSLClient.h>", "juno_https_get");
-        }
-
-        @Test
-        @DisplayName("Lowers the HTTPS method intrinsics")
-        void shouldLowerHttpsMethodIntrinsics() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpsDemo {
-                        public static void main(String[] args) {
-                            byte[] response = new byte[128];
-                            byte[] headers = new byte[128];
-                            int[] out = new int[2];
-                            int getBytes = HttpClient.get("https://example.com/status",
-                                    response, response.length, headers, headers.length, out);
-                            int postBytes = HttpClient.post("https://example.com/submit", "{\\"ok\\":true}",
-                                    response, response.length, headers, headers.length, out);
-                            int deleteBytes = HttpClient.delete("https://example.com/items/7",
-                                    response, response.length, headers, headers.length, out);
-                            int patchBytes = HttpClient.patch("https://example.com/items/7", "{\\"value\\":2}",
-                                    response, response.length, headers, headers.length, out);
-                            int queryBytes = HttpClient.query("https://example.com/items/search",
-                                    "{\\"tag\\":\\"new\\"}", response, response.length,
-                                    headers, headers.length, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsDemo");
-
-            // Then
-            assertThat(result.assembly()).contains(
-                    "bl juno_https_get", "bl juno_https_post", "bl juno_https_delete", "bl juno_https_patch",
-                    "bl juno_https_query");
-            assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <WiFiSSLClient.h>",
-                    "using JunoHttpsClient = WiFiSSLClient;",
-                    "juno_http_run<JunoHttpsClient>(\"GET\", host, port, path, nullptr",
-                    "juno_http_run<JunoHttpsClient>(\"QUERY\", host, port, path, body")
-                    .doesNotContain("juno_http_get", "juno_https_get_path_buffer");
-        }
-
-        @Test
-        @DisplayName("Lowers a URL POST with caller-owned headers and body")
-        void shouldLowerUrlPostWithCallerOwnedHeadersAndBody() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class BufferedPostDemo {
-                        public static void main(String[] args) {
-                            byte[] requestHeaders = new byte[32];
-                            byte[] requestBody = new byte[32];
-                            requestBody[0] = '[';
-                            requestBody[1] = ']';
-                            byte[] response = new byte[128];
-                            byte[] headers = new byte[128];
-                            int[] out = new int[2];
-                            HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
-                                    requestBody, 2, response, response.length, headers, headers.length, out);
-                            HttpClient.post("http://example.com/submit", requestHeaders, 0,
-                                    requestBody, 2, response, response.length, headers, headers.length, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedPostDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedPostDemo");
-
-            // Then
-            assertThat(result.assembly()).contains(".asciz \"example.com\"", ".asciz \"/rest/v1/sensor-data\"",
-                    ".asciz \"/submit\"", "bl juno_https_post_buffer", "bl juno_http_post_buffer");
-            assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" int32_t juno_https_post_buffer(const char* host, int32_t port, const char* path,",
-                    "extern \"C\" int32_t juno_http_post_buffer(const char* host, int32_t port, const char* path,",
-                    "juno_http_run<JunoHttpsClient>(\"POST\", host, port, path, nullptr,\n"
-                            + "                           requestHeadersBuffer, requestHeadersLength,\n"
-                            + "                           requestBodyBuffer, requestBodyLength",
-                    "if (!juno_http_has_content_type(requestHeadersBuffer, requestHeadersLength)) {");
-        }
-
-        @Test
-        @DisplayName("Lowers an HTTPS GET with a runtime path buffer")
-        void shouldLowerHttpsGetWithARuntimePathBuffer() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpsPathBufferDemo {
-                        public static void main(String[] args) {
-                            byte[] path = new byte[16];
-                            path[0] = '/';
-                            path[1] = 'a';
-                            byte[] response = new byte[128];
-                            byte[] headers = new byte[128];
-                            int[] out = new int[2];
-                            int bytes = HttpClient.get("https://example.com", path, 2,
-                                    response, response.length, headers, headers.length, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsPathBufferDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsPathBufferDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_https_get_path_buffer", ".asciz \"example.com\"");
-            assertThat(result.runtimeShim()).contains(
-                    "#include <WiFiSSLClient.h>",
-                    "extern \"C\" int32_t juno_https_get_path_buffer(const char* host, int32_t port,",
-                    "if (pathLength < 0 || pathLength >= JUNO_HTTP_PATH_BUFFER_CAPACITY)");
-        }
-
-        @Test
-        @DisplayName("Lowers a buffered HTTPS request with multiple headers")
-        void shouldLowerBufferedHttpsRequestWithMultipleHeaders() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class BufferedHttpsDemo {
-                        private static int request(String host, String method,
-                                byte[] path, byte[] requestHeaders, byte[] requestBody,
-                                byte[] responseBody, byte[] responseHeaders, int[] status) {
-                            return HttpClient.requestHttps(host, 443, method,
-                                    path, 1, requestHeaders, 10, requestBody, -1,
-                                    responseBody, 256, responseHeaders, 128, status);
-                        }
-
-                        public static void main(String[] args) {
-                            byte[] path = new byte[32];
-                            path[0] = '/';
-                            byte[] requestHeaders = new byte[64];
-                            requestHeaders[0] = 'a';
-                            requestHeaders[1] = ':';
-                            requestHeaders[2] = '1';
-                            requestHeaders[3] = '\\r';
-                            requestHeaders[4] = '\\n';
-                            requestHeaders[5] = 'b';
-                            requestHeaders[6] = ':';
-                            requestHeaders[7] = '2';
-                            requestHeaders[8] = '\\r';
-                            requestHeaders[9] = '\\n';
-                            byte[] requestBody = new byte[32];
-                            byte[] responseBody = new byte[256];
-                            byte[] responseHeaders = new byte[128];
-                            int[] status = new int[2];
-                            request("project.supabase.co", "GET", path, requestHeaders, requestBody,
-                                    responseBody, responseHeaders, status);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedHttpsDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedHttpsDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_https_request_buffer");
-            assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" int32_t juno_https_request_buffer(",
-                    "request.bytes(requestHeadersBuffer, requestHeadersLength)",
-                    "request.bytes(requestBodyBuffer, bodyLength)",
-                    "using JunoHttpsClient = WiFiSSLClient;")
-                    .doesNotContain("juno_http_get(");
-        }
-
-        @Test
-        @DisplayName("Lowers a buffered plain HTTP request with a runtime host")
-        void shouldLowerBufferedHttpRequestWithRuntimeHost() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class BufferedHttpDemo {
-                        public static void main(String[] args) {
-                            byte[] path = new byte[32];
-                            path[0] = '/';
-                            byte[] requestHeaders = new byte[32];
-                            byte[] requestBody = new byte[32];
-                            byte[] responseBody = new byte[256];
-                            byte[] responseHeaders = new byte[128];
-                            int[] status = new int[2];
-                            HttpClient.requestHttp("192.168.1.47", 80, "GET", path, 1,
-                                    requestHeaders, 0, requestBody, -1,
-                                    responseBody, responseBody.length, responseHeaders, responseHeaders.length, status);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BufferedHttpDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BufferedHttpDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_http_request_buffer");
-            assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" int32_t juno_http_request_buffer(",
-                    "juno_http_run<WiFiClient>(method, host, port, path, nullptr");
-        }
-
-        @Test
-        @DisplayName("Lowers HttpClient.setTimeout to the shared connect and response timeout")
-        void shouldLowerHttpTimeoutToSharedRequestTimeout() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpTimeoutDemo {
-                        public static void main(String[] args) {
-                            byte[] body = new byte[64];
-                            byte[] headers = new byte[64];
-                            int[] status = new int[2];
-                            HttpClient.setTimeout(15000);
-                            HttpClient.get("http://192.168.1.47/", body, body.length, headers, headers.length, status);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_http_set_timeout");
-            assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" void juno_http_set_timeout(int32_t millisToWait) {",
-                    "client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms))",
-                    "const unsigned long deadline = millis() + juno_http_timeout_ms;");
-        }
-
-        @Test
-        @DisplayName("Lowers HttpClient.setTrustedCertificate to the runtime TLS certificate setter")
-        void shouldLowerHttpTrustedCertificateSetter() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpTrustedCertificateDemo {
-                        public static void main(String[] args) {
-                            byte[] certificate = new byte[2048];
-                            certificate[0] = 'x';
-                            HttpClient.setTrustedCertificate(certificate, 1);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTrustedCertificateDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTrustedCertificateDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_http_set_trusted_certificate");
-            assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_http_set_trusted_certificate(");
-        }
-
-        @Test
-        @DisplayName("Backs HttpClient.setTimeout with a no-op when the program makes no request")
-        void shouldStubHttpTimeoutWithoutRequests() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpTimeoutOnlyDemo {
-                        public static void main(String[] args) {
-                            HttpClient.setTimeout(15000);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpTimeoutOnlyDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpTimeoutOnlyDemo");
-
-            // Then
-            assertThat(result.runtimeShim())
-                    .contains("extern \"C\" void juno_http_set_timeout(int32_t) {")
-                    .doesNotContain("juno_http_timeout_ms");
-        }
-
-        @Test
-        @DisplayName("Lowers HTTPS through the Router Bridge on the UNO Q")
-        void shouldLowerHttpsThroughRouterBridgeOnUnoQ() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.MCU;
-                    import io.github.jabrena.juno.hardware.net.Wifi;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    @Board(ArduinoUnoQBoard.class)
-                    public final class UnoQHttps {
-                        public static void main(String[] args) {
-                            MCU.getWifi().begin("ignored-on-q", "ignored-on-q");
-                            byte[] path = new byte[8];
-                            path[0] = '/';
-                            byte[] response = new byte[64];
-                            byte[] headers = new byte[64];
-                            int[] out = new int[2];
-                            HttpClient.get("https://example.com", path, 1,
-                                    response, 64, headers, 64, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQHttps", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQHttps");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_wifi_begin", "bl juno_https_get_path_buffer");
-            assertThat(result.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
-                    "class JunoBridgeSSLClient : public BridgeTCPClient<512>",
-                    "return connectSSL(host, port, \"\") == 0 ? 1 : 0;",
-                    "using JunoHttpsClient = JunoBridgeSSLClient;")
-                    .doesNotContain("#include <WiFiSSLClient.h>", "WiFiSSLClient");
-        }
-
-        @Test
-        @DisplayName("Lowers a plain HTTP GET with a runtime path")
-        void shouldLowerAPlainHttpGetWithARuntimePath() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class HttpPathBufferDemo {
-                        public static void main(String[] args) {
-                            byte[] path = new byte[8];
-                            path[0] = '/';
-                            byte[] response = new byte[64];
-                            byte[] headers = new byte[64];
-                            int[] out = new int[2];
-                            HttpClient.get("http://example.com:8080", path, 1, response, 64, headers, 64, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpPathBufferDemo", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpPathBufferDemo");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_http_get_path_buffer", ".asciz \"example.com\"");
-            assertThat(result.runtimeShim()).contains(
-                    "extern \"C\" int32_t juno_http_get_path_buffer(const char* host, int32_t port,")
-                    .doesNotContain("juno_https_get", "#include <WiFiSSLClient.h>");
-        }
-
-        @Test
-        @DisplayName("Rejects a plain HTTP URL on a board without a plain HTTP client")
-        void shouldRejectAPlainHttpUrlOnABoardWithoutAPlainHttpClient() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    @Board(ArduinoUnoQBoard.class)
-                    public final class UnoQPlainHttp {
-                        public static void main(String[] args) {
-                            byte[] response = new byte[64];
-                            int[] out = new int[2];
-                            HttpClient.get("http://example.com/", response, 64, response, 64, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQPlainHttp", source);
-
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQPlainHttp"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("an http:// URL needs HttpClient")
-                    .hasMessageContaining("does not provide a supported plain-HTTP client");
-        }
-
-        @Test
-        @DisplayName("Rejects a base URL that already has its own path when a runtime path is used")
-        void shouldRejectABaseUrlWithItsOwnPathForARuntimePath() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class BaseUrlWithPath {
-                        public static void main(String[] args) {
-                            byte[] path = new byte[8];
-                            byte[] response = new byte[64];
-                            int[] out = new int[2];
-                            HttpClient.get("https://example.com/v1", path, 1, response, 64, response, 64, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.BaseUrlWithPath", source);
-
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.BaseUrlWithPath"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("must have no path of its own");
-        }
-
-        @Test
-        @DisplayName("Rejects a URL without a scheme")
-        void shouldRejectAUrlWithoutAScheme() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                    public final class NoScheme {
-                        public static void main(String[] args) {
-                            byte[] response = new byte[64];
-                            int[] out = new int[2];
-                            HttpClient.get("example.com/status", response, 64, response, 64, out);
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NoScheme", source);
-
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NoScheme"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("must start with http:// or https://");
-        }
     }
 
     @Nested
@@ -3970,8 +3782,8 @@ class JunoCompilerTest {
             // Then
             assertThat(result.runtimeShim()).contains(
                     "static const char juno_smtp_ca[]", "-----BEGIN CERTIFICATE-----",
-                    "configTime(0, 0, \"pool.ntp.org\", \"time.google.com\");",
-                    "if (time(nullptr) < 1700000000) return -13;",
+                    "static bool juno_esp_tls_clock() {",
+                    "if (!juno_esp_tls_clock()) return -13;",
                     "client.setCACert(juno_smtp_ca);")
                     .doesNotContain("client.setInsecure();");
         }

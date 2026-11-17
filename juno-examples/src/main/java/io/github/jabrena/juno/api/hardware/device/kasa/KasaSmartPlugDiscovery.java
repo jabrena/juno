@@ -1,9 +1,7 @@
 package io.github.jabrena.juno.api.hardware.device.kasa;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -24,7 +22,7 @@ import java.net.InetAddress;
  * <p>Provision {@code wifi.ssid} and {@code wifi.password} with {@code juno:secret}. The display stays live while the
  * board joins Wi-Fi or reopens discovery, and its three fixed buttons toggle the first three plugs found.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class KasaSmartPlugDiscovery {
     private static final Wifi WIFI = MCU.getWifi();
 
@@ -96,7 +94,7 @@ public final class KasaSmartPlugDiscovery {
             closeDiscovery();
             showStatus(tft, "Connecting WiFi...");
             Serial.println("Kasa: connecting WiFi");
-            WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+            WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
             state = JOINING;
             nextPoll = now;
         }

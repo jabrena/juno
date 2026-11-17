@@ -1,9 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.email;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -17,9 +15,9 @@ import io.github.jabrena.juno.util.Delay;
  * Touch-screen version of {@link EmailHelloWorldLCD}. After Wi-Fi connects, a tap sends a
  * plain-text message over implicit TLS and verifies delivery by polling the POP3S inbox count.
  * Progress and the final result are shown on the ELEGOO 2.8" TFT touch shield and logged to
- * Serial. On UNO Q, Linux must already be connected to Wi-Fi.
+ * Serial.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class EmailHelloWorldTFT {
     private static final Wifi WIFI = MCU.getWifi();
 
@@ -84,9 +82,9 @@ public final class EmailHelloWorldTFT {
 
         showLine(tft, SEND_Y, "Sending...", TftTouchShield.YELLOW);
         int sent = Smtp.sendTls(
-                ExampleSecrets.smtpHost(), SMTP_PORT,
-                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword(),
-                ExampleSecrets.smtpUsername(), ExampleSecrets.smtpUsername(),
+                MCU.getSecretStore().getString("smtp.host"), SMTP_PORT,
+                MCU.getSecretStore().getString("smtp.username"), MCU.getSecretStore().getString("smtp.password"),
+                MCU.getSecretStore().getString("smtp.username"), MCU.getSecretStore().getString("smtp.username"),
                 "Hello World", "Hello World");
         Serial.print("Smtp.sendTls: ");
         Serial.println(sent);
@@ -112,8 +110,8 @@ public final class EmailHelloWorldTFT {
         for (int attempt = 0; attempt < DELIVERY_POLL_ATTEMPTS; attempt++) {
             Delay.seconds(DELIVERY_POLL_DELAY_SECONDS);
             after = Pop3Client.messageCount(
-                    ExampleSecrets.smtpHost(), POP3_PORT,
-                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
+                    MCU.getSecretStore().getString("smtp.host"), POP3_PORT,
+                    MCU.getSecretStore().getString("smtp.username"), MCU.getSecretStore().getString("smtp.password"));
             Serial.print("Inbox count after send: ");
             Serial.println(after);
             showValue(tft, AFTER_Y, "Checking: ", after, TftTouchShield.WHITE);
@@ -130,8 +128,8 @@ public final class EmailHelloWorldTFT {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
-                    ExampleSecrets.smtpHost(), POP3_PORT,
-                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
+                    MCU.getSecretStore().getString("smtp.host"), POP3_PORT,
+                    MCU.getSecretStore().getString("smtp.username"), MCU.getSecretStore().getString("smtp.password"));
             if (count != -1) {
                 return count;
             }
@@ -142,7 +140,7 @@ public final class EmailHelloWorldTFT {
 
     private static void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

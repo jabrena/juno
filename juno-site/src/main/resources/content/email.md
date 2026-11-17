@@ -54,9 +54,9 @@ String password = properties.getProperty("smtp.password");
 Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
 A `Properties` value holds 31 bytes, so keep the password, the subject and the body within that length.
 
-The `InboxCount` and `EmailClient` examples read the SMTP values through `ExampleSecrets`: from the secret store on a
-board that has one, otherwise from `application.properties` on the SD card. They run on the UNO R4 WiFi, which has no
-secret store, so there the SMTP values are plain text on the card.
+The email examples read the SMTP values from the board's secret store, with
+`MCU.getSecretStore().getString("smtp.host")` and the like. On the UNO R4 WiFi that is its coprocessor's NVS store:
+provision `smtp.host`, `smtp.username` and `smtp.password` there with `juno:secret`.
 
 ## SMTP
 
@@ -100,7 +100,7 @@ int sent = Smtp.send(
 | `-10` | Base64 encoding overflowed its buffer |
 | `-11` | `STARTTLS` |
 | `-12` | TLS upgrade, for example an untrusted certificate |
-| `-13` | Clock not set: on the Nano ESP32 the certificate dates cannot be checked without it |
+| `-13` | Clock not set: the certificate dates cannot be checked without it |
 
 ### Sending over implicit TLS
 

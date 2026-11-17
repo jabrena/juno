@@ -2,20 +2,21 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-import io.github.jabrena.juno.annotations.ArduinoUnoR3WiFiRev2Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
@@ -24,12 +25,12 @@ import java.util.concurrent.StructuredTaskScope;
  * Three independently owned HTTPS request rounds demonstrate each supported structured-concurrency joiner.
  * {@code allSuccessfulOrThrow} waits for both requests, {@code anySuccessfulOrThrow} returns the first successful
  * response and cancels its sibling, and {@code awaitAllSuccessfulOrThrow} waits for its request under a 20-second deadline.
- * A transport or non-2xx HTTP response fails its subtask so every joiner has meaningful failure semantics.
- *
- * UNO WiFi Rev2 queues their transports because a blocking NINA TLS handshake can starve another response;
- * the structured subtasks remain supported, but this board does not provide wire-level HTTP overlap.
+ * A transport or non-2xx HTTP response fails its subtask so every joiner has meaningful failure semantics. Each
+ * request owns a JDK {@code java.net.http} client, so the two never share a response; only the status matters, so
+ * the body is read with {@code ofByteArray()}, whose fixed buffer keeps the first bytes of a page of any size.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3WiFiRev2Board.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class,
+        M5StackCardputerBoard.class})
 public final class ParallelHttpsGet {
     private static final Wifi WIFI = MCU.getWifi();
 
@@ -43,14 +44,13 @@ public final class ParallelHttpsGet {
     private final SecondRequest second = new SecondRequest();
 
     private static final class FirstRequest {
-        private final byte[] body = new byte[1];
-        private final byte[] headers = new byte[256];
-        private final int[] statusAndHeadersLength = new int[2];
-        private int bodyLength;
+        private final HttpClient client = HttpClient.newHttpClient();
+        private final HttpRequest request = HttpRequest.newBuilder(URI.create(FIRST_URL)).build();
+        private int status;
 
-        String execute() {
-            bodyLength = HttpClient.get(FIRST_URL, body, body.length, headers, headers.length, statusAndHeadersLength);
-            if (!succeeded()) {
+        String execute() throws IOException, InterruptedException {
+            status = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode();
+            if (status < 200 || status >= 300) {
                 throw new IllegalStateException("first HTTPS request failed");
             }
             return "first";
@@ -59,25 +59,18 @@ public final class ParallelHttpsGet {
         void print() {
             Serial.print("first");
             Serial.print(" status=");
-            Serial.print(statusAndHeadersLength[0]);
-            Serial.print(" body=");
-            Serial.println(bodyLength);
-        }
-
-        private boolean succeeded() {
-            return bodyLength >= 0 && statusAndHeadersLength[0] >= 200 && statusAndHeadersLength[0] < 300;
+            Serial.println(status);
         }
     }
 
     private static final class SecondRequest {
-        private final byte[] body = new byte[1];
-        private final byte[] headers = new byte[256];
-        private final int[] statusAndHeadersLength = new int[2];
-        private int bodyLength;
+        private final HttpClient client = HttpClient.newHttpClient();
+        private final HttpRequest request = HttpRequest.newBuilder(URI.create(SECOND_URL)).build();
+        private int status;
 
-        String execute() {
-            bodyLength = HttpClient.get(SECOND_URL, body, body.length, headers, headers.length, statusAndHeadersLength);
-            if (!succeeded()) {
+        String execute() throws IOException, InterruptedException {
+            status = client.send(request, HttpResponse.BodyHandlers.ofByteArray()).statusCode();
+            if (status < 200 || status >= 300) {
                 throw new IllegalStateException("second HTTPS request failed");
             }
             return "second";
@@ -86,13 +79,7 @@ public final class ParallelHttpsGet {
         void print() {
             Serial.print("second");
             Serial.print(" status=");
-            Serial.print(statusAndHeadersLength[0]);
-            Serial.print(" body=");
-            Serial.println(bodyLength);
-        }
-
-        private boolean succeeded() {
-            return bodyLength >= 0 && statusAndHeadersLength[0] >= 200 && statusAndHeadersLength[0] < 300;
+            Serial.println(status);
         }
     }
 
@@ -179,7 +166,7 @@ public final class ParallelHttpsGet {
     }
 
     private boolean connectWifi() {
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < 30) {
             Delay.millis(1000);

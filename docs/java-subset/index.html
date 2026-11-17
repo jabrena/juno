@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -383,7 +383,10 @@ operation, so nothing fails silently on the board.</p>
 JVM's own heap collects it, and very large values do not fit the arena.</p>
 <h3 id="complex-data-types">Complex data types</h3>
 <ul>
-<li><strong>String</strong> is either a literal or a runtime value of up to 31 UTF-8 bytes; a longer runtime string stops the program.
+<li><strong>String</strong> is either a literal or a runtime value. A runtime string, from <code>+</code>, <code>String.valueOf</code>,
+<code>StringBuilder.toString()</code> or <code>Json.getString</code>, is allocated in the arena at exactly its length: it has no length
+limit and lives as long as the program refers to it, as in Java. Every one is an allocation, so building strings in
+a loop that runs often creates garbage for the collector; the risk report flags it (<code>JUNO-RISK-001</code>).
 Supported: <code>String.valueOf(int)</code>, <code>length()</code>, <code>charAt(int)</code> and concatenation with <code>+</code>.</li>
 <li><strong>BigInteger</strong> and <strong>BigDecimal</strong> give arbitrary precision, with results that match the JDK. Their size is limited by
 memory, not by a fixed width. Print them with <code>Serial.println(value.toString())</code>.</li>
@@ -459,6 +462,10 @@ public record Square(int side) implements Shape {}
 <p>Juno links the program as a closed world, so it already sees every subclass the program reaches. A sealed hierarchy
 should therefore behave like an ordinary class hierarchy on the board. Juno has no example or test that uses sealed
 types yet, so this page does not list them as supported.</p>
+<h3 id="instanceof">instanceof</h3>
+<p><code>instanceof</code>, and its pattern form <code>shape instanceof Circle circle</code>, work when the class tested for is <code>final</code>, which
+includes every record. Testing for a class that is not <code>final</code>, or for an interface, is rejected when the program is
+compiled.</p>
 <h3 id="static-methods">Static methods</h3>
 <p>Static methods take and return primitive values, and their calls are resolved when the program is linked. Methods the
 program never calls are left out of the firmware, so unused code does not take up space on the board.</p>
@@ -575,9 +582,13 @@ non-cryptographic source, so use it there only for best-effort identities.</li>
 <li><code>java.util.Properties</code>, read from a file on the SD card, and read-only <code>java.io.RandomAccessFile</code> and
 <code>InputStream</code>.</li>
 <li><code>java.time.LocalDateTime.now()</code>, with the time synchronised over SNTP on boards with Wi-Fi.</li>
+<li><code>java.net.URI</code>, and the <code>java.net.http</code> client (<code>HttpClient</code>, <code>HttpRequest</code>, <code>HttpResponse</code>, <code>HttpHeaders</code>), from
+the UNO R4 WiFi up, with <code>java.security.KeyStore</code>, <code>java.security.cert.CertificateFactory</code> and
+<code>javax.net.ssl.SSLContext</code> for a client's own trust anchors. See <a href="../httpclient">HTTP client</a> for what each covers.</li>
 <li><code>java.lang.StringBuilder</code>, with <code>new StringBuilder(int capacity)</code>, <code>append(char)</code>, <code>append(String)</code> and <code>toString()</code>.
-Give it a small capacity: <code>toString()</code> returns a runtime String, which holds at most 31 bytes, so a longer result stops the
-program.</li>
+<code>append(String)</code> takes a literal or a runtime <code>String</code>, and a <code>null</code> one appends <code>&quot;null&quot;</code>. The capacity is allocated
+in the arena once, and <code>toString()</code> copies the content into a new arena block of exactly its length; appends beyond
+the capacity are dropped.</li>
 </ul>
     </div>
   </section>

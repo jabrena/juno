@@ -148,7 +148,7 @@ address.</div>
  int&nbsp;length)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Sends the first <code>length</code> bytes of <code>data</code> to the device at <code>address</code>, with no register address,
-for raw protocols such as the ATECC608 command frames.</div>
+for raw protocols such as a secure element's command frames.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#writeRegister(int,int,int)" class="member-name-link">writeRegister</a><wbr>(int&nbsp;address,
@@ -220,7 +220,7 @@ for raw protocols such as the ATECC608 command frames.</div>
  byte[]&nbsp;data,
  int&nbsp;length)</span></div>
 <div class="block">Sends the first <code>length</code> bytes of <code>data</code> to the device at <code>address</code>, with no register address,
-for raw protocols such as the ATECC608 command frames. Returns <code>length</code> on success, or <code>-1</code> if the
+for raw protocols such as a secure element's command frames. Returns <code>length</code> on success, or <code>-1</code> if the
 device did not acknowledge. A zero-length write is a wake-up probe: it addresses the device and sends nothing.</div>
 </div>
 </section>

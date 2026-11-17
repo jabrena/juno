@@ -29,9 +29,18 @@ class JdkClassAliasesTest {
     @Test
     @DisplayName("any other string is returned as it was read")
     void leavesOtherStringsAlone() {
-        String hardware = "io/github/jabrena/juno/hardware/net/http/HttpClient";
+        String hardware = "io/github/jabrena/juno/hardware/net/http/Json";
 
         assertThat(aliases.apply(hardware)).isSameAs(hardware);
         assertThat(aliases.apply("GET")).isEqualTo("GET");
+    }
+
+    @Test
+    @DisplayName("a board-side javax class is read as the javax one, alone or next to a java one")
+    void readsJdkxAsJavax() {
+        assertThat(aliases.apply("io/github/jabrena/juno/javax/net/ssl/SSLContext")).isEqualTo("javax/net/ssl/SSLContext");
+        assertThat(aliases.apply("(Lio/github/jabrena/juno/javax/net/ssl/SSLContext;)"
+                + "Lio/github/jabrena/juno/jdk/net/http/HttpClient$Builder;"))
+                .isEqualTo("(Ljavax/net/ssl/SSLContext;)Ljava/net/http/HttpClient$Builder;");
     }
 }

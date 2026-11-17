@@ -4,55 +4,47 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.CertificateFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
-/** Loads the mailbox CA certificate from the Cardputer's SD card into one persistent, NUL-terminated buffer. */
+/**
+ * Loads the mailbox CA certificate from the Cardputer's SD card into an {@link SSLContext} that trusts only it, the
+ * JDK way: a {@link KeyStore} holding the certificate, through a {@link TrustManagerFactory}.
+ */
 public final class MailboxTrustedCertificate {
     static final String FILE = "mailbox-ca.crt";
-    /** Large enough for the generated development CA certificate, including its trailing NUL. */
-    static final int CAPACITY = 2048;
     private final SdCard sdCard;
-    private final byte[] certificate = new byte[CAPACITY];
-    private int length;
+    private SSLContext context;
 
     public MailboxTrustedCertificate(SdCard sdCard) {
         this.sdCard = sdCard;
     }
 
-    /** Reads the PEM certificate; false when it is missing, empty, unreadable or does not fit with a trailing NUL. */
+    /** Reads the PEM certificate; false when it is missing, unreadable or not a certificate. */
     public boolean load() {
-        length = 0;
         try (InputStream file = sdCard.open(FILE)) {
             if (file == null) {
                 return false;
             }
-            while (true) {
-                if (length == certificate.length - 1) {
-                    if (file.available() > 0) {
-                        return false;
-                    }
-                    break;
-                }
-                int count = file.read(certificate, length, certificate.length - 1 - length);
-                if (count < 0) {
-                    break;
-                }
-                if (count == 0) {
-                    return false;
-                }
-                length += count;
-            }
-            certificate[length] = 0;
-            return length > 0;
-        } catch (IOException exception) {
+            KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+            store.load(null, null);
+            store.setCertificateEntry("mailbox", CertificateFactory.getInstance("X.509").generateCertificate(file));
+            TrustManagerFactory trust = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            trust.init(store);
+            SSLContext loaded = SSLContext.getInstance("TLS");
+            loaded.init(null, trust.getTrustManagers(), null);
+            context = loaded;
+            return true;
+        } catch (IOException | GeneralSecurityException exception) {
             return false;
         }
     }
 
-    public byte[] value() {
-        return certificate;
-    }
-
-    public int length() {
-        return length;
+    /** The context that trusts the mailbox CA, or {@code null} before a successful {@link #load()}. */
+    public SSLContext context() {
+        return context;
     }
 }

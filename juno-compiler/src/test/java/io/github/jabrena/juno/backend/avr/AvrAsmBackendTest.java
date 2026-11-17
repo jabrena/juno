@@ -265,29 +265,18 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Rejects HTTPS on the UNO R3, which has no network support")
-    void shouldRejectHttpsOnTheUnoR3() {
+    @DisplayName("Rejects java.net.http on the UNO R3, which has no network support")
+    void shouldRejectTheJdkHttpClientOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3ShieldHttps", """
-                        byte[] body = new byte[16];
-                        byte[] headers = new byte[16];
-                        int[] status = new int[2];
-                        HttpClient.get("https://example.com/", body, 16, headers, 16, status);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO R3");
-    }
-
-    @Test
-    @DisplayName("Rejects plain HTTP on the UNO R3, which has no network support")
-    void shouldRejectPlainHttpOnTheUnoR3() {
-        // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3PlainHttp", """
-                        byte[] body = new byte[16];
-                        byte[] headers = new byte[16];
-                        int[] status = new int[2];
-                        HttpClient.get("http://example.com/", body, 16, headers, 16, status);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+        assertThatThrownBy(() -> compileR3("demo.R3Http", """
+                        try {
+                            java.net.http.HttpClient.newHttpClient().send(
+                                    java.net.http.HttpRequest.newBuilder(java.net.URI.create("http://example.com/")).build(),
+                                    java.net.http.HttpResponse.BodyHandlers.ofByteArray());
+                        } catch (Exception e) {
+                            return;
+                        }
+                """, ""))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3");
     }
@@ -814,15 +803,11 @@ class AvrAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Accepts HTTP and UDP on the UNO WiFi Rev2")
-    void shouldAcceptHttpAndUdpOnTheUnoWifiRev2() throws Exception {
+    @DisplayName("Accepts UDP on the UNO WiFi Rev2")
+    void shouldAcceptUdpOnTheUnoWifiRev2() throws Exception {
         // Given
         CompilationResult result = compile("demo.AvrNet", """
-                        byte[] body = new byte[32];
-                        byte[] headers = new byte[32];
-                        int[] status = new int[2];
                         MCU.getWifi().begin("ssid", "password");
-                        Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         try {
                             new DatagramSocket(4210).close();
                         } catch (IOException e) {
@@ -834,15 +819,13 @@ class AvrAsmBackendTest {
                 import java.io.IOException;
                 import java.net.DatagramSocket;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 """);
 
         // When & Then
         assertThat(result.runtimeShim())
                 .contains("#include <WiFiNINA.h>")
                 .contains("#include <WiFiUdp.h>")
-                .contains("static WiFiUDP juno_udp;")
-                .contains("extern \"C\" int32_t juno_avr_thunk_juno_http_get() {");
+                .contains("static WiFiUDP juno_udp;");
     }
 
     @Test
@@ -873,27 +856,6 @@ class AvrAsmBackendTest {
                 .contains("#include <WiFiNINA.h>")
                 .contains("using JunoTcpClient = WiFiClient;")
                 .contains("extern \"C\" int32_t juno_tcp_open(");
-    }
-
-    @Test
-    @DisplayName("Runs HTTPS through the NINA module's TLS")
-    void shouldRunHttpsThroughTheNinaModulesTls() throws Exception {
-        // Given
-        CompilationResult result = compile("demo.AvrTls", """
-                        byte[] body = new byte[32];
-                        int[] status = new int[2];
-                        Serial.println(HttpClient.get("https://example.com/", body, 32, body, 32, status));
-                """, """
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                """);
-
-        // When & Then
-        assertThat(result.runtimeShim())
-                .contains("#include <WiFiNINA.h>")
-                .contains("using JunoHttpsClient = WiFiSSLClient;")
-                .contains("extern \"C\" int32_t juno_avr_thunk_juno_https_get() {")
-                .doesNotContain("WiFiSSLClient.h");
     }
 
     @Test

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.net.wifi;
 
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -10,7 +9,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Minimal WiFi connectivity probe for the experimental {@code Thumb2AsmBackend}. Connects using
- * credentials from {@code ExampleSecrets} and prints
+ * credentials from the board's secret store and prints
  * {@link Wifi#status} once a second, so a connection attempt is observable over serial even while it
  * has not yet reached {@link Wifi#STATUS_CONNECTED} (unlike {@code MadridWeather}, which prints
  * nothing until connected).
@@ -22,8 +21,8 @@ public final class WifiStatus {
         Serial.begin(BaudRate.BAUD_115200);
         Serial.println("Starting WiFi");
         WIFI.begin(
-            ExampleSecrets.wifiSsid(),
-            ExampleSecrets.wifiPassword());
+            MCU.getSecretStore().getString("wifi.ssid"),
+            MCU.getSecretStore().getString("wifi.password"));
 
         while (true) {
             Serial.println("WiFi status: " + WIFI.status());

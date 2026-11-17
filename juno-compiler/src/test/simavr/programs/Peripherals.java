@@ -14,7 +14,6 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
 import io.github.jabrena.juno.hardware.net.email.Smtp;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import java.io.IOException;
@@ -23,7 +22,7 @@ import java.util.Properties;
 
 /**
  * The UNO WiFi Rev2's peripheral APIs end to end on the 8-bit target, against the simavr harness's stand-ins: Wi-Fi
- * and a WiFiClient/WiFiSSLClient that answers one chunked HTTP response, or plays an SMTP or POP3 server (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
+ * and a WiFiSSLClient that plays an SMTP or POP3 server (WiFiNINA.h), a loopback UDP socket (WiFiUdp.h), an SD card
  * in RAM holding config.txt (SdFat.h), and pins that read as zero for the LCD and TFT shields. No JVM can run these
  * APIs, so Peripherals.expected holds the output by hand.
  */
@@ -46,19 +45,13 @@ public final class Peripherals {
         byte[] body = new byte[64];
         byte[] headers = new byte[96];
         int[] status = new int[2];
-        int length = HttpClient.post("http://example.com/readings", "{\"t\":1}", body, body.length, headers,
-                headers.length, status);
-        Serial.println(status[0]);
-        Serial.println(length);
-        Serial.println(Json.getInt(body, length, "n"));
-        Serial.println(Json.getBool(body, length, "ok") ? "ok" : "not ok");
-        double temp = Json.getDouble(body, length, "temp");
+        // Json reads a document held in a String as it reads one in a buffer.
+        String reading = "{\"n\":-42,\"ok\":true,\"temp\":21.5}";
+        Serial.println(Json.getInt(reading, "n"));
+        Serial.println(Json.getBool(reading, "ok") ? "ok" : "not ok");
+        double temp = Json.getDouble(reading, "temp");
         Serial.println((int) (temp * 10));
         Serial.println("temp=" + temp);
-        int secure = HttpClient.get("https://example.com/readings", body, body.length, headers, headers.length,
-                status);
-        Serial.println(status[0] + " " + secure + " " + Json.getInt(body, secure, "n"));
-        Serial.println(HttpClient.get("https://example.com:80/", body, body.length, headers, headers.length, status));
 
         Serial.println(Smtp.sendTls("smtp.example.com", 465, "rev2@example.com", "secret", "rev2@example.com",
                 "you@example.com", "Hello", "Sent from a UNO WiFi Rev2"));

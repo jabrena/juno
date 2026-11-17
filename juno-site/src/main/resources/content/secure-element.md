@@ -148,17 +148,13 @@ provision it yet.
 
 ## Boards without a secret store
 
-The UNO Q has no secret store.
-
-On the UNO Q, the connected examples read the same names through `ExampleSecrets` from `application.properties` on the
-SD card, using the card of the stacked UNO shield (TFT Touch, LCD Keypad or Data Logger — all wire their socket to
-chip select D10):
+The UNO Q has no secret store. The connected examples read their credentials with
+`MCU.getSecretStore().getString(name)`, so the ones that need a credential do not target the Q. The UNO Q examples
+read `application.properties` from the SD card of the stacked UNO shield themselves, as `SntpTimeSD`,
+`WifiStatusSDTFT` and `Mailbox` do:
 
 ```properties
-wifi.ssid=MyNetwork
-wifi.password=MyPassword
+mailbox.q.ip=192.168.1.20
 ```
 
-**This is not a secret store.** The values are plain text on the card, so a copied card carries them. Each value is a
-`Properties` value, so it must fit in 31 characters. The Pico 2 W takes no UNO shield, so the multi-board Wi-Fi examples
-do not target it.
+**This is not a secret store.** The values are plain text on the card, so a copied card carries them.

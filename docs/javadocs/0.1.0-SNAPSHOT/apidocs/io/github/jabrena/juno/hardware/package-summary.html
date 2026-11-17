@@ -199,8 +199,9 @@ with shape and text drawing helpers that render into it and send it to the board
 </div>
 <div class="col-first even-row-color"><a href="security/package-summary.html">io.github.jabrena.juno.hardware.security</a></div>
 <div class="col-last even-row-color">
-<div class="block">Secrets kept in a secure element: <a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
+<div class="block">Secrets kept off the SD card and out of the firmware: <a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a>
+reads named values, and <a href="MCU.html#getSecretStore()"><code>MCU.getSecretStore()</code></a> selects the board's
+store — the Portenta H7's SE050C2, an ESP32 board's NVS, the Pico 2 W's TrustZone firmware or an AVR UNO's EEPROM.</div>
 </div>
 <div class="col-first odd-row-color"><a href="serial/package-summary.html">io.github.jabrena.juno.hardware.serial</a></div>
 <div class="col-last odd-row-color">

@@ -1,143 +1,134 @@
 ---
 title: "HTTP client"
-description: "Making HTTP and HTTPS requests with HttpClient: GET, POST, PATCH, DELETE and QUERY, with allocation-free buffers."
+description: "Making HTTP and HTTPS requests with the JDK's java.net.http client: methods, headers, bodies, timeouts, redirects, trust anchors and JSON."
 layout: page
 ---
 
-`HttpClient` sends HTTP and HTTPS requests from a Juno program once the board is connected to Wi-Fi. Each method writes
-the response body into a buffer that the program owns, so a request does not allocate memory.
+A Juno program sends HTTP and HTTPS requests with the JDK's own client, `java.net.http.HttpClient`, once the board is
+connected to Wi-Fi. The program is written and compiled against the JDK. On the board, Juno runs its own implementation
+of the same classes, which fits in the board's memory.
 
-## Methods
-
-| Method | Request body | Typical purpose |
-|---|---|---|
-| `get` | none | Read a resource. |
-| `post` | JSON | Create a resource or run a non-idempotent operation. |
-| `delete` | none | Delete a resource. |
-| `patch` | JSON | Partially update a resource. |
-| `query` | JSON | Run a safe, idempotent query whose parameters do not fit in the URL. |
-
-`QUERY` is the method standardised by [RFC 10008](https://www.rfc-editor.org/rfc/rfc10008.html). The server must
-support it explicitly. `POST`, `PATCH` and `QUERY` send `Content-Type: application/json`.
-
-Other static methods configure the client: `setTimeout(int)` sets the request deadline in milliseconds, and
-`setTrustedCertificate(byte[], int)` supplies a certificate for an HTTPS server.
+`java.net.http` runs on the UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer, Raspberry Pi Pico 2 W and
+Portenta H7. The UNO R4 WiFi is the smallest board that can run it, so the compiler rejects it on the UNO WiFi Rev2, the
+UNO R3 and the UNO Q.
 
 ## Making a GET request
 
-`HttpClient.get` takes a URL, a response buffer and its capacity, a headers buffer and its capacity, and an `int[2]`
-that receives the HTTP status code and the number of header bytes:
-
 ```java
-private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
-        + "&longitude=-3.7038&current=temperature_2m";
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.open-meteo.com/v1/forecast?latitude=40.4168"
+        + "&longitude=-3.7038&current=temperature_2m")).build();
 
-byte[] response = new byte[512];
-byte[] headers = new byte[256];
-int[] status = new int[2];
-int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
+HttpResponse<String> reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+Serial.println(reply.statusCode());
+Serial.println(Json.getDouble(reply.body(), "current.temperature_2m"));
 ```
 
-The URL must be a compile-time string. A constant built from other constants is fine, because the compiler splits it into
-host, port and path before the program runs.
+`send` declares `IOException` and `InterruptedException`, as in the JDK. It throws `IOException` when the request
+cannot be sent, and `HttpTimeoutException` when no response arrives in time. The board never interrupts a request.
 
-`http://` sends the request in the clear and `https://` uses TLS. The port defaults to 80 or 443; give another port in
-the URL, as in `http://192.168.1.10:8080/led`. HTTPS validates the server certificate against the root certificates
-the board trusts.
+Create the client and requests once, before a loop, and send the same request as often as needed.
 
-## Caller-owned buffers
+## Requests
 
-The three arrays in the GET example are the design of Juno's HTTP client. The client never allocates memory: the program
-creates the arrays once, and each request fills them in place.
+- **Methods:** `GET()`, `POST(body)`, `PUT(body)`, `DELETE()` and `HEAD()`. Any other method, such as `PATCH` or
+  `QUERY`, goes through `method("PATCH", body)`. Unlike the JDK, `CONNECT` is also accepted. It is sent to the URI's
+  `host:port` and reports its status, but opens no tunnel.
+- **Headers:** `header`, `headers(...)` and `setHeader`, up to 512 bytes per request. As in the JDK, the client sets
+  `Connection`, `Content-Length`, `Expect`, `Host` and `Upgrade` itself, so the builder rejects them.
+- **Bodies:** `BodyPublishers.ofString` (up to 512 bytes), `ofByteArray(bytes)`, `ofByteArray(bytes, 0, length)` and
+  `noBody()`. `ofByteArray(bytes, 0, length)` sends the first `length` bytes of a buffer the program allocated once.
+  Unlike the JDK, its offset must be 0. A body without a `Content-Type` header is sent as `application/json`.
 
-| Array | What the client writes into it | When it is too small |
+```java
+HttpRequest post = HttpRequest.newBuilder(URI.create("https://httpbin.org/post"))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString("{\"board\":\"juno\"}"))
+        .build();
+```
+
+## Responses
+
+How the body arrives depends on the body handler:
+
+| Handler | Body | Memory |
 |---|---|---|
-| `byte[] response` | the response body | the body is truncated; the return value is the number of bytes stored |
-| `byte[] headers` | the response headers as text | the headers are truncated; `status[1]` reports how many bytes were written |
-| `int[] status` | two results: `status[0]` is the HTTP status code and `status[1]` is the number of header bytes written | not applicable: the array always has two elements |
+| `BodyHandlers.ofString()` | A `String` of every byte received, sized to the response. | Allocates one `String` per response. There is no fixed limit, but a body that does not fit in the free memory makes `send` throw an `IOException`. |
+| `BodyHandlers.ofByteArray()` | The client's own 384-byte buffer, refilled by every request. A longer body is truncated, and `body().length` is the buffer's size, not the size received. | Allocates nothing per request. |
 
-The reason is memory. The board has a fixed 8 KB arena and no `OutOfMemoryError` to catch, so Juno requires every size to
-be known when the program is built. Each request then costs the same memory, however large the server's reply. The
-consequences for your program:
+Use `ofString()` to read a response. Use `ofByteArray()` when only the status matters, or when a page might be larger
+than the board's memory: the buffer keeps the first bytes of a page of any size.
 
-- Choose the response size for the largest reply you expect, and check the return value: a full buffer may mean the body
-  was cut short.
-- Read `status[0]` before you trust the body. The client returns the body whatever the status, including a `404` page.
-- Pass the lengths explicitly. The methods take a capacity next to each array, so one array can be reused with a smaller
-  capacity.
+The body is not decoded: a runtime `String` holds bytes, so UTF-8 text stays UTF-8.
 
-## Reading the result
-
-| Result | Meaning |
-|---:|---|
-| `-1` | The connection failed, or the certificate was not trusted. |
-| `0` | No response body bytes were captured. |
-| `1..response.length` | Number of body bytes stored in the buffer. |
-
-The client does not expose the HTTP status code to the body result, but `status[0]` holds it. The body is truncated to the
-buffer's length, so choose a buffer large enough for the response. Validate the body before you trust it: a positive
-result is not proof that the request succeeded.
-
-## Sending JSON with POST, PATCH and QUERY
-
-The request body must be a compile-time string, so the same URL and body rules apply:
+`headers()` answers `firstValue(name)` and `firstValueAsLong(name)`, with the name in any case:
 
 ```java
-String body = "{\"led\":\"on\"}";
-int responseBytes = HttpClient.post("http://192.168.1.10:8080/led", body, response, response.length,
-        headers, headers.length, status);
+String date = reply.headers().firstValue("date").orElse("");
 ```
 
-## Keeping the buffers outside the loop
+`uri()` is the URI the response came from: the request's own, or the last one a redirect led to.
 
-Allocate the response and header buffers once, at startup, and reuse them. Creating them inside a loop makes the
-program allocate on every pass:
+## Timeouts and redirects
 
 ```java
-byte[] response = new byte[512];
-byte[] headers = new byte[256];
-int[] status = new int[2];
+HttpClient client = HttpClient.newBuilder()
+        .followRedirects(HttpClient.Redirect.NORMAL)
+        .connectTimeout(Duration.ofSeconds(10))
+        .build();
+HttpRequest slow = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(2)).build();
+```
 
-while (true) {
-    int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
-    // Process response[0..responseBytes).
-    Delay.millis(60000);
+- **Timeouts:** the board has one timeout for the whole exchange. It is the request's timeout if it has one, else the
+  client's `connectTimeout`, else 5 seconds.
+- **Redirects:** `NEVER` (the default), `ALWAYS` and `NORMAL` (which never goes from `https` to `http`), with at most
+  5 redirects per request. The client follows a redirect only to a scheme that one of the program's own URIs names,
+  because only those requests are linked into the program.
+
+## Closing a client
+
+As in the JDK since 21, a client is `AutoCloseable`:
+
+```java
+try (HttpClient client = HttpClient.newHttpClient()) {
+    client.send(request, HttpResponse.BodyHandlers.ofString());
 }
 ```
 
-## Building the path at run time
+A closed client throws `IOException` from `send`. Every request runs to completion in the thread that sends it, so
+`isTerminated()` and `awaitTermination(...)` answer at once.
 
-A path that depends on runtime data, such as coordinates returned by an earlier request, cannot be a literal. Build it in
-a `byte[]` and use the overload that takes a base URL (a scheme, host and optional port, with no path) plus the path
-buffer and its length. The URL these methods take must be a compile-time string, so the buffer is the way to add a runtime
-path:
+## URIs
+
+`java.net.URI` parses any URI and has no length limit, so a long query string, such as a PostgREST filter, is fine. A URI
+can be built at run time, for example from settings on the SD card:
 
 ```java
-byte[] path = new byte[256];
-int pathLength = 0;
-// ... copy "/v1/forecast?latitude=", the runtime latitude, and so on into path ...
-int responseBytes = HttpClient.get("https://api.open-meteo.com", path, pathLength,
-        response, response.length, headers, headers.length, status);
+URI uri = URI.create("https://" + host + path);
+URI next = uri.resolve("../v2/items?page=2");
+Serial.println(next.getPath());
 ```
 
-The base URL must still be a compile-time string. Only `GET` has this overload. The
-[`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java)
-example uses it to pass the coordinates returned by one service to another.
+It has `getScheme`, `getHost`, `getPort`, `getPath`, `getQuery`, `getFragment`, `getUserInfo`, `getAuthority`, their
+`getRaw...` forms, `resolve`, `toString`, `equals` and `hashCode`. Where it differs from the JDK:
+
+- `resolve` follows RFC 3986. A reference that is only a query (`?q`) keeps the base path, and an absolute path loses
+  its `.` and `..` segments.
+- `new URI(...)` throws `IllegalArgumentException`, not `URISyntaxException`.
+- A port above 65535 is rejected.
 
 ## Reading JSON responses
 
-`Json` reads values straight from the response bytes, with no parsing into objects. Pass it the number of bytes the client
-returned, not the buffer's capacity:
+`Json` reads values straight from a body, with no parsing into objects. It takes the body as a `String`:
 
 ```java
-int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
-if (responseBytes > 0) {
-    double temperature = Json.getDouble(response, responseBytes, "current.temperature_2m");
-}
+String body = reply.body();
+double temperature = Json.getDouble(body, "current.temperature_2m");
 ```
 
-The parser checks the whole document before it reads a value. It supports objects, arrays, strings, numbers, booleans and
-`null`, nested up to 32 levels deep.
+Every method also takes a `byte[]` and the number of bytes in it, which is how `HttpServer` programs read a request
+body. The parser checks the whole document before it reads a value. It supports objects, arrays, strings, numbers,
+booleans and `null`, nested up to 32 levels deep.
 
 ### Paths
 
@@ -150,9 +141,8 @@ Object fields are separated by dots, and array elements use zero-based indexes i
 | `{"users":[{"name":"Ada"}]}` | `"users[0].name"` |
 | `[{"id":7}]` | `"[0].id"` |
 
-A path is a compile-time string literal, so a loop cannot build one such as `"items[" + index + "]"`. Known positions are
-read with separate literal paths. Field names that contain `.`, `[` or `]`, and names written with JSON escapes, cannot
-yet be addressed.
+A path can be built at run time, as in `"[" + index + "].uuid"`. Field names that contain `.`, `[` or `]`, and names
+written with JSON escapes, cannot be addressed yet.
 
 ### Reading values
 
@@ -162,16 +152,17 @@ yet be addressed.
 | `Json.getLong(...)` | a `long` |
 | `Json.getDouble(...)` | a `double` |
 | `Json.getBool(...)` | a `boolean` |
-| `Json.getString(..., byte[] out, int outLength)` | the number of UTF-8 bytes written to `out` |
+| `Json.getString(json, path)` | the value's raw text as a `String`, or `null` for a missing value, an object or an array |
+| `Json.getString(json, path, byte[] out, int outLength)` | the number of UTF-8 bytes decoded into `out` |
 | `Json.arraySize(...)` | the number of elements in an array, or `-1` when the path is missing, invalid or not an array |
 
 Typed getters return zero or `false` when the value cannot be read, so `getInt(...) == 0` is ambiguous by itself. Use
 `Json.type` when the difference matters:
 
 ```java
-int valueType = Json.type(response, responseBytes, "current.temperature_2m");
+int valueType = Json.type(body, "current.temperature_2m");
 if (valueType == Json.TYPE_NUMBER) {
-    double temperature = Json.getDouble(response, responseBytes, "current.temperature_2m");
+    double temperature = Json.getDouble(body, "current.temperature_2m");
 } else if (valueType == Json.TYPE_NULL) {
     Serial.println("Temperature is null");
 } else if (valueType == Json.TYPE_MISSING) {
@@ -182,125 +173,68 @@ if (valueType == Json.TYPE_NUMBER) {
 ```
 
 The type constants are `TYPE_MISSING`, `TYPE_NULL`, `TYPE_BOOLEAN`, `TYPE_NUMBER`, `TYPE_STRING`, `TYPE_OBJECT`,
-`TYPE_ARRAY` and `TYPE_INVALID`. A document cut short by a small response buffer reads as `TYPE_INVALID`.
+`TYPE_ARRAY` and `TYPE_INVALID`.
 
-### Reading strings
-
-Juno cannot create a runtime Java `String` here, so `Json.getString` decodes into a `byte[]` that the program owns:
-
-```java
-byte[] name = new byte[32];
-int nameBytes = Json.getString(response, responseBytes, "user.name", name, name.length);
-```
-
-The method decodes escapes such as `\n`, `\"` and `\u00e9`, including surrogate pairs, and writes at most `name.length`
-bytes. It adds no terminating NUL. A small buffer truncates the result.
+`Json.getString(json, path)` returns the text as written, with no escape decoding. That keeps a number such as `21.2`
+exactly as the server wrote it. `Json.getString(json, path, out, outLength)` decodes escapes such as `\n`, `\"` and
+`é`, including surrogate pairs, into the program's own buffer. It writes at most `outLength` bytes and adds no
+terminating NUL.
 
 ## Interacting with HTTPS endpoints
 
-An `https://` URL makes the client use TLS. Before it sends anything, the client checks the server's certificate chain
-against the trusted root certificates on the board. The calls are the same as for plain HTTP; only the scheme changes:
-
-```java
-int responseBytes = HttpClient.get("https://httpbin.org/anything", response, response.length, headers, headers.length, status);
-```
-
-A certificate that does not chain to a trusted root makes the request return `-1`.
+An `https` URI makes the client use TLS. Before it sends anything, the client checks the server's certificate chain and
+host name against the board's trusted root certificates. A certificate that fails the check makes `send` throw an
+`IOException`.
 
 ### Trusted roots on each board
 
-| Board | Where the trusted roots come from | Runtime trust anchor (`setTrustedCertificate`) |
-|---|---|---|
-| UNO R4 WiFi | The root CA bundle installed in the WiFi firmware. Arduino documents how to update it. | Not supported: returns `false`. |
-| UNO WiFi Rev2 | The root certificates in the NINA-W102 module's firmware. | Not supported: returns `false`. |
-| UNO Q | The Linux system trust store, used through the bridge. | Not supported: returns `false`. |
-| Nano ESP32 and M5Stack Cardputer | Mozilla's root certificates, bundled into the program (about 55 KB of flash). | Supported. |
+| Board | Where the trusted roots come from | Own trust anchors (`SSLContext`) | Certificate dates checked |
+|---|---|---|---|
+| UNO R4 WiFi | The root CA bundle in the ESP32-S3 coprocessor's firmware, which also runs the TLS. Arduino documents how to update it. | Not supported. | Yes, as the coprocessor does it: an expired certificate that chains to a trusted root is rejected (tested on the board). |
+| Nano ESP32, ESP32-CAM, M5Stack Cardputer | Mozilla's root certificates, bundled into the program (about 55 KB of flash). | Supported. | Yes: the clock is set over SNTP before each connection. A connection fails if the clock cannot be set. |
+| Raspberry Pi Pico 2 W | Mozilla's root certificates, through BearSSL. | Supported. | Yes, after the first HTTPS connection sets the clock over SNTP. |
+| Portenta H7 | Juno's root bundle, through Mbed TLS. | Not supported. | Yes: after the handshake, each certificate's dates are compared with the clock, which is set over SNTP first. A connection fails if the clock cannot be set. |
 
-The ESP32 boards also do not check certificate validity dates, because their TLS library has no calendar clock. A
-certificate that has expired can still be accepted there, so do not rely on the date check for security.
+On the UNO R4 WiFi and the Nano ESP32, an expired certificate that chains to a trusted root is rejected, as tested on the board.
 
-### Installing a trust anchor
+### Trusting your own certificate
 
-On the Nano ESP32 and the Cardputer, a program can trust one extra certificate, such as a self-signed certificate for a
-server on the local network. The certificate is PEM text, read into a caller-owned buffer, and its length excludes the
-trailing NUL byte, so the buffer must hold that NUL too:
+A program can trust its own certificate, such as the CA of a server on the local network, the way the JDK does it: load
+the PEM certificate into a `KeyStore`, turn it into trust managers, and give the client an `SSLContext`:
 
 ```java
-byte[] certificate = new byte[1537];   // PEM text read from the SD card, plus a trailing NUL byte
-int certificateLength = 1536;          // bytes of PEM text, excluding the NUL
-certificate[certificateLength] = 0;
-
-if (!HttpClient.setTrustedCertificate(certificate, certificateLength)) {
-    Serial.println("This board cannot install a certificate");
+KeyStore store = KeyStore.getInstance(KeyStore.getDefaultType());
+store.load(null, null);
+try (InputStream file = sdCard.open("ca.crt")) {
+    store.setCertificateEntry("ca", CertificateFactory.getInstance("X.509").generateCertificate(file));
 }
+TrustManagerFactory trust = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+trust.init(store);
+SSLContext context = SSLContext.getInstance("TLS");
+context.init(null, trust.getTrustManagers(), null);
+
+HttpClient client = HttpClient.newBuilder().sslContext(context).build();
 ```
 
-The client keeps a pointer to the buffer, so keep the buffer reachable for as long as requests may use it. Do not reuse it
-for other data while HTTPS requests are still running.
-
-## Compared with the JDK HTTP client
-
-The JDK's [`java.net.http.HttpClient`](https://openjdk.org/groups/net/httpclient/intro.html) is the standard client on the
-desktop. Juno's client follows its purpose, sending HTTP and HTTPS requests, but not its design, because it has to run in
-a fixed amount of RAM:
-
-| | JDK `HttpClient` | Juno `HttpClient` |
-|---|---|---|
-| Creating a client | `HttpClient.newHttpClient()` or a builder | No object: static methods on `HttpClient` |
-| Building a request | an immutable `HttpRequest` built with `HttpRequest.newBuilder()` | a URL string argument |
-| Getting the response | an `HttpResponse<T>` object | the program's own `byte[]` buffers, filled in place |
-| Choosing the body type | a `BodyHandler` such as `ofString`, `ofByteArray` or `ofFile` | always raw bytes in a caller-owned buffer |
-| Synchronous and asynchronous | `send` and `sendAsync` (a `CompletableFuture`) | synchronous calls only |
-| Headers | set on the request and read from the response | raw text in a buffer; no custom request headers |
-| Memory | the library allocates objects and buffers | no allocation; every size is fixed at build time |
-| Request body | `BodyPublishers` such as `ofString` or `ofFile` | a compile-time string literal |
-| Redirects, cookies and authentication | configurable through the builder | not available |
-| Timeouts | set per request and per client | `setTimeout` sets one deadline for requests |
-
-### The same GET request in each client
-
-Juno, as in [Making a GET request](#making-a-get-request):
-
-```java
-private static final String URL = "http://api.open-meteo.com/v1/forecast?latitude=40.4168"
-        + "&longitude=-3.7038&current=temperature_2m";
-
-byte[] response = new byte[512];
-byte[] headers = new byte[256];
-int[] status = new int[2];
-int responseBytes = HttpClient.get(URL, response, response.length, headers, headers.length, status);
-```
-
-The JDK client, with the same URL:
-
-```java
-HttpClient client = HttpClient.newHttpClient();
-HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(URL))
-        .GET()
-        .build();
-HttpResponse<byte[]> reply = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-int statusCode = reply.statusCode();
-byte[] body = reply.body();
-```
-
-The JDK version needs `IOException` and `InterruptedException` handled, since `send` declares both. Juno's call declares
-neither. The two differ in where the data goes:
-
-- In Juno the program creates the buffers first and passes them in. The client writes the result into them and returns
-  a count, so the program keeps control of the memory.
-- In the JDK the library creates the result: `send` returns an object holding the status, headers and body, and the
-  program reads them with accessor methods.
-- Juno's request is a single call with the URL and the buffers. The JDK builds an `HttpRequest` first, then sends it.
-
-The JDK client also streams bodies as reactive `ByteBuffer` flows. Juno has no streams, because each reply is read into one
-buffer that the program chose in advance.
+The context carries only trust anchors. The board's TLS client does the handshake, and client certificates are not
+supported. A program that calls `sslContext(...)` uses its own anchors only: on the ESP32 boards, the bundled Mozilla
+roots are then left out of the program. On a board that cannot change its trust at runtime, a request through such a
+client fails with an `IOException`.
 
 ## Examples
 
-- [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java)
-  makes one HTTPS request and prints the result.
+- [`JdkHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpWeather.java)
+  reads a temperature over plain HTTP, allocating nothing per request.
+- [`JdkHttpRequests`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpRequests.java)
+  and [`JdkHttpsRequests`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpsRequests.java)
+  send every method, headers, bodies, redirects and timeouts.
+- [`JdkHttpUri`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpUri.java)
+  sends a 501-character URI and resolves a reference, with a try-with-resources client.
+- [`JdkHttpsCertificates`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpsCertificates.java)
+  checks that valid certificates are accepted and broken ones rejected.
 - [`ParallelHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java)
   makes several requests at the same time with virtual threads.
 - [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java)
-  shows a weather station that builds its request path at run time.
+  shows a weather station that builds its URI at run time.
+- [`MailboxCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java)
+  trusts its server's own CA through an `SSLContext`.

@@ -34,21 +34,21 @@ public final class LichessModel {
     private boolean loaded;
 
     /** Loads a JSON response produced by {@code /api/puzzle/daily} or {@code /api/puzzle/next}. */
-    public boolean loadResponse(byte[] response, int responseLength, int status, int source) {
-        if (status != 200 || response == null || responseLength <= 0) {
+    public boolean loadResponse(String response, int status, int source) {
+        if (status != 200 || response == null || response.length() == 0) {
             loadError = LOAD_NETWORK_ERROR;
             loaded = false;
             return false;
         }
-        int fenLength = Json.getString(response, responseLength, "puzzle.fen", fen, fen.length);
+        int fenLength = Json.getString(response, "puzzle.fen", fen, fen.length);
         boolean positionLoaded = fenLength > 0 && board.loadFen(fen, fenLength);
         if (!positionLoaded) {
-            int pgnLength = Json.getString(response, responseLength, "game.pgn", pgn, pgn.length);
-            int initialPly = Json.getInt(response, responseLength, "puzzle.initialPly");
+            int pgnLength = Json.getString(response, "game.pgn", pgn, pgn.length);
+            int initialPly = Json.getInt(response, "puzzle.initialPly");
             positionLoaded = pgnLength > 0 && initialPly < Integer.MAX_VALUE
                     && board.loadPgnPosition(pgn, pgnLength, initialPly + 1);
         }
-        int count = Json.arraySize(response, responseLength, "puzzle.solution");
+        int count = Json.arraySize(response, "puzzle.solution");
         if (!positionLoaded || count <= 0 || count > solution.length) {
             loadError = LOAD_BAD_RESPONSE;
             loaded = false;
@@ -56,7 +56,7 @@ public final class LichessModel {
         }
         int parsed = 0;
         for (; parsed < count; parsed++) {
-            int uciLength = Json.getString(response, responseLength, solutionPath(parsed), uci, uci.length);
+            int uciLength = Json.getString(response, solutionPath(parsed), uci, uci.length);
             solution[parsed] = PuzzleBoard.parseUci(uci, uciLength);
             if (solution[parsed] < 0) {
                 loadError = LOAD_BAD_RESPONSE;
@@ -65,9 +65,9 @@ public final class LichessModel {
             }
         }
         solutionCount = parsed;
-        rating = Json.getInt(response, responseLength, "puzzle.rating");
-        plays = Json.getInt(response, responseLength, "puzzle.plays");
-        themeLength = Json.getString(response, responseLength, "puzzle.themes[0]", theme, theme.length);
+        rating = Json.getInt(response, "puzzle.rating");
+        plays = Json.getInt(response, "puzzle.plays");
+        themeLength = Json.getString(response, "puzzle.themes[0]", theme, theme.length);
         this.source = source;
         loadError = LOAD_OK;
         loaded = true;

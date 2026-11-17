@@ -35,7 +35,8 @@ final class HttpQueryFolding {
             new MethodRef(FEATURES, "responseHeaders", "()Z"), HttpLinkFacts.Fact.RESPONSE_HEADERS,
             new MethodRef(FEATURES, "redirects", "()Z"), HttpLinkFacts.Fact.REDIRECTS,
             new MethodRef(FEATURES, "customMethods", "()Z"), HttpLinkFacts.Fact.CUSTOM_METHODS,
-            new MethodRef(FEATURES, "timeouts", "()Z"), HttpLinkFacts.Fact.TIMEOUTS);
+            new MethodRef(FEATURES, "timeouts", "()Z"), HttpLinkFacts.Fact.TIMEOUTS,
+            new MethodRef(FEATURES, "customTrust", "()Z"), HttpLinkFacts.Fact.CUSTOM_TRUST);
 
     /**
      * Folds the queries left in {@code boardFolded}, reporting {@code changed} when either folding decided a branch, so

@@ -2,7 +2,6 @@ package io.github.jabrena.juno.usecases.mailbox.server;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
@@ -18,6 +17,10 @@ import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxModel;
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxServerTask;
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxStartupTask;
 import io.github.jabrena.juno.util.Delay;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * The mailbox composition root: shows the Java and Arduino intro, wires the SD-backed model,
@@ -59,11 +62,10 @@ public final class Mailbox {
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
         SdCard sdCard = tft.getSdCard();
-        ExampleSecrets.useSdCard(sdCard);
         MailboxModel model = new MailboxModel(sdCard);
         MailboxSecurity security = new MailboxSecurity(sdCard);
         MailboxView view = new MailboxView(security);
-        String address = ExampleSecrets.mailboxQIp();
+        String address = readQAddress(sdCard);
         view.drawCover(tft, false, 0);
         view.drawIp(tft, address);
         printLocalIP(address);
@@ -121,5 +123,27 @@ public final class Mailbox {
     private static void printLocalIP(String ip) {
         Serial.print("IP: ");
         Serial.println(ip);
+    }
+
+    /**
+     * Reads {@code mailbox.q.ip} from {@code /application.properties} on the shield's card. The UNO Q has no secret
+     * store, and the address is not a secret. The {@code Properties} stays a local, as Juno requires.
+     */
+    private static String readQAddress(SdCard sdCard) {
+        String address = null;
+        try (InputStream file = sdCard.open("application.properties")) {
+            if (file != null) {
+                Properties properties = new Properties();
+                properties.load(file);
+                address = properties.getProperty("mailbox.q.ip");
+            }
+        } catch (IOException e) {
+            Serial.println("Unreadable application.properties");
+        }
+        if (address == null) {
+            Serial.println("Missing setting: mailbox.q.ip");
+            throw new IllegalStateException("Missing setting: mailbox.q.ip");
+        }
+        return address;
     }
 }

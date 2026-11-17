@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.hardware.net.email;
 
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.lcd.LcdKeypadShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -13,7 +12,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Connects to WiFi and the mailbox configured by the {@code smtp.host}, {@code smtp.username}, and {@code smtp.password}
- * entries in {@code ExampleSecrets} (the same account {@link Smtp} would send from — POP3S on {@link #POP3_PORT}
+ * entries in the board's secret store (the same account {@link Smtp} would send from — POP3S on {@link #POP3_PORT}
  * needs no separate credentials), polls {@link Pop3Client#messageCount} every {@link
  * #POLL_INTERVAL_SECONDS} seconds, and shows the current message count on the LCD Keypad Shield's first
  * row ({@code "Inbox: N"}), or {@code "Inbox: err N"} for a negative result — see {@link
@@ -58,8 +57,8 @@ public final class InboxCount {
         int count = -1;
         for (int attempt = 0; attempt < CONNECT_RETRY_ATTEMPTS; attempt++) {
             count = Pop3Client.messageCount(
-                    ExampleSecrets.smtpHost(), POP3_PORT,
-                    ExampleSecrets.smtpUsername(), ExampleSecrets.smtpPassword());
+                    MCU.getSecretStore().getString("smtp.host"), POP3_PORT,
+                    MCU.getSecretStore().getString("smtp.username"), MCU.getSecretStore().getString("smtp.password"));
             if (count != -1) {
                 return count;
             }
@@ -86,7 +85,7 @@ public final class InboxCount {
 
     private void connectWifi() {
         Serial.println("Starting WiFi");
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         while (WIFI.status() != Wifi.STATUS_CONNECTED) {
             Delay.millis(500);
         }

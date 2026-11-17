@@ -43,7 +43,7 @@ public final class SecretProvisioner {
     private static final int NAME_PREFIX_CLEAR = 6;
     private static final int POLL_MS = 5;
     private static final int READY_REPEAT_MS = 1000;
-    /** The names {@code LIST} reports: the ones {@link ExampleSecrets} reads. */
+    /** The names {@code LIST} reports: the ones the examples read. */
     private static final String[] LISTED_NAMES = {"wifi.ssid", "wifi.password", "mailbox.apikey", "mailbox.q.ip",
         "smtp.host", "smtp.username", "smtp.password", "supabase.api.host", "supabase.api.key", "supabase.api.url"};
     private static final int LISTED_COUNT = 10;

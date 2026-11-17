@@ -4,6 +4,7 @@ import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
+import io.github.jabrena.juno.backend.runtime.SntpServer;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
@@ -49,20 +50,109 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return runtimeSource.load("esp32/https-server-transport.cpp");
     }
 
+    /** The Mbed TLS peer certificate and the TLS socket behind the Wi-Fi client, which the date check reads. */
+    @Override
+    public String httpsInclude() {
+        return "#include \"TLSSocket.h\"\n#include \"mbedtls/ssl.h\"\n#include \"mbedtls/x509_crt.h\"\n";
+    }
+
     /**
      * The Portenta Mbed Wi-Fi library otherwise looks for its CA file on the module's {@code /wlan} filesystem.
      * That filesystem is not present on every board, so keep the same Mozilla root set used by the Nano ESP32 in the
      * generated image and install it before each TLS client connects.
+     *
+     * <p>The Portenta core ships Mbed TLS prebuilt without certificate dates, so the handshake accepts an expired
+     * certificate. Each connection therefore first sets the clock over SNTP ({@code JUNO_SNTP_HOST}, default
+     * {@code pool.ntp.org}), then checks the validity dates of every certificate the server sent, and fails if one
+     * is outside them. If no time can be set, the connection fails.
      */
     @Override
     public String httpsHelpers() {
+        SntpServer server = SntpServer.from(System.getenv());
         return trustedRootsDefinition() + """
+                // Sets the system clock over SNTP unless it is already set; false when it cannot be set.
+                static bool juno_portenta_tls_clock_once() {
+                  WiFiUDP juno_tls_clock_udp;
+                  if (juno_tls_clock_udp.begin(2391) == 0) return false;
+                  uint8_t packet[48];
+                  memset(packet, 0, sizeof(packet));
+                  packet[0] = 0x1B;  // leap indicator 0, version 3, mode 3 (client)
+                  uint32_t seconds = 0;
+                  if (juno_tls_clock_udp.beginPacket("${HOST}", static_cast<uint16_t>(${PORT})) == 1
+                      && juno_tls_clock_udp.write(packet, sizeof(packet)) == sizeof(packet)
+                      && juno_tls_clock_udp.endPacket() > 0) {
+                    uint32_t start = static_cast<uint32_t>(millis());
+                    while (static_cast<uint32_t>(millis()) - start < 2000u) {
+                      if (juno_tls_clock_udp.parsePacket() >= static_cast<int>(sizeof(packet))) {
+                        juno_tls_clock_udp.read(packet, sizeof(packet));
+                        if ((packet[0] & 0x07) == 4 && packet[1] != 0) {
+                          seconds = (static_cast<uint32_t>(packet[40]) << 24) | (static_cast<uint32_t>(packet[41]) << 16)
+                              | (static_cast<uint32_t>(packet[42]) << 8) | static_cast<uint32_t>(packet[43]);
+                        }
+                        break;
+                      }
+                      delay(10);
+                    }
+                  }
+                  juno_tls_clock_udp.stop();
+                  if (seconds <= 2208988800ul) return false;
+                  set_time(static_cast<time_t>(seconds - 2208988800ul));
+                  return time(nullptr) > 1700000000;
+                }
+
+                // The first UDP exchange after Wi-Fi joins can be lost, so the time is asked for up to three times.
+                static bool juno_portenta_tls_clock() {
+                  for (int attempt = 0; attempt < 3; attempt++) {
+                    if (time(nullptr) > 1700000000) return true;
+                    if (juno_portenta_tls_clock_once()) return true;
+                    delay(500);
+                  }
+                  return time(nullptr) > 1700000000;
+                }
+
+                // A date as one number that orders like the date itself.
+                static uint64_t juno_time_key(int year, int month, int day, int hour, int minute, int second) {
+                  return static_cast<uint64_t>(year) * 10000000000ull + static_cast<uint64_t>(month) * 100000000ull
+                      + static_cast<uint64_t>(day) * 1000000ull + static_cast<uint64_t>(hour) * 10000ull
+                      + static_cast<uint64_t>(minute) * 100ull + static_cast<uint64_t>(second);
+                }
+
                 struct JunoPortentaHttpsClient : WiFiSSLClient {
                   JunoPortentaHttpsClient() {
                     setCACert(juno_portenta_ca);
                   }
+
+                  // Every certificate in the peer's chain must be within its validity dates. The prebuilt Mbed TLS
+                  // date helpers answer "not past" for every date, so the dates are compared here, as YYYYMMDDhhmmss.
+                  bool juno_certificates_current() {
+                    if (!client) return false;
+                    TLSSocket* tls = static_cast<TLSSocket*>(client->getSocket());
+                    if (tls == nullptr) return false;
+                    const mbedtls_x509_crt* chain = mbedtls_ssl_get_peer_cert(tls->get_ssl_context());
+                    if (chain == nullptr) return false;
+                    time_t nowSeconds = time(nullptr);
+                    struct tm now;
+                    gmtime_r(&nowSeconds, &now);
+                    uint64_t current = juno_time_key(now.tm_year + 1900, now.tm_mon + 1, now.tm_mday, now.tm_hour,
+                        now.tm_min, now.tm_sec);
+                    for (const mbedtls_x509_crt* crt = chain; crt != nullptr; crt = crt->next) {
+                      if (juno_time_key(crt->valid_to.year, crt->valid_to.mon, crt->valid_to.day, crt->valid_to.hour,
+                              crt->valid_to.min, crt->valid_to.sec) < current) return false;
+                      if (juno_time_key(crt->valid_from.year, crt->valid_from.mon, crt->valid_from.day,
+                              crt->valid_from.hour, crt->valid_from.min, crt->valid_from.sec) > current) return false;
+                    }
+                    return true;
+                  }
+
+                  int connect(const char* host, uint16_t port) override {
+                    if (!juno_portenta_tls_clock()) return 0;
+                    if (WiFiSSLClient::connect(host, port) != 1) return 0;
+                    if (juno_certificates_current()) return 1;
+                    stop();
+                    return 0;
+                  }
                 };
-                """;
+                """.replace("${HOST}", server.host()).replace("${PORT}", Integer.toString(server.port()));
     }
 
     @Override

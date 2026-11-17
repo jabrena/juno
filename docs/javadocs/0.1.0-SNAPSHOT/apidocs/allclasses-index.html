@@ -66,7 +66,7 @@ initTheme();
 <h1 title="All Classes and Interfaces" class="title">All Classes and Interfaces</h1>
 </div>
 <div id="all-classes-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="all-classes-table-tab0" role="tab" aria-selected="true" aria-controls="all-classes-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="all-classes-table-tab1" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab1', 2)" class="table-tab">Interfaces</button><button id="all-classes-table-tab2" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab2', 2)" class="table-tab">Classes</button><button id="all-classes-table-tab3" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab3', 2)" class="table-tab">Enum Classes</button><button id="all-classes-table-tab6" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab6', 2)" class="table-tab">Annotation Interfaces</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="all-classes-table-tab0" role="tab" aria-selected="true" aria-controls="all-classes-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="all-classes-table-tab1" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab1', 2)" class="table-tab">Interfaces</button><button id="all-classes-table-tab2" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab2', 2)" class="table-tab">Classes</button><button id="all-classes-table-tab3" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab3', 2)" class="table-tab">Enum Classes</button><button id="all-classes-table-tab5" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab5', 2)" class="table-tab">Exception Classes</button><button id="all-classes-table-tab6" role="tab" aria-selected="false" aria-controls="all-classes-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('all-classes-table', 'all-classes-table-tab6', 2)" class="table-tab">Annotation Interfaces</button></div>
 <div id="all-classes-table.tabpanel" role="tabpanel" aria-labelledby="all-classes-table-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
@@ -122,13 +122,14 @@ NINA-W102 module and the <code>WiFiNINA</code> library.</div>
 <div class="block">An ArUco fiducial marker from the <code>DICT_4X4_50</code> dictionary: ids 0 to 49, each a 6x6 grid of cells
 whose outer ring is black and whose inner 4x4 cells encode the id.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">An ATECC608 secure element on an I2C bus, holding named secrets in data slots.</div>
-</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/audio/Audio.html" title="interface in io.github.jabrena.juno.hardware.audio">Audio</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/audio/Audio.html" title="interface in io.github.jabrena.juno.hardware.audio">Audio</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">The Cardputer's built-in speaker.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Named-secret storage in the on-chip EEPROM of an AVR board: the UNO WiFi Rev2's ATmega4809 (256 bytes) and the UNO
+R3's ATmega328P (1 KB).</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/BaseMotor.html" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
@@ -180,72 +181,90 @@ on the sensor, so a reader that comes late still gets every sample since its pre
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/security/cert/Certificate.html" title="class in io.github.jabrena.juno.jdk.security.cert">Certificate</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.security.cert.Certificate</code>: an X.509 certificate as the PEM text it was read from.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/security/cert/CertificateException.html" title="class in io.github.jabrena.juno.jdk.security.cert">CertificateException</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.security.cert.CertificateException</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/security/cert/CertificateFactory.html" title="class in io.github.jabrena.juno.jdk.security.cert">CertificateFactory</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.security.cert.CertificateFactory</code>, for <code>"X.509"</code> certificates in PEM form, such as
+a CA certificate read from the SD card.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time">Clock</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">The board's monotonic clock.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/sd/DataLoggerShield.html" title="class in io.github.jabrena.juno.hardware.device.sd">DataLoggerShield</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/sd/DataLoggerShield.html" title="class in io.github.jabrena.juno.hardware.device.sd">DataLoggerShield</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The AZDelivery Data Logger Module Data Recorder Shield: an SD card socket on the UNO's SPI pins, chip select on D10
 (MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock that this class does not drive.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics">DCMotor</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A DC motor driven by a power level.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/Delay.html" title="class in io.github.jabrena.juno.util">Delay</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/Delay.html" title="class in io.github.jabrena.juno.util">Delay</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Timing operations recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Plans a mission's path for a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> and drives it around obstacles found on the way: the planner leJOS's
 <code>PathFinder</code> feeds a navigator through its <a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>WaypointListener</code></a>, re-planning when the navigator says a leg
 ended at an obstacle, which leJOS leaves to the program.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDrive</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Coordinates two independently controlled motors as a differential drive.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DifferentialDriveOdometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DifferentialDriveOdometry</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Updates a caller-owned pose from two wheel encoders and a heading sensor.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/gpio/DigitalOutput.html" title="interface in io.github.jabrena.juno.hardware.gpio">DigitalOutput</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A zero-cost GPIO handle.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/DirectionFinder.html" title="interface in io.github.jabrena.juno.robotics">DirectionFinder</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A source of the robot's direction in Cartesian degrees, which grow counter-clockwise, as a drive's positive turn
 does.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A board display with RGB565 colors, basic drawing operations and text output.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/image/Drawable.html" title="interface in io.github.jabrena.juno.util.image">Drawable</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/image/Drawable.html" title="interface in io.github.jabrena.juno.util.image">Drawable</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">An image that draws itself on the TFT, centred over the current viewport.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/DriveGeometry.html" title="class in io.github.jabrena.juno.robotics.navigation">DriveGeometry</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Fixed geometry and encoder ratios for a two-wheel differential drive.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics">Encoder</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Tachometer feedback for a motor or wheel.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/EncoderMotor.html" title="interface in io.github.jabrena.juno.robotics">EncoderMotor</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A motor with basic position feedback: open-loop power control from <a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a> and the position reported by
 <a href="io/github/jabrena/juno/robotics/Encoder.html" title="interface in io.github.jabrena.juno.robotics"><code>Encoder</code></a>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/Esp32Nvs.html" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32 board, for the ESP32-family boards that carry no
-secure element at all: each logical slot is one entry of a private NVS namespace, written through the core's
-<code>Preferences</code> library.</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/Esp32Nvs.html" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32, for the boards that carry no secure element at
+all: the ESP32-family boards' own chip, and the ESP32-S3 coprocessor of the UNO R4 WiFi, whose core's
+<code>Preferences</code> library has the same API and carries each call to the coprocessor over the modem link (it needs
+the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailable).</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/security/GeneralSecurityException.html" title="class in io.github.jabrena.juno.jdk.security">GeneralSecurityException</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.security.GeneralSecurityException</code>.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
@@ -338,25 +357,76 @@ else, such as an infrared round trip to an RCX.</div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Applies a bounded proportional correction to keep a differential drive on a target heading.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpClient</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpClient</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
-<div class="block">A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno.</div>
+<div class="block">The board-side <code>java.net.http.HttpClient</code>: sends a <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http"><code>HttpRequest</code></a> through the board's own
+<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeHttpRequests</code></a>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">Builds a <a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html" title="class in io.github.jabrena.juno.jdk.net.http"><code>HttpClient</code></a>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Redirect.html" title="enum class in io.github.jabrena.juno.jdk.net.http">HttpClient.Redirect</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="block">Whether a client follows the redirects it receives.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Version.html" title="enum class in io.github.jabrena.juno.jdk.net.http">HttpClient.Version</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="block">The HTTP version a client asks for; the board always speaks HTTP/1.1.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/http/HttpHeaders.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpHeaders</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.net.http.HttpHeaders</code>: a response's headers, read from the client's header buffer.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Named HTTP methods for matching against <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#method()"><code>HttpServer.method()</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.net.http.HttpRequest</code>: an immutable request for one <a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net"><code>URI</code></a>, built once and sent as
+often as needed.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublisher.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.BodyPublisher</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">A request body.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest.BodyPublishers</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The available <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublisher.html" title="interface in io.github.jabrena.juno.jdk.net.http"><code>HttpRequest.BodyPublisher</code></a>s.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.Builder</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">Builds a <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http"><code>HttpRequest</code></a>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpResponse&lt;T&gt;</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="block">The board-side <code>java.net.http.HttpResponse</code>: the status code and body of the last request a client sent.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandler.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpResponse.BodyHandler&lt;T&gt;</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">Chooses how the body is delivered: <a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandlers.html#ofByteArray()"><code>HttpResponse.BodyHandlers.ofByteArray()</code></a> or <a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandlers.html#ofString()"><code>HttpResponse.BodyHandlers.ofString()</code></a>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandlers.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpResponse.BodyHandlers</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The available <a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandler.html" title="interface in io.github.jabrena.juno.jdk.net.http"><code>HttpResponse.BodyHandler</code></a>s.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
 the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by <code>
 BridgeTCPServer</code> (a listener in <code>arduino-router</code> on Linux) on UNO Q.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Named HTTP status codes for <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a>'s <code>status</code> parameter, which stays
 a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
 intrinsic or type, exactly like <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getOutput()"><code>Gpio.getOutput()</code></a>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/net/http/HttpTimeoutException.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpTimeoutException</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.net.http.HttpTimeoutException</code>: thrown by <a href="io/github/jabrena/juno/jdk/net/http/HttpClient.html#send(io.github.jabrena.juno.jdk.net.http.HttpRequest,io.github.jabrena.juno.jdk.net.http.HttpResponse.BodyHandler)"><code>HttpClient.send(HttpRequest, HttpResponse.BodyHandler)</code></a> when no response arrived
+within the request's timeout.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/poweredup/HubColor.html" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">HubColor</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab3">
@@ -422,6 +492,24 @@ bit-banged on two plain pins, with no Arduino library.</div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/mvc/KeyboardViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">KeyboardViewRouter</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The controller for a keyboard-driven board program using <a href="io/github/jabrena/juno/util/mvc/KeyboardView.html" title="interface in io.github.jabrena.juno.util.mvc"><code>KeyboardView</code></a> screens.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/security/KeyManagementException.html" title="class in io.github.jabrena.juno.jdk.security">KeyManagementException</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.security.KeyManagementException</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/javax/net/ssl/KeyManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl">KeyManager</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
+client certificates are not supported, so a program passes <code>null</code>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.security.KeyStore</code>: an in-memory store of trusted certificates for a
+<code>java.net.http</code> client's <code>SSLContext</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/security/KeyStoreException.html" title="class in io.github.jabrena.juno.jdk.security">KeyStoreException</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.security.KeyStoreException</code>.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
@@ -547,37 +635,53 @@ pin mode and returns the pin number as the handle.</div>
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio"><code>Gpio</code></a>: each method is a GPIO intrinsic the compiler lowers to the Arduino core call, so it has no
 Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeHttpFeatures.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpFeatures</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">What a program does with <code>java.net.http</code> responses, answered when the program is linked.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board's HTTP and HTTPS requests behind the board-side <code>java.net.http</code> client.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeHttpSchemes.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpSchemes</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Which URI schemes a program sends HTTP requests to, answered when the program is linked.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a>: each method is an I2C intrinsic the compiler lowers to the core-bundled <code>Wire</code>
 library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The M5Stack Cardputer's <a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard"><code>Keyboard</code></a>, implemented by compiler intrinsics over the Cardputer keyboard.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>: each method is an LED matrix intrinsic the compiler lowers to the
 <code>Arduino_LED_Matrix</code> library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid"><code>Mouse</code></a>: each method is a USB HID intrinsic the compiler lowers to the Arduino <code>Mouse</code>
 library (the core's <code>USBHIDMouse</code> on ESP32-S3 boards), so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardImu.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardImu</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Owns the one lazily initialized onboard IMU without putting mutable state on the public MCU facade.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Owns the one card in the selected board's onboard microSD socket.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The card in a shield's SD socket: each method but <a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#begin()"><code>NativeSdCard.begin()</code></a> is an SD intrinsic the compiler lowers to the
 <code>SdFat</code> library, so it has no Java body and cannot run, or be mocked, on a desktop JVM.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeSecretStore.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSecretStore</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The selected board's secret store, opened on first use and shared after that.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/internal/NativeSpi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSpi</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
@@ -607,33 +711,52 @@ face the point, travels to it, and turns to the waypoint's heading when one is r
 <div class="block">The Bosch BNO055 orientation sensor of the Arduino 9 Axis Motion Shield, read over I2C as plain Java on top of
 <a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c"><code>I2c</code></a> (so it needs no Arduino library).</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab5"><a href="io/github/jabrena/juno/jdk/security/NoSuchAlgorithmException.html" title="class in io.github.jabrena.juno.jdk.security">NoSuchAlgorithmException</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab5">
+<div class="block">The board-side <code>java.security.NoSuchAlgorithmException</code>.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/navigation/ObstacleDetector.html" title="interface in io.github.jabrena.juno.robotics.navigation">ObstacleDetector</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Says whether something is in the robot's way, read by a <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation"><code>Pilot</code></a> on its own thread while it travels: leJOS's
 <code>FeatureDetector</code> without the thread of its own, which a board's few thread slots cannot spare.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft">ParallelBus</a></div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/util/Optional.html" title="class in io.github.jabrena.juno.jdk.util">Optional&lt;T&gt;</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.util.Optional</code>: the compiler reads this class as <code>java.util.Optional</code>, so a program
+written against the JDK's <code>Optional</code> runs this code on the board.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/util/OptionalLong.html" title="class in io.github.jabrena.juno.jdk.util">OptionalLong</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.util.OptionalLong</code>: the compiler reads this class as <code>java.util.OptionalLong</code>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft">ParallelBus</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">An 8-bit parallel output bus, as display shields wire it: eight data pins written together, latched by a write
 strobe pulsed low then high.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/pf/PFChannel.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFChannel</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
 <div class="block">A channel of a Power Functions receiver, as set by its channel switch: <code>CHANNEL_1</code> to <code>CHANNEL_4</code>.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFLink</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/PFLink.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFLink</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The Power Functions infrared link: the message framing and the transmission of a Power Functions command over an
 <a href="io/github/jabrena/juno/hardware/device/ir/InfraredEmitter.html" title="interface in io.github.jabrena.juno.hardware.device.ir"><code>InfraredEmitter</code></a>, as <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxLink</code></a> is for the RCX.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/remote/lego/pf/PFMotor.html" title="class in io.github.jabrena.juno.remote.lego.pf">PFMotor</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">One output of a Power Functions receiver as a <a href="io/github/jabrena/juno/robotics/DCMotor.html" title="interface in io.github.jabrena.juno.robotics"><code>DCMotor</code></a>: a motor, light or servo plugged into the red or the
 blue port of a receiver on a channel.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/pf/PFPort.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFPort</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab3">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab3"><a href="io/github/jabrena/juno/remote/lego/pf/PFPort.html" title="enum class in io.github.jabrena.juno.remote.lego.pf">PFPort</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab3">
 <div class="block">An output of a Power Functions receiver: the red port, also called A, or the blue port, also called B.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/Pico2WTrustZoneStore.html" title="class in io.github.jabrena.juno.hardware.security">Pico2WTrustZoneStore</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">Named-secret storage on the Raspberry Pi Pico 2 W, kept by Juno's own TrustZone secure firmware: the RP2350 has no
+secure element, so a small program in the Cortex-M33's secure world holds the slots in a flash sector it fences off,
+and this program, which runs in the non-secure world, reaches them only through that firmware's one gateway.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
@@ -643,8 +766,7 @@ blue port of a receiver on a channel.</div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
-board-specific implicit-TLS transport as
-<a href="io/github/jabrena/juno/hardware/net/http/HttpClient.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpClient</code></a>'s <code>https://</code> requests.</div>
+board-specific implicit-TLS transport as the board's HTTPS requests.</div>
 </div>
 <div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/gpio/PortNoise.html" title="class in io.github.jabrena.juno.hardware.gpio">PortNoise</a></div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
@@ -867,49 +989,51 @@ enabled.</div>
 <div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Named-secret storage in the NXP SE050C2 used by the Portenta H7.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">The names a program reads from a <a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> and the logical slot that holds each one.</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">Named secrets kept by the board's secret store.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
-<div class="block">Named secrets read from a secure element.</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/security/SecureRandom.html" title="class in io.github.jabrena.juno.jdk.security">SecureRandom</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.security.SecureRandom</code>, only as the type of <code>SSLContext.init</code>'s last parameter,
+which a program passes <code>null</code>: the board's TLS client brings its own randomness.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/security/SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security">SecretStoreFactory</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
-<div class="block">Selects the secure-element provider compiled for a board.</div>
-</div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorMode.html" title="interface in io.github.jabrena.juno.robotics">SensorMode</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One way of reading a sensor: a <a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a> with a name, such as a
 temperature or a humidity mode of the same device.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A sensor with several modes.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">USB serial output recognized as compiler intrinsics by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A zero-cost servo motor handle for a standard 3-wire hobby servo (signal, power, ground),
 backed by the Arduino <code>Servo</code> library.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/email/Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/email/Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A minimal SMTP client recognized as a compiler intrinsic by Juno.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The SNTP server behind the internet-backed <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/time/LocalDateTime.html#now()" class="external-link"><code>LocalDateTime.now()</code></a> intrinsic, which synchronizes UTC
 over one UDP exchange on its own socket (separate from any socket the program opens) and then advances it with the board's
 millisecond counter.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
+given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
 </div>
 <div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
@@ -932,39 +1056,53 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/UuidCodec.html" title="class in io.github.jabrena.juno.util">UuidCodec</a></div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl">TrustManager</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a>.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>javax.net.ssl.TrustManagerFactory</code>: turns a <a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security"><code>KeyStore</code></a> of trusted certificates into
+the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl"><code>TrustManager</code></a> an <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a> takes.</div>
+</div>
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></div>
 <div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="block">The board-side <code>java.net.URI</code>: the compiler reads this class as <code>java.net.URI</code>, so a program that calls
+<code>URI.create(...)</code> or <code>new URI(...)</code> against the JDK runs this code on the board.</div>
+</div>
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/UuidCodec.html" title="class in io.github.jabrena.juno.util">UuidCodec</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Converts UUID values to and from their 16-byte, most-significant-byte-first network representation.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">One screen of a multi-view program.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">ViewRouter</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">ViewRouter</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">The controller of a multi-view TFT program: it owns the views, runs the frame loop and switches the active view
 when a view asks through <a href="io/github/jabrena/juno/util/mvc/Navigator.html" title="interface in io.github.jabrena.juno.util.mvc"><code>Navigator</code></a>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab6">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab6"><a href="io/github/jabrena/juno/annotations/Watchdog.html" title="annotation interface in io.github.jabrena.juno.annotations">Watchdog</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab6">
 <div class="block">Enables the target's hardware watchdog timer on <code>@Watchdog</code>'s entry-point class.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
 <div class="block">A point a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> drives to, in the pose's Cartesian millimetres, optionally with the heading the robot must
 face there, as leJOS's <code>Waypoint</code>.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/robotics/navigation/WaypointListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">WaypointListener</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Receives a path one waypoint at a time from whatever plans it, as leJOS's interface of the same name does: a
 <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> implements it, and a planner such as <a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>DetourPlanner</code></a> feeds it.</div>
 </div>
-<div class="col-first odd-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></div>
-<div class="col-last odd-row-color all-classes-table all-classes-table-tab1">
+<div class="col-first even-row-color all-classes-table all-classes-table-tab1"><a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></div>
+<div class="col-last even-row-color all-classes-table all-classes-table-tab1">
 <div class="block">Wi-Fi connection control.</div>
 </div>
-<div class="col-first even-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a></div>
-<div class="col-last even-row-color all-classes-table all-classes-table-tab2">
+<div class="col-first odd-row-color all-classes-table all-classes-table-tab2"><a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a></div>
+<div class="col-last odd-row-color all-classes-table all-classes-table-tab2">
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
 <a href="io/github/jabrena/juno/hardware/MCU.html#getWifi()"><code>MCU.getWifi()</code></a> and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>

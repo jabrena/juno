@@ -97,6 +97,15 @@ class BoardTest {
                 arguments(Board.UNO_Q, Capability.SMTP_STARTTLS, false),
                 arguments(Board.UNO_Q, Capability.WATCHDOG, false),
                 arguments(Board.UNO_Q, Capability.USB_HID, false),
+                arguments(Board.UNO_R4_WIFI, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.NANO_ESP32, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.AI_THINKER_ESP32_CAM, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.M5_CARDPUTER, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.PICO_2_W, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.PORTENTA_H7, Capability.JDK_HTTP_CLIENT, true),
+                arguments(Board.UNO_R3_WIFI_REV2, Capability.JDK_HTTP_CLIENT, false),
+                arguments(Board.UNO_Q, Capability.JDK_HTTP_CLIENT, false),
+                arguments(Board.UNO_R3, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.WATCHDOG, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.CLASS_INHERITANCE, true),
                 arguments(Board.UNO_R3_WIFI_REV2, Capability.HTTP_SERVER, true),
@@ -1068,8 +1077,8 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO Q supports portable Wi-Fi, UDP, HTTPS and secure email")
-    void shouldSupportPortableWifiUdpHttpsAndSecureEmailOnTheUnoQ() throws Exception {
+    @DisplayName("The UNO Q supports portable Wi-Fi, UDP and secure email")
+    void shouldSupportPortableWifiUdpAndSecureEmailOnTheUnoQ() throws Exception {
         // Given
         String source = """
                 package demo;
@@ -1079,7 +1088,6 @@ class BoardTest {
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.io.IOException;
                 import java.net.DatagramSocket;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQBoard.class)
@@ -1091,10 +1099,6 @@ class BoardTest {
                         } catch (IOException e) {
                             return;
                         }
-                        byte[] body = new byte[8];
-                        byte[] headers = new byte[8];
-                        int[] result = new int[2];
-                        HttpClient.get("https://example.com/", body, 8, headers, 8, result);
                         Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
                                 "me@example.com", "me@example.com", "Hello", "Hello");
                         Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");

@@ -15,7 +15,7 @@ public final class HttpMethod {
     public static final String PATCH = "PATCH";
     public static final String HEAD = "HEAD";
     public static final String OPTIONS = "OPTIONS";
-    /** Safe, idempotent request with a body, as already supported by {@link HttpClient#query}. */
+    /** Safe, idempotent request with a body (RFC 10008), sent with {@code HttpRequest.Builder.method("QUERY", body)}. */
     public static final String QUERY = "QUERY";
 
     private HttpMethod() {

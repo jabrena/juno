@@ -219,34 +219,21 @@ public enum Intrinsic {
     PROPERTIES_GET,
     PROPERTIES_GET_DEFAULT,
     PROPERTIES_SIZE,
-    HTTP_GET,
-    HTTP_POST,
-    HTTP_POST_BUFFER,
-    HTTP_DELETE,
-    HTTP_PATCH,
-    HTTP_QUERY,
-    HTTPS_GET,
-    HTTPS_GET_PATH_BUFFER,
-    HTTPS_POST,
-    HTTPS_POST_BUFFER,
-    HTTPS_DELETE,
-    HTTPS_PATCH,
-    HTTPS_QUERY,
-    HTTPS_REQUEST_BUFFER,
-    HTTP_REQUEST_BUFFER,
-    /** {@code HttpClient.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
+    /** {@code NativeHttpRequests.requestHttps}: the board-side {@code java.net.http} request, its target a String. */
+    HTTPS_REQUEST_TEXT,
+    /** {@code NativeHttpRequests.requestHttp}: the plain-HTTP counterpart of {@link #HTTPS_REQUEST_TEXT}. */
+    HTTP_REQUEST_TEXT,
+    /** {@code NativeHttpRequests.requestHttpsForText}: a {@link #HTTPS_REQUEST_TEXT} whose body comes back as a String. */
+    HTTPS_REQUEST_TEXT_BODY,
+    /** {@code NativeHttpRequests.requestHttpForText}: the plain-HTTP counterpart of {@link #HTTPS_REQUEST_TEXT_BODY}. */
+    HTTP_REQUEST_TEXT_BODY,
+    /** {@code NativeHttpRequests.setTimeout}: the connect and response timeout of every later HTTP/HTTPS request. */
     HTTP_SET_TIMEOUT,
-    /** {@code HttpClient.setTrustedCertificate}: a caller-owned PEM trust anchor for later HTTPS requests. */
-    HTTP_SET_TRUSTED_CERTIFICATE,
-    HTTP_GET_PATH_BUFFER,
-    /** {@code HttpClient} called with a URL: lowered to the plain or TLS request its scheme names. */
-    HTTP_URL_GET,
-    HTTP_URL_GET_PATH_BUFFER,
-    HTTP_URL_POST,
-    HTTP_URL_POST_BUFFER,
-    HTTP_URL_DELETE,
-    HTTP_URL_PATCH,
-    HTTP_URL_QUERY,
+    /**
+     * {@code NativeHttpRequests.setTrustedCertificate}: the PEM trust anchors of a {@code java.net.http} client's
+     * {@code SSLContext}, held in a String, or {@code null} for the board's own.
+     */
+    HTTP_SET_TRUSTED_CERTIFICATE_TEXT,
     /** {@code Json.rawText}: a byte range copied into a new arena {@code String}. */
     STRING_FROM_BYTES,
     HTTP_SERVER_BEGIN,

@@ -2,11 +2,11 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -38,7 +38,8 @@ import java.time.Duration;
     ArduinoNanoEsp32Board.class,
     AiThinkerEsp32CamBoard.class,
     M5StackCardputerBoard.class,
-    RaspberryPico2WifiBoard.class
+    RaspberryPico2WifiBoard.class,
+    ArduinoPortentaH7Board.class
 })
 public final class JdkHttpRequests {
     private static final Wifi WIFI = MCU.getWifi();
@@ -111,7 +112,7 @@ public final class JdkHttpRequests {
     }
 
     private static boolean connectWifi() {
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);

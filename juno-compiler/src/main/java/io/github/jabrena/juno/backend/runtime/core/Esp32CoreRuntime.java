@@ -219,7 +219,8 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /**
      * The TLS client checks the server's chain against Mozilla's trusted roots, bundled as the core's
      * {@code setCACertBundle} format from {@code esp32/ca-certificates.pem} (curl's extract of Mozilla's list, MPL 2.0).
-     * The core's TLS library has no calendar clock, so certificate validity dates are not checked.
+     * The core's TLS library checks validity dates against {@code time()}, which the board leaves near 1970, so every
+     * connection first sets the system clock over SNTP. Without a clock the connection fails closed.
      */
     @Override
     public String httpsHelpers() {
@@ -235,6 +236,11 @@ final class Esp32CoreRuntime implements CoreRuntime {
                         if (juno_runtime_trusted_ca != nullptr) {
                           setCACert(juno_runtime_trusted_ca);
                         }
+                      }
+                      using WiFiClientSecure::connect;
+                      int connect(const char* host, uint16_t port) override {
+                        if (!juno_esp_tls_clock()) return 0;
+                        return WiFiClientSecure::connect(host, port);
                       }
                     };
                     """;
@@ -266,8 +272,31 @@ final class Esp32CoreRuntime implements CoreRuntime {
                       ${JUNO_DEFAULT_TRUST}
                     }
                   }
+                  using WiFiClientSecure::connect;
+                  int connect(const char* host, uint16_t port) override {
+                    if (!juno_esp_tls_clock()) return 0;
+                    return WiFiClientSecure::connect(host, port);
+                  }
                 };
                 """.replace("${JUNO_DEFAULT_TRUST}", defaultTrustConfiguration);
+    }
+
+    /**
+     * The clock the TLS client checks certificate dates against: set over SNTP when it still reads near 1970, and false
+     * when no time arrives, so the connection fails instead of checking dates against a wrong clock. The HTTPS client
+     * and the SMTP STARTTLS path both call it before their handshake.
+     */
+    @Override
+    public String tlsClockHelpers() {
+        return """
+                static bool juno_esp_tls_clock() {
+                  if (time(nullptr) < 1700000000) {
+                    configTime(0, 0, "pool.ntp.org", "time.google.com");
+                    for (int attempt = 0; attempt < 100 && time(nullptr) < 1700000000; attempt++) delay(100);
+                  }
+                  return time(nullptr) >= 1700000000;
+                }
+                """;
     }
 
     @Override
@@ -275,8 +304,13 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return """
                 static const char* juno_runtime_trusted_ca = nullptr;
 
+                // A null certificate goes back to the board's own trust.
                 extern "C" int32_t juno_http_set_trusted_certificate(const uint8_t* certificate, int32_t length) {
-                  if (certificate == nullptr || length <= 0) return 0;
+                  if (certificate == nullptr) {
+                    juno_runtime_trusted_ca = nullptr;
+                    return 1;
+                  }
+                  if (length <= 0) return 0;
                   juno_runtime_trusted_ca = reinterpret_cast<const char*>(certificate);
                   return 1;
                 }
@@ -291,17 +325,13 @@ final class Esp32CoreRuntime implements CoreRuntime {
     /**
      * The STARTTLS client checks the server's chain against the same Mozilla roots as {@link #httpsHelpers}. They go in
      * as one PEM string: {@code ESP_SSLClient}'s {@code setCACert} builds a trust anchor for every certificate in it.
-     * Unlike the core's TLS client, BearSSL also checks the certificate dates against {@code time()}, which the board
-     * leaves near 1970, so the system clock is set once over SNTP first. Without a clock it fails closed with {@code -13}.
+     * Like the HTTPS client, it checks certificate dates against {@code time()}, so the clock is set over SNTP first by
+     * {@code juno_esp_tls_clock}. Without a clock it fails closed with {@code -13}.
      */
     @Override
     public String smtpStarttlsTrust() {
         return CertificateBundle.cPem("juno_smtp_ca", runtimeSource.load("esp32/ca-certificates.pem")) + """
-                  if (time(nullptr) < 1700000000) {
-                    configTime(0, 0, "pool.ntp.org", "time.google.com");
-                    for (int attempt = 0; attempt < 100 && time(nullptr) < 1700000000; attempt++) delay(100);
-                  }
-                  if (time(nullptr) < 1700000000) return -13;
+                  if (!juno_esp_tls_clock()) return -13;
                   client.setCACert(juno_smtp_ca);""";
     }
 

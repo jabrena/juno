@@ -4,7 +4,6 @@ import io.github.jabrena.juno.jdk.net.URI;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,6 +58,30 @@ class HttpClientTest {
     }
 
     @Test
+    @DisplayName("a client is AutoCloseable: once closed or shut down it is terminated and sends nothing")
+    void closesAsTheJdk() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI_SENT).build();
+        HttpClient closed;
+        try (HttpClient client = HttpClient.newHttpClient()) {
+            assertThat(client.isTerminated()).isFalse();
+            assertThat(client.awaitTermination(Duration.ofSeconds(1))).isFalse();
+            closed = client;
+        }
+        HttpClient shutDown = HttpClient.newHttpClient();
+        shutDown.shutdown();
+        shutDown.shutdown();
+        HttpClient shutDownNow = HttpClient.newHttpClient();
+        shutDownNow.shutdownNow();
+
+        assertThat(closed.isTerminated()).isTrue();
+        assertThat(shutDown.awaitTermination(Duration.ofSeconds(1))).isTrue();
+        assertThat(shutDownNow.isTerminated()).isTrue();
+        assertThatThrownBy(() -> closed.send(request, HttpResponse.BodyHandlers.ofByteArray()))
+                .isInstanceOf(java.io.IOException.class)
+                .hasMessage("The client is shut down");
+    }
+
+    @Test
     @DisplayName("301, 302, 303, 307 and 308 are the redirects a client follows")
     void knowsTheRedirects() {
         assertThat(HttpClient.isRedirect(301)).isTrue();
@@ -95,14 +118,20 @@ class HttpClientTest {
     }
 
     @Test
-    @DisplayName("a String body holds exactly the bytes received, one character per byte, without decoding them")
-    void textKeepsTheBytesReceived() {
-        byte[] buffer = new byte[HttpClient.BODY_CAPACITY];
-        byte[] json = "{\"temperature_2m\":13.5}".getBytes(StandardCharsets.US_ASCII);
-        System.arraycopy(json, 0, buffer, 0, json.length);
+    @DisplayName("a client answers the SSLContext it was given, or the board's default")
+    void answersItsSslContext() throws Exception {
+        io.github.jabrena.juno.javax.net.ssl.SSLContext context =
+                io.github.jabrena.juno.javax.net.ssl.SSLContext.getInstance("TLS");
 
-        assertThat(HttpClient.text(buffer, json.length)).isEqualTo("{\"temperature_2m\":13.5}");
-        assertThat(HttpClient.text(buffer, 0)).isEmpty();
-        assertThat(HttpClient.text(new byte[] {(byte) 0xC3, (byte) 0xA9}, 2)).isEqualTo("Ã©");
+        assertThat(HttpClient.newBuilder().sslContext(context).build().sslContext()).isSameAs(context);
+        assertThat(HttpClient.newHttpClient().sslContext())
+                .isSameAs(io.github.jabrena.juno.javax.net.ssl.SSLContext.getDefault());
+    }
+
+    @Test
+    @DisplayName("each handler says whether the body is received as a String sized to it or into the byte buffer")
+    void handlersChooseHowTheBodyIsReceived() {
+        assertThat(HttpResponse.BodyHandlers.ofString().receivesText()).isTrue();
+        assertThat(HttpResponse.BodyHandlers.ofByteArray().receivesText()).isFalse();
     }
 }

@@ -14,7 +14,7 @@ public interface HttpResponse<T> {
 
     /**
      * The body: for {@link BodyHandlers#ofByteArray()} the client's fixed-capacity buffer, for
-     * {@link BodyHandlers#ofString()} a {@code String} of the bytes received.
+     * {@link BodyHandlers#ofString()} a {@code String} of every byte received.
      */
     T body();
 
@@ -39,6 +39,12 @@ public interface HttpResponse<T> {
          * subscriber instead; a program never calls this.
          */
         HttpResponse<T> respond(HttpClient client, int statusCode, int length, URI uri);
+
+        /**
+         * Board-side only: whether the client receives the body as a {@code String} sized to it, rather than into
+         * its fixed byte buffer. A program never calls this.
+         */
+        boolean receivesText();
     }
 
     /**
@@ -55,12 +61,12 @@ public interface HttpResponse<T> {
         }
 
         /**
-         * Delivers the body as a {@code String} of the bytes received, so {@code body().length()} is the size received,
-         * up to the client's buffer capacity. The bytes are not decoded: a runtime {@code String} holds bytes, so UTF-8
-         * text stays UTF-8. Returns the same handler every time; each response allocates its {@code String}, and a
-         * builder of the same size while it is made, so a full body takes about twice the buffer capacity of arena.
-         * The previous response stays reachable until the program drops it: on the UNO WiFi Rev2 a loop of requests
-         * needs {@code -Djuno.Xmx=3072}, where {@link #ofByteArray()} needs 1536.
+         * Delivers the body as a {@code String} of every byte received, so {@code body().length()} is the size
+         * received, with no limit but the free memory. A body with a {@code Content-Length} is allocated once, at
+         * that size; one without it (a chunked body) grows as it arrives. A body that does not fit in the free memory
+         * fails the request with an {@code IOException} rather than stopping the program. The bytes are not decoded:
+         * a runtime {@code String} holds bytes, so UTF-8 text stays UTF-8, and a {@code NUL} byte ends it. Returns the
+         * same handler every time; each response allocates its {@code String}.
          */
         public static BodyHandler<String> ofString() {
             return StringHandler.INSTANCE;
@@ -74,6 +80,11 @@ public interface HttpResponse<T> {
             public HttpResponse<byte[]> respond(HttpClient client, int statusCode, int length, URI uri) {
                 return client.byteArrayResponse(statusCode, length, uri);
             }
+
+            @Override
+            public boolean receivesText() {
+                return false;
+            }
         }
 
         /** {@link #ofString()}: a new response holding the body as a {@code String}. */
@@ -82,7 +93,12 @@ public interface HttpResponse<T> {
 
             @Override
             public HttpResponse<String> respond(HttpClient client, int statusCode, int length, URI uri) {
-                return client.stringResponse(statusCode, length, uri);
+                return client.stringResponse(statusCode, uri);
+            }
+
+            @Override
+            public boolean receivesText() {
+                return true;
             }
         }
     }

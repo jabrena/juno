@@ -35,6 +35,37 @@ class HttpRequestTest {
     }
 
     @Test
+    @DisplayName("ofByteArray sends the first bytes of a buffer, from offset 0 only")
+    void ofByteArraySendsARangeFromTheStart() {
+        byte[] buffer = {'{', '}', 'x', 'x'};
+
+        HttpRequest.BodyPublisher body = HttpRequest.BodyPublishers.ofByteArray(buffer, 0, 2);
+
+        assertThat(body.contentLength()).isEqualTo(2);
+        assertThat(body.bodyBytes()).isSameAs(buffer);
+        assertThatThrownBy(() -> HttpRequest.BodyPublishers.ofByteArray(buffer, 1, 2))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> HttpRequest.BodyPublishers.ofByteArray(buffer, 0, 5))
+                .isInstanceOf(IndexOutOfBoundsException.class);
+        assertThatThrownBy(() -> HttpRequest.BodyPublishers.ofByteArray(buffer, 0, -1))
+                .isInstanceOf(IndexOutOfBoundsException.class);
+    }
+
+    @Test
+    @DisplayName("only an http or https URI with a host can be sent, as in the JDK")
+    void requiresAnHttpUriWithAHost() {
+        assertThat(HttpRequest.newBuilder(URI.create("HTTPS://example.com/")).build().uri().isSecure()).isTrue();
+        assertThatThrownBy(() -> HttpRequest.newBuilder(URI.create("ftp://example.com/")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Unsupported URI scheme: ftp://example.com/");
+        assertThatThrownBy(() -> HttpRequest.newBuilder().uri(URI.create("http:///path")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("The URI has no host: http:///path");
+        assertThatThrownBy(() -> HttpRequest.newBuilder().uri(URI.create("/relative")))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     @DisplayName("POST and PUT carry their body; DELETE and HEAD carry none")
     void methodsAndBodies() {
         HttpRequest.BodyPublisher json = HttpRequest.BodyPublishers.ofString("{\"a\":1}");

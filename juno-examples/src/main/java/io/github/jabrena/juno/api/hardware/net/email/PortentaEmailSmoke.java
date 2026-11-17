@@ -2,7 +2,6 @@ package io.github.jabrena.juno.api.hardware.net.email;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
@@ -34,7 +33,7 @@ public final class PortentaEmailSmoke {
         Delay.millis(2000);
         // The program runs once, so pause before the sends: a serial monitor opened after the upload then sees every result.
         Delay.millis(20000);
-        WIFI.begin(ExampleSecrets.wifiSsid(), ExampleSecrets.wifiPassword());
+        WIFI.begin(MCU.getSecretStore().getString("wifi.ssid"), MCU.getSecretStore().getString("wifi.password"));
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
             Delay.millis(1000);
@@ -46,9 +45,9 @@ public final class PortentaEmailSmoke {
         }
         Serial.println("wifi connected");
 
-        String host = ExampleSecrets.smtpHost();
-        String username = ExampleSecrets.smtpUsername();
-        String password = ExampleSecrets.smtpPassword();
+        String host = MCU.getSecretStore().getString("smtp.host");
+        String username = MCU.getSecretStore().getString("smtp.username");
+        String password = MCU.getSecretStore().getString("smtp.password");
 
         Serial.println("starttls send 587");
         int starttls = Smtp.send(host, STARTTLS_SMTP_PORT, username, password, username, username,

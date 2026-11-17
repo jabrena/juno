@@ -24,7 +24,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
 | Wi-Fi station | ✓ | Through `MCU.getWifi()`; credentials can come from the onboard microSD card. | [`AiThinkerEsp32CamWifiFromSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java) |
 | Wi-Fi access point | ✓ | `MCU.getWifi().beginAP(ssid, password)` uses the ESP32 soft-AP. | |
-| `HttpClient` (HTTP and HTTPS) | ✓ | | |
+| `java.net.http` (HTTP and HTTPS) | ✓ | Mozilla root certificates; an `SSLContext` can add its own. Certificate dates are checked once SNTP sets the clock. | [`ParallelHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java) |
 | `HttpServer` (HTTP) | ✓ | Runs on the station address. | [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |
 | HTTPS server | ✓ | `HttpServer.beginTls()` uses the ESP32 mbedTLS server transport. | |
 | HTTP response streaming | ✓ | `HttpServer.beginStream()` sends the camera's MJPEG response. | [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |

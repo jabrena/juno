@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -453,10 +453,10 @@ STM32U585's complete flash and SRAM.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java"><code>SntpTimeSD</code></a></td>
 </tr>
 <tr>
-<td><code>HttpClient</code> (HTTPS)</td>
-<td align="center">✓</td>
-<td>TLS connections use <code>BridgeTCPClient</code> and the Linux system trust store.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a></td>
+<td><code>java.net.http</code></td>
+<td align="center">✗</td>
+<td>Not supported: the HTTP client starts at the UNO R4 WiFi.</td>
+<td></td>
 </tr>
 <tr>
 <td><code>HttpServer</code> (HTTP and HTTPS)</td>
@@ -467,8 +467,8 @@ STM32U585's complete flash and SRAM.</p>
 <tr>
 <td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>
 <td align="center">✓</td>
-<td>Email over implicit TLS.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailHelloWorldTFT.java"><code>EmailHelloWorldTFT</code></a></td>
+<td>Email over implicit TLS. No example targets the Q, because the email examples read their account from a secret store.</td>
+<td></td>
 </tr>
 <tr>
 <td><code>Smtp.send</code> (STARTTLS)</td>
