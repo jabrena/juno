@@ -523,9 +523,9 @@ class XtensaAsmBackendTest {
                         byte[] body = new byte[64];
                         byte[] headers = new byte[32];
                         int[] statusAndHeadersLength = new int[2];
-                        HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
+                        NativeHttpClient.get("http://example.com/", body, body.length, headers, headers.length,
                                 statusAndHeadersLength);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_http_get(");
@@ -543,9 +543,9 @@ class XtensaAsmBackendTest {
                         byte[] body = new byte[64];
                         byte[] headers = new byte[32];
                         int[] statusAndHeadersLength = new int[2];
-                        HttpClient.requestHttps("example.com", 443, "GET", path, 1, noHeaders, 0, null, -1, body,
+                        NativeHttpClient.requestHttps("example.com", 443, "GET", path, 1, noHeaders, 0, null, -1, body,
                                 body.length, headers, headers.length, statusAndHeadersLength);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;");
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;");
 
         // Then
         assertThat(result.runtimeShim()).contains("#include <WiFiClientSecure.h>",

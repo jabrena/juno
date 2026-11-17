@@ -272,8 +272,8 @@ class AvrAsmBackendTest {
                         byte[] body = new byte[16];
                         byte[] headers = new byte[16];
                         int[] status = new int[2];
-                        HttpClient.get("https://example.com/", body, 16, headers, 16, status);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+                        NativeHttpClient.get("https://example.com/", body, 16, headers, 16, status);
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3");
     }
@@ -286,8 +286,8 @@ class AvrAsmBackendTest {
                         byte[] body = new byte[16];
                         byte[] headers = new byte[16];
                         int[] status = new int[2];
-                        HttpClient.get("http://example.com/", body, 16, headers, 16, status);
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpClient;"))
+                        NativeHttpClient.get("http://example.com/", body, 16, headers, 16, status);
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpClient;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3");
     }
@@ -822,7 +822,7 @@ class AvrAsmBackendTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         MCU.getWifi().begin("ssid", "password");
-                        Serial.println(HttpClient.get("http://example.com/", body, 32, headers, 32, status));
+                        Serial.println(NativeHttpClient.get("http://example.com/", body, 32, headers, 32, status));
                         try {
                             new DatagramSocket(4210).close();
                         } catch (IOException e) {
@@ -834,7 +834,7 @@ class AvrAsmBackendTest {
                 import java.io.IOException;
                 import java.net.DatagramSocket;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 """);
 
         // When & Then
@@ -882,10 +882,10 @@ class AvrAsmBackendTest {
         CompilationResult result = compile("demo.AvrTls", """
                         byte[] body = new byte[32];
                         int[] status = new int[2];
-                        Serial.println(HttpClient.get("https://example.com/", body, 32, body, 32, status));
+                        Serial.println(NativeHttpClient.get("https://example.com/", body, 32, body, 32, status));
                 """, """
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 """);
 
         // When & Then

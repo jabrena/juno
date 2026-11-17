@@ -6,14 +6,14 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
  * A hardware call that waits lets the other threads run. The harness's server on port 8080 answers 40 ms after the
- * connection opens: while the main thread waits for that response inside {@code HttpClient.get}, a virtual thread
+ * connection opens: while the main thread waits for that response inside {@code NativeHttpClient.get}, a virtual thread
  * keeps running and sees the clock move well past the request's start. Then a subtask is cancelled while its request
  * waits, and the network must be free again for the next request rather than stay locked by a thread that will never
  * run again. No JVM can run these APIs, so IoWhileWaiting.expected holds the output by hand.
@@ -48,7 +48,7 @@ public final class IoWhileWaiting {
         Thread watcher = Thread.startVirtualThread(IoWhileWaiting::watch);
         started = CLOCK.millis();
         inRequest = true;
-        int length = HttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
+        int length = NativeHttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
         inRequest = false;
         stop = true;
         watcher.join();
@@ -57,7 +57,7 @@ public final class IoWhileWaiting {
 
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> {
-                HttpClient.get("http://example.com:8080/slow", body, BODY, headers, HEADERS, status);
+                NativeHttpClient.get("http://example.com:8080/slow", body, BODY, headers, HEADERS, status);
             });
             Callable<String> failing = () -> {
                 Thread.sleep(5);
@@ -71,7 +71,7 @@ public final class IoWhileWaiting {
         }
 
         status[0] = 0;
-        length = HttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
+        length = NativeHttpClient.get("http://example.com:8080/slow", body, body.length, headers, headers.length, status);
         Serial.println(status[0] + " " + length);
     }
 }

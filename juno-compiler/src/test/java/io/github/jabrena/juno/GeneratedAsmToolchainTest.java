@@ -731,7 +731,7 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 import io.github.jabrena.juno.hardware.net.http.Json;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -741,18 +741,18 @@ class GeneratedAsmToolchainTest {
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
-                        HttpClient.get("https://example.com/status", response, response.length,
+                        NativeHttpClient.get("https://example.com/status", response, response.length,
                                 headers, headers.length, out);
                         byte[] path = new byte[8];
                         path[0] = '/';
-                        HttpClient.get("https://example.com", path, 1, response, response.length,
+                        NativeHttpClient.get("https://example.com", path, 1, response, response.length,
                                 headers, headers.length, out);
                         byte[] requestHeaders = new byte[32];
                         byte[] requestBody = new byte[32];
-                        HttpClient.requestHttps("example.com", 443, "POST", path, 1,
+                        NativeHttpClient.requestHttps("example.com", 443, "POST", path, 1,
                                 requestHeaders, 0, requestBody, 0,
                                 response, response.length, headers, headers.length, out);
-                        HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
+                        NativeHttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
                                 requestBody, 2, response, response.length, headers, headers.length, out);
                         int temperature = Json.getInt(response, response.length, "data.temp");
                     }
@@ -781,7 +781,7 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQHttps {
                     public static void main(String[] args) {
@@ -789,7 +789,7 @@ class GeneratedAsmToolchainTest {
                         byte[] response = new byte[64];
                         byte[] headers = new byte[64];
                         int[] out = new int[2];
-                        HttpClient.get("https://example.com/", response, 64, headers, 64, out);
+                        NativeHttpClient.get("https://example.com/", response, 64, headers, 64, out);
                     }
                 }
                 """;

@@ -1088,7 +1088,7 @@ class BoardTest {
                 import io.github.jabrena.juno.hardware.net.Wifi;
                 import java.io.IOException;
                 import java.net.DatagramSocket;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
                 @Board(ArduinoUnoQBoard.class)
@@ -1103,7 +1103,7 @@ class BoardTest {
                         byte[] body = new byte[8];
                         byte[] headers = new byte[8];
                         int[] result = new int[2];
-                        HttpClient.get("https://example.com/", body, 8, headers, 8, result);
+                        NativeHttpClient.get("https://example.com/", body, 8, headers, 8, result);
                         Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
                                 "me@example.com", "me@example.com", "Hello", "Hello");
                         Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");

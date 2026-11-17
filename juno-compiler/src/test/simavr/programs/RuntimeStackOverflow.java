@@ -5,7 +5,7 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
+import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
@@ -29,7 +29,7 @@ public final class RuntimeStackOverflow {
         Serial.println("before");
         try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> {
-                HttpClient.get("https://example.com", path, 9, body, BODY, headers, HEADERS, status);
+                NativeHttpClient.get("https://example.com", path, 9, body, BODY, headers, HEADERS, status);
             });
             scope.join();
         }

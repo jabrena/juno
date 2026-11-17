@@ -1,7 +1,11 @@
-package io.github.jabrena.juno.hardware.net.http;
+package io.github.jabrena.juno.hardware.internal;
 
 /**
- * A minimal HTTP/1.1 client recognized as compiler intrinsics by Juno. As with {@code java.net.http.HttpClient}, the
+ * The board's own HTTP/1.1 requests, behind the board-side {@code java.net.http} client and Juno's runtime tests.
+ * Internal: programs send requests with the JDK's {@code java.net.http.HttpClient}, which the compiler reads from
+ * {@code io.github.jabrena.juno.jdk.net.http}; this class is not a supported API and may change.
+ *
+ * <p>Its methods are compiler intrinsics. As with {@code java.net.http.HttpClient}, the
  * URL decides how a request travels: an {@code https://} URL goes over TLS (Arduino's {@code WiFiSSLClient} and its
  * firmware CA bundle on UNO R4 WiFi, or Linux TLS through {@code Arduino_RouterBridge} on UNO Q), an {@code http://}
  * URL over a plain {@code WiFiClient}. The port defaults to 443 or 80 and can be given explicitly, as in
@@ -23,7 +27,7 @@ package io.github.jabrena.juno.hardware.net.http;
  * written into {@code headersBuffer} at index 1. A request that doesn't complete within the timeout (5 seconds unless
  * {@link #setTimeout} changed it) is abandoned and returns whatever was captured so far.
  */
-public final class HttpClient {
+public final class NativeHttpClient {
     /** A reasonable default size for a caller's body/headers buffer, in bytes. */
     public static final int DEFAULT_RESPONSE_BUFFER_SIZE = 1024;
 
@@ -42,7 +46,7 @@ public final class HttpClient {
      */
     public static native boolean setTrustedCertificate(byte[] certificate, int certificateLength);
 
-    private HttpClient() {
+    private NativeHttpClient() {
     }
 
     /** Sends a GET request to {@code url}. */

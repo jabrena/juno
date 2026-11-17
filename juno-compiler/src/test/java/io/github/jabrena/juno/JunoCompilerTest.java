@@ -3668,21 +3668,21 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpDemo {
                         public static void main(String[] args) {
                             byte[] response = new byte[128];
                             byte[] headers = new byte[128];
                             int[] out = new int[2];
-                            int getBytes = HttpClient.get("http://example.com/status", response, response.length,
+                            int getBytes = NativeHttpClient.get("http://example.com/status", response, response.length,
                                     headers, headers.length, out);
-                            int postBytes = HttpClient.post("http://example.com/submit", "{\\"ok\\":true}",
+                            int postBytes = NativeHttpClient.post("http://example.com/submit", "{\\"ok\\":true}",
                                     response, response.length, headers, headers.length, out);
-                            int deleteBytes = HttpClient.delete("http://example.com/items/7",
+                            int deleteBytes = NativeHttpClient.delete("http://example.com/items/7",
                                     response, response.length, headers, headers.length, out);
-                            int patchBytes = HttpClient.patch("http://example.com/items/7", "{\\"value\\":2}",
+                            int patchBytes = NativeHttpClient.patch("http://example.com/items/7", "{\\"value\\":2}",
                                     response, response.length, headers, headers.length, out);
-                            int queryBytes = HttpClient.query("http://example.com/items/search",
+                            int queryBytes = NativeHttpClient.query("http://example.com/items/search",
                                     "{\\"tag\\":\\"new\\"}", response, response.length,
                                     headers, headers.length, out);
                         }
@@ -3712,21 +3712,21 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpsDemo {
                         public static void main(String[] args) {
                             byte[] response = new byte[128];
                             byte[] headers = new byte[128];
                             int[] out = new int[2];
-                            int getBytes = HttpClient.get("https://example.com/status",
+                            int getBytes = NativeHttpClient.get("https://example.com/status",
                                     response, response.length, headers, headers.length, out);
-                            int postBytes = HttpClient.post("https://example.com/submit", "{\\"ok\\":true}",
+                            int postBytes = NativeHttpClient.post("https://example.com/submit", "{\\"ok\\":true}",
                                     response, response.length, headers, headers.length, out);
-                            int deleteBytes = HttpClient.delete("https://example.com/items/7",
+                            int deleteBytes = NativeHttpClient.delete("https://example.com/items/7",
                                     response, response.length, headers, headers.length, out);
-                            int patchBytes = HttpClient.patch("https://example.com/items/7", "{\\"value\\":2}",
+                            int patchBytes = NativeHttpClient.patch("https://example.com/items/7", "{\\"value\\":2}",
                                     response, response.length, headers, headers.length, out);
-                            int queryBytes = HttpClient.query("https://example.com/items/search",
+                            int queryBytes = NativeHttpClient.query("https://example.com/items/search",
                                     "{\\"tag\\":\\"new\\"}", response, response.length,
                                     headers, headers.length, out);
                         }
@@ -3754,7 +3754,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class BufferedPostDemo {
                         public static void main(String[] args) {
                             byte[] requestHeaders = new byte[32];
@@ -3764,9 +3764,9 @@ class JunoCompilerTest {
                             byte[] response = new byte[128];
                             byte[] headers = new byte[128];
                             int[] out = new int[2];
-                            HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
+                            NativeHttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
                                     requestBody, 2, response, response.length, headers, headers.length, out);
-                            HttpClient.post("http://example.com/submit", requestHeaders, 0,
+                            NativeHttpClient.post("http://example.com/submit", requestHeaders, 0,
                                     requestBody, 2, response, response.length, headers, headers.length, out);
                         }
                     }
@@ -3794,7 +3794,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpsPathBufferDemo {
                         public static void main(String[] args) {
                             byte[] path = new byte[16];
@@ -3803,7 +3803,7 @@ class JunoCompilerTest {
                             byte[] response = new byte[128];
                             byte[] headers = new byte[128];
                             int[] out = new int[2];
-                            int bytes = HttpClient.get("https://example.com", path, 2,
+                            int bytes = NativeHttpClient.get("https://example.com", path, 2,
                                     response, response.length, headers, headers.length, out);
                         }
                     }
@@ -3827,12 +3827,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class BufferedHttpsDemo {
                         private static int request(String host, String method,
                                 byte[] path, byte[] requestHeaders, byte[] requestBody,
                                 byte[] responseBody, byte[] responseHeaders, int[] status) {
-                            return HttpClient.requestHttps(host, 443, method,
+                            return NativeHttpClient.requestHttps(host, 443, method,
                                     path, 1, requestHeaders, 10, requestBody, -1,
                                     responseBody, 256, responseHeaders, 128, status);
                         }
@@ -3881,7 +3881,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class BufferedHttpDemo {
                         public static void main(String[] args) {
                             byte[] path = new byte[32];
@@ -3891,7 +3891,7 @@ class JunoCompilerTest {
                             byte[] responseBody = new byte[256];
                             byte[] responseHeaders = new byte[128];
                             int[] status = new int[2];
-                            HttpClient.requestHttp("192.168.1.47", 80, "GET", path, 1,
+                            NativeHttpClient.requestHttp("192.168.1.47", 80, "GET", path, 1,
                                     requestHeaders, 0, requestBody, -1,
                                     responseBody, responseBody.length, responseHeaders, responseHeaders.length, status);
                         }
@@ -3910,19 +3910,19 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Lowers HttpClient.setTimeout to the shared connect and response timeout")
+        @DisplayName("Lowers NativeHttpClient.setTimeout to the shared connect and response timeout")
         void shouldLowerHttpTimeoutToSharedRequestTimeout() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpTimeoutDemo {
                         public static void main(String[] args) {
                             byte[] body = new byte[64];
                             byte[] headers = new byte[64];
                             int[] status = new int[2];
-                            HttpClient.setTimeout(15000);
-                            HttpClient.get("http://192.168.1.47/", body, body.length, headers, headers.length, status);
+                            NativeHttpClient.setTimeout(15000);
+                            NativeHttpClient.get("http://192.168.1.47/", body, body.length, headers, headers.length, status);
                         }
                     }
                     """;
@@ -3940,17 +3940,17 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Lowers HttpClient.setTrustedCertificate to the runtime TLS certificate setter")
+        @DisplayName("Lowers NativeHttpClient.setTrustedCertificate to the runtime TLS certificate setter")
         void shouldLowerHttpTrustedCertificateSetter() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpTrustedCertificateDemo {
                         public static void main(String[] args) {
                             byte[] certificate = new byte[2048];
                             certificate[0] = 'x';
-                            HttpClient.setTrustedCertificate(certificate, 1);
+                            NativeHttpClient.setTrustedCertificate(certificate, 1);
                         }
                     }
                     """;
@@ -3965,15 +3965,15 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Backs HttpClient.setTimeout with a no-op when the program makes no request")
+        @DisplayName("Backs NativeHttpClient.setTimeout with a no-op when the program makes no request")
         void shouldStubHttpTimeoutWithoutRequests() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpTimeoutOnlyDemo {
                         public static void main(String[] args) {
-                            HttpClient.setTimeout(15000);
+                            NativeHttpClient.setTimeout(15000);
                         }
                     }
                     """;
@@ -3998,7 +3998,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.net.Wifi;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     @Board(ArduinoUnoQBoard.class)
                     public final class UnoQHttps {
                         public static void main(String[] args) {
@@ -4008,7 +4008,7 @@ class JunoCompilerTest {
                             byte[] response = new byte[64];
                             byte[] headers = new byte[64];
                             int[] out = new int[2];
-                            HttpClient.get("https://example.com", path, 1,
+                            NativeHttpClient.get("https://example.com", path, 1,
                                     response, 64, headers, 64, out);
                         }
                     }
@@ -4033,7 +4033,7 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class HttpPathBufferDemo {
                         public static void main(String[] args) {
                             byte[] path = new byte[8];
@@ -4041,7 +4041,7 @@ class JunoCompilerTest {
                             byte[] response = new byte[64];
                             byte[] headers = new byte[64];
                             int[] out = new int[2];
-                            HttpClient.get("http://example.com:8080", path, 1, response, 64, headers, 64, out);
+                            NativeHttpClient.get("http://example.com:8080", path, 1, response, 64, headers, 64, out);
                         }
                     }
                     """;
@@ -4065,13 +4065,13 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                     import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     @Board(ArduinoUnoQBoard.class)
                     public final class UnoQPlainHttp {
                         public static void main(String[] args) {
                             byte[] response = new byte[64];
                             int[] out = new int[2];
-                            HttpClient.get("http://example.com/", response, 64, response, 64, out);
+                            NativeHttpClient.get("http://example.com/", response, 64, response, 64, out);
                         }
                     }
                     """;
@@ -4090,13 +4090,13 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class BaseUrlWithPath {
                         public static void main(String[] args) {
                             byte[] path = new byte[8];
                             byte[] response = new byte[64];
                             int[] out = new int[2];
-                            HttpClient.get("https://example.com/v1", path, 1, response, 64, response, 64, out);
+                            NativeHttpClient.get("https://example.com/v1", path, 1, response, 64, response, 64, out);
                         }
                     }
                     """;
@@ -4114,12 +4114,12 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                     public final class NoScheme {
                         public static void main(String[] args) {
                             byte[] response = new byte[64];
                             int[] out = new int[2];
-                            HttpClient.get("example.com/status", response, 64, response, 64, out);
+                            NativeHttpClient.get("example.com/status", response, 64, response, 64, out);
                         }
                     }
                     """;

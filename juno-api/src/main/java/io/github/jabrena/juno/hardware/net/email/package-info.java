@@ -11,7 +11,7 @@
  * ESP_SSLClient} library ({@code arduino-cli lib install ESP_SSLClient}), the same manual-install
  * pattern as {@link io.github.jabrena.juno.hardware.hid.Mouse}. {@code Pop3Client} instead uses
  * implicit TLS on port 995 (POP3S), so it reuses {@code WiFiSSLClient} exactly like {@link
- * io.github.jabrena.juno.hardware.net.http.HttpClient}'s {@code https://} requests and needs no extra library.
+ * io.github.jabrena.juno.hardware.internal.NativeHttpClient}'s {@code https://} requests and needs no extra library.
  *
  * <p>Host and credential fields accept runtime strings read from a board-side {@code SecretStore}; message fields may
  * also be literals or caller-owned runtime strings. Values are passed directly to the bounded transport and are not

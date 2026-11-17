@@ -375,7 +375,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.annotations.%s;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 @Board(%s.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -383,7 +383,7 @@ class ThreadsTest {
                         byte[] headers = new byte[32];
                         int[] status = new int[2];
                         %s
-                        Serial.println(HttpClient.get("http://example.com/", body, body.length, headers, headers.length,
+                        Serial.println(NativeHttpClient.get("http://example.com/", body, body.length, headers, headers.length,
                                 status));
                     }
                 }
@@ -397,7 +397,7 @@ class ThreadsTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 @Board(%1$s.class)
                 public final class ParallelFetch {
                     static final class First {
@@ -405,7 +405,7 @@ class ThreadsTest {
                         private final byte[] headers = new byte[32];
                         private final int[] status = new int[2];
                         First fetch() {
-                            HttpClient.get("https://one.example/", body, body.length, headers, headers.length, status);
+                            NativeHttpClient.get("https://one.example/", body, body.length, headers, headers.length, status);
                             return this;
                         }
                     }
@@ -414,7 +414,7 @@ class ThreadsTest {
                         private final byte[] headers = new byte[32];
                         private final int[] status = new int[2];
                         Second fetch() {
-                            HttpClient.get("https://two.example/", body, body.length, headers, headers.length, status);
+                            NativeHttpClient.get("https://two.example/", body, body.length, headers, headers.length, status);
                             return this;
                         }
                     }
@@ -520,7 +520,7 @@ class ThreadsTest {
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpClient;
                 @Board(ArduinoUnoQBoard.class)
                 public final class Fetch {
                     public static void main() throws Exception {
@@ -529,7 +529,7 @@ class ThreadsTest {
                         int[] status = new int[2];
                         %s
                         MCU.getWifi().begin("juno", "secret");
-                        Serial.println(HttpClient.get("https://example.com/", body, body.length, headers,
+                        Serial.println(NativeHttpClient.get("https://example.com/", body, body.length, headers,
                                 headers.length, status));
                     }
                 }
