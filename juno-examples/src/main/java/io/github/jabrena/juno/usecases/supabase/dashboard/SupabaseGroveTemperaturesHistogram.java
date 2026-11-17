@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.usecases.supabase.dashboard;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
@@ -39,11 +38,11 @@ import io.github.jabrena.juno.util.mvc.ViewRouter;
  * <p>Each bin is one degree Celsius from 10 to 39; readings outside that range are counted in open-ended buckets. A
  * row containing any null sensor reading is counted as missing. Buffers and application objects are allocated once at
  * startup; each gathering step creates one bounded structured scope for two independent HTTPS requests,
- * and subsequent controller iterations allocate nothing. Each response buffer holds one page, so this targets UNO R4
- * WiFi and UNO Q. On the R4, build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k} so its carrier stack fits beside the
+ * and subsequent controller iterations allocate nothing. Each response buffer holds one page; the requests go through
+ * {@code java.net.http}, so this targets the UNO R4 WiFi. Build with {@code -Djuno.Xmx=9800 -Djuno.Xss=2k} so its carrier stack fits beside the
  * WiFi and TFT runtimes; the two subtasks share that carrier and keep their frames in the arena while parked.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class SupabaseGroveTemperaturesHistogram {
     private static final int INTRO_VIEW = 0;
     private static final int GATHERING_VIEW = 1;

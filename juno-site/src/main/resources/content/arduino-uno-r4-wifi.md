@@ -47,7 +47,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
-| `HttpClient` (HTTP and HTTPS) | ✓ | | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
+| `java.net.http` (HTTP and HTTPS) | ✓ | TLS runs in the ESP32-S3 coprocessor, with its firmware's root certificates; an `SSLContext` cannot add its own. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
 | `HttpServer` | ✓ | | [`HttpServerBacklight`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java) |
 | `Smtp`, `Pop3Client` | ✓ | Implicit TLS and STARTTLS (STARTTLS needs the `ESP_SSLClient` library). | [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java) |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `ArduinoBLE`; see [LEGO](../lego-ecosystem). | |

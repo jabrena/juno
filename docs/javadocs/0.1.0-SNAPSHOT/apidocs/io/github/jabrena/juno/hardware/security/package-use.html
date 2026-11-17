@@ -73,27 +73,62 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board's own hardware and program-wide introspection: <a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
+<a href="../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
+the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
+board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
+the program's flash usage).</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last odd-row-color">
+<div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
+</div>
 <div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.security">io.github.jabrena.juno.hardware.security</a></div>
 <div class="col-last even-row-color">
-<div class="block">Secrets kept in a secure element: <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
+<div class="block">Secrets kept off the SD card and out of the firmware: <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a>
+reads named values, and <a href="../MCU.html#getSecretStore()"><code>MCU.getSecretStore()</code></a> selects the board's
+store — the Portenta H7's SE050C2, an ESP32 board's NVS, the Pico 2 W's TrustZone firmware or an AVR UNO's EEPROM.</div>
 </div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.security</a> used by <a href="../package-summary.html">io.github.jabrena.juno.hardware</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/SecretStore.html#io.github.jabrena.juno.hardware">SecretStore</a></div>
+<div class="col-last even-row-color">
+<div class="block">Named secrets kept by the board's secret store.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.internal">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.security</a> used by <a href="../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/SecretStore.html#io.github.jabrena.juno.hardware.internal">SecretStore</a></div>
+<div class="col-last even-row-color">
+<div class="block">Named secrets kept by the board's secret store.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.hardware.security">
 <div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.security</a> used by <a href="package-summary.html">io.github.jabrena.juno.hardware.security</a></span></div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="class-use/SecretSlots.html#io.github.jabrena.juno.hardware.security">SecretSlots</a></div>
+<div class="col-first even-row-color"><a href="class-use/SecretStore.html#io.github.jabrena.juno.hardware.security">SecretStore</a></div>
 <div class="col-last even-row-color">
-<div class="block">The names a program reads from a <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> and the logical slot that holds each one.</div>
-</div>
-<div class="col-first odd-row-color"><a href="class-use/SecretStore.html#io.github.jabrena.juno.hardware.security">SecretStore</a></div>
-<div class="col-last odd-row-color">
-<div class="block">Named secrets read from a secure element.</div>
+<div class="block">Named secrets kept by the board's secret store.</div>
 </div>
 </div>
 </section>

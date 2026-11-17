@@ -724,37 +724,35 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    @DisplayName("A Wi-Fi, HTTP and JSON program's shim is valid C++")
+    @DisplayName("A Wi-Fi, java.net.http and JSON program's shim is valid C++")
     void shouldCompileAWifiHttpAndJsonProgramsShimWithACppCompiler() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
                 import io.github.jabrena.juno.hardware.net.http.Json;
                 import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.Wifi;
+                import java.net.URI;
+                import java.net.http.HttpClient;
+                import java.net.http.HttpRequest;
+                import java.net.http.HttpResponse;
+                import java.time.Duration;
                 public final class AsmNetworking {
-                    public static void main(String[] args) {
+                    public static void main(String[] args) throws Exception {
                         MCU.getWifi().begin("ssid", "password");
-                        byte[] response = new byte[64];
-                        byte[] headers = new byte[64];
-                        int[] out = new int[2];
-                        HttpClient.get("https://example.com/status", response, response.length,
-                                headers, headers.length, out);
-                        byte[] path = new byte[8];
-                        path[0] = '/';
-                        HttpClient.get("https://example.com", path, 1, response, response.length,
-                                headers, headers.length, out);
-                        byte[] requestHeaders = new byte[32];
-                        byte[] requestBody = new byte[32];
-                        HttpClient.requestHttps("example.com", 443, "POST", path, 1,
-                                requestHeaders, 0, requestBody, 0,
-                                response, response.length, headers, headers.length, out);
-                        HttpClient.post("https://example.com/rest/v1/sensor-data", requestHeaders, 0,
-                                requestBody, 2, response, response.length, headers, headers.length, out);
-                        int temperature = Json.getInt(response, response.length, "data.temp");
+                        HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).build();
+                        HttpResponse<String> text = client.send(
+                                HttpRequest.newBuilder(URI.create("https://example.com/status")).build(),
+                                HttpResponse.BodyHandlers.ofString());
+                        int temperature = Json.getInt(text.body(), "data.temp");
+                        byte[] row = new byte[32];
+                        HttpResponse<byte[]> bytes = client.send(
+                                HttpRequest.newBuilder(URI.create("http://example.com/rest/v1/sensor-data"))
+                                        .header("apikey", "key")
+                                        .POST(HttpRequest.BodyPublishers.ofByteArray(row, 0, 2)).build(),
+                                HttpResponse.BodyHandlers.ofByteArray());
+                        String type = bytes.headers().firstValue("content-type").orElse("none");
                     }
                 }
                 """;
@@ -763,41 +761,6 @@ class GeneratedAsmToolchainTest {
         // When
         CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmNetworking");
         Path shim = temporaryDirectory.resolve("AsmNetworkingShim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
-        // Then
-        syntaxCheckCpp(compiler, shim);
-    }
-
-    @Test
-    @DisplayName("An UNO Q RouterBridge HTTPS shim is valid C++")
-    void shouldCompileAnUnoQRouterBridgeHttpsShimWithACppCompiler() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpClient;
-                @Board(ArduinoUnoQBoard.class)
-                public final class AsmUnoQHttps {
-                    public static void main(String[] args) {
-                        MCU.getWifi().begin("ssid", "password");
-                        byte[] response = new byte[64];
-                        byte[] headers = new byte[64];
-                        int[] out = new int[2];
-                        HttpClient.get("https://example.com/", response, 64, headers, 64, out);
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQHttps", source);
-
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQHttps");
-        Path shim = temporaryDirectory.resolve("AsmUnoQHttpsShim.cpp");
         Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
 
         // Then

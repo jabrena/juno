@@ -1,12 +1,10 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.api.hardware.security.ExampleSecrets;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -29,20 +27,16 @@ import io.github.jabrena.juno.util.Delay;
  * positions (11-12 and 14-15) rather than parsed generically. Open-Meteo's
  * {@code current.temperature_2m} is a JSON number with a decimal fraction (e.g. {@code 21.2});
  * {@link WeatherClient} reads its raw JSON text directly via {@link
- * io.github.jabrena.juno.hardware.net.http.Json#getString(byte[], int, String)} rather than parsing it
+ * io.github.jabrena.juno.hardware.net.http.Json#getString(String, String)} rather than parsing it
  * to a {@code double} and reformatting, so the displayed value matches Open-Meteo's own text
  * exactly rather than being subject to binary-floating-point rounding.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class MadridWeather {
     private static final Wifi WIFI = MCU.getWifi();
 
-    private static final int TIME_TEXT_BUFFER_SIZE = 32;
-
-    private static void processWeather(DisplayData display, byte[] response, byte[] headers,
-            int[] statusAndHeadersLength) {
-        String temperature = WeatherClient.fetchTemperature(response, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE,
-                headers, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength);
+    private static void processWeather(DisplayData display, WeatherClient weather) throws InterruptedException {
+        String temperature = weather.fetchTemperature();
         if (temperature != null) {
             Serial.print("Weather OK len=");
             Serial.println(temperature.length());
@@ -53,11 +47,8 @@ public final class MadridWeather {
         }
     }
 
-    private static void processTime(DisplayData display, byte[] response, byte[] headers, byte[] timeText,
-            int[] statusAndHeadersLength) {
-        String time = TimeClient.fetchTime(response, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE,
-                headers, HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE, statusAndHeadersLength,
-                timeText, TIME_TEXT_BUFFER_SIZE);
+    private static void processTime(DisplayData display, TimeClient clock) throws InterruptedException {
+        String time = clock.fetchTime();
         if (time != null) {
             Serial.print("Time OK len=");
             Serial.println(time.length());
@@ -91,30 +82,21 @@ public final class MadridWeather {
         Delay.millis(2000);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
 
         DisplayData display = new DisplayData();
         connectWifi(display);
 
-        // Allocated once, outside the loop, and overwritten every iteration: Juno's arena never frees
-        // memory, so fresh allocations inside a while(true) would exhaust it after a few hundred cycles.
-        // Each service gets its own buffer/scratch pair rather than sharing one, so a weather request
-        // can never leave stale bytes behind for the time request (or vice versa) to read.
-        byte[] weatherResponse = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        byte[] weatherHeaders = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        int[] weatherStatusAndHeadersLength = new int[2];
-
-        byte[] timeResponse = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        byte[] timeHeaders = new byte[HttpClient.DEFAULT_RESPONSE_BUFFER_SIZE];
-        int[] timeStatusAndHeadersLength = new int[2];
-
-        byte[] timeText = new byte[TIME_TEXT_BUFFER_SIZE];
+        // Each service owns its client, created once, outside the loop; each response body is a String the
+        // collector reclaims once the value read from it has been shown.
+        WeatherClient weather = new WeatherClient();
+        TimeClient clock = new TimeClient();
 
         while (true) {
-            processWeather(display, weatherResponse, weatherHeaders, weatherStatusAndHeadersLength);
-            processTime(display, timeResponse, timeHeaders, timeText, timeStatusAndHeadersLength);
+            processWeather(display, weather);
+            processTime(display, clock);
             Delay.millis(1000);
         }
     }

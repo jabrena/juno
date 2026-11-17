@@ -27,7 +27,9 @@ record HttpLinkFacts(Set<Fact> facts) {
         /** The program sets a method of its own with {@code HttpRequest.Builder.method}, the one way to CONNECT. */
         CUSTOM_METHODS,
         /** The program sets a request or connect timeout. */
-        TIMEOUTS
+        TIMEOUTS,
+        /** The program gives a client trust anchors of its own, with {@code HttpClient.Builder.sslContext}. */
+        CUSTOM_TRUST
     }
 
     HttpLinkFacts {

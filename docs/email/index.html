@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>Juno supports two email protocols: SMTP for sending mail and POP3 for reading it. Each has its own client, both are
 compiler intrinsics, and both need an active <a href="../wifi"><code>Wifi</code></a> connection. Every buffer belongs to the caller.</p>
-<p>The host, username, password, and message fields come from the microSD card, as runtime <code>String</code> values. Each one holds at
+<p>The host, username, password, and message fields come from the microSD card, as <code>Properties</code> values. Each one holds at
 most 31 bytes, so keep them short (see <a href="#credentials">Credentials</a>).</p>
 <h2 id="board-support">Board support</h2>
 <p><code>Smtp.sendTls</code> and <code>Pop3Client</code> work on the boards with the <code>TLS_EMAIL</code> capability: UNO R4 WiFi, UNO Q, UNO WiFi Rev2,
@@ -348,11 +348,11 @@ String username = properties.getProperty(&quot;smtp.username&quot;);
 String password = properties.getProperty(&quot;smtp.password&quot;);
 </code></pre>
 <p>Check that the file and each key exist before using them; the examples print a message and stop when one is missing.
-Values loaded this way are runtime <code>String</code>s, and a runtime <code>String</code> holds 31 bytes, so keep the password, the subject
-and the body within that length.</p>
-<p>The <code>InboxCount</code> and <code>EmailClient</code> examples read the SMTP values from the ATECC608 <code>SecretStore</code> through
-<code>SecretStore</code>. SD-card properties remain supported for applications that intentionally use removable configuration;
-they are not a substitute for provisioning credentials into the secure element.</p>
+A <code>Properties</code> value holds 31 bytes, so keep the password, the subject and the body within that length.</p>
+<p>The <code>InboxCount</code> and <code>EmailClient</code> examples read the SMTP values through <code>ExampleSecrets</code>: from the secret store on a
+board that has one, otherwise from <code>application.properties</code> on the SD card. They run on the UNO R4 WiFi, which reads
+them from its coprocessor's NVS store: provision <code>smtp.host</code>, <code>smtp.username</code> and <code>smtp.password</code> there with
+<code>juno:secret</code>.</p>
 <h2 id="smtp">SMTP</h2>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/net/email/Smtp.java"><code>Smtp</code></a>
 sends one plain-text message to one recipient. It offers two ways to start the encrypted connection:</p>

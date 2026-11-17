@@ -52,29 +52,20 @@ final class NetworkShimLibraries {
                     using JunoHttpsClient = ${JUNO_HTTPS_CLIENT_TYPE};
                     """);
         }
-        if (features.contains(ShimFeature.HTTP)) {
-            helpers.append(runtimeSource.load("common/http-get.cpp"));
-        }
-        if (features.contains(ShimFeature.HTTPS)) {
-            helpers.append(runtimeSource.load("common/https-get.cpp"));
-        }
-        if (features.contains(ShimFeature.HTTP_PATH_BUFFER)) {
-            helpers.append(runtimeSource.load("common/http-path-buffer.cpp"));
-        }
-        if (features.contains(ShimFeature.HTTPS_PATH_BUFFER)) {
-            helpers.append(runtimeSource.load("common/https-path-buffer.cpp"));
-        }
-        if (features.contains(ShimFeature.HTTPS_REQUEST_BUFFER)) {
-            helpers.append(runtimeSource.load("common/https-request-buffer.cpp"));
-        }
-        if (features.contains(ShimFeature.HTTP_REQUEST_BUFFER)) {
-            helpers.append(runtimeSource.load("common/http-request-buffer.cpp"));
-        }
         if (features.contains(ShimFeature.HTTPS_REQUEST_TEXT)) {
             helpers.append(runtimeSource.load("common/https-request-text.cpp"));
         }
         if (features.contains(ShimFeature.HTTP_REQUEST_TEXT)) {
             helpers.append(runtimeSource.load("common/http-request-text.cpp"));
+        }
+        if (features.contains(ShimFeature.HTTPS_REQUEST_TEXT_BODY) || features.contains(ShimFeature.HTTP_REQUEST_TEXT_BODY)) {
+            helpers.append(runtimeSource.load("common/http-text-body.cpp"));
+        }
+        if (features.contains(ShimFeature.HTTPS_REQUEST_TEXT_BODY)) {
+            helpers.append(runtimeSource.load("common/https-request-text-body.cpp"));
+        }
+        if (features.contains(ShimFeature.HTTP_REQUEST_TEXT_BODY)) {
+            helpers.append(runtimeSource.load("common/http-request-text-body.cpp"));
         }
         return helpers.toString().replace("${JUNO_HTTP_CLIENT_TYPE}", httpClientType)
                 .replace("${JUNO_HTTPS_CLIENT_TYPE}", httpsClientType)

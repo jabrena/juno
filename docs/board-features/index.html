@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -630,10 +630,10 @@ native USB HID controller, onboard LED matrix or onboard IMU.</p>
 on every physical board; each board's page notes what is confirmed on hardware.</p>
 <h2 id="secret-storage">Secret storage</h2>
 <p>Juno's <a href="../secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from whatever store the
-board has: an ATECC608 on the I2C boards, the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which
-is weaker than a chip — a flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware
-image and the SD card either way, so provisioning does not put them in source code, build output or removable
-storage.</p>
+board has: the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which is weaker than a chip — a
+flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware image and the SD card either
+way, so provisioning does not put them in source code, build output or removable storage. The other boards have no
+secret store: their examples read <code>application.properties</code> from the SD card, in plain text.</p>
 <table>
 <thead>
 <tr>
@@ -646,31 +646,26 @@ storage.</p>
 <tr>
 <td>Built in</td>
 <td>Portenta H7</td>
-<td>The board includes an NXP SE050C2; <code>SecretStoreFactory</code> selects it by board, so programs use the same <code>SecretStore</code> API.</td>
-</tr>
-<tr>
-<td>Built in</td>
-<td>UNO WiFi Rev2</td>
-<td>The board includes a Microchip ATECC608A on its I2C bus.</td>
+<td>The board includes an NXP SE050C2; <code>MCU.getSecretStore()</code> selects it by board, so programs use the same <code>SecretStore</code> API.</td>
 </tr>
 <tr>
 <td>Built in, in flash</td>
 <td>Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM</td>
-<td>No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash. A program can use an ATECC608 breakout explicitly when stronger storage is needed.</td>
+<td>No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash.</td>
 </tr>
 <tr>
-<td>External breakout</td>
-<td>UNO R4 WiFi, UNO Q and Raspberry Pi Pico 2 W</td>
-<td>Connect an ATECC608 breakout to the board's I2C pins.</td>
+<td>Built in, in EEPROM</td>
+<td>UNO WiFi Rev2 and UNO R3</td>
+<td>No crypto chip: <code>MCU.getSecretStore()</code> uses the microcontroller's EEPROM, plain text that any flashed program or a programmer can read. The UNO WiFi Rev2's ATECC608 is not used: it refuses every read and write until it is permanently locked.</td>
 </tr>
 <tr>
-<td>Not supported</td>
-<td>UNO R3</td>
-<td>The board has no supported secure-element path.</td>
+<td>None: SD-card settings</td>
+<td>UNO Q</td>
+<td>No secret store. The examples read <code>application.properties</code> from a UNO shield's SD card, in plain text.</td>
 </tr>
 </tbody>
 </table>
-<p>The chip must be provisioned with <code>juno:secret</code> before the application reads its names and slots. The <a href="../secure-element">secure-element
+<p>The chip must be provisioned with <code>juno:secret</code> before the application reads its secrets by name. The <a href="../secure-element">secure-element
 guide</a> covers provisioning, wiring, missing-secret handling and the current hardware-validation
 status.</p>
 <h2 id="physical-expansions">Physical expansions</h2>
@@ -780,7 +775,7 @@ limits.</li>
 <li><strong>Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer</strong> reaches a Powered Up hub through the core's own BLE library:
 Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.</li>
 <li><strong>Portenta H7 Wi-Fi and Bluetooth LE</strong> use the Arduino Mbed core's <code>WiFi</code> and <code>ArduinoBLE</code> libraries. The Portenta's
-onboard ATECC608 is read through the ordinary <code>I2c</code>/<code>SecretStore</code> API; credentials stay in the chip rather than in
+onboard SE050C2 is read through the ordinary <code>SecretStore</code> API; credentials stay in the chip rather than in
 the generated sketch. Hardware verification remains pending for the connected-board run.</li>
 <li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
 <a href="../lego-ecosystem">LEGO ecosystem</a> page.</li>

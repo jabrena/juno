@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -445,6 +445,12 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <td></td>
 </tr>
 <tr>
+<td><code>SecretStore</code></td>
+<td align="center">✓</td>
+<td><code>Esp32Nvs</code> in the ESP32-S3's NVS, through the core's <code>Preferences</code> library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see <a href="../secure-element">Secrets in a Secure Element</a>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a></td>
+</tr>
+<tr>
 <td>Onboard LED matrix</td>
 <td align="center">✓</td>
 <td>12 × 8 through <code>LedMatrix</code> and <code>LedCanvas</code>.</td>
@@ -469,9 +475,9 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <td></td>
 </tr>
 <tr>
-<td><code>HttpClient</code> (HTTP and HTTPS)</td>
+<td><code>java.net.http</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
-<td></td>
+<td>TLS runs in the ESP32-S3 coprocessor, with its firmware's root certificates; an <code>SSLContext</code> cannot add its own.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a></td>
 </tr>
 <tr>

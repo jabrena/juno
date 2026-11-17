@@ -847,70 +847,61 @@ class Thumb2AsmBackendTest {
     @DisplayName("HTTPS get spills its stack arguments and uses the TLS runtime shim")
     void shouldLowerHttpsGetWithStackSpilledArgumentsAndATlsRuntimeShim() {
         // Given
-        // HttpClient.get("https://api.open-meteo.com/v1/forecast", body, 512, headers, 512, out) —
-        // 8 argument words exceeds the 4 available AAPCS registers, exercising emitShimCall's
-        // stack-spill path.
+        // NativeHttpRequests.requestHttpsForText: 11 argument words exceed the 4 available AAPCS registers,
+        // exercising emitShimCall's stack-spill path.
         MethodRef entryPoint = new MethodRef("demo/HttpsFetch", "main", "()I");
-        Value port = Value.int32(0);
-        Value bufferPtr = Value.int32(1);
-        Value bufferLength = Value.int32(2);
-        Value headersPtr = Value.int32(3);
-        Value headersLength = Value.int32(4);
-        Value outPtr = Value.int32(5);
-        Value result = Value.int32(6);
-        IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.Const(port, 443),
-                new IrInstruction.Const(bufferPtr, 0),
-                new IrInstruction.Const(bufferLength, 512),
-                new IrInstruction.Const(headersPtr, 0),
-                new IrInstruction.Const(headersLength, 512),
-                new IrInstruction.Const(outPtr, 0),
-                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_GET, Optional.empty(),
-                        List.of(port, bufferPtr, bufferLength, headersPtr, headersLength, outPtr),
-                        List.of("api.open-meteo.com", "/v1/forecast"))),
-                new IrTerminator.Return(Optional.of(result)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
+        // host, port, method, target, request headers and length, request body and length, response headers and
+        // length, and status: eleven words, as NativeHttpRequests.requestHttpsForText passes them.
+        List<Value> arguments = new java.util.ArrayList<>();
+        List<IrInstruction> instructions = new java.util.ArrayList<>();
+        for (int index = 0; index < 11; index++) {
+            Value argument = Value.int32(index);
+            arguments.add(argument);
+            instructions.add(new IrInstruction.Const(argument, index == 1 ? 443 : 0));
+        }
+        Value result = Value.int32(11);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_REQUEST_TEXT_BODY,
+                Optional.empty(), List.copyOf(arguments), List.of()));
+        IrBasicBlock block = new IrBasicBlock(0, List.copyOf(instructions), new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 12, List.of(), List.of(block));
 
         // When
         GeneratedCode generated = new Thumb2AsmBackend(false, Board.UNO_R4_WIFI).generate(new IrProgram(entryPoint, List.of(method)));
 
         // Then
-        assertThat(generated.assembly()).contains("bl juno_https_get",
-                "sub sp, sp, #16", // 8 words spills 4, rounded to 16
-                "add sp, sp, #16");
+        assertThat(generated.assembly()).contains("bl juno_https_request_text_body",
+                "sub sp, sp, #32", // 11 words spill 7 (28 bytes), rounded up to keep sp 8-byte aligned
+                "add sp, sp, #32");
     }
 
     @Test
-    @DisplayName("HTTPS get declares the TLS client and no plain HTTP helper")
+    @DisplayName("An HTTPS request declares the TLS client and no plain HTTP helper")
     void shouldDeclareTheTlsClientAndNoPlainHttpHelperForHttpsGet() {
         // Given
         MethodRef entryPoint = new MethodRef("demo/HttpsFetch", "main", "()I");
-        Value port = Value.int32(0);
-        Value bufferPtr = Value.int32(1);
-        Value bufferLength = Value.int32(2);
-        Value headersPtr = Value.int32(3);
-        Value headersLength = Value.int32(4);
-        Value outPtr = Value.int32(5);
-        Value result = Value.int32(6);
-        IrBasicBlock block = new IrBasicBlock(0, List.of(
-                new IrInstruction.Const(port, 443),
-                new IrInstruction.Const(bufferPtr, 0),
-                new IrInstruction.Const(bufferLength, 512),
-                new IrInstruction.Const(headersPtr, 0),
-                new IrInstruction.Const(headersLength, 512),
-                new IrInstruction.Const(outPtr, 0),
-                new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_GET, Optional.empty(),
-                        List.of(port, bufferPtr, bufferLength, headersPtr, headersLength, outPtr),
-                        List.of("api.open-meteo.com", "/v1/forecast"))),
-                new IrTerminator.Return(Optional.of(result)));
-        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 7, List.of(), List.of(block));
+        // host, port, method, target, request headers and length, request body and length, response headers and
+        // length, and status: eleven words, as NativeHttpRequests.requestHttpsForText passes them.
+        List<Value> arguments = new java.util.ArrayList<>();
+        List<IrInstruction> instructions = new java.util.ArrayList<>();
+        for (int index = 0; index < 11; index++) {
+            Value argument = Value.int32(index);
+            arguments.add(argument);
+            instructions.add(new IrInstruction.Const(argument, index == 1 ? 443 : 0));
+        }
+        Value result = Value.int32(11);
+        instructions.add(new IrInstruction.IntrinsicCall(Optional.of(result), Intrinsic.HTTPS_REQUEST_TEXT_BODY,
+                Optional.empty(), List.copyOf(arguments), List.of()));
+        IrBasicBlock block = new IrBasicBlock(0, List.copyOf(instructions), new IrTerminator.Return(Optional.of(result)));
+        IrMethod method = IrMethod.withInferredValues(entryPoint, 0, 12, List.of(), List.of(block));
 
         // When
         GeneratedCode generated = new Thumb2AsmBackend(false, Board.UNO_R4_WIFI).generate(new IrProgram(entryPoint, List.of(method)));
 
         // Then
-        assertThat(generated.runtimeShim()).contains("#include <WiFiSSLClient.h>", "extern \"C\" int32_t juno_https_get")
-                .doesNotContain("juno_http_get"); // HTTP (plain) must not be pulled in by an HTTPS-only program.
+        assertThat(generated.runtimeShim()).contains("#include <WiFiSSLClient.h>",
+                        "extern \"C\" int32_t juno_https_request_text_body(")
+                // HTTP (plain) must not be pulled in by an HTTPS-only program.
+                .doesNotContain("juno_http_request_text_body(");
     }
 
     @Test

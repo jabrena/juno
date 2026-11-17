@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -481,7 +481,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <tr>
 <td><code>SecretStore</code> / SE050C2</td>
 <td align="center">✓</td>
-<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>SecretStoreFactory</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a>, a reboot that joins Wi-Fi from the stored credentials, and <code>clearAll()</code>, a whole-chip wipe that erases the Wi-Fi and SMTP credentials too, checked with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretClearAllRead.java"><code>PortentaSecretClearAllRead</code></a>.</td>
+<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>MCU.getSecretStore()</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a>, a reboot that joins Wi-Fi from the stored credentials, and <code>clearAll()</code>, a whole-chip wipe that erases the Wi-Fi and SMTP credentials too, checked with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretClearAllRead.java"><code>PortentaSecretClearAllRead</code></a>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
 </tr>
 <tr>

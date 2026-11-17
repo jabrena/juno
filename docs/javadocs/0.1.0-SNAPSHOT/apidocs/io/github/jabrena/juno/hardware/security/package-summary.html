@@ -82,8 +82,10 @@ initTheme();
 <div class="package-signature"><span class="annotations">@NullMarked
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.security</span></div>
 <section class="package-description" id="package-description">
-<div class="block">Secrets kept in a secure element: <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> reads named values, and
-<a href="SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security"><code>SecretStoreFactory</code></a> selects the board's secure-element provider.</div>
+<div class="block">Secrets kept off the SD card and out of the firmware: <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a>
+reads named values, and <a href="../MCU.html#getSecretStore()"><code>MCU.getSecretStore()</code></a> selects the board's
+store — the Portenta H7's SE050C2, an ESP32 board's NVS, the Pico 2 W's TrustZone firmware or an AVR UNO's EEPROM.
+Secrets are found by name alone. Other boards have none.</div>
 </section>
 </div>
 <section class="summary">
@@ -112,31 +114,31 @@ the program's flash usage).</div>
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Atecc608.html" title="class in io.github.jabrena.juno.hardware.security">Atecc608</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="AvrEeprom.html" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">An ATECC608 secure element on an I2C bus, holding named secrets in data slots.</div>
+<div class="block">Named-secret storage in the on-chip EEPROM of an AVR board: the UNO WiFi Rev2's ATmega4809 (256 bytes) and the UNO
+R3's ATmega328P (1 KB).</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Esp32Nvs.html" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32 board, for the ESP32-family boards that carry no
-secure element at all: each logical slot is one entry of a private NVS namespace, written through the core's
-<code>Preferences</code> library.</div>
+<div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32, for the boards that carry no secure element at
+all: the ESP32-family boards' own chip, and the ESP32-S3 coprocessor of the UNO R4 WiFi, whose core's
+<code>Preferences</code> library has the same API and carries each call to the coprocessor over the modem link (it needs
+the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailable).</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Pico2WTrustZoneStore.html" title="class in io.github.jabrena.juno.hardware.security">Pico2WTrustZoneStore</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Named-secret storage in the NXP SE050C2 used by the Portenta H7.</div>
+<div class="block">Named-secret storage on the Raspberry Pi Pico 2 W, kept by Juno's own TrustZone secure firmware: the RP2350 has no
+secure element, so a small program in the Cortex-M33's secure world holds the slots in a flash sector it fences off,
+and this program, which runs in the non-secure world, reaches them only through that firmware's one gateway.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SecretSlots.html" title="class in io.github.jabrena.juno.hardware.security">SecretSlots</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Se050C2.html" title="class in io.github.jabrena.juno.hardware.security">Se050C2</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">The names a program reads from a <a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security"><code>SecretStore</code></a> and the logical slot that holds each one.</div>
+<div class="block">Named-secret storage in the NXP SE050C2 used by the Portenta H7.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab1"><a href="SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
-<div class="block">Named secrets read from a secure element.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SecretStoreFactory.html" title="class in io.github.jabrena.juno.hardware.security">SecretStoreFactory</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">Selects the secure-element provider compiled for a board.</div>
+<div class="block">Named secrets kept by the board's secret store.</div>
 </div>
 </div>
 </div>

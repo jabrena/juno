@@ -281,6 +281,9 @@ Juno implements a bounded set of JDK classes on top of the board's own runtime:
 - `java.util.Properties`, read from a file on the SD card, and read-only `java.io.RandomAccessFile` and
   `InputStream`.
 - `java.time.LocalDateTime.now()`, with the time synchronised over SNTP on boards with Wi-Fi.
+- `java.net.URI`, and the `java.net.http` client (`HttpClient`, `HttpRequest`, `HttpResponse`, `HttpHeaders`), from
+  the UNO R4 WiFi up, with `java.security.KeyStore`, `java.security.cert.CertificateFactory` and
+  `javax.net.ssl.SSLContext` for a client's own trust anchors. See [HTTP client](../httpclient) for what each covers.
 - `java.lang.StringBuilder`, with `new StringBuilder(int capacity)`, `append(char)`, `append(String)` and `toString()`.
   `append(String)` takes a literal or a runtime `String`, and a `null` one appends `"null"`. The capacity is allocated
   in the arena once, and `toString()` copies the content into a new arena block of exactly its length; appends beyond

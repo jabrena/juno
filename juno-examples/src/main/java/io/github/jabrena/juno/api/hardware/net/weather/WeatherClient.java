@@ -1,39 +1,40 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
 import io.github.jabrena.juno.hardware.net.http.Json;
 
-/** Fetches and reads Madrid's current weather from Open-Meteo. */
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+
+/** Fetches and reads Madrid's current weather from Open-Meteo, with the JDK's {@code java.net.http} client. */
 public final class WeatherClient {
     private static final String API_URL = "https://api.open-meteo.com/v1/forecast?latitude=40.4168&longitude=-3.7038"
             + "&current=temperature_2m&timezone=Europe%2FMadrid";
     private static final String TEMPERATURE_PATH = "current.temperature_2m";
     private static final int HTTP_STATUS_OK = 200;
 
-    private WeatherClient() {
-    }
+    private final HttpClient client = HttpClient.newHttpClient();
+    private final HttpRequest request = HttpRequest.newBuilder(URI.create(API_URL)).build();
 
     /**
-     * Fetches the current Madrid forecast into {@code response}/{@code headers} (caller-owned,
-     * reused every call) and returns the current temperature in Celsius as runtime text, exactly
-     * as Open-Meteo wrote it (e.g. {@code "21.2"}) — or {@code null} when the request failed, the
-     * response status wasn't {@code 200}, or the response didn't contain a numeric temperature.
-     * Reads the field's raw JSON text directly rather than parsing it through {@link
-     * Json#getDouble} and reformatting with {@link String#valueOf(double)}, avoiding that path's
-     * binary-floating-point precision loss entirely. {@code statusAndHeadersLength} is
-     * caller-owned scratch space (allocated once outside any loop, like the buffers), since Juno
-     * has no heap to allocate it internally.
+     * Returns Madrid's current temperature in Celsius as runtime text, exactly as Open-Meteo wrote it (e.g.
+     * {@code "21.2"}), or {@code null} when the request failed, the status wasn't {@code 200}, or the response didn't
+     * contain a numeric temperature. Reads the field's raw JSON text rather than parsing it through
+     * {@link Json#getDouble} and reformatting it, which would lose precision in binary floating point.
      */
-    public static String fetchTemperature(byte[] response, int responseLength, byte[] headers, int headersLength,
-            int[] statusAndHeadersLength) {
-        int bodyLength = HttpClient.get(API_URL, response, responseLength,
-                headers, headersLength, statusAndHeadersLength);
-        if (statusAndHeadersLength[0] != HTTP_STATUS_OK || bodyLength <= 0) {
+    public String fetchTemperature() throws InterruptedException {
+        HttpResponse<String> reply;
+        try {
+            reply = client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
             return null;
         }
-        if (Json.type(response, bodyLength, TEMPERATURE_PATH) != Json.TYPE_NUMBER) {
+        String body = reply.body();
+        if (reply.statusCode() != HTTP_STATUS_OK || Json.type(body, TEMPERATURE_PATH) != Json.TYPE_NUMBER) {
             return null;
         }
-        return Json.getString(response, bodyLength, TEMPERATURE_PATH);
+        return Json.getString(body, TEMPERATURE_PATH);
     }
 }

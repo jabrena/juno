@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-6G64LCUX.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
 
 </head>
 <body>
@@ -477,10 +477,10 @@ library; the <code>MCU</code> facade is the entry point for the board's peripher
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerStatusSDTFT.java"><code>HttpServerStatusSDTFT</code></a></td>
 </tr>
 <tr>
-<td><code>HttpClient</code> (HTTP and HTTPS), <code>Json</code></td>
-<td align="center">✓</td>
-<td>TLS runs on the NINA-W102, which trusts the root certificates in its firmware.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java"><code>SingleHttpsGet</code></a></td>
+<td><code>java.net.http</code></td>
+<td align="center">✗</td>
+<td>Not supported: the HTTP client starts at the UNO R4 WiFi. <code>Json</code> still reads <code>HttpServer</code> request bodies.</td>
+<td></td>
 </tr>
 <tr>
 <td><code>Smtp.sendTls</code>, <code>Pop3Client</code></td>

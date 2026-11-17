@@ -1,11 +1,10 @@
 package io.github.jabrena.juno.usecases.supabase.commons;
 
-import io.github.jabrena.juno.hardware.net.http.HttpClient;
-
 /**
- * Example allocation-free, bounded client for Supabase's PostgREST data API. One instance is created at startup with
- * caller-owned path, request-header, request-body, and response buffers; fluent operations mutate those buffers and
- * {@link #execute()} returns the same {@link SupabaseResponse} instance every time.
+ * Example bounded client for Supabase's PostgREST data API. One instance is created at startup with caller-owned path,
+ * request-header, request-body, and response buffers; fluent operations mutate those buffers and {@link #execute()}
+ * returns the same {@link SupabaseResponse} instance every time. The request itself goes through the JDK's
+ * {@code java.net.http} client, in {@link SupabaseTransport}.
  *
  * <p>{@code projectHost} is the project's DNS host, such as {@code "abcdefgh.supabase.co"}, without an
  * {@code https://} prefix or path. The key belongs in the {@code apikey} header. Firmware is a public client, so use
@@ -15,8 +14,7 @@ import io.github.jabrena.juno.hardware.net.http.HttpClient;
  * <p>Table names may contain ASCII letters, digits, underscores, and hyphens; column and parameter names are limited
  * to letters, digits, and underscores. Query values and select expressions are percent-encoded from ASCII. JSON
  * supplied as a {@link String} must be ASCII; use the byte-buffer overloads for pre-encoded UTF-8. Buffer exhaustion
- * makes the current request invalid, so {@link #execute()} returns a rejected response without connecting. No method
- * allocates after startup.
+ * makes the current request invalid, so {@link #execute()} returns a rejected response without connecting.
  */
 public final class SupabaseClient {
     /** Standard Supabase HTTPS port. */
@@ -35,6 +33,7 @@ public final class SupabaseClient {
     private final byte[] requestBodyBuffer;
     private final int requestBodyCapacity;
     private final SupabaseResponse response;
+    private final SupabaseTransport transport = new SupabaseTransport();
 
     private int baseHeadersLength;
     private int requestHeadersLength;
@@ -296,21 +295,8 @@ public final class SupabaseClient {
     }
 
     private int request(String method, int bodyLength) {
-        return HttpClient.requestHttps(
-                projectHost,
-                HTTPS_PORT,
-                method,
-                path.buffer(),
-                path.length(),
-                requestHeadersBuffer,
-                requestHeadersLength,
-                requestBodyBuffer,
-                bodyLength,
-                response.bodyBuffer(),
-                response.bodyCapacity(),
-                response.headersBuffer(),
-                response.headersCapacity(),
-                response.statusAndHeadersLength());
+        return transport.send(method, projectHost, path.buffer(), path.length(), requestHeadersBuffer,
+                requestHeadersLength, requestBodyBuffer, bodyLength, response);
     }
 
     private SupabaseClient bodyOperation(int nextOperation, String json) {

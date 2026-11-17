@@ -20,15 +20,14 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 /**
- * {@link PlainHttpWeather}'s Open-Meteo request, written with the JDK's {@code java.net.http} client instead of Juno's
- * {@code HttpClient}. On the board it runs Juno's board-side implementation of that API (package
- * {@code io.github.jabrena.juno.jdk.net.http}), and only the plain-HTTP request is linked, since the one URI is
- * {@code http}. Credentials come from {@code ExampleSecrets}. The client, request and response are created once,
- * before the loop, so each request allocates nothing. Prints the HTTP status, the body length and Madrid's current
- * temperature every ten seconds, at 115200 baud. On the board {@code body()} is a fixed-capacity buffer, so the length
- * printed is that capacity; the temperature is read straight from the bytes, since {@code Json} is more code than this
- * one value needs. The UNO R4 WiFi is the smallest board that runs {@code java.net.http}: Juno rejects it on the UNO
- * WiFi Rev2.
+ * Madrid's current temperature from Open-Meteo, over plain HTTP, with the JDK's {@code java.net.http} client. On the
+ * board it runs Juno's board-side implementation of that API (package {@code io.github.jabrena.juno.jdk.net.http}),
+ * and only the plain-HTTP request is linked, since the one URI is {@code http}. Credentials come from
+ * {@code ExampleSecrets}. The client, request and response are created once, before the loop, so each request
+ * allocates nothing. Prints the HTTP status, the body length and the temperature every ten seconds, at 115200 baud.
+ * On the board {@code body()} is a fixed-capacity buffer, so the length printed is that capacity; the temperature is
+ * read straight from the bytes, since {@code Json} is more code than this one value needs. The UNO R4 WiFi is the
+ * smallest board that runs {@code java.net.http}: Juno rejects it on the UNO WiFi Rev2.
  */
 @Board({
     ArduinoUnoR4WiFiBoard.class,

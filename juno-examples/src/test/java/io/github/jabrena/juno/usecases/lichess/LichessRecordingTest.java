@@ -53,9 +53,9 @@ class LichessRecordingTest {
         Files.createDirectories(output);
         tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
 
-        byte[] response = DAILY_PUZZLE.getBytes();
+        String response = DAILY_PUZZLE;
         LichessModel model = new LichessModel();
-        assertThat(model.loadResponse(response, response.length, 200, LichessModel.DAILY)).isTrue();
+        assertThat(model.loadResponse(response, 200, LichessModel.DAILY)).isTrue();
 
         SimulatedClock clock = new SimulatedClock();
         RecordingNavigator navigator = new RecordingNavigator();

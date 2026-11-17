@@ -77,19 +77,11 @@ final class CapabilityRequirements {
                 Intrinsic.DATAGRAM_SOCKET_SET_SO_TIMEOUT, Intrinsic.DATAGRAM_SOCKET_CLOSE, Intrinsic.SOCKET_NEW,
                 Intrinsic.SOCKET_GET_OUTPUT_STREAM, Intrinsic.SOCKET_GET_INPUT_STREAM,
                 Intrinsic.SOCKET_SET_SO_TIMEOUT, Intrinsic.SOCKET_CLOSE, Intrinsic.SOCKET_OUTPUT_STREAM_WRITE);
-        require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_GET, Intrinsic.HTTPS_GET_PATH_BUFFER,
-                Intrinsic.HTTPS_POST, Intrinsic.HTTPS_POST_BUFFER, Intrinsic.HTTPS_DELETE, Intrinsic.HTTPS_PATCH,
-                Intrinsic.HTTPS_QUERY, Intrinsic.HTTPS_REQUEST_BUFFER, Intrinsic.HTTPS_REQUEST_TEXT);
-        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_BUFFER, Intrinsic.HTTP_REQUEST_TEXT);
+        require(required, Capability.HTTPS_CLIENT, Intrinsic.HTTPS_REQUEST_TEXT, Intrinsic.HTTPS_REQUEST_TEXT_BODY);
+        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_REQUEST_TEXT, Intrinsic.HTTP_REQUEST_TEXT_BODY);
         require(required, Capability.WIFI, Intrinsic.HTTP_SET_TIMEOUT);
-        require(required, Capability.WIFI, Intrinsic.HTTP_URL_GET, Intrinsic.HTTP_URL_GET_PATH_BUFFER,
-                Intrinsic.HTTP_URL_POST, Intrinsic.HTTP_URL_POST_BUFFER, Intrinsic.HTTP_URL_DELETE,
-                Intrinsic.HTTP_URL_PATCH, Intrinsic.HTTP_URL_QUERY);
         require(required, Capability.TLS_EMAIL, Intrinsic.SMTP_SEND_TLS, Intrinsic.POP3_MESSAGE_COUNT,
                 Intrinsic.POP3_READ_LATEST, Intrinsic.POP3_READ_SUBJECT);
-        require(required, Capability.HTTP_CLIENT, Intrinsic.HTTP_GET, Intrinsic.HTTP_GET_PATH_BUFFER,
-                Intrinsic.HTTP_POST, Intrinsic.HTTP_POST_BUFFER, Intrinsic.HTTP_DELETE, Intrinsic.HTTP_PATCH,
-                Intrinsic.HTTP_QUERY);
         require(required, Capability.SMTP_STARTTLS, Intrinsic.SMTP_SEND);
         require(required, Capability.USB_HID, Intrinsic.MOUSE_BEGIN, Intrinsic.MOUSE_MOVE);
         require(required, Capability.STRUCTURED_CONCURRENCY, Intrinsic.TASK_JOINER_ALL_SUCCESSFUL,

@@ -3,18 +3,29 @@ package io.github.jabrena.juno.usecases.mailbox.client.services;
 import io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard;
 import org.junit.jupiter.api.Test;
 
-import java.nio.charset.StandardCharsets;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MailboxTrustedCertificateTest {
-    private static final String CERTIFICATE = "-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n";
+    /** A throwaway self-signed test CA, with no private key anywhere: it only has to parse. */
+    private static final String CERTIFICATE = """
+            -----BEGIN CERTIFICATE-----
+            MIIBkzCCATmgAwIBAgIUNGaKlwi2BLapsLElpLw2XlvpNPUwCgYIKoZIzj0EAwIw
+            HzEdMBsGA1UEAwwUSnVubyBNYWlsYm94IFRlc3QgQ0EwHhcNMjYxMTE3MDIzNzE0
+            WhcNMzYxMTE0MDIzNzE0WjAfMR0wGwYDVQQDDBRKdW5vIE1haWxib3ggVGVzdCBD
+            QTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABL+y2303TndNdpO1a1VJ4aGYoN0V
+            udeUzNpYP7ff75bbG21iCNzt5d+bSJ0f6TVLu3t+C1xVSg2NStxINoqCxI6jUzBR
+            MB0GA1UdDgQWBBSPH5Lb8WyHfA11eTbVD3gWw9RcfTAfBgNVHSMEGDAWgBSPH5Lb
+            8WyHfA11eTbVD3gWw9RcfTAPBgNVHRMBAf8EBTADAQH/MAoGCCqGSM49BAMCA0gA
+            MEUCIQDCn0SVn/VnLM59c4cSvYLDK8K4JFWVYTjx66bKXPMhcgIgFh/K6wpOXEAW
+            6qC7x4xv2tIK1F6xn/2l4WA8OSJzDdM=
+            -----END CERTIFICATE-----
+            """;
 
     private final EmulatedSdCard card = new EmulatedSdCard();
     private final MailboxTrustedCertificate certificate = new MailboxTrustedCertificate(card);
 
     @Test
-    void loadsTheCaCertificateFromTheSdCard() {
+    void loadsTheCaCertificateFromTheSdCardIntoAnSslContext() {
         // Given
         card.insert();
         card.appendText("mailbox-ca.crt", CERTIFICATE);
@@ -24,8 +35,8 @@ class MailboxTrustedCertificateTest {
 
         // Then
         assertThat(loaded).isTrue();
-        assertThat(text(certificate.value(), certificate.length())).isEqualTo(CERTIFICATE);
-        assertThat(certificate.value()[certificate.length()]).isZero();
+        assertThat(certificate.context()).isNotNull();
+        assertThat(certificate.context().getProtocol()).isEqualTo("TLS");
     }
 
     @Test
@@ -35,19 +46,16 @@ class MailboxTrustedCertificateTest {
 
         // When / Then
         assertThat(certificate.load()).isFalse();
+        assertThat(certificate.context()).isNull();
     }
 
     @Test
-    void failsWhenTheCaCertificateDoesNotLeaveRoomForTheTrailingNul() {
+    void failsWhenTheFileIsNotACertificate() {
         // Given
         card.insert();
-        card.appendText("mailbox-ca.crt", "x".repeat(MailboxTrustedCertificate.CAPACITY));
+        card.appendText("mailbox-ca.crt", "not a certificate");
 
         // When / Then
         assertThat(certificate.load()).isFalse();
-    }
-
-    private static String text(byte[] buffer, int length) {
-        return new String(buffer, 0, length, StandardCharsets.US_ASCII);
     }
 }

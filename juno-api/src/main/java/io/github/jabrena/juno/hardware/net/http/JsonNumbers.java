@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.hardware.net.http;
 
+import org.jspecify.annotations.Nullable;
+
 /** {@link Json}'s JSON numbers: validating one, and converting a validated one to {@code long} or {@code double}. */
 final class JsonNumbers {
     private static final int MAX_SIGNIFICANT_DIGITS = 18;
@@ -9,45 +11,45 @@ final class JsonNumbers {
     }
 
     /** The index just past the JSON number starting at {@code start}, or {@link JsonSyntax#FAILED}. */
-    static int parseNumber(byte[] buffer, int start, int end) {
+    static int parseNumber(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         int p = start;
-        if (p < end && buffer[p] == '-') {
+        if (p < end && JsonChars.at(buffer, text, p) == '-') {
             p++;
         }
         if (p >= end) {
             return JsonSyntax.FAILED;
         }
-        if (buffer[p] == '0') {
+        if (JsonChars.at(buffer, text, p) == '0') {
             p++;
-            if (p < end && JsonSyntax.isDigit(buffer[p])) {
+            if (p < end && JsonSyntax.isDigit(JsonChars.at(buffer, text, p))) {
                 return JsonSyntax.FAILED;
             }
         } else {
-            if (buffer[p] < '1' || buffer[p] > '9') {
+            if (JsonChars.at(buffer, text, p) < '1' || JsonChars.at(buffer, text, p) > '9') {
                 return JsonSyntax.FAILED;
             }
-            p = skipDigits(buffer, p, end);
+            p = skipDigits(buffer, text, p, end);
         }
-        if (p < end && buffer[p] == '.') {
-            p = requiredDigits(buffer, p + 1, end);
+        if (p < end && JsonChars.at(buffer, text, p) == '.') {
+            p = requiredDigits(buffer, text, p + 1, end);
         }
-        if (p != JsonSyntax.FAILED && p < end && (buffer[p] == 'e' || buffer[p] == 'E')) {
+        if (p != JsonSyntax.FAILED && p < end && (JsonChars.at(buffer, text, p) == 'e' || JsonChars.at(buffer, text, p) == 'E')) {
             p++;
-            if (p < end && (buffer[p] == '+' || buffer[p] == '-')) {
+            if (p < end && (JsonChars.at(buffer, text, p) == '+' || JsonChars.at(buffer, text, p) == '-')) {
                 p++;
             }
-            p = requiredDigits(buffer, p, end);
+            p = requiredDigits(buffer, text, p, end);
         }
         return p;
     }
 
     /** Whether {@code [start, end)} is an optional minus sign followed only by digits. */
-    static boolean isInteger(byte[] buffer, int start, int end) {
-        if (parseNumber(buffer, start, end) != end) {
+    static boolean isInteger(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        if (parseNumber(buffer, text, start, end) != end) {
             return false;
         }
-        for (int p = buffer[start] == '-' ? start + 1 : start; p < end; p++) {
-            if (!JsonSyntax.isDigit(buffer[p])) {
+        for (int p = JsonChars.at(buffer, text, start) == '-' ? start + 1 : start; p < end; p++) {
+            if (!JsonSyntax.isDigit(JsonChars.at(buffer, text, p))) {
                 return false;
             }
         }
@@ -58,13 +60,13 @@ final class JsonNumbers {
      * {@code [start, end)} as a {@code long}, or {@code 0} when it overflows. Accumulates negatively, like
      * {@link Long#parseLong(String)}, so {@link Long#MIN_VALUE} parses without overflowing on the way.
      */
-    static long parseLong(byte[] buffer, int start, int end) {
-        boolean negative = buffer[start] == '-';
+    static long parseLong(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        boolean negative = JsonChars.at(buffer, text, start) == '-';
         long limit = negative ? Long.MIN_VALUE : -Long.MAX_VALUE;
         long minimumBeforeDigit = limit / 10;
         long result = 0L;
         for (int p = negative ? start + 1 : start; p < end; p++) {
-            int digit = buffer[p] - '0';
+            int digit = JsonChars.at(buffer, text, p) - '0';
             if (result < minimumBeforeDigit) {
                 return 0L;
             }
@@ -81,19 +83,19 @@ final class JsonNumbers {
      * {@code [start, end)} as a {@code double}: up to 18 significant digits scaled by a power of ten, the same
      * operations in the same order on every board, or {@code 0.0} when it overflows.
      */
-    static double parseDouble(byte[] buffer, int start, int end) {
-        boolean negative = buffer[start] == '-';
-        int exponentStart = exponentStart(buffer, start, end);
+    static double parseDouble(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        boolean negative = JsonChars.at(buffer, text, start) == '-';
+        int exponentStart = exponentStart(buffer, text, start, end);
         double significand = 0.0;
         int significantDigits = 0;
-        int decimalExponent = exponentStart < end ? exponent(buffer, exponentStart + 1, end) : 0;
+        int decimalExponent = exponentStart < end ? exponent(buffer, text, exponentStart + 1, end) : 0;
         boolean fraction = false;
         for (int p = negative ? start + 1 : start; p < exponentStart; p++) {
-            if (buffer[p] == '.') {
+            if (JsonChars.at(buffer, text, p) == '.') {
                 fraction = true;
                 continue;
             }
-            int digit = buffer[p] - '0';
+            int digit = JsonChars.at(buffer, text, p) - '0';
             if (significantDigits == 0 && digit == 0) {
                 decimalExponent -= fraction ? 1 : 0;
             } else if (significantDigits < MAX_SIGNIFICANT_DIGITS) {
@@ -107,21 +109,21 @@ final class JsonNumbers {
         return scaled(significand, decimalExponent, negative);
     }
 
-    private static int exponentStart(byte[] buffer, int start, int end) {
+    private static int exponentStart(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         int p = start;
-        while (p < end && buffer[p] != 'e' && buffer[p] != 'E') {
+        while (p < end && JsonChars.at(buffer, text, p) != 'e' && JsonChars.at(buffer, text, p) != 'E') {
             p++;
         }
         return p;
     }
 
     /** The signed exponent whose optional sign starts at {@code start}, its magnitude capped near 1,000,000. */
-    private static int exponent(byte[] buffer, int start, int end) {
-        boolean negative = buffer[start] == '-';
+    private static int exponent(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        boolean negative = JsonChars.at(buffer, text, start) == '-';
         int exponent = 0;
-        for (int p = buffer[start] == '+' || negative ? start + 1 : start; p < end; p++) {
+        for (int p = JsonChars.at(buffer, text, start) == '+' || negative ? start + 1 : start; p < end; p++) {
             if (exponent < 100000) {
-                exponent = exponent * 10 + (buffer[p] - '0');
+                exponent = exponent * 10 + (JsonChars.at(buffer, text, p) - '0');
             }
         }
         return negative ? -exponent : exponent;
@@ -147,13 +149,13 @@ final class JsonNumbers {
     }
 
     /** Past one or more digits starting at {@code start}, or {@link JsonSyntax#FAILED} when there is none. */
-    private static int requiredDigits(byte[] buffer, int start, int end) {
-        return start < end && JsonSyntax.isDigit(buffer[start]) ? skipDigits(buffer, start, end) : JsonSyntax.FAILED;
+    private static int requiredDigits(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
+        return start < end && JsonSyntax.isDigit(JsonChars.at(buffer, text, start)) ? skipDigits(buffer, text, start, end) : JsonSyntax.FAILED;
     }
 
-    private static int skipDigits(byte[] buffer, int start, int end) {
+    private static int skipDigits(byte @Nullable [] buffer, @Nullable String text, int start, int end) {
         int p = start;
-        while (p < end && JsonSyntax.isDigit(buffer[p])) {
+        while (p < end && JsonSyntax.isDigit(JsonChars.at(buffer, text, p))) {
             p++;
         }
         return p;

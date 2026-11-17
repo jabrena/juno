@@ -43,8 +43,8 @@ Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, lin
 | Wi-Fi station | ✓ | `MCU.getWifi()` provides station mode, status, addresses and TCP/UDP networking. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | |
 | `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Uses the CYW43439 Wi-Fi radio and the core's UDP support. | |
-| `HttpClient` (HTTP) | ✓ | Plain HTTP client support through the board's Wi-Fi runtime. | |
-| `HttpClient.requestHttps` | ✓ | HTTPS client support through the Pico TLS transport. | |
+| `java.net.http` (HTTP) | ✓ | Plain HTTP through the board's Wi-Fi runtime. | [`JdkHttpWeather`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpWeather.java) |
+| `java.net.http` (HTTPS) | ✓ | BearSSL with Mozilla's roots, or an `SSLContext`'s own; certificate dates are checked once SNTP sets the clock. | [`JdkHttpsRequests`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/JdkHttpsRequests.java) |
 | `HttpServer` | ✓ | HTTP and HTTPS server support through the board's Wi-Fi runtime. | |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS email support. | |
 | `Smtp.send` (STARTTLS) | — | STARTTLS is not available on this board. | |

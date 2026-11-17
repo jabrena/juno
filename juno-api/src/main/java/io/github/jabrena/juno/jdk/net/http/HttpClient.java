@@ -2,7 +2,7 @@ package io.github.jabrena.juno.jdk.net.http;
 
 import io.github.jabrena.juno.hardware.internal.NativeHttpFeatures;
 import io.github.jabrena.juno.hardware.internal.NativeHttpRequests;
-import io.github.jabrena.juno.hardware.internal.NativeHttpSchemes;
+import io.github.jabrena.juno.javax.net.ssl.SSLContext;
 import io.github.jabrena.juno.jdk.net.URI;
 import io.github.jabrena.juno.jdk.util.Optional;
 import org.jspecify.annotations.Nullable;
@@ -12,7 +12,7 @@ import java.time.Duration;
 
 /**
  * The board-side {@code java.net.http.HttpClient}: sends a {@link HttpRequest} through the board's own
- * {@link io.github.jabrena.juno.hardware.net.http.HttpClient}. See the package description for the subset.
+ * {@link io.github.jabrena.juno.hardware.internal.NativeHttpRequests}. See the package description for the subset.
  *
  * <p>What a program never uses is not linked: the request code of a scheme none of its URIs name, the redirect code
  * when it never calls {@code followRedirects}, and a full response-header buffer when it never reads
@@ -24,7 +24,10 @@ import java.time.Duration;
  * {@link #send} throws {@link IOException}.
  */
 public final class HttpClient implements AutoCloseable {
-    /** The body buffer's size in bytes: a longer body is truncated to it. */
+    /**
+     * The size in bytes of the buffer {@link HttpResponse.BodyHandlers#ofByteArray()} receives a body into: a longer
+     * body is truncated to it. {@link HttpResponse.BodyHandlers#ofString()} has no such limit.
+     */
     public static final int BODY_CAPACITY = 384;
     /** The response-header buffer's size in bytes, in a program that reads headers or follows redirects. */
     public static final int RESPONSE_HEADERS_CAPACITY = 512;
@@ -34,18 +37,23 @@ public final class HttpClient implements AutoCloseable {
     public static final int DEFAULT_TIMEOUT_MILLIS = 5000;
     private static final int UNREAD_HEADERS_CAPACITY = 16;
 
-    private final byte[] body = new byte[BODY_CAPACITY];
     private final byte[] headers;
-    private final int[] statusAndHeadersLength = new int[2];
+    /** The status, the header bytes received, and whether a String body did not fit in the arena. */
+    private final int[] statusAndHeadersLength = new int[3];
     /** The response headers, in a program that reads them or follows redirects; {@code null} in any other. */
     private final @Nullable HttpHeaders responseHeaders;
-    private final ByteArrayResponse response;
+    /** The byte-array body buffer and its reused response, made on the first {@code ofByteArray()} response. */
+    private @Nullable ByteArrayResponse response;
+    /** The body of the last {@code ofString()} request. */
+    private @Nullable String textBody;
     /** The redirect policy, or {@code null} for {@link Redirect#NEVER}, so a program without redirects needs no enum. */
     private final @Nullable Redirect redirect;
     private final int connectTimeoutMillis;
+    /** The trust anchors given with {@link Builder#sslContext}, or {@code null} for the board's own. */
+    private final @Nullable SSLContext sslContext;
     private boolean shutDown;
 
-    private HttpClient(@Nullable Redirect redirect, int connectTimeoutMillis) {
+    private HttpClient(@Nullable Redirect redirect, int connectTimeoutMillis, @Nullable SSLContext sslContext) {
         // Decided when the program is linked: a full buffer only for a program that reads headers or follows redirects.
         if (NativeHttpFeatures.responseHeaders()) {
             headers = new byte[RESPONSE_HEADERS_CAPACITY];
@@ -54,19 +62,25 @@ public final class HttpClient implements AutoCloseable {
             headers = new byte[UNREAD_HEADERS_CAPACITY];
             responseHeaders = null;
         }
-        response = new ByteArrayResponse(body, responseHeaders);
         this.redirect = redirect;
         this.connectTimeoutMillis = connectTimeoutMillis;
+        this.sslContext = sslContext;
     }
 
     /** A client with the default settings: no redirects, and the default timeout. */
     public static HttpClient newHttpClient() {
-        return new HttpClient(null, 0);
+        return new HttpClient(null, 0, null);
     }
 
     /** A builder for a client. */
     public static Builder newBuilder() {
         return new ClientBuilder();
+    }
+
+    /** The {@code SSLContext} the client checks servers against: its own, or the board's default. */
+    public SSLContext sslContext() {
+        SSLContext context = sslContext;
+        return context == null ? SSLContext.boardDefault() : context;
     }
 
     /** The client's redirect policy. */
@@ -94,7 +108,8 @@ public final class HttpClient implements AutoCloseable {
         String method = request.method();
         byte[] bodyBytes = request.bodyBytes();
         int bodyLength = request.bodyLength();
-        int length = exchange(request, target, method, bodyBytes, bodyLength);
+        boolean text = responseBodyHandler.receivesText();
+        int length = exchange(request, target, method, bodyBytes, bodyLength, text);
         int hops = 0;
         // Decided when the program is linked: a program that never calls followRedirects links none of this loop.
         while (NativeHttpFeatures.redirects() && redirect != null && redirect != Redirect.NEVER
@@ -112,7 +127,7 @@ public final class HttpClient implements AutoCloseable {
             }
             target = next;
             hops++;
-            length = exchange(request, target, method, bodyBytes, bodyLength);
+            length = exchange(request, target, method, bodyBytes, bodyLength, text);
         }
         return responseBodyHandler.respond(this, statusCode(), length, target);
     }
@@ -153,27 +168,30 @@ public final class HttpClient implements AutoCloseable {
 
     /** The client's reused byte-array response, its buffer zero-filled past the {@code length} bytes received. */
     HttpResponse<byte[]> byteArrayResponse(int statusCode, int length, URI uri) {
+        ByteArrayResponse reused = byteArrayState();
+        byte[] body = reused.body;
         for (int i = length; i < body.length; i++) {
             body[i] = 0;
         }
-        response.statusCode = statusCode;
-        response.uri = uri;
-        return response;
+        reused.statusCode = statusCode;
+        reused.uri = uri;
+        return reused;
     }
 
-    /** A new response holding the {@code length} bytes received as a {@code String}. */
-    HttpResponse<String> stringResponse(int statusCode, int length, URI uri) {
-        return new StringResponse(statusCode, text(body, length), response.headers, uri);
+    /** A new response holding the body the last {@code ofString()} request received. */
+    HttpResponse<String> stringResponse(int statusCode, URI uri) {
+        String received = textBody;
+        return new StringResponse(statusCode, received == null ? "" : received, responseHeaders, uri);
     }
 
-    /** The first {@code length} of {@code bytes} as a {@code String}, one character per byte. */
-    static String text(byte[] bytes, int length) {
-        // Sized to the body received, not to the buffer, so a short body costs the arena only its own bytes.
-        StringBuilder text = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            text.append((char) (bytes[i] & 0xFF));
+    /** The reused byte-array response and its body buffer, made the first time a program needs them. */
+    private ByteArrayResponse byteArrayState() {
+        ByteArrayResponse reused = response;
+        if (reused == null) {
+            reused = new ByteArrayResponse(new byte[BODY_CAPACITY], responseHeaders);
+            response = reused;
         }
-        return text.toString();
+        return reused;
     }
 
     /** Whether {@code status} is a redirect a client follows. */
@@ -193,17 +211,23 @@ public final class HttpClient implements AutoCloseable {
         return statusAndHeadersLength[0];
     }
 
-    /** Sends one request and returns the body bytes received. */
-    private int exchange(HttpRequest request, URI uri, String method, byte[] bodyBytes, int bodyLength)
+    /**
+     * Sends one request and returns the body bytes received into the byte-array buffer; with {@code text}, the body
+     * is kept in {@link #textBody} instead, at its own size.
+     */
+    private int exchange(HttpRequest request, URI uri, String method, byte[] bodyBytes, int bodyLength, boolean text)
             throws IOException {
         // Decided when the program is linked: a program that sets no timeout keeps the board's own.
         if (NativeHttpFeatures.timeouts()) {
-            io.github.jabrena.juno.hardware.net.http.HttpClient.setTimeout(timeoutMillis(request));
+            NativeHttpRequests.setTimeout(timeoutMillis(request));
         }
         // Never null: HttpRequest.Builder.uri and redirectTarget only accept a URI with a host.
         String host = uri.getHost();
         if (host == null) {
             throw new IOException("The URI has no host");
+        }
+        if (uri.isSecure()) {
+            BoardRequests.installTrust(sslContext);
         }
         String target = uri.requestTarget();
         // Decided when the program is linked: only a program that calls HttpRequest.Builder.method can send a CONNECT.
@@ -212,25 +236,15 @@ public final class HttpClient implements AutoCloseable {
             target = uri.authorityTarget();
         }
         int length;
-        // Each scheme asks its link-time query first, so a program that only ever sends to one scheme links only
-        // that scheme's request: the other branch, and its shim, are dropped when the program is linked.
-        if (uri.isSecure()) {
-            if (!NativeHttpSchemes.https()) {
-                throw new IOException("This program links no https request: name an https URI in it to send one");
-            }
-            length = NativeHttpRequests.requestHttps(host, uri.connectPort(), method, target,
-                    request.headerBytes(), request.headersLength(), bodyBytes, bodyLength,
-                    body, body.length, headers, headers.length, statusAndHeadersLength);
+        if (text) {
+            textBody = null;
+            String received = BoardRequests.receiveText(request, uri, host, method, target, bodyBytes, bodyLength,
+                    headers, statusAndHeadersLength);
+            textBody = received;
+            length = received.length();
         } else {
-            if (!NativeHttpSchemes.http()) {
-                throw new IOException("This program links no http request: name an http URI in it to send one");
-            }
-            length = NativeHttpRequests.requestHttp(host, uri.connectPort(), method, target,
-                    request.headerBytes(), request.headersLength(), bodyBytes, bodyLength,
-                    body, body.length, headers, headers.length, statusAndHeadersLength);
-        }
-        if (length < 0) {
-            throw new IOException("The HTTP request failed");
+            length = BoardRequests.receiveBytes(request, uri, host, method, target, bodyBytes, bodyLength,
+                    byteArrayState().body, headers, statusAndHeadersLength);
         }
         // Decided when the program is linked: in a program that sets a timeout, no response within it throws; any
         // other program answers status 0, as the board's own client does.
@@ -254,7 +268,11 @@ public final class HttpClient implements AutoCloseable {
      * {@link Redirect#NORMAL}.
      */
     private @Nullable URI redirectTarget(URI current) throws IOException {
-        Optional<String> location = response.headers().firstValue("location");
+        HttpHeaders received = responseHeaders;
+        if (received == null) {
+            return null;
+        }
+        Optional<String> location = received.firstValue("location");
         if (location.isEmpty()) {
             return null;
         }
@@ -310,6 +328,14 @@ public final class HttpClient implements AutoCloseable {
          */
         Builder connectTimeout(Duration duration);
 
+        /**
+         * Sets the trust anchors the client checks HTTPS servers against. In a program that sets one, the board's own
+         * roots are no longer linked on the ESP32 boards, so every client there needs an {@code SSLContext} with
+         * trust anchors to reach an HTTPS server; on a board that cannot change its trust at runtime, a request through
+         * this client fails with an {@code IOException}.
+         */
+        Builder sslContext(SSLContext sslContext);
+
         /** Builds the client, with its response and buffers. */
         HttpClient build();
     }
@@ -317,6 +343,7 @@ public final class HttpClient implements AutoCloseable {
     private static final class ClientBuilder implements Builder {
         private @Nullable Redirect redirect;
         private int connectTimeoutMillis;
+        private @Nullable SSLContext sslContext;
 
         @Override
         public Builder version(Version version) {
@@ -340,8 +367,14 @@ public final class HttpClient implements AutoCloseable {
         }
 
         @Override
+        public Builder sslContext(SSLContext context) {
+            sslContext = context;
+            return this;
+        }
+
+        @Override
         public HttpClient build() {
-            return new HttpClient(redirect, connectTimeoutMillis);
+            return new HttpClient(redirect, connectTimeoutMillis, sslContext);
         }
     }
 
