@@ -32,7 +32,7 @@ static int32_t juno_pop3_login(Client& client, const char* username, const char*
 extern "C" int32_t juno_pop3_message_count(const char* host, int32_t port,
                                             const char* username, const char* password) {
   ${JUNO_TLS_CLIENT_DECLARATION}
-  if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+  if (!client.connect(host, static_cast<uint16_t>(port))) { client.stop(); return -1; }
   unsigned long deadline = millis() + 10000;
   int32_t loginResult = juno_pop3_login(client, username, password, deadline);
   if (loginResult != 0) { client.stop(); return loginResult; }
@@ -91,7 +91,7 @@ extern "C" int32_t juno_pop3_read_latest(const char* host, int32_t port,
                                           int32_t* status) {
   status[0] = 0;
   ${JUNO_TLS_CLIENT_DECLARATION}
-  if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+  if (!client.connect(host, static_cast<uint16_t>(port))) { client.stop(); return -1; }
   unsigned long deadline = millis() + 20000;
 
   int32_t loginResult = juno_pop3_login(client, username, password, deadline);
@@ -163,7 +163,7 @@ extern "C" int32_t juno_pop3_read_subject(const char* host, int32_t port,
                                            int32_t messageNumber,
                                            uint8_t* subjectBuffer, int32_t subjectBufferLength) {
   ${JUNO_TLS_CLIENT_DECLARATION}
-  if (!client.connect(host, static_cast<uint16_t>(port))) return -1;
+  if (!client.connect(host, static_cast<uint16_t>(port))) { client.stop(); return -1; }
   unsigned long deadline = millis() + 15000;
 
   int32_t loginResult = juno_pop3_login(client, username, password, deadline);
