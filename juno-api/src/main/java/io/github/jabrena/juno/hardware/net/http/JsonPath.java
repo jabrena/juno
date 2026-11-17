@@ -59,6 +59,19 @@ final class JsonPath {
         return current;
     }
 
+    /** Validates the whole document and returns where its root value starts, or {@link #INVALID}. */
+    static int root(byte @Nullable [] buffer, @Nullable String text, int length) {
+        if ((buffer == null && text == null) || length < 0) {
+            return INVALID;
+        }
+        int rootStart = JsonSyntax.skipSpace(buffer, text, 0, length);
+        int rootEnd = JsonSyntax.parseValue(buffer, text, rootStart, length, 0);
+        if (rootEnd == JsonSyntax.FAILED || JsonSyntax.skipSpace(buffer, text, rootEnd, length) != length) {
+            return INVALID;
+        }
+        return rootStart;
+    }
+
     /**
      * The array index whose digits start at {@code start} and end with {@code ']'}, or {@code -1} for no digits, a
      * leading zero, an index past {@link Integer#MAX_VALUE}, or a missing {@code ']'}.
@@ -113,7 +126,7 @@ final class JsonPath {
         return next;
     }
 
-    private static int member(byte @Nullable [] buffer, @Nullable String text, int objectStart, int objectEnd, String path, int keyStart, int keyEnd) {
+    static int member(byte @Nullable [] buffer, @Nullable String text, int objectStart, int objectEnd, String path, int keyStart, int keyEnd) {
         int p = JsonSyntax.skipSpace(buffer, text, objectStart + 1, objectEnd);
         while (p < objectEnd && JsonChars.at(buffer, text, p) != '}') {
             int nameEnd = JsonText.parseString(buffer, text, p, objectEnd);
@@ -135,7 +148,7 @@ final class JsonPath {
         return JsonSyntax.FAILED;
     }
 
-    private static int element(byte @Nullable [] buffer, @Nullable String text, int arrayStart, int arrayEnd, int index) {
+    static int element(byte @Nullable [] buffer, @Nullable String text, int arrayStart, int arrayEnd, int index) {
         int p = JsonSyntax.skipSpace(buffer, text, arrayStart + 1, arrayEnd);
         int current = 0;
         while (p < arrayEnd && JsonChars.at(buffer, text, p) != ']') {

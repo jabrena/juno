@@ -139,6 +139,16 @@ public final class Json {
         return arraySizeOf(null, json, json.length(), path);
     }
 
+    /** SPIKE (#285): validates {@code json} once and returns a view of its root value (invalid when malformed). */
+    public static JsonView view(String json) {
+        return new JsonView(null, json, json.length(), JsonPath.root(null, json, json.length()));
+    }
+
+    /** SPIKE (#285): {@link #view(String)} for the first {@code bufferLength} bytes of {@code buffer}. */
+    public static JsonView view(byte[] buffer, int bufferLength) {
+        return new JsonView(buffer, null, bufferLength, JsonPath.root(buffer, null, bufferLength));
+    }
+
     private static int typeOf(byte @Nullable [] buffer, @Nullable String text, int length, String path) {
         int start = JsonPath.locate(buffer, text, length, path);
         if (start == JsonPath.INVALID) {
