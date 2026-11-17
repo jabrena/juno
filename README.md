@@ -126,10 +126,6 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tr>
   <tr>
     <td align="center" width="50%">
-      <strong>Arduino UNO R3 WiFi Rev2</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3-wifi-rev2.png" alt="Arduino UNO WiFi Rev2">
-    </td>
-    <td align="center" width="50%">
       <strong>Arduino UNO R3</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3">
     </td>
@@ -236,7 +232,6 @@ The project provides a `Maven plugin` to help the user with the common operation
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-q
 # -Djuno.board=arduino-uno-r4-wifi
-# -Djuno.board=arduino-uno-r3-wifi-rev2
 # -Djuno.board=arduino-uno-r3
 # -Djuno.board=arduino-nano-esp32
 # -Djuno.board=ai-thinker-esp32-cam
@@ -302,13 +297,13 @@ add `-Djuno.main=<fully-qualified-class-name>` and `-Djuno.board=<id>` when the 
   </tbody>
 </table>
 
-For example, verify the Grove Temperature and Humidity Sensor Pro monitor for a UNO WiFi Rev2
+For example, verify the Grove Temperature and Humidity Sensor Pro monitor for a UNO R3
 without uploading it:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.device.grove.sensors.GroveDht22Monitor \
-  -Djuno.board=arduino-uno-r3-wifi-rev2
+  -Djuno.board=arduino-uno-r3
 ```
 
 ## Supported Java subset

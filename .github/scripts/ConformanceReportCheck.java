@@ -22,7 +22,7 @@ import org.w3c.dom.NodeList;
  * <p>An entry passes when its name holds a program ({@code demo.<Name>} or {@code <Name>}, which JUnit quotes as a
  * String argument) followed by a board constant in parentheses, as the runners' display names do
  * ({@code conformance "demo.IntegralArithmetic" (UNO_R4_WIFI) ["integral-arithmetic"]},
- * {@code "IntMath" (UNO_R3_WIFI_REV2)}). An index alone
+ * {@code "IntMath" (UNO_R3)}). An index alone
  * ({@code matches(String, Board)[7]}) fails, because the report must identify the run without the build log. A
  * directory without reports passes: whether the job produced any is the upload step's concern, not this check's.
  */

@@ -244,61 +244,6 @@ jobs:
           cache-from: type=gha,scope=qemu-image
           cache-to: type=gha,mode=max,scope=qemu-image
 
-  simavr-image:
-    name: Publish simavr image
-    needs: changes
-    if: needs.changes.result == 'success'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    outputs:
-      ref: ${{ steps.reference.outputs.ref }}
-    steps:
-      - uses: actions/checkout@v7
-      - id: reference
-        shell: bash
-        run: |
-          set -euo pipefail
-          digest="$(git ls-files -z -- \
-            juno-compiler/src/test/docker/simavr/Dockerfile \
-            juno-compiler/src/test/docker/simavr/Arduino.h \
-            juno-compiler/src/test/docker/simavr/SPI.h \
-            juno-compiler/src/test/docker/simavr/SdFat.h \
-            juno-compiler/src/test/docker/simavr/WiFiNINA.h \
-            juno-compiler/src/test/docker/simavr/WiFiUdp.h \
-            juno-compiler/src/test/docker/simavr/run.sh \
-            juno-compiler/src/test/docker/simavr/runner.c \
-            juno-compiler/src/test/docker/simavr/startup.cpp \
-            | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
-          echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-simavr:sha-$digest" >> "$GITHUB_OUTPUT"
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - id: image
-        env:
-          IMAGE: ${{ steps.reference.outputs.ref }}
-        shell: bash
-        run: |
-          if docker manifest inspect "$IMAGE" > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
-      - uses: docker/setup-buildx-action@v4
-        if: steps.image.outputs.exists != 'true'
-      - uses: docker/build-push-action@v7
-        if: steps.image.outputs.exists != 'true'
-        with:
-          context: juno-compiler/src/test/docker/simavr
-          push: true
-          tags: ${{ steps.reference.outputs.ref }}
-          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          cache-from: type=gha,scope=simavr-image
-          cache-to: type=gha,mode=max,scope=simavr-image
-
   xtensa-image:
     name: Publish Xtensa image
     needs: changes
@@ -438,52 +383,6 @@ jobs:
         if: always()
         run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
-  simavr:
-    name: Run AVR programs under simavr
-    needs: [changes, simavr-image]
-    if: needs.changes.outputs.full == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          submodules: true
-      - uses: ./.github/actions/setup-maven
-      - uses: docker/login-action@v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Pull simavr image
-        run: docker pull ${{ needs.simavr-image.outputs.ref }}
-      - name: Run AVR programs under simavr
-        run: >-
-          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Psimavr
-          verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=SimavrRunIT
-          -Djuno.simavrImage=${{ needs.simavr-image.outputs.ref }}
-          -b turbo -T1C
-      - name: Publish simavr conformance report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: avr-conformance-junit
-          path: juno-compiler/target/failsafe-reports/**
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Publish simavr conformance failure evidence
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: avr-conformance-failure
-          path: juno-compiler/target/simavr/generated/**
-          if-no-files-found: warn
-          retention-days: 7
-      - name: Check simavr conformance report entries
-        if: always()
-        run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
-
   xtensa:
     name: Run Xtensa programs under QEMU (ESP32-S3, ${{ matrix.carriers }} carrier)
     needs: [changes, xtensa-image]
@@ -541,7 +440,7 @@ jobs:
 
   conformance-reports:
     name: Publish conformance reports
-    needs: [changes, qemu, simavr, xtensa]
+    needs: [changes, qemu, xtensa]
     if: always() && needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -555,13 +454,6 @@ jobs:
         with:
           name: thumb2-conformance-junit
           path: reports/qemu
-      - name: Download AVR conformance report
-        if: needs.simavr.result != 'skipped'
-        continue-on-error: true
-        uses: actions/download-artifact@v8
-        with:
-          name: avr-conformance-junit
-          path: reports/simavr
       - name: Download Xtensa conformance report
         if: needs.xtensa.result != 'skipped'
         continue-on-error: true
@@ -585,7 +477,7 @@ jobs:
           {
             echo "## Conformance reports"
             echo
-            for backend in qemu simavr xtensa xtensa-2-carriers; do
+            for backend in qemu xtensa xtensa-2-carriers; do
               files=(reports/$backend/failsafe-reports/TEST-*.xml)
               if [[ -e "${files[0]}" ]]; then
                 for report in "${files[@]}"; do
@@ -604,7 +496,7 @@ jobs:
             echo "JUnit XML files collected: $report_count"
           } >> "$GITHUB_STEP_SUMMARY"
           if (( report_count == 0 )); then
-            echo "::warning::No QEMU, simavr or Xtensa JUnit XML report was available"
+            echo "::warning::No QEMU or Xtensa JUnit XML report was available"
           fi
       - name: Publish consolidated conformance reports
         if: always()
@@ -728,8 +620,6 @@ jobs:
         include:
           - board: UNO R3
             board_id: arduino-uno-r3
-          - board: UNO WiFi Rev2
-            board_id: arduino-uno-r3-wifi-rev2
           - board: UNO R4 WiFi
             board_id: arduino-uno-r4-wifi
           - board: Nano ESP32

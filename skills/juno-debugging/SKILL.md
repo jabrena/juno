@@ -65,7 +65,7 @@ selection. Reproduce without hardware:
   collection, remove allocations from loops (see the `juno-zero-allocation` skill), and only then consider
   `-Djuno.Xmx`.
 - **Silence or a reset right after printing**: a task that overflows its stack needs `-Djuno.Xss` (thread stacks are 2 KiB on the
-  UNO R4 WiFi, 4 KiB on the UNO Q, 512 bytes on the UNO WiFi Rev2).
+  UNO R4 WiFi, 4 KiB on the UNO Q, 512 bytes on the UNO R3).
 - **Language or runtime behavior** (arithmetic, exceptions, strings, threads): add a small program to
   `juno-compiler/src/test/qemu/programs` and run `./mvnw -pl juno-compiler -am -Pqemu verify`. It runs the
   generated assembly in QEMU (Cortex-M4) and requires output identical to the same source on OpenJDK. QEMU models
@@ -74,7 +74,7 @@ selection. Reproduce without hardware:
 ## 5. Differences between boards
 
 Compare the `--metrics` output and the generated shims for each `--board`. The UNO Q runs Zephyr and reaches the
-network through an I/O worker; the UNO WiFi Rev2 is AVR (8-bit, safepoint preemption, 1 KiB arena); capabilities
+network through an I/O worker; the UNO R3 is AVR (8-bit, 1 KiB arena, no threads); capabilities
 (`Capability`) gate what each board accepts. Check the board's page under `juno-site/src/main/resources/content/`.
 
 ## When changing the compiler
