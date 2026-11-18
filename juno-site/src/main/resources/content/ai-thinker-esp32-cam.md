@@ -9,8 +9,8 @@ status LED on a small board. Its CPU is an Xtensa LX6, so Juno compiles for it w
 backend as the Nano ESP32.
 
 The board has 4 MB of PSRAM. `Camera.begin()` leaves frame-buffer ownership inside the camera driver; application code
-receives copied bytes through `Camera.capture()`. For other large, caller-owned byte payloads use the static `Psram` API.
-PSRAM is not part of the Java arena and is not managed by the garbage collector.
+receives copied bytes through `Camera.capture()` (JPEG) or `Camera.captureGrayscale()` (8-bit pixels). For other
+large, caller-owned byte payloads use the static `Psram` API. PSRAM is not part of the Java arena and is not managed by the garbage collector.
 
 <img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
 
@@ -32,7 +32,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 | Email over STARTTLS (`Smtp.send`) | ✓ | STARTTLS upgrades through the ESP32 `ESP_SSLClient` wrapper. | |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `RemotePoweredUpHub` and ArduinoBLE. | [`PoweredUpMotorEncoders`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpMotorEncoders.java) |
 | `SdCard` | ✓ | Built-in microSD socket through `MCU.getSdCard()`, using GPIO13 as chip select. | [`AiThinkerEsp32CamWifiFromSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java) |
-| OV2640 camera | ✓ | `MCU.getCamera()` captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer. | [`AiThinkerEsp32CamCapture`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java) |
+| OV2640 camera | ✓ | `MCU.getCamera()` captures JPEG frames with `capture()`, or 8-bit grayscale frames downscaled to any `width × height` with `captureGrayscale()`, into a caller-owned buffer. The native driver owns the camera frame buffer. A program uses one of the two capture modes, never both: the compiler rejects a program that calls both. | [`AiThinkerEsp32CamCapture`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java), [`AiThinkerEsp32CamGrayscaleCapture`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamGrayscaleCapture.java) |
 | Explicit PSRAM buffers | ✓ | The static `Psram` API provides caller-owned byte buffers; PSRAM is outside the Java arena. | |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | |
 | USB HID mouse | — | The board has no native USB port; use a USB-serial adapter for flashing and serial output. | |
