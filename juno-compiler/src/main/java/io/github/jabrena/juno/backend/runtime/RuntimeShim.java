@@ -258,7 +258,7 @@ public final class RuntimeShim {
             shim.append(shimLibraries.bleCentralHelpers(uses(ShimFeature.THREADS), core.bleNames()));
         }
         if (uses(ShimFeature.CAMERA)) {
-            shim.append(core.cameraHelpers());
+            shim.append(uses(ShimFeature.CAMERA_GRAYSCALE) ? core.cameraGrayscaleHelpers() : core.cameraHelpers());
         }
         if (uses(ShimFeature.PSRAM)) {
             shim.append(core.psramHelpers());

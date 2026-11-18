@@ -426,6 +426,13 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/camera.cpp");
     }
 
+    /** Grayscale frames from the OV2640 at QQVGA, downscaled into the program's buffer by the grayscale capture. */
+    @Override
+    public String cameraGrayscaleHelpers() {
+        requireCamera();
+        return runtimeSource.load("esp32/camera-grayscale.cpp");
+    }
+
     /** The ESP32 capability allocator-backed generic PSRAM service. */
     @Override
     public String psramHelpers() {

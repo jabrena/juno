@@ -373,8 +373,13 @@ public interface CoreRuntime {
         throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
     }
 
-    /** Core-specific implementation of the camera intrinsics, emitted only for a program that uses them. */
+    /** Core-specific implementation of the JPEG camera intrinsics, emitted only for a program that uses them. */
     default String cameraHelpers() {
+        throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
+    }
+
+    /** Core-specific grayscale camera intrinsics, emitted instead of {@link #cameraHelpers()} for a grayscale program. */
+    default String cameraGrayscaleHelpers() {
         throw new IllegalStateException("This core has no camera; the linker should have rejected MCU.getCamera");
     }
 

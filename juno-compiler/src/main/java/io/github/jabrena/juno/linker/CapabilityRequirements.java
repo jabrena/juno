@@ -109,7 +109,8 @@ final class CapabilityRequirements {
                 Intrinsic.HTTP_SERVER_HEADER, Intrinsic.HTTP_SERVER_RESPOND, Intrinsic.HTTP_SERVER_RESPOND_BUILDER,
                 Intrinsic.HTTP_SERVER_BEGIN_TLS);
         require(required, Capability.HTTPS_SERVER, Intrinsic.HTTP_SERVER_BEGIN_TLS);
-        require(required, Capability.CAMERA, Intrinsic.CAMERA_BEGIN, Intrinsic.CAMERA_CAPTURE);
+        require(required, Capability.CAMERA, Intrinsic.CAMERA_BEGIN, Intrinsic.CAMERA_CAPTURE,
+                Intrinsic.CAMERA_CAPTURE_GRAYSCALE);
         require(required, Capability.PSRAM, Intrinsic.PSRAM_AVAILABLE, Intrinsic.PSRAM_NOMINAL_CAPACITY,
                 Intrinsic.PSRAM_TOTAL_BYTES, Intrinsic.PSRAM_FREE_BYTES, Intrinsic.PSRAM_LARGEST_FREE_BLOCK,
                 Intrinsic.PSRAM_ALLOCATE, Intrinsic.PSRAM_CAPACITY, Intrinsic.PSRAM_READ_BYTE,

@@ -29,6 +29,7 @@ public final class Linker {
     private final IntrinsicRegistry intrinsicRegistry = new IntrinsicRegistry();
     private final CapabilityRequirements capabilityRequirements = new CapabilityRequirements();
     private final Esp32CamBusConflicts esp32CamBusConflicts = new Esp32CamBusConflicts();
+    private final CameraModeConflicts cameraModeConflicts = new CameraModeConflicts();
 
     private final SupportedJdkMethods supportedJdkMethods = new SupportedJdkMethods();
 
@@ -114,6 +115,7 @@ public final class Linker {
             requireCapability(declaredBoards, Capability.WATCHDOG, "");
         }
         esp32CamBusConflicts.validate(board, reachability.methods());
+        cameraModeConflicts.validate(reachability.methods());
         return new Program(entryPoint, reachability.methods(), classes, board,
                 mainClass.watchdogTimeoutMillis(), reachability.interfaceDispatches(), reachability.lambdaSites(),
                 clojureFunctions);

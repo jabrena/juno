@@ -26,6 +26,8 @@ public enum ShimFeature {
     HTTP_STREAM,
     /** {@code MCU.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
     CAMERA,
+    /** {@code Camera.captureGrayscale}: the sensor starts in grayscale, so the program uses no JPEG capture. */
+    CAMERA_GRAYSCALE,
     /** Explicit external PSRAM byte buffers on the Nano ESP32 and AI Thinker ESP32-CAM. */
     PSRAM,
     /** {@code ParallelBus}: eight data pins and a strobe, written through the core's GPIO port registers. */
