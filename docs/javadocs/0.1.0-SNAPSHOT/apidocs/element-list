@@ -11,10 +11,12 @@ io.github.jabrena.juno.hardware.device.ir
 io.github.jabrena.juno.hardware.device.ir.hx
 io.github.jabrena.juno.hardware.device.kasa
 io.github.jabrena.juno.hardware.device.lcd
+io.github.jabrena.juno.hardware.device.lidar
 io.github.jabrena.juno.hardware.device.motor
 io.github.jabrena.juno.hardware.device.sd
 io.github.jabrena.juno.hardware.device.servo
 io.github.jabrena.juno.hardware.device.tft
+io.github.jabrena.juno.hardware.device.usb
 io.github.jabrena.juno.hardware.display
 io.github.jabrena.juno.hardware.fonts
 io.github.jabrena.juno.hardware.gpio

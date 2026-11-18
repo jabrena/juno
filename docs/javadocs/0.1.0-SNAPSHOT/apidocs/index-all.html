@@ -280,6 +280,11 @@ Grove OLED's text.</div>
 <div class="block">A JSON string's content with its escapes decoded, as a new arena <code>String</code> holding its UTF-8 bytes, or
 <code>null</code> when this is not a string.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#attach()" class="member-name-link">attach()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Waits for the bus to settle, resets it, and enumerates the connected device: reads its device descriptor, gives
+it <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#DEVICE_ADDRESS"><code>UsbHostShield.DEVICE_ADDRESS</code></a>, and reads the descriptor again for <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#vendorId()"><code>UsbHostShield.vendorId()</code></a> and <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#productId()"><code>UsbHostShield.productId()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#atWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">atWaypoint(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html#atWaypoint(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">atWaypoint(Waypoint, Pose, int)</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/NavigationListener.html" title="interface in io.github.jabrena.juno.robotics.navigation">NavigationListener</a></dt>
@@ -298,6 +303,11 @@ Grove OLED's text.</div>
 <dd>
 <div class="block"><code>host:port</code>, the request target of a <code>CONNECT</code>, with the scheme's default port when the URI names
 none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#available()" class="member-name-link">available()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">The bytes ready to <a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#read()"><code>Cp210xSerial.read()</code></a> without asking the bridge again: when none are buffered, polls the bridge for
+one packet first.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#available()" class="member-name-link">available()</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
@@ -438,6 +448,10 @@ reported it.</div>
 <dd>
 <div class="block">9,600 bits per second.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#BAUD_RATE" class="member-name-link">BAUD_RATE</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">The A2M8's UART speed.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/BaudRate.html" class="type-name-link" title="enum class in io.github.jabrena.juno.hardware.serial">BaudRate</a> - Enum Class in <a href="io/github/jabrena/juno/hardware/serial/package-summary.html">io.github.jabrena.juno.hardware.serial</a></dt>
 <dd>
 <div class="block">Common baud rates exposed as named values by Juno's USB serial API.</div>
@@ -450,9 +464,17 @@ reported it.</div>
 <dd>
 <div class="block">Configures the GPS TX pin as an idle-high software-UART input.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Opens the adapter's bridge at <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#BAUD_RATE"><code>RplidarA2.BAUD_RATE</code></a> and stops any scan still running.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
 <div class="block">Initializes the card on its socket's chip-select pin and returns whether it was detected successfully.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Starts the bus, resets the controller and puts it in host mode.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/hid/Mouse.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.hid.<a href="io/github/jabrena/juno/hardware/hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></dt>
 <dd>
@@ -495,6 +517,11 @@ reported it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin(int)" class="member-name-link">begin(int)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
 <div class="block">Initializes the card on <code>chipSelectPin</code> and returns whether it was detected successfully.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Enumerates the device on the shield, checks it is a CP210x, selects its configuration, and opens its UART at
+<code>baudRate</code>, 8N1, with DTR and RTS low.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
@@ -705,6 +732,16 @@ on the sensor, so a reader that comes late still gets every sample since its pre
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/BuiltInSensor.html" class="type-name-link" title="enum class in io.github.jabrena.juno.remote.lego.poweredup">BuiltInSensor</a> - Enum Class in <a href="io/github/jabrena/juno/remote/lego/poweredup/package-summary.html">io.github.jabrena.juno.remote.lego.poweredup</a></dt>
 <dd>
 <div class="block">A sensor built into the Technic Hub (88012).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#bulkIn(int,byte%5B%5D,int,int)" class="member-name-link">bulkIn(int, byte[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Asks bulk IN <code>endpoint</code> (its number, 1 to 15, without the direction bit) for one packet and stores it at
+<code>buffer[offset]</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#bulkOut(int,byte%5B%5D,int,int,int)" class="member-name-link">bulkOut(int, byte[], int, int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Sends <code>length</code> bytes from <code>data[offset]</code> to bulk OUT <code>endpoint</code>, in packets of up to
+<code>maxPacketSize</code> bytes.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#buttonPressed()" class="member-name-link">buttonPressed()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -985,6 +1022,11 @@ reply.</div>
 <dd>
 <div class="block">The move reached its distance or its turn.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#configurationDescriptor(byte%5B%5D,int)" class="member-name-link">configurationDescriptor(byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Reads the device's configuration descriptor, with its interfaces and endpoints, into <code>buffer</code>: up to
+<code>length</code> bytes.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html#configure(java.util.Properties)" class="member-name-link">configure(Properties)</a> - Static method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/SntpClock.html" title="class in io.github.jabrena.juno.hardware.net.udp">SntpClock</a></dt>
 <dd>
 <div class="block">Applies optional <code>sntp.host</code> and <code>sntp.port</code> values loaded by the application, normally from
@@ -1028,6 +1070,16 @@ had none.</div>
 <div class="block">The brick's count of regulator control cycles since it booted, 0 to 65535 and wrapping, or <code>-1</code> when it did
 not answer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#controlIn(int,int,int,int,byte%5B%5D,int)" class="member-name-link">controlIn(int, int, int, int, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">A control transfer that reads up to <code>length</code> bytes from the device into <code>buffer</code>: setup, data IN
+and status stages.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#controlOut(int,int,int,int,byte%5B%5D,int)" class="member-name-link">controlOut(int, int, int, int, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">A control transfer that sends the first <code>length</code> bytes of <code>data</code> to the device (none when
+<code>length</code> is 0): setup, data OUT and status stages.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#copyString(byte%5B%5D)" class="member-name-link">copyString(byte[])</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
 <dd>
 <div class="block">Decodes a JSON string, escapes included, to UTF-8 in <code>out</code> and returns the number of bytes written; <code>0</code>
@@ -1046,6 +1098,15 @@ negative turn.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#corrections()" class="member-name-link">corrections()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
 <dd>
 <div class="block">How many correcting pivots the drive has made.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a> - Class in <a href="io/github/jabrena/juno/hardware/device/usb/package-summary.html">io.github.jabrena.juno.hardware.device.usb</a></dt>
+<dd>
+<div class="block">A Silicon Labs CP210x USB-to-UART bridge (CP2102, CP2104, ...) attached to a <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb"><code>UsbHostShield</code></a>: the chip on the
+RoboPeak RPLIDAR adapter and on many ESP32 and sensor boards.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.usb.UsbHostShield)" class="member-name-link">Cp210xSerial(UsbHostShield)</a> - Constructor for class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">A bridge reached through <code>usb</code>, which must be started (<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#begin()"><code>UsbHostShield.begin()</code></a>) before use.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#create(java.lang.String)" class="member-name-link">create(String)</a> - Static method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
@@ -1142,6 +1203,10 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">Detours tried for one mission waypoint before the planner gives up on it.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#DEFAULT_MOTOR_PWM" class="member-name-link">DEFAULT_MOTOR_PWM</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">The motor PWM <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startMotor()"><code>RplidarA2.startMotor()</code></a> sets: Slamtec's default, about 10 revolutions a second.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#DEFAULT_PORT" class="member-name-link">DEFAULT_PORT</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">The UDP port <code>juno:monitor</code> listens on by default; the standard 514 needs root on most computers.</div>
@@ -1162,6 +1227,10 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">The angle in degrees, 22.5 per step rounded down.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#DEGREES" class="member-name-link">DEGREES</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Entries of a scan array: one per whole degree, clockwise seen from above, 0 at the lidar's front.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/Delay.html" class="type-name-link" title="class in io.github.jabrena.juno.util">Delay</a> - Class in <a href="io/github/jabrena/juno/util/package-summary.html">io.github.jabrena.juno.util</a></dt>
 <dd>
 <div class="block">Timing operations recognized as compiler intrinsics by Juno.</div>
@@ -1176,6 +1245,10 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">Makes the request a <code>DELETE</code>, with no body.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#DESCRIPTOR_CONFIGURATION" class="member-name-link">DESCRIPTOR_CONFIGURATION</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#DESCRIPTOR_DEVICE" class="member-name-link">DESCRIPTOR_DEVICE</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" class="type-name-link" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a> - Class in <a href="io/github/jabrena/juno/robotics/navigation/package-summary.html">io.github.jabrena.juno.robotics.navigation</a></dt>
 <dd>
 <div class="block">Plans a mission's path for a <a href="io/github/jabrena/juno/robotics/navigation/Navigator.html" title="class in io.github.jabrena.juno.robotics.navigation"><code>Navigator</code></a> and drives it around obstacles found on the way: the planner leJOS's
@@ -1190,6 +1263,10 @@ navigator's listener.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#detours()" class="member-name-link">detours()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>
 <div class="block">How many detours the planner has planned.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#DEVICE_ADDRESS" class="member-name-link">DEVICE_ADDRESS</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The address this host gives the one device it supports.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#DEVICE_COLOR_DISTANCE_SENSOR" class="member-name-link">DEVICE_COLOR_DISTANCE_SENSOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>&nbsp;</dd>
@@ -1538,9 +1615,33 @@ exactly.</div>
 <dd>
 <div class="block">The handle is unknown, released, forged or stale.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NAK" class="member-name-link">ERROR_NAK</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The peripheral answered NAK more often than the transfer's limit allows.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NO_DATA" class="member-name-link">ERROR_NO_DATA</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">An IN transfer completed without data in the receive FIFO.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NO_RESPONSE" class="member-name-link">ERROR_NO_RESPONSE</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The controller never reported the transfer as done: no device, or the SPI link is broken.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NOT_ATTACHED" class="member-name-link">ERROR_NOT_ATTACHED</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">No device is attached and enumerated: call <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#attach()"><code>UsbHostShield.attach()</code></a> first.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#ERROR_OUT_OF_BOUNDS" class="member-name-link">ERROR_OUT_OF_BOUNDS</a> - Static variable in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">The requested PSRAM range does not fit the buffer.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_STALL" class="member-name-link">ERROR_STALL</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The peripheral answered STALL: it does not support the request or the endpoint is halted.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_TIMEOUT" class="member-name-link">ERROR_TIMEOUT</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The peripheral did not answer at all, three times in a row.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#ERROR_UNAVAILABLE" class="member-name-link">ERROR_UNAVAILABLE</a> - Static variable in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
@@ -1725,6 +1826,10 @@ with <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.ht
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#flush()" class="member-name-link">flush()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
 <div class="block">Transfers all eight display pages from the framebuffer.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#flush()" class="member-name-link">flush()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Drops every byte the bridge and this driver hold, in both directions.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#flush()" class="member-name-link">flush()</a> - Method in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>
@@ -2902,6 +3007,26 @@ such header.</div>
 <dd>
 <div class="block">The heading, in millidegrees counter-clockwise, normalised to <code>0</code> through <code>359_999</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()" class="member-name-link">health()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">The lidar's health: <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_GOOD"><code>RplidarA2.HEALTH_GOOD</code></a>, <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_WARNING"><code>RplidarA2.HEALTH_WARNING</code></a>, <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_ERROR"><code>RplidarA2.HEALTH_ERROR</code></a> or <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_NO_ANSWER"><code>RplidarA2.HEALTH_NO_ANSWER</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_ERROR" class="member-name-link">HEALTH_ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()"><code>RplidarA2.health()</code></a> result: the lidar is in protection stop; reset it (or power-cycle it) before scanning.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_GOOD" class="member-name-link">HEALTH_GOOD</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()"><code>RplidarA2.health()</code></a> result: the lidar works.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_NO_ANSWER" class="member-name-link">HEALTH_NO_ANSWER</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()"><code>RplidarA2.health()</code></a> result: the lidar did not answer.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_WARNING" class="member-name-link">HEALTH_WARNING</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()"><code>RplidarA2.health()</code></a> result: the lidar works but reports a warning.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
 <div class="block">Returns 64.</div>
@@ -3154,6 +3279,10 @@ the hub has not reported its name.</div>
 <dd>
 <div class="block">Where the RCX firmware image starts in the brick's memory.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#info(int%5B%5D)" class="member-name-link">info(int[])</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Fills <code>info</code> with the model, firmware major and minor version, and hardware revision.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#info(java.lang.String)" class="member-name-link">info(String)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">Sends <code>message</code> at <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#INFO"><code>Syslog.INFO</code></a>; returns whether the datagram left the board.</div>
@@ -3161,6 +3290,10 @@ the hub has not reported its name.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#INFO" class="member-name-link">INFO</a> - Static variable in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">Informational message.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#INFO_LENGTH" class="member-name-link">INFO_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Entries <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#info(int%5B%5D)"><code>RplidarA2.info(int[])</code></a> fills: model, firmware major, firmware minor, hardware revision.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a> - Class in <a href="io/github/jabrena/juno/hardware/device/ir/package-summary.html">io.github.jabrena.juno.hardware.device.ir</a></dt>
 <dd>
@@ -3344,6 +3477,10 @@ bytes over a 38 kHz IR receiver module and an IR LED on plain pins.</div>
 4-bit mode plus 5 buttons read from a single resistor-ladder analog pin, wired for the shield's
 standard pinout.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/package-summary.html">io.github.jabrena.juno.hardware.device.lidar</a> - package io.github.jabrena.juno.hardware.device.lidar</dt>
+<dd>
+<div class="block">2D laser scanners.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/motor/package-summary.html">io.github.jabrena.juno.hardware.device.motor</a> - package io.github.jabrena.juno.hardware.device.motor</dt>
 <dd>
 <div class="block">DC-motor controller adapters.</div>
@@ -3366,6 +3503,10 @@ them from a PCA9685 servo shield over I2C.</div>
 <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/package-summary.html">io.github.jabrena.juno.hardware.device.usb</a> - package io.github.jabrena.juno.hardware.device.usb</dt>
+<dd>
+<div class="block">USB host support: the MAX3421E USB Host Shield and the device drivers built on it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/package-summary.html">io.github.jabrena.juno.hardware.display</a> - package io.github.jabrena.juno.hardware.display</dt>
 <dd>
@@ -3535,6 +3676,10 @@ boards.</div>
 <dd>
 <div class="block">Whether this is a JSON array.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#isAttached()" class="member-name-link">isAttached()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Whether <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#attach()"><code>UsbHostShield.attach()</code></a> enumerated a device.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#isAvailable()" class="member-name-link">isAvailable()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Whether the runtime currently exposes usable PSRAM.</div>
@@ -3554,6 +3699,11 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">Whether the number of pressed keys changed during the last update.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Whether the adapter is still open: <code>false</code> once it was unplugged or stopped answering, after which
+<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#begin()"><code>RplidarA2.begin()</code></a> enumerates it again.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html#isConnected()" class="member-name-link">isConnected()</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/BluetoothLe.html" title="interface in io.github.jabrena.juno.hardware.net">BluetoothLe</a></dt>
@@ -3571,6 +3721,10 @@ reads every name as missing and refuses every write.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#isDetour(io.github.jabrena.juno.robotics.navigation.Waypoint)" class="member-name-link">isDetour(Waypoint)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>
 <div class="block">Whether <code>waypoint</code> is one of the planner's detour points rather than a mission waypoint.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#isDeviceConnected()" class="member-name-link">isDeviceConnected()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Samples the bus and reports whether a device holds one of its data lines up, connected or not enumerated.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/util/Optional.html#isEmpty()" class="member-name-link">isEmpty()</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Optional.html" title="class in io.github.jabrena.juno.jdk.util">Optional</a></dt>
 <dd>
@@ -3603,6 +3757,10 @@ reads every name as missing and refuses every write.</div>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#isKeyPressed(int)" class="member-name-link">isKeyPressed(int)</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
 <dd>
 <div class="block">Whether <code>key</code> is currently pressed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#isLowSpeed()" class="member-name-link">isLowSpeed()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Whether the attached device is a low-speed (1.5 Mbit/s) one rather than full speed (12 Mbit/s).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html#isMissing()" class="member-name-link">isMissing()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></dt>
 <dd>
@@ -3674,6 +3832,11 @@ reads every name as missing and refuses every write.</div>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#isOpaque()" class="member-name-link">isOpaque()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">Whether the URI is absolute with a part that does not start with <code>/</code>, as <code>mailto:a@b.org</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#isOpen()" class="member-name-link">isOpen()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Whether <a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#begin(int)"><code>Cp210xSerial.begin(int)</code></a> opened the bridge and no transfer has failed since: a failed bulk transfer (the
+device unplugged, or it stopped answering) closes it, and <a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#begin(int)"><code>Cp210xSerial.begin(int)</code></a> opens it again.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#isOptionPressed()" class="member-name-link">isOptionPressed()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
@@ -3871,6 +4034,10 @@ client certificates are not supported, so a program passes <code>null</code>.</d
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#lastAcknowledgement()" class="member-name-link">lastAcknowledgement()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
 <div class="block">The acknowledgement code of the last command the brick refused, as <code>RcxRegulatedProtocol</code> numbers them.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#lastError()" class="member-name-link">lastError()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">The last negative <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb"><code>UsbHostShield</code></a> code a call failed with, or 0.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html#lastErrorDegrees()" class="member-name-link">lastErrorDegrees()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroRegulatedDifferentialDrive.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroRegulatedDifferentialDrive</a></dt>
 <dd>
@@ -4072,6 +4239,10 @@ list.</div>
 <dd>
 <div class="block">Maximum number of simultaneously live generic PSRAM handles.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#MAX_MOTOR_PWM" class="member-name-link">MAX_MOTOR_PWM</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">The largest motor PWM <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#setMotorPwm(int)"><code>RplidarA2.setMotorPwm(int)</code></a> accepts.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html#MAX_NUMBER" class="member-name-link">MAX_NUMBER</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLcd</a></dt>
 <dd>
 <div class="block">The largest number <a href="io/github/jabrena/juno/remote/lego/rcx/RcxLcd.html#showNumber(int)"><code>RcxLcd.showNumber(int)</code></a> displays.</div>
@@ -4095,6 +4266,10 @@ list.</div>
 <dt><a href="io/github/jabrena/juno/util/mvc/ViewRouter.html#MAX_VIEWS" class="member-name-link">MAX_VIEWS</a> - Static variable in class io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/ViewRouter.html" title="class in io.github.jabrena.juno.util.mvc">ViewRouter</a></dt>
 <dd>
 <div class="block">How many views a program can register.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#maxPacketSize0()" class="member-name-link">maxPacketSize0()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The largest packet the attached device's control endpoint takes, from its device descriptor.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html#maxPositionErrorMillimetres()" class="member-name-link">maxPositionErrorMillimetres()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Waypoint.html" title="class in io.github.jabrena.juno.robotics.navigation">Waypoint</a></dt>
 <dd>
@@ -4492,6 +4667,10 @@ in a unit test.</div>
 <dd>
 <div class="block">No body: a <code>POST</code> or <code>PUT</code> of nothing, with <code>Content-Length: 0</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#nodes()" class="member-name-link">nodes()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Measurement nodes received since the last <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startScan()"><code>RplidarA2.startScan()</code></a>, valid or not.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#nominalCapacityBytes()" class="member-name-link">nominalCapacityBytes()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">The board's nominal PSRAM capacity, or zero for an unsupported runtime.</div>
@@ -4836,6 +5015,10 @@ second (<code>1..255</code>).</div>
 <div class="block">Plays a tone of <code>frequencyHz</code> (about 31 to 20000 Hz) for <code>durationCentiseconds</code> hundredths
 of a second (<code>1..255</code>, so up to 2.55 s), then returns without waiting for it to end.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#poll(int%5B%5D)" class="member-name-link">poll(int[])</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Reads what the lidar sent since the last call.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html#pollButton()" class="member-name-link">pollButton()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRemoteControl</a></dt>
 <dd>
 <div class="block">Returns the next queued button, or <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControlButton.html#NONE"><code>RcxRemoteControlButton.NONE</code></a> when the queue is empty.</div>
@@ -5090,6 +5273,10 @@ cursor.</div>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#println(java.lang.String)" class="member-name-link">println(String)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
 <div class="block">Prints a compile-time string literal followed by a line ending.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#productId()" class="member-name-link">productId()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The attached device's USB product ID, from its device descriptor.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControlButton.html#PROGRAM_1" class="member-name-link">PROGRAM_1</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControlButton.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRemoteControlButton</a></dt>
 <dd>&nbsp;</dd>
@@ -5385,6 +5572,10 @@ once, at startup.</div>
 <dd>
 <div class="block">A touch sensor on <code>port</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#read()" class="member-name-link">read()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">The next received byte, <code>0..255</code>, or -1 when nothing arrived (or the device stopped answering).</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#read()" class="member-name-link">read()</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
 <div class="block">Reads the next byte the host sent, <code>0..255</code>, or <code>-1</code> when none is waiting.</div>
@@ -5395,6 +5586,10 @@ once, at startup.</div>
 <dd>
 <div class="block">Copies the next notification from the connected device into <code>buffer</code>, up to <code>capacity</code> bytes, and
 returns its length.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#read(byte%5B%5D,int,int)" class="member-name-link">read(byte[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Copies up to <code>length</code> received bytes into <code>buffer[offset]</code>, polling the bridge at most once.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/i2c/I2c.html#read(int,byte%5B%5D,int)" class="member-name-link">read(int, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.i2c.<a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></dt>
 <dd>
@@ -5725,6 +5920,20 @@ creates the brick's parts from the link — its motors (<a href="io/github/jabre
 <dd>
 <div class="block">Size needed for the length-prefixed TCP request buffer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#REQUEST_GET_DESCRIPTOR" class="member-name-link">REQUEST_GET_DESCRIPTOR</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#REQUEST_SET_ADDRESS" class="member-name-link">REQUEST_SET_ADDRESS</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#REQUEST_SET_CONFIGURATION" class="member-name-link">REQUEST_SET_CONFIGURATION</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#REQUEST_TYPE_STANDARD_IN" class="member-name-link">REQUEST_TYPE_STANDARD_IN</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Standard request <code>bmRequestType</code> of a device-to-host (IN) standard request to the device.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#REQUEST_TYPE_STANDARD_OUT" class="member-name-link">REQUEST_TYPE_STANDARD_OUT</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Standard request <code>bmRequestType</code> of a host-to-device (OUT) standard request to the device.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html#requestHttp(java.lang.String,int,java.lang.String,java.lang.String,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,byte%5B%5D,int,int%5B%5D)" class="member-name-link">requestHttp(String, int, String, String, byte[], int, byte[], int, byte[], int, byte[], int, int[])</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpRequests.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpRequests</a></dt>
 <dd>
 <div class="block">Sends a plain-HTTP request for <code>target</code> to <code>host:port</code> and returns how many body bytes it wrote
@@ -5756,6 +5965,10 @@ URI is <code>http</code> or <code>https</code> with a host.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.imu.<a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html" title="class in io.github.jabrena.juno.hardware.device.imu">NineAxisMotionShield</a></dt>
 <dd>
 <div class="block">Makes the current heading the zero of <a href="io/github/jabrena/juno/hardware/device/imu/NineAxisMotionShield.html#getAngle()"><code>NineAxisMotionShield.getAngle()</code></a>; does nothing if the read failed.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Reboots the lidar's core, which clears a protection stop; takes about a second.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#reset()" class="member-name-link">reset()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
 <dd>
@@ -5842,6 +6055,14 @@ authority, and its path is merged with this URI's and has its <code>.</code> and
 <dd>
 <div class="block">Whether the program reads <code>HttpResponse.headers()</code> or follows redirects, which read <code>Location</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#revision()" class="member-name-link">revision()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The controller's silicon revision: <code>0x12</code> or <code>0x13</code> on a working shield, anything else when not.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#revolutions()" class="member-name-link">revolutions()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Complete revolutions <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#poll(int%5B%5D)"><code>RplidarA2.poll(int[])</code></a> has returned since the last <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startScan()"><code>RplidarA2.startScan()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#right()" class="member-name-link">right()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
 <div class="block">The right side, the motor C output, as a <a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx"><code>RcxRegulatedMotor</code></a> view of this pair.</div>
@@ -5923,6 +6144,15 @@ positions, starting both in one coordinated movement.</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html#ROWS" class="member-name-link">ROWS</a> - Static variable in class io.github.jabrena.juno.hardware.device.lcd.<a href="io/github/jabrena/juno/hardware/device/lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd">LcdKeypadShield</a></dt>
 <dd>
 <div class="block">Character rows.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a> - Class in <a href="io/github/jabrena/juno/hardware/device/lidar/package-summary.html">io.github.jabrena.juno.hardware.device.lidar</a></dt>
+<dd>
+<div class="block">A Slamtec RPLIDAR A2 (A2M8) 360-degree laser scanner reached through its USB adapter, whose CP2102 bridge sits on a
+<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb"><code>UsbHostShield</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.usb.Cp210xSerial)" class="member-name-link">RplidarA2(Cp210xSerial)</a> - Constructor for class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">A lidar behind <code>serial</code>, the adapter's bridge; nothing is sent until <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#begin()"><code>RplidarA2.begin()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#rssi()" class="member-name-link">rssi()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -6180,6 +6410,10 @@ backed by the Arduino <code>Servo</code> library.</div>
 <dd>
 <div class="block">Replaces the device for a whole-program emulator in a test, never on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#setBaudRate(int)" class="member-name-link">setBaudRate(int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Changes the UART's baud rate.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html#setBoardMemory(io.github.jabrena.juno.hardware.BoardMemory)" class="member-name-link">setBoardMemory(BoardMemory)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBoardMemory.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBoardMemory</a></dt>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getBoardMemory()"><code>MCU.getBoardMemory()</code></a> hand out <code>replacement</code>: for a
@@ -6208,6 +6442,10 @@ past them. 0 brakes only on the target.</div>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getClock()"><code>MCU.getClock()</code></a> hand out <code>replacement</code>: for a
 whole-program emulator in a test, never on the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#setConfiguration(int)" class="member-name-link">setConfiguration(int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">Selects configuration <code>value</code> and restarts every endpoint's data toggle.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#setControlPeriodMillis(int)" class="member-name-link">setControlPeriodMillis(int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>
@@ -6250,6 +6488,10 @@ whole-program emulator in a test, never on the board.</div>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html#setDisplay(io.github.jabrena.juno.hardware.display.Display)" class="member-name-link">setDisplay(Display)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></dt>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/internal/NativeLedMatrix.html#display()"><code>NativeLedMatrix.display()</code></a> return <code>display</code>: for a whole-program emulator or a unit test, never on the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#setDtr(boolean)" class="member-name-link">setDtr(boolean)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Drives the DTR line: <code>true</code> is the asserted (active, electrically low) state.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#setGpio(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">setGpio(Gpio)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>
@@ -6329,6 +6571,10 @@ port given to <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePowere
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#setMotorPower(int,int)" class="member-name-link">setMotorPower(int, int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxBrick</a></dt>
 <dd>
 <div class="block">Sets the power level of the outputs, <code>0..</code><a href="io/github/jabrena/juno/remote/lego/rcx/RcxMotor.html#MAX_LEVEL"><code>RcxMotor.MAX_LEVEL</code></a> (clamped); it takes effect while they are on.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#setMotorPwm(int)" class="member-name-link">setMotorPwm(int)</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Sets the motor speed, <code>0</code> (stopped) to <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#MAX_MOTOR_PWM"><code>RplidarA2.MAX_MOTOR_PWM</code></a>; a value outside is clamped.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html#setMouse(io.github.jabrena.juno.hardware.hid.Mouse)" class="member-name-link">setMouse(Mouse)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeMouse.html" title="class in io.github.jabrena.juno.hardware.internal">NativeMouse</a></dt>
 <dd>
@@ -6415,6 +6661,10 @@ negative for backwards, <code>0</code> to coast.</div>
 <dd>
 <div class="block">Configures <code>input</code> for a rotation sensor counting 16 steps per revolution, which
 <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#rotationSteps(int)"><code>RcxBrick.rotationSteps(int)</code></a> and <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#rotationDegrees(int)"><code>RcxBrick.rotationDegrees(int)</code></a> read; <a href="io/github/jabrena/juno/remote/lego/rcx/RcxBrick.html#clearSensor(int)"><code>RcxBrick.clearSensor(int)</code></a> sets it back to zero.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#setRts(boolean)" class="member-name-link">setRts(boolean)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Drives the RTS line: <code>true</code> is the asserted (active, electrically low) state.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeOnboardSdCard.html#setSdCard(io.github.jabrena.juno.hardware.device.sd.SdCard)" class="member-name-link">setSdCard(SdCard)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeOnboardSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeOnboardSdCard</a></dt>
 <dd>
@@ -6768,10 +7018,18 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dd>
 <div class="block">Starts averaging the gyroscope's rate as its bias, instead of integrating it; the robot must stand still.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startMotor()" class="member-name-link">startMotor()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Spins the motor up at <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#DEFAULT_MOTOR_PWM"><code>RplidarA2.DEFAULT_MOTOR_PWM</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#startPathFinding()" class="member-name-link">startPathFinding()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>
 <div class="block">Sends the whole mission to the navigator and starts it, as leJOS's <code>startPathFinding</code> sends a path to its
 listeners; the navigator follows it on its own thread.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startScan()" class="member-name-link">startScan()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Starts the measurement stream.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html#status()" class="member-name-link">status()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeWifi.html" title="class in io.github.jabrena.juno.hardware.internal">NativeWifi</a></dt>
 <dd>&nbsp;</dd>
@@ -6813,6 +7071,10 @@ listeners; the navigator follows it on its own thread.</div>
 <dt><a href="io/github/jabrena/juno/hardware/audio/Audio.html#stop()" class="member-name-link">stop()</a> - Method in interface io.github.jabrena.juno.hardware.audio.<a href="io/github/jabrena/juno/hardware/audio/Audio.html" title="interface in io.github.jabrena.juno.hardware.audio">Audio</a></dt>
 <dd>
 <div class="block">Stops the currently playing tone, if any.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Stops scanning and drops what is still in flight.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html#stop()" class="member-name-link">stop()</a> - Method in class io.github.jabrena.juno.hardware.device.motor.<a href="io/github/jabrena/juno/hardware/device/motor/L298nMotor.html" title="class in io.github.jabrena.juno.hardware.device.motor">L298nMotor</a></dt>
 <dd>
@@ -6903,6 +7165,10 @@ listeners; the navigator follows it on its own thread.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html#stopCalibration()" class="member-name-link">stopCalibration()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a></dt>
 <dd>
 <div class="block">Ends the calibration and subtracts the averaged bias from later reads; without a sample, the bias stays.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#stopMotor()" class="member-name-link">stopMotor()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
+<dd>
+<div class="block">Stops the motor; a running scan stops delivering measurements.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#STOPPED" class="member-name-link">STOPPED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>&nbsp;</dd>
@@ -7367,6 +7633,19 @@ the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="inte
 <div class="block">The board-side <code>java.net.URI</code>: the compiler reads this class as <code>java.net.URI</code>, so a program that calls
 <code>URI.create(...)</code> or <code>new URI(...)</code> against the JDK runs this code on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a> - Class in <a href="io/github/jabrena/juno/hardware/device/usb/package-summary.html">io.github.jabrena.juno.hardware.device.usb</a></dt>
+<dd>
+<div class="block">The Arduino USB Host Shield: a Maxim MAX3421E USB host controller driven over <a href="io/github/jabrena/juno/hardware/spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi"><code>Spi</code></a> as plain Java, so it needs
+no Arduino library.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#%3Cinit%3E()" class="member-name-link">UsbHostShield()</a> - Constructor for class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">A shield on the board's own SPI bus, selected by D10.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)" class="member-name-link">UsbHostShield(Gpio, Spi)</a> - Constructor for class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">A shield selected through <code>gpio</code> and reached over <code>spi</code>: fakes in a unit test.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/UuidCodec.html" class="type-name-link" title="class in io.github.jabrena.juno.util">UuidCodec</a> - Class in <a href="io/github/jabrena/juno/util/package-summary.html">io.github.jabrena.juno.util</a></dt>
 <dd>
 <div class="block">Converts UUID values to and from their 16-byte, most-significant-byte-first network representation.</div>
@@ -7556,6 +7835,14 @@ the order they are declared.</div>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#VENDOR_ID" class="member-name-link">VENDOR_ID</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Silicon Labs' USB vendor ID, shared by every CP210x.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#vendorId()" class="member-name-link">vendorId()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
+<dd>
+<div class="block">The attached device's USB vendor ID, from its device descriptor.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html#version(io.github.jabrena.juno.jdk.net.http.HttpClient.Version)" class="member-name-link">version(HttpClient.Version)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></dt>
 <dd>
 <div class="block">Sets the preferred version; the board sends HTTP/1.1 either way, as a JDK client falls back to it.</div>
@@ -7728,6 +8015,10 @@ does not call it).</div>
 <dd>
 <div class="block">Writes the first <code>length</code> bytes of <code>message</code> to the connected device's characteristic.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#write(byte%5B%5D,int,int)" class="member-name-link">write(byte[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Sends <code>length</code> bytes from <code>data[offset]</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html#write(int)" class="member-name-link">write(int)</a> - Method in class io.github.jabrena.juno.hardware.device.servo.<a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a></dt>
 <dd>
 <div class="block">Turns the servo to <code>angleDegrees</code>, from <code>0</code> to <code>180</code>.</div>
@@ -7735,6 +8026,10 @@ does not call it).</div>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html#write(int)" class="member-name-link">write(int)</a> - Static method in class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft">ParallelBus</a></dt>
 <dd>
 <div class="block">Drives the low byte of <code>value</code> onto the data pins and pulses the strobe.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#write(int)" class="member-name-link">write(int)</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
+<dd>
+<div class="block">Sends one byte.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/i2c/I2c.html#write(int,byte%5B%5D,int)" class="member-name-link">write(int, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.i2c.<a href="io/github/jabrena/juno/hardware/i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></dt>
 <dd>
