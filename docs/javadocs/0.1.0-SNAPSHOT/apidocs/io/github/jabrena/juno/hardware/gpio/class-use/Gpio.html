@@ -168,6 +168,11 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-last even-row-color">
 <div class="block">Creates the carrier handle for a board GPIO context.</div>
 </div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/carrier/PortentaHatCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">PortentaHatCarrier</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Creates the carrier handle for a board GPIO context.</div>
+</div>
 </div>
 </section>
 </li>
@@ -347,8 +352,15 @@ in a unit test.</div>
 <div class="table-header col-second">Constructor</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/tft/TftTouchShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">TftTouchShield</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/tft/Mhs35TftDisplay.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier)" class="member-name-link">Mhs35TftDisplay</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi,
+ <a href="../../device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a>&nbsp;carrier)</code></div>
 <div class="col-last even-row-color">
+<div class="block">A display driven through <code>gpio</code> and <code>spi</code>: mocked ones in a unit test.</div>
+</div>
+<div class="col-first odd-row-color"><code>&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/tft/TftTouchShield.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">TftTouchShield</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">A shield driven through <code>gpio</code>: a mocked one in a unit test.</div>
 </div>
 </div>

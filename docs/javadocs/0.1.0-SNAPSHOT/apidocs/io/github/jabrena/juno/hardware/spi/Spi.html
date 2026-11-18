@@ -75,6 +75,9 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#transfer(int)" tabindex="0">transfer(int)</a></li>
+<li><a href="#setClock(int)" tabindex="0">setClock(int)</a></li>
+<li><a href="#transfer(byte%5B%5D,int)" tabindex="0">transfer(byte[], int)</a></li>
+<li><a href="#write(byte%5B%5D,int)" tabindex="0">write(byte[], int)</a></li>
 </ol>
 </li>
 </ol>
@@ -117,10 +120,29 @@ that need it.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Starts the bus as a controller in SPI mode 0, most significant bit first, at the core's default clock.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#setClock(int)" class="member-name-link">setClock</a><wbr>(int&nbsp;frequencyHz)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Sets the clock of the transfers that follow, in hertz; the board rounds it down to a rate it can make.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#transfer(byte%5B%5D,int)" class="member-name-link">transfer</a><wbr>(byte[]&nbsp;buffer,
+ int&nbsp;length)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Clocks out the first <code>length</code> bytes of <code>buffer</code> in one call, replacing each with the byte clocked in
+at the same time.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#transfer(int)" class="member-name-link">transfer</a><wbr>(int&nbsp;value)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Clocks <code>value</code> (low 8 bits) out and returns the byte clocked in, <code>0..255</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#write(byte%5B%5D,int)" class="member-name-link">write</a><wbr>(byte[]&nbsp;buffer,
+ int&nbsp;length)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="block">Clocks out the first <code>length</code> bytes of <code>buffer</code> and discards the bytes clocked in, leaving the
+buffer unchanged: the fast way to send data to a device that only listens, such as a display.</div>
 </div>
 </div>
 </div>
@@ -151,6 +173,41 @@ that need it.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="return-type">int</span>&nbsp;<span class="element-name">transfer</span><wbr><span class="parameters">(int&nbsp;value)</span></div>
 <div class="block">Clocks <code>value</code> (low 8 bits) out and returns the byte clocked in, <code>0..255</code>.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setClock(int)">
+<h3>setClock</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">setClock</span><wbr><span class="parameters">(int&nbsp;frequencyHz)</span></div>
+<div class="block">Sets the clock of the transfers that follow, in hertz; the board rounds it down to a rate it can make. The mode
+stays 0 and the bit order most significant first. Devices sharing the bus at different speeds each set their
+own clock when they select themselves: a display at tens of megahertz, a touch controller at two.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="transfer(byte[],int)">
+<h3>transfer</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">transfer</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
+ int&nbsp;length)</span></div>
+<div class="block">Clocks out the first <code>length</code> bytes of <code>buffer</code> in one call, replacing each with the byte clocked in
+at the same time. This is the fast way to send a run of data such as a row of pixels; refill the buffer before
+sending it again.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="write(byte[],int)">
+<h3>write</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">write</span><wbr><span class="parameters">(byte[]&nbsp;buffer,
+ int&nbsp;length)</span></div>
+<div class="block">Clocks out the first <code>length</code> bytes of <code>buffer</code> and discards the bytes clocked in, leaving the
+buffer unchanged: the fast way to send data to a device that only listens, such as a display. A board whose SPI
+peripheral can be fed faster than its core's transfer call sends it that way.</div>
 </div>
 </section>
 </li>

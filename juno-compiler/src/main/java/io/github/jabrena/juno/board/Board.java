@@ -33,12 +33,6 @@ public enum Board {
                     Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
-    UNO_Q("io/github/jabrena/juno/annotations/ArduinoUnoQBoard", "arduino-uno-q", "UNO Q", "arduino:zephyr:unoq",
-            ArduinoCore.ZEPHYR, UnoGeneration.Q, new BoardMemoryProfile(262144, 8192, 226928, 4096, 16384, MemoryAuthority.LOADER_POOL, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.LED_MATRIX, Capability.DISPLAY, Capability.WIFI,
-                    Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT, Capability.HTTPS_CLIENT, Capability.JSON,
-                    Capability.TLS_EMAIL,
-                    Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE,
-                    Capability.STRUCTURED_CONCURRENCY, Capability.BIG_NUMBERS, Capability.DOUBLE_MATH)),
     /**
      * The ESP32-S3 Nano: GPIO, delays, USB serial, SPI SD cards, the onboard Wi-Fi of its NORA-W106 module (station and
      * access-point modes, with UDP and SNTP), plain HTTP and HTTPS requests (checked against Mozilla's root
@@ -151,7 +145,7 @@ public enum Board {
 
     /**
      * Resolves the user-facing id passed to {@code --board}/{@code -Djuno.board} (e.g.
-     * {@code "arduino-uno-q"}), case-insensitively.
+     * {@code "arduino-uno-r4-wifi"}), case-insensitively.
      */
     public static Board fromId(String id) {
         String normalized = id.trim().toLowerCase(Locale.ROOT);
@@ -164,7 +158,7 @@ public enum Board {
                 + Arrays.stream(values()).map(Board::id).collect(Collectors.joining(", ")));
     }
 
-    /** The user-facing id passed to {@code --board}/{@code -Djuno.board}, e.g. {@code "arduino-uno-q"}. */
+    /** The user-facing id passed to {@code --board}/{@code -Djuno.board}, e.g. {@code "arduino-uno-r4-wifi"}. */
     public String id() {
         return id;
     }
@@ -201,8 +195,7 @@ public enum Board {
     }
 
     /**
-     * The UNO generation reported by {@code BoardModel.isR3()}/{@code isR4()}/{@code isQ()}, or an empty value for
-     * boards outside the UNO family.
+     * The UNO generation (R3 or R4), or an empty value for boards outside the UNO family.
      */
     public Optional<UnoGeneration> unoGeneration() {
         return family instanceof UnoGeneration generation ? Optional.of(generation) : Optional.empty();

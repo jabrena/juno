@@ -22,10 +22,8 @@ import io.github.jabrena.juno.robotics.SampleProvider;
  * modes; {@link #readSensor} then returns the latest value the hub sent, e.g. a tacho motor's
  * position in degrees or the button pressed on a Powered Up remote.
  *
- * <p>Works on both boards. On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which
- * cannot run BLE and {@code Wifi} at the same time. On the UNO Q, the radio belongs to the Linux
- * side: {@code ArduinoBLE} 2.1.0 or newer tunnels raw HCI to its {@code hci0} adapter through
- * {@code Arduino_RouterBridge}, which needs {@code arduino-router} 0.7.0 or newer on the board.
+ * <p>On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which cannot run BLE and {@code Wifi} at the
+ * same time.
  */
 public final class RemotePoweredUpHub {
     /** The external ports A to D, indexed by their {@link PoweredUpPort#value()}: the motors {@link #getMotor} returns. */

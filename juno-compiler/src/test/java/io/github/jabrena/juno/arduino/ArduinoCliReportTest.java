@@ -44,7 +44,7 @@ class ArduinoCliReportTest {
     @Test
     @DisplayName("Rejects a platform that core list does not show")
     void shouldRejectAnUninstalledPlatform() {
-        assertThatThrownBy(() -> ArduinoCliReport.installedVersion(CORE_LIST, "arduino:zephyr"))
+        assertThatThrownBy(() -> ArduinoCliReport.installedVersion(CORE_LIST, "arduino:megaavr"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

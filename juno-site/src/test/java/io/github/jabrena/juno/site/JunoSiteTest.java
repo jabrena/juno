@@ -79,7 +79,7 @@ class JunoSiteTest {
 
     @Test
     void boardsSectionListsBoardsInSecondaryNavigation() {
-        RestAssured.given().when().get("/arduino-uno-q/").then().statusCode(200)
+        RestAssured.given().when().get("/arduino-portenta-h7/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("UNO R4 WiFi"))
                 .body(containsString("Nano ESP32"))

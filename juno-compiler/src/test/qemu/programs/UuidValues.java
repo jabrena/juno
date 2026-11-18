@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -9,7 +8,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import java.util.UUID;
 
 /** UUID construction, value semantics, canonical text, parsing and 16-byte network representation. */
-@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class UuidValues {
     private UuidValues() {
     }

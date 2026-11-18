@@ -5,7 +5,7 @@ description: Use when writing or reviewing a Juno example program (juno-examples
 # Zero-allocation Juno programs and API entries
 
 Juno compiles Java ahead of time for boards with a few KB of RAM. Every run-time allocation comes from one
-**fixed arena** (8 KiB by default on the UNO R4 WiFi and UNO Q, 1 KiB on the UNO R3), collected by a
+**fixed arena** (8 KiB by default on the UNO R4 WiFi, 1 KiB on the UNO R3), collected by a
 conservative, non-moving mark-and-sweep GC. When the arena is full even after a collection, the board stops with
 `[juno-gc] OOM: need …` on the serial port: there is no `OutOfMemoryError` to catch. `juno-api` and
 `juno-examples` are therefore written in a deliberately different style from `juno-compiler` and

@@ -4,7 +4,6 @@ package io.github.jabrena.juno.annotations;
 public sealed interface BoardSupported permits
         ArduinoUnoR3Board,
         ArduinoUnoR4WiFiBoard,
-        ArduinoUnoQBoard,
         ArduinoNanoEsp32Board,
         AiThinkerEsp32CamBoard,
         M5StackCardputerBoard,

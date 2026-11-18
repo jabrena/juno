@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -12,7 +11,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@link Display#print(String)} clips anything outside the matrix, so characters appear at the right edge and disappear
  * off the left edge as the offset shrinks.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class LedMatrixScrollingText {
     private static final Display DISPLAY = MCU.getDisplay();
     private static final String MESSAGE = "Juno, Java for Arduino ONE R4";

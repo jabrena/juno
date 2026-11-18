@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +13,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * times under the write lock while a reader reads it under the read lock. Every read sees a value between 0 and 40,
  * and the final value is 40 whatever the interleaving.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class ReadWriteLockCounter {
     static final ReentrantReadWriteLock RW = new ReentrantReadWriteLock();
     static final ReadWriteLock VIEW = RW;

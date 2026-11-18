@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.device.grove.sensors;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -16,7 +15,7 @@ import io.github.jabrena.juno.util.Delay;
  * times a second, or "no echo" when nothing answers within 30 ms (beyond about 5 m, or a soft or slanted surface). The
  * ranger times its echo with {@code Gpio.pulseIn}, in the core. Pick the board with {@code -Djuno.board}.
  */
-@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class GroveUltrasonicMonitor {
     private static final int PERIOD_MILLIS = 200;
     private static final float MILLIMETRES_PER_METRE = 1000f;

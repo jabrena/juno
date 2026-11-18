@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -11,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * the rows of a two-dimensional array and an enum's {@code values()}, plus arrays that keep their length
  * across collections.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoUnoR3Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoR3Board.class})
 public final class ArrayLengths {
     enum Color { RED, GREEN, BLUE }
 

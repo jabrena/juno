@@ -4,7 +4,7 @@ import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 
-/** The blocking Q HTTPS loop, isolated from the main task that owns the mailbox TFT and touch panel. */
+/** The blocking HTTPS loop, isolated from the main task that owns the mailbox TFT and touch panel. */
 public final class MailboxServerTask implements Runnable {
     private final MailboxController controller;
     private final byte[] requestBody;

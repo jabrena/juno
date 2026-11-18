@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.server.cover;
 
-import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.Mhs35TftDisplay;
 
 /** The cover's picture: a flat blue mailbox on two pale circles, with a letter dropping into its slot. */
 public final class MailboxArt {
@@ -21,13 +21,13 @@ public final class MailboxArt {
     private static final int BODY_BOTTOM = 175;
     private static final int LEG_HEIGHT = 18;
 
-    void draw(TftTouchShield tft) {
+    void draw(Mhs35TftDisplay tft) {
         tft.fillCircle(MAILBOX_X + 40, MAILBOX_Y + 55, 62, PALE_BLUE);
         tft.fillCircle(MAILBOX_X + 120, MAILBOX_Y + 145, 40, PALE_BLUE);
         drawMailbox(tft);
     }
 
-    private void drawMailbox(TftTouchShield tft) {
+    private void drawMailbox(Mhs35TftDisplay tft) {
         rect(tft, -10, BODY_BOTTOM + LEG_HEIGHT, BODY_WIDTH + 20, 3, SHADOW);
         circle(tft, DOME_RADIUS, DOME_RADIUS, DOME_RADIUS, MailboxView.BLUE);
         circle(tft, DOME_RADIUS, DOME_RADIUS, 47, DARK_BLUE);
@@ -43,15 +43,15 @@ public final class MailboxArt {
         rect(tft, 10, BODY_BOTTOM, 16, LEG_HEIGHT, MailboxView.BLUE);
         rect(tft, BODY_WIDTH - 26, BODY_BOTTOM, 26, LEG_HEIGHT, DARK_BLUE);
 
-        tft.drawRect(MAILBOX_X + 10, MAILBOX_Y + 98, 110, 40, TftTouchShield.WHITE);
-        tft.drawRect(MAILBOX_X + 11, MAILBOX_Y + 99, 108, 38, TftTouchShield.WHITE);
+        tft.drawRect(MAILBOX_X + 10, MAILBOX_Y + 98, 110, 40, Mhs35TftDisplay.WHITE);
+        tft.drawRect(MAILBOX_X + 11, MAILBOX_Y + 99, 108, 38, Mhs35TftDisplay.WHITE);
         tft.setTextSize(2);
-        tft.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
+        tft.setTextColor(Mhs35TftDisplay.WHITE, MailboxView.BLUE);
         tft.setCursor(MAILBOX_X + 17, MAILBOX_Y + 110);
         tft.print("MAIL BOX");
     }
 
-    private void drawEnvelope(TftTouchShield tft) {
+    private void drawEnvelope(Mhs35TftDisplay tft) {
         // A 60x40 letter tilted 35 degrees, its lower corner already inside the slot.
         fillTriangle(tft, 34, 39, 83, 4, 106, 37, ENVELOPE);
         fillTriangle(tft, 34, 39, 106, 37, 59, 72, ENVELOPE);
@@ -61,22 +61,22 @@ public final class MailboxArt {
         drawMotionLine(tft, 130, 22);
     }
 
-    private void rect(TftTouchShield tft, int x, int y, int w, int h, int color) {
+    private void rect(Mhs35TftDisplay tft, int x, int y, int w, int h, int color) {
         tft.fillRect(MAILBOX_X + x, MAILBOX_Y + y, w, h, color);
     }
 
-    private void circle(TftTouchShield tft, int cx, int cy, int r, int color) {
+    private void circle(Mhs35TftDisplay tft, int cx, int cy, int r, int color) {
         tft.fillCircle(MAILBOX_X + cx, MAILBOX_Y + cy, r, color);
     }
 
-    private void drawMotionLine(TftTouchShield tft, int x, int y) {
+    private void drawMotionLine(Mhs35TftDisplay tft, int x, int y) {
         for (int i = 0; i < 10; i++) {
             tft.drawPixel(MAILBOX_X + x + i, MAILBOX_Y + y - i, MailboxView.MOTION);
             tft.drawPixel(MAILBOX_X + x + i + 1, MAILBOX_Y + y - i, MailboxView.MOTION);
         }
     }
 
-    private void fillTriangle(TftTouchShield tft, int x0, int y0, int x1, int y1, int x2, int y2, int color) {
+    private void fillTriangle(Mhs35TftDisplay tft, int x0, int y0, int x1, int y1, int x2, int y2, int color) {
         boolean clockwise = edge(x0, y0, x1, y1, x2, y2) > 0;
         int minX = Math.min(x0, Math.min(x1, x2));
         int maxX = Math.max(x0, Math.max(x1, x2));

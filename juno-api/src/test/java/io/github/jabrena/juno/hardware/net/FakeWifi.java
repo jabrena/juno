@@ -15,7 +15,6 @@ final class FakeWifi implements Wifi {
     /** Whether each join attempt succeeds, consumed in order; an empty queue means the join fails. */
     final Deque<Boolean> joinOutcomes = new ArrayDeque<>();
     /** Whether the board already has a connection when its access point starts. */
-    boolean connectedWhileAccessPoint;
     /** How many {@link #status} reads report idle before the real status is reported. */
     int warmupReads;
     String accessPointSsid;
@@ -36,7 +35,7 @@ final class FakeWifi implements Wifi {
     @Override
     public void beginAP(String ssid, String password) {
         accessPointSsid = ssid;
-        status = connectedWhileAccessPoint ? STATUS_CONNECTED : STATUS_AP_LISTENING;
+        status = STATUS_AP_LISTENING;
     }
 
     @Override

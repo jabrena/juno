@@ -17,8 +17,8 @@ final class ArrayLowering {
 
     /**
      * Checks the index in r1 against the stored length of the array in r0, keeping r0-r3 and clobbering only r12
-     * and the flags. One shared copy keeps each check to a single 4-byte call: on the UNO Q the code is loaded into
-     * the same RAM as the arena, so an inline check at every access of a large program costs kilobytes of arena.
+     * and the flags. One shared copy keeps each check to a single 4-byte call: an inline check at every access of a
+     * large program costs kilobytes of code.
      * Unsigned, so a negative index fails too; a failure reports the index, the length and the call site.
      */
     private static final String CHECK_HELPER = """

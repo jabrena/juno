@@ -17,7 +17,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * The ARENA role: builds the {@link Coliseum}, keeps the {@link Match} and shows it from above ({@link ArenaView}).
- * Meant for the most powerful board on the network, an UNO Q, one per network.
+ * Meant for one board per network.
  *
  * <p>Log lines are printed in pieces, so they build no {@code String} in the arena.
  *

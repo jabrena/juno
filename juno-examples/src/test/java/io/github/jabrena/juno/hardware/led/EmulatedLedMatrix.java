@@ -4,13 +4,13 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 
 /**
- * The UNO Q's 13x8 LED matrix for whole-program tests: a {@link Display} that {@code MCU.getDisplay()} returns on the
- * UNO Q once {@link #install()} has run. It reports the UNO Q's size, the board the emulator models, and drops every
+ * The UNO R4 WiFi's 12x8 LED matrix for whole-program tests: a {@link Display} that {@code MCU.getDisplay()} returns on
+ * the UNO R4 WiFi once {@link #install()} has run. It reports the R4's size, the board the emulator models, and drops every
  * drawing.
  */
 public final class EmulatedLedMatrix implements Display {
     private static final EmulatedLedMatrix INSTANCE = new EmulatedLedMatrix();
-    private static final int UNO_Q_COLUMNS = 13;
+    private static final int UNO_R4_COLUMNS = 12;
     private static final int HEIGHT = 8;
 
     private EmulatedLedMatrix() {
@@ -23,7 +23,7 @@ public final class EmulatedLedMatrix implements Display {
 
     @Override
     public int width() {
-        return UNO_Q_COLUMNS;
+        return UNO_R4_COLUMNS;
     }
 
     @Override

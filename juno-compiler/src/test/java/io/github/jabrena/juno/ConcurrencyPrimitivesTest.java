@@ -429,7 +429,7 @@ class ConcurrencyPrimitivesTest {
     }
 
     @ParameterizedTest(name = "{0} shim compiles as C++")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("Both ports' runtime shims compile as C++")
     void shouldCompileBothPortsRuntimeShimsAsCpp(String board) throws Exception {
         // Given

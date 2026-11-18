@@ -210,11 +210,9 @@ jobs:
             juno-compiler/src/test/docker/qemu/Dockerfile \
             juno-compiler/src/test/docker/qemu/Arduino.h \
             juno-compiler/src/test/docker/qemu/Arduino_LED_Matrix.h \
-            juno-compiler/src/test/docker/qemu/Arduino_RouterBridge.h \
             juno-compiler/src/test/docker/qemu/link.ld \
             juno-compiler/src/test/docker/qemu/run.sh \
             juno-compiler/src/test/docker/qemu/startup.cpp \
-            juno-compiler/src/test/docker/qemu/zephyr/kernel.h \
             | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)"
           echo "ref=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/juno-qemu:sha-$digest" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v4
@@ -624,8 +622,6 @@ jobs:
             board_id: arduino-uno-r4-wifi
           - board: Nano ESP32
             board_id: arduino-nano-esp32
-          - board: UNO Q
-            board_id: arduino-uno-q
           - board: AI Thinker ESP32-CAM
             board_id: ai-thinker-esp32-cam
           - board: M5Stack Cardputer

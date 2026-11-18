@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -297,7 +296,6 @@ document.addEventListener('DOMContentLoaded', function () {
     <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
     <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
     <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-    <a class="" href="/juno/arduino-uno-q">UNO Q</a>
     <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
     <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
     <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -314,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p>Juno compiles the same Java program for eight boards through four backends: <strong>AVR</strong> for the 8-bit
-UNO R3, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi, UNO Q, Raspberry Pi Pico 2 W and Portenta H7,
+UNO R3, <strong>Thumb-2</strong> for the Arm Cortex-M UNO R4 WiFi, Raspberry Pi Pico 2 W and Portenta H7,
 and <strong>Xtensa</strong> for the Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM. Pick the target with the entry point's
 <code>@Board</code> annotation or with <code>-Djuno.board=&lt;id&gt;</code>.</p>
 <h2 id="hardware-at-a-glance">Hardware at a glance</h2>
@@ -330,7 +328,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <th>Nano ESP32</th>
 <th>M5Stack Cardputer</th>
 <th>AI Thinker ESP32-CAM</th>
-<th>UNO Q</th>
 <th>Raspberry Pi Pico 2 W</th>
 <th>UNO R4 WiFi</th>
 <th>UNO R3</th>
@@ -343,7 +340,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>ESP32-S3 (NORA-W106)</td>
 <td>ESP32-S3</td>
 <td>ESP32 Q</td>
-<td>STM32U585</td>
 <td>RP2350A</td>
 <td>Renesas RA4M1</td>
 <td>ATmega328P</td>
@@ -354,7 +350,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>Dual-core 32-bit Xtensa LX7</td>
 <td>Dual-core 32-bit Xtensa LX7</td>
 <td>Dual-core 32-bit Xtensa LX6</td>
-<td>32-bit Cortex-M33F</td>
 <td>Dual-core 32-bit Cortex-M33F</td>
 <td>32-bit Cortex-M4F</td>
 <td>8-bit AVR</td>
@@ -365,7 +360,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>240 MHz</td>
 <td>240 MHz</td>
 <td>240 MHz</td>
-<td>160 MHz</td>
 <td>150 MHz</td>
 <td>48 MHz</td>
 <td>16 MHz</td>
@@ -376,7 +370,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>16 MB</td>
 <td>8 MB</td>
 <td>4 MB</td>
-<td>2 MB</td>
 <td>4 MB</td>
 <td>256 kB</td>
 <td>32 kB</td>
@@ -387,7 +380,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>512 kB</td>
 <td>512 kB</td>
 <td>520 kB</td>
-<td>786 kB</td>
 <td>520 kB</td>
 <td>32 kB</td>
 <td>2 kB</td>
@@ -395,7 +387,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <tr>
 <td>SDRAM</td>
 <td>8 MB</td>
-<td>—</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
@@ -412,11 +403,9 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>—</td>
 <td>—</td>
 <td>—</td>
-<td>—</td>
 </tr>
 <tr>
 <td>Logic level</td>
-<td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
 <td>3.3 V</td>
@@ -431,7 +420,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE</td>
 <td>Wi-Fi/BLE</td>
-<td>Wi-Fi/BLE on the Linux side</td>
 <td>CYW43439 Wi-Fi/BLE</td>
 <td>ESP32-S3 Wi-Fi/BLE</td>
 <td>None</td>
@@ -442,7 +430,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td></td>
 <td>Display, keyboard, speaker, battery</td>
 <td>OV2640 camera, microSD socket</td>
-<td>13×8 LED matrix, Linux MPU</td>
 <td>Built-in LED on the radio chip</td>
 <td>12×8 LED matrix</td>
 <td></td>
@@ -453,7 +440,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td><code>arduino: esp32</code></td>
 <td><code>m5stack: esp32</code></td>
 <td><code>esp32: esp32</code></td>
-<td><code>arduino: zephyr</code></td>
 <td><code>rp2040: rp2040</code></td>
 <td><code>arduino: renesas_uno</code></td>
 <td><code>arduino: avr</code></td>
@@ -464,7 +450,6 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 <td><code>arduino-nano-esp32</code></td>
 <td><code>m5stack-cardputer</code></td>
 <td><code>ai-thinker-esp32-cam</code></td>
-<td><code>arduino-uno-q</code></td>
 <td><code>raspberry-pi-pico-2-w</code></td>
 <td><code>arduino-uno-r4-wifi</code></td>
 <td><code>arduino-uno-r3</code></td>
@@ -472,7 +457,7 @@ static <code>Psram</code> byte-buffer API; the camera board also keeps its drive
 </tbody>
 </table>
 <p>The spaces after <code>:</code> in the Arduino core row are visual break points for this table; use the compact
-core identifier (for example, <code>arduino:zephyr</code>) in build commands.</p>
+core identifier (for example, <code>arduino:renesas_uno</code>) in build commands.</p>
 <p>For the API and board-feature support matrix, see <a href="../board-features">Board features</a>. The compiler checks that matrix for
 you: a program that uses an API its target board does not support fails with a <code>CompileException</code> naming the board and the
 missing capability.</p>

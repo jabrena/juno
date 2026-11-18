@@ -111,8 +111,8 @@ on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its
 <div class="col-first even-row-color"><code>static <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getDisplay()" class="member-name-link">getDisplay</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q as a
-monochrome <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a> (12x8 or 13x8).</div>
+<div class="block">The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi as a
+monochrome 12x8 <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>.</div>
 </div>
 </div>
 </section>
@@ -142,8 +142,14 @@ monochrome <a href="../Display.html" title="interface in io.github.jabrena.juno.
 <div class="table-header col-second">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>final class&nbsp;</code></div>
-<div class="col-second even-row-color"><code><a href="../../device/tft/TftTouchShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></code></div>
+<div class="col-second even-row-color"><code><a href="../../device/tft/Mhs35TftDisplay.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.tft">Mhs35TftDisplay</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">Driver for the MHS-3.5-inch Raspberry Pi display: a 480x320 TFT on the Pi's 40-pin header with an ILI9486
+controller and a resistive XPT2046 touch panel.</div>
+</div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../device/tft/TftTouchShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
@@ -168,7 +174,7 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../../internal/NativeLedMatrix.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">The board's built-in LED matrix as a <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q, one color.</div>
+<div class="block">The board's built-in LED matrix as a <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>: 12x8 on the UNO R4 WiFi, one color.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> that return <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
@@ -184,7 +190,7 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <div class="col-first odd-row-color"><code>static <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">NativeLedMatrix.</span><code><a href="../../internal/NativeLedMatrix.html#display()" class="member-name-link">display</a>()</code></div>
 <div class="col-last odd-row-color">
-<div class="block">The display <a href="../../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi and the UNO Q:
+<div class="block">The display <a href="../../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi:
 the board's matrix, started on first use, unless a whole-program emulator or a test replaced it.</div>
 </div>
 </div>

@@ -144,6 +144,12 @@ on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its
 <div class="col-last even-row-color">
 <div class="block">The card in the microSD slot; its <a href="../SdCard.html#begin()"><code>SdCard.begin()</code></a> selects it on D4.</div>
 </div>
+<div class="col-first odd-row-color"><code><a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">PortentaHatCarrier.</span><code><a href="../../carrier/PortentaHatCarrier.html#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">The card in the carrier's own microSD slot (J7), not the H7's: the slot is on the SDMMC2 bus, so it has no chip
+select and does not share the header's SPI bus with a HAT display.</div>
+</div>
 </div>
 </section>
 </li>

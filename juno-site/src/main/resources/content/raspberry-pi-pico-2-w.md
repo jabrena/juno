@@ -4,8 +4,8 @@ description: "Board notes for the Raspberry Pi Pico 2 W and what Juno supports o
 layout: page
 ---
 
-The Raspberry Pi Pico 2 W pairs the RP2350's Cortex-M33 with an Infineon CYW43439 Wi-Fi radio. The UNO Q is a
-Cortex-M33 too, so Juno compiles for the Pico with the same Thumb-2 backend, linking against Earle Philhower's
+The Raspberry Pi Pico 2 W pairs the RP2350's Cortex-M33 with an Infineon CYW43439 Wi-Fi radio. Juno compiles
+for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle Philhower's
 [arduino-pico](https://github.com/earlephilhower/arduino-pico) core (`rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble`).
 
 <img src="../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">

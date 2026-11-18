@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -316,7 +315,7 @@ with any pin-mapped shield or carrier.</p>
 <h3 id="grove-base-shield-on-the-uno-boards">Grove Base Shield, on the UNO boards</h3>
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
 <p>The <a href="https://wiki.seeedstudio.com/Base_Shield_V2/">Grove Base Shield</a> is a passive adapter for the UNO headers, used
-on the UNO R3, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
+on the UNO R3 and UNO R4 WiFi. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
 <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java"><code>GroveBaseShield</code></a>
 names them. Seat it on the board's UNO headers and plug the module into a socket; the diagram is a socket map, not the
 shield's physical layout:</p>
@@ -330,7 +329,7 @@ shield's physical layout:</p>
 +------------------------------+------------------------------+
                                | seated on the UNO headers
 +------------------------------v------------------------------+
-|      UNO R3  /  UNO R4 WiFi  /  UNO Q                       |
+|      UNO R3  /  UNO R4 WiFi                                 |
 +-------------------------------------------------------------+
 
  Grove DHT22 ---- cable ----&gt; [D4]
@@ -756,6 +755,39 @@ public final class GroveRcxExample {
 </code></pre>
 <p>See <a href="../lego-ecosystem">LEGO</a> for driving the brick, and the
 <a href="../arduino-nano-esp32#remote-control-a-lego-rcx">Nano ESP32</a> page for a complete example.</p>
+<h2 id="grove-actuators">Grove actuators</h2>
+<h3 id="i2c-motor-driver-tb6612fng">I2C Motor Driver (TB6612FNG)</h3>
+<p>The Grove I2C Motor Driver drives two brushed DC motors, channels A and B, from one Grove I2C socket. Its own
+microcontroller turns each I2C command into the TB6612FNG's direction and PWM signals, so the board spends no motor
+pins. The motors need their own 2.5 V to 13.5 V supply; the socket only powers the driver's logic.</p>
+<img src="../images/grove/grove-motor-driver-tb6612fng.png" alt="Grove I2C Motor Driver (TB6612FNG)" width="240">
+<p><code>GroveMotorDriverTb6612fng</code> checks at startup that the driver answers (address <code>0x14</code> unless it was changed), takes it
+out of standby, and hands out each channel as a <code>DCMotor</code>. Power is a percentage; <code>stop()</code> brakes a motor and <code>flt()</code>
+lets it coast.</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.motor.GroveMotorDriverTb6612fng;
+import io.github.jabrena.juno.robotics.DCMotor;
+import io.github.jabrena.juno.util.Delay;
+
+public final class GroveMotorDriverExample {
+    public static void main(String[] args) {
+        GroveMotorDriverTb6612fng driver = new GroveMotorDriverTb6612fng(MCU.getI2c());
+        DCMotor left = driver.getMotorA();
+        DCMotor right = driver.getMotorB();
+        left.setPower(60);
+        right.setPower(60);
+
+        while (true) {
+            left.forward();
+            right.forward();
+            Delay.millis(2000);
+            left.stop();
+            right.stop();
+            Delay.millis(1000);
+        }
+    }
+}
+</code></pre>
     </div>
   </section>
 </article>

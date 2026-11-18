@@ -5,13 +5,13 @@ import io.github.jabrena.juno.hardware.fonts.AsciiFont;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The board's built-in LED matrix as a {@link Display}: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q, one color. A color
+ * The board's built-in LED matrix as a {@link Display}: 12x8 on the UNO R4 WiFi, one color. A color
  * other than {@link #BLACK} lights a pixel. Drawing changes a four-word buffer and {@link #flush()} sends it to the
  * matrix, so a program draws a whole frame before it flushes. Text is one line of 6x8 cells at size 1, the only size
  * that fits the 8 rows: {@link #setTextSize} is accepted and ignored, and text past the right edge is clipped, not
  * wrapped.
  *
- * <p>{@link io.github.jabrena.juno.hardware.MCU#getDisplay()} hands this out on the UNO R4 WiFi and the UNO Q. The
+ * <p>{@link io.github.jabrena.juno.hardware.MCU#getDisplay()} hands this out on the UNO R4 WiFi. The
  * four matrix operations are intrinsics the compiler lowers to the {@code Arduino_LED_Matrix} library; everything else
  * is plain Java over the buffer, so a unit test can draw into it without the board.
  */
@@ -45,7 +45,7 @@ public final class NativeLedMatrix implements Display {
     }
 
     /**
-     * The display {@link io.github.jabrena.juno.hardware.MCU#getDisplay()} hands out on the UNO R4 WiFi and the UNO Q:
+     * The display {@link io.github.jabrena.juno.hardware.MCU#getDisplay()} hands out on the UNO R4 WiFi:
      * the board's matrix, started on first use, unless a whole-program emulator or a test replaced it.
      */
     public static Display display() {
@@ -74,7 +74,7 @@ public final class NativeLedMatrix implements Display {
     /**
      * Loads a frame packed MSB-first into four 32-bit words, exactly as the underlying
      * {@code loadFrame(const uint32_t[...])} of the board's {@code Arduino_LED_Matrix} library expects: the UNO R4's 96
-     * pixels use the first three words and ignore {@code word3}; the UNO Q's 104 pixels use all four.
+     * pixels use the first three words and ignore {@code word3}.
      */
     public native void loadFrame(int word0, int word1, int word2, int word3);
 

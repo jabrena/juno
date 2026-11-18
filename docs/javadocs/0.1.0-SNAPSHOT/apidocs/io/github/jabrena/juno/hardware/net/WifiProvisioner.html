@@ -102,11 +102,6 @@ joins that network and prints its address over <a href="../serial/Serial.html" t
 15000 ms the access point comes back so the form can be submitted again.
 The credentials live only in RAM.
 
-<p>On <b>UNO Q</b> Wi-Fi belongs to Linux, which the MCU cannot reconfigure: start the hotspot
-there first (<code>nmcli device wifi hotspot ssid &lt;ssid&gt; password &lt;password&gt;</code>). The form is then
-served through <code>arduino-router</code>, and the submitted credentials are printed over
-<a href="../serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial"><code>Serial</code></a> for Linux to apply (<code>nmcli device wifi connect &lt;ssid&gt; password &lt;password&gt;</code>).
-
 <p>Limits: SSID and password are at most 31 characters each (Juno's runtime
 strings are small), and the form is plain HTTP, so the password crosses the setup network
 unencrypted; on UNO R4 WiFi the access point's own WPA2 passphrase is what protects it.</div>
@@ -129,8 +124,7 @@ unencrypted; on UNO R4 WiFi the access point's own WPA2 passphrase is what prote
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#run(java.lang.String,java.lang.String)" class="member-name-link">run</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;apSsid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;apPassword)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Serves the setup form until credentials are submitted and, on UNO R4 WiFi, the board has joined
-that network; on UNO Q it returns once the credentials have been printed.</div>
+<div class="block">Serves the setup form until credentials are submitted and the board has joined that network.</div>
 </div>
 </div>
 </div>
@@ -155,8 +149,7 @@ that network; on UNO Q it returns once the credentials have been printed.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">run</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;apSsid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;apPassword)</span></div>
-<div class="block">Serves the setup form until credentials are submitted and, on UNO R4 WiFi, the board has joined
-that network; on UNO Q it returns once the credentials have been printed. <code>apPassword</code>
+<div class="block">Serves the setup form until credentials are submitted and the board has joined that network. <code>apPassword</code>
 is a WPA2 passphrase of at least 8 characters, or empty for an open access point.</div>
 </div>
 </section>

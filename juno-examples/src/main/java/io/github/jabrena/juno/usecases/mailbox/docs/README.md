@@ -2,10 +2,10 @@
 
 The mailbox example has two applications:
 
-- `io.github.jabrena.juno.usecases.mailbox.server.Mailbox` runs the HTTPS server on an Arduino UNO Q.
+- `io.github.jabrena.juno.usecases.mailbox.server.Mailbox` runs the HTTPS server on an Arduino Portenta H7 in a Portenta Hat Carrier with the MHS-3.5 TFT touch HAT.
 - `io.github.jabrena.juno.usecases.mailbox.client.MailboxCardputer` runs the HTTPS client on an M5Stack Cardputer.
 
-Both applications read their TLS files from the root of their SD card: the UNO Q reads its PEM server certificate and
+Both applications read their TLS files from the root of their SD card: the Portenta reads its PEM server certificate and
 private key, while the Cardputer reads the private CA certificate. Neither board needs the private CA certificate
 embedded in its firmware.
 
@@ -14,13 +14,13 @@ ignored by Git and is used below for the local TLS files.
 
 ## Create a local CA and server certificate
 
-Choose the UNO Q address first. The address must be stable, must be the same address shown by the UNO Q mailbox, and
-must appear in the server certificate's `subjectAltName`.
+Choose the Portenta's address first: give it a fixed DHCP lease. The address must be the same address shown on the
+mailbox cover and printed over Serial, and must appear in the server certificate's `subjectAltName`.
 
 Run the following from the repository root with OpenSSL. The generated `.key` and `.crt` files are stored in `build/`:
 
 ```bash
-export MAILBOX_Q_IP=192.168.1.47
+export MAILBOX_IP=192.168.1.47
 export TLS_DIR="$PWD/build"
 mkdir -p "$TLS_DIR"
 
@@ -31,15 +31,15 @@ openssl req -x509 -new -sha256 -days 825 \
   -out "$TLS_DIR/mailbox-ca.crt" \
   -subj "/CN=Juno Mailbox Development CA"
 
-# The UNO Q uses this key and certificate. P-256 keeps the PEM files within the board's bounded buffers.
+# The Portenta uses this key and certificate. P-256 keeps the PEM files within the board's bounded buffers.
 openssl ecparam -name prime256v1 -genkey -noout \
   -out "$TLS_DIR/server.key"
 openssl req -new -sha256 \
   -key "$TLS_DIR/server.key" \
   -out "$TLS_DIR/server.csr" \
-  -subj "/CN=${MAILBOX_Q_IP}"
+  -subj "/CN=${MAILBOX_IP}"
 cat > "$TLS_DIR/server-ext.cnf" <<EOF
-subjectAltName = IP:${MAILBOX_Q_IP}
+subjectAltName = IP:${MAILBOX_IP}
 extendedKeyUsage = serverAuth
 EOF
 openssl x509 -req -sha256 -days 825 \
@@ -54,7 +54,7 @@ openssl verify -CAfile "$TLS_DIR/mailbox-ca.crt" "$TLS_DIR/server.crt"
 openssl x509 -in "$TLS_DIR/server.crt" -noout -subject -issuer -ext subjectAltName
 ```
 
-Copy these files to the UNO Q SD card's root:
+Copy these files to the root of the Hat Carrier's microSD card:
 
 ```text
 server.crt
@@ -65,8 +65,9 @@ The client trusts the CA, not the server private key.
 
 ## Prepare the SD cards
 
-The UNO Q server needs `server.crt` and `server.key` in the SD card root. It may also contain
-`application.properties`; the server only checks that this file is readable.
+The Portenta server needs `server.crt` and `server.key` in the root of the Hat Carrier's microSD card. Its Wi-Fi
+network comes from the Portenta's secret store instead: write `wifi.ssid` and `wifi.password` once with
+`SecretProvisioner` (see the secure-element page), so no credential sits on the card.
 
 The Cardputer needs `application.properties` and `mailbox-ca.crt` in the SD card root:
 
@@ -82,27 +83,27 @@ mailbox-ca.crt
 ```
 
 The Cardputer starts with API key `1234567890`. Change it from the Settings screen; the new value is stored in
-`api-key.txt`. Enter the UNO Q address and the same API key in the client UI. The Settings screen also exposes the
+`api-key.txt`. Enter the Portenta's address and the same API key in the client UI. The Settings screen also exposes the
 polling interval in minutes; it defaults to five minutes, accepts values from 1 to 60, and persists the selected value
 in `polling-minutes.txt`. Use Tab to move through the API key, mailbox IP, and polling fields. The local Cardputer IP
 is shown as secondary Wi-Fi status.
 
-## Build and upload the UNO Q server
+## Build and upload the Portenta server
 
 Run `juno:verify` first to compile and validate the generated sketch without touching hardware:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
-  -Djuno.board=arduino-uno-q
+  -Djuno.board=arduino-portenta-h7
 ```
 
-With the UNO Q connected and its SD card inserted, upload it with `juno:flash`:
+With the Portenta connected and the carrier's SD card inserted, upload it with `juno:flash`:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox \
-  -Djuno.board=arduino-uno-q
+  -Djuno.board=arduino-portenta-h7
 ```
 
 Then open the serial monitor. The server waits briefly before its first output, so leave the monitor attached long
@@ -110,7 +111,7 @@ enough to see the startup result:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-q \
+  -Djuno.board=arduino-portenta-h7 \
   -Djuno.baudRate=115200
 ```
 

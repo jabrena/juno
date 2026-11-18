@@ -1,9 +1,7 @@
 package io.github.jabrena.juno.usecases.gladiator;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -49,12 +47,13 @@ import java.io.IOException;
  * the touch screen. A strike the victim did not see coming does double damage, which is what the AMBUSH gladiator
  * plays for. All roles use UDP port {@link GladiatorProtocol#PORT}; see {@link GladiatorProtocol} for the packets.
  */
-@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class Gladiator {
     private static final Wifi WIFI = MCU.getWifi();
 
     private static final Clock CLOCK = MCU.getClock();
-    private static final boolean ON_UNO_Q = MCU.getBoardModel() == BoardModel.UNO_Q;
+    /** Solo needs more memory than the UNO R4 WiFi's arena leaves next to the TFT and Wi-Fi. */
+    private static final boolean SOLO_AVAILABLE = false;
     private static final int ARENA = 0;
 
     /** The screen's line list, which every role draws into, and the class models of the title and the Solo screens. */
@@ -78,7 +77,7 @@ public final class Gladiator {
         Opening.play(tft, list, wireframe);
         Random.seed(CLOCK.micros());
         while (true) {
-            int mode = ModeMenu.choose(tft, ON_UNO_Q);
+            int mode = ModeMenu.choose(tft, SOLO_AVAILABLE);
             if (mode == ModeMenu.SOLO) {
                 SoloFlow.run(tft, list, wireframe, FighterSetup.choose(tft));
                 Opening.play(tft, list, wireframe);
@@ -107,9 +106,9 @@ public final class Gladiator {
     }
 
     /**
-     * Joins the Wi-Fi network named on the SD card ({@link WifiSettings}; UNO Q uses the connection configured on its
-     * Linux side) and opens the UDP socket on {@link GladiatorProtocol#PORT}. Returns false after showing what is missing, when an UNO
-     * R4 finds no network to join, once MENU is tapped.
+     * Joins the Wi-Fi network named on the SD card ({@link WifiSettings}) and opens the UDP socket on
+     * {@link GladiatorProtocol#PORT}. Returns false after showing what is missing, when the board finds no network to
+     * join, once MENU is tapped.
      */
     private boolean connect(TftTouchShield tft) {
         if (online) {
@@ -117,12 +116,9 @@ public final class Gladiator {
         }
         WifiSettings settings = WifiSettings.load(tft.getSdCard());
         if (settings == null) {
-            if (!ON_UNO_Q) {
-                Hud.message(tft, "NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
-                waitForMenu(tft);
-                return false;
-            }
-            settings = WifiSettings.NONE;
+            Hud.message(tft, "NO WIFI SETTINGS", "Put application.properties on the SD card", TftTouchShield.ORANGE);
+            waitForMenu(tft);
+            return false;
         }
         tft.fillScreen(ViewList.BACKGROUND);
         Hud.centered(tft, "CONNECTING WIFI", 110, 2, TftTouchShield.CYAN, ViewList.BACKGROUND);

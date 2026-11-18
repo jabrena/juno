@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * drained by main, with one condition for "not full" and one for "not empty". Whatever the interleaving, main takes
  * the twenty values 1 to 20 exactly once, so the sum is 210.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class ConditionBoundedBuffer {
     static final ReentrantLock LOCK = new ReentrantLock();
     static final Condition NOT_FULL = LOCK.newCondition();

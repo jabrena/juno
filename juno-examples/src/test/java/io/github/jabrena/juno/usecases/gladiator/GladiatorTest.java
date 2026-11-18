@@ -398,9 +398,9 @@ class GladiatorTest {
     }
 
     @Test
-    void theModeMenuKeepsSoloExclusiveToTheUnoQ() {
+    void theModeMenuOffersSoloOnlyWhenTheBoardHasRoomForIt() {
         assertThat(ModeMenu.modeAt(160, 100, true)).isEqualTo(ModeMenu.SOLO);
-        assertThat(ModeMenu.modeAt(160, 100, false)).as("solo on an R4").isEqualTo(-1);
+        assertThat(ModeMenu.modeAt(160, 100, false)).as("solo unavailable").isEqualTo(-1);
         assertThat(ModeMenu.modeAt(160, 170, true)).isEqualTo(ModeMenu.MULTIPLAYER);
         assertThat(ModeMenu.modeAt(160, 170, false)).isEqualTo(ModeMenu.MULTIPLAYER);
         assertThat(ModeMenu.modeAt(5, 100, true)).isEqualTo(-1);

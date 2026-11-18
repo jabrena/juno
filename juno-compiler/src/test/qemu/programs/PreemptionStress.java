@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +13,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * thread reads concurrently (a {@code volatile long} must never be seen half-written). Each result is fixed, so the
  * JVM and the board print the same lines whatever the interleaving.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class PreemptionStress {
     static volatile long wide;
     static volatile boolean writing;

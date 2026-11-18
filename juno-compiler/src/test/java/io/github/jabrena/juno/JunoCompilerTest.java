@@ -1181,9 +1181,9 @@ class JunoCompilerTest {
         }
 
         @ParameterizedTest
-        @CsvSource({"ArduinoUnoR4WiFiBoard, 0", "ArduinoUnoQBoard, 1"})
+        @CsvSource({"ArduinoUnoR4WiFiBoard, 0", "ArduinoPortentaH7Board, 1"})
         @DisplayName("Folds a BoardModel query through Arduino to the target board's constant")
-        void shouldFoldABoardModelQueryThroughMcuToAConstant(String board, int isQ) throws Exception {
+        void shouldFoldABoardModelQueryThroughMcuToAConstant(String board, int isPortenta) throws Exception {
             // Given
             String source = """
                     package demo;
@@ -1195,7 +1195,7 @@ class JunoCompilerTest {
                     @Board(%1$s.class)
                     public final class Which {
                         public static void main(String[] args) {
-                            if (MCU.getBoardModel() == BoardModel.UNO_Q) {
+                            if (MCU.getBoardModel() == BoardModel.PORTENTA_H7) {
                                 Delay.millis(111);
                             }
                         }
@@ -1207,7 +1207,7 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Which");
 
             // Then
-            if (isQ == 1) {
+            if (isPortenta == 1) {
                 assertThat(result.assembly()).contains("#111");
             } else {
                 assertThat(result.assembly()).doesNotContain("#111");
@@ -1215,10 +1215,10 @@ class JunoCompilerTest {
         }
 
         @ParameterizedTest
-        @CsvSource({"ArduinoUnoR4WiFiBoard, false", "ArduinoUnoQBoard, true"})
+        @CsvSource({"ArduinoUnoR4WiFiBoard, false", "ArduinoPortentaH7Board, true"})
         @DisplayName("Drops the branch its target can never take, so that side's shim features go with it")
-        void shouldDropTheBranchTheTargetCannotTake(String board, boolean isQ) throws Exception {
-            // Given: the I2C bus is used only where the board is the Q, as MCU.getSecretStore() uses the SE050C2 only
+        void shouldDropTheBranchTheTargetCannotTake(String board, boolean isPortenta) throws Exception {
+            // Given: the I2C bus is used only where the board is the Portenta, as MCU.getSecretStore() uses the SE050C2 only
             // on the Portenta. The query is answered when the program is linked, so the other side is not compiled.
             String source = """
                     package demo;
@@ -1230,7 +1230,7 @@ class JunoCompilerTest {
                     @Board(%1$s.class)
                     public final class Which {
                         public static void main(String[] args) {
-                            if (MCU.getBoardModel() == BoardModel.UNO_Q) {
+                            if (MCU.getBoardModel() == BoardModel.PORTENTA_H7) {
                                 MCU.getI2c().begin();
                             } else {
                                 Delay.millis(222);
@@ -1244,7 +1244,7 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Which");
 
             // Then
-            if (isQ) {
+            if (isPortenta) {
                 assertThat(result.runtimeShim()).contains("#include <Wire.h>", "juno_i2c_begin");
             } else {
                 assertThat(result.runtimeShim()).doesNotContain("#include <Wire.h>", "juno_i2c_begin");
@@ -1256,10 +1256,8 @@ class JunoCompilerTest {
             "ArduinoNanoEsp32Board, juno_nvs_read, juno_se050_read",
             "ArduinoPortentaH7Board, juno_se050_read, juno_nvs_read",
             "RaspberryPico2WifiBoard, juno_pico_tz_read, juno_nvs_read",
-            // A board with no secret store reaches neither provider, so a read through the store cannot compile.
             "ArduinoUnoR4WiFiBoard, juno_nvs_read, juno_se050_read",
-            "ArduinoUnoR3Board, juno_eeprom_read, juno_nvs_read",
-            "ArduinoUnoQBoard, , juno_se050_read"})
+            "ArduinoUnoR3Board, juno_eeprom_read, juno_nvs_read"})
         @DisplayName("MCU.getSecretStore() compiles to the one store its target board has, and is rejected on a board with none")
         void shouldCompileOnlyTheTargetBoardsSecretStore(String board, String present, String absent)
                 throws Exception {
@@ -1280,14 +1278,6 @@ class JunoCompilerTest {
                     }
                     """.formatted(board);
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.Secrets", source);
-
-            if (present == null) {
-                // When & Then: nothing implements the store's read, so the program is rejected when it is built
-                assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Secrets"))
-                        .isInstanceOf(CompileException.class)
-                        .hasMessageContaining("no reachable implementation of io.github.jabrena.juno.hardware.security.SecretStore");
-                return;
-            }
 
             // When
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Secrets");
@@ -3035,19 +3025,18 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Lowers portable UDP intrinsics for the UNO R4 WiFi and the UNO Q")
-        void shouldLowerPortableUdpIntrinsicsForUnoR4WifiAndUnoQ() throws Exception {
+        @DisplayName("Lowers portable UDP intrinsics for the UNO R4 WiFi")
+        void shouldLowerPortableUdpIntrinsicsForUnoR4Wifi() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import java.io.IOException;
                     import java.net.DatagramPacket;
                     import java.net.DatagramSocket;
                     import java.net.InetAddress;
-                    @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                    @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class PortableUdp {
                         public static void main(String[] args) {
                             byte[] payload = new byte[16];
@@ -3072,8 +3061,6 @@ class JunoCompilerTest {
             // When
             CompilationResult r4 = compiler.compile(classpath, "demo.PortableUdp", false,
                     Optional.of(Board.UNO_R4_WIFI.id()));
-            CompilationResult q = compiler.compile(classpath, "demo.PortableUdp", false,
-                    Optional.of(Board.UNO_Q.id()));
 
             // Then
             assertThat(r4.assembly()).contains("bl juno_datagram_socket_new", "bl juno_inet_address_get_by_address",
@@ -3082,22 +3069,14 @@ class JunoCompilerTest {
                     "bl juno_datagram_socket_close");
             assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "static WiFiUDP juno_udp;",
                     "IPAddress(255, 255, 255, 255)", "juno_udp.beginMulticast(");
-            assertThat(q.assembly()).contains("bl juno_datagram_socket_new", "bl juno_inet_address_get_by_address",
-                    "bl juno_datagram_packet_new_send", "bl juno_datagram_socket_send",
-                    "bl juno_datagram_socket_set_so_timeout", "bl juno_datagram_socket_receive",
-                    "bl juno_datagram_socket_close");
-            assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
-                    "static BridgeUDP<512> juno_udp(Bridge);", "IPAddress(255, 255, 255, 255)")
-                    .doesNotContain("#include <WiFiS3.h>", "static WiFiUDP juno_udp;");
         }
 
         @Test
-        @DisplayName("Lowers the legacy Kasa HS100 and HS110 requests for the UNO R4 WiFi and the UNO Q")
-        void shouldLowerLegacyKasaHs100AndHs110RequestsForUnoR4WifiAndUnoQ() throws Exception {
+        @DisplayName("Lowers the legacy Kasa HS100 and HS110 requests for the UNO R4 WiFi")
+        void shouldLowerLegacyKasaHs100AndHs110RequestsForUnoR4Wifi() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                     import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
@@ -3105,7 +3084,7 @@ class JunoCompilerTest {
                     import java.net.DatagramPacket;
                     import java.net.DatagramSocket;
                     import java.net.InetAddress;
-                    @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                    @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class KasaPlug {
                         public static void main(String[] args) {
                             byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
@@ -3134,8 +3113,6 @@ class JunoCompilerTest {
             // When
             CompilationResult r4 = compiler.compile(classpath, "demo.KasaPlug", false,
                     Optional.of(Board.UNO_R4_WIFI.id()));
-            CompilationResult q = compiler.compile(classpath, "demo.KasaPlug", false,
-                    Optional.of(Board.UNO_Q.id()));
 
             // Then
             assertThat(r4.assembly()).contains("bl juno_datagram_socket_new", "bl juno_datagram_socket_send",
@@ -3144,13 +3121,6 @@ class JunoCompilerTest {
             assertThat(r4.runtimeShim()).contains("#include <WiFiS3.h>", "using JunoTcpClient = WiFiClient;",
                     "extern \"C\" int32_t juno_tcp_open(")
                     .doesNotContain("juno_kasa");
-            assertThat(q.assembly()).contains("bl juno_datagram_socket_new", "bl juno_datagram_socket_send",
-                    "bl juno_datagram_socket_receive", "bl juno_socket_new", "bl juno_socket_output_stream_write",
-                    "bl juno_socket_stream_read", "bl juno_socket_close");
-            assertThat(q.runtimeShim()).contains("#include <Arduino_RouterBridge.h>",
-                    "class JunoBridgeTcpClient : public BridgeTCPClient<1024>",
-                    "using JunoTcpClient = JunoBridgeTcpClient;")
-                    .doesNotContain("#include <WiFiS3.h>", "juno_kasa");
         }
 
         @Test
@@ -3901,42 +3871,6 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Lowers implicit TLS email through the Router Bridge on the UNO Q")
-        void shouldLowerImplicitTlsEmailThroughRouterBridgeOnUnoQ() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.net.email.Pop3Client;
-                    import io.github.jabrena.juno.hardware.net.email.Smtp;
-                    @Board(ArduinoUnoQBoard.class)
-                    public final class UnoQEmail {
-                        public static void main(String[] args) {
-                            int sent = Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
-                                    "me@example.com", "me@example.com", "Hello", "Hello");
-                            int count = Pop3Client.messageCount("mail.example.com", 995,
-                                    "me@example.com", "secret");
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQEmail", source);
-
-            // When
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQEmail");
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_smtp_send_tls", "bl juno_pop3_message_count");
-            assertThat(result.runtimeShim()).contains(
-                    "#include <Arduino_RouterBridge.h>",
-                    "class JunoBridgeSSLClient : public BridgeTCPClient<512>",
-                    "extern \"C\" int32_t juno_smtp_send_tls",
-                    "JunoBridgeSSLClient client;")
-                    .doesNotContain("#include <ESP_SSLClient.h>", "#include <WiFiSSLClient.h>",
-                            "extern \"C\" int32_t juno_smtp_send(", "STARTTLS");
-        }
-
-        @Test
         @DisplayName("Lowers the HTTP server intrinsics and string equality")
         void shouldLowerHttpServerIntrinsicsAndStringEquals() throws Exception {
             // Given
@@ -4049,41 +3983,6 @@ class JunoCompilerTest {
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.HttpsServerOnR4"))
                     .isInstanceOf(CompileException.class)
                     .hasMessageContaining("UNO R4 WiFi cannot run a TLS server session");
-        }
-
-        @Test
-        @DisplayName("Lowers HttpServer.beginTls on the UNO Q to a BearSSL server session over the bridge listener")
-        void shouldLowerHttpServerBeginTlsOnTheUnoQ() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
-                    public final class HttpsServerOnQ {
-                        public static void main(String[] args) {
-                            byte[] certificate = new byte[64];
-                            byte[] key = new byte[64];
-                            byte[] body = new byte[16];
-                            if (HttpServer.beginTls(443, certificate, 64, key, 64)) {
-                                if (HttpServer.accept(body, 16) >= 0) {
-                                    HttpServer.respond(200, "text/plain", "online");
-                                }
-                            }
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.HttpsServerOnQ", source);
-
-            // When
-            CompilationResult result = new JunoCompiler().compile(CompilerTestSupport.classpath(temporaryDirectory),
-                    "demo.HttpsServerOnQ", false, Optional.of(Board.UNO_Q.id()));
-
-            // Then
-            assertThat(result.assembly()).contains("bl juno_http_server_begin_tls");
-            assertThat(result.runtimeShim()).contains("#include <bearssl.h>",
-                    "static br_ssl_server_context juno_https_server;",
-                    "BridgeTCPServer<JUNO_HTTP_SERVER_BUFFER>",
-                    "extern \"C\" int32_t juno_http_server_begin_tls(")
-                    .doesNotContain("mbedtls", "WiFiServer", "ESP_SSLClient");
         }
 
         /**
@@ -4497,30 +4396,6 @@ class JunoCompilerTest {
             assertThat(plainResult.runtimeShim()).doesNotContain("Mouse.h", "juno_mouse_begin", "juno_parallel_bus");
         }
 
-        @Test
-        @DisplayName("Rejects Mouse on the UNO Q, whose core has no HID.h")
-        void shouldRejectMouseOnTheUnoQ() throws Exception {
-            // Given
-            String source = """
-                    package demo;
-                    import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                    import io.github.jabrena.juno.annotations.Board;
-                    import io.github.jabrena.juno.hardware.MCU;
-                    @Board(ArduinoUnoQBoard.class)
-                    public final class UnoQMouse {
-                        public static void main(String[] args) {
-                            MCU.getMouse().begin();
-                        }
-                    }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoQMouse", source);
-
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoQMouse"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("Mouse")
-                    .hasMessageContaining("Zephyr core has no HID.h");
-        }
     }
 
     @Nested

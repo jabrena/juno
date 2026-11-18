@@ -30,7 +30,6 @@ class RuntimeConfigTest {
     static Stream<Arguments> knownGoodArenas() {
         return Stream.of(
                 arguments(Board.UNO_R4_WIFI, 11264),
-                arguments(Board.UNO_Q, 92 * 1024),
                 arguments(Board.M5_CARDPUTER, 12 * 1024),
                 arguments(Board.NANO_ESP32, 24 * 1024));
     }
@@ -96,8 +95,8 @@ class RuntimeConfigTest {
     @DisplayName("An unset task stack falls back to the board's own size")
     void shouldFallBackToTheBoardsOwnStackSizeWhenUnset() {
         // When
-        ResolvedRuntimeConfig unset = RuntimeConfig.DEFAULT.resolveFor(Board.UNO_Q);
-        ResolvedRuntimeConfig explicit = new RuntimeConfig(8192, OptionalInt.of(1024)).resolveFor(Board.UNO_Q);
+        ResolvedRuntimeConfig unset = RuntimeConfig.DEFAULT.resolveFor(Board.PICO_2_W);
+        ResolvedRuntimeConfig explicit = new RuntimeConfig(8192, OptionalInt.of(1024)).resolveFor(Board.PICO_2_W);
 
         // Then
         assertThat(unset.threadStackBytes()).isEqualTo(4096);

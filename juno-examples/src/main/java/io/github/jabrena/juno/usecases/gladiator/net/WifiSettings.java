@@ -15,8 +15,6 @@ import java.util.Properties;
  * wifi.ssid=MyNetwork
  * wifi.password=MyPassword
  * </pre>
- *
- * An UNO Q does not need it: it uses the connection configured on its Linux side ({@link #NONE}).
  */
 public record WifiSettings(String ssid, String password) {
     public static final String FILE = "application.properties";
@@ -24,8 +22,6 @@ public record WifiSettings(String ssid, String password) {
     public static final String SSID_KEY = "wifi.ssid";
     /** The {@link #FILE} key holding the network's password. */
     public static final String PASSWORD_KEY = "wifi.password";
-    /** No network of its own to join, for a board whose connection is set up elsewhere. */
-    public static final WifiSettings NONE = new WifiSettings("", "");
 
     /** Reads the network from {@code sdCard}; null, saying why over serial, when the card or either key is missing. */
     public static WifiSettings load(SdCard sdCard) {

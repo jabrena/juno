@@ -189,10 +189,8 @@ and tacho motors alike with a power percentage, <code>-100..100</code>. The Tech
 modes; <a href="#readSensor(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>readSensor(PoweredUpPort)</code></a> then returns the latest value the hub sent, e.g. a tacho motor's
 position in degrees or the button pressed on a Powered Up remote.
 
-<p>Works on both boards. On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which
-cannot run BLE and <code>Wifi</code> at the same time. On the UNO Q, the radio belongs to the Linux
-side: <code>ArduinoBLE</code> 2.1.0 or newer tunnels raw HCI to its <code>hci0</code> adapter through
-<code>Arduino_RouterBridge</code>, which needs <code>arduino-router</code> 0.7.0 or newer on the board.</div>
+<p>On the UNO R4 WiFi, BLE is provided by the ESP32-S3 radio module, which cannot run BLE and <code>Wifi</code> at the
+same time.</div>
 </div>
 </section>
 <section class="summary">

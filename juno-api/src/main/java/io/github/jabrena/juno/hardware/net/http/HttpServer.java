@@ -2,12 +2,11 @@ package io.github.jabrena.juno.hardware.net.http;
 
 /**
  * A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
- * the Arduino {@code WiFiS3} library's {@code WiFiServer} on UNO R4 WiFi and by {@code
- * BridgeTCPServer} (a listener in {@code arduino-router} on Linux) on UNO Q. Requires an active
+ * the Arduino {@code WiFiS3} library's {@code WiFiServer} on UNO R4 WiFi and by each core's
+ * own Wi-Fi server elsewhere. Requires an active
  * {@link io.github.jabrena.juno.hardware.net.Wifi#begin} or {@link io.github.jabrena.juno.hardware.net.Wifi#beginAP}
  * connection. {@link #begin(int)} serves plain HTTP on every board; {@link #beginTls} serves HTTPS on the ESP32
- * boards (Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer), the UNO Q whose MCU runs the TLS session over the bridge,
- * and the Raspberry Pi Pico 2 W.
+ * boards (Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer), the Raspberry Pi Pico 2 W and the Portenta H7.
  *
  * <p>{@link #begin(int)} starts listening once. From then on, call {@link #accept} once per
  * {@code loop()} iteration: it returns immediately with {@code -1} when no client is currently
@@ -42,7 +41,7 @@ public final class HttpServer {
      * certificate themselves (e.g. {@code curl --cacert server.crt}, or {@code -k}). The buffers are parsed here and
      * can be reused afterwards. On success the rest of the API is unchanged: {@link #accept} completes the TLS
      * handshake before it reads the request. Returns {@code false} when the certificate or key does not parse.
-     * ESP32 boards (Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer), UNO Q and Raspberry Pi Pico 2 W only, one connection at a time; call it once, instead of
+     * ESP32 boards (Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer), Raspberry Pi Pico 2 W and Portenta H7 only, one connection at a time; call it once, instead of
      * {@link #begin(int)}.
      */
     public static native boolean beginTls(int port, byte[] certificate, int certificateLength, byte[] privateKey,

@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,7 +12,7 @@ import java.util.concurrent.Semaphore;
  * Each thread must see all three arrivals after the barrier, the arrival indices of one trip must be 0, 1 and 2
  * (their sum is 3), and exactly one thread per trip is the last to arrive. None of that depends on scheduling order.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class CyclicBarrierRendezvous {
     static final CyclicBarrier BARRIER = new CyclicBarrier(3);
     static final Semaphore LOCK = new Semaphore(1);

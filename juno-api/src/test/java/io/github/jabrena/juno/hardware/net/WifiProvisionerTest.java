@@ -216,35 +216,6 @@ class WifiProvisionerTest {
     }
 
     @Test
-    @DisplayName("Does not join when the board is already on the network")
-    void shouldNotJoinWhenTheBoardIsAlreadyOnTheNetwork() {
-        // Given
-        wifi.connectedWhileAccessPoint = true;
-        script(post("/connect", "ssid=Office&password=%4Aa%4b"));
-
-        // When
-        WifiProvisioner.run("Juno-Setup", "juno1234");
-
-        // Then
-        assertThat(wifi.joins).as("no second join is needed").isEmpty();
-    }
-
-    @Test
-    @DisplayName("Prints the command to join when the board is already on the network")
-    void shouldPrintTheCommandToJoinWhenTheBoardIsAlreadyOnTheNetwork() {
-        // Given
-        wifi.connectedWhileAccessPoint = true;
-        script(post("/connect", "ssid=Office&password=%4Aa%4b"));
-
-        // When
-        WifiProvisioner.run("Juno-Setup", "juno1234");
-
-        // Then
-        assertThat(Serial.output).containsSubsequence(
-                "Apply on Linux: nmcli device wifi connect ", "Office", " password ", "JaK\n");
-    }
-
-    @Test
     @DisplayName("Waits for the access point to come up")
     void shouldWaitForTheAccessPointToComeUp() {
         // Given

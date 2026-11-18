@@ -68,7 +68,7 @@ public final class RoleMenu {
         Hud.centered(tft, "GLADIATOR", 10, 3, View.WALL, ViewList.BACKGROUND);
         Hud.centered(tft, "One arena, two players, every board its role", 42, 1, TftTouchShield.GRAY,
                 ViewList.BACKGROUND);
-        button(tft, ARENA, "ARENA", "Keeps the battle, map from above (UNO Q)", TftTouchShield.YELLOW);
+        button(tft, ARENA, "ARENA", "Keeps the battle, map from above", TftTouchShield.YELLOW);
         button(tft, PLAYER_1, "PLAYER 1", "Secutor: charges and presses the attack", Figure.AGGRESSIVE_COLOR);
         button(tft, PLAYER_2, "PLAYER 2", "Retiarius: nets and strikes from cover", Figure.AMBUSH_COLOR);
         tft.fillRect(RETURN_X, RETURN_Y, RETURN_WIDTH, RETURN_HEIGHT, Hud.PANEL);

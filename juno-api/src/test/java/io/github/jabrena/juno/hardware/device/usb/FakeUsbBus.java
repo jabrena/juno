@@ -129,6 +129,25 @@ public final class FakeUsbBus implements Spi {
     }
 
     @Override
+    public void setClock(int frequencyHz) {
+        // the fake answers at any clock
+    }
+
+    @Override
+    public void transfer(byte[] buffer, int length) {
+        for (int index = 0; index < length; index++) {
+            buffer[index] = (byte) transfer(buffer[index] & 0xFF);
+        }
+    }
+
+    @Override
+    public void write(byte[] buffer, int length) {
+        for (int index = 0; index < length; index++) {
+            transfer(buffer[index] & 0xFF);
+        }
+    }
+
+    @Override
     public int transfer(int value) {
         if (!selected) {
             throw new IllegalStateException("SPI transfer without chip select");

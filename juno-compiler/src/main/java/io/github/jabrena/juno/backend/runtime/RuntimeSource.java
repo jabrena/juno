@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * The C++ fragments the runtime shim is assembled from, kept as real source files under {@code src/main/resources/runtime}
  * rather than Java strings: {@code common/} for every board, {@code thumb2/}/{@code avr/} for one instruction set, and
- * {@code renesas/}/{@code zephyr/} for one {@link io.github.jabrena.juno.board.ArduinoCore}. A fragment
+ * {@code renesas/}/{@code mbed/} for one {@link io.github.jabrena.juno.board.ArduinoCore}. A fragment
  * is emitted verbatim apart from its {@code ${JUNO_...}} placeholders, which the Java side substitutes.
  */
 public final class RuntimeSource {

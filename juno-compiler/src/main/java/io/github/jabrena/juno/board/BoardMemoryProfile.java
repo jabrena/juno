@@ -115,8 +115,6 @@ public record BoardMemoryProfile(int internalSramBytes, int defaultArenaBytes, i
         return switch (authority) {
             case LINKER -> "";
             case RUNTIME_HEAP -> " Below that maximum, the run-time heap decides whether the arena fits.";
-            case LOADER_POOL -> " Below that maximum, the loader pool decides whether the arena fits, and the"
-                    + " program's code shares it.";
         };
     }
 }

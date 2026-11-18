@@ -3,7 +3,6 @@ package demo;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -18,7 +17,7 @@ import java.io.InputStream;
  * only grows, and a CSV file of samples. Not the UNO R3: SdFat's 512-byte block cache, the 1 KiB arena and the
  * float/double/long string helpers this program pulls in exceed its 2 KiB of RAM.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class SdCardApi {
     private static final SdCard SD_CARD = new DataLoggerShield().getSdCard();
     // Constants are inlined as literals, which is what SdCard's compile-time path rule needs.

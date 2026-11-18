@@ -1,6 +1,6 @@
 ---
 title: "Wifi"
-description: "Connecting a Juno program to a Wi-Fi network on the UNO R4 WiFi, UNO Q and other boards with Wi-Fi."
+description: "Connecting a Juno program to a Wi-Fi network on the UNO R4 WiFi and other boards with Wi-Fi."
 layout: page
 ---
 
@@ -9,8 +9,7 @@ and password, and wait until `status` reports that the connection is up.
 
 ## Connecting to Wi-Fi
 
-Get the board's radio once, at startup. `MCU.getWifi()` returns it on the boards with onboard Wi-Fi (UNO R4
-WiFi and UNO Q). The UNO R3 has no radio and no network support, so the compiler rejects
+Get the board's radio once, at startup. `MCU.getWifi()` returns it on the boards with onboard Wi-Fi. The UNO R3 has no radio and no network support, so the compiler rejects
 `MCU.getWifi()` there. A unit test passes `mock(Wifi.class)`.
 
 The credentials stay on the microSD card (see [SD Card](../sdcard)), so they are not written in the source. `Wifi.begin`

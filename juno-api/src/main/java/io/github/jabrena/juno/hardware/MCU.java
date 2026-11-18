@@ -98,12 +98,12 @@ public final class MCU {
     }
 
     /**
-     * The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q as a
-     * monochrome {@link Display} (12x8 or 13x8). The board is asked here, so only the chosen display is linked.
+     * The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi as a
+     * monochrome 12x8 {@link Display}. The board is asked here, so only the chosen display is linked.
      */
     public static Display getDisplay() {
         return switch (getBoardModel()) {
-            case UNO_R4_WIFI, UNO_Q -> NativeLedMatrix.display();
+            case UNO_R4_WIFI -> NativeLedMatrix.display();
             default -> NativeDisplay.display();
         };
     }

@@ -12,9 +12,8 @@ most 31 bytes, so keep them short (see [Credentials](#credentials)).
 
 ## Board support
 
-`Smtp.sendTls` and `Pop3Client` work on the boards with the `TLS_EMAIL` capability: UNO R4 WiFi, UNO Q,
-Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM.
-and Nano ESP32. `Smtp.send` (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
+`Smtp.sendTls` and `Pop3Client` work on the boards with the `TLS_EMAIL` capability: UNO R4 WiFi,
+Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, Raspberry Pi Pico 2 W and Portenta H7. `Smtp.send` (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
 boards have the `SMTP_STARTTLS` capability. The compiler rejects a call the board cannot run.
 
 ## Credentials

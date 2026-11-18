@@ -110,7 +110,7 @@ class CompileMojoTest extends AbstractMojoTestCase {
     @Test
     @DisplayName("Regenerates for the board selected by the latest build, not the previous output")
     void shouldRegenerateForTheBoardSelectedNow() throws Exception {
-        // Given: one output directory, compiled first for the UNO R4 WiFi and then for the UNO Q
+        // Given: one output directory, compiled first for the UNO R4 WiFi and then for the Portenta H7
         RecordingLog log = new RecordingLog();
         CompileMojo first = lookupEmptyMojo("compile", new File("."));
         first = configureMojo(first, configuration()
@@ -127,7 +127,7 @@ class CompileMojoTest extends AbstractMojoTestCase {
         second = configureMojo(second, configuration()
                 .set("arduinoCli", "arduino-cli")
                 .set("mainClass", "io.github.jabrena.juno.maven.fixture.TinyProgram")
-                .set("board", "arduino-uno-q")
+                .set("board", "arduino-portenta-h7")
                 .set("outputDirectory", "target/juno-mojo-test/regenerate")
                 .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .build());
@@ -140,7 +140,7 @@ class CompileMojoTest extends AbstractMojoTestCase {
         Path sketchDirectory = Path.of("target/juno-mojo-test/regenerate/TinyProgramAsm");
         assertThat(sketchDirectory.resolve("TinyProgram.S")).isRegularFile();
         assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO R4 WiFi"));
-        assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("UNO Q"));
+        assertThat(log.infos()).anyMatch(line -> line.contains("Generated") && line.contains("Portenta H7"));
     }
 
     @Test

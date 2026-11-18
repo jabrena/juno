@@ -47,8 +47,7 @@ import io.github.jabrena.juno.util.Delay;
  * {@code [juno-watchdog] panic: board will reset via watchdog in ...}, then {@code tick 0} again as
  * the board comes back up. Without {@code --gc-log}, only the
  * {@code tick N} lines and the two unconditional pre-panic diagnostics (OOM and watchdog — see
- * the generated backend's {@code juno_alloc}/{@code juno_panic}) appear. UNO Q rejects this example
- * because its current Arduino Zephyr firmware does not enable the watchdog subsystem.
+ * the generated backend's {@code juno_alloc}/{@code juno_panic}) appear.
  */
 @Watchdog(timeoutMillis = 3000)
 public final class GcDemo {

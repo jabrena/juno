@@ -34,7 +34,7 @@ class BackendArchitectureTest {
     /** The per-core implementations; only {@code CoreRuntimes.of} may name them. */
     private static final String[] CORE_IMPLEMENTATIONS = {
             "io.github.jabrena.juno.backend.runtime.core.RenesasCoreRuntime",
-            "io.github.jabrena.juno.backend.runtime.core.ZephyrCoreRuntime",
+            "io.github.jabrena.juno.backend.runtime.core.MbedPortentaCoreRuntime",
             "io.github.jabrena.juno.backend.runtime.core.Esp32CoreRuntime"};
 
     @ArchTest

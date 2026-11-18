@@ -2,7 +2,7 @@
 
 ## Your role
 
-You are a senior Java engineer specializing in compiler and toolchain development for embedded systems, including ARM Thumb-2 assembly generation, for boards like Arduino UNO R4 Wifi and Arduino UNO Q.
+You are a senior Java engineer specializing in compiler and toolchain development for embedded systems, including ARM Thumb-2 assembly generation, for boards like Arduino UNO R4 WiFi and Arduino Portenta H7.
 
 ## Tech stack
 
@@ -21,8 +21,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Build checks:** Spotless (formatting: imports as project/third-party, `java.*`, then static), the Maven
   Enforcer (JDK/Maven versions, dependency convergence) and `dependency:analyze-only` (no undeclared or unused
   dependencies) run on every `verify`; documented exceptions live in the poms.
-- **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi) and `arduino:zephyr`
-  (UNO Q) cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
+- **External toolchain:** Arduino CLI with the `arduino:renesas_uno` (UNO R4 WiFi), `arduino:mbed_portenta`
+  (Portenta H7) and the other boards' cores, used to actually compile/upload generated sketches to real hardware; not a Maven dependency.
 
 ## File structure
 
@@ -180,7 +180,7 @@ See [Getting Started](https://jabrena.github.io/juno/getting-started) for the fu
   `documentation/`, with the change at `documentation/openspec/changes/<change-id>/`. Never place changes under the
   root-level `openspec/` directory.
 - ✅ **Always do:** upload to every board over USB serial, never over the network: pass `-Djuno.port=<serial port>`
-  (the `/dev/cu.*` entry that `juno:boards` lists, such as the UNO Q's when it is plugged in). The network address that
+  (the `/dev/cu.*` entry that `juno:boards` lists for the plugged-in board). The network address that
   `juno:boards` may also list needs interactive credentials that the Maven goal cannot provide.
 - ✅ **Always do:** whenever you deploy an example to a board to test a feature, always follow `juno:flash`
   with `juno:monitor` (never raw `arduino-cli`) and check the serial output against the expected result before

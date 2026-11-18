@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.WifiProvisioner;
@@ -13,10 +12,9 @@ import io.github.jabrena.juno.util.Delay;
  * Wi-Fi setup from a phone instead of build-time credentials: the board opens the access point
  * {@value #AP_SSID} (passphrase {@value #AP_PASSWORD}), and {@link WifiProvisioner} serves a form at the
  * native access-point address and joins the network the user submits, printing the new address over
- * Serial at 115200 baud. On UNO Q the hotspot must be started on the Linux side first; see
- * {@link WifiProvisioner} for what each board does with the submitted credentials.
+ * Serial at 115200 baud.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoPortentaH7Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
 public final class WifiProvisioning {
     private static final String AP_SSID = "juno";
     private static final String AP_PASSWORD = "juno";

@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR3Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -15,7 +14,7 @@ import io.github.jabrena.juno.language.Interfaces.Scale;
 import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates interface dispatch, inherited default methods, and an overriding implementation. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class, ArduinoUnoR3Board.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoUnoR3Board.class, M5StackCardputerBoard.class})
 public final class Interfaces {
 
     public static void main(String[] args) {

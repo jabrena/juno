@@ -8,7 +8,7 @@ static unsigned long now = 0;
 static unsigned long millis() { return now; }
 static void juno_io_wait(int delay) { now += delay; }
 
-// Like RouterBridge, available() incurs an RPC even when unread bytes remain buffered.
+// available() is counted as a library call even when unread bytes remain buffered.
 class RpcClient {
   std::string response;
   size_t cursor = 0;

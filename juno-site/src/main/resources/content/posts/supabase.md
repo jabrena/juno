@@ -20,5 +20,5 @@ a public client, so it uses a publishable key that is protected by Row Level Sec
 | Field | Value |
 |---|---|
 | Sources | [`usecases/supabase`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase) |
-| Boards supported | [`UNO R4 WiFi`](../../arduino-uno-r4-wifi), [`UNO Q`](../../arduino-uno-q) |
+| Boards supported | [`UNO R4 WiFi`](../../arduino-uno-r4-wifi) |
 | Features used | Wi-Fi, HTTPS, Grove sensors, Grove Base Shield, LocalDateTime, clock, serial output, delays |

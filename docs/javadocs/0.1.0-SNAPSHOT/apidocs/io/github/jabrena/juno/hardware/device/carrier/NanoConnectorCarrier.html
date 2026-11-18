@@ -94,6 +94,7 @@ initTheme();
 <li><a href="#getA1()" tabindex="0">getA1()</a></li>
 <li><a href="#getA2()" tabindex="0">getA2()</a></li>
 <li><a href="#getA3()" tabindex="0">getA3()</a></li>
+<li><a href="#getI2c()" tabindex="0">getI2c()</a></li>
 <li><a href="#getI2cSda()" tabindex="0">getI2cSda()</a></li>
 <li><a href="#getI2cScl()" tabindex="0">getI2cScl()</a></li>
 <li><a href="#getUartRx()" tabindex="0">getUartRx()</a></li>
@@ -151,9 +152,10 @@ The module's <code>GND</code> and <code>VCC</code> wires are supplied by the soc
       (white) wires are <a href="#getA1()"><code>getA1()</code></a> and <a href="#getA3()"><code>getA3()</code></a>.</li>
   <li><a href="#getGroveUart()"><code>getGroveUart()</code></a>: RX on D0; TX on D1 is <a href="#getUartTx()"><code>getUartTx()</code></a>. These are the Nano's hardware serial
       pins, free on the Nano ESP32, whose <code>Serial</code> is USB.</li>
-  <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through <code>MCU.getI2c()</code>. Use it for I2C
-      modules only: the bus pull-ups distort a digital module's output, and a Grove PIR measured about 1.4 V at
-      rest here, neither low nor high. Plug such a module into an analog socket instead.</li>
+  <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through <a href="#getI2c()"><code>getI2c()</code></a>, which is the
+      board's <code>MCU.getI2c()</code> bus. Use it for I2C modules only: the bus pull-ups distort a digital module's
+      output, and a Grove PIR measured about 1.4 V at rest here, neither low nor high. Plug such a module into an
+      analog socket instead.</li>
 </ul>
 The Grove sockets' VCC is 3.3 V or 5 V, chosen by the carrier's input selector switch; the Qwiic connector and the
 microSD slot are always 3.3 V. Set the switch to 3.3 V for a 3.3 V board such as the Nano ESP32.
@@ -240,59 +242,65 @@ program reading the card should not blink that LED.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The signal pin of a module in the Grove UART socket: RX, D0.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cScl()" class="member-name-link">getI2cScl</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2c()" class="member-name-link">getI2c</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The I2C bus on the Grove I2C socket and the Qwiic connector: the board's primary bus (<a href="../../MCU.html#getI2c()"><code>MCU.getI2c()</code></a>),
+SDA on A4 and SCL on A5.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cScl()" class="member-name-link">getI2cScl</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">SCL, A5, shared by the Grove I2C socket and the Qwiic connector.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cSda()" class="member-name-link">getI2cSda</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cSda()" class="member-name-link">getI2cSda</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">SDA, A4, shared by the Grove I2C socket and the Qwiic connector.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The card in the microSD slot; its <a href="../sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> selects it on D4.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelect()" class="member-name-link">getSdChipSelect</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelect()" class="member-name-link">getSdChipSelect</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's chip select, D4.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelectJumperD2()" class="member-name-link">getSdChipSelectJumperD2</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelectJumperD2()" class="member-name-link">getSdChipSelectJumperD2</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's chip select once its solder jumper is moved to D2.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelectJumperD3()" class="member-name-link">getSdChipSelectJumperD3</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdChipSelectJumperD3()" class="member-name-link">getSdChipSelectJumperD3</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's chip select once its solder jumper is moved to D3.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiMiso()" class="member-name-link">getSpiMiso</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiMiso()" class="member-name-link">getSpiMiso</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's SPI MISO pin, D12.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiMosi()" class="member-name-link">getSpiMosi</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiMosi()" class="member-name-link">getSpiMosi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's SPI MOSI pin, D11.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiSck()" class="member-name-link">getSpiSck</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpiSck()" class="member-name-link">getSpiSck</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The microSD slot's SPI clock, D13, which is also the Nano's built-in LED.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartRx()" class="member-name-link">getUartRx</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartRx()" class="member-name-link">getUartRx</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The Grove UART socket's RX, D0; the same pin as <a href="#getGroveUart()"><code>getGroveUart()</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartTx()" class="member-name-link">getUartTx</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartTx()" class="member-name-link">getUartTx</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The Grove UART socket's TX, D1.</div>
 </div>
 </div>
@@ -462,6 +470,16 @@ instance every call.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getA3</span>()</div>
 <div class="block">The Grove A2/A3 socket's second (white) wire, A3.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getI2c()">
+<h3>getI2c</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></span>&nbsp;<span class="element-name">getI2c</span>()</div>
+<div class="block">The I2C bus on the Grove I2C socket and the Qwiic connector: the board's primary bus (<a href="../../MCU.html#getI2c()"><code>MCU.getI2c()</code></a>),
+SDA on A4 and SCL on A5. The same instance every call; allocates nothing.</div>
 </div>
 </section>
 </li>

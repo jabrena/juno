@@ -1,5 +1,5 @@
 /**
- * Concurrency examples for the UNO R4 WiFi and UNO Q, limited to the concurrency APIs Juno lowers: volatile fields,
+ * Concurrency examples for the boards with threads, limited to the concurrency APIs Juno lowers: volatile fields,
  * {@code synchronized}, {@link java.util.concurrent.locks.ReentrantLock}, the atomic {@code Integer}, {@code Boolean}
  * and {@code Long} cells, virtual threads, and {@link java.util.concurrent.StructuredTaskScope}.
  *

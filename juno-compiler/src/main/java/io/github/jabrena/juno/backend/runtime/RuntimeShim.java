@@ -230,7 +230,7 @@ public final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        shim.append(ioRuntime.preludeFor(core, features, carrierCount));
+        shim.append(ioRuntime.preludeFor(features, carrierCount));
         if (uses(ShimFeature.M5_DEVICE)) {
             shim.append(runtimeSource.load("common/m5-device.cpp"));
         }
@@ -338,15 +338,14 @@ public final class RuntimeShim {
             shim.append(core.httpsHelpers(uses(ShimFeature.HTTPS_TRUSTED_CERTIFICATE)));
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS)) {
-            shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), core.httpsClientType(),
-                    ioRuntime.usesWorker(core, features)));
+            shim.append(networkShimLibraries.httpHelpers(features, core.httpClientType(), core.httpsClientType()));
         } else if (uses(ShimFeature.HTTP_TIMEOUT)) {
             shim.append(networkShimLibraries.httpTimeoutStub());
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(
                     uses(ShimFeature.HTTPS_SERVER) ? core.httpsServerTransport() : core.httpServerTransport(),
-                    ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
+                    uses(ShimFeature.HTTP_SERVER_HEADERS)));
         }
         if (uses(ShimFeature.HTTP_STREAM)) {
             shim.append(core.httpStreamHelpers());
@@ -393,8 +392,7 @@ public final class RuntimeShim {
             shim.append(carrierGcRuntime.source(core, carrierCount));
             shim.append(core.carrierRuntime(carrierCount));
             shim.append(core.threadPort(config, carrierCount));
-            shim.append(ioRuntime.workerPortFor(core, features));
-            shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(), ioRuntime.usesWorker(core, features),
+            shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(),
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),

@@ -199,7 +199,7 @@ public final class AvrRuntimeShim {
                 new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
                 new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
                 new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers)));
-        shim.append(ioRuntime.preludeFor(core, features));
+        shim.append(ioRuntime.preludeFor(features));
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.SD, () -> core.sdHelpers(SD_OPEN_FILES, PROPERTIES_ENTRIES,
                         PROPERTIES_KEY_BYTES, PROPERTIES_VALUE_BYTES, PROPERTIES_LINE_BYTES)),
@@ -254,8 +254,7 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(ioRuntime.workerPortFor(core, features));
-            shim.append(threadRuntime.scheduler(false, ioRuntime.usesWorker(core, features),
+            shim.append(threadRuntime.scheduler(false,
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_bytes",
                     uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),
@@ -307,7 +306,7 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),
-                    ioRuntime.usesWorker(core, features), uses(ShimFeature.HTTP_SERVER_HEADERS)));
+                    uses(ShimFeature.HTTP_SERVER_HEADERS)));
         }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
         if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {

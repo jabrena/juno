@@ -6,9 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Enables the target's hardware watchdog timer on {@code @Watchdog}'s entry-point class. UNO R3, UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W are supported. UNO Q is rejected because its current Arduino
- * Zephyr firmware does not enable the watchdog subsystem, even though its STM32U585 contains the
- * peripheral.
+ * Enables the target's hardware watchdog timer on {@code @Watchdog}'s entry-point class. UNO R3, UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W are supported.
  *
  * <p>Juno reads this annotation directly from the class file at compile time; it carries no runtime
  * behavior itself. When present, the generated program starts the watchdog before static

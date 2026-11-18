@@ -10,7 +10,6 @@ public final class CoreRuntimes {
         return switch (core) {
             case CLASSIC_AVR -> new ClassicAvrCoreRuntime();
             case RENESAS_UNO -> new RenesasCoreRuntime();
-            case ZEPHYR -> new ZephyrCoreRuntime();
             case ESP32 -> new Esp32CoreRuntime(ArduinoCore.ESP32);
             case ESP32_CAM -> new Esp32CoreRuntime(ArduinoCore.ESP32_CAM);
             case M5STACK_ESP32 -> new Esp32CoreRuntime(ArduinoCore.M5STACK_ESP32);

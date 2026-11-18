@@ -61,19 +61,19 @@ class MCUTest {
     }
 
     @Test
-    @DisplayName("On the UNO R4 WiFi and UNO Q the display is the LED matrix, one shared instance")
-    void shouldHandOutTheLedMatrixAsTheDisplayOnTheUnoBoards() {
+    @DisplayName("On the UNO R4 WiFi the display is the LED matrix, one shared instance")
+    void shouldHandOutTheLedMatrixAsTheDisplayOnTheUnoR4Wifi() {
         // Given
         BoardModel previous = NativeBoardModel.boardModel();
         Display matrix = mock(Display.class);
-        when(matrix.width()).thenReturn(13);
+        when(matrix.width()).thenReturn(12);
         NativeLedMatrix.setDisplay(matrix);
-        NativeBoardModel.setBoardModel(BoardModel.UNO_Q);
+        NativeBoardModel.setBoardModel(BoardModel.UNO_R4_WIFI);
 
         // When & Then
         try {
             assertThat(MCU.getDisplay()).isSameAs(matrix).isSameAs(MCU.getDisplay());
-            assertThat(MCU.getDisplay().width()).isEqualTo(13);
+            assertThat(MCU.getDisplay().width()).isEqualTo(12);
         } finally {
             NativeBoardModel.setBoardModel(previous);
         }

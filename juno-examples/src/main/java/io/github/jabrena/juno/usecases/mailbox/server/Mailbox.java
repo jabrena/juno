@@ -1,10 +1,13 @@
 package io.github.jabrena.juno.usecases.mailbox.server;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.Mhs35TftDisplay;
+import io.github.jabrena.juno.hardware.net.Wifi;
+import io.github.jabrena.juno.hardware.security.SecretStore;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -18,20 +21,16 @@ import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxServerTask
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxStartupTask;
 import io.github.jabrena.juno.util.Delay;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 /**
- * The mailbox composition root: shows the Java and Arduino intro, wires the SD-backed model,
- * HTTPS controller and TFT view, then runs the UI and HTTPS tasks together.
+ * The mailbox composition root on an Arduino Portenta H7 in a Portenta Hat Carrier with the MHS-3.5 TFT touch HAT:
+ * wires the SD-backed model, HTTPS controller and TFT view, joins Wi-Fi, then runs the UI and HTTPS tasks together.
  *
- * <p>The UNO Q's Linux side provides the network connection, so the MCU cannot ask it for its address. Write the
- * address shown on the TFT as {@code mailbox.q.ip=<address>} in {@code /application.properties} on the SD card; the
- * Q's network port is listed by {@code juno:boards}. The TLS certificate and private key are read
- * at startup from {@code /server.crt} and {@code /server.key} (PEM) on the SD card, so the firmware image holds no key
- * and a certificate is replaced without rebuilding (see {@link MailboxCredentials}); the certificate must name the same
- * address in its {@code subjectAltName}.
+ * <p>The Wi-Fi network comes from the Portenta's secret store ({@code wifi.ssid} and {@code wifi.password}, written
+ * once with {@code SecretProvisioner}), and the address the board gets is shown on the TFT and printed over Serial. The
+ * TLS certificate and private key are read at startup from {@code /server.crt} and {@code /server.key} (PEM) on the
+ * carrier's microSD card, so the firmware image holds no key and a certificate is replaced without rebuilding (see
+ * {@link io.github.jabrena.juno.usecases.mailbox.server.services.MailboxCredentials}); the certificate must name the
+ * board's address in its {@code subjectAltName}, so give the board a fixed DHCP lease.
  *
  * <p>The mailbox is available at {@code /api/v1/mailbox/}, and {@code GET /actuator/info} identifies the service.
  * Every mailbox request must carry the API key in a {@code Mailbox-API-Key} header, or it is answered {@code 401}; the
@@ -41,34 +40,46 @@ import java.util.Properties;
  * ignored.
  * Only the small index is kept in the board arena.
  *
- * <p>Copy {@code server.crt}, {@code server.key} and {@code application.properties} to the SD card's root, then
- * build it, for example:
+ * <p>The screens are laid out for 240x320 portrait, which the 320x480 panel scales up by 4/3.
+ * Copy {@code server.crt} and {@code server.key} to the SD card's root, then build it, for example:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
- *   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-uno-q
+ *   -Djuno.main=io.github.jabrena.juno.usecases.mailbox.server.Mailbox -Djuno.board=arduino-portenta-h7
  * }</pre>
  */
-@Board(ArduinoUnoQBoard.class)
+@Board(ArduinoPortentaH7Board.class)
 public final class Mailbox {
     private static final int TOUCH_POLL_MILLIS = 100;
+    private static final int WIFI_ATTEMPTS = 60;
+    private static final int WIFI_RETRY_MILLIS = 1000;
 
     private Mailbox() {
     }
 
     public static void main(String[] args) {
-        TftTouchShield tft = new TftTouchShield();
+        PortentaHatCarrier carrier = new PortentaHatCarrier();
+        Mhs35TftDisplay tft = new Mhs35TftDisplay(carrier);
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        tft.setRotation(TftTouchShield.PORTRAIT_FLIPPED);
+        tft.setRotation(Mhs35TftDisplay.PORTRAIT);
+        tft.fitLogicalSize(MailboxView.SCREEN_WIDTH, MailboxView.SCREEN_HEIGHT);
 
-        SdCard sdCard = tft.getSdCard();
+        SdCard sdCard = carrier.getSdCard();
         MailboxModel model = new MailboxModel(sdCard);
         MailboxSecurity security = new MailboxSecurity(sdCard);
         MailboxView view = new MailboxView(security);
-        String address = readQAddress(sdCard);
         view.drawCover(tft, false, 0);
-        view.drawIp(tft, address);
-        printLocalIP(address);
+        view.drawInternetConnecting(tft);
+        if (joinWifi(MCU.getWifi())) {
+            int[] address = new int[4];
+            MCU.getWifi().localIP(address);
+            view.drawIp(tft, address);
+            printLocalIP(address);
+        } else {
+            view.drawInternetOffline(tft);
+            Serial.println("Mailbox stopped: Wi-Fi did not connect");
+            return;
+        }
 
         MailboxUiState uiState = new MailboxUiState();
         MailboxStartupState startupState = new MailboxStartupState();
@@ -81,7 +92,7 @@ public final class Mailbox {
     }
 
     /** The main task owns all TFT operations; a tap counts once, when the press starts. */
-    private static void runUserInterface(TftTouchShield tft, MailboxView view, MailboxUiState uiState, MailboxStartupState startupState,
+    private static void runUserInterface(Mhs35TftDisplay tft, MailboxView view, MailboxUiState uiState, MailboxStartupState startupState,
                                          Clock clock) {
         int nextTouchPoll = clock.millis();
         int renderedRevision = uiState.revision();
@@ -120,30 +131,24 @@ public final class Mailbox {
         }
     }
 
-    private static void printLocalIP(String ip) {
-        Serial.print("IP: ");
-        Serial.println(ip);
+    /** Joins the network named in the secret store, waiting up to a minute; returns whether the board is on it. */
+    private static boolean joinWifi(Wifi wifi) {
+        SecretStore secrets = MCU.getSecretStore();
+        wifi.begin(secrets.getString("wifi.ssid"), secrets.getString("wifi.password"));
+        for (int attempt = 0; attempt < WIFI_ATTEMPTS && wifi.status() != Wifi.STATUS_CONNECTED; attempt++) {
+            Delay.millis(WIFI_RETRY_MILLIS);
+        }
+        return wifi.status() == Wifi.STATUS_CONNECTED;
     }
 
-    /**
-     * Reads {@code mailbox.q.ip} from {@code /application.properties} on the shield's card. The UNO Q has no secret
-     * store, and the address is not a secret. The {@code Properties} stays a local, as Juno requires.
-     */
-    private static String readQAddress(SdCard sdCard) {
-        String address = null;
-        try (InputStream file = sdCard.open("application.properties")) {
-            if (file != null) {
-                Properties properties = new Properties();
-                properties.load(file);
-                address = properties.getProperty("mailbox.q.ip");
+    private static void printLocalIP(int[] octets) {
+        Serial.print("IP: ");
+        for (int index = 0; index < octets.length; index++) {
+            if (index > 0) {
+                Serial.print(".");
             }
-        } catch (IOException e) {
-            Serial.println("Unreadable application.properties");
+            Serial.print(octets[index]);
         }
-        if (address == null) {
-            Serial.println("Missing setting: mailbox.q.ip");
-            throw new IllegalStateException("Missing setting: mailbox.q.ip");
-        }
-        return address;
+        Serial.println("");
     }
 }

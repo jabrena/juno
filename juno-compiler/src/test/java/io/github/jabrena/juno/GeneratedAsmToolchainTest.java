@@ -176,7 +176,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "a UUID program's shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoUnoR3Board", "ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR3Board", "ArduinoUnoR4WiFiBoard"})
     @DisplayName("A UUID program's shim is valid C++ on every board")
     void shouldCompileAUuidProgramsShimWithACppCompiler(String board) throws Exception {
         // Given
@@ -220,7 +220,7 @@ class GeneratedAsmToolchainTest {
     }
 
     @ParameterizedTest(name = "random UUID shim is valid for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("Random UUID shims compile for boards with native entropy")
     void shouldCompileRandomUuidShimsForBoardsWithNativeEntropy(String board) throws Exception {
         // Given
@@ -764,85 +764,20 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    @DisplayName("An UNO Q LED matrix shim is valid C++")
-    void shouldCompileAnUnoQLedMatrixShimWithACppCompiler() throws Exception {
+    @DisplayName("Portable UDP shims are valid C++ on the UNO R4 WiFi")
+    void shouldCompilePortableUdpShimsOnTheUnoR4Wifi() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.display.Display;
-                @Board(ArduinoUnoQBoard.class)
-                public final class AsmUnoQLedMatrix {
-                    public static void main(String[] args) {
-                        Display display = MCU.getDisplay();
-                        display.fillRect(1, 1, 3, 3, Display.WHITE);
-                        display.flush();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLedMatrix", source);
-
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLedMatrix");
-        Path shim = temporaryDirectory.resolve("AsmUnoQLedMatrixShim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
-        // Then
-        syntaxCheckCpp(compiler, shim);
-    }
-
-    @Test
-    @DisplayName("An UNO Q RouterBridge email shim is valid C++")
-    void shouldCompileAnUnoQRouterBridgeEmailShimWithACppCompiler() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.net.email.Pop3Client;
-                import io.github.jabrena.juno.hardware.net.email.Smtp;
-                @Board(ArduinoUnoQBoard.class)
-                public final class AsmUnoQEmail {
-                    public static void main(String[] args) {
-                        Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
-                                "me@example.com", "me@example.com", "Hello", "Hello");
-                        Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQEmail", source);
-
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQEmail");
-        Path shim = temporaryDirectory.resolve("AsmUnoQEmailShim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
-        // Then
-        syntaxCheckCpp(compiler, shim);
-    }
-
-    @Test
-    @DisplayName("Portable UDP shims are valid C++ for both Arduino cores")
-    void shouldCompilePortableUdpShimsForBothArduinoCores() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import java.io.IOException;
                 import java.net.DatagramPacket;
                 import java.net.DatagramSocket;
                 import java.net.InetAddress;
-                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class AsmUdp {
                     public static void main(String[] args) {
                         byte[] payload = new byte[12];
@@ -869,25 +804,19 @@ class GeneratedAsmToolchainTest {
                 Optional.of(Board.UNO_R4_WIFI.id()));
         Path r4Shim = temporaryDirectory.resolve("AsmUdpR4Shim.cpp");
         Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
-        CompilationResult q = juno.compile(classpath, "demo.AsmUdp", false,
-                Optional.of(Board.UNO_Q.id()));
-        Path qShim = temporaryDirectory.resolve("AsmUdpQShim.cpp");
-        Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
 
         // Then
         syntaxCheckCpp(compiler, r4Shim);
-        syntaxCheckCpp(compiler, qShim);
     }
 
     @Test
-    @DisplayName("Kasa HS100 and HS110 shims are valid C++ for both Arduino cores")
-    void shouldCompileKasaHs100AndHs110ShimsForBothArduinoCores() throws Exception {
+    @DisplayName("Kasa HS100 and HS110 shims are valid C++ on the UNO R4 WiFi")
+    void shouldCompileKasaHs100AndHs110ShimsOnTheUnoR4Wifi() throws Exception {
         // Given
         String compiler = availableCppCompiler();
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.device.kasa.KasaSmartPlug;
@@ -895,7 +824,7 @@ class GeneratedAsmToolchainTest {
                 import java.net.DatagramPacket;
                 import java.net.DatagramSocket;
                 import java.net.InetAddress;
-                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                @Board(ArduinoUnoR4WiFiBoard.class)
                 public final class AsmKasa {
                     public static void main(String[] args) {
                         byte[] request = new byte[KasaSmartPlug.REQUEST_BUFFER_SIZE];
@@ -926,14 +855,9 @@ class GeneratedAsmToolchainTest {
                 Optional.of(Board.UNO_R4_WIFI.id()));
         Path r4Shim = temporaryDirectory.resolve("AsmKasaR4Shim.cpp");
         Files.writeString(r4Shim, r4.runtimeShim(), StandardCharsets.UTF_8);
-        CompilationResult q = juno.compile(classpath, "demo.AsmKasa", false,
-                Optional.of(Board.UNO_Q.id()));
-        Path qShim = temporaryDirectory.resolve("AsmKasaQShim.cpp");
-        Files.writeString(qShim, q.runtimeShim(), StandardCharsets.UTF_8);
 
         // Then
         syntaxCheckCpp(compiler, r4Shim);
-        syntaxCheckCpp(compiler, qShim);
     }
 
     /**
@@ -1029,14 +953,6 @@ class GeneratedAsmToolchainTest {
     @DisplayName("A ParallelBus program's shim writes the R4 GPIO port registers and is valid C++")
     void shouldCompileAParallelBusProgramsShimWithACppCompiler() throws Exception {
         assertParallelBusShimCompiles("", "AsmParallelBus", "PCNTR3");
-    }
-
-    /** On the UNO Q the same helpers write ports through Zephyr's raw GPIO port API, over the devicetree pin table. */
-    @Test
-    @DisplayName("A ParallelBus program's shim writes the UNO Q GPIO port API and is valid C++")
-    void shouldCompileAnUnoQParallelBusProgramsShimWithACppCompiler() throws Exception {
-        assertParallelBusShimCompiles("@io.github.jabrena.juno.annotations.Board(io.github.jabrena.juno.annotations.ArduinoUnoQBoard.class)",
-                "AsmUnoQParallelBus", "gpio_port_set_clr_bits_raw");
     }
 
     private void assertParallelBusShimCompiles(String board, String name, String portWrite) throws Exception {
@@ -1472,47 +1388,6 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
-    @DisplayName("A UNO Q LEGO Powered Up program's shim is valid C++")
-    void shouldCompileAnUnoQLegoPoweredUpProgramsShimWithACppCompiler() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.remote.lego.poweredup.BuiltInSensor;
-                import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
-                import io.github.jabrena.juno.remote.lego.poweredup.LinkedMotors;
-                import io.github.jabrena.juno.remote.lego.poweredup.HubColor;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.util.Delay;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
-                @Board(ArduinoUnoQBoard.class)
-                public final class AsmUnoQLegoTrain {
-                    public static void main(String[] args) {
-                        RemotePoweredUpHub hub = new RemotePoweredUpHub();
-                        if (!hub.connect(0)) return;
-                        hub.setLedColor(HubColor.GREEN);
-                        hub.getMotor(PoweredUpPort.A).drive(-40);
-                        Delay.millis(1000);
-                        hub.getMotor(PoweredUpPort.A).stop();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmUnoQLegoTrain", source);
-
-        // When
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmUnoQLegoTrain");
-        Path shim = temporaryDirectory.resolve("AsmUnoQLegoTrainShim.cpp");
-        Files.writeString(shim, result.runtimeShim(), StandardCharsets.UTF_8);
-
-        // Then
-        assertThat(result.runtimeShim()).contains("#include <ArduinoBLE.h>", "juno_delay(uint32_t ms)");
-        syntaxCheckCpp(compiler, shim);
-    }
-
-    @Test
     @DisplayName("An SD properties program's shim is valid C++")
     void shouldCompileAnSdPropertiesProgramsShimWithACppCompiler() throws Exception {
         // Given
@@ -1671,10 +1546,10 @@ class GeneratedAsmToolchainTest {
         syntaxCheckCpp(compiler, shim);
     }
 
-    /** AP mode plus the server on both boards: WiFiS3's WiFiServer on the R4, BridgeTCPServer on the UNO Q. */
+    /** AP mode plus the server: WiFiS3's WiFiServer on the R4. */
     @ParameterizedTest(name = "access point provisioning shim is valid C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
-    @DisplayName("An access-point provisioning shim is valid C++ on both boards")
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
+    @DisplayName("An access-point provisioning shim is valid C++")
     void shouldCompileAnAccessPointProvisioningShimForBothBoardsWithACppCompiler(String board) throws Exception {
         // Given
         String compiler = availableCppCompiler();
@@ -1708,18 +1583,13 @@ class GeneratedAsmToolchainTest {
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_wifi_begin_ap");
-        if (board.equals("ArduinoUnoQBoard")) {
-            // A bridge read must fit the 256-byte RPC reply even when every byte is >= 0x80 (MessagePack 2 bytes).
-            assertThat(result.runtimeShim()).contains("JUNO_HTTP_SERVER_BUFFER = 112",
-                    "using JunoHttpClient = BridgeTCPClient<JUNO_HTTP_SERVER_BUFFER>;");
-        }
         syntaxCheckCpp(compiler, shim);
     }
 
-    /** The pure-Java provisioning helper links against both boards' intrinsics and produces a valid shim. */
+    /** The pure-Java provisioning helper links against the board's intrinsics and produces a valid shim. */
     @ParameterizedTest(name = "Wi-Fi provisioner shim is valid C++ for {0}")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
-    @DisplayName("The Wi-Fi provisioner produces a valid shim on both boards")
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
+    @DisplayName("The Wi-Fi provisioner produces a valid shim")
     void shouldCompileTheWifiProvisionerForBothBoardsWithACppCompiler(String board) throws Exception {
         // Given
         String compiler = availableCppCompiler();

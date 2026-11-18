@@ -28,7 +28,7 @@ extern "C" int32_t juno_tcp_read(uint8_t* payload, int32_t offset, int32_t lengt
       delay(1);
       continue;
     }
-    // One bulk read for everything waiting: on the UNO Q each single-byte read is a round trip over the Bridge.
+    // One bulk read for everything waiting, instead of one library call per byte.
     int32_t wanted = length - received;
     int32_t ready = juno_tcp_client.available();
     int32_t chunk = ready < wanted ? ready : wanted;

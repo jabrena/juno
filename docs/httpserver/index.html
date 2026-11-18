@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -414,8 +413,9 @@ public certificate that clients trust.</p>
 <p>The program reads both files at startup into buffers it allocates once, then passes them to <code>beginTls</code>. The server parses
 them and keeps its own copy, so the program does not hold the key afterwards. Each buffer must hold its whole file, so
 keep the PEM text small: the examples use 2048-byte buffers.</p>
-<p>On the UNO Q, <code>QHttpsServer</code> reads <code>server.crt</code> and <code>server.key</code> from the root of the Data Logger Shield's microSD card at
-startup, so neither file is built into the program or committed to the repository.</p>
+<p>On the Portenta H7, the <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java"><code>Mailbox</code></a>
+server reads <code>server.crt</code> and <code>server.key</code> from the root of the Hat Carrier's microSD card at startup, so neither file is
+built into the program or committed to the repository.</p>
 <h3 id="testing-the-server">Testing the server</h3>
 <p>Find the board's address on the serial monitor, then request the status route from a computer that trusts the
 certificate:</p>
@@ -426,8 +426,8 @@ certificate:</p>
 <ul>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java"><code>NanoHttpServerSD</code></a>
 joins the network with credentials from the SD card, prints its address and answers <code>GET /status</code> on port 80.</li>
-<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java"><code>QHttpsServer</code></a>
-serves HTTPS on the UNO Q, with the certificate and key built in at build time.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpsServer.java"><code>PortentaHttpsServer</code></a>
+serves HTTPS on the Portenta H7, with the certificate and key sent over Serial at startup.</li>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java"><code>HttpServerBacklight</code></a>
 demonstrates <code>POST</code> handling with an LCD Keypad Shield attached.</li>
 </ul>

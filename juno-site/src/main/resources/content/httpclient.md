@@ -9,7 +9,7 @@ connected to Wi-Fi. The program is written and compiled against the JDK. On the 
 of the same classes, which fits in the board's memory.
 
 `java.net.http` runs on the UNO R4 WiFi, Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer, Raspberry Pi Pico 2 W and
-Portenta H7. The UNO R4 WiFi is the smallest board that can run it, so the compiler rejects it on the UNO R3 and the UNO Q.
+Portenta H7. The UNO R4 WiFi is the smallest board that can run it, so the compiler rejects it on the UNO R3.
 
 ## Making a GET request
 

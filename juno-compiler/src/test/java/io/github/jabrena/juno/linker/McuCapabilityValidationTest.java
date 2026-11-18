@@ -107,7 +107,7 @@ class McuCapabilityValidationTest {
             return java.util.stream.Stream.of(
                     org.junit.jupiter.params.provider.Arguments.of("getWifi", Capability.ONBOARD_WIFI, Board.UNO_R3),
                     org.junit.jupiter.params.provider.Arguments.of("getBluetoothLe", Capability.BLUETOOTH_LE, Board.UNO_R3),
-                    org.junit.jupiter.params.provider.Arguments.of("getMouse", Capability.USB_HID, Board.UNO_Q),
+                    org.junit.jupiter.params.provider.Arguments.of("getMouse", Capability.USB_HID, Board.UNO_R3),
                     org.junit.jupiter.params.provider.Arguments.of("getCamera", Capability.CAMERA, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getSdCard", Capability.ONBOARD_SD_CARD, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getDisplay", Capability.DISPLAY, Board.NANO_ESP32),

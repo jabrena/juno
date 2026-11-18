@@ -49,7 +49,7 @@ public final class ModeMenu {
     private static void draw(TftTouchShield tft, boolean soloAvailable) {
         tft.fillScreen(ViewList.BACKGROUND);
         Hud.centered(tft, "CHOOSE GAME", 16, 3, View.WALL, ViewList.BACKGROUND);
-        button(tft, FIRST_BUTTON_Y, "SOLO", soloAvailable ? "ONE BOARD - YOU VS CPU" : "UNO Q ONLY",
+        button(tft, FIRST_BUTTON_Y, "SOLO", soloAvailable ? "ONE BOARD - YOU VS CPU" : "NOT ON THIS BOARD",
                 soloAvailable ? TftTouchShield.YELLOW : TftTouchShield.GRAY);
         button(tft, FIRST_BUTTON_Y + BUTTON_HEIGHT + BUTTON_GAP, "MULTIPLAYER", "ARENA + TWO GLADIATOR BOARDS",
                 TftTouchShield.CYAN);
