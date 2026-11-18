@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.usecases.mailbox.server.security;
 
-import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
+import io.github.jabrena.juno.hardware.device.tft.Mhs35TftDisplay;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.mailbox.server.cover.MailboxView;
 
@@ -11,8 +11,8 @@ import io.github.jabrena.juno.usecases.mailbox.server.cover.MailboxView;
 public final class MailboxSecurityView {
     private static final int LABEL_X = 16;
     private static final int TEXT_SIZE = 2;
-    private static final int CHAR_WIDTH = TEXT_SIZE * TftTouchShield.CHAR_WIDTH;
-    private static final int ROW_HEIGHT = TEXT_SIZE * TftTouchShield.CHAR_HEIGHT;
+    private static final int CHAR_WIDTH = TEXT_SIZE * Mhs35TftDisplay.CHAR_WIDTH;
+    private static final int ROW_HEIGHT = TEXT_SIZE * Mhs35TftDisplay.CHAR_HEIGHT;
     private static final int CURRENT_KEY_Y = 52;
     private static final int NEW_KEY_Y = 76;
     private static final int MESSAGE_Y = 98;
@@ -38,21 +38,21 @@ public final class MailboxSecurityView {
     }
 
     /** Draws the screen with an empty new key. */
-    public void show(TftTouchShield tft) {
+    public void show(Mhs35TftDisplay tft) {
         newKeyLength = 0;
-        tft.fillScreen(TftTouchShield.WHITE);
+        tft.fillScreen(Mhs35TftDisplay.WHITE);
         MailboxView.drawHeader(tft, "SECURITY");
         tft.setTextSize(1);
-        tft.setTextColor(TftTouchShield.WHITE, MailboxView.BLUE);
+        tft.setTextColor(Mhs35TftDisplay.WHITE, MailboxView.BLUE);
         tft.setCursor(4, 4);
         tft.print("< BACK");
 
         tft.setTextSize(TEXT_SIZE);
-        tft.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
+        tft.setTextColor(MailboxView.TEXT, Mhs35TftDisplay.WHITE);
         tft.setCursor(LABEL_X, CURRENT_KEY_Y);
         tft.print("KEY ");
-        tft.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
-        tft.print(currentKey, security.copyKey(currentKey));
+        tft.setTextColor(MailboxView.BLUE, Mhs35TftDisplay.WHITE);
+        print(tft, currentKey, security.copyKey(currentKey));
         drawNewKey(tft);
         drawMessage(tft, "TYPE A NEW KEY, THEN OK", MailboxView.TEXT);
         for (int key = 0; key < KEY_LABELS.length; key++) {
@@ -61,7 +61,7 @@ public final class MailboxSecurityView {
     }
 
     /** Handles a tap; true when the screen is done, after a tap on the header or a saved key. */
-    public boolean touch(TftTouchShield tft, int x, int y) {
+    public boolean touch(Mhs35TftDisplay tft, int x, int y) {
         if (y < MailboxView.HEADER_HEIGHT) {
             return true;
         }
@@ -82,48 +82,48 @@ public final class MailboxSecurityView {
         return false;
     }
 
-    private boolean save(TftTouchShield tft) {
+    private boolean save(Mhs35TftDisplay tft) {
         if (newKeyLength < MailboxSecurity.MIN_KEY_BYTES) {
-            drawMessage(tft, "USE AT LEAST 6 DIGITS", TftTouchShield.RED);
+            drawMessage(tft, "USE AT LEAST 6 DIGITS", Mhs35TftDisplay.RED);
             return false;
         }
         if (!security.change(newKey, newKeyLength)) {
-            drawMessage(tft, "COULD NOT SAVE TO THE SD CARD", TftTouchShield.RED);
+            drawMessage(tft, "COULD NOT SAVE TO THE SD CARD", Mhs35TftDisplay.RED);
             return false;
         }
         Serial.println("Mailbox API key changed");
         return true;
     }
 
-    private void drawKey(TftTouchShield tft, int key) {
+    private void drawKey(Mhs35TftDisplay tft, int key) {
         int x = KEYPAD_LEFT + key % 3 * (KEY_WIDTH + KEY_GAP);
         int y = KEYPAD_TOP + key / 3 * (KEY_HEIGHT + KEY_GAP);
-        int color = key == OK_KEY ? MailboxView.DARK_GREEN : key == DELETE_KEY ? TftTouchShield.RED : MailboxView.BLUE;
+        int color = key == OK_KEY ? MailboxView.DARK_GREEN : key == DELETE_KEY ? Mhs35TftDisplay.RED : MailboxView.BLUE;
         tft.fillRect(x, y, KEY_WIDTH, KEY_HEIGHT, color);
         String label = KEY_LABELS[key];
         tft.setTextSize(TEXT_SIZE);
-        tft.setTextColor(TftTouchShield.WHITE, color);
+        tft.setTextColor(Mhs35TftDisplay.WHITE, color);
         tft.setCursor(x + (KEY_WIDTH - label.length() * CHAR_WIDTH) / 2, y + (KEY_HEIGHT - ROW_HEIGHT) / 2);
         tft.print(label);
     }
 
-    private void drawNewKey(TftTouchShield tft) {
-        tft.fillRect(0, NEW_KEY_Y, MailboxView.SCREEN_WIDTH, ROW_HEIGHT, TftTouchShield.WHITE);
+    private void drawNewKey(Mhs35TftDisplay tft) {
+        tft.fillRect(0, NEW_KEY_Y, MailboxView.SCREEN_WIDTH, ROW_HEIGHT, Mhs35TftDisplay.WHITE);
         tft.setTextSize(TEXT_SIZE);
         tft.setCursor(LABEL_X, NEW_KEY_Y);
-        tft.setTextColor(MailboxView.TEXT, TftTouchShield.WHITE);
+        tft.setTextColor(MailboxView.TEXT, Mhs35TftDisplay.WHITE);
         tft.print("NEW ");
-        tft.setTextColor(MailboxView.BLUE, TftTouchShield.WHITE);
-        tft.print(newKey, newKeyLength);
+        tft.setTextColor(MailboxView.BLUE, Mhs35TftDisplay.WHITE);
+        print(tft, newKey, newKeyLength);
         tft.print("_");
     }
 
-    private void drawMessage(TftTouchShield tft, String message, int color) {
-        tft.fillRect(0, MESSAGE_Y, MailboxView.SCREEN_WIDTH, TftTouchShield.CHAR_HEIGHT,
-                TftTouchShield.WHITE);
+    private void drawMessage(Mhs35TftDisplay tft, String message, int color) {
+        tft.fillRect(0, MESSAGE_Y, MailboxView.SCREEN_WIDTH, Mhs35TftDisplay.CHAR_HEIGHT,
+                Mhs35TftDisplay.WHITE);
         tft.setTextSize(1);
         tft.setCursor(LABEL_X, MESSAGE_Y);
-        tft.setTextColor(color, TftTouchShield.WHITE);
+        tft.setTextColor(color, Mhs35TftDisplay.WHITE);
         tft.print(message);
     }
 
@@ -137,5 +137,12 @@ public final class MailboxSecurityView {
             return -1;
         }
         return row * 3 + column;
+    }
+
+    /** The first {@code length} bytes of {@code text}, one character at a time. */
+    private static void print(Mhs35TftDisplay tft, byte[] text, int length) {
+        for (int index = 0; index < length; index++) {
+            tft.print((char) text[index]);
+        }
     }
 }

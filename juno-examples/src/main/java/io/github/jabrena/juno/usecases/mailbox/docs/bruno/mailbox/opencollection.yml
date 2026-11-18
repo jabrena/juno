@@ -6,7 +6,7 @@ info:
 
 docs:
   content: |
-    An SD-backed mailbox served by the Juno Mailbox example on an Arduino UNO Q or UNO R4 WiFi.
+    An SD-backed mailbox served by the Juno Mailbox example on an Arduino Portenta H7.
     The in-memory index is limited to four messages; message JSON is stored on the SD card.
   type: text/markdown
 bundled: false

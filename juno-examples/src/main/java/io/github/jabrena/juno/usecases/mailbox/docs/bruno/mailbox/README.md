@@ -3,7 +3,7 @@
 This collection consumes the mailbox API described by
 [`Mailbox.openapi.yaml`](../../Mailbox.openapi.yaml).
 
-Set the UNO Q host in `environments/local.yml`, trust its build-time TLS certificate in Bruno, then run the collection:
+Set the Portenta's host in `environments/local.yml`, trust the mailbox CA certificate in Bruno, then run the collection:
 
 ```bash
 npx --yes @usebruno/cli run --env local
@@ -19,12 +19,8 @@ To override the host or the key without editing the environment file:
 npx --yes @usebruno/cli run --env local --env-var host=192.168.1.42 --env-var apiKey=24680135
 ```
 
-The UNO Q gets its network from Linux, so write the address shown on the TFT as `mailbox.q.ip` in
-`application.properties` on the SD card. It is the Q's `[network]` port in `juno:boards`:
-
-```properties
-mailbox.q.ip=192.168.1.42
-```
+The host is the address shown on the mailbox cover and printed over Serial as `IP: <address>` when the board joins
+Wi-Fi.
 
 The collection contains requests for listing, creating, retrieving, and deleting messages, plus `GET /actuator/info`,
 which identifies the service. The list request returns only
