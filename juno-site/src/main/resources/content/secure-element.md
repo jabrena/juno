@@ -14,10 +14,10 @@ image or in build output. Three implementations sit behind that one interface:
 | `Pico2WTrustZoneStore` | Raspberry Pi Pico 2 W | Fenced flash behind Juno's TrustZone secure firmware. See below. |
 | `AvrEeprom` | UNO R3 | Weakest: plain text in the microcontroller's EEPROM. See the warning below. |
 
-`MCU.getSecretStore()` returns the one the board has, the same way `MCU.getWifi()` returns its Wi-Fi; a program that
-asks for it on a board without one is rejected when it is built. The board query is answered when the program is linked and the branches the target cannot take are dropped
+`MCU.getSecretStore()` returns the one the board has, the same way `MCU.getWifi()` returns its Wi-Fi; every supported
+board has one. The board query is answered when the program is linked and the branches the target cannot take are dropped
 with it, so only the chosen implementation reaches the image — and a core without the others' shim code never has to
-supply it. The other boards have no secret store; see [Boards without a secret store](#boards-without-a-secret-store).
+supply it.
 
 **The ESP32 store is not a secure element.** Those boards carry no crypto chip, so `Esp32Nvs` keeps each value in an
 NVS entry in the board's own flash partition. That still takes the secret out of the firmware image, out of the build
@@ -137,16 +137,3 @@ anything, which is the first thing to run on a board whose store has never answe
 - **UNO R3:** nothing to wire — the store is the microcontroller's own EEPROM.
 
 **The UNO R3's store is plain EEPROM.** The UNO R3 (ATmega328P) carries no crypto chip, so `AvrEeprom` keeps each name and value in plain text in the microcontroller's own EEPROM, split into 64-byte slots: 16 names in its 1 KB. The secret stays out of the firmware image, the build output and the SD card, and an upload keeps it, since the R3 is flashed through its bootloader, which never erases the EEPROM. But any program flashed to the board can read it, and so can anyone with an ISP programmer. Clearing a name erases its whole slot. On the UNO R3, `SecretProvisioner` does not fit in the 2 KB of RAM, so `juno:secret` cannot provision it yet.
-
-## Boards without a secret store
-
-The UNO Q has no secret store. The connected examples read their credentials with
-`MCU.getSecretStore().getString(name)`, so the ones that need a credential do not target the Q. The UNO Q examples
-read `application.properties` from the SD card of the stacked UNO shield themselves, as `SntpTimeSD`,
-`WifiStatusSDTFT` and `Mailbox` do:
-
-```properties
-mailbox.q.ip=192.168.1.20
-```
-
-**This is not a secret store.** The values are plain text on the card, so a copied card carries them.

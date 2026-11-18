@@ -19,5 +19,5 @@ mailbox to process them and notify the status.
 | Field | Value |
 |---|---|
 | Sources | [`usecases/mailbox`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox) |
-| Boards supported | [`Arduino Q`](../../arduino-uno-q) (server), [`M5Stack Cardputer`](../../m5stack-cardputer) (client) |
+| Boards supported | [`Portenta H7`](../../arduino-portenta-h7) (server), [`M5Stack Cardputer`](../../m5stack-cardputer) (client) |
 | Features used | HTTPS server, HTTPS client, self-signed certificates, Wi-Fi, SD card, API key header, TFT touch screen, Cardputer keyboard, MVC view router, JSON, serial output, clock, delays |

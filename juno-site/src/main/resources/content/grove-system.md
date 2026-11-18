@@ -16,7 +16,7 @@ with any pin-mapped shield or carrier.
 <img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="240">
 
 The [Grove Base Shield](https://wiki.seeedstudio.com/Base_Shield_V2/) is a passive adapter for the UNO headers, used
-on the UNO R3, UNO R4 WiFi and UNO Q. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
+on the UNO R3 and UNO R4 WiFi. Its A0-A3, D2-D8, UART and I2C sockets are ordinary UNO pins;
 [`GroveBaseShield`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.java)
 names them. Seat it on the board's UNO headers and plug the module into a socket; the diagram is a socket map, not the
 shield's physical layout:
@@ -32,7 +32,7 @@ shield's physical layout:
 +------------------------------+------------------------------+
                                | seated on the UNO headers
 +------------------------------v------------------------------+
-|      UNO R3  /  UNO R4 WiFi  /  UNO Q                       |
+|      UNO R3  /  UNO R4 WiFi                                 |
 +-------------------------------------------------------------+
 
  Grove DHT22 ---- cable ----> [D4]
@@ -471,3 +471,43 @@ public final class GroveRcxExample {
 
 See [LEGO](../lego-ecosystem) for driving the brick, and the
 [Nano ESP32](../arduino-nano-esp32#remote-control-a-lego-rcx) page for a complete example.
+
+## Grove actuators
+
+### I2C Motor Driver (TB6612FNG)
+
+The Grove I2C Motor Driver drives two brushed DC motors, channels A and B, from one Grove I2C socket. Its own
+microcontroller turns each I2C command into the TB6612FNG's direction and PWM signals, so the board spends no motor
+pins. The motors need their own 2.5 V to 13.5 V supply; the socket only powers the driver's logic.
+
+<img src="../images/grove/grove-motor-driver-tb6612fng.png" alt="Grove I2C Motor Driver (TB6612FNG)" width="240">
+
+`GroveMotorDriverTb6612fng` checks at startup that the driver answers (address `0x14` unless it was changed), takes it
+out of standby, and hands out each channel as a `DCMotor`. Power is a percentage; `stop()` brakes a motor and `flt()`
+lets it coast.
+
+```java
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.device.motor.GroveMotorDriverTb6612fng;
+import io.github.jabrena.juno.robotics.DCMotor;
+import io.github.jabrena.juno.util.Delay;
+
+public final class GroveMotorDriverExample {
+    public static void main(String[] args) {
+        GroveMotorDriverTb6612fng driver = new GroveMotorDriverTb6612fng(MCU.getI2c());
+        DCMotor left = driver.getMotorA();
+        DCMotor right = driver.getMotorB();
+        left.setPower(60);
+        right.setPower(60);
+
+        while (true) {
+            left.forward();
+            right.forward();
+            Delay.millis(2000);
+            left.stop();
+            right.stop();
+            Delay.millis(1000);
+        }
+    }
+}
+```

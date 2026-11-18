@@ -10,12 +10,12 @@ infrared tower, and the LEGO hardware does the rest.
 
 | System | Since | What it is | Protocol used | Board with support | Juno class |
 |---|---|---|---|---|---|
-| LEGO Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, UNO Q, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
+| LEGO Powered Up | 2017 | Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps | Bluetooth LE | UNO R4 WiFi, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer | [`RemotePoweredUpHub`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java) |
 | LEGO Mindstorms EV3 | 2013 | The third Mindstorms brick: four motor outputs, four sensor inputs, a screen and a speaker, running Linux | Bluetooth Classic (serial port profile), LEGO's EV3 direct commands | — | Pending |
-| LEGO Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java) |
+| LEGO Power Functions | 2007 | Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885) | Infrared, through an IR LED on the board | UNO R4 WiFi, Nano ESP32 | [`RemotePF`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java) |
 | LEGO Mindstorms NXT | 2006 | The second Mindstorms brick: three motor outputs, four sensor inputs, a screen and a speaker | Bluetooth Classic (serial port profile), LEGO's NXT direct commands | — | Pending |
-| LEGO Mindstorms RCX | 1998 | The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker | Infrared, through an IR LED and receiver on the board | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) |
-| LEGO Mindstorms RCX remote control | 1998 | The 9738 infrared handset that sends button commands to an RCX brick | Infrared, using RCX remote-control frames | UNO R4 WiFi, UNO Q, Nano ESP32 | [`RcxRemoteControl`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.java) |
+| LEGO Mindstorms RCX | 1998 | The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker | Infrared, through an IR LED and receiver on the board | UNO R4 WiFi, Nano ESP32 | [`RemoteRcx`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java) |
+| LEGO Mindstorms RCX remote control | 1998 | The 9738 infrared handset that sends button commands to an RCX brick | Infrared, using RCX remote-control frames | UNO R4 WiFi, Nano ESP32 | [`RcxRemoteControl`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.java) |
 
 ## LEGO Powered Up
 
@@ -35,7 +35,7 @@ Create one `RemotePoweredUpHub` at startup, from the board's Bluetooth LE radio 
 so it advertises, and call `connect`. It scans for the first hub it finds, for up to the given milliseconds (`0` waits
 forever). The clock is used for BLE and sensor waits. The hub drops the link when it switches off or goes out of range,
 so check `isConnected()` in long-running loops and connect again. A Technic Hub's built-in sensors (see
-[Read the sensors](#read-the-sensors)) are subscribed on every connect. Only the UNO R4 WiFi, UNO Q, Nano ESP32,
+[Read the sensors](#read-the-sensors)) are subscribed on every connect. Only the UNO R4 WiFi, Nano ESP32,
 AI Thinker ESP32-CAM and M5Stack Cardputer have `getBluetoothLe()`; on the UNO R3 the compiler
 rejects the call:
 

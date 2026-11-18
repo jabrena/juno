@@ -135,15 +135,9 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
 <table>
   <tr>
     <td align="center" width="50%">
-      <strong>Arduino UNO Q</strong><br>
-      <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-q.png" alt="Arduino UNO Q">
-    </td>
-    <td align="center" width="50%">
       <strong>Arduino UNO R4 WiFi</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi">
     </td>
-  </tr>
-  <tr>
     <td align="center" width="50%">
       <strong>Arduino UNO R3</strong><br>
       <img src="./juno-site/src/main/resources/public/images/boards/arduino-uno-r3.png" alt="Arduino UNO R3">
@@ -249,13 +243,13 @@ The project provides a `Maven plugin` to help the user with the common operation
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-q
-# -Djuno.board=arduino-uno-r4-wifi
+  -Djuno.board=arduino-uno-r4-wifi
 # -Djuno.board=arduino-uno-r3
 # -Djuno.board=arduino-nano-esp32
 # -Djuno.board=ai-thinker-esp32-cam
 # -Djuno.board=m5stack-cardputer
 # -Djuno.board=raspberry-pi-pico-2-w
+# -Djuno.board=arduino-portenta-h7
 ```
 
 Select another supported board with `-Djuno.board`. The plugin auto-detects the port when exactly one matching board is
@@ -265,7 +259,7 @@ After uploading the program, you could monitor what happen in the board using th
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-q
+  -Djuno.board=arduino-uno-r4-wifi
 ```
 
 ## Maven plugin
@@ -399,7 +393,6 @@ single instruction. That is also why there is no dynamic class loading, reflecti
 - https://openjdk.org/
 - https://openjdk.org/groups/conformance/JckAccess/
 - https://github.com/openjdk
-- https://docs.arduino.cc/hardware/uno-q/
 - https://docs.arduino.cc/hardware/uno-r4-wifi/
 - https://docs.arduino.cc/hardware/uno-wifi-rev2/
 - https://docs.arduino.cc/hardware/uno-rev3/

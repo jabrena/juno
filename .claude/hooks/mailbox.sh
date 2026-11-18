@@ -13,8 +13,8 @@
 # Every mailbox request carries the board's API key in a Mailbox-API-Key header: $MAILBOX_API_KEY, else
 # .claude/mailbox/api-key (git-ignored), else the board's starting key 1234567890.
 # With a CA certificate ($MAILBOX_CA, else .claude/mailbox/ca.crt, git-ignored) requests use HTTPS and verify the
-# board's certificate against it, as the UNO Q's HTTPS-only server needs; without one they use plain HTTP (UNO R4).
-# The board keeps four messages and the UNO Q hangs on non-ASCII bodies, so bodies are ASCII-only, at
+# board's certificate against it, as the Portenta's HTTPS-only server needs; without one they use plain HTTP.
+# The board keeps four messages and bodies are kept ASCII-only, at
 # most 280 characters, and `notify` deletes earlier CLAUDE: messages to leave room for AGENT tasks.
 set -uo pipefail
 

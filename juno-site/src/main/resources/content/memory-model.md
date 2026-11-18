@@ -137,7 +137,6 @@ upper limits. Every board uses its default arena unless `juno.Xmx` says otherwis
 |---|---|---|---|
 | UNO R3 | 1 KB | 2 | 1 |
 | UNO R4 WiFi | 8 KB | 20 | 8 |
-| UNO Q | 8 KB | 20 | 8 |
 | Nano ESP32 | 8 KB | 20 | 8 |
 | AI Thinker ESP32-CAM | 8 KB | 20 | 8 |
 | M5Stack Cardputer | 8 KB | 20 | 8 |
@@ -155,21 +154,18 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 |---|---|---|---|---|---|---|
 | UNO R3 | 2 KB | 1024 / 1024 bytes | 512 / 512 bytes | 1 | The linker | None |
 | UNO R4 WiFi | 32 KB | 8192 / 25736 bytes | 2048 / 8192 bytes | 1 | The linker | None |
-| UNO Q | 256 KB | 8192 / 226928 bytes | 4096 / 16384 bytes | 1 | The loader pool: the sketch's code shares it | None |
 | Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
 | AI Thinker ESP32-CAM | 320 KB | 8192 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
 | M5Stack Cardputer | 320 KB | 8192 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Not recorded; explicit API unavailable |
 | Raspberry Pi Pico 2 W | 512 KB | 8192 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
 
 - **Usable RAM** is the limit the Arduino toolchain reports for a sketch's static data and arena. It is smaller than the
-  chip's total RAM: the core, its radio and networking libraries, and the runtime keep the rest. The UNO Q, for example,
-  has 786 KB of RAM in total but offers 256 KB to a sketch.
+  chip's total RAM: the core, its radio and networking libraries, and the runtime keep the rest. The Portenta H7, for example,
+  offers 1 MB of its RAM to a sketch.
 - **What decides whether a larger arena fits** explains how a too-large arena fails:
   - **The linker** places every section, so a successful link is the final word.
   - **The run-time heap** supplies the memory for Wi-Fi, TLS, Bluetooth, the camera and the extra thread stacks. A
     larger arena can link and then fail at boot or when a network connection starts.
-  - **The loader pool** is filled when the sketch loads on the UNO Q, and the sketch's code and its arena share it. The
-    usable arena shrinks as the program grows.
 - **The maximums are provisional.** Each maximum is the largest arena the linker accepts for a minimal program on that
   board, not the largest a real program can use. On the boards whose limit is not the linker, the real limit is lower,
   and it depends on the program's own memory use. The measured limits will replace these values. Until then, treat the
@@ -186,7 +182,6 @@ The compiler looks at the program's memory use before it is built, and reports w
 - `JUNO-RISK-003`: a recursion cycle with unbounded depth.
 - `JUNO-RISK-011`: a thread body that may use more stack than its board's carrier stack.
 - `JUNO-RISK-012`: a constant table kept in the arena instead of flash.
-- `JUNO-RISK-014`: on the UNO Q, the arena and static data pass 90% of the loader pool.
 
 When the startup estimate is larger than the arena, the compiler also suggests a larger `juno.Xmx`, capped at the board's
 maximum. If the program cannot fit even at that maximum, the suggestion says so.
@@ -226,7 +221,7 @@ internal RAM and the default. For example, `-Djuno.Xmx=1g` on the UNO R4 WiFi fa
    `MCU.getBoardMemory()` (or `MCU.getBoardMemory()` on the Nano ESP32): `arenaUsedBytes()` and `arenaCapacityBytes()` give the same figures from inside the
    program.
 4. **Confirm the build runs.** On the UNO R3 and UNO R4, a link that succeeds is a reliable sign the sizes fit. On the
-   Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W and UNO Q, the run-time heap or the loader pool decides, so upload the
+   Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W and Portenta H7, the run-time heap decides, so upload the
    program and watch its output with `juno:monitor` before relying on the size.
 
 ## Concurrency by board
@@ -238,7 +233,6 @@ gives the limit each board applies.
 |---|---|---|---|
 | UNO R3 | Four slots, including `main` | 512 / 512 bytes | No: use `synchronized` and atomics |
 | UNO R4 WiFi | No slot count: the arena bounds the threads | 2048 / 8192 bytes | Yes |
-| UNO Q | No slot count: the arena bounds the threads | 4096 / 16384 bytes | Yes |
 | Nano ESP32 | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | AI Thinker ESP32-CAM | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | M5Stack Cardputer | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |

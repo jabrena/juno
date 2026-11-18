@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
  * <ul>
  *   <li>{@code summary} picks a reply's {@code TL;DR:} line, else its first paragraph.
  *   <li>{@code tweet LIMIT} drops markdown and non-ASCII characters, joins the text onto one line and cuts it to
- *       LIMIT characters, because the UNO Q mailbox hangs on non-ASCII bodies.
+ *       LIMIT characters, so the mailbox only ever stores ASCII.
  * </ul>
  */
 public final class MailboxText {

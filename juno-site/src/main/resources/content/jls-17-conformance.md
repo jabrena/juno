@@ -78,7 +78,6 @@ a focused executable example and a deterministic assertion.
 | Target | Compile and link | Runtime execution |
 |---|---|---|
 | UNO R4 WiFi | Supported; one carrier | Physical board, or Cortex-M4 QEMU for the language/runtime layer |
-| UNO Q | Supported; one carrier | Physical board; Cortex-M4 QEMU uses a stand-in for the Zephyr scheduling port |
 | Nano ESP32 | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |
 | AI Thinker ESP32-CAM | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |
 | M5Stack Cardputer | Supported; two carriers by default | Physical board; Xtensa toolchain coverage, no QEMU stand-in |

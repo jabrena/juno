@@ -49,7 +49,7 @@ many programs, so every `compile`, `verify` or `flash` names one, for example
 | `juno.main` | `compile`, `verify`, `flash` | *(required)* | Fully qualified entry-point class. |
 | `juno.outputDirectory` | `compile`, `verify`, `flash` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
 | `juno.gcLog` | `compile`, `verify`, `flash` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
-| `juno.board` | `compile`, `verify`, `flash`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-q`, `arduino-uno-r3`, `arduino-nano-esp32`, `m5stack-cardputer`). |
+| `juno.board` | `compile`, `verify`, `flash`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-r3`, `arduino-nano-esp32`, `m5stack-cardputer`). |
 | `juno.arduinoCli` | `verify`, `flash`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `flash`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `flash`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
@@ -82,7 +82,6 @@ The board ids you pass as `-Djuno.board` are:
 |---|---|
 | Arduino UNO R3 | `arduino-uno-r3` |
 | Arduino UNO R4 WiFi | `arduino-uno-r4-wifi` |
-| Arduino UNO Q | `arduino-uno-q` |
 | Arduino Nano ESP32 | `arduino-nano-esp32` |
 | AI Thinker ESP32-CAM | `ai-thinker-esp32-cam` |
 | M5Stack Cardputer | `m5stack-cardputer` |
@@ -142,7 +141,7 @@ them with `-D`:
 | Flag | Default | What it sets |
 |---|---|---|
 | `juno.Xmx` | 8 KB on most boards; 1 KB on the UNO R3 | The size of the garbage-collected arena, where every `new`, array, string and object lives. Each board has a maximum; see the [Memory Model](../memory-model#board-memory-profiles). |
-| `juno.Xss` | 512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the UNO Q and Pico 2 W; 8192 on the ESP32 boards | The stack of each carrier (on AVR, of each extra task). Each board has a maximum. |
+| `juno.Xss` | 512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the Pico 2 W; 8192 on the ESP32 boards and the Portenta H7 | The stack of each carrier (on AVR, of each extra task). Each board has a maximum. |
 | `juno.carriers` | 2 on the ESP32 boards and the Pico 2 W; 1 elsewhere | How many carriers run threads: `1` or `2`, at most the board's carriers. Use `1` only in test environments that cannot run both cores. |
 | `juno.gcLog` | `false` | When `true`, the garbage collector prints one `Serial` line per collection with the arena bytes used before and after. |
 
@@ -218,5 +217,5 @@ Two board examples make the distinction observable:
   Juno derived from the entry point's `@Board` annotation; the plugin logs a warning whenever an
   override changes the effective target.
 - **"@Board declares multiple boards ...; pass the target board explicitly":** the entry point's
-  `@Board` lists more than one board (e.g. `@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})`);
+  `@Board` lists more than one board (e.g. `@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})`);
   add `-Djuno.board=<id>` naming one of them, as printed in the error.

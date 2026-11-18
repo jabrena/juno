@@ -1,13 +1,13 @@
 ---
 name: juno-mailbox-agent
-description: Use the Juno Mailbox board (UNO Q / UNO R4 WiFi running usecases.mailbox) as Claude's message channel - set or discover the board IP, send a tweet-sized summary when a task finishes, and poll every 5 minutes for pending messages whose title contains AGENT or agent (any case) and carry them out. Triggers - "mailbox host", "set the mailbox IP", "send to mailbox", "poll the mailbox", "check AGENT messages", "/juno-mailbox-agent poll".
+description: Use the Juno Mailbox board (Portenta H7 running usecases.mailbox) as Claude's message channel - set or discover the board IP, send a tweet-sized summary when a task finishes, and poll every 5 minutes for pending messages whose title contains AGENT or agent (any case) and carry them out. Triggers - "mailbox host", "set the mailbox IP", "send to mailbox", "poll the mailbox", "check AGENT messages", "/juno-mailbox-agent poll".
 ---
 
 # Juno Mailbox agent
 
 The Mailbox example (`juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox`) serves
 `/api/v1/mailbox/` (contract: `juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/docs/Mailbox.openapi.yaml`). It holds at most **4** messages, a title of at
-most 64 bytes and a body of at most 512 bytes. The UNO Q hangs on non-ASCII bodies. Every call goes through
+most 64 bytes and a body of at most 512 bytes. Keep bodies ASCII-only. Every call goes through
 `.claude/hooks/mailbox.sh`, which applies these limits. Do not call curl by hand.
 
 ```bash
@@ -36,12 +36,12 @@ it: probing a whole subnet is blocked by the harness and needs the user's explic
 
    ```bash
    sleep 20 | script -q "$CLAUDE_PROJECT_DIR/.claude/mailbox/monitor.log" ./mvnw -f juno-examples/pom.xml \
-     juno:monitor -Djuno.board=<arduino-uno-r4-wifi|arduino-uno-q> -Djuno.baudRate=115200
+     juno:monitor -Djuno.board=arduino-portenta-h7 -Djuno.baudRate=115200
    grep -ao 'IP: [0-9.]*' .claude/mailbox/monitor.log | tail -1
    ```
 
    The IP is printed only once, at boot. If the log does not show it, ask the user to press reset while the
-   monitor runs. On the UNO Q the printed value is the required build-time `JUNO_Q_IP`.
+   monitor runs.
 3. If neither works, ask the user for the IP. Do not scan the network.
 
 Then check the connection with the configured mailbox hook or the project-approved HTTP diagnostic, never by
@@ -49,9 +49,8 @@ embedding credentials or sending repository contents.
 
 ## Mailbox apps
 
-- **Server** (`usecases/mailbox/server`, UNO R4 WiFi or UNO Q, port 80): `GET|POST /api/v1/mailbox/`,
+- **Server** (`usecases/mailbox/server`, Portenta H7 with the Hat Carrier and MHS-3.5 TFT, HTTPS on port 443): `GET|POST /api/v1/mailbox/`,
   `GET|DELETE /api/v1/mailbox/{uuid}`, `GET /actuator/info`. Messages live on its SD card; at most 4.
-  A POST has hung the R4 server more than once (stored, then no reply); a reset recovers it.
 - **M5Stack Cardputer client** (`usecases/mailbox/client`): always starts on Settings, where the user types
   the server IP; inbox refreshes every 5 minutes or on `R`, and requests time out after 30 s. Keys: list
   `Enter | C | R | S`, detail `Esc | Ctrl+c | Ctrl+d`. Uploading or attaching `juno:monitor` resets it, so the

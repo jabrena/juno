@@ -17,5 +17,5 @@ network needed.
 | Field | Value |
 |---|---|
 | Sources | [`games/gladiator`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/gladiator) |
-| Board supported | [`Arduino Q`](../../arduino-uno-q) |
+| Board supported | [`UNO R4 WiFi`](../../arduino-uno-r4-wifi) |
 | Features used | Wi-Fi, UDP, SD card, TFT touch screen, rotating 3D wireframe view, CPU opponent AI, lion, javelins, smoke, stamina, random numbers, clock |

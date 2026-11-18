@@ -36,8 +36,6 @@ items:
         path: "/m5stack-cardputer"
       - title: "ESP32-CAM"
         path: "/ai-thinker-esp32-cam"
-      - title: "UNO Q"
-        path: "/arduino-uno-q"
       - title: "Pico 2 W"
         path: "/raspberry-pi-pico-2-w"
       - title: "UNO R4 WiFi"
