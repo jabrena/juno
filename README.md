@@ -25,6 +25,25 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tr>
 </table>
 
+#### Arduino Portenta carriers supported
+
+<table>
+  <thead>
+    <tr>
+      <th>Carrier</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>Arduino Portenta Hat Carrier</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/portenta-hat-carrier.png" alt="Arduino Portenta Hat Carrier" width="220"></td>
+    <td>Raspberry Pi 40-pin header for HATs, with its SPI bus on <code>MCU.getSpi()</code> and its pins named by <code>PortentaHatCarrier</code>; the carrier's own microSD slot on SDMMC, read with <code>SdCard</code>.</td>
+  </tr>
+  </tbody>
+</table>
+
 ### Arduino Nano Family
 
 <table>
