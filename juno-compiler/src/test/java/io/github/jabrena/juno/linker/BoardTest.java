@@ -150,6 +150,10 @@ class BoardTest {
                 arguments(Board.M5_CARDPUTER, Capability.HTTPS_SERVER, true),
                 arguments(Board.M5_CARDPUTER, Capability.M5_DISPLAY, true),
                 arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false),
+                arguments(Board.M5_CARDPUTER, Capability.DISPLAY, true),
+                arguments(Board.UNO_R4_WIFI, Capability.DISPLAY, true),
+                arguments(Board.UNO_Q, Capability.DISPLAY, true),
+                arguments(Board.NANO_ESP32, Capability.DISPLAY, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),
                 arguments(Board.NANO_ESP32, Capability.M5_KEYBOARD, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_AUDIO, true),
@@ -694,10 +698,10 @@ class BoardTest {
                 @Board(ArduinoUnoQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        MCU.getLedMatrix().begin();
-                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = MCU.getLedMatrix().columns();
-                        MCU.getLedMatrix().clear();
+                        MCU.getDisplay();
+                        MCU.getDisplay().flush();
+                        int columns = MCU.getDisplay().width();
+                        MCU.getDisplay().flush();
                     }
                 }
                 """;
@@ -723,10 +727,10 @@ class BoardTest {
                 @Board(ArduinoUnoQBoard.class)
                 public final class MatrixOnUnoQ {
                     public static void main(String[] args) {
-                        MCU.getLedMatrix().begin();
-                        MCU.getLedMatrix().loadFrame(1, 2, 3, 4);
-                        int columns = MCU.getLedMatrix().columns();
-                        MCU.getLedMatrix().clear();
+                        MCU.getDisplay();
+                        MCU.getDisplay().flush();
+                        int columns = MCU.getDisplay().width();
+                        MCU.getDisplay().flush();
                     }
                 }
                 """;
@@ -950,7 +954,7 @@ class BoardTest {
                 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        MCU.getLedMatrix().begin();
+                        MCU.getDisplay();
                     }
                 }
                 """;
@@ -975,7 +979,7 @@ class BoardTest {
                 @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
                 public final class PortableWithLedMatrix {
                     public static void main(String[] args) {
-                        MCU.getLedMatrix().begin();
+                        MCU.getDisplay();
                     }
                 }
                 """;
@@ -1164,8 +1168,8 @@ class BoardTest {
                 public final class OnUnoR4 {
                     public static void main(String[] args) {
                         Delay.millis(1);
-                        MCU.getLedMatrix().begin();
-                        int columns = MCU.getLedMatrix().columns();
+                        MCU.getDisplay();
+                        int columns = MCU.getDisplay().width();
                     }
                 }
                 """;

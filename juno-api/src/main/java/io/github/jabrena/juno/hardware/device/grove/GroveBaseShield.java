@@ -2,6 +2,7 @@ package io.github.jabrena.juno.hardware.device.grove;
 
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.i2c.I2c;
 
 /**
  * Pin map for the passive Grove Base Shield for UNO. The shield does not add a protocol or a
@@ -126,5 +127,13 @@ public final class GroveBaseShield {
     /** The UNO pin behind the I2C_SCL socket. */
     public int getI2cScl() {
         return i2cScl;
+    }
+
+    /**
+     * The I2C bus behind the I2C_SDA and I2C_SCL sockets (A4 and A5), to pass to a Grove I2C driver such as
+     * {@code GroveOledSsd1315}. It is the board's bus, the same instance {@code MCU.getI2c()} returns, on every call.
+     */
+    public I2c getI2c() {
+        return MCU.getI2c();
     }
 }

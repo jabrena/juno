@@ -3,9 +3,7 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -16,7 +14,6 @@ import io.github.jabrena.juno.util.Delay;
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixCountUp {
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
@@ -32,7 +29,8 @@ public final class LedMatrixCountUp {
 
                 LedCanvas.show(frame);
                 Delay.millis(700);
-                matrix.clear();
+                LedCanvas.clear(frame);
+                LedCanvas.show(frame);
                 Delay.millis(120);
                 number = number + 1;
             }

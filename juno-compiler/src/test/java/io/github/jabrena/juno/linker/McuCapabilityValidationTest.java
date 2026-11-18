@@ -108,10 +108,9 @@ class McuCapabilityValidationTest {
                     org.junit.jupiter.params.provider.Arguments.of("getWifi", Capability.ONBOARD_WIFI, Board.UNO_R3),
                     org.junit.jupiter.params.provider.Arguments.of("getBluetoothLe", Capability.BLUETOOTH_LE, Board.UNO_R3),
                     org.junit.jupiter.params.provider.Arguments.of("getMouse", Capability.USB_HID, Board.UNO_Q),
-                    org.junit.jupiter.params.provider.Arguments.of("getLedMatrix", Capability.LED_MATRIX, Board.NANO_ESP32),
                     org.junit.jupiter.params.provider.Arguments.of("getCamera", Capability.CAMERA, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getSdCard", Capability.ONBOARD_SD_CARD, Board.UNO_R4_WIFI),
-                    org.junit.jupiter.params.provider.Arguments.of("getDisplay", Capability.M5_DISPLAY, Board.UNO_R4_WIFI),
+                    org.junit.jupiter.params.provider.Arguments.of("getDisplay", Capability.DISPLAY, Board.NANO_ESP32),
                     org.junit.jupiter.params.provider.Arguments.of("getKeyboard", Capability.M5_KEYBOARD, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getAudio", Capability.M5_AUDIO, Board.UNO_R4_WIFI),
                     org.junit.jupiter.params.provider.Arguments.of("getBattery", Capability.M5_BATTERY, Board.UNO_R4_WIFI));

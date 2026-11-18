@@ -1,12 +1,12 @@
 package io.github.jabrena.juno.hardware.led;
 
 /**
- * The board's built-in LED matrix: 12x8 on the UNO R4 WiFi and 13x8 on the UNO Q.
- * {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} is the board's own matrix, which the compiler lowers
- * to the {@code Arduino_LED_Matrix} library; a unit test passes {@code mock(LedMatrix.class)} instead. {@link #columns()}
+ * The board's built-in LED matrix: 12x8 on the UNO R4 WiFi and 13x8 on the UNO Q. Programs reach it through
+ * {@link io.github.jabrena.juno.hardware.MCU#getDisplay()}, which is a {@link LedMatrixDisplay} on these boards, or
+ * through {@link LedCanvas} for boolean frames. The compiler lowers this interface to the {@code Arduino_LED_Matrix}
+ * library; a unit test passes {@code mock(LedMatrix.class)} to {@link LedMatrixDisplay} instead. {@link #columns()}
  * tells a program which matrix it was compiled for; frames are packed row by row, MSB first, into 32-bit words
- * ({@code columns() * 8} pixels: three words on the R4, four on the Q). Get the board's matrix once, at startup, and
- * pass it to the classes that need it.
+ * ({@code columns() * 8} pixels: three words on the R4, four on the Q).
  */
 public interface LedMatrix {
 

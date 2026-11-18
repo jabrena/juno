@@ -21,10 +21,9 @@ class CapabilityRequirementsTest {
             "getWifi, ONBOARD_WIFI, Lio/github/jabrena/juno/hardware/net/Wifi;",
             "getBluetoothLe, BLUETOOTH_LE, Lio/github/jabrena/juno/hardware/net/BluetoothLe;",
             "getMouse, USB_HID, Lio/github/jabrena/juno/hardware/hid/Mouse;",
-            "getLedMatrix, LED_MATRIX, Lio/github/jabrena/juno/hardware/led/LedMatrix;",
             "getCamera, CAMERA, Lio/github/jabrena/juno/hardware/device/camera/Camera;",
             "getSdCard, ONBOARD_SD_CARD, Lio/github/jabrena/juno/hardware/device/sd/SdCard;",
-            "getDisplay, M5_DISPLAY, Lio/github/jabrena/juno/hardware/display/Display;",
+            "getDisplay, DISPLAY, Lio/github/jabrena/juno/hardware/display/Display;",
             "getKeyboard, M5_KEYBOARD, Lio/github/jabrena/juno/hardware/keyboard/Keyboard;",
             "getAudio, M5_AUDIO, Lio/github/jabrena/juno/hardware/audio/Audio;",
             "getBattery, M5_BATTERY, Lio/github/jabrena/juno/hardware/power/Battery;"

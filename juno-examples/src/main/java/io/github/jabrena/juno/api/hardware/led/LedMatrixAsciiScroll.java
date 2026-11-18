@@ -3,9 +3,7 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -16,40 +14,40 @@ import io.github.jabrena.juno.util.Delay;
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixAsciiScroll {
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
         boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
             for (int code = '0'; code <= '9'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = 'A'; code <= 'Z'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = 'a'; code <= 'z'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = '!'; code <= '/'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = ':'; code <= '@'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = '['; code <= '`'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
             for (int code = '{'; code <= '~'; code++) {
-                showChar(matrix, frame, code);
+                showChar(frame, code);
             }
         }
     }
 
-    private static void showChar(LedMatrix matrix, boolean[][] frame, int asciiCode) {
+    private static void showChar(boolean[][] frame, int asciiCode) {
         LedCanvas.clear(frame);
         LedCanvas.drawChar(frame, asciiCode, 4, 0);
         LedCanvas.show(frame);
         Delay.millis(450);
-        matrix.clear();
+        LedCanvas.clear(frame);
+        LedCanvas.show(frame);
         Delay.millis(80);
     }
 }

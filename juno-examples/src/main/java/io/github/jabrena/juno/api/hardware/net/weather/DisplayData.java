@@ -1,8 +1,6 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.util.Delay;
 
 /** Displays time and weather data on the UNO R4 WiFi LED matrix. */
@@ -10,13 +8,11 @@ public final class DisplayData {
     private static final int CHAR_SPACING = 6;
     private static final int MAX_MESSAGE_CHARS = 24;
 
-    private final LedMatrix matrix;
     private final boolean[][] frame;
     private final int[] message;
 
-    /** Takes the board's LED matrix and creates the fixed display buffers once for reuse throughout the application. */
+    /** Creates the fixed display buffers once, for reuse throughout the application. */
     public DisplayData() {
-        matrix = MCU.getLedMatrix();
         frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
         message = new int[MAX_MESSAGE_CHARS];
     }
@@ -68,7 +64,8 @@ public final class DisplayData {
             }
             LedCanvas.show(frame);
             Delay.millis(80);
-            matrix.clear();
+            LedCanvas.clear(frame);
+            LedCanvas.show(frame);
             offset = offset - 1;
         }
     }

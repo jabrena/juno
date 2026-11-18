@@ -25,7 +25,6 @@ import io.github.jabrena.juno.hardware.internal.NativeSecretStore;
 import io.github.jabrena.juno.hardware.internal.NativeSpi;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
 import io.github.jabrena.juno.hardware.keyboard.Keyboard;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
 import io.github.jabrena.juno.hardware.net.BluetoothLe;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.power.Battery;
@@ -63,11 +62,6 @@ public final class MCU {
         return NativeMouse.mouse();
     }
 
-    /** The selected board's onboard LED matrix. */
-    public static LedMatrix getLedMatrix() {
-        return NativeLedMatrix.ledMatrix();
-    }
-
     /** The selected board's onboard Wi-Fi service. */
     public static Wifi getWifi() {
         return NativeWifi.wifi();
@@ -103,9 +97,15 @@ public final class MCU {
         return NativeOnboardSdCard.sdCard();
     }
 
-    /** The selected board's onboard display. */
+    /**
+     * The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q as a
+     * monochrome {@link Display} (12x8 or 13x8). The board is asked here, so only the chosen display is linked.
+     */
     public static Display getDisplay() {
-        return NativeDisplay.display();
+        return switch (getBoardModel()) {
+            case UNO_R4_WIFI, UNO_Q -> NativeLedMatrix.display();
+            default -> NativeDisplay.display();
+        };
     }
 
     /** The selected board's onboard keyboard. */

@@ -3,6 +3,7 @@ package io.github.jabrena.juno.util.mvc;
 import io.github.jabrena.juno.hardware.device.tft.ParallelBus;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.touch.TouchScreen;
 import io.github.jabrena.juno.testing.FrameClock;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -142,6 +143,30 @@ class ViewRouterTest {
         // Given
         when(pins.analogRead(touchXPin)).thenReturn(523);
         when(pins.analogRead(touchYPin)).thenReturn(600);
+        script.add(r -> { });
+        script.add(r -> { });
+        script.add(r -> { throw new Stop(); });
+
+        // When
+        runFrom(0);
+
+        // Then
+        assertThat(log.stream().filter(entry -> entry.startsWith("touch:")).toList())
+                .containsExactly("touch:0:93:158");
+    }
+
+    @Test
+    @DisplayName("The router takes touch from any TouchScreen, not only the TFT shield")
+    void shouldDeliverATouchFromAnyTouchScreen() {
+        // Given
+        TouchScreen touch = mock(TouchScreen.class);
+        when(touch.readTouch()).thenReturn(true, false);
+        when(touch.touchX()).thenReturn(93);
+        when(touch.touchY()).thenReturn(158);
+        router = new ViewRouter(touch, 10, clock);
+        for (int id = 0; id < 4; id++) {
+            router.register(id, new Recorder(id));
+        }
         script.add(r -> { });
         script.add(r -> { });
         script.add(r -> { throw new Stop(); });

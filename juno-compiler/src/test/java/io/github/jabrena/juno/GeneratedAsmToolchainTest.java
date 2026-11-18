@@ -276,9 +276,9 @@ class GeneratedAsmToolchainTest {
                         Random.seed(42);
                         int randomValue = Random.nextInt(1, 7);
                         gpio.digitalWrite(12, randomValue > 0);
-                        MCU.getLedMatrix().begin();
-                        MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                        MCU.getLedMatrix().clear();
+                        MCU.getDisplay();
+                        MCU.getDisplay().flush();
+                        MCU.getDisplay().flush();
                         Serial.begin(BaudRate.BAUD_9600);
                         Serial.print(randomValue > 0);
                         Serial.println(randomValue <= 0);

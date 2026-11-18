@@ -168,6 +168,7 @@ public final class GroveOledSsd1315 implements Display {
     }
 
     /** Transfers all eight display pages from the framebuffer. */
+    @Override
     public void flush() {
         for (int page = 0; page < HEIGHT / 8; page++) {
             setAddress(0, page);

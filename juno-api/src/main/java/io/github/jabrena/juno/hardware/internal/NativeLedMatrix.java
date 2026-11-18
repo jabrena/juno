@@ -1,6 +1,9 @@
 package io.github.jabrena.juno.hardware.internal;
 
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.led.LedMatrixDisplay;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The board's {@link LedMatrix}: each method is an LED matrix intrinsic the compiler lowers to the
@@ -12,10 +15,13 @@ public final class NativeLedMatrix implements LedMatrix {
     public static final NativeLedMatrix INSTANCE;
 
     /**
-     * What {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} returns: the board's matrix, unless a
+     * The board's matrix, which {@link io.github.jabrena.juno.hardware.led.LedCanvas} and {@link #display()} drive, unless a
      * whole-program emulator in a test replaced it.
      */
     private static LedMatrix ledMatrix;
+
+    /** The LED matrix as a {@link Display}, created on first use over {@link #ledMatrix()}; null until then. */
+    private static @Nullable LedMatrixDisplay display;
 
     static {
         INSTANCE = new NativeLedMatrix();
@@ -25,17 +31,32 @@ public final class NativeLedMatrix implements LedMatrix {
     private NativeLedMatrix() {
     }
 
-    /** The matrix {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} hands out. */
+    /** The board's matrix, or the replacement a test installed. */
     public static LedMatrix ledMatrix() {
         return ledMatrix;
     }
 
     /**
-     * Makes {@link io.github.jabrena.juno.hardware.MCU#getLedMatrix()} hand out {@code replacement}: for a
+     * Makes {@link #ledMatrix()} return {@code replacement}: for a
      * whole-program emulator or a unit test, never on the board.
      */
     public static void setLedMatrix(LedMatrix replacement) {
         ledMatrix = replacement;
+        display = null;
+    }
+
+    /**
+     * The board's LED matrix as a {@link Display}: what {@link io.github.jabrena.juno.hardware.MCU#getDisplay()} hands
+     * out on the UNO R4 WiFi and the UNO Q. Created once, on first use, so the same display keeps its cursor and
+     * buffer for the whole program.
+     */
+    public static Display display() {
+        LedMatrixDisplay current = display;
+        if (current == null) {
+            current = new LedMatrixDisplay(ledMatrix);
+            display = current;
+        }
+        return current;
     }
 
     @Override

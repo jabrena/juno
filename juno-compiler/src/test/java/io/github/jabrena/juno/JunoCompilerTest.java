@@ -486,7 +486,38 @@ class JunoCompilerTest {
             // When & Then
             assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDisplay"))
                     .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("MCU.getDisplay requires @Board(M5StackCardputerBoard.class)");
+                    .hasMessageContaining("MCU.getDisplay requires @Board(")
+                    .hasMessageContaining("M5StackCardputerBoard");
+        }
+
+        @Test
+        @DisplayName("Compiles MCU.getDisplay on the UNO R4 WiFi without linking the Cardputer display")
+        void shouldCompileMcuDisplayAsTheLedMatrixOnTheUnoR4WiFi() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class R4Display {
+                        public static void main(String[] args) {
+                            MCU.getDisplay().fillScreen(0);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.R4Display", source);
+
+            // When
+            Program program = CompilerTestSupport.link(temporaryDirectory, "demo.R4Display");
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.R4Display");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+            assertThat(program.methods()).noneMatch(method -> method.owner().name().equals(
+                    "io/github/jabrena/juno/hardware/internal/NativeDisplay"));
+            assertThat(program.methods()).anyMatch(method -> method.owner().name().equals(
+                    "io/github/jabrena/juno/hardware/internal/NativeLedMatrix"));
         }
 
         @Test
@@ -797,6 +828,57 @@ class JunoCompilerTest {
             assertThat(program.interfaceDispatches().values()).anySatisfy(dispatch ->
                     assertThat(dispatch.targets()).anySatisfy(target ->
                             assertThat(target.method().owner()).isEqualTo("demo/DefaultInterface$Greeting")));
+        }
+
+        @Test
+        @DisplayName("Dispatches Display and TouchScreen defaults on a class that implements both interfaces")
+        void shouldDispatchDefaultsOfTwoInterfacesOnOneClass() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.display.Display;
+                    import io.github.jabrena.juno.hardware.touch.TouchScreen;
+                    public class TwoInterfaces {
+                        public static void main(String[] args) {
+                            Canvas canvas = new Canvas();
+                            Display display = canvas;
+                            TouchScreen touch = canvas;
+                            display.drawHorizontalLine(0, 0, 3, Display.WHITE);
+                            display.fillCircle(0, 0, 1, Display.WHITE);
+                            if (canvas.lit != 8 || !touch.readTouch() || touch.touchX() != 7) {
+                                throw new IllegalStateException();
+                            }
+                        }
+                        static final class Canvas implements Display, TouchScreen {
+                            int lit;
+                            public int width() { return 12; }
+                            public int height() { return 8; }
+                            public void fillScreen(int color) { }
+                            public void drawPixel(int x, int y, int color) { lit = lit + 1; }
+                            public void fillRect(int x, int y, int w, int h, int color) { lit = lit + w * h; }
+                            public void setCursor(int x, int y) { }
+                            public void setTextColor(int foreground, int background) { }
+                            public void setTextSize(int size) { }
+                            public void print(char character) { }
+                            public void print(String text) { }
+                            public void println(String text) { }
+                            public boolean readTouch() { return true; }
+                            public int touchX() { return 7; }
+                            public int touchY() { return 3; }
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.TwoInterfaces", source);
+
+            // When
+            Program program = CompilerTestSupport.link(temporaryDirectory, "demo.TwoInterfaces");
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.TwoInterfaces");
+
+            // Then
+            assertThat(result.assembly()).isNotBlank();
+            assertThat(program.interfaceDispatches().values()).anySatisfy(dispatch ->
+                    assertThat(dispatch.targets()).anySatisfy(target ->
+                            assertThat(target.method().owner()).isEqualTo("io/github/jabrena/juno/hardware/display/Display")));
         }
 
         @Test
@@ -1956,9 +2038,9 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.hardware.MCU;
                     public final class Heart {
                         public static void main(String[] args) {
-                            MCU.getLedMatrix().begin();
-                            MCU.getLedMatrix().loadFrame(0x3184a444, 0x44042081, 0x100a0040);
-                            MCU.getLedMatrix().clear();
+                            MCU.getDisplay();
+                            MCU.getDisplay().flush();
+                            io.github.jabrena.juno.hardware.internal.NativeLedMatrix.ledMatrix().clear();
                         }
                     }
                     """;
@@ -2010,7 +2092,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            LedCanvas.show(frame);
                         }
                     }
                     """;
@@ -2022,11 +2104,11 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
             // The glyphs are one constant table read by index, so drawing a digit reaches no per-glyph
-            // code: locked at 14 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
-            // charPixel, the 3-word NativeLedMatrix.loadFrame wrapper, and MCU.getLedMatrix with
-            // NativeLedMatrix's getter, constructor and static initializer); before the matrix moved behind
+            // code: locked at 13 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
+            // charPixel, the 3-word NativeLedMatrix.loadFrame wrapper, and NativeLedMatrix.ledMatrix with its
+            // constructor and static initializer); before the matrix moved behind
             // Arduino it was 10, where a function per glyph took 22.
-            assertThat(result.report().reachableMethods()).isEqualTo(14);
+            assertThat(result.report().reachableMethods()).isEqualTo(13);
         }
 
         @Test
@@ -2041,7 +2123,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawDigit(frame, 7, 4, 0);
-                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            LedCanvas.show(frame);
                         }
                     }
                     """;
@@ -2065,7 +2147,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) {
                             boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
                             LedCanvas.drawText(frame, "Hi", 0, 0);
-                            MCU.getLedMatrix().loadFrame(LedCanvas.packWord(frame, 0), 0, 0);
+                            LedCanvas.show(frame);
                         }
                     }
                     """;

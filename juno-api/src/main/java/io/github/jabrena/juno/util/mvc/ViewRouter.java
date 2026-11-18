@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.util.mvc;
 
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.time.Clock;
+import io.github.jabrena.juno.hardware.touch.TouchScreen;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -21,7 +21,7 @@ public final class ViewRouter implements Navigator {
     private static final int HISTORY_DEPTH = 4;
 
     private final View[] views = new View[MAX_VIEWS];
-    private final TftTouchShield tft;
+    private final TouchScreen touch;
     private final int framePeriodMs;
     private final Clock clock;
     private final int[] history = new int[HISTORY_DEPTH];
@@ -33,14 +33,14 @@ public final class ViewRouter implements Navigator {
     /** Until {@link #background} sets one, a task that does nothing: Juno needs a linked implementation to call. */
     private Task task = new Idle();
 
-    /** A router that reads touch from {@code tft} and renders a frame every {@code framePeriodMs} of the board's clock. */
-    public ViewRouter(TftTouchShield tft, int framePeriodMs) {
-        this(tft, framePeriodMs, MCU.getClock());
+    /** A router that reads touch from {@code touch} and renders a frame every {@code framePeriodMs} of the board's clock. */
+    public ViewRouter(TouchScreen touch, int framePeriodMs) {
+        this(touch, framePeriodMs, MCU.getClock());
     }
 
     /** A router that renders a frame every {@code framePeriodMs} of {@code clock}: a mocked one in a unit test. */
-    public ViewRouter(TftTouchShield tft, int framePeriodMs, Clock clock) {
-        this.tft = tft;
+    public ViewRouter(TouchScreen touch, int framePeriodMs, Clock clock) {
+        this.touch = touch;
         this.framePeriodMs = framePeriodMs;
         this.clock = clock;
     }
@@ -99,9 +99,9 @@ public final class ViewRouter implements Navigator {
     }
 
     private void handleTouch() {
-        boolean touched = tft.readTouch();
+        boolean touched = touch.readTouch();
         if (touched && !touchWasDown) {
-            views[active].touch(tft.touchX(), tft.touchY());
+            views[active].touch(touch.touchX(), touch.touchY());
         }
         touchWasDown = touched;
     }
