@@ -26,8 +26,14 @@ public final class InstallDepsMojo extends AbstractArduinoMojo {
      * {@code M5GFX} release for the built-in display and keyboard.
      * Update this list whenever a new example starts needing another one.
      */
+    /**
+     * Pinned Arduino Library Manager entries. {@code Chirale_TensorFLowLite} is the TensorFlow Lite Micro port the
+     * ESP32-CAM cat detector links against; its 2.0.0 release compiles on the esp32:esp32 3.3.12 core, while
+     * {@code TensorFlowLite_ESP32} 1.0.0 does not.
+     */
     private static final List<String> OPTIONAL_LIBRARIES = List.of(
-            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1", "M5GFX@0.2.31");
+            "Mouse", "ArduinoBLE", "ESP_SSLClient", "Servo", "SdFat", "M5Cardputer@1.1.1", "M5GFX@0.2.31",
+            "Chirale_TensorFLowLite@2.0.0");
 
     /** The arduino-cli platform backing the Renesas UNO targets. */
     private static final String CORE_PLATFORM = "arduino:renesas_uno";
