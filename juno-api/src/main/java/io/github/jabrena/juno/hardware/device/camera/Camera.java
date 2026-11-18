@@ -20,4 +20,15 @@ public interface Camera {
      * bytes, or {@code -1} when the camera is not started, no frame arrived, or the frame is larger than {@code jpeg}.
      */
     int capture(byte[] jpeg);
+
+    /**
+     * Waits for the next frame, converts it to 8-bit grayscale (0 = black, 255 = white), downscales it to
+     * {@code width × height} and writes it row-major, one byte per pixel, into {@code pixels} from index 0. Returns
+     * {@code true} on success, or {@code false} when the camera is not started, no frame arrived, or {@code pixels} is
+     * shorter than {@code width × height}; it never panics.
+     *
+     * <p>A program uses either {@link #capture(byte[])} or this method, never both: the camera is initialized once in
+     * one pixel format, so the compiler rejects a program that calls both.
+     */
+    boolean captureGrayscale(byte[] pixels, int width, int height);
 }

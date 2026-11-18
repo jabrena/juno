@@ -28,4 +28,12 @@ public final class NativeCamera implements Camera {
 
     /** The native capture into {@code capacity} bytes of {@code jpeg}; see {@link Camera#capture(byte[])}. */
     native int capture(byte[] jpeg, int capacity);
+
+    @Override
+    public boolean captureGrayscale(byte[] pixels, int width, int height) {
+        return captureGrayscale(pixels, pixels.length, width, height);
+    }
+
+    /** The native grayscale capture into {@code capacity} bytes of {@code pixels}; see {@link Camera#captureGrayscale}. */
+    native boolean captureGrayscale(byte[] pixels, int capacity, int width, int height);
 }
