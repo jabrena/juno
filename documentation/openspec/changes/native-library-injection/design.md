@@ -48,4 +48,6 @@ never branches on a specific board.
 
 ## Open Questions
 
-- The Library Manager package name and version for TensorFlow Lite Micro (gate 0, U3).
+- Resolved 2026-11-18: `Chirale_TensorFLowLite@2.0.0`. `TensorFlowLite_ESP32` 1.0.0 fails to compile on the esp32:esp32
+  3.3.12 core (its LCD driver uses removed GPIO APIs). The CI image installs `esp32:esp32` without a version pin; the
+  version checked here is 3.3.12.
