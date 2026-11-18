@@ -2,9 +2,11 @@ package io.github.jabrena.juno.hardware.device.tft;
 
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.fonts.AsciiFont;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
-import io.github.jabrena.juno.hardware.led.LedMatrixFontAscii;
+import io.github.jabrena.juno.hardware.touch.TouchScreen;
 import io.github.jabrena.juno.util.Delay;
 import org.jspecify.annotations.Nullable;
 
@@ -32,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * panel; use {@link #calibrateTouch} (from {@link #touchRawX()}/{@link #touchRawY()} readings at
  * the screen's edges) if a particular panel reports offset or mirrored positions.
  */
-public final class TftTouchShield {
+public final class TftTouchShield implements Display, TouchScreen {
     /** Native (portrait) width in pixels. */
     public static final int NATIVE_WIDTH = 240;
     /** Native (portrait) height in pixels. */
@@ -47,15 +49,7 @@ public final class TftTouchShield {
     /** Landscape, rotated 180 degrees from {@link #LANDSCAPE}. */
     public static final int LANDSCAPE_FLIPPED = 3;
 
-    // RGB565 colors.
-    public static final int BLACK = 0x0000;
-    public static final int WHITE = 0xFFFF;
-    public static final int RED = 0xF800;
-    public static final int GREEN = 0x07E0;
-    public static final int BLUE = 0x001F;
-    public static final int YELLOW = 0xFFE0;
-    public static final int CYAN = 0x07FF;
-    public static final int MAGENTA = 0xF81F;
+    // RGB565 colors beyond the Display palette (BLACK .. MAGENTA are inherited from Display).
     public static final int ORANGE = 0xFD20;
     public static final int GRAY = 0x8410;
     public static final int NAVY = 0x000F;
@@ -244,9 +238,12 @@ public final class TftTouchShield {
         return height;
     }
 
-    /** Packs 8-bit-per-channel {@code red}, {@code green}, {@code blue} into an RGB565 color. */
+    /**
+     * Packs 8-bit-per-channel {@code red}, {@code green}, {@code blue} into an RGB565 color. Static interface methods
+     * are not inherited, so this delegates to {@link Display#color} for callers of {@code TftTouchShield.color}.
+     */
     public static int color(int red, int green, int blue) {
-        return TftGraphics.color(red, green, blue);
+        return Display.color(red, green, blue);
     }
 
     /** Fills the whole screen with {@code color}. */
@@ -334,6 +331,11 @@ public final class TftTouchShield {
         for (int i = 0; i < length; i++) {
             writeChar(text.charAt(i));
         }
+    }
+
+    /** Prints one character at the cursor with the current text size and colors, advancing the cursor. */
+    public void print(char character) {
+        writeChar(character);
     }
 
     /** Prints {@code value} in decimal at the cursor. */
@@ -490,12 +492,12 @@ public final class TftTouchShield {
 
     // Bit n set = glyph column n lit; the spacing column and row stay background.
     private static int glyphRowBits(int code, int row) {
-        if (row >= LedMatrixFontAscii.GLYPH_HEIGHT) {
+        if (row >= AsciiFont.GLYPH_HEIGHT) {
             return 0;
         }
         int bits = 0;
-        for (int column = 0; column < LedMatrixFontAscii.GLYPH_WIDTH; column++) {
-            if (LedMatrixFontAscii.charPixel(code, column, row)) {
+        for (int column = 0; column < AsciiFont.GLYPH_WIDTH; column++) {
+            if (AsciiFont.charPixel(code, column, row)) {
                 bits = bits | (1 << column);
             }
         }

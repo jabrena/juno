@@ -43,7 +43,7 @@ STM32U585's complete flash and SRAM.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
 | `@Watchdog` | – | Not available: the Zephyr firmware does not enable its watchdog subsystem, so the compiler rejects `@Watchdog` for this board. | |
 | `UUID.randomUUID()` | ✓ | Zephyr's cryptographic random service on the STM32U585's TRNG; no Linux, Wi-Fi or bridge involved. | |
-| Onboard LED matrix | ✓ | 13 × 8 through the Zephyr core's `Arduino_LED_Matrix`; `LedCanvas.width()` is 13 here and 12 on the UNO R4 WiFi. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
+| Onboard LED matrix | ✓ | 13 × 8 through `MCU.getDisplay()`, a monochrome `Display` over the Zephyr core's `Arduino_LED_Matrix`; `Display.width()` is 13 here and 12 on the UNO R4 WiFi. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
 | `Wifi`, `Udp`, SNTP | ✓ | Linux owns Wi-Fi; the MCU exchanges datagrams through `Arduino_RouterBridge`. | [`SntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/SntpTimeSD.java) |
 | `java.net.http` | ✗ | Not supported: the HTTP client starts at the UNO R4 WiFi. | |
 | `HttpServer` (HTTP and HTTPS) | ✓ | The TLS session runs on the MCU; the Linux side is already on the network. | [`QHttpsServer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/QHttpsServer.java) |
@@ -75,22 +75,22 @@ while (true) {
 
 ### Scroll text on the LED matrix
 
-The UNO Q's matrix is 13 columns by 8 rows. `LedCanvas` draws into a frame and `show` sends it to the matrix:
+The UNO Q's matrix is 13 columns by 8 rows. `MCU.getDisplay()` returns it as a `Display`: `print` draws text and `flush` sends the frame to the matrix:
 
 ```java
-LedMatrix matrix = MCU.getLedMatrix();
-matrix.begin();
-boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+Display display = MCU.getDisplay();
+display.setTextColor(Display.WHITE, Display.BLACK);
 
 for (int offset = 12; offset >= -60; offset--) {
-    LedCanvas.clear(frame);
-    LedCanvas.drawText(frame, "Hello, Juno", offset, 0);
-    LedCanvas.show(frame);
+    display.fillScreen(Display.BLACK);
+    display.setCursor(offset, 0);
+    display.print("Hello, Juno");
+    display.flush();
     Delay.millis(80);
 }
 ```
 
-`drawText` takes a compile-time string literal. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
+`print` takes any `String`, and the matrix clips the text at its edges. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
 message forever.
 
 ### Serve HTTPS

@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware.device.grove;
 
+import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,16 @@ class GroveBaseShieldTest {
             .containsExactly(
                     pins.analogPin("A0"), pins.digitalPin("D2"), pins.digitalPin("D8"),
                     pins.digitalPin("D0"), pins.analogPin("A5"));
+    }
+
+    @Test
+    @DisplayName("Returns the board's I2C bus, the same instance on every call")
+    void shouldReturnTheBoardsI2cBus() {
+        // Given
+        GroveBaseShield shield = new GroveBaseShield(pins());
+
+        // When & Then
+        assertThat(shield.getI2c()).isSameAs(shield.getI2c()).isSameAs(MCU.getI2c());
     }
 
     private static Gpio pins() {

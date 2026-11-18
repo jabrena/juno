@@ -7,6 +7,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.jupiter.api.DisplayName;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 /**
  * Keeps juno-api a self-contained programming model: programs compile against it alone, so it must not reach into the
@@ -38,4 +39,10 @@ class ApiArchitectureTest {
                     "io.github.jabrena.juno.javax..", "java..",
                     "org.jspecify.annotations..")
             .because("programs compile against juno-api alone, so it must not use the compiler or third-party code");
+
+    @ArchTest
+    static final ArchRule shouldNotLetViewsAndRoutersDependOnDevices = noClasses()
+            .that().resideInAPackage("io.github.jabrena.juno.util.mvc..")
+            .should().dependOnClassesThat().resideInAPackage("io.github.jabrena.juno.hardware.device..")
+            .because("views and routers take their hardware through interfaces, so a program can swap a device or a mock");
 }

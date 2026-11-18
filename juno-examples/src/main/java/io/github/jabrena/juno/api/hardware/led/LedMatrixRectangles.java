@@ -4,44 +4,41 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Cycles a filled square, an outlined square, a filled rectangle, and an outlined rectangle on the
- * built-in LED matrix using {@code LedCanvas}.
+ * Cycles a filled square, an outlined square, a filled rectangle, and an outlined rectangle on the built-in LED matrix.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixRectangles {
+    private static final Display DISPLAY = MCU.getDisplay();
+
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-
         while (true) {
-            LedCanvas.clear(frame);
-            LedCanvas.fillRect(frame, 3, 1, 6, 6);
-            LedCanvas.show(frame);
-            Delay.millis(800);
-            matrix.clear();
+            DISPLAY.fillScreen(Display.BLACK);
+            DISPLAY.fillRect(3, 1, 6, 6, Display.WHITE);
+            show(800);
 
-            LedCanvas.clear(frame);
-            LedCanvas.drawRect(frame, 3, 1, 6, 6);
-            LedCanvas.show(frame);
-            Delay.millis(800);
-            matrix.clear();
+            DISPLAY.fillScreen(Display.BLACK);
+            DISPLAY.drawRect(3, 1, 6, 6, Display.WHITE);
+            show(800);
 
-            LedCanvas.clear(frame);
-            LedCanvas.fillRect(frame, 1, 2, 10, 4);
-            LedCanvas.show(frame);
-            Delay.millis(800);
-            matrix.clear();
+            DISPLAY.fillScreen(Display.BLACK);
+            DISPLAY.fillRect(1, 2, 10, 4, Display.WHITE);
+            show(800);
 
-            LedCanvas.clear(frame);
-            LedCanvas.drawRect(frame, 1, 2, 10, 4);
-            LedCanvas.show(frame);
-            Delay.millis(800);
-            matrix.clear();
+            DISPLAY.fillScreen(Display.BLACK);
+            DISPLAY.drawRect(1, 2, 10, 4, Display.WHITE);
+            show(800);
         }
+    }
+
+    /** Sends the drawn frame to the matrix, holds it for {@code millis}, then turns the matrix off. */
+    private static void show(int millis) {
+        DISPLAY.flush();
+        Delay.millis(millis);
+        DISPLAY.fillScreen(Display.BLACK);
+        DISPLAY.flush();
     }
 }

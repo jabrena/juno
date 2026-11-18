@@ -30,6 +30,13 @@ public enum Capability {
             return board.displayName() + " has no onboard LED matrix";
         }
     },
+    /** {@code MCU.getDisplay()}: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q. */
+    DISPLAY("MCU.getDisplay") {
+        @Override
+        public String unsupportedReason(Board board) {
+            return board.displayName() + " has no display for MCU.getDisplay";
+        }
+    },
     M5_DISPLAY("MCU.getDisplay") {
         @Override
         public String unsupportedReason(Board board) {

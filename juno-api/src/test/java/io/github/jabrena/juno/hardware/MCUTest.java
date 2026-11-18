@@ -4,8 +4,10 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
+import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
+import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("MCU")
 class MCUTest {
@@ -22,6 +25,7 @@ class MCUTest {
     @AfterEach
     void restoreBoardSdCard() {
         NativeOnboardSdCard.setSdCard(null);
+        NativeLedMatrix.setDisplay(NativeLedMatrix.INSTANCE);
     }
 
     @Test
@@ -42,9 +46,37 @@ class MCUTest {
     }
 
     @Test
-    @DisplayName("The board's display is one shared instance")
-    void shouldHandOutOneDisplayInstance() {
-        assertThat(MCU.getDisplay()).isSameAs(MCU.getDisplay()).isSameAs(NativeDisplay.INSTANCE);
+    @DisplayName("The Cardputer's display is one shared instance")
+    void shouldHandOutOneDisplayInstanceOnTheCardputer() {
+        // Given
+        BoardModel previous = NativeBoardModel.boardModel();
+        NativeBoardModel.setBoardModel(BoardModel.M5_CARDPUTER);
+
+        // When & Then
+        try {
+            assertThat(MCU.getDisplay()).isSameAs(MCU.getDisplay()).isSameAs(NativeDisplay.INSTANCE);
+        } finally {
+            NativeBoardModel.setBoardModel(previous);
+        }
+    }
+
+    @Test
+    @DisplayName("On the UNO R4 WiFi and UNO Q the display is the LED matrix, one shared instance")
+    void shouldHandOutTheLedMatrixAsTheDisplayOnTheUnoBoards() {
+        // Given
+        BoardModel previous = NativeBoardModel.boardModel();
+        Display matrix = mock(Display.class);
+        when(matrix.width()).thenReturn(13);
+        NativeLedMatrix.setDisplay(matrix);
+        NativeBoardModel.setBoardModel(BoardModel.UNO_Q);
+
+        // When & Then
+        try {
+            assertThat(MCU.getDisplay()).isSameAs(matrix).isSameAs(MCU.getDisplay());
+            assertThat(MCU.getDisplay().width()).isEqualTo(13);
+        } finally {
+            NativeBoardModel.setBoardModel(previous);
+        }
     }
 
     @Test

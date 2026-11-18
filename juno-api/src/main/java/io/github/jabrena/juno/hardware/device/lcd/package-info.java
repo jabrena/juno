@@ -4,7 +4,7 @@
  * 4-bit mode plus 5 buttons read from a single resistor-ladder analog pin, wired for the shield's
  * standard pinout.
  *
- * <p>Unlike {@code led}'s {@code LedMatrix}, a shield here needs no new compiler intrinsic —
+ * <p>Unlike the board's LED matrix, a shield here needs no new compiler intrinsic —
  * every operation is built entirely from {@link io.github.jabrena.juno.hardware.gpio.Gpio} pin
  * operations and {@link io.github.jabrena.juno.util.Delay}.
  */

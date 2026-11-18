@@ -229,7 +229,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects features that do not fit the classic UNO R3")
     void shouldRejectFeaturesThatDoNotFitTheClassicUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "MCU.getLedMatrix().begin();", ""))
+        assertThatThrownBy(() -> compileR3("demo.R3Matrix", "io.github.jabrena.juno.hardware.internal.NativeLedMatrix.INSTANCE.clear();", ""))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard LED matrix");
     }
@@ -680,7 +680,7 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects capabilities the board lacks")
     void shouldRejectCapabilitiesTheBoardLacks() {
         // When & Then
-        assertThatThrownBy(() -> compile("demo.AvrMatrix", "MCU.getLedMatrix().begin();",
+        assertThatThrownBy(() -> compile("demo.AvrMatrix", "io.github.jabrena.juno.hardware.internal.NativeLedMatrix.INSTANCE.clear();",
                 "import io.github.jabrena.juno.hardware.MCU;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3 has no onboard LED matrix");

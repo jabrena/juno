@@ -3,26 +3,12 @@ package io.github.jabrena.juno.lowering;
 import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.bytecode.Instruction;
 import io.github.jabrena.juno.classfile.MethodRef;
-import io.github.jabrena.juno.ir.BinaryOp;
-import io.github.jabrena.juno.ir.IrInstruction;
-import io.github.jabrena.juno.ir.Value;
 
-import java.util.List;
-import java.util.Optional;
 
-/** Calls Juno evaluates while compiling: {@code LedCanvas.drawText}; board programs cannot read the build environment. */
+/** Calls Juno evaluates while compiling: {@code System.getenv}, which a board program may not read. */
 final class CompileTimeCalls {
     private static final MethodRef GETENV = new MethodRef("java/lang/System", "getenv",
             "(Ljava/lang/String;)Ljava/lang/String;");
-    private static final MethodRef DRAW_TEXT = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
-            "drawText", "([[ZLjava/lang/String;II)V");
-    private static final MethodRef DRAW_CHAR = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
-            "drawChar", "([[ZIII)V");
-    /**
-     * {@code LedMatrixFontAscii.GLYPH_WIDTH + 1} (a 5-wide glyph plus a 1-column gap), kept as a literal so codegen
-     * doesn't depend on a specific font's internals; keep the two in sync if the font's geometry ever changes.
-     */
-    private static final int CHARACTER_SPACING = 6;
 
     private final MethodContext context;
     private final OperandStack stack;
@@ -36,10 +22,6 @@ final class CompileTimeCalls {
         return called.equals(GETENV);
     }
 
-    boolean isDrawText(MethodRef called) {
-        return called.equals(DRAW_TEXT);
-    }
-
     /**
      * Rejects {@code System.getenv(...)} in board code. Resolving a build-machine value here would emit it as a
      * firmware string constant, so credentials must be loaded at runtime from {@code SecretStore} or board storage.
@@ -49,33 +31,5 @@ final class CompileTimeCalls {
         throw new CompileException(context.at(instruction) + ": System.getenv(...) is not supported in board programs; "
                 + "its build-time value would become part of the firmware. Use SecretStore or runtime board storage "
                 + "for credentials and configuration");
-    }
-
-    /**
-     * {@code LedCanvas.drawText(frame, "literal", x, y)} unrolls into one ordinary {@code drawChar} call per
-     * character, at {@code x + i * CHARACTER_SPACING}: exactly what writing the calls out by hand would produce.
-     */
-    void drawText(Instruction instruction) {
-        Value originY = stack.pop();
-        Value originX = stack.pop();
-        String text = context.facts().knownString(stack.pop());
-        if (text == null) {
-            throw new CompileException(context.at(instruction) + ": " + DRAW_TEXT.displayName() + " requires a "
-                    + "compile-time string literal text argument (Juno has no heap for a runtime String value)");
-        }
-        Value frame = stack.pop();
-        FreshValues values = context.values();
-        for (int index = 0; index < text.length(); index++) {
-            Value character = values.int32();
-            context.emit(new IrInstruction.Const(character, text.charAt(index)));
-            Value x = originX;
-            if (index > 0) {
-                Value offset = values.int32();
-                context.emit(new IrInstruction.Const(offset, index * CHARACTER_SPACING));
-                x = values.int32();
-                context.emit(new IrInstruction.Binary(x, BinaryOp.ADD, originX, offset));
-            }
-            context.emit(new IrInstruction.Call(Optional.empty(), DRAW_CHAR, List.of(frame, character, x, originY)));
-        }
     }
 }

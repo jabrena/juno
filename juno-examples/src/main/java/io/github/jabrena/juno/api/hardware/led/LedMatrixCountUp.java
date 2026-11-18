@@ -4,35 +4,37 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Counts from 1 to 10 on the built-in LED matrix using the shared 5x7 font in
- * {@code LedCanvas}/{@code LedMatrixFont}. 1-9 are drawn as a single centered digit; 10 is
- * drawn as two digits side by side, since 5 + 1 gap + 5 = 11 fits within the 12-column matrix.
+ * Counts from 1 to 10 on the built-in LED matrix with the 5x7 font of {@link Display#print(char)}. 1-9 are drawn as a
+ * single digit at column 4; 10 is drawn as two digits side by side, since 5 + 1 gap + 5 = 11 fits within the 12-column
+ * matrix.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixCountUp {
-    public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+    private static final Display DISPLAY = MCU.getDisplay();
 
+    public static void main(String[] args) {
+        DISPLAY.setTextColor(Display.WHITE, Display.BLACK);
         while (true) {
             int number = 1;
             while (number <= 10) {
-                LedCanvas.clear(frame);
+                DISPLAY.fillScreen(Display.BLACK);
                 if (number < 10) {
-                    LedCanvas.drawDigit(frame, number, 4, 0);
+                    DISPLAY.setCursor(4, 0);
+                    DISPLAY.print((char) ('0' + number));
                 } else {
-                    LedCanvas.drawDigit(frame, 1, 0, 0);
-                    LedCanvas.drawDigit(frame, 0, 6, 0);
+                    DISPLAY.setCursor(0, 0);
+                    DISPLAY.print('1');
+                    DISPLAY.setCursor(6, 0);
+                    DISPLAY.print('0');
                 }
-
-                LedCanvas.show(frame);
+                DISPLAY.flush();
                 Delay.millis(700);
-                matrix.clear();
+                DISPLAY.fillScreen(Display.BLACK);
+                DISPLAY.flush();
                 Delay.millis(120);
                 number = number + 1;
             }

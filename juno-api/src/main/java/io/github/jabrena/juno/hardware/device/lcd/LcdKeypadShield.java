@@ -13,10 +13,9 @@ import org.jspecify.annotations.Nullable;
  * standard pinout as used by e.g. <a href="https://github.com/dzindra/lcdkeypad">dzindra/lcdkeypad</a>:
  * LCD data/control on digital pins 4-9, backlight on digital pin 10, buttons on {@code A0}.
  *
- * <p>Unlike {@link io.github.jabrena.juno.hardware.led.LedMatrix}, this shield needs no new compiler
- * intrinsic: every operation here is built from {@link Gpio#pinMode}, {@link Gpio#digitalWrite},
- * {@link Gpio#analogRead}, and {@link Delay}, the same way {@link io.github.jabrena.juno.hardware.led.LedCanvas}
- * is built from {@link io.github.jabrena.juno.hardware.led.LedMatrix}.
+ * <p>Unlike the board's LED matrix, this shield needs no new compiler intrinsic: every operation here
+ * is built from {@link Gpio#pinMode}, {@link Gpio#digitalWrite}, {@link Gpio#analogRead}, and
+ * {@link Delay}.
  */
 public final class LcdKeypadShield {
     /** No button is currently pressed. */

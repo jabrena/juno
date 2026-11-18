@@ -60,11 +60,6 @@ public final class Linker {
     private final ReachableBodySupport reachableBodySupport = new ReachableBodySupport(intrinsicRegistry,
             supportedJdkMethods, throwableTypes);
 
-    private static final MethodRef DRAW_TEXT_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
-            "drawText", "([[ZLjava/lang/String;II)V");
-    private static final MethodRef DRAW_CHAR_METHOD = new MethodRef("io/github/jabrena/juno/hardware/led/LedCanvas",
-            "drawChar", "([[ZIII)V");
-
     private final BytecodeDecoder decoder = new BytecodeDecoder();
     private final ControlFlowGraphBuilder cfgBuilder = new ControlFlowGraphBuilder();
     private final InterfaceDispatchResolver interfaceDispatchResolver = new InterfaceDispatchResolver();
@@ -296,9 +291,7 @@ public final class Linker {
         socketSupport.validateCall(called);
         localDateTimeSupport.validateCall(called);
         ClojureSupport.validateCall(called);
-        if (called.equals(DRAW_TEXT_METHOD)) {
-            work.addLast(DRAW_CHAR_METHOD);
-        } else if (reachableBodySupport.hasReachableBody(called, classes)) {
+        if (reachableBodySupport.hasReachableBody(called, classes)) {
             work.addLast(called);
         }
     }
@@ -327,11 +320,6 @@ public final class Linker {
         });
     }
 
-    /**
-     * {@code LedCanvas.drawText(frame, "literal", x, y)} is unrolled by {@code BytecodeToIr} into one
-     * {@code LedCanvas.drawChar} call per character at compile time — {@code drawText} itself is
-     * native (no body to walk into); {@link #DRAW_CHAR_METHOD} is what's actually reachable.
-     */
     private JavaMethod findMain(JavaClass mainClass) {
         JavaMethod conventional = mainClass.findMethod("main", "([Ljava/lang/String;)V");
         JavaMethod embedded = mainClass.findMethod("main", "()V");

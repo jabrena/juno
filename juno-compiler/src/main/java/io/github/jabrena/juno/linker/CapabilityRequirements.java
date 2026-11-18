@@ -23,12 +23,11 @@ final class CapabilityRequirements {
 
     private static final Map<String, Capability> MCU_SERVICE_CAPABILITIES = Map.ofEntries(
             Map.entry("Lio/github/jabrena/juno/hardware/hid/Mouse;", Capability.USB_HID),
-            Map.entry("Lio/github/jabrena/juno/hardware/led/LedMatrix;", Capability.LED_MATRIX),
             Map.entry("Lio/github/jabrena/juno/hardware/net/Wifi;", Capability.ONBOARD_WIFI),
             Map.entry("Lio/github/jabrena/juno/hardware/net/BluetoothLe;", Capability.BLUETOOTH_LE),
             Map.entry("Lio/github/jabrena/juno/hardware/device/camera/Camera;", Capability.CAMERA),
             Map.entry("Lio/github/jabrena/juno/hardware/device/sd/SdCard;", Capability.ONBOARD_SD_CARD),
-            Map.entry("Lio/github/jabrena/juno/hardware/display/Display;", Capability.M5_DISPLAY),
+            Map.entry("Lio/github/jabrena/juno/hardware/display/Display;", Capability.DISPLAY),
             Map.entry("Lio/github/jabrena/juno/hardware/keyboard/Keyboard;", Capability.M5_KEYBOARD),
             Map.entry("Lio/github/jabrena/juno/hardware/audio/Audio;", Capability.M5_AUDIO),
             Map.entry("Lio/github/jabrena/juno/hardware/power/Battery;", Capability.M5_BATTERY));

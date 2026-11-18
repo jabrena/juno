@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.touch.TouchScreen;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -482,5 +484,18 @@ class TftTouchShieldTest {
 
         // When & Then
         assertThat(tft.touchPressure()).isZero();
+    }
+
+    @Test
+    @DisplayName("The TFT shield is both a Display and a TouchScreen, and keeps the Display palette")
+    void shouldBeADisplayAndATouchScreen() {
+        // When
+        Display display = tft;
+        TouchScreen touch = tft;
+
+        // Then
+        assertThat(display).isSameAs(touch);
+        assertThat(TftTouchShield.RED).isEqualTo(Display.RED);
+        assertThat(TftTouchShield.ORANGE).isEqualTo(0xFD20);
     }
 }

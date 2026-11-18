@@ -4,20 +4,17 @@ import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Scrolls "Juno, Java for Arduino ONE R4" across the built-in LED matrix from right to
- * left, one pixel column per tick, using {@link LedCanvas#drawText}, which unrolls the literal into
- * one {@code drawChar} per character at compile time (this API deliberately requires a compile-time
- * literal even though Juno supports a small runtime {@code String} subset). {@code LedCanvas.setPixel} already
- * clips anything outside the frame, so characters simply appear at the right edge and disappear
+ * Scrolls "Juno, Java for Arduino ONE R4" across the built-in LED matrix from right to left, one pixel column per tick.
+ * {@link Display#print(String)} clips anything outside the matrix, so characters appear at the right edge and disappear
  * off the left edge as the offset shrinks.
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixScrollingText {
+    private static final Display DISPLAY = MCU.getDisplay();
     private static final String MESSAGE = "Juno, Java for Arduino ONE R4";
     // MESSAGE.length() is not a Java compile-time constant, so keep this synchronized with MESSAGE.
     private static final int CHAR_COUNT = 29;
@@ -27,17 +24,17 @@ public final class LedMatrixScrollingText {
     private static final int END_OFFSET = -MESSAGE_WIDTH;
 
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-
+        DISPLAY.setTextColor(Display.WHITE, Display.BLACK);
         while (true) {
             int offset = START_OFFSET;
             while (offset >= END_OFFSET) {
-                LedCanvas.clear(frame);
-                LedCanvas.drawText(frame, MESSAGE, offset, 0);
-                LedCanvas.show(frame);
+                DISPLAY.fillScreen(Display.BLACK);
+                DISPLAY.setCursor(offset, 0);
+                DISPLAY.print(MESSAGE);
+                DISPLAY.flush();
                 Delay.millis(80);
-                matrix.clear();
+                DISPLAY.fillScreen(Display.BLACK);
+                DISPLAY.flush();
                 offset = offset - 1;
             }
         }

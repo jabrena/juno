@@ -86,8 +86,15 @@ the program's flash usage).</div>
 <div class="col-last odd-row-color">
 <div class="block">Grove monochrome display adapters.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
 <div class="col-last even-row-color">
+<div class="block">Drivers for TFT display shields, currently
+<a href="../../device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
+on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
+<a href="../../device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
@@ -104,7 +111,8 @@ the program's flash usage).</div>
 <div class="col-first even-row-color"><code>static <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getDisplay()" class="member-name-link">getDisplay</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">The selected board's onboard display.</div>
+<div class="block">The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q as a
+monochrome <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a> (12x8 or 13x8).</div>
 </div>
 </div>
 </section>
@@ -126,6 +134,25 @@ the program's flash usage).</div>
 </section>
 </li>
 <li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.tft">
+<h2>Uses of <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a> in <a href="../../device/tft/package-summary.html">io.github.jabrena.juno.hardware.device.tft</a></h2>
+<div class="caption"><span>Classes in <a href="../../device/tft/package-summary.html">io.github.jabrena.juno.hardware.device.tft</a> that implement <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/tft/TftTouchShield.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
+240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
+socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
+<code>TouchScreen</code> libraries.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="io.github.jabrena.juno.hardware.internal">
 <h2>Uses of <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a> in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></h2>
 <div class="caption"><span>Classes in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> that implement <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
@@ -138,6 +165,11 @@ the program's flash usage).</div>
 <div class="col-last even-row-color">
 <div class="block">The M5Stack Cardputer's <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>, implemented by compiler intrinsics over the Cardputer keyboard.</div>
 </div>
+<div class="col-first odd-row-color"><code>final class&nbsp;</code></div>
+<div class="col-second odd-row-color"><code><a href="../../internal/NativeLedMatrix.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The board's built-in LED matrix as a <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q, one color.</div>
+</div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> that return <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
 <div class="summary-table three-column-summary">
@@ -149,6 +181,12 @@ the program's flash usage).</div>
 <div class="col-last even-row-color">
 <div class="block">The display the MCU facade hands out.</div>
 </div>
+<div class="col-first odd-row-color"><code>static <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">NativeLedMatrix.</span><code><a href="../../internal/NativeLedMatrix.html#display()" class="member-name-link">display</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">The display <a href="../../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi and the UNO Q:
+the board's matrix, started on first use, unless a whole-program emulator or a test replaced it.</div>
+</div>
 </div>
 <div class="caption"><span>Methods in <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a> with parameters of type <a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
 <div class="summary-table three-column-summary">
@@ -159,6 +197,11 @@ the program's flash usage).</div>
 <div class="col-second even-row-color"><span class="type-name-label">NativeDisplay.</span><code><a href="../../internal/NativeDisplay.html#setDisplay(io.github.jabrena.juno.hardware.display.Display)" class="member-name-link">setDisplay</a><wbr>(<a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a>&nbsp;replacement)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Makes MCU hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
+</div>
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">NativeLedMatrix.</span><code><a href="../../internal/NativeLedMatrix.html#setDisplay(io.github.jabrena.juno.hardware.display.Display)" class="member-name-link">setDisplay</a><wbr>(<a href="../Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a>&nbsp;display)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Makes <a href="../../internal/NativeLedMatrix.html#display()"><code>NativeLedMatrix.display()</code></a> return <code>display</code>: for a whole-program emulator or a unit test, never on the board.</div>
 </div>
 </div>
 </section>

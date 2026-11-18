@@ -70,9 +70,18 @@ initTheme();
 <div class="toc-header">Contents&nbsp;<input type="text" class="filter-input" disabled title="Filter contents (type .)" placeholder="Filter contents (type .)" aria-label="Filter table of contents" autocomplete="off" spellcheck="false"><input type="reset" class="reset-filter" disabled tabindex="-1" value="Reset">&nbsp;<button class="toc-sort-toggle" id="toc-lexical-order-toggle"><img src="../../../../../../../resource-files/sort-a-z.svg" alt="Sort member details in lexicographical order"></button></div>
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
-<li><a href="#field-summary" tabindex="0">Field Summary</a></li>
+<li><a href="#field-summary" tabindex="0">Field Summary</a>
+<ol class="toc-list">
+<li><a href="#fields-inherited-from-class-io.github.jabrena.juno.hardware.display.Display" tabindex="0">Fields inherited from interface&nbsp;Display</a></li>
+</ol>
+</li>
 <li><a href="#constructor-summary" tabindex="0">Constructor Summary</a></li>
-<li><a href="#method-summary" tabindex="0">Method Summary</a></li>
+<li><a href="#method-summary" tabindex="0">Method Summary</a>
+<ol class="toc-list">
+<li><a href="#methods-inherited-from-class-java.lang.Object" tabindex="0">Methods inherited from class&nbsp;Object</a></li>
+<li><a href="#methods-inherited-from-class-io.github.jabrena.juno.hardware.display.Display" tabindex="0">Methods inherited from interface&nbsp;Display</a></li>
+</ol>
+</li>
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
 <li><a href="#NATIVE_WIDTH" tabindex="0">NATIVE_WIDTH</a></li>
@@ -81,14 +90,6 @@ initTheme();
 <li><a href="#LANDSCAPE" tabindex="0">LANDSCAPE</a></li>
 <li><a href="#PORTRAIT_FLIPPED" tabindex="0">PORTRAIT_FLIPPED</a></li>
 <li><a href="#LANDSCAPE_FLIPPED" tabindex="0">LANDSCAPE_FLIPPED</a></li>
-<li><a href="#BLACK" tabindex="0">BLACK</a></li>
-<li><a href="#WHITE" tabindex="0">WHITE</a></li>
-<li><a href="#RED" tabindex="0">RED</a></li>
-<li><a href="#GREEN" tabindex="0">GREEN</a></li>
-<li><a href="#BLUE" tabindex="0">BLUE</a></li>
-<li><a href="#YELLOW" tabindex="0">YELLOW</a></li>
-<li><a href="#CYAN" tabindex="0">CYAN</a></li>
-<li><a href="#MAGENTA" tabindex="0">MAGENTA</a></li>
 <li><a href="#ORANGE" tabindex="0">ORANGE</a></li>
 <li><a href="#GRAY" tabindex="0">GRAY</a></li>
 <li><a href="#NAVY" tabindex="0">NAVY</a></li>
@@ -123,6 +124,7 @@ initTheme();
 <li><a href="#setTextSize(int)" tabindex="0">setTextSize(int)</a></li>
 <li><a href="#setTextColor(int,int)" tabindex="0">setTextColor(int, int)</a></li>
 <li><a href="#print(java.lang.String)" tabindex="0">print(String)</a></li>
+<li><a href="#print(char)" tabindex="0">print(char)</a></li>
 <li><a href="#print(int)" tabindex="0">print(int)</a></li>
 <li><a href="#print(byte%5B%5D,int)" tabindex="0">print(byte[], int)</a></li>
 <li><a href="#println(java.lang.String)" tabindex="0">println(String)</a></li>
@@ -146,10 +148,15 @@ initTheme();
 <div class="inheritance">io.github.jabrena.juno.hardware.device.tft.TftTouchShield</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>All Implemented Interfaces:</dt>
+<dd><code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a>, <a href="../../touch/TouchScreen.html" title="interface in io.github.jabrena.juno.hardware.touch">TouchScreen</a></code></dd>
+</dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">TftTouchShield</span>
-<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
+<span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
+implements <a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a>, <a href="../../touch/TouchScreen.html" title="interface in io.github.jabrena.juno.hardware.touch">TouchScreen</a></span></div>
 <div class="block">Driver for the ELEGOO 2.8" TFT touch screen shield ("Pantalla Táctil TFT de 2,8 pulgadas"): a
 240x320 ILI9341 display on an 8-bit parallel bus, a 4-wire resistive touch panel, and a microSD
 socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Elegoo_TFTLCD</code> and
@@ -161,7 +168,7 @@ style and touch calibration belong to that one screen, so two instances would di
 <p>The display bus is a <a href="ParallelBus.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>ParallelBus</code></a>: each byte is a few GPIO port writes
 and a run of one color is a single call, so pixels stream from the runtime without a call per byte. Commands
 still toggle the RS line with <a href="../../gpio/Gpio.html#digitalWrite(int,boolean)"><code>Gpio.digitalWrite(int, boolean)</code></a>, and the touch panel uses <a href="../../gpio/Gpio.html#analogRead(int)"><code>Gpio.analogRead(int)</code></a>.
-Fills in colors whose two bytes are equal (e.g. <a href="#BLACK"><code>BLACK</code></a>, <a href="#WHITE"><code>WHITE</code></a>) are the fastest: the data pins
+Fills in colors whose two bytes are equal (e.g. <a href="../../display/Display.html#BLACK"><code>Display.BLACK</code></a>, <a href="../../display/Display.html#WHITE"><code>Display.WHITE</code></a>) are the fastest: the data pins
 are set once and only the write strobe toggles.
 
 <p>The SD socket is an ordinary SPI card reader with chip select on D10: <a href="#getSdCard()"><code>getSdCard()</code></a> is its card. It
@@ -186,12 +193,6 @@ the screen's edges) if a particular panel reports offset or mirrored positions.<
 <div class="table-header col-second">Field</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#BLACK" class="member-name-link">BLACK</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#BLUE" class="member-name-link">BLUE</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>static final int</code></div>
 <div class="col-second even-row-color"><code><a href="#CHAR_HEIGHT" class="member-name-link">CHAR_HEIGHT</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">Height of one character cell at text size 1 (7-pixel glyph plus 1 pixel of spacing).</div>
@@ -202,13 +203,7 @@ the screen's edges) if a particular panel reports offset or mirrored positions.<
 <div class="block">Width of one character cell at text size 1 (5-pixel glyph plus 1 pixel of spacing).</div>
 </div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#CYAN" class="member-name-link">CYAN</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#GRAY" class="member-name-link">GRAY</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#GREEN" class="member-name-link">GREEN</a></code></div>
+<div class="col-second even-row-color"><code><a href="#GRAY" class="member-name-link">GRAY</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
 <div class="col-second odd-row-color"><code><a href="#LANDSCAPE" class="member-name-link">LANDSCAPE</a></code></div>
@@ -221,43 +216,64 @@ the screen's edges) if a particular panel reports offset or mirrored positions.<
 <div class="block">Landscape, rotated 180 degrees from <a href="#LANDSCAPE"><code>LANDSCAPE</code></a>.</div>
 </div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#MAGENTA" class="member-name-link">MAGENTA</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#NATIVE_HEIGHT" class="member-name-link">NATIVE_HEIGHT</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-second odd-row-color"><code><a href="#NATIVE_HEIGHT" class="member-name-link">NATIVE_HEIGHT</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Native (portrait) height in pixels.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#NATIVE_WIDTH" class="member-name-link">NATIVE_WIDTH</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#NATIVE_WIDTH" class="member-name-link">NATIVE_WIDTH</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Native (portrait) width in pixels.</div>
 </div>
-<div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#NAVY" class="member-name-link">NAVY</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#ORANGE" class="member-name-link">ORANGE</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#NAVY" class="member-name-link">NAVY</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#PORTRAIT" class="member-name-link">PORTRAIT</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-second even-row-color"><code><a href="#ORANGE" class="member-name-link">ORANGE</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#PORTRAIT" class="member-name-link">PORTRAIT</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Portrait, USB/power connectors at the top.</div>
 </div>
-<div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#PORTRAIT_FLIPPED" class="member-name-link">PORTRAIT_FLIPPED</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="#PORTRAIT_FLIPPED" class="member-name-link">PORTRAIT_FLIPPED</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">Portrait, rotated 180 degrees from <a href="#PORTRAIT"><code>PORTRAIT</code></a>.</div>
 </div>
+</div>
+<div class="inherited-list">
+<h3 id="fields-inherited-from-class-io.github.jabrena.juno.hardware.display.Display">Fields inherited from interface&nbsp;<a href="../../display/Display.html#field-summary" title="interface in io.github.jabrena.juno.hardware.display">Display</a></h3>
+<code><a href="../../display/Display.html#BLACK">BLACK</a>, <a href="../../display/Display.html#BLUE">BLUE</a>, <a href="../../display/Display.html#CYAN">CYAN</a>, <a href="../../display/Display.html#GREEN">GREEN</a>, <a href="../../display/Display.html#MAGENTA">MAGENTA</a>, <a href="../../display/Display.html#RED">RED</a>, <a href="../../display/Display.html#WHITE">WHITE</a>, <a href="../../display/Display.html#YELLOW">YELLOW</a></code>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Field</div>
+<div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#RED" class="member-name-link">RED</a></code></div>
+<div class="col-second even-row-color"><code><a href="../../display/Display.html#BLACK" class="member-name-link">BLACK</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
 <div class="col-first odd-row-color"><code>static final int</code></div>
-<div class="col-second odd-row-color"><code><a href="#WHITE" class="member-name-link">WHITE</a></code></div>
+<div class="col-second odd-row-color"><code><a href="../../display/Display.html#BLUE" class="member-name-link">BLUE</a></code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code>static final int</code></div>
-<div class="col-second even-row-color"><code><a href="#YELLOW" class="member-name-link">YELLOW</a></code></div>
+<div class="col-second even-row-color"><code><a href="../../display/Display.html#CYAN" class="member-name-link">CYAN</a></code></div>
 <div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="../../display/Display.html#GREEN" class="member-name-link">GREEN</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="../../display/Display.html#MAGENTA" class="member-name-link">MAGENTA</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="../../display/Display.html#RED" class="member-name-link">RED</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static final int</code></div>
+<div class="col-second even-row-color"><code><a href="../../display/Display.html#WHITE" class="member-name-link">WHITE</a></code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code>static final int</code></div>
+<div class="col-second odd-row-color"><code><a href="../../display/Display.html#YELLOW" class="member-name-link">YELLOW</a></code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+</div>
 </div>
 </section>
 </li>
@@ -397,83 +413,88 @@ y = 319.</div>
 like <a href="#print(java.lang.String)"><code>print(String)</code></a> — for text that already lives in a caller-owned byte buffer (e.g.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(int)" class="member-name-link">print</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(char)" class="member-name-link">print</a><wbr>(char&nbsp;character)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Prints <code>value</code> in decimal at the cursor.</div>
+<div class="block">Prints one character at the cursor with the current text size and colors, advancing the cursor.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(java.lang.String)" class="member-name-link">print</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(int)" class="member-name-link">print</a><wbr>(int&nbsp;value)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Prints <code>value</code> in decimal at the cursor.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(java.lang.String)" class="member-name-link">print</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Prints <code>text</code> at the cursor with the current text size and colors, advancing the
 cursor.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#println(java.lang.String)" class="member-name-link">println</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#println(java.lang.String)" class="member-name-link">println</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Prints <code>text</code> and then moves the cursor to the start of the next text line.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pushPixel(int)" class="member-name-link">pushPixel</a><wbr>(int&nbsp;color)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#pushPixel(int)" class="member-name-link">pushPixel</a><wbr>(int&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Writes the next pixel of the window opened by <a href="#beginPixels(int,int,int,int)"><code>beginPixels(int, int, int, int)</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readTouch()" class="member-name-link">readTouch</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#readTouch()" class="member-name-link">readTouch</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Samples the touch panel, returning whether it is currently pressed — only when two position
 and pressure samples agree, which rejects noise from the pins it shares with the display bus.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCursor(int,int)" class="member-name-link">setCursor</a><wbr>(int&nbsp;x,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCursor(int,int)" class="member-name-link">setCursor</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Moves the text cursor so the next character's top-left corner is at (<code>x</code>, <code>y</code>) pixels.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setRotation(int)" class="member-name-link">setRotation</a><wbr>(int&nbsp;value)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setRotation(int)" class="member-name-link">setRotation</a><wbr>(int&nbsp;value)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Selects <a href="#PORTRAIT"><code>PORTRAIT</code></a>, <a href="#LANDSCAPE"><code>LANDSCAPE</code></a>, <a href="#PORTRAIT_FLIPPED"><code>PORTRAIT_FLIPPED</code></a>, or
 <a href="#LANDSCAPE_FLIPPED"><code>LANDSCAPE_FLIPPED</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextColor(int,int)" class="member-name-link">setTextColor</a><wbr>(int&nbsp;foreground,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextColor(int,int)" class="member-name-link">setTextColor</a><wbr>(int&nbsp;foreground,
  int&nbsp;background)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the text foreground and background colors.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextSize(int)" class="member-name-link">setTextSize</a><wbr>(int&nbsp;size)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextSize(int)" class="member-name-link">setTextSize</a><wbr>(int&nbsp;size)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Scales text by an integer factor (1 = 6x8-pixel cells, 2 = 12x16, ...); values below 1 are treated as 1.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchPressure()" class="member-name-link">touchPressure</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchPressure()" class="member-name-link">touchPressure</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Pressure estimate of the last <a href="#readTouch()"><code>readTouch()</code></a> (0 when untouched; higher is firmer).</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchRawX()" class="member-name-link">touchRawX</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchRawX()" class="member-name-link">touchRawX</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Raw 10-bit X reading of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for calibration.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchRawY()" class="member-name-link">touchRawY</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchRawY()" class="member-name-link">touchRawY</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Raw 10-bit Y reading of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for calibration.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchX()" class="member-name-link">touchX</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchX()" class="member-name-link">touchX</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">X coordinate of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for the current rotation.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchY()" class="member-name-link">touchY</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#touchY()" class="member-name-link">touchY</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Y coordinate of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for the current rotation.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#width()" class="member-name-link">width</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#width()" class="member-name-link">width</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Current width in pixels, for the current rotation.</div>
 </div>
 </div>
@@ -482,6 +503,20 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#method-summary" title="class in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#clone()" title="clone()" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="equals(Object)" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#finalize()" title="finalize()" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#getClass()" title="getClass()" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#hashCode()" title="hashCode()" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notify()" title="notify()" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notifyAll()" title="notifyAll()" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#toString()" title="toString()" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait()" title="wait()" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long)" title="wait(long)" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="wait(long, int)" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.github.jabrena.juno.hardware.display.Display">Methods inherited from interface&nbsp;<a href="../../display/Display.html#method-summary" title="interface in io.github.jabrena.juno.hardware.display">Display</a></h3>
+<code><a href="../../display/Display.html#flush()" title="flush()">flush</a></code>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>default void</code></div>
+<div class="col-second even-row-color"><code><a href="../../display/Display.html#flush()" class="member-name-link">flush</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">Shows the drawing so far.</div>
+</div>
+</div>
+</div>
 </section>
 </li>
 </ul>
@@ -589,134 +624,6 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 <dd>
 <ul class="tag-list">
 <li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.LANDSCAPE_FLIPPED">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="BLACK">
-<h3>BLACK</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">BLACK</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.BLACK">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="WHITE">
-<h3>WHITE</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">WHITE</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.WHITE">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="RED">
-<h3>RED</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">RED</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.RED">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="GREEN">
-<h3>GREEN</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">GREEN</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.GREEN">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="BLUE">
-<h3>BLUE</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">BLUE</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.BLUE">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="YELLOW">
-<h3>YELLOW</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">YELLOW</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.YELLOW">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="CYAN">
-<h3>CYAN</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">CYAN</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.CYAN">Constant Field Values</a></li>
-</ul>
-</dd>
-</dl>
-</div>
-</section>
-</li>
-<li>
-<section class="detail" id="MAGENTA">
-<h3>MAGENTA</h3>
-<div class="horizontal-scroll">
-<div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">MAGENTA</span></div>
-<dl class="notes">
-<dt>See Also:</dt>
-<dd>
-<ul class="tag-list">
-<li><a href="../../../../../../../constant-values.html#io.github.jabrena.juno.hardware.device.tft.TftTouchShield.MAGENTA">Constant Field Values</a></li>
 </ul>
 </dd>
 </dl>
@@ -866,6 +773,10 @@ positions all follow the current rotation. Existing screen contents are not redr
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">width</span>()</div>
 <div class="block">Current width in pixels, for the current rotation.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#width()">width</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -875,6 +786,10 @@ positions all follow the current rotation. Existing screen contents are not redr
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">height</span>()</div>
 <div class="block">Current height in pixels, for the current rotation.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#height()">height</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -885,7 +800,8 @@ positions all follow the current rotation. Existing screen contents are not redr
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">color</span><wbr><span class="parameters">(int&nbsp;red,
  int&nbsp;green,
  int&nbsp;blue)</span></div>
-<div class="block">Packs 8-bit-per-channel <code>red</code>, <code>green</code>, <code>blue</code> into an RGB565 color.</div>
+<div class="block">Packs 8-bit-per-channel <code>red</code>, <code>green</code>, <code>blue</code> into an RGB565 color. Static interface methods
+are not inherited, so this delegates to <a href="../../display/Display.html#color(int,int,int)"><code>Display.color(int, int, int)</code></a> for callers of <code>TftTouchShield.color</code>.</div>
 </div>
 </section>
 </li>
@@ -895,6 +811,10 @@ positions all follow the current rotation. Existing screen contents are not redr
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fillScreen</span><wbr><span class="parameters">(int&nbsp;color)</span></div>
 <div class="block">Fills the whole screen with <code>color</code>.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#fillScreen(int)">fillScreen</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -906,6 +826,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;y,
  int&nbsp;color)</span></div>
 <div class="block">Sets the pixel at (<code>x</code>, <code>y</code>) to <code>color</code>; off-screen pixels are ignored.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#drawPixel(int,int,int)">drawPixel</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -919,6 +843,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;h,
  int&nbsp;color)</span></div>
 <div class="block">Fills a <code>w</code>x<code>h</code> rectangle whose top-left corner is (<code>x</code>, <code>y</code>), clipped to the screen.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#fillRect(int,int,int,int,int)">fillRect</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -931,6 +859,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;w,
  int&nbsp;color)</span></div>
 <div class="block">Draws a horizontal line of <code>w</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#drawHorizontalLine(int,int,int,int)">drawHorizontalLine</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -943,6 +875,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;h,
  int&nbsp;color)</span></div>
 <div class="block">Draws a vertical line of <code>h</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#drawVerticalLine(int,int,int,int)">drawVerticalLine</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -956,6 +892,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;h,
  int&nbsp;color)</span></div>
 <div class="block">Draws the 1-pixel outline of a <code>w</code>x<code>h</code> rectangle whose top-left corner is (<code>x</code>, <code>y</code>).</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#drawRect(int,int,int,int,int)">drawRect</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -968,6 +908,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;r,
  int&nbsp;color)</span></div>
 <div class="block">Fills a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>), clipped to the screen.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#fillCircle(int,int,int,int)">fillCircle</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -980,6 +924,10 @@ positions all follow the current rotation. Existing screen contents are not redr
  int&nbsp;r,
  int&nbsp;color)</span></div>
 <div class="block">Draws the 1-pixel outline of a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#drawCircle(int,int,int,int)">drawCircle</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1014,6 +962,10 @@ on screen. Push exactly <code>w * h</code> pixels before any other drawing call.
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setCursor</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
 <div class="block">Moves the text cursor so the next character's top-left corner is at (<code>x</code>, <code>y</code>) pixels.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#setCursor(int,int)">setCursor</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1023,6 +975,10 @@ on screen. Push exactly <code>w * h</code> pixels before any other drawing call.
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTextSize</span><wbr><span class="parameters">(int&nbsp;size)</span></div>
 <div class="block">Scales text by an integer factor (1 = 6x8-pixel cells, 2 = 12x16, ...); values below 1 are treated as 1.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#setTextSize(int)">setTextSize</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1034,6 +990,10 @@ on screen. Push exactly <code>w * h</code> pixels before any other drawing call.
  int&nbsp;background)</span></div>
 <div class="block">Sets the text foreground and background colors. Characters always paint their whole cell, so
 printing over older text replaces it — pad shorter strings with spaces to erase leftovers.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#setTextColor(int,int)">setTextColor</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1045,6 +1005,23 @@ printing over older text replaces it — pad shorter strings with spaces to eras
 <div class="block">Prints <code>text</code> at the cursor with the current text size and colors, advancing the
 cursor. <code>'\n'</code> moves to the start of the next text line, and text wraps at the right
 edge. Characters outside printable ASCII (32-126) are drawn as spaces.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#print(java.lang.String)">print</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="print(char)">
+<h3>print</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">print</span><wbr><span class="parameters">(char&nbsp;character)</span></div>
+<div class="block">Prints one character at the cursor with the current text size and colors, advancing the cursor.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#print(char)">print</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1076,6 +1053,10 @@ output) and would otherwise need a runtime <code>String</code>.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">println</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text)</span></div>
 <div class="block">Prints <code>text</code> and then moves the cursor to the start of the next text line.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../display/Display.html#println(java.lang.String)">println</a></code>&nbsp;in interface&nbsp;<code><a href="../../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1089,6 +1070,10 @@ and pressure samples agree, which rejects noise from the pins it shares with the
 When it is,
 <a href="#touchX()"><code>touchX()</code></a>/<a href="#touchY()"><code>touchY()</code></a> hold the pressed position in screen coordinates for the
 current rotation. Always leaves the display bus ready for drawing again.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../touch/TouchScreen.html#readTouch()">readTouch</a></code>&nbsp;in interface&nbsp;<code><a href="../../touch/TouchScreen.html" title="interface in io.github.jabrena.juno.hardware.touch">TouchScreen</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1098,6 +1083,10 @@ current rotation. Always leaves the display bus ready for drawing again.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">touchX</span>()</div>
 <div class="block">X coordinate of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for the current rotation.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../touch/TouchScreen.html#touchX()">touchX</a></code>&nbsp;in interface&nbsp;<code><a href="../../touch/TouchScreen.html" title="interface in io.github.jabrena.juno.hardware.touch">TouchScreen</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
@@ -1107,6 +1096,10 @@ current rotation. Always leaves the display bus ready for drawing again.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">touchY</span>()</div>
 <div class="block">Y coordinate of the last successful <a href="#readTouch()"><code>readTouch()</code></a>, for the current rotation.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../../touch/TouchScreen.html#touchY()">touchY</a></code>&nbsp;in interface&nbsp;<code><a href="../../touch/TouchScreen.html" title="interface in io.github.jabrena.juno.hardware.touch">TouchScreen</a></code></dd>
+</dl>
 </div>
 </section>
 </li>
