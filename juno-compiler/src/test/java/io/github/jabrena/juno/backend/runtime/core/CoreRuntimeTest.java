@@ -33,7 +33,6 @@ class CoreRuntimeTest {
         assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.MBED_PORTENTA).carrierCount()).isEqualTo(1);
-        assertThat(coreRuntimes.of(ArduinoCore.ZEPHYR).carrierCount()).isEqualTo(1);
         assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
     }
 
@@ -41,7 +40,7 @@ class CoreRuntimeTest {
     @DisplayName("Single-carrier core port selection remains byte-identical")
     void shouldKeepTheOriginalPortForSingleCarrierCores() {
         for (ArduinoCore core : new ArduinoCore[] {
-                ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR, ArduinoCore.CLASSIC_AVR
+                ArduinoCore.RENESAS_UNO, ArduinoCore.MBED_PORTENTA, ArduinoCore.CLASSIC_AVR
         }) {
             CoreRuntime runtime = coreRuntimes.of(core);
             assertThat(runtime.threadPort(resolvedFor(core), 1)).isEqualTo(runtime.threadPort(resolvedFor(core)));
@@ -154,83 +153,6 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Zephyr core keeps its own delay wrappers")
-    void shouldKeepItsOwnDelayWrappersOnZephyr() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(new String[] {runtime.delayMillisFunction(), runtime.delayMicrosFunction()})
-                .containsExactly("juno_delay", "juno_delay_microseconds");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core uses the Router Bridge for Wi-Fi either way")
-    void shouldUseTheRouterBridgeOnZephyrForWifi() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(new String[] {runtime.wifiIncludes(false), runtime.wifiIncludes(true)})
-                .containsOnly("#include <Arduino_RouterBridge.h>\n");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core provides Bridge helpers without WiFi.begin")
-    void shouldProvideBridgeWifiHelpersWithoutWifiBegin() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(runtime.wifiHelpers()).contains("Bridge.begin()", "return Bridge ? 3 : 0;")
-                .doesNotContain("WiFi.begin");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core declares a Bridge UDP socket and SSL client")
-    void shouldDeclareTheBridgeUdpSocketAndSslClientOnZephyr() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(new String[] {runtime.udpDeclaration(), runtime.httpsClientDeclaration()})
-                .containsExactly("static BridgeUDP<512> juno_udp(Bridge);", "JunoBridgeSSLClient client;");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core needs no HTTPS include")
-    void shouldNeedNoHttpsIncludeOnZephyr() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(runtime.httpsInclude()).isEmpty();
-    }
-
-    @Test
-    @DisplayName("The Zephyr core provides the Bridge SSL client helpers")
-    void shouldProvideTheBridgeSslClientHelpersOnZephyr() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(runtime.httpsHelpers()).contains("class JunoBridgeSSLClient", "connectSSL(host, port, \"\")");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core wraps its delays in the yield function")
-    void shouldWrapTheZephyrDelaysInItsYieldFunction() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(runtime.yieldFunction())
-                .contains("extern \"C\" void " + runtime.delayMillisFunction() + "(uint32_t ms)",
-                        "extern \"C\" void " + runtime.delayMicrosFunction() + "(uint32_t us)")
-                .doesNotContain("void yield()");
-    }
-
-    @Test
     @DisplayName("The classic AVR core exposes its delay functions")
     void shouldExposeTheClassicAvrDelayFunctions() {
         // Given
@@ -272,18 +194,6 @@ class CoreRuntimeTest {
         assertThat(runtime.sdHelpers(2, 8, 32, 64, 96))
                 .contains("juno_sd.begin(chipSelectPin)")
                 .doesNotContain("JunoSdSoftSpiDriver");
-    }
-
-    @Test
-    @DisplayName("The Zephyr core restores an SD chip select after SPI pin multiplexing")
-    void shouldRestoreTheSdChipSelectOnZephyr() {
-        // Given
-        CoreRuntime runtime = coreRuntimes.of(ArduinoCore.ZEPHYR);
-
-        // When & Then
-        assertThat(runtime.sdHelpers(2, 8, 32, 64, 96))
-                .contains("SPI.begin(), pinMode(chipSelectPin, OUTPUT), digitalWrite(chipSelectPin, HIGH)",
-                        "SHARED_SPI | USER_SPI_BEGIN", "SD_SCK_MHZ(25), &SPI");
     }
 
     @Test
@@ -332,15 +242,6 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Zephyr core rejects a watchdog because its subsystem is not enabled")
-    void shouldRejectAWatchdogOnZephyr() {
-        // When & Then
-        assertThatThrownBy(() -> coreRuntimes.of(ArduinoCore.ZEPHYR).watchdog(3000))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("Zephyr firmware does not enable its watchdog subsystem");
-    }
-
-    @Test
     @DisplayName("The Renesas thread port runs one carrier sized from the defaults")
     void shouldSizeTheRenesasThreadPortFromTheDefaults() {
         // When
@@ -365,17 +266,6 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The Zephyr thread port runs one carrier sized from the defaults")
-    void shouldSizeTheZephyrThreadPortFromTheDefaults() {
-        // When
-        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(resolvedFor(ArduinoCore.ZEPHYR));
-
-        // Then
-        assertThat(zephyr).contains("JUNO_SLOT_LIMIT = 0x7FFFFFFFu", "juno_zephyr_carrier_stack",
-                "JUNO_THREAD_STACK_BYTES = 4096u").doesNotContain("JUNO_MAX_THREADS");
-    }
-
-    @Test
     @DisplayName("The Renesas thread port takes the configured carrier stack")
     void shouldApplyTheConfiguredStackToTheRenesasThreadPort() {
         // Given
@@ -386,19 +276,6 @@ class CoreRuntimeTest {
 
         // Then
         assertThat(renesas).contains("JUNO_THREAD_STACK_BYTES = 1536u");
-    }
-
-    @Test
-    @DisplayName("The Zephyr thread port takes the configured carrier stack")
-    void shouldApplyTheConfiguredStackToTheZephyrThreadPort() {
-        // Given
-        ResolvedRuntimeConfig config = new RuntimeConfig(8192, OptionalInt.of(1536)).resolveFor(boardOf(ArduinoCore.ZEPHYR));
-
-        // When
-        String zephyr = coreRuntimes.of(ArduinoCore.ZEPHYR).threadPort(config);
-
-        // Then
-        assertThat(zephyr).contains("JUNO_THREAD_STACK_BYTES = 1536u");
     }
 
     static Stream<Arguments> unsupportedEsp32Features() {

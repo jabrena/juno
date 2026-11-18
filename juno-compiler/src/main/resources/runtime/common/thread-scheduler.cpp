@@ -124,7 +124,6 @@ static JunoMonitor juno_monitors[JUNO_MAX_MONITORS];
 
 ${JUNO_ORDINARY_ENTRY}
 ${JUNO_TASK_ENTRY}
-${JUNO_IO_WAITING_DECLARATION}
 
 static JunoThreadObject* juno_thread_of(int32_t handle) {
   if (handle == 0) juno_panic();
@@ -157,7 +156,6 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
     case JUNO_SLOT_JOINING_SCOPE:
       return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u
           || (slot.scope->deadline != 0u && static_cast<int32_t>(now - slot.scope->deadline) >= 0);
-    ${JUNO_WAITING_IO_CASE}
     default:
       return false;
   }
@@ -165,9 +163,7 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
 
 // The next thread after the current one that can run, or JUNO_NO_SLOT if none can. The
 // current thread comes last, so it is chosen only when nobody else is runnable.
-${JUNO_IO_REAP_DECLARATION}
 ${JUNO_PLACEMENT}static uint32_t juno_sched_pick(bool includeCurrent) {
-  ${JUNO_IO_REAP_CALL}
   uint32_t now = static_cast<uint32_t>(millis());
   uint32_t count = juno_slot_count;
   uint32_t last = includeCurrent ? count : count - 1u;

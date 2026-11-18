@@ -155,7 +155,7 @@ class AtomicsTest {
     @DisplayName("An atomic needs no scheduler or monitor")
     void shouldNeedNoSchedulerOrMonitorForAnAtomic() throws Exception {
         // Given
-        CompilationResult result = compile("ArduinoUnoQBoard", ALL_THREE);
+        CompilationResult result = compile("ArduinoUnoR4WiFiBoard", ALL_THREE);
 
         // When & Then
         assertThat(result.runtimeShim()).doesNotContain("juno_thread", "juno_monitor");
@@ -174,7 +174,7 @@ class AtomicsTest {
     }
 
     @ParameterizedTest(name = "{0} shim compiles as C++")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("Both ports' runtime shims compile as C++")
     void shouldCompileBothPortsRuntimeShimsAsCpp(String board) throws Exception {
         // Given

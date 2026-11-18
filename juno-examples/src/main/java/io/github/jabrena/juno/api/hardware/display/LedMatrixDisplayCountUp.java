@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.display;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -12,7 +11,7 @@ import io.github.jabrena.juno.util.Delay;
  * uses for its panel. The matrix is one color and 12 or 13 pixels wide, so the digit is centered from
  * {@link Display#width()} and the frame is sent with {@link Display#flush()}.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class LedMatrixDisplayCountUp {
     private static final Display DISPLAY = MCU.getDisplay();
     private static final int GLYPH_WIDTH = 5;

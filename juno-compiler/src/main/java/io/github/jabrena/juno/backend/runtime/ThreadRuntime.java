@@ -9,8 +9,8 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * {@code StructuredTaskScope} subtasks and {@code main} share that one scheduler and are all preemptive, as described
  * below: a subtask is an ordinary thread with a scope, not a second scheduling policy.
  *
- * <p>On the Thumb-2 boards preemption is asynchronous: a periodic tick ({@code SysTick} on the UNO R4, a Zephyr
- * {@code k_timer} on the UNO Q) interrupts whatever runs. When the interrupted instruction belongs to the generated
+ * <p>On the Thumb-2 boards preemption is asynchronous: a periodic tick ({@code SysTick} on the UNO R4) interrupts
+ * whatever runs. When the interrupted instruction belongs to the generated
  * Java code (between {@code juno_java_code_start} and {@code juno_java_code_end}) the tick rewrites the exception
  * frame's return address so that, the moment the interrupt returns, the thread enters
  * {@code juno_preempt_trampoline}: it saves every register the interrupted code may be using (the caller-saved
@@ -31,10 +31,10 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * CPU once its time slice has expired, so neither a spinning loop nor a loop-free recursion can starve the others.
  *
  * <p>Only how a stack is created, how control moves between two of them and where the tick comes from differ per
- * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #zephyrPort},
+ * board; that lives in the {@link CoreRuntime}'s port ({@link #renesasPort}, {@link #mbedPort},
  * {@link #esp32Port}, {@link #avrPort}): the UNO R4 has no RTOS, so a few lines of assembly swap stack pointers; the
- * UNO Q already runs on Zephyr and the Nano ESP32 on FreeRTOS, whose own threads carry the stacks while a baton
- * semaphore keeps exactly one of them running Java code. The Nano ESP32 is preempted at safepoints, like AVR.
+ * Portenta H7 already runs on Mbed OS and the Nano ESP32 on FreeRTOS, whose own threads carry the stacks while a
+ * baton semaphore keeps exactly one of them running Java code. The Nano ESP32 is preempted at safepoints, like AVR.
  */
 public final class ThreadRuntime {
     private final IoRuntime ioRuntime = new IoRuntime();
@@ -79,19 +79,6 @@ public final class ThreadRuntime {
     }
 
     /**
-     * The UNO Q's port: main keeps its Zephyr thread and every other Juno thread is a continuation on one carrier, a
-     * second Zephyr thread whose stack holds the continuations' {@code stackBytes} below the switcher. main and the
-     * carrier hand a baton to each other, so only one runs Java code and the runtime needs no other locking; while the
-     * thread on the carrier waits for its I/O worker it stays pinned there. The preemption tick is a Zephyr
-     * {@code k_timer}, whose expiry runs in the system clock's interrupt: Zephyr threads run on the process stack, so
-     * {@code psp} holds the interrupted thread's exception frame.
-     */
-    public String zephyrPort(int stackBytes) {
-        return runtimeSource.load("zephyr/thread-port.cpp")
-                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
-    }
-
-    /**
      * The Portenta H7's Mbed OS port: every Juno thread is an Mbed RTOS thread with a caller-owned stack from the
      * Juno arena. A semaphore baton keeps exactly one Mbed thread inside the Juno scheduler at a time, while the
      * stack ranges remain available to the collector even when a thread is parked by the RTOS.
@@ -102,7 +89,7 @@ public final class ThreadRuntime {
     }
 
     /**
-     * The Nano ESP32's port: like the UNO Q's, every Juno thread is an RTOS task (here FreeRTOS, which the
+     * The Nano ESP32's port: like the Portenta H7's, every Juno thread is an RTOS task (here FreeRTOS, which the
      * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
      * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.
      */
@@ -117,14 +104,6 @@ public final class ThreadRuntime {
         return carrierCount == 1 ? esp32Port(stackBytes) : runtimeSource.load("esp32/thread-port-dual.cpp")
                 .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
-    }
-
-    /**
-     * The UNO Q's I/O worker ({@link CoreRuntime#ioWorker()}), emitted after its thread port when the program makes
-     * waiting device calls.
-     */
-    public String zephyrIoWorker() {
-        return runtimeSource.load("zephyr/io-worker.cpp");
     }
 
     /**
@@ -144,18 +123,17 @@ public final class ThreadRuntime {
      * @param asynchronousPreemption whether the port's tick preempts generated code at any instruction (Thumb-2:
      *     the port defines {@code juno_port_preempt_start} and its tick calls {@code juno_preempt_tick}); otherwise
      *     (AVR) a thread is preempted at the safepoints the backend emits once its time slice has expired
-     * @param ioWorker whether the port runs waiting device calls on its I/O worker ({@link CoreRuntime#ioWorker()})
      * @param maxHttpRequests the core's safe number of simultaneous HTTP transport leases
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    String scheduler(boolean asynchronousPreemption, boolean ioWorker, int maxHttpRequests, String delayFunction,
+    String scheduler(boolean asynchronousPreemption, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId,
                             int interruptedExceptionClassId, int brokenBarrierExceptionClassId) {
-        return scheduler(asynchronousPreemption, ioWorker, maxHttpRequests, delayFunction, stackScanFunction,
+        return scheduler(asynchronousPreemption, maxHttpRequests, delayFunction, stackScanFunction,
                 exceptions, threadEntry, taskCallableEntry, structuredTasks, scopedValues,
                 failedExceptionClassId, illegalStateExceptionClassId, interruptedExceptionClassId,
                 brokenBarrierExceptionClassId, 1);
@@ -165,7 +143,7 @@ public final class ThreadRuntime {
      * Generates the common scheduler with the number of physical carriers supplied by the core. Keeping the old
      * overload above is deliberate: all single-carrier generated text follows the original template exactly.
      */
-    String scheduler(boolean asynchronousPreemption, boolean ioWorker, int maxHttpRequests, String delayFunction,
+    String scheduler(boolean asynchronousPreemption, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
@@ -218,13 +196,7 @@ public final class ThreadRuntime {
         String preemption = asynchronousPreemption ? asynchronousPreemption(carrierCount) : safepointPreemption(carrierCount);
         SchedulerCarriers carriers = SchedulerCarriers.of(carrierCount);
         String startPreemption = asynchronousPreemption ? carriers.startPreemption() : "";
-        String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(ioWorker, maxHttpRequests))
-                .replace("${JUNO_WAITING_IO_CASE}", ioWorker
-                        ? "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);" : "")
-                .replace("${JUNO_IO_WAITING_DECLARATION}", ioWorker ? "static bool juno_io_waiting(uint32_t slot);" : "")
-                .replace("${JUNO_IO_REAP_DECLARATION}", ioWorker
-                        ? "static void juno_io_reap();\nstatic bool juno_io_waiting(uint32_t slot);" : "")
-                .replace("${JUNO_IO_REAP_CALL}", ioWorker ? "juno_io_reap();" : "")
+        String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(maxHttpRequests))
                 .replace("${JUNO_PREEMPTION}", preemption)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)
                 .replace("${JUNO_PENDING_SWAP}", pendingSave)

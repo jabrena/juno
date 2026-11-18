@@ -4,7 +4,7 @@
  *
  * <p>This package holds what both code generators share: frame and program layout, the calling convention and
  * {@link io.github.jabrena.juno.backend.IntrinsicLowering}. {@link io.github.jabrena.juno.backend.thumb2} generates
- * GNU ARM Thumb-2 assembly for the UNO R4 WiFi and the UNO Q, {@link io.github.jabrena.juno.backend.avr} AVR assembly
+ * GNU ARM Thumb-2 assembly for the UNO R4 WiFi, Pico 2 W and Portenta H7, {@link io.github.jabrena.juno.backend.avr} AVR assembly
  * for the UNO R3. Both assemble the shim through {@link io.github.jabrena.juno.backend.runtime}, and reach a
  * board's {@link io.github.jabrena.juno.board.ArduinoCore} only through
  * {@link io.github.jabrena.juno.backend.runtime.spi.CoreRuntime}.

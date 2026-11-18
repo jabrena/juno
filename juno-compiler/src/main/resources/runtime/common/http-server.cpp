@@ -185,7 +185,6 @@ static void juno_http_server_respond_bytes(int32_t status, const char* contentTy
                                              const char* body, int32_t bodyLength) {
   JunoIoGuard guard(JUNO_IO_NETWORK);
   JunoHttpServerRespondJob job = {status, contentType, body, bodyLength};
-  ${JUNO_HTTP_SERVER_RESPOND_PREPARE}
   juno_io_offload(juno_http_server_respond_job, &job);
 }
 

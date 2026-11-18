@@ -12,11 +12,6 @@ public enum ArduinoCore {
     /** {@code arduino:renesas_uno}: the UNO R4's classic, non-RTOS core. */
     RENESAS_UNO("Renesas", Architecture.THUMB2),
     /**
-     * {@code arduino:zephyr}: provides its own {@code yield()} and inlines {@code delay()}/
-     * {@code delayMicroseconds()}, so generated code must reach those through shim functions.
-     */
-    ZEPHYR("Zephyr", Architecture.THUMB2),
-    /**
      * {@code arduino:esp32}: the Nano ESP32's FreeRTOS-based core, whose {@code pinMode}/{@code digitalWrite} are
      * macros mapping the board's printed pin numbers to ESP32-S3 GPIO numbers.
      */

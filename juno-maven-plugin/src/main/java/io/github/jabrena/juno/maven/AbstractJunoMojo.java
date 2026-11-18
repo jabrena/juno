@@ -46,7 +46,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private boolean gcLog;
 
     /**
-     * Target board (e.g. {@code arduino-uno-r4-wifi}, {@code arduino-uno-q}), required when the entry point has no
+     * Target board (e.g. {@code arduino-uno-r4-wifi}, {@code arduino-nano-esp32}), required when the entry point has no
      * {@code @Board} annotation or declares more than one board; the compiler fails rather than picking one silently.
      * Ignored when the entry point declares a single board.
      */
@@ -64,7 +64,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
 
     /**
      * Stack of each carrier, the stack virtual threads run on (on AVR boards, of each extra task), in the JVM's
-     * {@code -Xss} syntax; a multiple of 8. It must fit the deepest virtual thread. Defaults to the board's own size (512 bytes on the AVR boards, 2048 on the UNO R4 WiFi, 4096 on the UNO Q and Pico 2 W, 8192 on the ESP32 boards). Each board also has a maximum; a larger value fails the build with the maximum named.
+     * {@code -Xss} syntax; a multiple of 8. It must fit the deepest virtual thread. Defaults to the board's own size (512 bytes on the AVR boards, 2048 on the UNO R4 WiFi, 4096 on the Pico 2 W, 8192 on the ESP32 boards and the Portenta H7). Each board also has a maximum; a larger value fails the build with the maximum named.
      */
     @Parameter(property = "juno.Xss")
     private @Nullable String threadStackSize;

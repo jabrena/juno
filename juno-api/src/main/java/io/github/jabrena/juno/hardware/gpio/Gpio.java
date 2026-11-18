@@ -30,7 +30,7 @@ public interface Gpio {
 
     void toggle(int pin);
 
-    /** The linked board's onboard LED pin: D13 on the UNO R4 WiFi and Nano ESP32, LED3 red on the UNO Q. */
+    /** The linked board's onboard LED pin: e.g. D13 on the UNO R4 WiFi and Nano ESP32. */
     int getBuiltinLed();
 
     /**

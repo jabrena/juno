@@ -26,10 +26,10 @@ class BoardModelTest {
     @DisplayName("A whole-program emulator can say which board it is pretending to be")
     void shouldHandOutTheReplacementBoardModel() {
         // When
-        NativeBoardModel.setBoardModel(BoardModel.UNO_Q);
+        NativeBoardModel.setBoardModel(BoardModel.PORTENTA_H7);
 
         // Then
-        assertThat(MCU.getBoardModel()).isEqualTo(BoardModel.UNO_Q);
+        assertThat(MCU.getBoardModel()).isEqualTo(BoardModel.PORTENTA_H7);
     }
 
     @Test

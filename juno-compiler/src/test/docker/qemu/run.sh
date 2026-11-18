@@ -8,10 +8,7 @@ CPU="-mcpu=cortex-m4 -mthumb"
 FLAGS="$CPU -mfloat-abi=hard -mfpu=fpv4-sp-d16 -Os -ffunction-sections -fdata-sections -fno-exceptions -fno-rtti -I/harness"
 arm-none-eabi-gcc $CPU -c program.S -o program.o
 arm-none-eabi-g++ $FLAGS -include Arduino.h -c shim.cpp -o shim.o
-# The UNO Q's shim runs on Zephyr, whose threads use the process stack; the stand-in kernel does the same.
-HARNESS=""
-if grep -q "zephyr/kernel.h" shim.cpp; then HARNESS="-DJUNO_HARNESS_PSP"; fi
-arm-none-eabi-g++ $FLAGS $HARNESS -DJUNO_ENTRY="$2" -c /harness/startup.cpp -o startup.o
+arm-none-eabi-g++ $FLAGS -DJUNO_ENTRY="$2" -c /harness/startup.cpp -o startup.o
 # None of the generated shim or harness uses the C++ standard library. Link with gcc so it does not
 # implicitly request libstdc++. This keeps the very large libstdc++-arm-none-eabi-newlib package out
 # of the QEMU image while retaining g++ for compiling the C++ translation units above.

@@ -1,13 +1,12 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** 64-bit integral arithmetic and shifts. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
 public final class LongArithmetic {
     private LongArithmetic() {
     }

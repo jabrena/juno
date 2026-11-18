@@ -3,8 +3,6 @@ package io.github.jabrena.juno.analysis;
 import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.RuntimeLimits;
 import io.github.jabrena.juno.board.ArduinoCore;
-import io.github.jabrena.juno.board.BoardMemoryProfile;
-import io.github.jabrena.juno.board.MemoryAuthority;
 import io.github.jabrena.juno.classfile.FieldRef;
 import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
@@ -139,14 +137,6 @@ public final class RuntimeRiskAnalyzer {
         int staticFieldBytes = staticFields.stream()
                 .mapToInt(field -> allocationSizeEstimator.descriptorSize(field.descriptor())).sum();
         int estimatedStaticRam = config.arenaBytes() + staticFieldBytes + constantArrayBytes + 4;
-        BoardMemoryProfile profile = config.board().memoryProfile();
-        if (profile.authority() == MemoryAuthority.LOADER_POOL
-                && (long) estimatedStaticRam * 10 > (long) profile.internalSramBytes() * 9) {
-            findings.add(new RuntimeRisk("JUNO-RISK-014", RiskSeverity.WARNING, program.entryPoint(),
-                    "estimated arena and static RAM of " + estimatedStaticRam + " bytes is above 90% of the "
-                            + profile.internalSramBytes() + " byte " + config.board().displayName()
-                            + " loader pool; the sketch's code shares that pool, so it may not load at boot"));
-        }
         int maxDepth = recursive.isEmpty() ? callGraphMetrics.maximumStartupCallDepth(program, calls) : -1;
         int maxStack = recursive.isEmpty() ? callGraphMetrics.maximumStartupStack(program, calls, frames) : -1;
         findings.sort(this::compareFindings);

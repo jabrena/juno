@@ -3,9 +3,8 @@ ${JUNO_UDP_DECLARATION}
 static bool juno_udp_listening = false;
 
 static IPAddress juno_udp_discovery_group() {
-  // Limited broadcast. A multicast group would be tidier, but neither board really joins one:
-  // the UNO Q's BridgeUDP::beginMulticast ignores the address and just binds the port, and
-  // the UNO R4 WiFi's modem cannot join at all. A socket bound to the port receives broadcast.
+  // Limited broadcast. A multicast group would be tidier, but the UNO R4 WiFi's modem cannot
+  // join one. A socket bound to the port receives broadcast.
   return IPAddress(255, 255, 255, 255);
 }
 

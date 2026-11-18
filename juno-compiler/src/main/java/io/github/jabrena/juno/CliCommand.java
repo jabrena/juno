@@ -26,7 +26,7 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
 
     record Help() implements CliCommand {
         private static final String USAGE = """
-                Juno - Java AOT compiler for Arduino UNO R3, UNO R4 and UNO Q
+                Juno - Java AOT compiler for Arduino and compatible boards
 
                 Usage:
                   java -jar juno.jar compile --main <class> [options]
@@ -35,7 +35,7 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                 compile options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
                   --output, -o <file>       Generated .S file (default: build/juno/<Main>/<Main>.S)
-                  --board <id>              Target board (arduino-uno-r3, arduino-uno-r4-wifi, arduino-uno-q);
+                  --board <id>              Target board (e.g. arduino-uno-r4-wifi, arduino-nano-esp32);
                                             required when the entry point has no
                                             @Board annotation or when @Board declares more than one board
                   --gc-log                  Have the generated garbage collector print one Serial
@@ -51,12 +51,12 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
                 The target board is read from the entry-point class's @Board annotation
                 (io.github.jabrena.juno.annotations.Board), or from the required --board option when the
                 class has no annotation. @Board may declare more than one board (e.g.
-                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})), in which case --board picks which one
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})), in which case --board picks which one
                 this build compiles for.
 
                 inspect options:
                   --classpath, -cp <paths>  Class directories or JARs (default: target/classes)
-                  --board <id>              Target board (arduino-uno-r3, arduino-uno-r4-wifi, arduino-uno-q);
+                  --board <id>              Target board (e.g. arduino-uno-r4-wifi, arduino-nano-esp32);
                                             required when the entry point has no
                                             @Board annotation or when @Board declares more than one board
                   --ir                      Print the lowered/optimized Juno IR per reachable method

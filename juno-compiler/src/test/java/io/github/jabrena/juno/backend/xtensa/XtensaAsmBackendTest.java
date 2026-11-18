@@ -579,7 +579,7 @@ class XtensaAsmBackendTest {
         // Then
         assertThat(result.runtimeShim()).contains("juno_http_server_begin(", "WiFiServer(static_cast<uint16_t>(port))",
                 "#include <new>");
-        assertThat(result.runtimeShim()).doesNotContain("BridgeTCPServer", "mbedtls", "juno_http_server_begin_tls");
+        assertThat(result.runtimeShim()).doesNotContain("mbedtls", "juno_http_server_begin_tls");
     }
 
     @Test

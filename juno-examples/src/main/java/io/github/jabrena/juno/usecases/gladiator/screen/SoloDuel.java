@@ -13,7 +13,7 @@ import io.github.jabrena.juno.usecases.gladiator.gladiator.Senses;
 import io.github.jabrena.juno.usecases.gladiator.net.GladiatorProtocol;
 
 /**
- * The local arena and CPU opponent used by UNO Q Solo mode, independent of display and touch input: a new
+ * The local arena and CPU opponent used by Solo mode, independent of display and touch input: a new
  * {@link Coliseum}, the authoritative {@link Match} on it, and both gladiators' bodies and brains.
  */
 public final class SoloDuel {

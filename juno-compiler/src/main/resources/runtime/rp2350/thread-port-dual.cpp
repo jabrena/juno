@@ -2,7 +2,7 @@
 // Like the ESP32's: each slot owns one FreeRTOS task pinned to a core, created the first time the slot is used and
 // kept for every later thread in that slot, with its stack and TCB from the FreeRTOS heap and its baton static. main is arduino-pico's CORE0 task.
 // The preemption tick is a hardware alarm per core (FreeRTOS owns SysTick); its handler finds the interrupted task's
-// frame on the process stack, as the UNO Q's does.
+// frame on the process stack.
 #include <FreeRTOS.h>
 #include <task.h>
 #include <semphr.h>

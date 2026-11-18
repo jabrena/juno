@@ -30,7 +30,7 @@ public enum Capability {
             return board.displayName() + " has no onboard LED matrix";
         }
     },
-    /** {@code MCU.getDisplay()}: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi and the UNO Q. */
+    /** {@code MCU.getDisplay()}: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi. */
     DISPLAY("MCU.getDisplay") {
         @Override
         public String unsupportedReason(Board board) {
@@ -170,18 +170,12 @@ public enum Capability {
     WATCHDOG("@Watchdog") {
         @Override
         public String unsupportedReason(Board board) {
-            if (board == Board.UNO_Q) {
-                return "UNO Q's Zephyr firmware does not enable its watchdog subsystem";
-            }
             return board.displayName() + "'s " + board.core().displayName() + " core has no WDT library";
         }
     },
     USB_HID("Mouse") {
         @Override
         public String unsupportedReason(Board board) {
-            if (board == Board.UNO_Q) {
-                return "UNO Q's Zephyr core has no HID.h, which the Mouse library needs";
-            }
             return board.displayName() + " has no native USB port to act as a HID device";
         }
     },

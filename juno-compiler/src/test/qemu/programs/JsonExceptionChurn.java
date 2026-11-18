@@ -1,7 +1,6 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.net.http.Json;
@@ -13,7 +12,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * method boundary, thousands of times: far more exception and view objects than the arena holds at once, so the
  * program only finishes if the collector reclaims each caught exception (and each view) once nothing refers to it.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
 public final class JsonExceptionChurn {
     private static final String DOCUMENT = "{\"rating\":1712,\"fen\":\"8/8 w\",\"plays\":null}";
     private static final String[] NAMES = {"rating", "fen", "plays", "missing"};

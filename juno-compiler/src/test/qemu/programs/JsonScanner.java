@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -8,7 +7,7 @@ import io.github.jabrena.juno.hardware.net.http.Json;
 import io.github.jabrena.juno.hardware.net.http.JsonValue;
 
 /** Json's scanner, compiled from Java like the program: views, validation, every conversion and UTF-8 decoding. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class JsonScanner {
     private static final byte[] DOCUMENT = new byte[256];
 

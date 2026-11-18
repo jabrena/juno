@@ -1,13 +1,12 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** javac's StringConcatFactory bootstrap across every supported operand kind, compared with OpenJDK. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public class StringConcat {
 
     public static void main(String[] args) {

@@ -21,7 +21,7 @@ class ArduinoCliBoardsTest {
 
         assertThat(boards.includes(Board.UNO_R3)).isTrue();
         assertThat(boards.includes(Board.UNO_R4_WIFI)).isTrue();
-        assertThat(boards.includes(Board.UNO_Q)).isFalse();
+        assertThat(boards.includes(Board.NANO_ESP32)).isFalse();
     }
 
     @Test

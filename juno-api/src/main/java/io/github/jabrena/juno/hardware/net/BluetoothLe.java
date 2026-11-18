@@ -5,7 +5,7 @@ package io.github.jabrena.juno.hardware.net;
  * exchanges messages with one characteristic of that service. It knows no protocol; a protocol built on it, such as
  * {@link io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub}, frames its own messages.
  *
- * <p>It exists only on the boards with a BLE adapter: UNO R4 WiFi and UNO Q
+ * <p>It exists only on the boards with a BLE adapter: UNO R4 WiFi
  * ({@link io.github.jabrena.juno.hardware.MCU#getBluetoothLe()}), Nano ESP32, AI Thinker ESP32-CAM, M5Stack
  * Cardputer and Raspberry Pi Pico 2 W. The UNO R3 has none, so the compiler rejects those accessor
  * calls. Get it once, at startup, and pass it to the protocols built on it.

@@ -21,7 +21,6 @@ public interface BoardMemory {
 
     /**
      * Bytes of program flash the running image occupies: code, constants and the initial values of static data.
-     * On the UNO Q, whose sketch is loaded from its own flash partition, it is the size of that sketch image.
      */
     int flashUsedBytes();
 

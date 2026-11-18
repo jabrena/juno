@@ -38,10 +38,9 @@ class BoardTest {
     @Test
     @DisplayName("Keeps UNO generations separate from other board families")
     void shouldClassifyBoardsByTheirOwnFamily() {
-        assertThat(UnoGeneration.values()).containsExactly(UnoGeneration.R3, UnoGeneration.R4, UnoGeneration.Q);
+        assertThat(UnoGeneration.values()).containsExactly(UnoGeneration.R3, UnoGeneration.R4);
         assertThat(Board.UNO_R3.family()).isEqualTo(UnoGeneration.R3);
         assertThat(Board.UNO_R4_WIFI.family()).isEqualTo(UnoGeneration.R4);
-        assertThat(Board.UNO_Q.family()).isEqualTo(UnoGeneration.Q);
         assertThat(Board.NANO_ESP32.family()).isEqualTo(NanoFamily.NANO_ESP32);
         assertThat(Board.AI_THINKER_ESP32_CAM.family()).isEqualTo(Esp32Family.AI_THINKER_ESP32_CAM);
         assertThat(Board.M5_CARDPUTER.family()).isEqualTo(M5StackFamily.CARDPUTER_ADV);
@@ -87,25 +86,14 @@ class BoardTest {
                 arguments(Board.UNO_R4_WIFI, Capability.LED_MATRIX, true),
                 arguments(Board.UNO_R4_WIFI, Capability.USB_HID, true),
                 arguments(Board.UNO_R4_WIFI, Capability.HTTPS_SERVER, false),
-                arguments(Board.UNO_Q, Capability.WIFI, true),
-                arguments(Board.UNO_Q, Capability.CLASS_INHERITANCE, true),
-                arguments(Board.UNO_Q, Capability.HTTPS_CLIENT, true),
-                arguments(Board.UNO_Q, Capability.LED_MATRIX, true),
-                arguments(Board.UNO_Q, Capability.HTTP_SERVER, true),
-                arguments(Board.UNO_Q, Capability.HTTPS_SERVER, true),
-                arguments(Board.UNO_Q, Capability.SMTP_STARTTLS, false),
-                arguments(Board.UNO_Q, Capability.WATCHDOG, false),
-                arguments(Board.UNO_Q, Capability.USB_HID, false),
                 arguments(Board.UNO_R4_WIFI, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.NANO_ESP32, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.M5_CARDPUTER, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.PICO_2_W, Capability.JDK_HTTP_CLIENT, true),
                 arguments(Board.PORTENTA_H7, Capability.JDK_HTTP_CLIENT, true),
-                arguments(Board.UNO_Q, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_R3, Capability.JDK_HTTP_CLIENT, false),
                 arguments(Board.UNO_R4_WIFI, Capability.JSON, true),
-                arguments(Board.UNO_Q, Capability.JSON, true),
                 arguments(Board.NANO_ESP32, Capability.JSON, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.JSON, true),
                 arguments(Board.M5_CARDPUTER, Capability.JSON, true),
@@ -152,7 +140,6 @@ class BoardTest {
                 arguments(Board.NANO_ESP32, Capability.M5_DISPLAY, false),
                 arguments(Board.M5_CARDPUTER, Capability.DISPLAY, true),
                 arguments(Board.UNO_R4_WIFI, Capability.DISPLAY, true),
-                arguments(Board.UNO_Q, Capability.DISPLAY, true),
                 arguments(Board.NANO_ESP32, Capability.DISPLAY, false),
                 arguments(Board.M5_CARDPUTER, Capability.M5_KEYBOARD, true),
                 arguments(Board.NANO_ESP32, Capability.M5_KEYBOARD, false),
@@ -194,7 +181,6 @@ class BoardTest {
     @Test
     @DisplayName("The Uno boards resolve from their board IDs")
     void shouldResolveTheUnoBoardsFromTheirIds() {
-        assertThat(Board.fromId("arduino-uno-q")).isEqualTo(Board.UNO_Q);
         assertThat(Board.fromId("arduino-uno-r4-wifi")).isEqualTo(Board.UNO_R4_WIFI);
         assertThat(Board.fromId("arduino-uno-r3")).isEqualTo(Board.UNO_R3);
         assertThatThrownBy(() -> Board.fromId("arduino-one-q"))
@@ -638,110 +624,6 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO Q runs under the Zephyr core")
-    void shouldRunTheUnoQUnderTheZephyrCore() throws Exception {
-        // Given
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnUnoQ", unoQDelaySource());
-
-        // When
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.OnUnoQ", Optional.empty());
-
-        // Then
-        assertThat(program.board()).isEqualTo(Board.UNO_Q);
-    }
-
-    @Test
-    @DisplayName("The UNO Q board carries its FQBN")
-    void shouldGiveTheUnoQItsFqbn() throws Exception {
-        // Given
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnUnoQ", unoQDelaySource());
-        Program program = CompilerTestSupport.link(temporaryDirectory, "demo.OnUnoQ", Optional.empty());
-
-        // When & Then
-        assertThat(program.board().fqbn()).isEqualTo(Board.UNO_Q.fqbn());
-    }
-
-    @Test
-    @DisplayName("The UNO Q calls the Zephyr delay wrappers and not the Arduino core functions")
-    void shouldCallTheZephyrDelayWrappersOnTheUnoQ() throws Exception {
-        // Given
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnUnoQ", unoQDelaySource());
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OnUnoQ");
-
-        // When & Then
-        // Zephyr inlines delay()/delayMicroseconds() and provides yield() itself.
-        assertThat(result.assembly()).contains("bl juno_delay\n", "bl juno_delay_microseconds\n")
-                .doesNotContain("bl delay\n", "bl delayMicroseconds\n");
-    }
-
-    @Test
-    @DisplayName("The UNO Q shim defines the Zephyr delay and omits the LED matrix library")
-    void shouldDefineTheZephyrDelayAndOmitTheLedMatrixLibraryOnTheUnoQ() throws Exception {
-        // Given
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnUnoQ", unoQDelaySource());
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.OnUnoQ");
-
-        // When & Then
-        assertThat(result.runtimeShim()).contains("extern \"C\" void juno_delay(uint32_t ms)")
-                .doesNotContain("extern \"C\" void yield()", "Arduino_LED_Matrix", "ArduinoLEDMatrix");
-    }
-
-    @Test
-    @DisplayName("The UNO Q drives its thirteen-column LED matrix through the Zephyr library")
-    void shouldDriveTheThirteenColumnLedMatrixThroughTheZephyrLibrary() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                @Board(ArduinoUnoQBoard.class)
-                public final class MatrixOnUnoQ {
-                    public static void main(String[] args) {
-                        MCU.getDisplay();
-                        MCU.getDisplay().flush();
-                        int columns = MCU.getDisplay().width();
-                        MCU.getDisplay().flush();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MatrixOnUnoQ", source);
-        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MatrixOnUnoQ");
-
-        // When & Then
-        // Zephyr's library is Arduino_LED_Matrix and a 13x8 frame (104 pixels) needs four words.
-        assertThat(result.runtimeShim()).contains("#include \"Arduino_LED_Matrix.h\"",
-                "static Arduino_LED_Matrix juno_led_matrix;", "const uint32_t frame[4] = {")
-                .doesNotContain("ArduinoLEDMatrix", "static_cast<void>(word3)");
-    }
-
-    @Test
-    @DisplayName("The UNO Q LED matrix has thirteen columns in the assembly")
-    void shouldUseThirteenColumnsForTheUnoQLedMatrix() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                @Board(ArduinoUnoQBoard.class)
-                public final class MatrixOnUnoQ {
-                    public static void main(String[] args) {
-                        MCU.getDisplay();
-                        MCU.getDisplay().flush();
-                        int columns = MCU.getDisplay().width();
-                        MCU.getDisplay().flush();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.MatrixOnUnoQ", source);
-
-        // When & Then
-        assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.MatrixOnUnoQ").assembly())
-                .contains("#13");
-    }
-
-    @Test
     @DisplayName("The UNO R4 keeps its own yield and LED matrix")
     void shouldKeepItsOwnYieldAndLedMatrixOnTheUnoR4() throws Exception {
         // Given
@@ -774,42 +656,16 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO Q has no watchdog")
-    void shouldRejectAWatchdogOnTheUnoQ() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.annotations.Watchdog;
-                import io.github.jabrena.juno.util.Delay;
-                @Board(ArduinoUnoQBoard.class)
-                @Watchdog(timeoutMillis = 3000)
-                public final class WatchdogOnUnoQ {
-                    public static void main(String[] args) {
-                        Delay.millis(1);
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WatchdogOnUnoQ", source);
-
-        // When & Then
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WatchdogOnUnoQ", Optional.empty()))
-                .isInstanceOf(CompileException.class)
-                .hasMessageContaining("UNO Q's Zephyr firmware does not enable its watchdog subsystem");
-    }
-
-    @Test
     @DisplayName("Declaring multiple boards without a requested board fails")
     void shouldFailWhenMultipleBoardsAreDeclaredWithoutARequestedBoard() throws Exception {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
+                @Board({ArduinoPortentaH7Board.class, ArduinoUnoR4WiFiBoard.class})
                 public final class Portable {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -822,7 +678,7 @@ class BoardTest {
         assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.Portable", Optional.empty()))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("@Board declares multiple boards")
-                .hasMessageContaining("UNO Q")
+                .hasMessageContaining("Portenta H7")
                 .hasMessageContaining("UNO R4 WiFi");
     }
 
@@ -832,11 +688,11 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
+                @Board({ArduinoPortentaH7Board.class, ArduinoUnoR4WiFiBoard.class})
                 public final class Portable {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -847,7 +703,7 @@ class BoardTest {
 
         // When & Then
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Portable",
-                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
+                Optional.of(Board.PORTENTA_H7.id())).board()).isEqualTo(Board.PORTENTA_H7);
     }
 
     @Test
@@ -856,11 +712,11 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
+                @Board({ArduinoPortentaH7Board.class, ArduinoUnoR4WiFiBoard.class})
                 public final class Portable {
                     public static void main(String[] args) {
                         Delay.millis(1);
@@ -880,20 +736,20 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.util.Delay;
-                @Board(ArduinoUnoQBoard.class)
-                public final class OnlyUnoQ {
+                @Board(ArduinoPortentaH7Board.class)
+                public final class OnlyPortenta {
                     public static void main(String[] args) {
                         Delay.millis(1);
                     }
                 }
                 """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnlyUnoQ", source);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.OnlyPortenta", source);
 
         // When & Then
-        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.OnlyUnoQ",
+        assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.OnlyPortenta",
                 Optional.of(Board.UNO_R4_WIFI.id())))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("is not one of @Board's declared boards");
@@ -916,7 +772,7 @@ class BoardTest {
 
         // When & Then
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.Unrestricted",
-                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
+                Optional.of(Board.PORTENTA_H7.id())).board()).isEqualTo(Board.PORTENTA_H7);
     }
 
     @Test
@@ -939,55 +795,6 @@ class BoardTest {
                 Optional.of("arduino-mega")))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("Unknown board 'arduino-mega'");
-    }
-
-    @Test
-    @DisplayName("A portable program using the LED matrix links for each declared board")
-    void shouldLinkAPortableLedMatrixProgramForEachDeclaredBoard() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
-                public final class PortableWithLedMatrix {
-                    public static void main(String[] args) {
-                        MCU.getDisplay();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableWithLedMatrix", source);
-
-        // When & Then
-        // Both boards have an LED matrix (12x8 and 13x8), so each declared board builds the same source.
-        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
-                Optional.of(Board.UNO_R4_WIFI.id())).board()).isEqualTo(Board.UNO_R4_WIFI);
-    }
-
-    @Test
-    @DisplayName("The portable LED matrix program also links for the UNO Q")
-    void shouldLinkThePortableLedMatrixProgramForTheUnoQ() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                @Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})
-                public final class PortableWithLedMatrix {
-                    public static void main(String[] args) {
-                        MCU.getDisplay();
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableWithLedMatrix", source);
-
-        // When & Then
-        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableWithLedMatrix",
-                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
     }
 
     @Test
@@ -1022,13 +829,13 @@ class BoardTest {
         // Given
         String source = """
                 package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
-                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub();
@@ -1041,10 +848,9 @@ class BoardTest {
         CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortableTrain", source);
 
         // When & Then
-        // Both boards provide Bluetooth LE: the R4 WiFi through its ESP32-S3, the UNO Q through
-        // its Linux side's adapter, tunnelled over Arduino_RouterBridge.
+        // Both boards provide Bluetooth LE: the R4 WiFi through its ESP32-S3, the Portenta H7 through its Murata module.
         assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.PortableTrain",
-                Optional.of(Board.UNO_Q.id())).board()).isEqualTo(Board.UNO_Q);
+                Optional.of(Board.PORTENTA_H7.id())).board()).isEqualTo(Board.PORTENTA_H7);
     }
 
     @Test
@@ -1054,12 +860,12 @@ class BoardTest {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
+                import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
                 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.remote.lego.poweredup.RemotePoweredUpHub;
-                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+                @Board({ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
                 public final class PortableTrain {
                     public static void main(String[] args) {
                         RemotePoweredUpHub hub = new RemotePoweredUpHub();
@@ -1077,47 +883,11 @@ class BoardTest {
     }
 
     @Test
-    @DisplayName("The UNO Q supports portable Wi-Fi, UDP and secure email")
-    void shouldSupportPortableWifiUdpAndSecureEmailOnTheUnoQ() throws Exception {
-        // Given
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.Wifi;
-                import java.io.IOException;
-                import java.net.DatagramSocket;
-                import io.github.jabrena.juno.hardware.net.email.Pop3Client;
-                import io.github.jabrena.juno.hardware.net.email.Smtp;
-                @Board(ArduinoUnoQBoard.class)
-                public final class WifiOnUnoQ {
-                    public static void main(String[] args) {
-                        MCU.getWifi().status();
-                        try {
-                            new DatagramSocket(5000).close();
-                        } catch (IOException e) {
-                            return;
-                        }
-                        Smtp.sendTls("mail.example.com", 465, "me@example.com", "secret",
-                                "me@example.com", "me@example.com", "Hello", "Hello");
-                        Pop3Client.messageCount("mail.example.com", 995, "me@example.com", "secret");
-                    }
-                }
-                """;
-        CompilerTestSupport.compileJava(temporaryDirectory, "demo.WifiOnUnoQ", source);
-
-        // When & Then
-        assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.WifiOnUnoQ", Optional.empty()).board())
-                .isEqualTo(Board.UNO_Q);
-    }
-
-    @Test
     @DisplayName("Each board declares its Arduino core")
     void shouldDeclareEachBoardsArduinoCore() {
         // When & Then
-        assertThat(new ArduinoCore[] {Board.UNO_R3.core(), Board.UNO_R4_WIFI.core(), Board.UNO_Q.core()})
-                .containsExactly(ArduinoCore.CLASSIC_AVR, ArduinoCore.RENESAS_UNO, ArduinoCore.ZEPHYR);
+        assertThat(new ArduinoCore[] {Board.UNO_R3.core(), Board.UNO_R4_WIFI.core(), Board.PORTENTA_H7.core()})
+                .containsExactly(ArduinoCore.CLASSIC_AVR, ArduinoCore.RENESAS_UNO, ArduinoCore.MBED_PORTENTA);
     }
 
     @Test
@@ -1139,22 +909,6 @@ class BoardTest {
     void shouldDeclareEachBoardsCapabilities(Board board, Capability capability, boolean expected) {
         // When & Then
         assertThat(board.supports(capability)).isEqualTo(expected);
-    }
-
-    private static String unoQDelaySource() {
-        return """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.util.Delay;
-                @Board(ArduinoUnoQBoard.class)
-                public final class OnUnoQ {
-                    public static void main(String[] args) {
-                        Delay.millis(1);
-                        Delay.micros(1);
-                    }
-                }
-                """;
     }
 
     private CompilationResult compileUnoR4() throws Exception {

@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,7 +11,7 @@ import java.math.RoundingMode;
  * java.math as a small board uses it: exact counters past long, and money-style decimals. Sized to run in the UNO
  * R3's default 1 KB arena, so every board must give the JVM's answers within it.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class BigTypical {
     static BigInteger factorial(int n) {
         BigInteger result = BigInteger.ONE;

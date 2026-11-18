@@ -10,7 +10,6 @@ static constexpr uint32_t JUNO_IO_HTTP_FIRST_OWNER = 0u;
 static constexpr uint32_t JUNO_IO_NETWORK_OWNER = 2u;
 static constexpr uint32_t JUNO_IO_OWNED_DEVICES = 5u;
 static JunoIoOwner juno_io_owners[JUNO_IO_OWNED_DEVICES];
-${WORKER_STATE}
 extern "C" void juno_thread_sleep(int64_t millis);
 
 static bool juno_http_in_use_by_other(uint32_t owner) {
@@ -21,7 +20,7 @@ static bool juno_http_in_use_by_other(uint32_t owner) {
   return false;
 }
 
-extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {${ON_WORKER}
+extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {
   // A device call is the deepest the runtime goes on a thread's stack: catch an overflow here, before
   // the call's own frames are used.
   juno_port_check_stack(juno_current_slot);
@@ -40,7 +39,7 @@ extern "C" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(voi
   entry = {self, 1u, handle, abort};
 }
 
-extern "C" uint32_t juno_http_acquire(void* handle, void (*abort)(void*)) {${ON_HTTP_WORKER}
+extern "C" uint32_t juno_http_acquire(void* handle, void (*abort)(void*)) {
   juno_port_check_stack(juno_current_slot);
   uint32_t self = juno_current_slot + 1u;
   JunoIoOwner& network = juno_io_owners[JUNO_IO_NETWORK_OWNER];
@@ -66,7 +65,7 @@ extern "C" uint32_t juno_http_acquire(void* handle, void (*abort)(void*)) {${ON_
   }
 }
 
-extern "C" void juno_io_release(uint32_t device) {${ON_WORKER}
+extern "C" void juno_io_release(uint32_t device) {
   JunoIoOwner& entry = juno_io_owners[device];
   if (entry.owner != juno_current_slot + 1u) return;
   if (--entry.depth == 0u) entry = {0u, 0u, nullptr, nullptr};
@@ -77,11 +76,12 @@ extern "C" void juno_http_release(uint32_t device) {
 }
 
 // A cancelled thread never leaves its library call: abort what it left half done and free the device.
-static void juno_io_release_owned(uint32_t owner) {${OFFLOADING}
+static void juno_io_release_owned(uint32_t owner) {
   for (uint32_t device = 0u; device < JUNO_IO_OWNED_DEVICES; device++) {
     JunoIoOwner& entry = juno_io_owners[device];
-    if (entry.owner != owner) continue;${ABORT}${OFFLOADING_CONTINUE}
+    if (entry.owner != owner) continue;
+    if (entry.abort != nullptr) entry.abort(entry.handle);
     entry = {0u, 0u, nullptr, nullptr};
   }
 }
-${OFFLOAD}
+

@@ -1,7 +1,6 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -11,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * caught by a superclass in the caller, plus unchecked and checked exceptions thrown by the program. Juno panics on
  * an implicit bounds failure by design, so the index failure is thrown explicitly before the access.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
 public final class ExceptionCauses {
     static final class ProbeException extends RuntimeException {
         ProbeException(String message) {

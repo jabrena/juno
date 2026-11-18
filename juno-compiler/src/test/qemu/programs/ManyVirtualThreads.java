@@ -1,7 +1,6 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -15,7 +14,7 @@ import java.util.concurrent.StructuredTaskScope;
  * carrier and thawed back several times, and collections run while they are parked. Every printed value is fixed by
  * the joins, so the JVM and the board agree whatever the interleaving.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
 public final class ManyVirtualThreads {
     static final int THREADS = 6;
     static final int[] RESULTS = new int[THREADS];

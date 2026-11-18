@@ -61,12 +61,6 @@ class QemuRunIT {
     private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "qemu",
             CompilerTestSupport.JUNO_API_CLASSES);
     private static final ProgramDirectory PROGRAMS = new ProgramDirectory(QEMU.resolve("programs"));
-    /**
-     * Programs whose device APIs no JVM can run (the UNO Q's bridge to Linux, against the harness's stand-in
-     * {@code Arduino_RouterBridge.h}), each compared with the {@code .expected} file next to it.
-     */
-    private static final ProgramDirectory DEVICES = new ProgramDirectory(QEMU.resolve("devices"));
-    private static final Path DEVICE_CLASSES = BASEDIR.resolve("target/qemu/device-classes");
     /** Programs whose output differs from OpenJDK because of a known compiler bug, with the reason. */
     private static final Map<String, String> KNOWN_GAPS = Map.of();
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.qemuImage", "").trim();
@@ -80,7 +74,7 @@ class QemuRunIT {
         }
         // Keep the named toolchain image across Maven JVMs. The heavyweight apt layer is stable and reusable;
         // a harness change only replaces the small COPY layer at the end of the Dockerfile.
-        return new GenericContainer<>(new ImageFromDockerfile("juno-qemu:bookworm-v1", false)
+        return new GenericContainer<>(new ImageFromDockerfile("juno-qemu:bookworm-v2", false)
                 .withFileFromPath(".", HARNESS));
     }
 
@@ -91,15 +85,11 @@ class QemuRunIT {
         sources.addAll(WORKSPACE.conformancePrograms().allSources());
         WORKSPACE.compilePrograms(sources);
         WORKSPACE.compileBaseline();
-        WORKSPACE.compile(DEVICES.sources(), DEVICE_CLASSES);
         LOG.info("javac: {} programs and the OpenJDK-side sources in {} ms", sources.size(), millisSince(start));
     }
 
     /**
      * Every program under src/test/qemu/programs, once per Thumb-2 board it targets.
-     * The UNO Q thread port runs on Zephyr's kernel, which the harness replaces with a small stand-in
-     * ({@code src/test/docker/qemu/zephyr/kernel.h}: baton semaphores, and a {@code k_timer} on SysTick for the preemption
-     * tick, with threads on the process stack), so it covers the port's logic but not Zephyr's real scheduler.
      */
     static Stream<Arguments> programs() {
         return PROGRAMS.programs().stream().flatMap(program -> thumb2Boards()
@@ -114,13 +104,6 @@ class QemuRunIT {
             return thumb2Boards().filter(source::targets)
                     .map(board -> Arguments.of(source.mainClass(), board, program.id()));
         });
-    }
-
-    /** Every program under src/test/qemu/devices, once per Thumb-2 board its {@code @Board} names. */
-    static Stream<Arguments> devices() {
-        return DEVICES.programs().stream().flatMap(program -> thumb2Boards()
-                .filter(program::declares)
-                .map(board -> Arguments.of(program.mainClass(), board)));
     }
 
     private static Stream<Board> thumb2Boards() {
@@ -151,18 +134,6 @@ class QemuRunIT {
         String actual = runUnderQemu(mainClass, board, WORKSPACE.junoClasspath());
         WORKSPACE.assertTranscript(board, mainClass, expected, actual,
                 "conformance %s (%s) on %s under QEMU".formatted(programId, mainClass, board.displayName()));
-    }
-
-    @ParameterizedTest(name = "{0} ({1})")
-    @MethodSource("devices")
-    void matchesItsExpectedOutputUnderQemu(String mainClass, Board board) throws Exception {
-        String simpleName = mainClass.substring(mainClass.lastIndexOf('.') + 1);
-        String expected = Files.readString(DEVICES.directory().resolve(simpleName + ".expected"));
-
-        String actual = runUnderQemu(mainClass, board, WORKSPACE.junoClasspath(DEVICE_CLASSES));
-
-        WORKSPACE.assertTranscript(board, mainClass, expected, actual,
-                "%s on %s under QEMU".formatted(mainClass, board.displayName()));
     }
 
     private static String runUnderQemu(String mainClass, Board board, List<Path> classpath) throws Exception {

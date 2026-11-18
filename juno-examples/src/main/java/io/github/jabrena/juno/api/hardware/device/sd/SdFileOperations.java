@@ -1,7 +1,6 @@
 package io.github.jabrena.juno.api.hardware.device.sd;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -21,7 +20,7 @@ import java.io.InputStream;
  * each step reported over USB serial so the behavior can be checked remotely with a serial monitor
  * instead of pulling the card to inspect it by hand.
  *
- * <p>On an UNO R4 WiFi or UNO Q, put the card in a {@link DataLoggerShield}, which selects it on D10. On a Nano
+ * <p>On an UNO R4 WiFi, put the card in a {@link DataLoggerShield}, which selects it on D10. On a Nano
  * ESP32, plug it into a {@link NanoConnectorCarrier}, whose microSD slot selects the card on D4. Upload, then watch the result:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
@@ -29,7 +28,7 @@ import java.io.InputStream;
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
 public final class SdFileOperations {
     private static final String PATH = "juno-sd-demo.txt";
     private static final SdCard SD_CARD = sdCard();
@@ -62,7 +61,7 @@ public final class SdFileOperations {
     /** The Data Logger Shield's card on the UNO boards; of the boards above, only the Nano ESP32 is neither. */
     private static SdCard sdCard() {
         return switch (MCU.getBoardModel()) {
-            case UNO_R4_WIFI, UNO_Q -> new DataLoggerShield().getSdCard();
+            case UNO_R4_WIFI -> new DataLoggerShield().getSdCard();
             default -> new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
         };
     }

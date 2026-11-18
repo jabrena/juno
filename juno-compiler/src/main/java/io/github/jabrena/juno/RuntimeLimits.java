@@ -18,9 +18,6 @@ public final class RuntimeLimits {
      */
     public static final int NUMBER_TEXT_BYTES = 32;
 
-    /** Size (bytes) of the stack copy an I/O worker job takes of short request text. */
-    public static final int IO_TEXT_COPY_BYTES = 32;
-
     /** Bounded native storage allocated for one {@code java.util.Properties} instance. */
     public static final int PROPERTIES_STORAGE_BYTES = 4 + 16 * (32 + 64);
 
@@ -44,7 +41,7 @@ public final class RuntimeLimits {
     public static final int AVR_THREAD_STACK_BYTES = 512;
     public static final int AVR_MAX_THREAD_STACK_BYTES = 1024;
 
-    /** Stack bytes of the carrier on the smallest board (UNO R4 WiFi); the UNO Q gives 4096. */
+    /** Stack bytes of the carrier on the smallest board (UNO R4 WiFi). */
     public static final int MIN_THREAD_STACK_BYTES = 2048;
 
     /** Arena bytes of one thread/task handle, including structured-task result and failure state. */

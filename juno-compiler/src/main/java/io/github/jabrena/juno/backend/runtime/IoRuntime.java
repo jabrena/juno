@@ -1,7 +1,5 @@
 package io.github.jabrena.juno.backend.runtime;
 
-import io.github.jabrena.juno.RuntimeLimits;
-import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
 
 import java.util.Set;
@@ -16,22 +14,16 @@ import java.util.Set;
  * Arduino libraries tolerate halfway through a transaction. So each waiting entry point holds a device guard
  * ({@code JunoIoGuard}) for its whole call: a second thread waits its turn, like a {@code synchronized} method, while
  * threads that do not touch the device keep running. HTTP requests instead use core-bounded, independently owned
- * {@code JunoHttpGuard} leases: two on R4/Q, whose blocking TLS handshake can starve another response. Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
+ * {@code JunoHttpGuard} leases: two on the R4, whose blocking TLS handshake can starve another response. Wi-Fi setup and the HTTP server retain the exclusive network guard. A guard records its owner; cancelling a structured subtask that
  * owns one runs the guard's abort hook (closing a half-used client) and releases it, so the device does not stay
  * locked by a thread that will never run again.
  *
- * <p>Some waits happen inside a vendor library, out of the shim's reach. Where the core has an RTOS (the UNO Q's
- * Zephyr, whose network calls all wait on Linux through Arduino_RouterBridge), such a call runs on an I/O worker
- * thread while its caller is parked in the scheduler ({@code juno_io_offload}); elsewhere it still holds every thread.
+ * <p>Some waits happen inside a vendor library, out of the shim's reach: such a call still holds every thread.
  */
 public final class IoRuntime {
     private static final String WAIT = """
             static void juno_io_wait(uint32_t millisToWait) {
-              if (juno_io_on_worker()) {
-                delay(millisToWait);
-              } else {
-                juno_thread_sleep(static_cast<int64_t>(millisToWait));
-              }
+              juno_thread_sleep(static_cast<int64_t>(millisToWait));
             }
             """;
 
@@ -39,11 +31,7 @@ public final class IoRuntime {
             static void juno_io_wait(uint32_t millisToWait) {
               bool runtimeHeld = juno_runtime_owned();
               if (runtimeHeld) juno_runtime_exit();
-              if (juno_io_on_worker()) {
-                delay(millisToWait);
-              } else {
-                juno_thread_sleep(static_cast<int64_t>(millisToWait));
-              }
+              juno_thread_sleep(static_cast<int64_t>(millisToWait));
               if (runtimeHeld) juno_runtime_enter();
             }
             """;
@@ -84,60 +72,38 @@ public final class IoRuntime {
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
 
-    /**
-     * Whether the program reaches a library with waiting entry points, so the shim needs {@link #prelude}; with an
-     * I/O worker, starting Wi-Fi (the UNO Q's bridge to Linux) is one too.
-     */
-    boolean needed(Set<ShimFeature> features, boolean worker) {
+    /** Whether the program reaches a library with waiting entry points, so the shim needs {@link #prelude}. */
+    boolean needed(Set<ShimFeature> features) {
         return features.contains(ShimFeature.HTTP) || features.contains(ShimFeature.HTTPS)
-                || (worker && features.contains(ShimFeature.WIFI))
                 || features.contains(ShimFeature.HTTP_SERVER) || features.contains(ShimFeature.SD)
                 || features.contains(ShimFeature.BLUETOOTH_LE);
     }
 
-    /** Whether waiting device calls run on the core's I/O worker: the core has one and the program makes them. */
-    boolean usesWorker(CoreRuntime core, Set<ShimFeature> features) {
-        return core.ioWorker() && features.contains(ShimFeature.THREADS) && needed(features, true);
-    }
-
     /** {@link #prelude} for a single carrier when the program needs it, else nothing. */
-    String preludeFor(CoreRuntime core, Set<ShimFeature> features) {
-        return preludeFor(core, features, 1);
+    String preludeFor(Set<ShimFeature> features) {
+        return preludeFor(features, 1);
     }
 
     /**
      * {@link #prelude} when the program needs it, else nothing. Only with threads on more than one carrier do the
      * waits and guards release the runtime lock, which single-carrier ports do not define.
      */
-    String preludeFor(CoreRuntime core, Set<ShimFeature> features, int carrierCount) {
-        boolean worker = usesWorker(core, features);
+    String preludeFor(Set<ShimFeature> features, int carrierCount) {
         boolean threads = features.contains(ShimFeature.THREADS);
-        return needed(features, core.ioWorker()) ? prelude(threads, worker, threads && carrierCount > 1) : "";
-    }
-
-    /** The core's I/O worker when the program uses it, else nothing; goes right after the thread port. */
-    String workerPortFor(CoreRuntime core, Set<ShimFeature> features) {
-        return usesWorker(core, features) ? core.ioWorkerPort() : "";
+        return needed(features) ? prelude(threads, threads && carrierCount > 1) : "";
     }
 
     /**
      * The devices, the wait, the guard and {@code juno_io_offload}, emitted ahead of the libraries that use them.
-     * {@code juno_io_offload(job, argument)} runs a device call: on the I/O worker while the calling thread is parked,
-     * when the core has one and the program has threads, else right here. A job may wait ({@code juno_io_wait}) and
-     * take guards (no-ops on the worker, whose caller already holds them), but never touches the arena.
+     * {@code juno_io_offload(job, argument)} runs a device call right here. A job may wait ({@code juno_io_wait}) and
+     * take guards, but never touches the arena.
      *
-     * @param worker whether the core's port provides the I/O worker ({@link CoreRuntime#ioWorker()})
      * @param runtimeLock whether threads run on several carriers, so a wait or guard releases the runtime lock
      */
-    String prelude(boolean threads, boolean worker, boolean runtimeLock) {
-        String offload = threads && worker ? runtimeSource.load("common/io-stable-text.cpp").replace("${JUNO_IO_TEXT_COPY_BYTES}", Integer.toString(RuntimeLimits.IO_TEXT_COPY_BYTES))
-                : """
+    String prelude(boolean threads, boolean runtimeLock) {
+        String offload = """
                 static void juno_io_offload(void (*job)(void*), void* argument) {
                   job(argument);
-                }
-
-                static bool juno_io_on_worker() {
-                  return false;
                 }
                 """;
         String lockDeclarations = runtimeLock ? """
@@ -199,50 +165,10 @@ public final class IoRuntime {
 
     /**
      * The scheduler's half: who owns each device. A guard is reentrant for its owner (one guarded entry point may call
-     * another), and a contender sleeps a millisecond at a time until the device is free. With an I/O worker, this is
-     * also where a call is handed to it: the caller parks ({@code JUNO_SLOT_WAITING_IO}) until the worker is idle
-     * again, and a caller cancelled meanwhile stays {@code JUNO_SLOT_DRAINING}, its stack still scanned by the
-     * collector since the worker may write into its arrays, until {@code juno_io_reap} frees it.
+     * another), and a contender sleeps a millisecond at a time until the device is free.
      */
-    String owners(boolean worker, int maxHttpRequests) {
-        String workerState = worker ? """
-
-                // The owner and deferred cancellation state of each I/O worker. A cancelled call keeps its device
-                // lease until its worker finishes, so another request cannot reuse its transport prematurely.
-                static uint32_t juno_io_offloader[JUNO_IO_WORKER_COUNT];
-                static uint32_t juno_io_deferred_owner[JUNO_IO_WORKER_COUNT];
-                static void (*juno_io_deferred_abort[JUNO_IO_WORKER_COUNT])(void*);
-                static void* juno_io_deferred_handle[JUNO_IO_WORKER_COUNT];
-                """ : "";
-        String onWorker = worker ? "\n  if (juno_io_on_worker()) return;" : "";
-        String onHttpWorker = worker ? "\n  if (juno_io_on_worker()) return 0u;" : "";
-        String abort = worker ? """
-                    if (entry.abort == nullptr) {
-                    } else if (offloading) {
-                      juno_io_deferred_abort[offloadingWorker] = entry.abort;
-                      juno_io_deferred_handle[offloadingWorker] = entry.handle;
-                    } else {
-                      entry.abort(entry.handle);
-                    }""" : """
-                    if (entry.abort != nullptr) entry.abort(entry.handle);""";
-        String offloadingFlag = worker ? """
-                  uint32_t offloadingWorker = JUNO_IO_WORKER_COUNT;
-                  for (uint32_t worker = 0u; worker < JUNO_IO_WORKER_COUNT; worker++) {
-                    if (juno_io_offloader[worker] == owner && juno_port_io_busy(worker)) {
-                      offloadingWorker = worker;
-                      break;
-                    }
-                  }
-                  bool offloading = offloadingWorker != JUNO_IO_WORKER_COUNT;
-                  if (offloading) juno_io_deferred_owner[offloadingWorker] = owner;""" : "";
-        String offload = worker ? runtimeSource.load("common/io-worker-offload.cpp") : "";
-        return runtimeSource.load("common/io-owners.cpp").replace("${WORKER_STATE}", workerState)
-                .replace("${JUNO_HTTP_MAX_IN_FLIGHT}", Integer.toString(maxHttpRequests))
-                .replace("${ON_WORKER}", onWorker)
-                .replace("${ON_HTTP_WORKER}", onHttpWorker)
-                .replace("${OFFLOADING}", offloadingFlag)
-                .replace("${ABORT}", abort)
-                .replace("${OFFLOADING_CONTINUE}", worker ? "\n    if (offloading) continue;" : "")
-                .replace("${OFFLOAD}", offload);
+    String owners(int maxHttpRequests) {
+        return runtimeSource.load("common/io-owners.cpp")
+                .replace("${JUNO_HTTP_MAX_IN_FLIGHT}", Integer.toString(maxHttpRequests));
     }
 }

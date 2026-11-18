@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -18,7 +17,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * the interleaving: a timed tryLock or await on a held or unsignalled resource gives false, an interrupted
  * lockInterruptibly throws, and the fair lock and fair semaphore protect a counter that ends at 40.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class TimedAndFairLocks {
     static final ReentrantLock HELD = new ReentrantLock();
     static final ReentrantLock FAIR = new ReentrantLock(true);

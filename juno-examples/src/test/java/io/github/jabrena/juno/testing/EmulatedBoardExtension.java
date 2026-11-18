@@ -2,7 +2,7 @@ package io.github.jabrena.juno.testing;
 
 
 import io.github.jabrena.juno.hardware.EmulatedMemory;
-import io.github.jabrena.juno.hardware.EmulatedUnoQ;
+import io.github.jabrena.juno.hardware.EmulatedUnoR4Wifi;
 import io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard;
 import io.github.jabrena.juno.hardware.gpio.EmulatedShield;
 import io.github.jabrena.juno.hardware.led.EmulatedLedMatrix;
@@ -12,10 +12,10 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
- * Stands the emulated TFT shield, the simulated clock, an UNO Q board model, the emulated arena, an UNO Q LED
- * matrix, an always-connected Wi-Fi radio and an SD card in for the board before any test class runs, so example code that gets
+ * Stands the emulated TFT shield, the simulated clock, an UNO R4 WiFi board model, the emulated arena, an UNO R4
+ * WiFi LED matrix, an always-connected Wi-Fi radio and an SD card in for the board before any test class runs, so example code that gets
  * its own {@code MCU.getGpio()}, {@code MCU.getClock()}, {@code MCU.getBoardModel()}, {@code MCU.getBoardMemory()},
- * {@code MCU.getDisplay()} on the UNO Q, {@code MCU.getWifi()} or a shield's {@code getSdCard()}
+ * {@code MCU.getDisplay()} on the UNO R4 WiFi, {@code MCU.getWifi()} or a shield's {@code getSdCard()}
  * (a game's real classes, run whole) meets them instead of the native ports. Registered for every test through JUnit's extension auto-detection; a unit test that
  * wants a mock passes {@code mock} explicitly instead.
  */
@@ -25,7 +25,7 @@ public final class EmulatedBoardExtension implements BeforeAllCallback {
     public void beforeAll(ExtensionContext context) {
         EmulatedShield.install();
         SimulatedClock.install();
-        EmulatedUnoQ.install();
+        EmulatedUnoR4Wifi.install();
         EmulatedMemory.install();
         EmulatedLedMatrix.install();
         EmulatedWifi.install();

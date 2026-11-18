@@ -19,7 +19,6 @@ class GpioPulseInTest {
     @CsvSource(delimiter = '|', value = {
         "ArduinoUnoR3Board      | MCU       | pulseIn(static_cast<uint8_t>(pin),",
         "ArduinoUnoR4WiFiBoard  | MCU       | pulseIn(static_cast<uint8_t>(pin),",
-        "ArduinoUnoQBoard       | MCU       | pulseIn(static_cast<uint8_t>(pin),",
         "ArduinoNanoEsp32Board  | MCU       | pulseIn(juno_nano_pin(pin),"
     })
     @DisplayName("A program that times a pulse calls juno_pulse_in, which the shim defines over the core's pulseIn")

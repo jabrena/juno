@@ -48,12 +48,12 @@ class MonitorMojoTest extends AbstractMojoTestCase {
         MonitorMojo mojo = lookupEmptyMojo("monitor", new File("."));
         mojo = configureMojo(mojo, configuration()
                 .set("arduinoCli", "arduino-cli")
-                .set("board", "arduino-uno-q")
+                .set("board", "arduino-portenta-h7")
                 .set("baudRate", "115200")
                 .build());
         mojo.setLog(new RecordingLog());
         FakeExecutor executor = new FakeExecutor()
-                .respond(0, boardListJson("/dev/cu.usbmodem1", "arduino:zephyr:unoq"))
+                .respond(0, boardListJson("/dev/cu.usbmodem1", "arduino:mbed_portenta:envie_m7"))
                 .respond(0, "");
         mojo.useExecutor(executor);
 

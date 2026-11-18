@@ -1,10 +1,8 @@
 package io.github.jabrena.juno.maven;
 
-import io.github.jabrena.juno.thirdparty.bearssl.BearSslLibrary;
 import io.github.jabrena.juno.thirdparty.pico.secure.PicoSecureFirmware;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,9 +11,6 @@ import java.util.function.Consumer;
 
 /** The {@code arduino-cli} commands the Maven goals run, behind a {@link CommandExecutor}. */
 final class ArduinoCli {
-    private static final String UNO_Q_FQBN = "arduino:zephyr:unoq";
-    private static final String SDFAT_WITHOUT_ARDUINO_SERIAL =
-            "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0";
     private static final String PORTENTA_H7_FQBN = "arduino:mbed_portenta:envie_m7";
     /** The Hat Carrier's microSD slot is SDMMC, which SdFat reaches only through its generic block device interface. */
     private static final String SDFAT_BLOCK_DEVICE_INTERFACE =
@@ -24,7 +19,6 @@ final class ArduinoCli {
     private final String executable;
     private final CommandExecutor executor;
     private final Consumer<String> output;
-    private final BearSslLibrary bearSsl;
     private final BoardListJsonParser boardListParser = new BoardListJsonParser();
 
     ArduinoCli(String executable, Consumer<String> output) {
@@ -32,14 +26,9 @@ final class ArduinoCli {
     }
 
     ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output) {
-        this(executable, executor, output, new BearSslLibrary());
-    }
-
-    ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output, BearSslLibrary bearSsl) {
         this.executable = requireText(executable, "Arduino CLI executable");
         this.executor = executor;
         this.output = output;
-        this.bearSsl = bearSsl;
     }
 
     void installCore(String platform) {
@@ -58,27 +47,11 @@ final class ArduinoCli {
     void compile(String fqbn, Path sketchDirectory) {
         String requiredFqbn = requireText(fqbn, "FQBN");
         List<String> arguments = new ArrayList<>(List.of("compile", "--fqbn", requiredFqbn));
-        if (UNO_Q_FQBN.equals(requiredFqbn)) {
-            // The Zephyr core has no TLS server, so HttpServer.beginTls compiles against the bundled BearSSL.
-            arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL,
-                    "--library", absolute(bundledBearSsl(sketchDirectory))));
-        } else if (PORTENTA_H7_FQBN.equals(requiredFqbn)) {
+        if (PORTENTA_H7_FQBN.equals(requiredFqbn)) {
             arguments.addAll(List.of("--build-property", SDFAT_BLOCK_DEVICE_INTERFACE));
         }
         arguments.add(absolute(sketchDirectory));
         run(captured(arguments.toArray(String[]::new)));
-    }
-
-    /** Installs BearSSL beside the generated sketches ({@code target/juno/libraries}), once per version. */
-    private Path bundledBearSsl(Path sketchDirectory) {
-        Path sketches = sketchDirectory.toAbsolutePath().normalize().getParent();
-        Path libraries = (sketches != null ? sketches : sketchDirectory.toAbsolutePath()).resolve("libraries");
-        try {
-            return bearSsl.installInto(libraries);
-        } catch (IOException exception) {
-            throw new ArduinoCliException("Could not install " + BearSslLibrary.NAME + " into " + libraries,
-                    exception);
-        }
     }
 
     /**

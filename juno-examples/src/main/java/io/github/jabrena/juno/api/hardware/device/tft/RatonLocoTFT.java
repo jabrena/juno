@@ -16,13 +16,6 @@ import io.github.jabrena.juno.util.Delay;
  * whole display is the switch: it starts Off (a red screen), a tap anywhere turns it On (a green
  * screen) and starts the walk, and another tap anywhere pauses the walk in place.
  *
- * <p>UNO Q only: the Arduino {@code Mouse} library needs {@code HID.h}, which the UNO Q's Zephyr
- * Arduino core does not provide, so this example cannot build for {@link
- * io.github.jabrena.juno.annotations.ArduinoUnoQBoard} — confirmed with a real {@code arduino-cli
- * compile --fqbn arduino:zephyr:unoq}, which fails with {@code HID.h: No such file or directory}
- * from {@code Mouse.h}. USB HID mouse control stays UNO R4 WiFi-only until the UNO Q core gains
- * that header.
- *
  * <p>The example requires the Arduino {@code Mouse} library (see {@code RatonLoco}'s javadoc) and
  * the {@link TftTouchShield} wiring.
  *

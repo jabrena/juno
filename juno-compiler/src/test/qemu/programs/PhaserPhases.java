@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * left and the number of arrivals do not depend on the order the threads arrive in. A second phaser checks that an
  * interrupted awaitAdvanceInterruptibly throws and leaves the phase where it was.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class PhaserPhases {
     static final Phaser PHASER = new Phaser(3);
     static final Phaser GATE = new Phaser(2);

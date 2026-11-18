@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.language;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -9,10 +8,10 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Demonstrates the double-precision {@code java.lang.Math} functions: powers and roots, exponentials and logarithms,
- * and trigonometry. Double-precision libm is only on the UNO R4 WiFi and UNO Q toolchains, so the other boards cannot
+ * and trigonometry. Double-precision libm is only on the boards with the DOUBLE_MATH capability, so the UNO R3 cannot
  * build it; {@link MathFunctionsSinglePrecision} covers the rest.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class MathFunctionsDoublePrecision {
 
     public static void main(String[] args) {

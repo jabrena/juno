@@ -2,7 +2,7 @@ package io.github.jabrena.juno.hardware.fonts;
 
 /**
  * A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 {@code ~}), for
- * printing arbitrary ASCII characters on the board's 12x8 or 13x8 LED matrix one at a time (two
+ * printing arbitrary ASCII characters on the board's 12x8 LED matrix one at a time (two
  * glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's and the
  * Grove OLED's text. Space, punctuation, digits, uppercase letters and lowercase letters complete the
  * range so every printable ASCII code has a glyph.

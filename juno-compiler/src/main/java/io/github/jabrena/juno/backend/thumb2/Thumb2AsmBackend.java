@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 /**
  * Emits GNU ARM Thumb-2 assembly straight from Juno IR, restricted to instructions common to the UNO R4's
- * Cortex-M4 and the UNO Q's Cortex-M33, so one code generator serves every board; per-core runtime
+ * Cortex-M4, the Pico 2 W's Cortex-M33 and the Portenta H7's Cortex-M7, so one code generator serves every board; per-core runtime
  * differences live in {@code CoreRuntime}. Every reachable method becomes its own
  * function (real {@code bl} calls between them, full AAPCS parameter passing including stack-passed
  * arguments beyond the first four), with branches, {@code switch}, {@code int} arithmetic/comparisons,

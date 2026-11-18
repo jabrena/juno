@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -13,7 +12,7 @@ import java.util.concurrent.StructuredTaskScope;
  * sibling subtask runs one (a cooperative subtask would keep the CPU there and print "sibling starved"); two computing
  * subtasks interleave through their loops, and a fail-fast scope cancels a sibling that is spinning.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class StructuredScheduling {
     static volatile boolean stop;
     static volatile int progress;

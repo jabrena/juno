@@ -139,14 +139,14 @@ public interface CoreRuntime {
     /** Rows of every supported board's LED matrix. */
     int LED_MATRIX_ROWS = 8;
 
-    /** The 32-bit words one frame of the board's LED matrix occupies (96 pixels on UNO R4, 104 on UNO Q). */
+    /** The 32-bit words one frame of the board's LED matrix occupies (96 pixels on the UNO R4). */
     default int ledMatrixWords() {
         return (ledMatrixColumns() * LED_MATRIX_ROWS + 31) / 32;
     }
 
     /**
      * Core-provided headers for network access and, when requested, UDP. UNO R4 uses WiFiS3
-     * directly; UNO Q delegates networking to Linux through Arduino_RouterBridge.
+     * directly.
      */
     String wifiIncludes(boolean udp);
 
@@ -292,20 +292,6 @@ public interface CoreRuntime {
      */
     String uuidRandomHelpers();
 
-    /**
-     * Whether the core's port runs a program's waiting device calls on a worker thread of its own (see
-     * {@code IoRuntime}), so they hold up no other thread even where the wait happens inside a vendor library. Only
-     * a core with an RTOS underneath can: the UNO Q's.
-     */
-    default boolean ioWorker() {
-        return false;
-    }
-
-    /** The port's I/O worker, when {@link #ioWorker()} is true. */
-    default String ioWorkerPort() {
-        return "";
-    }
-
     /** Declares the internet clock's own SNTP socket, {@code juno_sntp_udp}, of the same type as {@link #udpDeclaration()}. */
     default String sntpUdpDeclaration() {
         return udpDeclaration().replace("juno_udp", "juno_sntp_udp");
@@ -368,7 +354,7 @@ public interface CoreRuntime {
      * and scanner object. A core with another BLE library names its own adapter here.
      */
     record BleNames(String device, String characteristic, String central) {
-        /** {@code ArduinoBLE}, the library the UNO R4 WiFi and UNO Q use. */
+        /** {@code ArduinoBLE}, the library the UNO R4 WiFi uses. */
         public static final BleNames ARDUINO_BLE = new BleNames("BLEDevice", "BLECharacteristic", "BLE");
     }
 

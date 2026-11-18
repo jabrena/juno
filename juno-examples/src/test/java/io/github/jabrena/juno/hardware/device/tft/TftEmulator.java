@@ -12,7 +12,7 @@ import java.util.List;
 
 /**
  * Runs a TFT program's real {@code main()} against the shield emulated by the test doubles in
- * {@code io.github.jabrena.juno.hardware} (see {@code EmulatedShield}, {@code SimulatedClock}, {@code EmulatedUnoQ},
+ * {@code io.github.jabrena.juno.hardware} (see {@code EmulatedShield}, {@code SimulatedClock}, {@code EmulatedUnoR4Wifi},
  * {@code EmulatedMemory}, {@code EmulatedLedMatrix}, {@code EmulatedWifi} and {@code EmulatedSdCard}), taps the
  * screen on a script and returns what is on the screen at a chosen moment of simulated time.
  *
@@ -36,12 +36,12 @@ final class TftEmulator {
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.hardware.device.tft.TftTouchShield");
-            Class<?> board = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedUnoQ");
+            Class<?> board = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedUnoR4Wifi");
             Class<?> memory = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedMemory");
             Class<?> matrix = loader.loadClass("io.github.jabrena.juno.hardware.led.EmulatedLedMatrix");
             Class<?> wifi = loader.loadClass("io.github.jabrena.juno.hardware.net.EmulatedWifi");
             Class<?> sdCard = loader.loadClass("io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard");
-            // Stand the emulated shield, simulated clock, UNO Q, arena, LED matrix, Wi-Fi and SD card in for the board
+            // Stand the emulated shield, simulated clock, UNO R4 WiFi, arena, LED matrix, Wi-Fi and SD card in for the board
             // before the program creates its Gpio/Clock/BoardModel/BoardMemory/LedMatrix/Wifi/SdCard.
             clock.getMethod("install").invoke(null);
             gpio.getMethod("install").invoke(null);
@@ -92,12 +92,12 @@ final class TftEmulator {
             Class<?> delay = loader.loadClass("io.github.jabrena.juno.util.Delay");
             Class<?> gpio = loader.loadClass("io.github.jabrena.juno.hardware.gpio.EmulatedShield");
             Class<?> shield = loader.loadClass("io.github.jabrena.juno.hardware.device.tft.TftTouchShield");
-            Class<?> board = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedUnoQ");
+            Class<?> board = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedUnoR4Wifi");
             Class<?> memory = loader.loadClass("io.github.jabrena.juno.hardware.EmulatedMemory");
             Class<?> matrix = loader.loadClass("io.github.jabrena.juno.hardware.led.EmulatedLedMatrix");
             Class<?> wifi = loader.loadClass("io.github.jabrena.juno.hardware.net.EmulatedWifi");
             Class<?> sdCard = loader.loadClass("io.github.jabrena.juno.hardware.device.sd.EmulatedSdCard");
-            // Stand the emulated shield, simulated clock, UNO Q, arena, LED matrix, Wi-Fi and SD card in for the board
+            // Stand the emulated shield, simulated clock, UNO R4 WiFi, arena, LED matrix, Wi-Fi and SD card in for the board
             // before the program creates its Gpio/Clock/BoardModel/BoardMemory/LedMatrix/Wifi/SdCard.
             clock.getMethod("install").invoke(null);
             gpio.getMethod("install").invoke(null);

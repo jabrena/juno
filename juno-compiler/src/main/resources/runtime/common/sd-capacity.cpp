@@ -9,10 +9,9 @@ extern "C" int32_t juno_sd_total_kib() {
 }
 
 // Without a trustworthy FSInfo count, the free clusters are counted from the whole FAT: a minute or more on a large
-// card. SdFat's freeClusterCount() reads it in one busy loop, which on the UNO Q's I/O worker (a Zephyr thread above
-// the Juno threads) would freeze every other thread until it finished. This counts the same entries a few sectors at
-// a time and waits between slices, so the display keeps running: on the worker the wait is a Zephyr sleep, on a
-// Juno thread a thread sleep.
+// card. SdFat's freeClusterCount() reads it in one busy loop, which would freeze every other thread until it finished.
+// This counts the same entries a few sectors at a time and sleeps the calling thread between slices, so the display
+// keeps running.
 static constexpr uint32_t JUNO_SD_SCAN_SLICE_SECTORS = 4u;
 static constexpr uint32_t JUNO_SD_SCAN_PAUSE_MS = 10u;
 static uint32_t juno_sd_scan_sector[128];

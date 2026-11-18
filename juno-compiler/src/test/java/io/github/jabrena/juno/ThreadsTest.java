@@ -68,7 +68,7 @@ class ThreadsTest {
             """;
 
     static Stream<String> boards() {
-        return Stream.of("ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard");
+        return Stream.of("ArduinoUnoR4WiFiBoard");
     }
 
     static Stream<String> userLevelThreadBodies() {
@@ -119,7 +119,7 @@ class ThreadsTest {
         String shim = compile("ArduinoUnoR4WiFiBoard", START_AND_JOIN).runtimeShim();
 
         // When & Then
-        assertThat(shim).contains("juno_context_switch:", "UNO R4 port").doesNotContain("zephyr/kernel.h");
+        assertThat(shim).contains("juno_context_switch:", "UNO R4 port");
     }
 
     @Test
@@ -132,18 +132,6 @@ class ThreadsTest {
         assertThat(shim).as("an overflow is caught by the stack pointer too, and reported from a stack of its own")
                 .contains("bool below = reinterpret_cast<uintptr_t>(&marker) < reinterpret_cast<uintptr_t>(canary + 2);",
                         "__asm__ volatile(\"mov sp, %0\"");
-    }
-
-    @Test
-    @DisplayName("The UNO Q runs its virtual threads on one carrier Zephyr thread passing a baton with main")
-    void shouldRunVirtualThreadsOnOneCarrierZephyrThreadPassingABaton() throws Exception {
-        // Given
-        String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
-
-        // When & Then
-        assertThat(shim).contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create", "k_sem_give",
-                "juno_context_switch", "juno_switcher_run", "juno_freeze", "juno_thaw")
-                .doesNotContain("K_THREAD_STACK_ARRAY_DEFINE");
     }
 
     @Test
@@ -190,26 +178,12 @@ class ThreadsTest {
                 .doesNotContain("k_timer", "juno_thread_safepoint");
     }
 
-    @Test
-    @DisplayName("The UNO Q preempts from a Zephyr timer reading the process stack")
-    void shouldPreemptFromAZephyrTimerReadingTheProcessStackOnTheUnoQ() throws Exception {
-        // Given
-        String shim = compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim();
-
-        // When & Then
-        assertThat(shim).contains("k_timer_init(&juno_preempt_timer, juno_preempt_expiry, nullptr);",
-                        "k_timer_start(&juno_preempt_timer, K_MSEC(JUNO_TIME_SLICE_MILLIS)",
-                        "__asm__ volatile(\"mrs %0, psp\" : \"=r\"(frame));", "juno_preempt_trampoline:\\n")
-                .doesNotContain("SysTick_Handler", "juno_thread_safepoint");
-    }
-
 
     static Stream<Arguments> preemptionSections() {
         String tick = "extern \"C\" const uint8_t juno_java_code_start[];";
         String safepoints = "static void juno_thread_slice_over() {";
         return Stream.of(
                 arguments("ArduinoUnoR4WiFiBoard", tick),
-                arguments("ArduinoUnoQBoard", tick),
                 arguments("ArduinoNanoEsp32Board", safepoints));
     }
 
@@ -466,125 +440,6 @@ class ThreadsTest {
         assertThat(shim).contains("if (entry.abort != nullptr) entry.abort(entry.handle);");
     }
 
-    private String unoQNetworkShim(boolean threads) throws Exception {
-        String source = """
-                package demo;
-                import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
-                import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.serial.Serial;
-                import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.http.HttpServer;
-                @Board(ArduinoUnoQBoard.class)
-                public final class Fetch {
-                    public static void main() throws Exception {
-                        byte[] body = new byte[32];
-                        %s
-                        MCU.getWifi().begin("juno", "secret");
-                        HttpServer.begin(80);
-                        Serial.println(HttpServer.accept(body, body.length));
-                        HttpServer.respond(200, "text/plain", "ok");
-                    }
-                }
-                """.formatted(threads ? """
-                        try (var scope = java.util.concurrent.StructuredTaskScope.open()) {
-                            scope.fork(() -> Serial.println(1));
-                            scope.join();
-                        }""" : "");
-        CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Fetch", source);
-        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Fetch").runtimeShim();
-    }
-
-    @Test
-    @DisplayName("The UNO Q runs bridge calls on the I/O worker while the caller is parked")
-    void shouldRunBridgeCallsOnTheIoWorkerWhileTheCallerIsParkedOnTheUnoQ() throws Exception {
-        // Given
-        String shim = unoQNetworkShim(true);
-
-        // When & Then
-        assertThat(shim).contains("K_THREAD_STACK_DEFINE(juno_io_worker_stack_first, JUNO_IO_WORKER_STACK_BYTES);",
-                        "K_THREAD_STACK_DEFINE(juno_io_worker_stack_second, JUNO_IO_WORKER_STACK_BYTES);",
-                        "static constexpr uint32_t JUNO_IO_WORKER_COUNT = 2u;",
-                        "K_PRIO_PREEMPT(4)", "extern \"C\" void juno_io_offload(void (*job)(void*), void* argument) {",
-                        "juno_slots[juno_current_slot].state = JUNO_SLOT_WAITING_IO;",
-                        "case JUNO_SLOT_WAITING_IO:\n                      return !juno_io_waiting(index);",
-                        "juno_io_offload(juno_wifi_bridge_begin, nullptr);",
-                        "juno_io_offload(juno_http_server_accept_job, &job);");
-    }
-
-    @Test
-    @DisplayName("Short text the worker reads later is copied to the caller's stack")
-    void shouldCopyShortTextToTheCallersStackForTheWorker() throws Exception {
-        // Given
-        String shim = unoQNetworkShim(true);
-
-        // When & Then
-        assertThat(shim).as("short text the worker reads later is copied to the caller's stack")
-                .contains("job.contentType = juno_io_stable_text(contentType, contentTypeCopy);");
-    }
-
-    @Test
-    @DisplayName("A cancelled caller keeps its frames on the carrier, scanned, until the worker is done")
-    void shouldKeepACancelledCallersStackScannedUntilTheWorkerIsDone() throws Exception {
-        // Given
-        String shim = unoQNetworkShim(true);
-
-        // When & Then
-        assertThat(shim).as("a caller cancelled during its call keeps its frames until the worker is done")
-                .contains("if (!draining) juno_port_cancel(slot);", "juno_slots[slot].state = JUNO_SLOT_DRAINING;",
-                        "static void juno_io_reap() {", "return state == JUNO_SLOT_WAITING_IO || state == JUNO_SLOT_DRAINING;");
-    }
-
-    @Test
-    @DisplayName("On the worker, guards belong to its caller")
-    void shouldLeaveGuardsToTheCallerOnTheWorker() throws Exception {
-        // Given
-        String shim = unoQNetworkShim(true);
-
-        // When & Then
-        assertThat(shim).as("on the worker, guards are its caller's").contains("if (juno_io_on_worker()) return;");
-    }
-
-    @Test
-    @DisplayName("The I/O worker exists only for a threaded UNO Q program with network calls")
-    void shouldIncludeTheIoWorkerOnlyForAThreadedUnoQProgramWithNetworkCalls() throws Exception {
-        // When & Then
-        assertThat(unoQNetworkShim(false)).doesNotContain("juno_io_worker", "juno_io_stable_text")
-                .contains("static void juno_io_offload(void (*job)(void*), void* argument) {\n  job(argument);");
-    }
-
-    @Test
-    @DisplayName("A threaded UNO Q program without network calls has no I/O worker")
-    void shouldOmitTheIoWorkerForAThreadedUnoQProgramWithoutNetworkCalls() throws Exception {
-        // When & Then
-        assertThat(compile("ArduinoUnoQBoard", START_AND_JOIN).runtimeShim()).doesNotContain("juno_io_worker");
-    }
-
-    @Test
-    @DisplayName("A threaded R4 HTTP program has no I/O worker")
-    void shouldOmitTheIoWorkerForAThreadedR4HttpProgram() throws Exception {
-        // When & Then
-        assertThat(httpProgramShim("ArduinoUnoR4WiFiBoard", true)).doesNotContain("juno_io_worker", "JUNO_SLOT_WAITING_IO\n");
-    }
-
-    @Test
-    @DisplayName("The UNO Q I/O worker shim compiles as C++")
-    void shouldCompileTheUnoQIoWorkerShimAsCpp() throws Exception {
-        // Given
-        String compiler = availableCppCompiler();
-        Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
-        Path shim = temporaryDirectory.resolve("UnoQWorker.cpp");
-        Files.writeString(shim, unoQNetworkShim(true), StandardCharsets.UTF_8);
-
-        // When
-        Process process = new ProcessBuilder(compiler, "-std=c++17", "-fsyntax-only", "-x", "c++",
-                "-Isrc/test/resources/include", shim.toString()).redirectErrorStream(true).start();
-        assertThat(process.waitFor(30, TimeUnit.SECONDS)).isTrue();
-
-        // Then
-        String diagnostics = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        assertThat(process.exitValue()).as("UNO Q worker shim:%n%s", diagnostics).isZero();
-    }
-
     @Test
     @DisplayName("Delay becomes a sleep that lets other threads run")
     void shouldTurnDelayIntoASleepThatLetsOtherThreadsRun() throws Exception {
@@ -716,14 +571,6 @@ class ThreadsTest {
         assertThat(result.runtimeShim()).as(board)
                 .contains("extern \"C\" int32_t juno_thread_start_virtual(int32_t runnable)",
                         "juno_thread_set_daemon(handle, 1);");
-    }
-
-    @Test
-    @DisplayName("The UNO Q virtual-thread shim uses the Zephyr kernel")
-    void shouldUseTheZephyrKernelForVirtualThreadsOnTheUnoQ() throws Exception {
-        // When & Then
-        assertThat(compile("ArduinoUnoQBoard", VIRTUAL_THREAD).runtimeShim())
-                .contains("#include <zephyr/kernel.h>", "UNO Q port", "k_thread_create");
     }
 
     @ParameterizedTest(name = "rejects {0}")

@@ -25,11 +25,6 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-compiler</artifactId>
         </dependency>
-        <!-- BearSSL's sources, handed to arduino-cli for the UNO Q's TLS server. -->
-        <dependency>
-            <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-bearssl</artifactId>
-        </dependency>
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-pico-secure</artifactId>

@@ -1,7 +1,5 @@
 // Bare-metal harness: reset vector, FPU enable, SysTick, semihosting output/exit. JUNO_ENTRY is the generated
-// program's entry symbol (the function the .ino wrapper calls from setup()). With JUNO_HARNESS_PSP (run.sh sets it
-// for the UNO Q's Zephyr shim) the program runs on the process stack, as every Zephyr thread does, and handlers on
-// a main stack of their own.
+// program's entry symbol (the function the .ino wrapper calls from setup()).
 #include <stdint.h>
 #include "Arduino.h"
 
@@ -36,11 +34,9 @@ __asm__(".global millis\n.set millis, juno_harness_millis\n.global micros\n.set 
 }
 
 // The real core's service hook. Weak: the R4 shim defines its own. Like that one (through Serial's bool
-// conversion) it lets virtual time pass. On the UNO Q, whose Zephyr core makes yield() a k_yield(), it also lets the
-// stand-in kernel's other threads run (the I/O worker, which real Zephyr would run by priority).
+// conversion) it lets virtual time pass.
 __attribute__((weak)) void yield(void) {
   juno_harness_clock++;
-  if (juno_harness_delay_hook != nullptr) juno_harness_delay_hook();
 }
 
 [[noreturn]] static void fault(void) {
@@ -48,12 +44,8 @@ __attribute__((weak)) void yield(void) {
   juno_harness_exit(2);
 }
 
-// The shim of a threaded program defines the real one (the R4 port directly, the Q port through the kernel stand-in).
+// The shim of a threaded program defines the real one (the R4 port).
 __attribute__((weak)) void SysTick_Handler(void) {}
-
-#if defined(JUNO_HARNESS_PSP)
-alignas(8) static uint8_t juno_handler_stack[2048];
-#endif
 
 void Reset_Handler(void) {
   // CP10/CP11 full access: the shim is built hard-float, exactly like the UNO R4 core.
@@ -61,20 +53,6 @@ void Reset_Handler(void) {
   __asm__ volatile("dsb\n isb");
   for (uint32_t* word = &_sbss; word < &_ebss; ++word) *word = 0;
   __libc_init_array();
-#if defined(JUNO_HARNESS_PSP)
-  // Thread mode moves to the process stack in place (same sp), then handlers get a main stack of their own.
-  __asm__ volatile(
-      "mrs r0, msp\n"
-      "msr psp, r0\n"
-      "movs r0, #2\n"
-      "msr control, r0\n"
-      "isb\n"
-      "msr msp, %0\n"
-      "isb\n"
-      :
-      : "r"(juno_handler_stack + sizeof juno_handler_stack)
-      : "r0", "memory");
-#endif
   JUNO_ENTRY();
   juno_harness_write("[juno-exit]\n");
   juno_harness_exit(0);

@@ -6,12 +6,12 @@ import io.github.jabrena.juno.hardware.internal.NativeBoardMemory;
  * Juno's arena and the program's flash for whole-program tests: a {@link BoardMemory} that
  * {@code MCU.getBoardMemory()} returns once {@link #install()} has run. The JVM has no Juno arena, so it reports an
  * empty one of the default size, or of {@code -Djuno.emulator.arenaBytes=<bytes>} to play a program built with a
- * bigger {@code juno.Xmx}; the flash is the UNO Q's empty sketch partition, the board the emulator models.
+ * bigger {@code juno.Xmx}; the flash is the UNO R4 WiFi's 256 KiB, the board the emulator models.
  */
 public final class EmulatedMemory implements BoardMemory {
     private static final EmulatedMemory INSTANCE = new EmulatedMemory();
     private static final int DEFAULT_ARENA_BYTES = 8192;
-    private static final int UNO_Q_SKETCH_PARTITION_BYTES = 786432;
+    private static final int UNO_R4_WIFI_FLASH_BYTES = 262144;
 
     private EmulatedMemory() {
     }
@@ -38,6 +38,6 @@ public final class EmulatedMemory implements BoardMemory {
 
     @Override
     public int flashCapacityBytes() {
-        return UNO_Q_SKETCH_PARTITION_BYTES;
+        return UNO_R4_WIFI_FLASH_BYTES;
     }
 }

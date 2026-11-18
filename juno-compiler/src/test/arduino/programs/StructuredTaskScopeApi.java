@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.annotations.Board;
@@ -9,7 +8,7 @@ import java.util.concurrent.StructuredTaskScope;
 import java.util.concurrent.locks.ReentrantLock;
 
 /** Forked preemptive subtasks, with a lock, a scoped value and a sleep: each board's thread port. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class, RaspberryPico2WifiBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, RaspberryPico2WifiBoard.class})
 public final class StructuredTaskScopeApi {
     private static final ScopedValue<String> NAME = ScopedValue.newInstance();
     private static final ReentrantLock LOCK = new ReentrantLock();

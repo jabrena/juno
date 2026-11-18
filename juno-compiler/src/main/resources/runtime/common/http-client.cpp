@@ -335,7 +335,9 @@ static int32_t juno_http_run(const char* method, const char* host, int32_t port,
                      requestHeadersBuffer, requestHeadersLength, requestBodyBuffer, requestBodyLength,
                      responseBuffer, responseBufferLength,
                      headersBuffer, headersBufferLength, statusAndHeadersLength, sink, &client, 0};
-  ${JUNO_HTTP_RUN_PREPARE}
+  JunoHttpGuard guard(&client, [](void* handle) {
+    static_cast<Client*>(handle)->stop();
+  });
   juno_io_offload(juno_http_job<Client>, &job);
   return job.result;
 }

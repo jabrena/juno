@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,7 +11,7 @@ import io.github.jabrena.juno.robotics.SensorMode;
 import io.github.jabrena.juno.robotics.SensorModes;
 
 /** The sensor contracts in juno.robotics, called through their interfaces with caller-owned buffers. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class SensorContracts {
 
     static final class Temperature implements SensorMode {

@@ -20,11 +20,6 @@ import io.github.jabrena.juno.util.Delay;
  * {@value #CONNECT_TIMEOUT_MS} ms the access point comes back so the form can be submitted again.
  * The credentials live only in RAM.
  *
- * <p>On <b>UNO Q</b> Wi-Fi belongs to Linux, which the MCU cannot reconfigure: start the hotspot
- * there first ({@code nmcli device wifi hotspot ssid <ssid> password <password>}). The form is then
- * served through {@code arduino-router}, and the submitted credentials are printed over
- * {@link Serial} for Linux to apply ({@code nmcli device wifi connect <ssid> password <password>}).
- *
  * <p>Limits: SSID and password are at most {@value #MAX_FIELD} characters each (Juno's runtime
  * strings are small), and the form is plain HTTP, so the password crosses the setup network
  * unencrypted; on UNO R4 WiFi the access point's own WPA2 passphrase is what protects it.
@@ -53,8 +48,7 @@ public final class WifiProvisioner {
             + "</body></html>";
 
     /**
-     * Serves the setup form until credentials are submitted and, on UNO R4 WiFi, the board has joined
-     * that network; on UNO Q it returns once the credentials have been printed. {@code apPassword}
+     * Serves the setup form until credentials are submitted and the board has joined that network. {@code apPassword}
      * is a WPA2 passphrase of at least 8 characters, or empty for an open access point.
      */
     public static void run(String apSsid, String apPassword) {
@@ -110,15 +104,6 @@ public final class WifiProvisioner {
 
         Serial.print("Credentials received for: ");
         Serial.println(ssid.toString());
-        if (wifi.status() == Wifi.STATUS_CONNECTED) {
-            // UNO Q: Linux owns Wi-Fi, so there is nothing for the MCU to join.
-            Serial.print("Apply on Linux: nmcli device wifi connect ");
-            Serial.print(ssid.toString());
-            Serial.print(" password ");
-            Serial.println(password.toString());
-            return true;
-        }
-
         wifi.begin(ssid.toString(), password.toString());
         int deadline = clock.millis() + CONNECT_TIMEOUT_MS;
         while (wifi.status() != Wifi.STATUS_CONNECTED && clock.millis() < deadline) {

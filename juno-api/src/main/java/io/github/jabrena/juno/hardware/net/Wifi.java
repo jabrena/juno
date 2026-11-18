@@ -2,8 +2,7 @@ package io.github.jabrena.juno.hardware.net;
 
 /**
  * Wi-Fi connection control. {@link io.github.jabrena.juno.hardware.MCU#getWifi()} is the board's own radio, which the
- * compiler lowers to the Arduino board networking stack ({@code WiFiS3} on UNO R4 WiFi, {@code Arduino_RouterBridge}
- * on UNO Q). The UNO R3 has no radio and no network support. A unit test passes
+ * compiler lowers to the Arduino board networking stack ({@code WiFiS3} on UNO R4 WiFi). The UNO R3 has no radio and no network support. A unit test passes
  * {@code mock(Wifi.class)}. Get it once, at startup, and pass it to the classes that need it.
  *
  * <p>{@code ssid}/{@code password} may be string literals or stable runtime strings returned by a
@@ -30,9 +29,7 @@ public interface Wifi {
     int STATUS_AP_LISTENING = 7;
 
     /**
-     * Starts station-mode Wi-Fi on boards with an onboard radio. On UNO Q, Wi-Fi belongs to Linux and must already
-     * be configured through App Lab or {@code nmcli}; this method initializes the MCU-to-Linux
-     * bridge and ignores the credential arguments.
+     * Starts station-mode Wi-Fi on boards with an onboard radio.
      */
     void begin(String ssid, String password);
 
@@ -41,11 +38,7 @@ public interface Wifi {
      * directly (typically to serve a provisioning page through {@link
      * io.github.jabrena.juno.hardware.net.http.HttpServer}). On UNO R4 WiFi and ESP32 boards, {@code password} is a WPA2
      * passphrase of at least 8 characters, or empty for an open network; call {@link #localIP} after
-     * {@link #status} reports {@link #STATUS_AP_LISTENING} to obtain the access point's address. On UNO Q the
-     * MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running
-     * ({@code nmcli device wifi hotspot ssid <ssid> password <password>}); this method only
-     * initializes the MCU-to-Linux bridge, ignores both arguments, and {@link #status} reports
-     * {@link #STATUS_CONNECTED} once the bridge is up.
+     * {@link #status} reports {@link #STATUS_AP_LISTENING} to obtain the access point's address.
      */
     void beginAP(String ssid, String password);
 
@@ -55,8 +48,7 @@ public interface Wifi {
      * Writes the board's current IPv4 address into {@code octets} (caller-owned, at least 4
      * entries), one byte value (0-255) per element, most significant first — e.g. {@code 192, 168,
      * 1, 45}. When {@link #status} reports {@link #STATUS_AP_LISTENING}, this is the access point's
-     * address; when it reports {@link #STATUS_CONNECTED}, it is the station address. UNO Q's
-     * current router API does not expose either address and writes four zeroes. Juno has no
+     * address; when it reports {@link #STATUS_CONNECTED}, it is the station address. Juno has no
      * heap, so there is no {@code String}-returning form here — print each octet with {@link
      * io.github.jabrena.juno.hardware.serial.Serial#print(int)} and a literal {@code "."} between them.
      */
@@ -65,15 +57,14 @@ public interface Wifi {
     /**
      * Writes the IPv4 address of the router the board is connected to (its gateway) into {@code octets} (at least 4
      * entries), in the same form as {@link #localIP}. Only meaningful once {@link #status} reports {@link
-     * #STATUS_CONNECTED}; a gateway that does not share the board's subnet usually means a bad DHCP lease. UNO Q's
-     * router API does not expose it and writes four zeroes.
+     * #STATUS_CONNECTED}; a gateway that does not share the board's subnet usually means a bad DHCP lease.
      */
     void gatewayIP(int[] octets);
 
     /**
      * Writes the Wi-Fi interface's six-byte hardware (MAC) address into {@code octets} (at least 6 entries), one byte
      * value (0-255) per element, most significant first; print them in hex to compare against a router's client
-     * list. UNO Q's router API does not expose it and writes six zeroes.
+     * list.
      */
     void macAddress(int[] octets);
 }

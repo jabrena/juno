@@ -12,7 +12,7 @@ import io.github.jabrena.juno.usecases.gladiator.view.View;
 import io.github.jabrena.juno.usecases.gladiator.view.ViewList;
 import io.github.jabrena.juno.util.Delay;
 
-/** A complete local CPU-versus-CPU match using the selected player profile and a random opponent on an UNO Q. */
+/** A complete local CPU-versus-CPU match using the selected player profile and a random opponent. */
 public final class SoloFlow {
     private static final Clock CLOCK = MCU.getClock();
     private static final int FRAME_MILLIS = 40;

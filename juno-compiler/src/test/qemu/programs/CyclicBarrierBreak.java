@@ -1,6 +1,5 @@
 package demo;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -14,7 +13,7 @@ import java.util.concurrent.CyclicBarrier;
  * and main (which calls await afterwards) get BrokenBarrierException. Whether the interrupt lands before or during the
  * wait, the outcome is the same.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class CyclicBarrierBreak {
     static final CyclicBarrier BARRIER = new CyclicBarrier(3);
     static volatile int interruptedOutcome;

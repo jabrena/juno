@@ -22,7 +22,7 @@
  *   <li>{@link io.github.jabrena.juno.language.MathFunctionsSinglePrecision} — {@code java.lang.Math} helpers and rounding on
  *       {@code int} and {@code float}, portable to every board.</li>
  *   <li>{@link io.github.jabrena.juno.language.MathFunctionsDoublePrecision} — double-precision powers, logarithms and
- *       trigonometry, on the UNO R4 WiFi and UNO Q.</li>
+ *       trigonometry, on the boards with double-precision libm.</li>
  *   <li>{@link io.github.jabrena.juno.language.Exceptions} — throwing and catching exceptions, {@code finally}, and custom exceptions.</li>
  *   <li>{@link io.github.jabrena.juno.language.VirtualThreads} — virtual threads and joining.</li>
  *   <li>{@link io.github.jabrena.juno.language.StructuredConcurrency} — structured task scopes and subtasks.</li>

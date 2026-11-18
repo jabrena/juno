@@ -158,7 +158,7 @@ class BigNumberTest {
     }
 
     @ParameterizedTest(name = "{0} runtime compiles as C++")
-    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard", "ArduinoUnoQBoard"})
+    @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("The generated big-number runtime compiles for both boards")
     void shouldCompileTheGeneratedRuntimeForBothBoards(String board) throws Exception {
         // Given

@@ -8,7 +8,5 @@ public enum MemoryAuthority {
     /** The linker places every section, so a successful link is the final word (AVR, UNO R4 WiFi). */
     LINKER,
     /** Task stacks, Wi-Fi, TLS and BLE take memory from the run-time heap, which fails only at run time. */
-    RUNTIME_HEAP,
-    /** The sketch's code and the arena share one loader pool filled at boot (UNO Q). */
-    LOADER_POOL
+    RUNTIME_HEAP
 }

@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.api.hardware.led;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -11,7 +10,7 @@ import io.github.jabrena.juno.util.Delay;
  * Counts a one-decimal-digit reading from 0.0 up to 9.9 on the built-in LED matrix. The whole digit sits at column 0 and
  * the fraction digit at column 7, with a one-pixel decimal point between them at column 6, so "w.f" fits the 12 columns.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class LedMatrixDecimalCountUp {
     private static final Display DISPLAY = MCU.getDisplay();
     private static final int POINT_X = 6;
