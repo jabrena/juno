@@ -3,6 +3,7 @@ package io.github.jabrena.juno.hardware.device.carrier;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.i2c.I2c;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
 import org.jspecify.annotations.Nullable;
 
@@ -43,9 +44,10 @@ import org.jspecify.annotations.Nullable;
  *       (white) wires are {@link #getA1()} and {@link #getA3()}.</li>
  *   <li>{@link #getGroveUart()}: RX on D0; TX on D1 is {@link #getUartTx()}. These are the Nano's hardware serial
  *       pins, free on the Nano ESP32, whose {@code Serial} is USB.</li>
- *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@code MCU.getI2c()}. Use it for I2C
- *       modules only: the bus pull-ups distort a digital module's output, and a Grove PIR measured about 1.4 V at
- *       rest here, neither low nor high. Plug such a module into an analog socket instead.</li>
+ *   <li>Grove I2C and Qwiic: one bus, SDA on A4 and SCL on A5, reached through {@link #getI2c()}, which is the
+ *       board's {@code MCU.getI2c()} bus. Use it for I2C modules only: the bus pull-ups distort a digital module's
+ *       output, and a Grove PIR measured about 1.4 V at rest here, neither low nor high. Plug such a module into an
+ *       analog socket instead.</li>
  * </ul>
  * The Grove sockets' VCC is 3.3 V or 5 V, chosen by the carrier's input selector switch; the Qwiic connector and the
  * microSD slot are always 3.3 V. Set the switch to 3.3 V for a 3.3 V board such as the Nano ESP32.
@@ -174,6 +176,14 @@ public final class NanoConnectorCarrier {
     /** The Grove A2/A3 socket's second (white) wire, A3. */
     public int getA3() {
         return a3;
+    }
+
+    /**
+     * The I2C bus on the Grove I2C socket and the Qwiic connector: the board's primary bus ({@link MCU#getI2c()}),
+     * SDA on A4 and SCL on A5. The same instance every call; allocates nothing.
+     */
+    public I2c getI2c() {
+        return MCU.getI2c();
     }
 
     /** SDA, A4, shared by the Grove I2C socket and the Qwiic connector. */
