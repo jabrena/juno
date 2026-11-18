@@ -17,8 +17,9 @@ bundled library cannot be shipped as sketch source.
 
 ## What Changes
 
-- A use-gated `ShimFeature` can carry bundled C++ source. The source is emitted into the generated sketch only when a
-  program uses the feature, and it is not gated on any board FQBN.
+- A use-gated shim text block (`ShimFeatureBlock`, which exists today) carries the bundled C++ source. The source is
+  emitted into the generated sketch only when a program uses the feature, and it is not gated on any board FQBN. No new
+  declaration type is added.
 - `InstallDepsMojo` gains one pinned Library Manager entry for TensorFlow Lite Micro, once the package and version are
   chosen (gate 0 in `cat-detection-execution-order.md`).
 - Existing behaviour is preserved. No program that uses no new feature changes its `arduino-cli` arguments, its `.S`,

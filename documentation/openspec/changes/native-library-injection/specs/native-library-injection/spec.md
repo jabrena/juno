@@ -2,8 +2,8 @@
 
 ### Requirement: Bundled sketch sources follow used shim features
 
-A shim feature MAY declare bundled C++ source. The compiler SHALL emit that source into the generated sketch only when
-the program uses the feature. The emission SHALL NOT branch on a specific board FQBN.
+A shim feature's text block (`ShimFeatureBlock`) MAY carry bundled C++ source. The compiler SHALL emit that source into
+the generated sketch only when the program uses the feature. The emission SHALL NOT branch on a specific board FQBN.
 
 #### Scenario: A program using the feature gets the bundled source
 

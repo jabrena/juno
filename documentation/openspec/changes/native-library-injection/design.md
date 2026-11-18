@@ -31,8 +31,8 @@ never branches on a specific board.
 
 - **Feature-driven, not FQBN-driven.** Bundled source is attached to a shim feature. The board only decides whether
   the feature is allowed, through the existing capability gate in the `Linker`.
-- **Bundled source as sketch text (consensus, 4 of 5 panel members).** The feature's source is emitted into the
-  generated sketch through the same path `Shim.cpp` uses. This needs no `ArduinoCli` change and no new artifacts
+- **Bundled source as sketch text (consensus, 4 of 5 panel members).** The feature's source is a `ShimFeatureBlock`
+  that `RuntimeShim` appends to `Shim.cpp` only when the feature is used. The mechanism exists today. This needs no `ArduinoCli` change and no new artifacts
   under `target/`. Dissent (recorded): the plugin owner preferred a generic `--library` mechanism now. Deferred until a
   library cannot be shipped as source.
 - **Managed libraries are pinned in `InstallDepsMojo`.** Its existing `OPTIONAL_LIBRARIES` list takes `name@version`
