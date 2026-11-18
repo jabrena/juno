@@ -107,6 +107,8 @@ class ArduinoCliTest {
             return Stream.of(
                     Arguments.of(Board.UNO_R4_WIFI.fqbn(), "Blink", List.of()),
                     Arguments.of(Board.UNO_R3.fqbn(), "Blink", List.of()),
+                    Arguments.of(Board.PORTENTA_H7.fqbn(), "Doom",
+                            List.of("--build-property", "compiler.cpp.extra_flags=-DUSE_BLOCK_DEVICE_INTERFACE=1")),
                     Arguments.of(Board.UNO_Q.fqbn(), "DashboardTFT",
                             List.of("--build-property", "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0",
                                     "--library", Path.of("target/juno/libraries/JunoBearSSL").toAbsolutePath()

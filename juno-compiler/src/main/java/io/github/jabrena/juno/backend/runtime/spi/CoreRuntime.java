@@ -333,6 +333,22 @@ public interface CoreRuntime {
     String threadIncludes();
 
     /**
+     * The runtime source of {@code juno_spi_write_buffer}, the write-only block transfer behind {@code Spi.write}: the
+     * core's own {@code SPI.transfer}, unless the core's SPI peripheral can be fed faster directly.
+     */
+    default String spiWriteSource() {
+        return "common/spi-write.cpp";
+    }
+
+    /**
+     * The includes before the SD helpers: SdFat over the core's SPI bus, unless the core reaches its card another way
+     * and its headers must come before SdFat's.
+     */
+    default String sdIncludes() {
+        return "#include <SPI.h>\n#include <SdFat.h>\n";
+    }
+
+    /**
      * The core's half of the {@code java.lang.Thread} runtime (see {@code ThreadRuntime}): how a thread's stack
      * is created and how control moves between two threads, plus the {@code JUNO_MAX_THREADS} and
      * {@code JUNO_THREAD_STACK_BYTES} constants, sized from {@code config}.

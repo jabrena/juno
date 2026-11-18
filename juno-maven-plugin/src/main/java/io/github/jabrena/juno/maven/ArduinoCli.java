@@ -16,6 +16,10 @@ final class ArduinoCli {
     private static final String UNO_Q_FQBN = "arduino:zephyr:unoq";
     private static final String SDFAT_WITHOUT_ARDUINO_SERIAL =
             "compiler.cpp.extra_flags=-DENABLE_ARDUINO_SERIAL=0";
+    private static final String PORTENTA_H7_FQBN = "arduino:mbed_portenta:envie_m7";
+    /** The Hat Carrier's microSD slot is SDMMC, which SdFat reaches only through its generic block device interface. */
+    private static final String SDFAT_BLOCK_DEVICE_INTERFACE =
+            "compiler.cpp.extra_flags=-DUSE_BLOCK_DEVICE_INTERFACE=1";
 
     private final String executable;
     private final CommandExecutor executor;
@@ -58,6 +62,8 @@ final class ArduinoCli {
             // The Zephyr core has no TLS server, so HttpServer.beginTls compiles against the bundled BearSSL.
             arguments.addAll(List.of("--build-property", SDFAT_WITHOUT_ARDUINO_SERIAL,
                     "--library", absolute(bundledBearSsl(sketchDirectory))));
+        } else if (PORTENTA_H7_FQBN.equals(requiredFqbn)) {
+            arguments.addAll(List.of("--build-property", SDFAT_BLOCK_DEVICE_INTERFACE));
         }
         arguments.add(absolute(sketchDirectory));
         run(captured(arguments.toArray(String[]::new)));

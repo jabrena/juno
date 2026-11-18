@@ -896,6 +896,11 @@ public final class IntrinsicLowering {
                 ShimFeature.PICO_TRUSTZONE);
         shim(Intrinsic.SPI_BEGIN, "juno_spi_begin", Result.NONE, List.of(), ShimFeature.SPI);
         shim(Intrinsic.SPI_TRANSFER, "juno_spi_transfer", Result.WORD, List.of(arg(0)), ShimFeature.SPI);
+        shim(Intrinsic.SPI_SET_CLOCK, "juno_spi_set_clock", Result.NONE, List.of(arg(0)), ShimFeature.SPI);
+        shim(Intrinsic.SPI_TRANSFER_BUFFER, "juno_spi_transfer_buffer", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.SPI);
+        shim(Intrinsic.SPI_WRITE_BUFFER, "juno_spi_write_buffer", Result.NONE, List.of(arg(0), arg(1)),
+                ShimFeature.SPI);
         shim(Intrinsic.WIFI_BEGIN, "juno_wifi_begin", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_BEGIN_AP, "juno_wifi_begin_ap", Result.NONE, List.of(arg(0), arg(1)), ShimFeature.WIFI);
         shim(Intrinsic.WIFI_STATUS, "juno_wifi_status", Result.WORD, List.of(), ShimFeature.WIFI);

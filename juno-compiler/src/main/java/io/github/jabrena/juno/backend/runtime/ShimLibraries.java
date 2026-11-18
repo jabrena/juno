@@ -56,9 +56,12 @@ public final class ShimLibraries {
         return runtimeSource.load("common/se050.cpp");
     }
 
-    /** Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library. */
-    String spiHelpers() {
-        return runtimeSource.load("common/spi.cpp");
+    /**
+     * Full-duplex byte transfers on the primary {@code SPI} bus, with the core-bundled {@code SPI} library, and the
+     * write-only block transfer the core sends its own way ({@link CoreRuntime#spiWriteSource()}).
+     */
+    String spiHelpers(CoreRuntime core) {
+        return runtimeSource.load("common/spi.cpp") + runtimeSource.load(core.spiWriteSource());
     }
 
     /**

@@ -33,12 +33,12 @@ static int32_t juno_gpio_alias(const char* name, const int32_t* pins) {
   } else {
     return -1;
   }
-  if (name[offset] < '0' || name[offset] > '9') return -1;
-  int32_t value = name[offset] - '0';
-  if (name[offset + 1] != '\0') {
-    if (name[offset] == '0' || name[offset + 1] < '0' || name[offset + 1] > '9'
-        || name[offset + 2] != '\0') return -1;
-    value = value * 10 + name[offset + 1] - '0';
+  // One to three digits, no leading zero: a board's raw core pin index can exceed 99, as the Portenta's does.
+  if (name[offset] < '0' || name[offset] > '9' || name[offset] == '0' && name[offset + 1] != '\0') return -1;
+  int32_t value = 0;
+  for (int32_t digit = 0; name[offset + digit] != '\0'; digit++) {
+    if (digit == 3 || name[offset + digit] < '0' || name[offset + digit] > '9') return -1;
+    value = value * 10 + name[offset + digit] - '0';
   }
   for (int32_t index = 0; pins[index] >= 0; index++) {
     if (pins[index] == value) return value;
