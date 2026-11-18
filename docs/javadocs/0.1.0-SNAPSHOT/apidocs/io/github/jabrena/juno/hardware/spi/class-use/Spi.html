@@ -82,12 +82,19 @@ the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardMod
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.usb">io.github.jabrena.juno.hardware.device.usb</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Drivers for TFT display shields, currently
+<a href="../../device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
+on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
+<a href="../../device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.usb">io.github.jabrena.juno.hardware.device.usb</a></div>
+<div class="col-last even-row-color">
 <div class="block">USB host support: the MAX3421E USB Host Shield and the device drivers built on it.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
@@ -105,6 +112,24 @@ the program's flash usage).</div>
 <div class="col-second even-row-color"><span class="type-name-label">MCU.</span><code><a href="../../MCU.html#getSpi()" class="member-name-link">getSpi</a>()</code></div>
 <div class="col-last even-row-color">
 <div class="block">The selected board's primary SPI bus.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.tft">
+<h2>Uses of <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a> in <a href="../../device/tft/package-summary.html">io.github.jabrena.juno.hardware.device.tft</a></h2>
+<div class="caption"><span>Constructors in <a href="../../device/tft/package-summary.html">io.github.jabrena.juno.hardware.device.tft</a> with parameters of type <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/tft/Mhs35TftDisplay.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier)" class="member-name-link">Mhs35TftDisplay</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ <a href="../Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi,
+ <a href="../../device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a>&nbsp;carrier)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A display driven through <code>gpio</code> and <code>spi</code>: mocked ones in a unit test.</div>
 </div>
 </div>
 </section>

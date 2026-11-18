@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -402,7 +401,7 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>flash
 <td><code>juno.board</code></td>
 <td><code>compile</code>, <code>verify</code>, <code>flash</code>, <code>monitor</code></td>
 <td><em>(required without a single-board <code>@Board</code> declaration)</em></td>
-<td>Which board to build for (<code>arduino-uno-r4-wifi</code>, <code>arduino-uno-q</code>, <code>arduino-uno-r3</code>, <code>arduino-nano-esp32</code>, <code>m5stack-cardputer</code>).</td>
+<td>Which board to build for (<code>arduino-uno-r4-wifi</code>, <code>arduino-uno-r3</code>, <code>arduino-nano-esp32</code>, <code>m5stack-cardputer</code>).</td>
 </tr>
 <tr>
 <td><code>juno.arduinoCli</code></td>
@@ -464,10 +463,6 @@ Use it to confirm the board is detected and to find the <code>&lt;PORT&gt;</code
 <tr>
 <td>Arduino UNO R4 WiFi</td>
 <td><code>arduino-uno-r4-wifi</code></td>
-</tr>
-<tr>
-<td>Arduino UNO Q</td>
-<td><code>arduino-uno-q</code></td>
 </tr>
 <tr>
 <td>Arduino Nano ESP32</td>
@@ -535,7 +530,7 @@ them with <code>-D</code>:</p>
 </tr>
 <tr>
 <td><code>juno.Xss</code></td>
-<td>512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the UNO Q and Pico 2 W; 8192 on the ESP32 boards</td>
+<td>512 bytes on the AVR boards; 2048 on the UNO R4 WiFi; 4096 on the Pico 2 W; 8192 on the ESP32 boards and the Portenta H7</td>
 <td>The stack of each carrier (on AVR, of each extra task). Each board has a maximum.</td>
 </tr>
 <tr>
@@ -656,7 +651,7 @@ explicitly with <code>-Djuno.port=...</code> when more than one matching board i
 Juno derived from the entry point's <code>@Board</code> annotation; the plugin logs a warning whenever an
 override changes the effective target.</li>
 <li><strong>&quot;@Board declares multiple boards ...; pass the target board explicitly&quot;:</strong> the entry point's
-<code>@Board</code> lists more than one board (e.g. <code>@Board({ArduinoUnoQBoard.class, ArduinoUnoR4WiFiBoard.class})</code>);
+<code>@Board</code> lists more than one board (e.g. <code>@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})</code>);
 add <code>-Djuno.board=&lt;id&gt;</code> naming one of them, as printed in the error.</li>
 </ul>
     </div>

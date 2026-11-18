@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -328,7 +327,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>2017</td>
 <td>Hubs (City, Technic, BOOST, DUPLO Train) with motors and sensors, driven by LEGO's apps</td>
 <td>Bluetooth LE</td>
-<td>UNO R4 WiFi, UNO Q, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer</td>
+<td>UNO R4 WiFi, AI Thinker ESP32-CAM, Nano ESP32, M5Stack Cardputer</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.java"><code>RemotePoweredUpHub</code></a></td>
 </tr>
 <tr>
@@ -344,7 +343,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>2007</td>
 <td>Motors, lights and servos plugged into an IR Receiver (8884), normally driven by the IR remote (8885)</td>
 <td>Infrared, through an IR LED on the board</td>
-<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td>UNO R4 WiFi, Nano ESP32</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/pf/RemotePF.java"><code>RemotePF</code></a></td>
 </tr>
 <tr>
@@ -360,7 +359,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>1998</td>
 <td>The yellow programmable brick: three motor outputs, three sensor inputs, an LCD and a speaker</td>
 <td>Infrared, through an IR LED and receiver on the board</td>
-<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td>UNO R4 WiFi, Nano ESP32</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.java"><code>RemoteRcx</code></a></td>
 </tr>
 <tr>
@@ -368,7 +367,7 @@ infrared tower, and the LEGO hardware does the rest.</p>
 <td>1998</td>
 <td>The 9738 infrared handset that sends button commands to an RCX brick</td>
 <td>Infrared, using RCX remote-control frames</td>
-<td>UNO R4 WiFi, UNO Q, Nano ESP32</td>
+<td>UNO R4 WiFi, Nano ESP32</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.java"><code>RcxRemoteControl</code></a></td>
 </tr>
 </tbody>
@@ -387,7 +386,7 @@ UNO boards, and the native BLE stack on the ESP32 boards).</p>
 so it advertises, and call <code>connect</code>. It scans for the first hub it finds, for up to the given milliseconds (<code>0</code> waits
 forever). The clock is used for BLE and sensor waits. The hub drops the link when it switches off or goes out of range,
 so check <code>isConnected()</code> in long-running loops and connect again. A Technic Hub's built-in sensors (see
-<a href="#read-the-sensors">Read the sensors</a>) are subscribed on every connect. Only the UNO R4 WiFi, UNO Q, Nano ESP32,
+<a href="#read-the-sensors">Read the sensors</a>) are subscribed on every connect. Only the UNO R4 WiFi, Nano ESP32,
 AI Thinker ESP32-CAM and M5Stack Cardputer have <code>getBluetoothLe()</code>; on the UNO R3 the compiler
 rejects the call:</p>
 <pre><code class="language-java">import io.github.jabrena.juno.hardware.MCU;

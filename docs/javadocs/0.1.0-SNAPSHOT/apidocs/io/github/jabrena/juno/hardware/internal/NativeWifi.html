@@ -284,9 +284,7 @@ whole-program emulator in a test, never on the board.</div>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">begin</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#begin(java.lang.String,java.lang.String)">Wifi</a></code></span></div>
-<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio. On UNO Q, Wi-Fi belongs to Linux and must already
-be configured through App Lab or <code>nmcli</code>; this method initializes the MCU-to-Linux
-bridge and ignores the credential arguments.</div>
+<div class="block">Starts station-mode Wi-Fi on boards with an onboard radio.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../net/Wifi.html#begin(java.lang.String,java.lang.String)">begin</a></code>&nbsp;in interface&nbsp;<code><a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></dd>
@@ -304,11 +302,7 @@ bridge and ignores the credential arguments.</div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
 directly (typically to serve a provisioning page through <a href="../net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
 passphrase of at least 8 characters, or empty for an open network; call <a href="../net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a> after
-<a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_AP_LISTENING"><code>Wifi.STATUS_AP_LISTENING</code></a> to obtain the access point's address. On UNO Q the
-MCU cannot create an access point: Linux owns Wi-Fi, so the hotspot must already be running
-(<code>nmcli device wifi hotspot ssid &lt;ssid&gt; password &lt;password&gt;</code>); this method only
-initializes the MCU-to-Linux bridge, ignores both arguments, and <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports
-<a href="../net/Wifi.html#STATUS_CONNECTED"><code>Wifi.STATUS_CONNECTED</code></a> once the bridge is up.</div>
+<a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_AP_LISTENING"><code>Wifi.STATUS_AP_LISTENING</code></a> to obtain the access point's address.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../net/Wifi.html#beginAP(java.lang.String,java.lang.String)">beginAP</a></code>&nbsp;in interface&nbsp;<code><a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></dd>
@@ -337,8 +331,7 @@ initializes the MCU-to-Linux bridge, ignores both arguments, and <a href="../net
 <div class="block">Writes the board's current IPv4 address into <code>octets</code> (caller-owned, at least 4
 entries), one byte value (0-255) per element, most significant first — e.g. <code>192, 168,
 1, 45</code>. When <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_AP_LISTENING"><code>Wifi.STATUS_AP_LISTENING</code></a>, this is the access point's
-address; when it reports <a href="../net/Wifi.html#STATUS_CONNECTED"><code>Wifi.STATUS_CONNECTED</code></a>, it is the station address. UNO Q's
-current router API does not expose either address and writes four zeroes. Juno has no
+address; when it reports <a href="../net/Wifi.html#STATUS_CONNECTED"><code>Wifi.STATUS_CONNECTED</code></a>, it is the station address. Juno has no
 heap, so there is no <code>String</code>-returning form here — print each octet with <a href="../serial/Serial.html#print(int)"><code>Serial.print(int)</code></a> and a literal <code>"."</code> between them.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
@@ -354,8 +347,7 @@ heap, so there is no <code>String</code>-returning form here — print each octe
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">gatewayIP</span><wbr><span class="parameters">(int[]&nbsp;octets)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#gatewayIP(int%5B%5D)">Wifi</a></code></span></div>
 <div class="block">Writes the IPv4 address of the router the board is connected to (its gateway) into <code>octets</code> (at least 4
-entries), in the same form as <a href="../net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a>. Only meaningful once <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_CONNECTED"><code>Wifi.STATUS_CONNECTED</code></a>; a gateway that does not share the board's subnet usually means a bad DHCP lease. UNO Q's
-router API does not expose it and writes four zeroes.</div>
+entries), in the same form as <a href="../net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a>. Only meaningful once <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_CONNECTED"><code>Wifi.STATUS_CONNECTED</code></a>; a gateway that does not share the board's subnet usually means a bad DHCP lease.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../net/Wifi.html#gatewayIP(int%5B%5D)">gatewayIP</a></code>&nbsp;in interface&nbsp;<code><a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></dd>
@@ -371,7 +363,7 @@ router API does not expose it and writes four zeroes.</div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#macAddress(int%5B%5D)">Wifi</a></code></span></div>
 <div class="block">Writes the Wi-Fi interface's six-byte hardware (MAC) address into <code>octets</code> (at least 6 entries), one byte
 value (0-255) per element, most significant first; print them in hex to compare against a router's client
-list. UNO Q's router API does not expose it and writes six zeroes.</div>
+list.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../net/Wifi.html#macAddress(int%5B%5D)">macAddress</a></code>&nbsp;in interface&nbsp;<code><a href="../net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></dd>

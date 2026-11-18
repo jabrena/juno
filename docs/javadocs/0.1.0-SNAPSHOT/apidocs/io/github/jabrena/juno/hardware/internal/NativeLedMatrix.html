@@ -124,13 +124,13 @@ initTheme();
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">NativeLedMatrix</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a>
 implements <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span></div>
-<div class="block">The board's built-in LED matrix as a <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>: 12x8 on the UNO R4 WiFi, 13x8 on the UNO Q, one color. A color
+<div class="block">The board's built-in LED matrix as a <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>: 12x8 on the UNO R4 WiFi, one color. A color
 other than <a href="../display/Display.html#BLACK"><code>Display.BLACK</code></a> lights a pixel. Drawing changes a four-word buffer and <a href="#flush()"><code>flush()</code></a> sends it to the
 matrix, so a program draws a whole frame before it flushes. Text is one line of 6x8 cells at size 1, the only size
 that fits the 8 rows: <a href="#setTextSize(int)"><code>setTextSize(int)</code></a> is accepted and ignored, and text past the right edge is clipped, not
 wrapped.
 
-<p><a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands this out on the UNO R4 WiFi and the UNO Q. The
+<p><a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands this out on the UNO R4 WiFi. The
 four matrix operations are intrinsics the compiler lowers to the <code>Arduino_LED_Matrix</code> library; everything else
 is plain Java over the buffer, so a unit test can draw into it without the board.</div>
 </div>
@@ -216,7 +216,7 @@ is plain Java over the buffer, so a unit test can draw into it without the board
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#display()" class="member-name-link">display</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">The display <a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi and the UNO Q:
+<div class="block">The display <a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi:
 the board's matrix, started on first use, unless a whole-program emulator or a test replaced it.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
@@ -254,7 +254,7 @@ the board's matrix, started on first use, unless a whole-program emulator or a t
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Loads a frame packed MSB-first into four 32-bit words, exactly as the underlying
 <code>loadFrame(const uint32_t[...])</code> of the board's <code>Arduino_LED_Matrix</code> library expects: the UNO R4's 96
-pixels use the first three words and ignore <code>word3</code>; the UNO Q's 104 pixels use all four.</div>
+pixels use the first three words and ignore <code>word3</code>.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#print(char)" class="member-name-link">print</a><wbr>(char&nbsp;character)</code></div>
@@ -382,7 +382,7 @@ pixels use the first three words and ignore <code>word3</code>; the UNO Q's 104 
 <h3>display</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></span>&nbsp;<span class="element-name">display</span>()</div>
-<div class="block">The display <a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi and the UNO Q:
+<div class="block">The display <a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> hands out on the UNO R4 WiFi:
 the board's matrix, started on first use, unless a whole-program emulator or a test replaced it.</div>
 </div>
 </section>
@@ -424,7 +424,7 @@ the board's matrix, started on first use, unless a whole-program emulator or a t
  int&nbsp;word3)</span></div>
 <div class="block">Loads a frame packed MSB-first into four 32-bit words, exactly as the underlying
 <code>loadFrame(const uint32_t[...])</code> of the board's <code>Arduino_LED_Matrix</code> library expects: the UNO R4's 96
-pixels use the first three words and ignore <code>word3</code>; the UNO Q's 104 pixels use all four.</div>
+pixels use the first three words and ignore <code>word3</code>.</div>
 </div>
 </section>
 </li>

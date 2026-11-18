@@ -96,7 +96,6 @@
         <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
         <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
         <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/arduino-uno-q">UNO Q</a>
         <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
         <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
@@ -315,9 +314,8 @@ compiler intrinsics, and both need an active <a href="../wifi"><code>Wifi</code>
 <p>The host, username, password, and message fields come from the microSD card, as <code>Properties</code> values. Each one holds at
 most 31 bytes, so keep them short (see <a href="#credentials">Credentials</a>).</p>
 <h2 id="board-support">Board support</h2>
-<p><code>Smtp.sendTls</code> and <code>Pop3Client</code> work on the boards with the <code>TLS_EMAIL</code> capability: UNO R4 WiFi, UNO Q,
-Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM.
-and Nano ESP32. <code>Smtp.send</code> (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
+<p><code>Smtp.sendTls</code> and <code>Pop3Client</code> work on the boards with the <code>TLS_EMAIL</code> capability: UNO R4 WiFi,
+Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM, Raspberry Pi Pico 2 W and Portenta H7. <code>Smtp.send</code> (STARTTLS) is limited to the UNO R4 WiFi and the Nano ESP32, because only those two
 boards have the <code>SMTP_STARTTLS</code> capability. The compiler rejects a call the board cannot run.</p>
 <h2 id="credentials">Credentials</h2>
 <p>Keep the mailbox settings and the password on the microSD card, not in the Java source. Put them in

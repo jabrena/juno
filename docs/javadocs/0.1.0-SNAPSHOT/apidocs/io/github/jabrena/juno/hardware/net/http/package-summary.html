@@ -104,7 +104,7 @@ response body. JSON support needs the UNO R4 WiFi or a larger board.</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="../package-summary.html">io.github.jabrena.juno.hardware.net</a></div>
 <div class="col-last even-row-color">
-<div class="block">Wi-Fi connectivity for the UNO R4 WiFi and UNO Q:
+<div class="block">Wi-Fi connectivity for the boards with a radio:
 <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a> connects and reads the board's address.</div>
 </div>
 <div class="col-first odd-row-color"><a href="../email/package-summary.html">io.github.jabrena.juno.hardware.net.email</a></div>
@@ -136,8 +136,8 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
-the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by <code>
-BridgeTCPServer</code> (a listener in <code>arduino-router</code> on Linux) on UNO Q.</div>
+the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by each core's
+own Wi-Fi server elsewhere.</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
