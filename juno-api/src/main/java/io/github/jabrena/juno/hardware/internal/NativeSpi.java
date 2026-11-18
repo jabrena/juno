@@ -42,4 +42,13 @@ public final class NativeSpi implements Spi {
 
     @Override
     public native int transfer(int value);
+
+    @Override
+    public native void setClock(int frequencyHz);
+
+    @Override
+    public native void transfer(byte[] buffer, int length);
+
+    @Override
+    public native void write(byte[] buffer, int length);
 }

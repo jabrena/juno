@@ -135,7 +135,7 @@ public final class RuntimeShim {
             shim.append(core.wifiIncludes(usesAny(ShimFeature.UDP, ShimFeature.SNTP)));
         }
         if (uses(ShimFeature.SD)) {
-            shim.append("#include <SPI.h>\n#include <SdFat.h>\n");
+            shim.append(core.sdIncludes());
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadIncludes());
@@ -282,7 +282,7 @@ public final class RuntimeShim {
             shim.append(core.trustZoneHelpers());
         }
         if (uses(ShimFeature.SPI)) {
-            shim.append(shimLibraries.spiHelpers());
+            shim.append(shimLibraries.spiHelpers(core));
         }
     }
 

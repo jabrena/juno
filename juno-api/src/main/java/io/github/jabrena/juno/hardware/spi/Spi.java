@@ -14,4 +14,25 @@ public interface Spi {
 
     /** Clocks {@code value} (low 8 bits) out and returns the byte clocked in, {@code 0..255}. */
     int transfer(int value);
+
+    /**
+     * Sets the clock of the transfers that follow, in hertz; the board rounds it down to a rate it can make. The mode
+     * stays 0 and the bit order most significant first. Devices sharing the bus at different speeds each set their
+     * own clock when they select themselves: a display at tens of megahertz, a touch controller at two.
+     */
+    void setClock(int frequencyHz);
+
+    /**
+     * Clocks out the first {@code length} bytes of {@code buffer} in one call, replacing each with the byte clocked in
+     * at the same time. This is the fast way to send a run of data such as a row of pixels; refill the buffer before
+     * sending it again.
+     */
+    void transfer(byte[] buffer, int length);
+
+    /**
+     * Clocks out the first {@code length} bytes of {@code buffer} and discards the bytes clocked in, leaving the
+     * buffer unchanged: the fast way to send data to a device that only listens, such as a display. A board whose SPI
+     * peripheral can be fed faster than its core's transfer call sends it that way.
+     */
+    void write(byte[] buffer, int length);
 }

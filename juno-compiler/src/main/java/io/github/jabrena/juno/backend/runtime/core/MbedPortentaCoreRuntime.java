@@ -40,6 +40,40 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return "Wire1";
     }
 
+    /**
+     * The Hat Carrier's Raspberry Pi header reaches STM32 pins that have no Arduino number, so the core's raw pin
+     * indices are accepted under the names {@code GPIO159} (PI5), {@code GPIO160} (PI6) and {@code GPIO161} (PI7).
+     * Those are the variant's own indices into its pin table, which the core's {@code digitalWrite} also takes.
+     */
+    @Override
+    public String gpioAdditionalDigitalPins() {
+        return "159, 160, 161, -1";
+    }
+
+    /** The H7's SPI FIFO fed directly: the core's own transfer sends one byte per driver call. */
+    @Override
+    public String spiWriteSource() {
+        return "mbed/spi-write.cpp";
+    }
+
+    @Override
+    public String sdIncludes() {
+        // Mbed's headers before SdFat's: SdFat defines an F(str) macro that Mbed's templates would then expand.
+        return "#include <SPI.h>\n#include <SDMMCBlockDevice.h>\n#include <SdFat.h>\n";
+    }
+
+    /**
+     * SdFat over the core's SDMMC block device: the Hat Carrier's microSD slot is on the H7's SDMMC2 bus, not SPI, so
+     * the card has no chip select and SdFat mounts its volume through {@code JunoSdmmcDevice}. The SD and
+     * {@code RandomAccessFile} helpers are otherwise the shared ones.
+     */
+    @Override
+    public String sdHelpers(int openFiles, int entries, int keyBytes, int valueBytes, int lineBytes) {
+        return shimLibraries.sdHelpers(openFiles, entries, keyBytes, valueBytes, lineBytes,
+                runtimeSource.load("mbed/sdmmc-block-device.cpp"),
+                "juno_sdmmc.begin() && static_cast<FatVolume&>(juno_sd).begin(&juno_sdmmc)");
+    }
+
     @Override
     public boolean hasSe050C2() {
         return true;

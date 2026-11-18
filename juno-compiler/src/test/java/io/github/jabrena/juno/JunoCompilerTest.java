@@ -2450,6 +2450,100 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains("int32_t juno_i2c_write(int32_t address, int8_t* data, int32_t length)",
                     "int32_t juno_i2c_read(int32_t address, int8_t* buffer, int32_t length)");
         }
+
+        @Test
+        @DisplayName("SPI clock and block transfer lower to the SPI shims with a caller-owned byte buffer")
+        void shouldLowerSpiClockAndBlockTransfer() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.spi.Spi;
+                    public final class SpiBlockDemo {
+                        public static void main(String[] args) {
+                            Spi spi = MCU.getSpi();
+                            spi.begin();
+                            spi.setClock(32000000);
+                            byte[] row = new byte[64];
+                            row[0] = (byte) 0xF8;
+                            spi.transfer(row, row.length);
+                            spi.write(row, row.length);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.SpiBlockDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SpiBlockDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_spi_begin", "bl juno_spi_set_clock", "bl juno_spi_transfer_buffer",
+                    "bl juno_spi_write_buffer");
+            assertThat(result.runtimeShim()).contains("void juno_spi_set_clock(int32_t frequency)",
+                    "SPI.beginTransaction(SPISettings(", "void juno_spi_transfer_buffer(int8_t* data, int32_t length)",
+                    "SPI.transfer(data, static_cast<size_t>(length))",
+                    "void juno_spi_write_buffer(int8_t* data, int32_t length)", "memcpy(chunk, data + offset")
+                    .doesNotContain("LL_SPI_TransmitData8");
+        }
+
+        @Test
+        @DisplayName("Portenta H7 feeds an SPI write straight into the H7's SPI FIFO, with the core's transfer as fallback")
+        void shouldFeedPortentaSpiWritesToTheFifo() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.spi.Spi;
+                    @Board(io.github.jabrena.juno.annotations.ArduinoPortentaH7Board.class)
+                    public final class PortentaSpiWriteDemo {
+                        public static void main(String[] args) {
+                            Spi spi = MCU.getSpi();
+                            spi.begin();
+                            byte[] row = new byte[64];
+                            spi.write(row, row.length);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaSpiWriteDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PortentaSpiWriteDemo");
+
+            // Then
+            assertThat(result.assembly()).contains("bl juno_spi_write_buffer");
+            assertThat(result.runtimeShim()).contains("#include \"stm32h7xx_ll_spi.h\"", "LL_SPI_TransmitData8",
+                    "juno_spi_write_chunked(data, length)");
+        }
+
+        @Test
+        @DisplayName("Portenta H7 accepts the raw pin names its Hat Carrier needs, up to three digits")
+        void shouldResolvePortentaRawPinNames() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.gpio.Gpio;
+                    @Board(io.github.jabrena.juno.annotations.ArduinoPortentaH7Board.class)
+                    public final class PortentaRawPinDemo {
+                        public static void main(String[] args) {
+                            Gpio gpio = MCU.getGpio();
+                            int dataCommand = gpio.digitalPin("GPIO161");
+                            gpio.pinMode(dataCommand, gpio.getOutput());
+                            gpio.digitalWrite(dataCommand, true);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaRawPinDemo", source);
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PortentaRawPinDemo");
+
+            // Then
+            assertThat(result.runtimeShim()).contains("juno_gpio_additional_digital_pins[] = {\n159, 160, 161, -1}",
+                    "if (digit == 3 ||");
+        }
     }
 
     @Nested

@@ -194,7 +194,7 @@ public final class AvrRuntimeShim {
                 new ShimFeatureBlock(ShimFeature.PARALLEL_BUS, core::parallelBusHelpers),
                 new ShimFeatureBlock(ShimFeature.INFRARED, shimLibraries::infraredHelpers),
                 new ShimFeatureBlock(ShimFeature.I2C, shimLibraries::i2cHelpers),
-                new ShimFeatureBlock(ShimFeature.SPI, shimLibraries::spiHelpers),
+                new ShimFeatureBlock(ShimFeature.SPI, () -> shimLibraries.spiHelpers(core)),
                 new ShimFeatureBlock(ShimFeature.EEPROM, shimLibraries::eepromHelpers),
                 new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
                 new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
