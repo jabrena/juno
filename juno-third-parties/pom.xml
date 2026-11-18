@@ -22,5 +22,6 @@
     <modules>
         <module>juno-rcx-firmware</module>
         <module>juno-pico-secure</module>
+        <module>juno-cat-detection</module>
     </modules>
 </project>
