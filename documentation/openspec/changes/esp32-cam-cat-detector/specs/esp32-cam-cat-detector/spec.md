@@ -34,7 +34,7 @@ in the Juno arena (`-Djuno.Xmx`).
 
 ### Requirement: Cat detection is capability-gated and use-gated
 
-`Esp32Cam.getCatDetector()` and its intrinsics SHALL compile only for boards that declare the cat-detection
+`MCU.getCatDetector()` and its intrinsics SHALL compile only for boards that declare the cat-detection
 capability, which in v1 is only `ai-thinker-esp32-cam`. Every other board SHALL fail at compile time with a clear
 `CompileException`. The shim includes, the TensorFlow Lite Micro library and the `cat_inference` library SHALL be
 emitted and linked only when a program uses the intrinsic. Every existing example's generated `.S`, `Shim.cpp` and

@@ -23,15 +23,18 @@
 
 ## Decisions
 
-- **Interface + native instance.** `Esp32Cam.getCatDetector()` returns `NativeCatDetector`. The detection logic in a
+- **Interface + native instance.** `MCU.getCatDetector()` returns `NativeCatDetector`. The detection logic in a
   program can be tested with a mock `CatDetector`.
-- **TensorFlow Lite Micro from the Arduino Library Manager**, pinned to an exact version, installed through
-  `native-library-injection`. The maintainer chose this over vendoring the sources or using Espressif's
+- **TensorFlow Lite Micro from the Arduino Library Manager**, pinned to an exact version in `InstallDepsMojo`, as
+  `native-library-injection` defines. The maintainer chose this over vendoring the sources or using Espressif's
   `esp-tflite-micro`. The model and the wrapper live in a repo-bundled `cat_inference` library, so
   `ExamplesArchitectureTest` is unchanged.
 - **Tensor arena outside the Juno arena.** It is allocated by the shim, in PSRAM if needed. Only the 4 KiB image
   buffer counts against `-Djuno.Xmx`.
 - **Integer score.** The shim maps the sigmoid output to 0..1000.
+- **Input 64×64.** A 96×96 input needs 9,216 bytes, more than the whole 8 KiB Juno arena, so it is ruled out for v1.
+  The 4 KiB image buffer is half the arena. The risk report must show headroom. If it is too tight, the fallback is
+  48×48 (2,304 bytes), which changes `inputSize()` only, not the API.
 
 ## Risks / Trade-offs
 

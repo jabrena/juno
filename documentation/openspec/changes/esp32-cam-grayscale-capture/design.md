@@ -29,6 +29,9 @@ A guard (`juno_camera_ready`) prevents a second init. The board has `BOARD_HAS_P
 - **Downscale in the shim.** Conversion and downscaling run in C++ into the caller's buffer, so no float math or loop
   runs in the Java program.
 - **Failure is a `false` return**, never a panic.
+- **Mode strategy (decided by the panel, 2026-11-18).** One camera mode per program. A program that calls both
+  `capture` and `captureGrayscale` is rejected at compile time with a `CompileException`, so the camera is never
+  re-initialised at run time. This rule stands even if the spike falls back to YUV422.
 
 ## Risks / Trade-offs
 
@@ -38,7 +41,4 @@ A guard (`juno_camera_ready`) prevents a second init. The board has `BOARD_HAS_P
 
 ## Open Questions
 
-- **Mode strategy (unresolved in the source).** Two options:
-  - (a) One camera mode per program, chosen at compile time from which capture call the program uses.
-  - (b) Re-initialise when the program switches between `capture` and `captureGrayscale`.
-  Behaviour when one program uses both calls is undefined until this is decided.
+- None on the mode strategy. The pixel source is still decided by the hardware spike (task 1.1).

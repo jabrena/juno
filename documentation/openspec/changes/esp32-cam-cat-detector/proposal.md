@@ -13,10 +13,11 @@ This change delivers the user-visible goal of issue #312: offline cat detection 
   - `begin()`
   - `inputSize()`, which returns 64 for the first model
   - `int score(byte[] grayscale)`, which returns 0..`MAX_SCORE`, so the program needs no float math
-- `hardware/internal/NativeCatDetector` and a new `Esp32Cam.getCatDetector()` accessor.
+- `hardware/internal/NativeCatDetector` and a new `MCU.getCatDetector()` accessor. The `Esp32Cam` class was removed in
+  #344; the MCU facade is the only entry point.
 - A new capability on `AI_THINKER_ESP32_CAM`. `IntrinsicRegistry`/`IntrinsicLowering` entries with a `Linker` gate:
   every other board fails to compile with a clear error.
-- A use-gated shim feature that declares two libraries through `native-library-injection`:
+- A use-gated shim feature that needs two native pieces, delivered as `native-library-injection` defines:
   - TensorFlow Lite Micro from the Arduino Library Manager, at a pinned version.
   - A repo-bundled `cat_inference` library (`cat_inference.cpp`/`.h`) that embeds the tracked model as a C array.
 
@@ -43,7 +44,7 @@ None.
 
 ## Impact
 
-- `juno-api`: `Esp32Cam`, a new `vision` package, `hardware/internal`.
+- `juno-api`: `MCU` (the `getCatDetector()` accessor), a new `vision` package, `hardware/internal`.
 - `juno-compiler`: `Board`, `Capability`, `IntrinsicRegistry`, `IntrinsicLowering`, `Linker`, `ShimFeature`,
   `Esp32CoreRuntime`.
 - The `cat_inference` library inside `juno-third-parties/juno-cat-detection`.

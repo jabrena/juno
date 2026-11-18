@@ -3,7 +3,8 @@
 Two precedents exist in the repo:
 - `juno-third-parties/juno-rcx-firmware`: a host-side generator with a tracked artifact (the S-record), regenerated
   on demand.
-- `juno-third-parties/juno-bearssl`: a vendored native library with its own `LICENSE.txt`.
+- `juno-third-parties/juno-pico-secure`: a third-party module that vendors native code. It replaces `juno-bearssl`, which
+  was removed with the UNO Q (#388) and is no longer a precedent.
 
 Build-machine code is written object-oriented (AGENTS.md code style).
 
