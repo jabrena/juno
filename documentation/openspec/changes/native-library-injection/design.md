@@ -1,50 +1,51 @@
 ## Context
 
-Today the mapping from board to library is a hard-coded branch in `ArduinoCli.compile`:
-- The UNO Q gets `--build-property` settings plus `--library <target/juno/libraries/JunoBearSSL>`, installed by
-  `BearSslLibrary.installInto`.
-- The UNO R3 WiFi Rev2 gets a `--build-property`.
+Today `ArduinoCli.compile` builds its arguments from the FQBN and the sketch path, with two board-specific extras:
+- the Portenta H7 gets the SDFAT block-device `--build-property`;
+- the Pico 2 W secure firmware goes through `compileForPicoSecureFirmware`, with its own build properties.
 
-`InstallDepsMojo` can already run `arduino-cli lib install <name>`. The compiler already knows which `ShimFeature`s a
-program uses, because `RuntimeShim` gates includes and helpers on `uses(ShimFeature.X)`. The repo norm is that the
-backend never branches on a specific board.
+No `--library` argument is passed for any board.
+
+`InstallDepsMojo` already installs pinned managed libraries with `arduino-cli lib install name@version`. The compiler
+already knows which `ShimFeature`s a program uses, because `RuntimeShim` gates includes and helpers on
+`uses(ShimFeature.X)`. Shim sources reach the generated sketch as text in `Shim.cpp`. The repo norm is that the backend
+never branches on a specific board.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- One mechanism through which a shim feature declares the native libraries it needs.
-- The plugin links exactly that set of libraries.
-- Repo-bundled libraries and pinned Library Manager libraries are both supported.
+- A use-gated shim feature can carry bundled C++ source (the `cat_inference` wrapper and its model array).
+- A pinned Library Manager library (TensorFlow Lite Micro) is installed at its exact version.
+- Programs that use neither are unchanged, byte for byte.
 - Offline tests use the fake process executor.
 
 **Non-Goals:**
-- Changing which libraries existing programs link. BearSSL on the UNO Q stays as it is today, unconditional for
-  that FQBN, unless a later change decides otherwise.
-- Adding TensorFlow Lite Micro itself. That belongs to `esp32-cam-cat-detector`.
+- A generic `--library` argument in `ArduinoCli.compile`. It is deferred until a bundled library cannot be emitted as
+  sketch source (for example a large prebuilt archive).
+- Restoring the removed UNO Q BearSSL path.
 - The `.env` key allowlist idea.
+- Adding TensorFlow Lite Micro's code to the repo. That belongs to `esp32-cam-cat-detector`, through the pinned
+  library.
 
 ## Decisions
 
-- **Feature-driven, not FQBN-driven.** The library list is computed from the shim features the program uses. The
-  board only decides whether a feature is allowed, through the existing capability gate in the `Linker`.
-  - Alternative rejected: an `esp32:esp32:esp32cam` FQBN branch. The maintainer declined it in favour of a generic
-    mechanism.
-- **Two library kinds.**
-  - *Bundled*: a repo module that provides an installer, like `BearSslLibrary`. It is copied into
-    `target/juno/libraries` and passed with `--library`.
-  - *Managed*: an Arduino Library Manager name plus an exact version, installed with `lib install name@version`.
-- **Channel from compiler to plugin.** The compiled program exposes its required libraries to the Mojos. The concrete
-  carrier (the report, or the compile-result API) is left to implementation, with one constraint: for programs
-  that need no library, the existing reports must stay byte-identical.
+- **Feature-driven, not FQBN-driven.** Bundled source is attached to a shim feature. The board only decides whether
+  the feature is allowed, through the existing capability gate in the `Linker`.
+- **Bundled source as sketch text (consensus, 4 of 5 panel members).** The feature's source is emitted into the
+  generated sketch through the same path `Shim.cpp` uses. This needs no `ArduinoCli` change and no new artifacts
+  under `target/`. Dissent (recorded): the plugin owner preferred a generic `--library` mechanism now. Deferred until a
+  library cannot be shipped as source.
+- **Managed libraries are pinned in `InstallDepsMojo`.** Its existing `OPTIONAL_LIBRARIES` list takes `name@version`
+  entries. TensorFlow Lite Micro is added there once gate 0 picks the package and version.
 
 ## Risks / Trade-offs
 
+- The model is about 100 KB as a C array in sketch text. Compile time and sketch size must be measured in the
+  TensorFlow Lite Micro spike (S-C) before the real model is wired.
 - Library Manager versions can drift against the `esp32:esp32` core, which the repo does not pin → pin the library
   version, and record the core version used by CI.
-- A bundled library could appear on the command line twice, for example BearSSL on the UNO Q → use de-duplicated,
-  deterministic ordering.
+- The C array must stay in flash, not RAM, on the ESP32. The spike checks the link map.
 
 ## Open Questions
 
-- Should the UNO Q's BearSSL move behind its shim feature (`HttpServer.beginTls`), or stay unconditional? The source
-  does not decide this, so it is unresolved.
+- The Library Manager package name and version for TensorFlow Lite Micro (gate 0, U3).

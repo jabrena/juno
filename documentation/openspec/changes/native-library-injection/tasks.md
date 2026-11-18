@@ -1,9 +1,9 @@
-## 1. Native library injection
+## 1. Bundled sources and pinned libraries
 
-- [ ] 1.1 Model a library declaration (bundled installer, or managed name plus pinned version) and attach declarations to shim features in `juno-compiler`.
-- [ ] 1.2 Expose a compiled program's required libraries to the Mojos, keeping existing reports byte-identical for programs with no library.
-- [ ] 1.3 Replace the hard-coded BearSSL `--library` branch in `ArduinoCli.compile` with the feature-driven list, preserving the UNO Q and UNO R3 WiFi Rev2 build properties and the UNO Q BearSSL linkage.
-- [ ] 1.4 Install managed libraries at their pinned version through `InstallDepsMojo`, and bundled libraries once per version into `target/juno/libraries`, with deterministic, de-duplicated ordering.
-- [ ] 1.5 Add fake-executor Mojo tests for bundled, managed, and no-library programs, plus the UNO Q regression.
-- [ ] 1.6 Regenerate every example and confirm `.S`, `Shim.cpp` and reports are byte-identical. Run `./mvnw test` and the full `verify`.
+- [ ] 1.1 Capture a baseline: the `arduino-cli` arguments, `.S`, `Shim.cpp` and report of every existing example, before any edit.
+- [ ] 1.2 Add an optional bundled-source declaration to `ShimFeature` (C++ text, use-gated), emitted into the generated sketch through the existing `Shim.cpp` path, with no board branch.
+- [ ] 1.3 Add a pinned Library Manager entry to `InstallDepsMojo` once gate 0 picks the TensorFlow Lite Micro package and version. Record the `esp32:esp32` core version CI uses.
+- [ ] 1.4 Add fake-executor Mojo tests: the pinned library is installed at its exact version, and programs without a new feature produce identical `arduino-cli` arguments.
+- [ ] 1.5 Add a compiler test: the bundled source appears in the sketch only when the feature is used.
+- [ ] 1.6 Regenerate every example and confirm `.S`, `Shim.cpp` and reports are byte-identical to the baseline. Run `./mvnw test`.
 - [ ] 1.7 Document the mechanism in `juno-site/src/main/resources/content/third-parties.md`.
