@@ -89,9 +89,15 @@ initTheme();
 <li><a href="#color(int,int,int)" tabindex="0">color(int, int, int)</a></li>
 <li><a href="#width()" tabindex="0">width()</a></li>
 <li><a href="#height()" tabindex="0">height()</a></li>
+<li><a href="#flush()" tabindex="0">flush()</a></li>
 <li><a href="#fillScreen(int)" tabindex="0">fillScreen(int)</a></li>
 <li><a href="#drawPixel(int,int,int)" tabindex="0">drawPixel(int, int, int)</a></li>
 <li><a href="#fillRect(int,int,int,int,int)" tabindex="0">fillRect(int, int, int, int, int)</a></li>
+<li><a href="#drawHorizontalLine(int,int,int,int)" tabindex="0">drawHorizontalLine(int, int, int, int)</a></li>
+<li><a href="#drawVerticalLine(int,int,int,int)" tabindex="0">drawVerticalLine(int, int, int, int)</a></li>
+<li><a href="#drawRect(int,int,int,int,int)" tabindex="0">drawRect(int, int, int, int, int)</a></li>
+<li><a href="#fillCircle(int,int,int,int)" tabindex="0">fillCircle(int, int, int, int)</a></li>
+<li><a href="#drawCircle(int,int,int,int)" tabindex="0">drawCircle(int, int, int, int)</a></li>
 <li><a href="#setCursor(int,int)" tabindex="0">setCursor(int, int)</a></li>
 <li><a href="#setTextColor(int,int)" tabindex="0">setTextColor(int, int)</a></li>
 <li><a href="#setTextSize(int)" tabindex="0">setTextSize(int)</a></li>
@@ -110,14 +116,16 @@ initTheme();
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>All Known Implementing Classes:</dt>
-<dd><code><a href="../device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a>, <a href="../internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a></code></dd>
+<dd><code><a href="../device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a>, <a href="../internal/NativeDisplay.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDisplay</a>, <a href="../internal/NativeLedMatrix.html" title="class in io.github.jabrena.juno.hardware.internal">NativeLedMatrix</a>, <a href="../device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft">TftTouchShield</a></code></dd>
 </dl>
 <hr>
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public interface </span><span class="element-name type-name-label">Display</span></div>
-<div class="block">A board display with RGB565 colors, basic drawing operations and text output. Implementations are supplied by
-<a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> so application code can receive a mock
-in unit tests.</div>
+<div class="block">A board display with basic drawing operations and text output. Color displays use RGB565 colors. A monochrome
+display (the Grove OLED, the LED matrix) lights a pixel for every color other than <a href="#BLACK"><code>BLACK</code></a>, so the palette
+works on every display. Coordinates outside the display are ignored. Use <a href="#width()"><code>width()</code></a> and <a href="#height()"><code>height()</code></a> to
+place content: the LED matrix is 12 or 13 pixels wide and 8 high. Implementations are supplied by
+<a href="../MCU.html#getDisplay()"><code>MCU.getDisplay()</code></a> so application code can receive a mock in unit tests.</div>
 </div>
 </section>
 <section class="summary">
@@ -163,7 +171,7 @@ in unit tests.</div>
 <section class="method-summary" id="method-summary">
 <h2>Method Summary</h2>
 <div id="method-summary-table">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="method-summary-table-tab0" role="tab" aria-selected="true" aria-controls="method-summary-table.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table', 3)" class="active-table-tab">All Methods</button><button id="method-summary-table-tab1" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab1', 3)" class="table-tab">Static Methods</button><button id="method-summary-table-tab2" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab2', 3)" class="table-tab">Instance Methods</button><button id="method-summary-table-tab3" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab3', 3)" class="table-tab">Abstract Methods</button><button id="method-summary-table-tab5" role="tab" aria-selected="false" aria-controls="method-summary-table.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('method-summary-table', 'method-summary-table-tab5', 3)" class="table-tab">Default Methods</button></div>
 <div id="method-summary-table.tabpanel" role="tabpanel" aria-labelledby="method-summary-table-tab0">
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier and Type</div>
@@ -176,21 +184,68 @@ in unit tests.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1">
 <div class="block">Packs 8-bit red, green and blue channels into an RGB565 color.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#drawCircle(int,int,int,int)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Draws the 1-pixel outline of a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#drawHorizontalLine(int,int,int,int)" class="member-name-link">drawHorizontalLine</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Draws a horizontal line of <code>width</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#drawPixel(int,int,int)" class="member-name-link">drawPixel</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#fillRect(int,int,int,int,int)" class="member-name-link">fillRect</a><wbr>(int&nbsp;x,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#drawRect(int,int,int,int,int)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  int&nbsp;color)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Draws the 1-pixel outline of a <code>width</code>x<code>height</code> rectangle whose top-left corner is
+(<code>x</code>, <code>y</code>).</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#drawVerticalLine(int,int,int,int)" class="member-name-link">drawVerticalLine</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;height,
+ int&nbsp;color)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Draws a vertical line of <code>height</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#fillCircle(int,int,int,int)" class="member-name-link">fillCircle</a><wbr>(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Fills a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#fillScreen(int)" class="member-name-link">fillScreen</a><wbr>(int&nbsp;color)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#fillRect(int,int,int,int,int)" class="member-name-link">fillRect</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ int&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#fillScreen(int)" class="member-name-link">fillScreen</a><wbr>(int&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">&nbsp;</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code>default void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5"><code><a href="#flush()" class="member-name-link">flush</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab5">
+<div class="block">Shows the drawing so far.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#height()" class="member-name-link">height</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
@@ -401,6 +456,16 @@ in unit tests.</div>
 </section>
 </li>
 <li>
+<section class="detail" id="flush()">
+<h3>flush</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">flush</span>()</div>
+<div class="block">Shows the drawing so far. Color displays draw as they are called, so this does nothing there. A buffered display
+shows its buffer only here.</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="fillScreen(int)">
 <h3>fillScreen</h3>
 <div class="horizontal-scroll">
@@ -427,6 +492,68 @@ in unit tests.</div>
  int&nbsp;width,
  int&nbsp;height,
  int&nbsp;color)</span></div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="drawHorizontalLine(int,int,int,int)">
+<h3>drawHorizontalLine</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawHorizontalLine</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;color)</span></div>
+<div class="block">Draws a horizontal line of <code>width</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="drawVerticalLine(int,int,int,int)">
+<h3>drawVerticalLine</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawVerticalLine</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;height,
+ int&nbsp;color)</span></div>
+<div class="block">Draws a vertical line of <code>height</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="drawRect(int,int,int,int,int)">
+<h3>drawRect</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRect</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ int&nbsp;color)</span></div>
+<div class="block">Draws the 1-pixel outline of a <code>width</code>x<code>height</code> rectangle whose top-left corner is
+(<code>x</code>, <code>y</code>).</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="fillCircle(int,int,int,int)">
+<h3>fillCircle</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">fillCircle</span><wbr><span class="parameters">(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</span></div>
+<div class="block">Fills a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="drawCircle(int,int,int,int)">
+<h3>drawCircle</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">default</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawCircle</span><wbr><span class="parameters">(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</span></div>
+<div class="block">Draws the 1-pixel outline of a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
 </div>
 </section>
 </li>

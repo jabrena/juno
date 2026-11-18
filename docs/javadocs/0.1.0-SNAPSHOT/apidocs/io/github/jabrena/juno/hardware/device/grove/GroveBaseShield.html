@@ -95,6 +95,7 @@ initTheme();
 <li><a href="#getUartTx()" tabindex="0">getUartTx()</a></li>
 <li><a href="#getI2cSda()" tabindex="0">getI2cSda()</a></li>
 <li><a href="#getI2cScl()" tabindex="0">getI2cScl()</a></li>
+<li><a href="#getI2c()" tabindex="0">getI2c()</a></li>
 </ol>
 </li>
 </ol>
@@ -208,24 +209,30 @@ socket; the driver only needs the signal pin.</div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The UNO pin behind the D8 socket.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cScl()" class="member-name-link">getI2cScl</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2c()" class="member-name-link">getI2c</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The I2C bus behind the I2C_SDA and I2C_SCL sockets (A4 and A5), to pass to a Grove I2C driver such as
+<code>GroveOledSsd1315</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cScl()" class="member-name-link">getI2cScl</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The UNO pin behind the I2C_SCL socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cSda()" class="member-name-link">getI2cSda</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getI2cSda()" class="member-name-link">getI2cSda</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The UNO pin behind the I2C_SDA socket.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartRx()" class="member-name-link">getUartRx</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartRx()" class="member-name-link">getUartRx</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The UNO pin behind the UART_RX socket.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartTx()" class="member-name-link">getUartTx</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getUartTx()" class="member-name-link">getUartTx</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The UNO pin behind the UART_TX socket.</div>
 </div>
 </div>
@@ -403,6 +410,16 @@ socket; the driver only needs the signal pin.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getI2cScl</span>()</div>
 <div class="block">The UNO pin behind the I2C_SCL socket.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getI2c()">
+<h3>getI2c</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../i2c/I2c.html" title="interface in io.github.jabrena.juno.hardware.i2c">I2c</a></span>&nbsp;<span class="element-name">getI2c</span>()</div>
+<div class="block">The I2C bus behind the I2C_SDA and I2C_SCL sockets (A4 and A5), to pass to a Grove I2C driver such as
+<code>GroveOledSsd1315</code>. It is the board's bus, the same instance <code>MCU.getI2c()</code> returns, on every call.</div>
 </div>
 </section>
 </li>

@@ -71,7 +71,12 @@ initTheme();
 <ol class="toc-list" tabindex="-1">
 <li><a href="#" tabindex="0">Description</a></li>
 <li><a href="#field-summary" tabindex="0">Field Summary</a></li>
-<li><a href="#method-summary" tabindex="0">Method Summary</a></li>
+<li><a href="#method-summary" tabindex="0">Method Summary</a>
+<ol class="toc-list">
+<li><a href="#methods-inherited-from-class-java.lang.Object" tabindex="0">Methods inherited from class&nbsp;Object</a></li>
+<li><a href="#methods-inherited-from-class-io.github.jabrena.juno.hardware.display.Display" tabindex="0">Methods inherited from interface&nbsp;Display</a></li>
+</ol>
+</li>
 <li><a href="#field-detail" tabindex="0">Field Details</a>
 <ol class="toc-list">
 <li><a href="#INSTANCE" tabindex="0">INSTANCE</a></li>
@@ -243,6 +248,62 @@ implements <a href="../display/Display.html" title="interface in io.github.jabre
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#method-summary" title="class in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#clone()" title="clone()" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="equals(Object)" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#finalize()" title="finalize()" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#getClass()" title="getClass()" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#hashCode()" title="hashCode()" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notify()" title="notify()" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#notifyAll()" title="notifyAll()" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#toString()" title="toString()" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait()" title="wait()" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long)" title="wait(long)" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="wait(long, int)" class="external-link">wait</a></code></div>
+<div class="inherited-list">
+<h3 id="methods-inherited-from-class-io.github.jabrena.juno.hardware.display.Display">Methods inherited from interface&nbsp;<a href="../display/Display.html#method-summary" title="interface in io.github.jabrena.juno.hardware.display">Display</a></h3>
+<code><a href="../display/Display.html#drawCircle(int,int,int,int)" title="drawCircle(int, int, int, int)">drawCircle</a>, <a href="../display/Display.html#drawHorizontalLine(int,int,int,int)" title="drawHorizontalLine(int, int, int, int)">drawHorizontalLine</a>, <a href="../display/Display.html#drawRect(int,int,int,int,int)" title="drawRect(int, int, int, int, int)">drawRect</a>, <a href="../display/Display.html#drawVerticalLine(int,int,int,int)" title="drawVerticalLine(int, int, int, int)">drawVerticalLine</a>, <a href="../display/Display.html#fillCircle(int,int,int,int)" title="fillCircle(int, int, int, int)">fillCircle</a>, <a href="../display/Display.html#flush()" title="flush()">flush</a></code>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>default void</code></div>
+<div class="col-second even-row-color"><code><a href="../display/Display.html#drawCircle(int,int,int,int)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Draws the 1-pixel outline of a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+</div>
+<div class="col-first odd-row-color"><code>default void</code></div>
+<div class="col-second odd-row-color"><code><a href="../display/Display.html#drawHorizontalLine(int,int,int,int)" class="member-name-link">drawHorizontalLine</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;color)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Draws a horizontal line of <code>width</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
+<div class="col-first even-row-color"><code>default void</code></div>
+<div class="col-second even-row-color"><code><a href="../display/Display.html#drawRect(int,int,int,int,int)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ int&nbsp;color)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Draws the 1-pixel outline of a <code>width</code>x<code>height</code> rectangle whose top-left corner is
+(<code>x</code>, <code>y</code>).</div>
+</div>
+<div class="col-first odd-row-color"><code>default void</code></div>
+<div class="col-second odd-row-color"><code><a href="../display/Display.html#drawVerticalLine(int,int,int,int)" class="member-name-link">drawVerticalLine</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;height,
+ int&nbsp;color)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Draws a vertical line of <code>height</code> pixels starting at (<code>x</code>, <code>y</code>).</div>
+</div>
+<div class="col-first even-row-color"><code>default void</code></div>
+<div class="col-second even-row-color"><code><a href="../display/Display.html#fillCircle(int,int,int,int)" class="member-name-link">fillCircle</a><wbr>(int&nbsp;cx,
+ int&nbsp;cy,
+ int&nbsp;r,
+ int&nbsp;color)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Fills a circle of radius <code>r</code> centered on (<code>cx</code>, <code>cy</code>).</div>
+</div>
+<div class="col-first odd-row-color"><code>default void</code></div>
+<div class="col-second odd-row-color"><code><a href="../display/Display.html#flush()" class="member-name-link">flush</a>()</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Shows the drawing so far.</div>
+</div>
+</div>
+</div>
 </section>
 </li>
 </ul>

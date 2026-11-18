@@ -451,7 +451,7 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <tr>
 <td>Onboard LED matrix</td>
 <td align="center">✓</td>
-<td>12 × 8 through <code>LedMatrix</code> and <code>LedCanvas</code>.</td>
+<td>12 × 8 through <code>MCU.getDisplay()</code>, a monochrome <code>Display</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a></td>
 </tr>
 <tr>
@@ -525,19 +525,19 @@ while (true) {
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass
 <code>-Djuno.board=arduino-uno-r4-wifi</code>.</p>
 <h3 id="scroll-text-on-the-led-matrix">Scroll text on the LED matrix</h3>
-<p>The matrix is 12 columns by 8 rows. <code>LedCanvas</code> draws into a frame and <code>show</code> sends it to the matrix:</p>
-<pre><code class="language-java">LedMatrix matrix = MCU.getLedMatrix();
-matrix.begin();
-boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+<p>The matrix is 12 columns by 8 rows. <code>MCU.getDisplay()</code> returns it as a <code>Display</code>: <code>print</code> draws text and <code>flush</code> sends the frame to the matrix:</p>
+<pre><code class="language-java">Display display = MCU.getDisplay();
+display.setTextColor(Display.WHITE, Display.BLACK);
 
 for (int offset = 12; offset &gt;= -60; offset--) {
-    LedCanvas.clear(frame);
-    LedCanvas.drawText(frame, &quot;Hello, Juno&quot;, offset, 0);
-    LedCanvas.show(frame);
+    display.fillScreen(Display.BLACK);
+    display.setCursor(offset, 0);
+    display.print(&quot;Hello, Juno&quot;);
+    display.flush();
     Delay.millis(80);
 }
 </code></pre>
-<p><code>drawText</code> takes a compile-time string literal. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
+<p><code>print</code> takes any <code>String</code>, and the matrix clips the text at its edges. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
 message forever.</p>
 <h3 id="usb-hid-mouse">USB HID mouse</h3>
 <p><code>MCU.getMouse()</code> makes the board a USB mouse for the computer it is plugged into. Call <code>begin()</code> once, then

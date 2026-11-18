@@ -125,10 +125,9 @@ mode, plus 5 buttons wired through a single resistor ladder into one analog pin)
 standard pinout as used by e.g. <a href="https://github.com/dzindra/lcdkeypad">dzindra/lcdkeypad</a>:
 LCD data/control on digital pins 4-9, backlight on digital pin 10, buttons on <code>A0</code>.
 
-<p>Unlike <a href="../../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>, this shield needs no new compiler
-intrinsic: every operation here is built from <a href="../../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>, <a href="../../gpio/Gpio.html#digitalWrite(int,boolean)"><code>Gpio.digitalWrite(int, boolean)</code></a>,
-<a href="../../gpio/Gpio.html#analogRead(int)"><code>Gpio.analogRead(int)</code></a>, and <a href="../../../util/Delay.html" title="class in io.github.jabrena.juno.util"><code>Delay</code></a>, the same way <a href="../../led/LedCanvas.html" title="class in io.github.jabrena.juno.hardware.led"><code>LedCanvas</code></a>
-is built from <a href="../../led/LedMatrix.html" title="interface in io.github.jabrena.juno.hardware.led"><code>LedMatrix</code></a>.</div>
+<p>Unlike the board's LED matrix, this shield needs no new compiler intrinsic: every operation here
+is built from <a href="../../gpio/Gpio.html#pinMode(int,int)"><code>Gpio.pinMode(int, int)</code></a>, <a href="../../gpio/Gpio.html#digitalWrite(int,boolean)"><code>Gpio.digitalWrite(int, boolean)</code></a>, <a href="../../gpio/Gpio.html#analogRead(int)"><code>Gpio.analogRead(int)</code></a>, and
+<a href="../../../util/Delay.html" title="class in io.github.jabrena.juno.util"><code>Delay</code></a>.</div>
 </div>
 </section>
 <section class="summary">
