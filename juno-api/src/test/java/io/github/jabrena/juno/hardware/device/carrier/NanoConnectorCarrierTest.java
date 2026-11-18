@@ -1,6 +1,9 @@
 package io.github.jabrena.juno.hardware.device.carrier;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.internal.NativeI2c;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +14,22 @@ import static org.mockito.Mockito.when;
 
 @DisplayName("Nano Connector Carrier pin mapping")
 class NanoConnectorCarrierTest {
+
+    @AfterEach
+    void restoreBoardI2c() {
+        NativeI2c.setI2c(NativeI2c.INSTANCE);
+    }
+
+    @Test
+    @DisplayName("Hands out the board's I2C bus for the Grove I2C socket and Qwiic connector")
+    void shouldHandOutTheBoardI2cBus() {
+        // Given
+        I2c board = mock(I2c.class);
+        NativeI2c.setI2c(board);
+        NanoConnectorCarrier carrier = new NanoConnectorCarrier(pins());
+        // When & Then
+        assertThat(carrier.getI2c()).isSameAs(board);
+    }
 
     @Test
     @DisplayName("Maps the microSD slot to SPI with chip select on D4, or D2/D3 through its jumpers")
