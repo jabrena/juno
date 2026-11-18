@@ -571,6 +571,93 @@ class BoardTest {
     }
 
     @Test
+    @DisplayName("The ESP32-CAM rejects one program that captures both JPEG and grayscale frames")
+    void shouldRejectJpegAndGrayscaleCaptureTogether() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.device.camera.Camera;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class JpegAndGrayscale {
+                    public static void main(String[] args) {
+                        Camera camera = MCU.getCamera();
+                        byte[] jpeg = new byte[1024];
+                        byte[] pixels = new byte[4096];
+                        camera.capture(jpeg);
+                        camera.captureGrayscale(pixels, 64, 64);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JpegAndGrayscale", source);
+        JunoCompiler juno = new JunoCompiler();
+
+        // When & Then
+        assertThatThrownBy(() -> juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.JpegAndGrayscale",
+                false, Optional.of(Board.AI_THINKER_ESP32_CAM.id())))
+                .isInstanceOf(CompileException.class)
+                .hasMessageContaining("Camera.capture(byte[]) and Camera.captureGrayscale")
+                .hasMessageContaining("one program");
+    }
+
+    @Test
+    @DisplayName("The ESP32-CAM starts the sensor in grayscale only for a program that captures grayscale frames")
+    void shouldSelectTheCameraModeFromTheCaptureUsed() throws Exception {
+        // Given
+        String grayscaleSource = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.device.camera.Camera;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class GrayscaleOnly {
+                    public static void main(String[] args) {
+                        Camera camera = MCU.getCamera();
+                        camera.begin();
+                        camera.captureGrayscale(new byte[4096], 64, 64);
+                    }
+                }
+                """;
+        String jpegSource = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.device.camera.Camera;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class JpegOnly {
+                    public static void main(String[] args) {
+                        Camera camera = MCU.getCamera();
+                        camera.begin();
+                        camera.capture(new byte[1024]);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.GrayscaleOnly", grayscaleSource);
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.JpegOnly", jpegSource);
+        JunoCompiler juno = new JunoCompiler();
+
+        // When
+        CompilationResult grayscale = juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.GrayscaleOnly",
+                false, Optional.of(Board.AI_THINKER_ESP32_CAM.id()));
+        CompilationResult jpeg = juno.compile(CompilerTestSupport.classpath(temporaryDirectory), "demo.JpegOnly", false,
+                Optional.of(Board.AI_THINKER_ESP32_CAM.id()));
+
+        // Then
+        assertThat(grayscale.runtimeShim())
+                .contains("config.pixel_format = PIXFORMAT_GRAYSCALE;")
+                .contains("juno_camera_capture_grayscale(")
+                .doesNotContain("juno_camera_capture(");
+        assertThat(jpeg.runtimeShim())
+                .contains("config.pixel_format = PIXFORMAT_JPEG;")
+                .doesNotContain("PIXFORMAT_GRAYSCALE")
+                .doesNotContain("juno_camera_capture_grayscale");
+    }
+
+    @Test
     @DisplayName("The Raspberry Pi Pico 2 W lowers @Watchdog to the RP2350 hardware watchdog")
     void shouldLowerWatchdogOnRaspberryPico2W() throws Exception {
         // Given

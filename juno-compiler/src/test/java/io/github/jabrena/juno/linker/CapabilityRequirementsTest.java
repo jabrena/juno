@@ -70,4 +70,10 @@ class CapabilityRequirementsTest {
     void shouldNotRequireCapabilityForPortableIntrinsics() {
         assertThat(requirements.forIntrinsic(Intrinsic.GPIO_DIGITAL_WRITE)).isEmpty();
     }
+
+    @Test
+    @DisplayName("Grayscale capture requires the camera capability, as JPEG capture does")
+    void shouldRequireCameraForGrayscaleCapture() {
+        assertThat(requirements.forIntrinsic(Intrinsic.CAMERA_CAPTURE_GRAYSCALE)).contains(Capability.CAMERA);
+    }
 }

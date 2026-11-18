@@ -126,6 +126,29 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Rejects grayscale capture on a board without a camera")
+        void shouldRejectGrayscaleCaptureOnUnoR4WiFi() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.device.camera.Camera;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class R4Grayscale {
+                        public static void main(String[] args) {
+                            Camera camera = MCU.getCamera();
+                            camera.captureGrayscale(new byte[4096], 64, 64);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.R4Grayscale", source);
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.R4Grayscale"))
+                    .hasMessageContaining("MCU.getCamera");
+        }
+
+        @Test
         @DisplayName("Compiles symbolic GPIO lookup for the Cardputer")
         void shouldCompileSymbolicGpioLookupForCardputer() throws Exception {
             // Given
