@@ -1,5 +1,8 @@
 package io.github.jabrena.juno.hardware.device.camera;
 
+import io.github.jabrena.juno.hardware.device.vision.DetectorKind;
+import io.github.jabrena.juno.hardware.device.vision.ImageDetector;
+
 /**
  * A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.
  *
@@ -31,4 +34,11 @@ public interface Camera {
      * one pixel format, so the compiler rejects a program that calls both.
      */
     boolean captureGrayscale(byte[] pixels, int width, int height);
+
+    /**
+     * The image detector of the given kind that reads this camera's frames. Detectors are a camera feature: the API
+     * provides them only where the camera exists, and {@link DetectorKind#CAT} is the one provided in v1. Call
+     * {@link ImageDetector#begin()} before scoring.
+     */
+    ImageDetector detector(DetectorKind kind);
 }

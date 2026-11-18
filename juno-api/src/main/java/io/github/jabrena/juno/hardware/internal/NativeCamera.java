@@ -1,6 +1,8 @@
 package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.hardware.device.camera.Camera;
+import io.github.jabrena.juno.hardware.device.vision.DetectorKind;
+import io.github.jabrena.juno.hardware.device.vision.ImageDetector;
 
 /**
  * The AI Thinker ESP32-CAM's camera: {@link #begin()} and the native capture are intrinsics the compiler lowers to the
@@ -36,4 +38,12 @@ public final class NativeCamera implements Camera {
 
     /** The native grayscale capture into {@code capacity} bytes of {@code pixels}; see {@link Camera#captureGrayscale}. */
     native boolean captureGrayscale(byte[] pixels, int capacity, int width, int height);
+
+    @Override
+    public ImageDetector detector(DetectorKind kind) {
+        if (kind == DetectorKind.CAT) {
+            return NativeCatDetector.catDetector();
+        }
+        throw new IllegalArgumentException("No detector of kind " + kind + " on this camera");
+    }
 }
