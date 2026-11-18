@@ -364,6 +364,14 @@ can pass mocks instead. Seat a shield directly on the board, and check the pins 
 <td align="center"></td>
 </tr>
 <tr>
+<td><a href="#arduino-usb-host-shield">Arduino USB Host Shield</a></td>
+<td>USB host port (MAX3421E)</td>
+<td align="center"></td>
+<td align="center">✓</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
 <td><a href="#nano-connector-carrier">Nano Connector Carrier</a></td>
 <td>microSD, Grove and Qwiic sockets</td>
 <td align="center"></td>
@@ -550,6 +558,43 @@ public final class DataLoggerExample {
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a>
 also reads the file back, deletes it, and supports the Nano Connector Carrier.</p>
+<h2 id="arduino-usb-host-shield">Arduino USB Host Shield</h2>
+<img src="../images/shields/shield-usb-host.png" alt="Arduino USB Host Shield" width="240">
+<p>A Maxim MAX3421E USB host controller with a USB-A socket. <code>UsbHostShield</code> drives it over SPI as plain Java, with no
+Arduino library: it enumerates one full- or low-speed device plugged straight into the socket (no hubs) and offers
+control and bulk transfers. The shield takes SPI from the ICSP header and selects the chip with D10; D9, its interrupt
+line, stays free because the driver polls.</p>
+<p>Two drivers build on it. <code>Cp210xSerial</code> opens a Silicon Labs CP210x USB-to-UART bridge (baud rate, 8N1, DTR and RTS),
+and <code>RplidarA2</code> reads a Slamtec RPLIDAR A2 (A2M8) through the bridge on the lidar's USB adapter, one revolution at a
+time into a 360-entry array of distances in millimetres:</p>
+<pre><code class="language-java">import io.github.jabrena.juno.hardware.device.lidar.RplidarA2;
+import io.github.jabrena.juno.hardware.device.usb.Cp210xSerial;
+import io.github.jabrena.juno.hardware.device.usb.UsbHostShield;
+import io.github.jabrena.juno.hardware.serial.BaudRate;
+import io.github.jabrena.juno.hardware.serial.Serial;
+
+public final class LidarExample {
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+        UsbHostShield usb = new UsbHostShield();
+        RplidarA2 lidar = new RplidarA2(new Cp210xSerial(usb));
+        int[] scan = new int[RplidarA2.DEGREES];   // mm per whole degree, 0 = no return
+
+        if (usb.begin() &amp;&amp; lidar.begin() &amp;&amp; lidar.startMotor() &amp;&amp; lidar.startScan()) {
+            while (true) {
+                if (lidar.poll(scan)) {
+                    Serial.print(&quot;front=&quot;);
+                    Serial.println(scan[0]);
+                }
+            }
+        }
+    }
+}
+</code></pre>
+<p><code>startMotor()</code> sends the A2's <code>SET_MOTOR_PWM</code> command: without it the head stands still, and a scan is acknowledged
+but delivers no measurements. Call <code>poll</code> continuously while scanning, since the bridge buffers only half a second of data.
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lidar/UsbHostRplidarA2Scan.java"><code>UsbHostRplidarA2Scan</code></a>
+prints a summary every ten revolutions and all 360 distances every twenty, and reconnects when the lidar is unplugged.</p>
 <h2 id="nano-connector-carrier">Nano Connector Carrier</h2>
 <img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="240">
 <p>Arduino's passive carrier for the Nano ESP32: a microSD slot, four Grove sockets and a Qwiic connector, all named by
