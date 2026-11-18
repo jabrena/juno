@@ -43,7 +43,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `UUID.randomUUID()` | ✓ | The RA4M1's Secure Crypto Engine true-random-number generator. | |
 | `@Watchdog` | ✓ | The RA4M1 hardware watchdog. | |
 | `SecretStore` | ✓ | `Esp32Nvs` in the ESP32-S3's NVS, through the core's `Preferences` library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see [Secrets in a Secure Element](../secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
-| Onboard LED matrix | ✓ | 12 × 8 through `LedMatrix` and `LedCanvas`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
+| Onboard LED matrix | ✓ | 12 × 8 through `MCU.getDisplay()`, a monochrome `Display`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
 | USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
@@ -76,22 +76,22 @@ while (true) {
 
 ### Scroll text on the LED matrix
 
-The matrix is 12 columns by 8 rows. `LedCanvas` draws into a frame and `show` sends it to the matrix:
+The matrix is 12 columns by 8 rows. `MCU.getDisplay()` returns it as a `Display`: `print` draws text and `flush` sends the frame to the matrix:
 
 ```java
-LedMatrix matrix = MCU.getLedMatrix();
-matrix.begin();
-boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+Display display = MCU.getDisplay();
+display.setTextColor(Display.WHITE, Display.BLACK);
 
 for (int offset = 12; offset >= -60; offset--) {
-    LedCanvas.clear(frame);
-    LedCanvas.drawText(frame, "Hello, Juno", offset, 0);
-    LedCanvas.show(frame);
+    display.fillScreen(Display.BLACK);
+    display.setCursor(offset, 0);
+    display.print("Hello, Juno");
+    display.flush();
     Delay.millis(80);
 }
 ```
 
-`drawText` takes a compile-time string literal. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
+`print` takes any `String`, and the matrix clips the text at its edges. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
 message forever.
 
 ### USB HID mouse

@@ -773,13 +773,14 @@ class GeneratedAsmToolchainTest {
                 package demo;
                 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
                 import io.github.jabrena.juno.annotations.Board;
-                import io.github.jabrena.juno.hardware.led.LedCanvas;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.display.Display;
                 @Board(ArduinoUnoQBoard.class)
                 public final class AsmUnoQLedMatrix {
                     public static void main(String[] args) {
-                        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-                        LedCanvas.fillRect(frame, 1, 1, 3, 3);
-                        LedCanvas.show(frame);
+                        Display display = MCU.getDisplay();
+                        display.fillRect(1, 1, 3, 3, Display.WHITE);
+                        display.flush();
                     }
                 }
                 """;

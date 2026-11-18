@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.hardware.net.weather;
 
-import io.github.jabrena.juno.hardware.led.LedCanvas;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 /** Displays time and weather data on the UNO R4 WiFi LED matrix. */
@@ -8,12 +9,13 @@ public final class DisplayData {
     private static final int CHAR_SPACING = 6;
     private static final int MAX_MESSAGE_CHARS = 24;
 
-    private final boolean[][] frame;
+    private final Display display;
     private final int[] message;
 
     /** Creates the fixed display buffers once, for reuse throughout the application. */
     public DisplayData() {
-        frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+        display = MCU.getDisplay();
+        display.setTextColor(Display.WHITE, Display.BLACK);
         message = new int[MAX_MESSAGE_CHARS];
     }
 
@@ -52,20 +54,21 @@ public final class DisplayData {
 
     private void scrollMessage(int messageLength) {
         int messageWidth = messageLength * CHAR_SPACING;
-        int startOffset = LedCanvas.width();
+        int startOffset = display.width();
         int endOffset = -messageWidth;
         int offset = startOffset;
         while (offset >= endOffset) {
-            LedCanvas.clear(frame);
+            display.fillScreen(Display.BLACK);
             int i = 0;
             while (i < messageLength) {
-                LedCanvas.drawChar(frame, message[i], offset + i * CHAR_SPACING, 0);
+                display.setCursor(offset + i * CHAR_SPACING, 0);
+                display.print((char) message[i]);
                 i = i + 1;
             }
-            LedCanvas.show(frame);
+            display.flush();
             Delay.millis(80);
-            LedCanvas.clear(frame);
-            LedCanvas.show(frame);
+            display.fillScreen(Display.BLACK);
+            display.flush();
             offset = offset - 1;
         }
     }

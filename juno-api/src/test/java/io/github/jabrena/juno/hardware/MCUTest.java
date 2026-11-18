@@ -11,8 +11,6 @@ import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
 import io.github.jabrena.juno.hardware.internal.NativeWifi;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
-import io.github.jabrena.juno.hardware.led.LedMatrixDisplay;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +25,7 @@ class MCUTest {
     @AfterEach
     void restoreBoardSdCard() {
         NativeOnboardSdCard.setSdCard(null);
-        NativeLedMatrix.setLedMatrix(NativeLedMatrix.INSTANCE);
+        NativeLedMatrix.setDisplay(NativeLedMatrix.INSTANCE);
     }
 
     @Test
@@ -63,18 +61,18 @@ class MCUTest {
     }
 
     @Test
-    @DisplayName("On the UNO R4 WiFi and UNO Q the display is the LED matrix, one shared instance of the matrix's width")
+    @DisplayName("On the UNO R4 WiFi and UNO Q the display is the LED matrix, one shared instance")
     void shouldHandOutTheLedMatrixAsTheDisplayOnTheUnoBoards() {
         // Given
         BoardModel previous = NativeBoardModel.boardModel();
-        LedMatrix matrix = mock(LedMatrix.class);
-        when(matrix.columns()).thenReturn(13);
-        NativeLedMatrix.setLedMatrix(matrix);
+        Display matrix = mock(Display.class);
+        when(matrix.width()).thenReturn(13);
+        NativeLedMatrix.setDisplay(matrix);
         NativeBoardModel.setBoardModel(BoardModel.UNO_Q);
 
         // When & Then
         try {
-            assertThat(MCU.getDisplay()).isInstanceOf(LedMatrixDisplay.class).isSameAs(MCU.getDisplay());
+            assertThat(MCU.getDisplay()).isSameAs(matrix).isSameAs(MCU.getDisplay());
             assertThat(MCU.getDisplay().width()).isEqualTo(13);
         } finally {
             NativeBoardModel.setBoardModel(previous);

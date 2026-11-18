@@ -170,22 +170,21 @@ package com.example.testingjuno;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.led.LedCanvas;
-import io.github.jabrena.juno.hardware.led.LedMatrix;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class App {
     public static void main(String[] args) {
-        LedMatrix matrix = MCU.getLedMatrix();
-        matrix.begin();
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
+        Display display = MCU.getDisplay();
+        display.setTextColor(Display.WHITE, Display.BLACK);
 
         while (true) {
             for (int offset = 12; offset >= -60; offset--) {
-                LedCanvas.clear(frame);
-                LedCanvas.drawText(frame, "Hello, Juno", offset, 0);
-                LedCanvas.show(frame);
+                display.fillScreen(Display.BLACK);
+                display.setCursor(offset, 0);
+                display.print("Hello, Juno");
+                display.flush();
                 Delay.millis(80);
             }
         }
@@ -193,7 +192,7 @@ public final class App {
 }
 ```
 
-`drawText` takes a compile-time string literal, so the message is written directly in the source.
+`print` takes any `String`, and the matrix clips the text at its edges.
 
 ## 7. Build and compile
 

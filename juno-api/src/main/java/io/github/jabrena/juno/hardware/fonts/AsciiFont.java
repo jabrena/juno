@@ -1,20 +1,19 @@
-package io.github.jabrena.juno.hardware.led;
+package io.github.jabrena.juno.hardware.fonts;
 
 /**
  * A 5x7 dot-matrix font covering the full printable ASCII range (32 space .. 126 {@code ~}), for
- * printing arbitrary ASCII characters on the UNO R4 WiFi's 12x8 LED matrix one at a time (two
- * glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's text.
- * Digits and uppercase letters are {@link LedMatrixFont}'s shapes; space, punctuation/symbols and
- * distinct lowercase letter shapes complete the range so every printable ASCII code has a glyph.
+ * printing arbitrary ASCII characters on the board's 12x8 or 13x8 LED matrix one at a time (two
+ * glyphs fit side by side: 5 + 1 gap + 5 = 11 of the 12 columns), and for the TFT shield's and the
+ * Grove OLED's text. Space, punctuation, digits, uppercase letters and lowercase letters complete the
+ * range so every printable ASCII code has a glyph.
  *
- * <p>Callers draw one {@code char}/ASCII code at a time with {@link #charPixel}, exactly like
- * {@link LedMatrixFont#digitPixel} and {@link LedMatrixFont#letterPixel}.
+ * <p>Callers draw one {@code char}/ASCII code at a time with {@link #charPixel}.
  *
  * <p>The glyphs are one constant table, {@link #ROWS}: for each code, seven rows (0 = top .. 6 =
  * bottom), each a 5-bit mask of its lit columns (bit 4 = leftmost column). Read only by index, the
  * table stays in flash: 665 bytes, where the glyphs encoded as code took about 17 KB.
  */
-public final class LedMatrixFontAscii {
+public final class AsciiFont {
     public static final int GLYPH_WIDTH = 5;
     public static final int GLYPH_HEIGHT = 7;
     static final int FIRST = 32;
@@ -119,7 +118,7 @@ public final class LedMatrixFontAscii {
         0x00, 0x00, 0x09, 0x15, 0x12, 0x00, 0x00, // 126 ~
     };
 
-    private LedMatrixFontAscii() {
+    private AsciiFont() {
     }
 
     /** asciiCode: 32 (space) to 126 ('~'). col: 0 (left) to {@link #GLYPH_WIDTH} - 1. row: 0 (top) to {@link #GLYPH_HEIGHT} - 1. */

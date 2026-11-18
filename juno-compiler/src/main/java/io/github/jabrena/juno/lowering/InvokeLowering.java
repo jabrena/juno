@@ -131,8 +131,6 @@ final class InvokeLowering implements InstructionLowering {
             stack.push(reference);
         } else if (compileTime.isGetenv(called)) {
             compileTime.rejectGetenv(instruction);
-        } else if (compileTime.isDrawText(called)) {
-            compileTime.drawText(instruction);
         } else {
             calls.call(instruction, called, false, List.of());
         }

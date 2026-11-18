@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.hardware.device.grove.display;
 
 import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.fonts.AsciiFont;
 import io.github.jabrena.juno.hardware.i2c.I2c;
-import io.github.jabrena.juno.hardware.led.LedMatrixFontAscii;
 
 /**
  * Grove 0.96-inch 128×64 yellow/blue OLED with an SSD1315 controller, connected over I2C.
@@ -142,10 +142,10 @@ public final class GroveOledSsd1315 implements Display {
             cursorY += 8 * textSize;
             return;
         }
-        for (int column = 0; column < LedMatrixFontAscii.GLYPH_WIDTH; column++) {
-            for (int row = 0; row < LedMatrixFontAscii.GLYPH_HEIGHT; row++) {
+        for (int column = 0; column < AsciiFont.GLYPH_WIDTH; column++) {
+            for (int row = 0; row < AsciiFont.GLYPH_HEIGHT; row++) {
                 fillRect(cursorX + column * textSize, cursorY + row * textSize, textSize, textSize,
-                        LedMatrixFontAscii.charPixel(character, column, row) ? color(foreground) : color(background));
+                        AsciiFont.charPixel(character, column, row) ? color(foreground) : color(background));
             }
         }
         cursorX += 6 * textSize;

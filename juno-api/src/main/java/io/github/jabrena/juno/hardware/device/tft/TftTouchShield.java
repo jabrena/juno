@@ -3,9 +3,9 @@ package io.github.jabrena.juno.hardware.device.tft;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.fonts.AsciiFont;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
-import io.github.jabrena.juno.hardware.led.LedMatrixFontAscii;
 import io.github.jabrena.juno.hardware.touch.TouchScreen;
 import io.github.jabrena.juno.util.Delay;
 import org.jspecify.annotations.Nullable;
@@ -492,12 +492,12 @@ public final class TftTouchShield implements Display, TouchScreen {
 
     // Bit n set = glyph column n lit; the spacing column and row stay background.
     private static int glyphRowBits(int code, int row) {
-        if (row >= LedMatrixFontAscii.GLYPH_HEIGHT) {
+        if (row >= AsciiFont.GLYPH_HEIGHT) {
             return 0;
         }
         int bits = 0;
-        for (int column = 0; column < LedMatrixFontAscii.GLYPH_WIDTH; column++) {
-            if (LedMatrixFontAscii.charPixel(code, column, row)) {
+        for (int column = 0; column < AsciiFont.GLYPH_WIDTH; column++) {
+            if (AsciiFont.charPixel(code, column, row)) {
                 bits = bits | (1 << column);
             }
         }

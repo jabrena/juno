@@ -2040,7 +2040,7 @@ class JunoCompilerTest {
                         public static void main(String[] args) {
                             MCU.getDisplay();
                             MCU.getDisplay().flush();
-                            io.github.jabrena.juno.hardware.internal.NativeLedMatrix.ledMatrix().clear();
+                            io.github.jabrena.juno.hardware.internal.NativeLedMatrix.INSTANCE.clear();
                         }
                     }
                     """;
@@ -2086,13 +2086,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.led.LedCanvas;
                     import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.display.Display;
                     public final class Digits {
                         public static void main(String[] args) {
-                            boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-                            LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedCanvas.show(frame);
+                            Display display = MCU.getDisplay();
+                            display.setTextColor(Display.WHITE, Display.BLACK);
+                            display.setCursor(4, 0);
+                            display.print('7');
+                            display.flush();
                         }
                     }
                     """;
@@ -2104,11 +2106,10 @@ class JunoCompilerTest {
             // Then
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame");
             // The glyphs are one constant table read by index, so drawing a digit reaches no per-glyph
-            // code: locked at 13 (main, drawDigit/packWord/setPixel and their helpers, digitPixel,
-            // charPixel, the 3-word NativeLedMatrix.loadFrame wrapper, and NativeLedMatrix.ledMatrix with its
-            // constructor and static initializer); before the matrix moved behind
-            // Arduino it was 10, where a function per glyph took 22.
-            assertThat(result.report().reachableMethods()).isEqualTo(13);
+            // code: locked at 17 (main, MCU.getDisplay, the display's print, glyph, pixel, width and flush paths,
+            // charPixel, and the NativeLedMatrix static initializer); before the display moved behind Arduino
+            // it was 10, where a function per glyph took 22.
+            assertThat(result.report().reachableMethods()).isEqualTo(17);
         }
 
         @Test
@@ -2117,13 +2118,15 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.led.LedCanvas;
                     import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.display.Display;
                     public final class Digits {
                         public static void main(String[] args) {
-                            boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-                            LedCanvas.drawDigit(frame, 7, 4, 0);
-                            LedCanvas.show(frame);
+                            Display display = MCU.getDisplay();
+                            display.setTextColor(Display.WHITE, Display.BLACK);
+                            display.setCursor(4, 0);
+                            display.print('7');
+                            display.flush();
                         }
                     }
                     """;
@@ -2132,22 +2135,24 @@ class JunoCompilerTest {
             // When & Then
             assertThat(CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Digits").assembly())
                     .as("the table stays in flash")
-                    .contains("juno_table_io_github_jabrena_juno_hardware_led_LedMatrixFontAscii_ROWS__B:");
+                    .contains("juno_table_io_github_jabrena_juno_hardware_fonts_AsciiFont_ROWS__B:");
         }
 
         @Test
-        @DisplayName("Draw text unrolls into one draw-char call per character")
-        void shouldUnrollDrawTextIntoOneDrawCharPerCharacter() throws Exception {
+        @DisplayName("Printing text on the LED display reaches the ASCII glyph table")
+        void shouldPrintTextThroughTheGlyphTable() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.led.LedCanvas;
                     import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.display.Display;
                     public final class ScrollingText {
                         public static void main(String[] args) {
-                            boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
-                            LedCanvas.drawText(frame, "Hi", 0, 0);
-                            LedCanvas.show(frame);
+                            Display display = MCU.getDisplay();
+                            display.setTextColor(Display.WHITE, Display.BLACK);
+                            display.setCursor(0, 0);
+                            display.print("Hi");
+                            display.flush();
                         }
                     }
                     """;
@@ -2157,10 +2162,8 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ScrollingText");
 
             // Then
-            // drawText itself is native (no body); the linker substitutes drawChar, the method the two
-            // unrolled calls actually reach, as what's linked and reported reachable.
             assertThat(result.assembly()).contains("bl juno_led_matrix_load_frame",
-                    "juno_table_io_github_jabrena_juno_hardware_led_LedMatrixFontAscii_ROWS__B:");
+                    "juno_table_io_github_jabrena_juno_hardware_fonts_AsciiFont_ROWS__B:");
         }
 
         @Test

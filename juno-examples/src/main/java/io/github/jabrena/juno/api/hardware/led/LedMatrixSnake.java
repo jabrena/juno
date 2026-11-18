@@ -3,7 +3,8 @@ package io.github.jabrena.juno.api.hardware.led;
 import io.github.jabrena.juno.annotations.ArduinoUnoQBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
-import io.github.jabrena.juno.hardware.led.LedCanvas;
+import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.util.Delay;
 
 /**
@@ -15,6 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoUnoQBoard.class})
 public final class LedMatrixSnake {
+    private static final Display DISPLAY = MCU.getDisplay();
     private static final int HEIGHT = 8;
     private static final int MAX_LENGTH = 16;
     private static final int NO_DIR = -1;
@@ -34,8 +36,6 @@ public final class LedMatrixSnake {
         resetBody(body);
         int foodPos = packPos(9, 2);
         int rngState = 12345;
-
-        boolean[][] frame = new boolean[LedCanvas.HEIGHT][LedCanvas.MAX_WIDTH];
 
         while (true) {
             int chosenDir = chooseDir(dir, headPos, foodPos, length, body);
@@ -63,7 +63,7 @@ public final class LedMatrixSnake {
                 int attempt = 0;
                 while (attempt < 4) {
                     rngState = rngState * 1103515245 + 12345;
-                    int candidateX = rawMod(rngState, LedCanvas.width());
+                    int candidateX = rawMod(rngState, DISPLAY.width());
                     rngState = rngState * 1103515245 + 12345;
                     int candidateY = rawMod(rngState, HEIGHT);
                     int candidatePos = packPos(candidateX, candidateY);
@@ -76,14 +76,14 @@ public final class LedMatrixSnake {
                 }
             }
 
-            LedCanvas.clear(frame);
-            LedCanvas.setPixel(frame, posX(headPos), posY(headPos));
+            DISPLAY.fillScreen(Display.BLACK);
+            DISPLAY.drawPixel(posX(headPos), posY(headPos), Display.WHITE);
             for (int i = 0; i < length; i++) {
-                LedCanvas.setPixel(frame, posX(body[i]), posY(body[i]));
+                DISPLAY.drawPixel(posX(body[i]), posY(body[i]), Display.WHITE);
             }
-            LedCanvas.setPixel(frame, posX(foodPos), posY(foodPos));
+            DISPLAY.drawPixel(posX(foodPos), posY(foodPos), Display.WHITE);
 
-            LedCanvas.show(frame);
+            DISPLAY.flush();
             Delay.millis(220);
         }
     }
@@ -145,15 +145,15 @@ public final class LedMatrixSnake {
     }
 
     private static int packPos(int x, int y) {
-        return y * LedCanvas.width() + x;
+        return y * DISPLAY.width() + x;
     }
 
     private static int posX(int pos) {
-        return pos % LedCanvas.width();
+        return pos % DISPLAY.width();
     }
 
     private static int posY(int pos) {
-        return pos / LedCanvas.width();
+        return pos / DISPLAY.width();
     }
 
     private static int dirDx(int dir) {
@@ -177,7 +177,7 @@ public final class LedMatrixSnake {
     }
 
     private static boolean inBounds(int x, int y) {
-        return x >= 0 && x < LedCanvas.width() && y >= 0 && y < HEIGHT;
+        return x >= 0 && x < DISPLAY.width() && y >= 0 && y < HEIGHT;
     }
 
     private static boolean collidesWithBody(int pos, int length, int[] body) {
