@@ -24,6 +24,7 @@ case "$board" in
         timer_driver=timer.esp32s3.timg
         flash_mib=16
         bootloader_offset=0x0
+        core_package=arduino
         ;;
     m5stack-cardputer)
         # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU.
@@ -38,6 +39,7 @@ case "$board" in
         timer_driver=timer.esp32s3.timg
         flash_mib=8
         bootloader_offset=0x0
+        core_package=m5stack
         ;;
     ai-thinker-esp32-cam)
         # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU, which the ESP-IDF 5 app
@@ -51,6 +53,7 @@ case "$board" in
         flash_mib=4
         # The classic ESP32's boot ROM loads the second-stage bootloader from 0x1000, not 0x0.
         bootloader_offset=0x1000
+        core_package=esp32
         ;;
     *)
         echo "run.sh: unsupported board '$board'" >&2
@@ -108,6 +111,24 @@ decode_backtrace() {
     "$addr2line" -pfiaC -e "$elf" $addresses >&2 || true
 }
 
+# Decodes program counters from a hung CPU against the app ELF and, for bootloader addresses, the bootloader ELF.
+decode_pcs() {
+    [ -n "$1" ] || return 0
+    addr2line="$(find /root/.arduino15/packages -name "xtensa-${machine}-elf-addr2line" -type f 2>/dev/null | head -1)"
+    [ -n "$addr2line" ] || addr2line="$(find /root/.arduino15/packages -name 'xtensa-esp-elf-addr2line' -type f 2>/dev/null | head -1)"
+    [ -n "$addr2line" ] || { echo "run.sh: no addr2line to decode the PCs" >&2; return 0; }
+    echo "run.sh: decoded PCs (app ELF):" >&2
+    # shellcheck disable=SC2086
+    "$addr2line" -pfiaC -e "$sketch-build/$name.ino.elf" $1 >&2 || true
+    bootloader_elf="$(find "/root/.arduino15/packages/$core_package" -path "*${machine}-libs*" -name 'bootloader_dio_*.elf' \
+        -type f 2>/dev/null | head -1)"
+    if [ -n "$bootloader_elf" ]; then
+        echo "run.sh: decoded PCs (bootloader ELF $bootloader_elf):" >&2
+        # shellcheck disable=SC2086
+        "$addr2line" -pfiaC -e "$bootloader_elf" $1 >&2 || true
+    fi
+}
+
 # Espressif's QEMU occasionally crashes while the guest boots (seen as exit 139 with the boot log and no [juno-begin]).
 # Such a run never reached the program, so it is retried, at most twice; a crash after [juno-begin], a crash on every
 # attempt, or a hang stopped by the watchdog still fails. The crash repeats on a retry with the same settings on the
@@ -135,6 +156,7 @@ while :; do
     qemu-system-xtensa -nographic -machine "$machine" $memory $accel_option \
         $psram_options \
         -global driver=$timer_driver,property=wdt_disable,value=true \
+        -monitor unix:"$tmpdir/monitor.sock",server,nowait \
         -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
     qemu_pid=$!
     qemu_started_ms=$(now_ms)
@@ -147,6 +169,30 @@ while :; do
     (
         sleep 20
         if [ ! -f "$tmpdir/begun" ]; then
+            # Before stopping a silent hang, record where every CPU is, so the failure can name the code it is stuck in.
+            python3 - "$tmpdir/monitor.sock" >"$tmpdir/hung-registers.txt" 2>&1 <<'PY' || true
+import socket, sys, time
+monitor = socket.socket(socket.AF_UNIX)
+monitor.settimeout(2)
+monitor.connect(sys.argv[1])
+time.sleep(0.3)
+try:
+    monitor.recv(65536)
+except OSError:
+    pass
+monitor.sendall(b"info registers -a\n")
+time.sleep(1)
+output = b""
+try:
+    while True:
+        chunk = monitor.recv(65536)
+        if not chunk:
+            break
+        output += chunk
+except OSError:
+    pass
+sys.stdout.write(output.decode(errors="replace"))
+PY
             kill "$qemu_pid" 2>/dev/null || true
             exit 0
         fi
@@ -194,6 +240,19 @@ while :; do
                 ;;
         esac
     done <"$fifo"
+
+    # The guard stopped a silent hang before [juno-begin]: report where each CPU was, decoded, and fail.
+    if [ "$begun" -eq 0 ] && [ -f "$tmpdir/hung-registers.txt" ]; then
+        wait "$qemu_pid" 2>/dev/null || true
+        qemu_pid=
+        kill "$watchdog_pid" 2>/dev/null || true
+        wait "$watchdog_pid" 2>/dev/null || true
+        watchdog_pid=
+        echo "run.sh: boot hung before [juno-begin] on $board (no output for 20 s); CPU state:" >&2
+        grep -E 'PC=|^CPU|cpu' "$tmpdir/hung-registers.txt" >&2 || cat "$tmpdir/hung-registers.txt" >&2
+        decode_pcs "$(grep -o 'PC=[0-9a-fA-F]*' "$tmpdir/hung-registers.txt" | sed 's/PC=/0x/')"
+        exit 4
+    fi
 
     if wait "$qemu_pid"; then
         qemu_status=0
