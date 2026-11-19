@@ -27,21 +27,6 @@ static `Psram` byte-buffer API; the camera board also keeps its driver-owned fra
 | SDRAM | 8 MB | — | — | — | — | — | — |
 | PSRAM | — | 8 MB | — | 4 MB | — | — | — |
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V |
-| Radio | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | Wi-Fi/BLE | CYW43439 Wi-Fi/BLE | ESP32-S3 Wi-Fi/BLE | None |
+| Wi-Fi | Wi-Fi | Wi-Fi | Wi-Fi | Wi-Fi | CYW43439 Wi-Fi | ESP32-S3 Wi-Fi | None |
+| Bluetooth | BLE | BLE | BLE | BLE | CYW43439 BLE | ESP32-S3 BLE | None |
 | Extras | M7/M4 dual core, Ethernet, secure element, RGB LED |  | Display, keyboard, speaker, battery | OV2640 camera, microSD socket | Built-in LED on the radio chip | 12×8 LED matrix |  |
-| Arduino core | `arduino: mbed_portenta` | `arduino: esp32` | `m5stack: esp32` | `esp32: esp32` | `rp2040: rp2040` | `arduino: renesas_uno` | `arduino: avr` |
-| Juno board id | `arduino-portenta-h7` | `arduino-nano-esp32` | `m5stack-cardputer` | `ai-thinker-esp32-cam` | `raspberry-pi-pico-2-w` | `arduino-uno-r4-wifi` | `arduino-uno-r3` |
-
-The spaces after `:` in the Arduino core row are visual break points for this table; use the compact
-core identifier (for example, `arduino:renesas_uno`) in build commands.
-
-For the API and board-feature support matrix, see [Board features](../board-features). The compiler checks that matrix for
-you: a program that uses an API its target board does not support fails with a `CompileException` naming the board and the
-missing capability.
-
-Every board exposes `Gpio.digitalPin("D0".."D13")` and `Gpio.analogPin("A0".."A5")` through `MCU`.
-The selected runtime translates those names to the board's pin mapping. `getInput()`, `getOutput()` and
-`getInputPullup()` are also board-context methods. Invalid names raise `IllegalArgumentException`; the M5Stack Cardputer
-additionally accepts its documented `G*` and `GPIO*` aliases. The Raspberry Pi Pico 2 W maps `A0`..`A2` to its ADC
-pins GP26..GP28 (it has no `A3`..`A5`) and also accepts `GP*` and `GPIO*` names for its header pins. The Portenta H7
-maps its `A0`..`A5` aliases to the M7 core's analog pin numbers 15..20. See [GPIO](../gpio) for examples.

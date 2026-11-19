@@ -24,7 +24,8 @@ import io.github.jabrena.juno.util.Delay;
  * pins are fed only from there. Each channel is a column of three pins, {@code GND} nearest the board edge,
  * {@code V+} in the middle and {@code PWM} nearest the chip, matching a servo's brown, red and yellow wires. The
  * shield answers at address {@code 0x40}; bridging its address pads selects another, passed to the constructor.
- * Works on every board, wherever {@code Wire} reaches the shield's SDA/SCL. The constructor accepts a given
+ * Supported on the UNO R4 WiFi only. The shield's SDA/SCL must be wired to the board's I2C bus, the one
+ * {@link io.github.jabrena.juno.hardware.MCU#getI2c()} returns. The constructor accepts a given
  * {@link I2c} so a unit test can mock the bus.
  *
  * @see <a href="https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf">PCA9685 data sheet</a>

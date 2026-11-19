@@ -241,6 +241,31 @@ class UuidTest {
         assertThat(result.assembly()).contains("juno_uuid_new", "juno_uuid_equals");
     }
 
+    @Test
+    @DisplayName("Random UUID on the Pico 2 W is lowered through the RP2350 hardware random generator")
+    void shouldUseTheRp2350HardwareRandomGeneratorOnThePico2W() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+                import java.util.UUID;
+                @Board(RaspberryPico2WifiBoard.class)
+                public final class Tasks {
+                    public static void main() {
+                        UUID value = UUID.randomUUID();
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.Tasks", source, "25");
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Tasks");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("get_rand_128", "juno_uuid_random_bytes");
+    }
+
     private CompilationResult compile(String members) throws Exception {
         String source = """
                 package demo;

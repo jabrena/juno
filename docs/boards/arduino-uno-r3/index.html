@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>Arduino UNO R3 - Juno: Java for Arduino</title>
+  <meta property="og:title" content="Arduino UNO R3" />
+  <meta name="twitter:title" content="Arduino UNO R3">
+  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="Board notes for the Arduino UNO R3 (ATmega328P) and what Juno supports on it.">
+  <meta property="og:description" content="Board notes for the Arduino UNO R3 (ATmega328P) and what Juno supports on it." />
+  <meta name="twitter:description" content="Board notes for the Arduino UNO R3 (ATmega328P) and what Juno supports on it.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/boards/arduino-uno-r3/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/boards/arduino-uno-r3/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/boards/arduino-uno-r3/">
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="website" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
+
+<!-- Favicon -->
+
+<base href="/juno/boards/arduino-uno-r3/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+<form class="juno-search juno-search-mobile" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-mobile" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-mobile" role="listbox" hidden></ul>
+</form>
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/getting-started/create-your-first-project">Create your first project</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/features/java-subset">Java subset</a>
+        <a class="" href="/juno/features/board-features">Board features</a>
+        <a class="" href="/juno/features/memory-model">Memory Model</a>
+        <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class=" active" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/boards/arduino-portenta-h7">Portenta H7</a>
+        <a class="" href="/juno/boards/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/boards/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/boards/ai-thinker-esp32-cam">ESP32-CAM</a>
+        <a class="" href="/juno/boards/raspberry-pi-pico-2-w">Pico 2 W</a>
+        <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="active" href="/juno/boards/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/api" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/observability">Observability</a>
+        <a class="" href="/juno/api/storage">Storage</a>
+        <a class="" href="/juno/api/internet">Internet</a>
+        <a class="" href="/juno/api/utils">Utils</a>
+        <a class="" href="/juno/api/hardware">Hardware</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/third-parties/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/third-parties/grove-system">Grove system</a>
+        <a class="" href="/juno/third-parties/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/blog" >Blog</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/blog">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+<form class="juno-search juno-search-desktop" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-desktop" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-desktop" role="listbox" hidden></ul>
+</form>
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<script>
+(function () {
+  var MAX_RESULTS = 8;
+  var entries = null;
+  var loading = null;
+
+  // Loads search-index.js once: a plain script tag, so it also works when the site is opened from disk.
+  function loadIndex(src) {
+    if (entries) return Promise.resolve(entries);
+    if (!loading) {
+      loading = new Promise(function (resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = function () { resolve(window.JUNO_SEARCH_INDEX || []); };
+        script.onerror = function () { reject(new Error('Search index failed to load')); };
+        document.head.appendChild(script);
+      }).then(function (list) {
+        entries = list;
+        return list;
+      });
+    }
+    return loading;
+  }
+
+  // Score = 0 when some term is missing; otherwise a higher score for matches in the title than in the body.
+  function score(entry, terms) {
+    var title = entry.title.toLowerCase();
+    var description = entry.description.toLowerCase();
+    var text = entry.text.toLowerCase();
+    var total = 0;
+    for (var i = 0; i < terms.length; i++) {
+      if (title.indexOf(terms[i]) !== -1) total += 10;
+      else if (description.indexOf(terms[i]) !== -1) total += 4;
+      else if (text.indexOf(terms[i]) !== -1) total += 1;
+      else return 0;
+    }
+    return total;
+  }
+
+  // The index keeps the page's HTML text, so entities such as &lt; come through escaped.
+  function snippet(entry, term) {
+    var text = entry.text
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ');
+    var at = text.toLowerCase().indexOf(term);
+    if (at === -1) return entry.description;
+    var start = Math.max(0, at - 50);
+    return (start > 0 ? '…' : '') + text.slice(start, at + 90).trim() + '…';
+  }
+
+  function search(query) {
+    var terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) return [];
+    return entries
+      .map(function (entry) { return { entry: entry, score: score(entry, terms), term: terms[0] }; })
+      .filter(function (hit) { return hit.score > 0; })
+      .sort(function (a, b) { return b.score - a.score || a.entry.title.localeCompare(b.entry.title); })
+      .slice(0, MAX_RESULTS);
+  }
+
+  function render(form, query) {
+    var list = form.querySelector('.juno-search-results');
+    list.textContent = '';
+    if (!query.trim()) {
+      list.hidden = true;
+      return;
+    }
+    var hits = search(query);
+    if (!hits.length) {
+      var empty = document.createElement('li');
+      empty.className = 'juno-search-empty';
+      empty.textContent = 'No results for “' + query + '”';
+      list.appendChild(empty);
+    }
+    hits.forEach(function (hit) {
+      var item = document.createElement('li');
+      var link = document.createElement('a');
+      var title = document.createElement('span');
+      var excerpt = document.createElement('span');
+      link.href = hit.entry.url;
+      link.setAttribute('role', 'option');
+      title.className = 'juno-search-title';
+      title.textContent = hit.entry.title;
+      excerpt.className = 'juno-search-excerpt';
+      excerpt.textContent = snippet(hit.entry, hit.term);
+      link.appendChild(title);
+      link.appendChild(excerpt);
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    list.hidden = false;
+  }
+
+  function hide(form) {
+    form.querySelector('.juno-search-results').hidden = true;
+  }
+
+  function attach(form) {
+    var input = form.querySelector('.juno-search-input');
+    var src = input.getAttribute('data-index-src');
+    input.addEventListener('focus', function () { loadIndex(src).catch(function () {}); });
+    input.addEventListener('input', function () {
+      loadIndex(src).then(function () { render(form, input.value); }).catch(function () {});
+    });
+    // Keys are handled on the form so they work from the input and from the result links alike.
+    form.addEventListener('keydown', function (event) {
+      var links = Array.prototype.slice.call(form.querySelectorAll('.juno-search-results a'));
+      var current = links.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (!links.length) return;
+        event.preventDefault();
+        var step = event.key === 'ArrowDown' ? 1 : -1;
+        links[(current + step + links.length) % links.length].focus();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        var target = current !== -1 ? links[current] : links[0];
+        if (target) window.location.href = target.href;
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        input.value = '';
+        hide(form);
+        input.focus();
+      }
+    });
+    // On touch screens a tap on a result moves focus off the input before the click lands, and the list would hide
+    // first. Keeping the press on the input stops that blur; the click still reaches the link.
+    form.querySelector('.juno-search-results').addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+    });
+    form.addEventListener('focusout', function (event) {
+      if (!form.contains(event.relatedTarget)) hide(form);
+    });
+    form.addEventListener('submit', function (event) { event.preventDefault(); });
+  }
+
+  document.querySelectorAll('.juno-search').forEach(attach);
+})();
+</script>
+<nav class="juno-subnav" aria-label="Boards">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/boards">Overview</a>
+    <a class="" href="/juno/boards/arduino-portenta-h7">Portenta H7</a>
+    <a class="" href="/juno/boards/arduino-nano-esp32">Nano ESP32</a>
+    <a class="" href="/juno/boards/m5stack-cardputer">M5Stack Cardputer</a>
+    <a class="" href="/juno/boards/ai-thinker-esp32-cam">ESP32-CAM</a>
+    <a class="" href="/juno/boards/raspberry-pi-pico-2-w">Pico 2 W</a>
+    <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+    <a class="active" href="/juno/boards/arduino-uno-r3">UNO R3</a>
+  </div>
+</nav>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+<article class="page-content">
+
+  <section class="content-main">
+<header class="juno-page-header">
+  <h1>Arduino UNO R3</h1>
+</header>
+    <div class="content-prose">
+<p>The UNO R3 is the classic 5 V UNO board based on the 8-bit Microchip ATmega328P. Juno compiles for it with its <strong>AVR
+backend</strong> and links against the <code>arduino:avr</code> core; the <code>MCU</code> facade is the entry point for the board's
+peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
+startup and stay small.</p>
+<img src="../../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
+<h2 id="core-specification">Core specification</h2>
+<table>
+<thead>
+<tr>
+<th>Characteristic</th>
+<th align="right">UNO R3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main microcontroller</td>
+<td align="right">Microchip ATmega328P</td>
+</tr>
+<tr>
+<td>CPU architecture</td>
+<td align="right">8-bit AVR</td>
+</tr>
+<tr>
+<td>CPU clock</td>
+<td align="right">16 MHz</td>
+</tr>
+<tr>
+<td>Program flash</td>
+<td align="right">32 kB; 0.5 kB is used by the bootloader</td>
+</tr>
+<tr>
+<td>SRAM</td>
+<td align="right">2 kB</td>
+</tr>
+<tr>
+<td>EEPROM</td>
+<td align="right">1 kB</td>
+</tr>
+<tr>
+<td>Logic and operating voltage</td>
+<td align="right">5 V</td>
+</tr>
+<tr>
+<td>Digital I/O</td>
+<td align="right">14 pins, D0-D13 (6 with PWM: D3, D5, D6, D9, D10, D11)</td>
+</tr>
+<tr>
+<td>Analog inputs</td>
+<td align="right">6 pins, A0-A5, 10-bit ADC</td>
+</tr>
+<tr>
+<td>USB connector</td>
+<td align="right">USB Type-B, through an ATmega16U2 USB-to-serial converter</td>
+</tr>
+<tr>
+<td>Built-in LED</td>
+<td align="right">D13</td>
+</tr>
+<tr>
+<td>Wireless connectivity</td>
+<td align="right">None</td>
+</tr>
+<tr>
+<td>Arduino CLI FQBN</td>
+<td align="right"><code>arduino:avr:uno</code></td>
+</tr>
+<tr>
+<td>Juno board id</td>
+<td align="right"><code>arduino-uno-r3</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-juno-supports">What Juno supports</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th align="center">Status</th>
+<th>Notes</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gpio</code>, <code>DigitalOutput</code>, <code>Delay</code>, <code>Clock</code></td>
+<td align="center">✓</td>
+<td>Resolve <code>D0</code>–<code>D13</code> with <code>digitalPin</code> and <code>A0</code>–<code>A5</code> with <code>analogPin</code>; modes come from the board's <code>Gpio</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
+</tr>
+<tr>
+<td><code>analogRead</code>, <code>analogWrite</code></td>
+<td align="center">✓</td>
+<td>Analog reads on A0–A5 through the 10-bit ADC; PWM output on D3, D5, D6, D9, D10 and D11.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Serial</code></td>
+<td align="center">✓</td>
+<td>Through the ATmega16U2 USB-to-serial path.</td>
+<td></td>
+</tr>
+<tr>
+<td>Classes, interfaces and inheritance</td>
+<td align="center">✓</td>
+<td>Larger object graphs may exceed the 1 KB arena or the flash.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Inheritance.java"><code>Inheritance</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Interfaces.java"><code>Interfaces</code></a></td>
+</tr>
+<tr>
+<td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
+<td align="center">✓</td>
+<td>Bounded by the 1 KB arena and 2 KB of SRAM.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>@Watchdog</code></td>
+<td align="center">✓</td>
+<td>ATmega328P hardware watchdog, at most 8 seconds.</td>
+<td></td>
+</tr>
+<tr>
+<td>Non-cryptographic UUIDs (<code>PortNoise</code>)</td>
+<td align="center">✓</td>
+<td>The R3 has no hardware entropy, so <code>UUID.randomUUID()</code> is rejected; <code>PortNoise</code> gives best-effort node identities, never secrets.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java"><code>WeakUuid</code></a></td>
+</tr>
+<tr>
+<td><code>SdCard</code></td>
+<td align="center">✓</td>
+<td>On the Data Logger Shield's microSD slot.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java"><code>StorageOccupancy</code></a></td>
+</tr>
+<tr>
+<td>Grove Base Shield</td>
+<td align="center">✓</td>
+<td>Passive: every socket is an UNO pin.</td>
+<td></td>
+</tr>
+<tr>
+<td>9 Axis Motion Shield</td>
+<td align="center">✓</td>
+<td>BNO055 over I2C; its reset line is D7.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a></td>
+</tr>
+<tr>
+<td>LCD Keypad Shield</td>
+<td align="center">✓</td>
+<td>Uses D4-D10 for the LCD and backlight.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a></td>
+</tr>
+<tr>
+<td><code>Json</code>, <code>JsonValue</code>, <code>JsonWriter</code></td>
+<td align="center">✗</td>
+<td>Not supported: JSON support starts at the UNO R4 WiFi.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="features">Features</h2>
+<p>These need only the UNO R3 and its USB cable.</p>
+<h3 id="blink-the-built-in-led">Blink the built-in LED</h3>
+<pre><code class="language-java">DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
+
+while (true) {
+    led.high();
+    Delay.millis(500);
+    led.low();
+    Delay.millis(500);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is the complete program; it builds for any board, so pass <code>-Djuno.board=arduino-uno-r3</code>.</p>
+<h2 id="shields">Shields</h2>
+<p>Seat each shield directly on the UNO R3. Check which pins a shield uses before stacking two: the compiler rejects a
+program whose shields share a pin, and the 9 Axis Motion Shield's sensor reset uses D7.</p>
+<h3 id="grove-base-shield">Grove Base Shield</h3>
+<img src="../../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
+<p>The Grove Base Shield is passive: every socket is an ordinary UNO pin, and <code>GroveBaseShield</code> names them so programs
+don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
+module's <code>GND</code> and <code>VCC</code>. A Grove DHT22 temperature and humidity sensor in the D4 socket:</p>
+<pre><code class="language-java">GroveBaseShield shield = new GroveBaseShield();
+GroveDht22 dht = new GroveDht22();
+int[] reading = new int[GroveDht22.READING_LENGTH];
+int[] frame = new int[GroveDht22.FRAME_LENGTH];
+
+if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
+    Serial.print(reading[GroveDht22.TEMPERATURE_TENTHS_CELSIUS]);
+    Serial.println(&quot; tenths of a degree&quot;);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java"><code>GroveDht22Monitor</code></a> prints a DHT22's readings; it runs on the UNO R3,
+UNO R4 WiFi, and the snippet above is the same read for the R3. See <a href="../../third-parties/grove-system">Grove</a> for the
+sensor drivers.</p>
+<h3 id="arduino-9-axis-motion-shield">Arduino 9 Axis Motion Shield</h3>
+<img src="../../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+<p>The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
+<code>NineAxisMotionShield</code> reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
+direction the sensor pointed at construction. Construction drives D7, the sensor's reset line, so don't use D7 for
+anything else:</p>
+<pre><code class="language-java">NineAxisMotionShield imu = new NineAxisMotionShield();
+imu.reset();                                      // count the turn from here
+while (true) {
+    Serial.println(imu.getAngle());               // heading since the reset, whole degrees, clockwise
+    Delay.millis(200);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java"><code>NineAxisMotionShieldSerial</code></a> prints heading, yaw rate,
+and acceleration readings.</p>
+<h3 id="lcd-keypad-shield">LCD Keypad Shield</h3>
+<img src="../../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+<p>A 16 × 2 character LCD with five buttons read through one analog pin (A0). <code>LcdKeypadShield</code> needs no extra library:
+the LCD uses D4-D9 and its backlight D10.</p>
+<pre><code class="language-java">LcdKeypadShield lcd = new LcdKeypadShield();
+lcd.print(&quot;Hello, Juno&quot;);
+
+while (true) {
+    if (lcd.readButton() == LcdKeypadShield.SELECT) {
+        lcd.setCursor(0, 1);
+        lcd.print(&quot;SELECT pressed&quot;);
+    }
+    Delay.millis(100);
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a> shows each button press.</p>
+<h3 id="azdelivery-data-logger-shield">AZDelivery Data Logger Shield</h3>
+<img src="../../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+<p>A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
+that Juno does not drive. Format the card as FAT16 or FAT32.</p>
+<pre><code class="language-java">SdCard sd = new DataLoggerShield().getSdCard();
+if (sd.begin()) {
+    Serial.print(&quot;used KiB: &quot;);
+    Serial.println(sd.totalKiB() - sd.freeKiB());
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java"><code>StorageOccupancy</code></a> reports the card's used and total space.</p>
+<h2 id="build-and-run">Build and run</h2>
+<p>Install the AVR core once. Then compile and upload an example, for instance the UUID demo, which prints over serial:</p>
+<pre><code class="language-bash">arduino-cli core install arduino:avr
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.language.WeakUuid \
+  -Djuno.board=arduino-uno-r3
+</code></pre>
+<p>Open the serial monitor in another terminal:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r3
+</code></pre>
+<p>The monitor uses 115200 baud by default, matching <code>Serial.begin(BaudRate.BAUD_115200)</code>.</p>
+    </div>
+  </section>
+</article>
+
+
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FPC5GLQPGY"></script>
+<script src="/juno/gtag.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

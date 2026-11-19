@@ -299,7 +299,7 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String uuidRandomHelpers() {
-        throw unsupported("UUID.randomUUID()");
+        return runtimeSource.load("rp2350/uuid-random.cpp");
     }
 
     @Override

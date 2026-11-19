@@ -27,31 +27,17 @@ import io.github.jabrena.juno.hardware.internal.NativeI2c;
  * |       3V3 o o TX                                           3V3 |
  * |       CS  o o RX                                               |
  * |                                                                |
- * | UART0  RX=GP1 TX=GP0                    I2C0  SCL=GP9  SDA=GP8 |
+ * | UART0  RX=GP1 TX=GP0                   I2C0  SCL=GP9  SDA=GP8  |
  * | [RX |TX |VCC|GND]                            [SCL|SDA|VCC|GND] |
- * | UART1  RX=GP5 TX=GP4                    I2C1  SCL=GP7  SDA=GP6 |
+ * | UART1  RX=GP5 TX=GP4                   I2C1  SCL=GP7  SDA=GP6  |
  * | [RX |TX |VCC|GND]        Raspberry Pi        [SCL|SDA|VCC|GND] |
  * | D16  SIG=GP16              Pico 2 W               A0  SIG=GP26 |
- * | [D16|D17|VCC|GND]        (sits here)         [A0 |NC |3V3|GND] |
+ * | [D16|D17|VCC|GND]                            [A0 |NC |3V3|GND] |
  * | D18  SIG=GP18                                     A1  SIG=GP27 |
  * | [D18|D19|VCC|GND]                            [A1 |A0 |3V3|GND] |
  * | D20  SIG=GP20                                     A2  SIG=GP28 |
  * | [D20|D21|VCC|GND]                            [A2 |A1 |3V3|GND] |
  * +-------------------[ DEBUG: SWCLK GND SWDIO ]-------------------+
- *
- *   Socket  Getter                            Pico pin
- *   D16     getD16()                          GP16
- *   D18     getD18()                          GP18
- *   D20     getD20()                          GP20
- *   A0      getA0()                           GP26 (ADC0)
- *   A1      getA1()                           GP27 (ADC1)
- *   A2      getA2()                           GP28 (ADC2)
- *   I2C0    getI2c0() bus, getI2c0Sda/Scl()   GP8, GP9
- *   I2C1    getI2c1Sda(), getI2c1Scl()        GP6, GP7
- *   UART0    getUart0Rx()/getUart0Tx()        GP1, GP0
- *   UART1    getUart1Rx()/getUart1Tx()        GP5, GP4
- *   SPI0     getSpi0Miso()/getSpi0Mosi()      GP16, GP19
- *            getSpi0Sck()/getSpi0Cs()        GP18, GP17
  * </pre>
  */
 public final class GrovePicoShield {

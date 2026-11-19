@@ -26,7 +26,7 @@ class JunoSiteTest {
 
     @Test
     void docsPagesHaveOnlyTheTopNavigation() {
-        RestAssured.given().when().get("/hardware-apis/").then().statusCode(200)
+        RestAssured.given().when().get("/api/").then().statusCode(200)
                 .body(containsString("juno-topbar"))
                 .body(containsString("juno-footer"))
                 .body(not(containsString("sidebar main")));
@@ -40,7 +40,7 @@ class JunoSiteTest {
 
     @Test
     void featuresSectionListsItsPagesInSecondaryNavigation() {
-        RestAssured.given().when().get("/memory-model/").then().statusCode(200)
+        RestAssured.given().when().get("/features/memory-model/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("JLS 17 Conformance"))
                 .body(containsString("Java subset"));
@@ -54,14 +54,14 @@ class JunoSiteTest {
 
     @Test
     void boardFeaturesPageRendersInFeaturesSection() {
-        RestAssured.given().when().get("/board-features/").then().statusCode(200)
+        RestAssured.given().when().get("/features/board-features/").then().statusCode(200)
                 .body(containsString("Infrared link to LEGO RCX"))
                 .body(containsString("juno-subnav"));
     }
 
     @Test
     void javaSubsetPageRendersInFeaturesSection() {
-        RestAssured.given().when().get("/java-subset/").then().statusCode(200)
+        RestAssured.given().when().get("/features/java-subset/").then().statusCode(200)
                 .body(containsString("Program entry points"))
                 .body(containsString("juno-subnav"));
     }
@@ -73,13 +73,13 @@ class JunoSiteTest {
 
     @Test
     void mavenPluginPagePreservesLiteralMavenProperties() {
-        RestAssured.given().when().get("/juno-maven-plugin/").then().statusCode(200)
+        RestAssured.given().when().get("/features/juno-maven-plugin/").then().statusCode(200)
                 .body(containsString("${project.version}"));
     }
 
     @Test
     void boardsSectionListsBoardsInSecondaryNavigation() {
-        RestAssured.given().when().get("/arduino-portenta-h7/").then().statusCode(200)
+        RestAssured.given().when().get("/boards/arduino-portenta-h7/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("UNO R4 WiFi"))
                 .body(containsString("Nano ESP32"))
@@ -97,7 +97,7 @@ class JunoSiteTest {
 
     @Test
     void createYourFirstProjectPageExplainsSubmoduleAndPlugin() {
-        RestAssured.given().when().get("/create-your-first-project/").then().statusCode(200)
+        RestAssured.given().when().get("/getting-started/create-your-first-project/").then().statusCode(200)
                 .body(containsString("git submodule add"))
                 .body(containsString("mainClass"))
                 .body(containsString("juno:flash"));
@@ -108,48 +108,50 @@ class JunoSiteTest {
         RestAssured.given().when().get("/third-parties/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("Arduino Shields"))
-                .body(containsString("/grove-system"))
-                .body(containsString("/lego-ecosystem"));
+                .body(containsString("/third-parties/grove-system"))
+                .body(containsString("/third-parties/lego-ecosystem"));
     }
 
     @Test
     void shieldsPageListsEveryShield() {
-        RestAssured.given().when().get("/arduino-shields/").then().statusCode(200)
+        RestAssured.given().when().get("/third-parties/arduino-shields/").then().statusCode(200)
                 .body(containsString("TFT Touch Shield"))
+                .body(containsString("PCA9685 PWM and Servo Shield"));
+        RestAssured.given().when().get("/third-parties/grove-system/").then().statusCode(200)
                 .body(containsString("Nano Connector Carrier"));
     }
 
     @Test
     void apisSectionListsHardwareApisInSecondaryNavigation() {
-        RestAssured.given().when().get("/hardware-apis/").then().statusCode(200)
+        RestAssured.given().when().get("/api/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
-                .body(containsString("Telemetry"))
+                .body(containsString("Observability"))
                 .body(containsString("Storage"))
                 .body(containsString("Internet"))
                 .body(containsString("Utils"))
                 .body(containsString("Hardware"))
-                .body(containsString("href=\"/hardware-apis#telemetry\""))
-                .body(containsString("href=\"/hardware-apis#storage\""))
+                .body(containsString("href=\"/api/observability\""))
+                .body(containsString("href=\"/api/storage\""))
                 .body(containsString("juno-topnav-children"));
     }
 
     @Test
     void timePageRendersInApisSection() {
-        RestAssured.given().when().get("/time/").then().statusCode(200)
+        RestAssured.given().when().get("/api/internet/time/").then().statusCode(200)
                 .body(containsString("LocalDateTime.now()"))
                 .body(containsString("juno-subnav"));
     }
 
     @Test
     void mvcPageRendersInApisSection() {
-        RestAssured.given().when().get("/mvc/").then().statusCode(200)
+        RestAssured.given().when().get("/api/utils/mvc/").then().statusCode(200)
                 .body(containsString("ViewRouter"))
                 .body(containsString("juno-subnav"));
     }
 
     @Test
     void gpioPageShowsBlink() {
-        RestAssured.given().when().get("/gpio/").then().statusCode(200)
+        RestAssured.given().when().get("/api/hardware/gpio/").then().statusCode(200)
                 .body(containsString("public class Blink"))
                 .body(containsString("juno-subnav"));
     }
@@ -184,26 +186,21 @@ class JunoSiteTest {
     void blogPageListsArticlesWithoutImagesAndWithPagination() {
         RestAssured.given().when().get("/blog/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
-                .body(containsString("/blog/gladiator/"))
-                .body(containsString("/blog/lichess/"))
-                .body(containsString("/blog/mailbox/"))
-                .body(containsString("A chess tactics trainer for the UNO R4 WiFi and TFT touch shield"))
+                .body(containsString("/blog/2026-11-14-gladiator/"))
+                .body(containsString("/blog/2026-11-14-lichess/"))
+                .body(containsString("/blog/2026-11-14-mailbox/"))
+                .body(containsString("Lichess Daily Challenges: a chess tactics trainer"))
                 .body(not(containsString("post-thumbnail")))
-                .body(containsString("/posts/page2/"));
+                .body(containsString("Supabase: publish Grove temperatures to the cloud"))
+                .body(not(containsString("/posts/page2/")));
     }
 
     @Test
     void blogArticleRendersDetail() {
-        RestAssured.given().when().get("/blog/mailbox/").then().statusCode(200)
+        RestAssured.given().when().get("/blog/2026-11-14-mailbox/").then().statusCode(200)
                 .body(containsString("Mailbox is a remote messaging system for Claude"))
                 .body(containsString("usecases/mailbox"));
     }
 
-    @Test
-    void blogPaginationRendersNextPage() {
-        RestAssured.given().when().get("/posts/page2/").then().statusCode(200)
-                .body(containsString("Supabase: publish Grove temperatures to the cloud"))
-                .body(containsString("Blog"));
-    }
 
 }

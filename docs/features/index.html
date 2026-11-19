@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
 
 </head>
 <body>
@@ -78,43 +78,43 @@
       <a class="" href="/juno/getting-started" >Getting Started</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/getting-started">Getting Started</a>
-        <a class="" href="/juno/create-your-first-project">Create your first project</a>
-        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/getting-started/create-your-first-project">Create your first project</a>
       </div>
       <a class="active active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
         <a class="active" href="/juno/features">Overview</a>
-        <a class="" href="/juno/java-subset">Java subset</a>
-        <a class="" href="/juno/board-features">Board features</a>
-        <a class="" href="/juno/memory-model">Memory Model</a>
-        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/java-subset">Java subset</a>
+        <a class="" href="/juno/features/board-features">Board features</a>
+        <a class="" href="/juno/features/memory-model">Memory Model</a>
+        <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
       </div>
       <a class="" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/boards">Overview</a>
-        <a class="" href="/juno/arduino-portenta-h7">Portenta H7</a>
-        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
-        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
-        <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
-        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+        <a class="" href="/juno/boards/arduino-portenta-h7">Portenta H7</a>
+        <a class="" href="/juno/boards/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/boards/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/boards/ai-thinker-esp32-cam">ESP32-CAM</a>
+        <a class="" href="/juno/boards/raspberry-pi-pico-2-w">Pico 2 W</a>
+        <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/boards/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
-        <a class="" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
-        <a class="" href="/juno/hardware-apis#storage">Storage</a>
-        <a class="" href="/juno/hardware-apis#internet">Internet</a>
-        <a class="" href="/juno/hardware-apis#utils">Utils</a>
-        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
+        <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/observability">Observability</a>
+        <a class="" href="/juno/api/storage">Storage</a>
+        <a class="" href="/juno/api/internet">Internet</a>
+        <a class="" href="/juno/api/utils">Utils</a>
+        <a class="" href="/juno/api/hardware">Hardware</a>
       </div>
       <a class="" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/third-parties">Overview</a>
-        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
-        <a class="" href="/juno/grove-system">Grove system</a>
-        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+        <a class="" href="/juno/third-parties/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/third-parties/grove-system">Grove system</a>
+        <a class="" href="/juno/third-parties/lego-ecosystem">LEGO ecosystem</a>
       </div>
       <a class="" href="/juno/blog" >Blog</a>
       <div class="juno-topnav-children">
@@ -292,10 +292,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <nav class="juno-subnav" aria-label="Features">
   <div class="juno-subnav-inner">
     <a class="active" href="/juno/features">Overview</a>
-    <a class="" href="/juno/java-subset">Java subset</a>
-    <a class="" href="/juno/board-features">Board features</a>
-    <a class="" href="/juno/memory-model">Memory Model</a>
-    <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+    <a class="" href="/juno/features/java-subset">Java subset</a>
+    <a class="" href="/juno/features/board-features">Board features</a>
+    <a class="" href="/juno/features/memory-model">Memory Model</a>
+    <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+    <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -308,18 +309,36 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Feature Inventory</h1>
 </header>
     <div class="content-prose">
-<ul>
-<li><strong><a href="../java-subset">Java subset</a>:</strong> the language itself, grouped by topic: data types, the program's entry point,
-object-oriented programming, control flow, arrays, lambdas, exceptions, concurrency and the JDK classes Juno supports.
-Start here to learn what Java code runs on the board.</li>
-<li><strong><a href="../memory-model">Memory model</a>:</strong> how a program uses the microcontroller's memory: flash and RAM, startup, the
-stack, the fixed 8 KiB arena and its garbage collector, the <code>juno.*</code> memory flags, and how many threads and arrays each
-board can hold.</li>
-<li><strong><a href="../jls-17-conformance">JLS 17 conformance</a>:</strong> how Juno maps each section of the Java Language Specification's
-Memory Model (chapter 17) to a focused example and to the boards it runs on.</li>
-<li><strong><a href="../board-features">Board features</a>:</strong> what each board supports beyond the language: Wi-Fi, HTTP and email,
-Bluetooth, USB, displays, storage and shields, compared board by board in one table.</li>
-</ul>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="java-subset">Java subset</a></td>
+<td>The language itself, grouped by topic: data types, the program's entry point, object-oriented programming, control flow, arrays, lambdas, exceptions, concurrency and the JDK classes Juno supports. Start here to learn what Java code runs on the board.</td>
+</tr>
+<tr>
+<td><a href="memory-model">Memory model</a></td>
+<td>How a program uses the microcontroller's memory: flash and RAM, startup, the stack, the fixed 8 KiB arena and its garbage collector, the <code>juno.*</code> memory flags, and how many threads and arrays each board can hold.</td>
+</tr>
+<tr>
+<td><a href="jls-17-conformance">JLS 17 conformance</a></td>
+<td>How Juno maps each section of the Java Language Specification's Memory Model (chapter 17) to a focused example and to the boards it runs on.</td>
+</tr>
+<tr>
+<td><a href="board-features">Board features</a></td>
+<td>What each board supports beyond the language: Wi-Fi, HTTP and email, Bluetooth, USB, displays, storage and shields, compared board by board in one table.</td>
+</tr>
+<tr>
+<td><a href="juno-maven-plugin">Maven plugin</a></td>
+<td>The Maven goals that compile, verify, flash and monitor a program: <code>juno:compile</code>, <code>juno:verify</code>, <code>juno:flash</code> and <code>juno:monitor</code>.</td>
+</tr>
+</tbody>
+</table>
     </div>
   </section>
 </article>
