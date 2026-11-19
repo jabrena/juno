@@ -139,7 +139,10 @@
                 </executions>
                 <configuration>
                     <goalPrefix>juno</goalPrefix>
+                    <!-- Written into the plugin descriptor, so a build that pulls the plugin from Maven Central on an
+                         older JDK or Maven stops with a clear message instead of an UnsupportedClassVersionError. -->
                     <requiredJavaVersion>${java.version}</requiredJavaVersion>
+                    <requiredMavenVersion>${maven.version}</requiredMavenVersion>
                 </configuration>
             </plugin>
         </plugins>
