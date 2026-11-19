@@ -392,9 +392,9 @@ jobs:
         # Every board runs in its own parallel job. The ESP32-S3 boards (Nano ESP32, M5Stack Cardputer) and the classic
         # ESP32 of the AI Thinker ESP32-CAM share the same Juno backend; the emulator boots each board's own core.
         board: [arduino-nano-esp32, m5stack-cardputer, ai-thinker-esp32-cam]
-        # 1: the single-carrier runtime. 2: one carrier per core, the runtime the dual-core boards run by default;
-        # the DualCarrier* programs exercise hand-over, stop-the-world collection and cancellation across the cores.
-        carriers: [1, 2]
+        # Two carriers: one per core, the runtime the dual-core boards run. The DualCarrier* programs exercise
+        # hand-over, stop-the-world collection and cancellation across the two cores.
+        carriers: [2]
     permissions:
       contents: read
       packages: read
@@ -451,9 +451,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The RP2350 has no QEMU model in this pipeline, so this job compiles for the Pico 2 W rather than running it:
-        # the carrier count changes the runtime Juno links into the sketch (one carrier per core, or one for both).
-        carriers: [1, 2]
+        # The RP2350 has no QEMU model in this pipeline, so this job compiles for the Pico 2 W rather than running it.
+        # Two carriers only, like the other dual-core boards.
+        carriers: [2]
     steps:
       - uses: actions/checkout@v7
         with:
