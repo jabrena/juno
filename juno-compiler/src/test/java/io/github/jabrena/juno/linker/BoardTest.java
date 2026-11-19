@@ -98,6 +98,7 @@ class BoardTest {
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.JSON, true),
                 arguments(Board.M5_CARDPUTER, Capability.JSON, true),
                 arguments(Board.PICO_2_W, Capability.JSON, true),
+                arguments(Board.PICO_2_W, Capability.UUID_RANDOM, true),
                 arguments(Board.PORTENTA_H7, Capability.JSON, true),
                 arguments(Board.UNO_R3, Capability.JSON, false),
                 arguments(Board.UNO_R3, Capability.BLUETOOTH_LE, false),
