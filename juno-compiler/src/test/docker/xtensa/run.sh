@@ -27,7 +27,9 @@ case "$board" in
         ;;
     m5stack-cardputer)
         # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU.
-        fqbn="m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc,FlashMode=dio"
+        # USBMode=hwcdc: the default TinyUSB stack drives the USB-OTG peripheral, which QEMU does not model; with it the
+        # app hung silently right after the bootloader handed over.
+        fqbn="m5stack:esp32:m5stack_cardputer:USBMode=hwcdc,CDCOnBoot=cdc,UploadMode=cdc,FlashMode=dio"
         variant_option=""
         machine=esp32s3
         memory="-m 8M"
@@ -38,7 +40,9 @@ case "$board" in
         bootloader_offset=0x0
         ;;
     ai-thinker-esp32-cam)
-        fqbn="esp32:esp32:esp32cam"
+        # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU, which the ESP-IDF 5 app
+        # then treats as a fatal flash-init error (startup_funcs.c:118).
+        fqbn="esp32:esp32:esp32cam:FlashMode=dio"
         variant_option=""
         machine=esp32
         memory=""
@@ -137,8 +141,16 @@ while :; do
 
     # Keep a real hang guard without making normal marker-terminated runs wait for it. Its sleep outlives the kill of
     # the guard, so it must not hold the script's output open, or a caller reading to the end would wait for it.
+    # A good boot reaches [juno-begin] in well under a second, so a boot that has not got there in 20 s is a silent
+    # hang: the guard stops it then, and gives a running program the rest of the 60 s.
+    rm -f "$tmpdir/begun"
     (
-        sleep 60
+        sleep 20
+        if [ ! -f "$tmpdir/begun" ]; then
+            kill "$qemu_pid" 2>/dev/null || true
+            exit 0
+        fi
+        sleep 40
         kill "$qemu_pid" 2>/dev/null || true
     ) </dev/null >/dev/null 2>&1 &
     watchdog_pid=$!
@@ -166,6 +178,7 @@ while :; do
         case "$line" in
             *'[juno-begin]'*)
                 begun=1
+                : >"$tmpdir/begun"
                 begun_ms=$(now_ms)
                 echo "run.sh timing: boot to [juno-begin] $(( begun_ms - qemu_started_ms )) ms (attempt $attempt)" >&2
                 ;;
