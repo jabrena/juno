@@ -79,6 +79,7 @@
         <maven-plugin-jar.version>3.5.1</maven-plugin-jar.version>
         <maven-plugin-javadoc.version>3.12.0</maven-plugin-javadoc.version>
         <maven-plugin-source.version>3.3.1</maven-plugin-source.version>
+        <central-publishing-plugin.version>0.12.0</central-publishing-plugin.version>
         <!-- Overridden to true by the modules that are never published; the -Prelease attachments follow it too. -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
@@ -545,6 +546,28 @@
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <!-- Replaces maven-deploy-plugin: deploy collects every module into one bundle and uploads it
+                             to the Central Portal with the token stored as server "central" in ~/.m2/settings.xml. -->
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${central-publishing-plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <deploymentName>Juno ${project.version}</deploymentName>
+                            <!-- Stop at VALIDATED and publish by hand from the Portal: a release cannot be withdrawn. -->
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                            <!-- The plugin ignores maven.deploy.skip and would bundle every reactor module; Central
+                                 then rejects the whole deployment for these modules' missing sources and Javadoc. -->
+                            <excludeArtifacts>
+                                <excludeArtifact>juno-examples</excludeArtifact>
+                                <excludeArtifact>juno-site</excludeArtifact>
+                                <excludeArtifact>coverage-aggregator</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
