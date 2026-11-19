@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jabrena</groupId>
     <artifactId>java-for-arduino</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
     <name>Juno</name>
     <description>Juno: an ahead-of-time Java compiler, hardware API and Maven plugin for Arduino and other microcontroller boards</description>
@@ -89,6 +89,8 @@
              mutation and line coverage under -Ppitest (juno-compiler). -->
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
+        <!-- Release versioning: ./mvnw versions:set -DnewVersion=<version> updates the parent and every module. -->
+        <maven-plugin-versions.version>2.21.0</maven-plugin-versions.version>
         <maven-plugin-pitest.version>1.30.2</maven-plugin-pitest.version>
         <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
         <pitest.threads>4</pitest.threads>
@@ -175,6 +177,15 @@
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${maven-plugin-versions.version}</version>
+                    <configuration>
+                        <processAllModules>true</processAllModules>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>

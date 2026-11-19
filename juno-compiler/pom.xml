@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.jabrena</groupId>
         <artifactId>java-for-arduino</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>juno-compiler</artifactId>

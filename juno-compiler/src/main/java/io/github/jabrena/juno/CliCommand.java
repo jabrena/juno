@@ -74,7 +74,7 @@ sealed interface CliCommand permits CliCommand.Help, CliCommand.Version, Compile
     }
 
     record Version() implements CliCommand {
-        private static final String VERSION = "0.1.0-SNAPSHOT";
+        private static final String VERSION = "0.1.0";
 
         @Override
         public void run(PrintStream out) {

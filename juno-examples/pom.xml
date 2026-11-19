@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.jabrena</groupId>
         <artifactId>java-for-arduino</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>juno-examples</artifactId>
@@ -186,7 +186,7 @@
                                     <pluginExecutionFilter>
                                         <groupId>io.github.jabrena</groupId>
                                         <artifactId>juno-maven-plugin</artifactId>
-                                        <versionRange>0.1.0-SNAPSHOT</versionRange>
+                                        <versionRange>[0.1.0,)</versionRange>
                                         <goals>
                                             <goal>env</goal>
                                         </goals>
