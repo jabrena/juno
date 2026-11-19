@@ -23,9 +23,11 @@ case "$board" in
         psram_options="-global driver=ssi_psram,property=is_octal,value=true"
         timer_driver=timer.esp32s3.timg
         flash_mib=16
+        bootloader_offset=0x0
         ;;
     m5stack-cardputer)
-        fqbn="m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc"
+        # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU.
+        fqbn="m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc,FlashMode=dio"
         variant_option=""
         machine=esp32s3
         memory="-m 8M"
@@ -33,6 +35,7 @@ case "$board" in
         psram_options=""
         timer_driver=timer.esp32s3.timg
         flash_mib=8
+        bootloader_offset=0x0
         ;;
     ai-thinker-esp32-cam)
         fqbn="esp32:esp32:esp32cam"
@@ -42,6 +45,8 @@ case "$board" in
         psram_options=""
         timer_driver=timer.esp32.timg
         flash_mib=4
+        # The classic ESP32's boot ROM loads the second-stage bootloader from 0x1000, not 0x0.
+        bootloader_offset=0x1000
         ;;
     *)
         echo "run.sh: unsupported board '$board'" >&2
@@ -54,7 +59,7 @@ esac
 arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
     --build-path "$sketch-build" "$sketch" >&2
 echo "run.sh timing: build $(( $(now_ms) - started_ms )) ms" >&2
-/harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin" "$flash_mib"
+/harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin" "$flash_mib" "$bootloader_offset"
 # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes, so QEMU emulates one (its
 # default PSRAM is quad SPI). The timer-group watchdog is disabled: the harness never feeds it.
 # The guest never powers off. Keep the output stream live, but terminate QEMU explicitly as soon as the completion
@@ -83,6 +88,21 @@ cleanup() {
     rm -rf "$tmpdir"
 }
 trap cleanup EXIT INT TERM
+
+# Decodes a panic backtrace ("Backtrace: 0xPC:0xSP ...") against the build's ELF, so a boot failure names its source.
+decode_backtrace() {
+    elf="$sketch-build/$name.ino.elf"
+    addr2line="$(find /root/.arduino15/packages -name "xtensa-${machine}-elf-addr2line" -type f 2>/dev/null | head -1)"
+    [ -n "$addr2line" ] || addr2line="$(find /root/.arduino15/packages -name 'xtensa-esp-elf-addr2line' -type f 2>/dev/null | head -1)"
+    if [ -z "$addr2line" ] || [ ! -f "$elf" ]; then
+        echo "run.sh: cannot decode the backtrace (addr2line or $elf missing)" >&2
+        return
+    fi
+    addresses="$(printf '%s\n' "$1" | tr ' ' '\n' | grep -o '^0x[0-9a-fA-F]*' || true)"
+    echo "run.sh: decoded backtrace:" >&2
+    # shellcheck disable=SC2086
+    "$addr2line" -pfiaC -e "$elf" $addresses >&2 || true
+}
 
 # Espressif's QEMU occasionally crashes while the guest boots (seen as exit 139 with the boot log and no [juno-begin]).
 # Such a run never reached the program, so it is retried, at most twice; a crash after [juno-begin], a crash on every
@@ -125,6 +145,24 @@ while :; do
 
     while IFS= read -r line; do
         printf '%s\n' "$line"
+        # A boot that fails before [juno-begin] never recovers: stop at once instead of waiting for the hang guard.
+        if [ "$begun" -eq 0 ]; then
+            case "$line" in
+                *'invalid header'*|*'Backtrace:'*|*'Rebooting...'*|*'Guru Meditation'*)
+                    kill "$qemu_pid" 2>/dev/null || true
+                    wait "$qemu_pid" 2>/dev/null || true
+                    qemu_pid=
+                    kill "$watchdog_pid" 2>/dev/null || true
+                    wait "$watchdog_pid" 2>/dev/null || true
+                    watchdog_pid=
+                    echo "run.sh: boot failed before [juno-begin] on $board: $line" >&2
+                    case "$line" in
+                        *'Backtrace:'*) decode_backtrace "$line" ;;
+                    esac
+                    exit 3
+                    ;;
+            esac
+        fi
         case "$line" in
             *'[juno-begin]'*)
                 begun=1
