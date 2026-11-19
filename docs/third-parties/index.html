@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-K3IMVOYK.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
 
 </head>
 <body>
@@ -78,43 +78,43 @@
       <a class="" href="/juno/getting-started" >Getting Started</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/getting-started">Getting Started</a>
-        <a class="" href="/juno/create-your-first-project">Create your first project</a>
-        <a class="" href="/juno/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/getting-started/create-your-first-project">Create your first project</a>
       </div>
       <a class="" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/features">Overview</a>
-        <a class="" href="/juno/java-subset">Java subset</a>
-        <a class="" href="/juno/board-features">Board features</a>
-        <a class="" href="/juno/memory-model">Memory Model</a>
-        <a class="" href="/juno/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/java-subset">Java subset</a>
+        <a class="" href="/juno/features/board-features">Board features</a>
+        <a class="" href="/juno/features/memory-model">Memory Model</a>
+        <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
       </div>
       <a class="" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/boards">Overview</a>
-        <a class="" href="/juno/arduino-portenta-h7">Portenta H7</a>
-        <a class="" href="/juno/arduino-nano-esp32">Nano ESP32</a>
-        <a class="" href="/juno/m5stack-cardputer">M5Stack Cardputer</a>
-        <a class="" href="/juno/ai-thinker-esp32-cam">ESP32-CAM</a>
-        <a class="" href="/juno/raspberry-pi-pico-2-w">Pico 2 W</a>
-        <a class="" href="/juno/arduino-uno-r4-wifi">UNO R4 WiFi</a>
-        <a class="" href="/juno/arduino-uno-r3">UNO R3</a>
+        <a class="" href="/juno/boards/arduino-portenta-h7">Portenta H7</a>
+        <a class="" href="/juno/boards/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/boards/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/boards/ai-thinker-esp32-cam">ESP32-CAM</a>
+        <a class="" href="/juno/boards/raspberry-pi-pico-2-w">Pico 2 W</a>
+        <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/boards/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="" href="/juno/hardware-apis" >APIs</a>
+      <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
-        <a class="" href="/juno/hardware-apis">Overview</a>
-        <a class="" href="/juno/hardware-apis#telemetry">Telemetry</a>
-        <a class="" href="/juno/hardware-apis#storage">Storage</a>
-        <a class="" href="/juno/hardware-apis#internet">Internet</a>
-        <a class="" href="/juno/hardware-apis#utils">Utils</a>
-        <a class="" href="/juno/hardware-apis#hardware">Hardware</a>
+        <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/observability">Observability</a>
+        <a class="" href="/juno/api/storage">Storage</a>
+        <a class="" href="/juno/api/internet">Internet</a>
+        <a class="" href="/juno/api/utils">Utils</a>
+        <a class="" href="/juno/api/hardware">Hardware</a>
       </div>
       <a class="active active" href="/juno/third-parties" >Third parties</a>
       <div class="juno-topnav-children">
         <a class="active" href="/juno/third-parties">Overview</a>
-        <a class="" href="/juno/arduino-shields">Arduino Shields</a>
-        <a class="" href="/juno/grove-system">Grove system</a>
-        <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+        <a class="" href="/juno/third-parties/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/third-parties/grove-system">Grove system</a>
+        <a class="" href="/juno/third-parties/lego-ecosystem">LEGO ecosystem</a>
       </div>
       <a class="" href="/juno/blog" >Blog</a>
       <div class="juno-topnav-children">
@@ -292,9 +292,9 @@ document.addEventListener('DOMContentLoaded', function () {
 <nav class="juno-subnav" aria-label="Third parties">
   <div class="juno-subnav-inner">
     <a class="active" href="/juno/third-parties">Overview</a>
-    <a class="" href="/juno/arduino-shields">Arduino Shields</a>
-    <a class="" href="/juno/grove-system">Grove system</a>
-    <a class="" href="/juno/lego-ecosystem">LEGO ecosystem</a>
+    <a class="" href="/juno/third-parties/arduino-shields">Arduino Shields</a>
+    <a class="" href="/juno/third-parties/grove-system">Grove system</a>
+    <a class="" href="/juno/third-parties/lego-ecosystem">LEGO ecosystem</a>
   </div>
 </nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
@@ -317,27 +317,23 @@ compiler intrinsic over the board's own library, so the same program style works
 <th>Third party</th>
 <th>What Juno does with it</th>
 <th>How it connects</th>
-<th>Page</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Arduino shields</td>
+<td><a href="arduino-shields">Arduino Shields</a></td>
 <td>Drives displays, touch panels, buttons, SD cards, motion sensors and Wi-Fi on boards that plug onto the UNO or Nano headers.</td>
 <td>The board's headers: GPIO, SPI, I2C and analog pins.</td>
-<td><a href="../arduino-shields">Arduino Shields</a></td>
 </tr>
 <tr>
-<td>Grove</td>
+<td><a href="grove-system">Grove</a></td>
 <td>Reads Seeed Studio's Grove sensors (temperature and humidity, light, sound, motion, gas) with allocation-free drivers.</td>
 <td>A Grove socket on the Grove Base Shield or the Nano Connector Carrier.</td>
-<td><a href="../grove-system">Grove</a></td>
 </tr>
 <tr>
-<td>LEGO</td>
+<td><a href="lego-ecosystem">LEGO</a></td>
 <td>Remote-controls LEGO Powered Up hubs, and the Mindstorms RCX and Scout bricks: motors, lights, sensors, sound and battery.</td>
 <td>Bluetooth LE for Powered Up; infrared for the RCX and Scout.</td>
-<td><a href="../lego-ecosystem">LEGO</a></td>
 </tr>
 </tbody>
 </table>
