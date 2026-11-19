@@ -171,7 +171,7 @@ while :; do
     qemu-system-xtensa -nographic -machine "$machine" $memory $accel_option \
         $psram_options \
         -global driver=$timer_driver,property=wdt_disable,value=true \
-        -monitor unix:"$tmpdir/monitor.sock",server,nowait \
+        -serial stdio -monitor unix:"$tmpdir/monitor.sock",server,nowait \
         -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
     qemu_pid=$!
     qemu_started_ms=$(now_ms)
