@@ -80,6 +80,9 @@
         <maven-plugin-javadoc.version>3.12.0</maven-plugin-javadoc.version>
         <maven-plugin-source.version>3.3.1</maven-plugin-source.version>
         <central-publishing-plugin.version>0.12.0</central-publishing-plugin.version>
+        <maven-plugin-gpg.version>3.2.8</maven-plugin-gpg.version>
+        <!-- -Prelease signs only the published modules; -Dgpg.skip still turns signing off for a local dry run. -->
+        <gpg.skip>${maven.deploy.skip}</gpg.skip>
         <!-- Overridden to true by the modules that are never published; the -Prelease attachments follow it too. -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
@@ -567,6 +570,27 @@
                                 <excludeArtifact>coverage-aggregator</excludeArtifact>
                             </excludeArtifacts>
                         </configuration>
+                    </plugin>
+                    <plugin>
+                        <!-- Central rejects every file without a detached .asc signature. Signing runs at verify, so
+                             the publishing plugin finds the signatures attached when it bundles at deploy. -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-plugin-gpg.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- The passphrase only ever comes from MAVEN_GPG_PASSPHRASE, never from
+                                         settings.xml or the command line. -->
+                                    <bestPractices>true</bestPractices>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
