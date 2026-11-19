@@ -1,6 +1,8 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -8,7 +10,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * A volatile long written on one carrier and read on the other must never be seen half-written. The long sits after an
  * int, so a wide access that missed the field's offset would also show up: it would tear the value and clobber the int.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class})
 public final class DualCarrierWideFields {
     private static final int READS = 20_000;
 

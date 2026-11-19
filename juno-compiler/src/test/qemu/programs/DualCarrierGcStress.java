@@ -1,6 +1,8 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -9,7 +11,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
  * built. The arena is shared, so allocation must be serialized and a collection must stop the other carrier first; a
  * collection that ran while the other carrier kept mutating its list would free live nodes and corrupt them.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class})
 public final class DualCarrierGcStress {
     private static final int ROUNDS = 100;
     private static final int LENGTH = 40;

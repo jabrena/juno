@@ -1,12 +1,14 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** while with zero iterations, do that runs once, basic for with comma-separated headers, and enhanced for over arrays. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class})
 public final class Loops {
     private Loops() {
     }

@@ -1,6 +1,8 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -12,7 +14,7 @@ import java.util.concurrent.StructuredTaskScope;
  * carrier and keep entering the runtime (scoped lookups, allocations), and joins them; the body must not keep the
  * runtime lock while it waits, or the subtasks never finish.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class})
 public final class DualCarrierScopedRun {
     private static final ScopedValue<int[]> FACTOR = ScopedValue.newInstance();
     static final int[] RESULTS = new int[2];

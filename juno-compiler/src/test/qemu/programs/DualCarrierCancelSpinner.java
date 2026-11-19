@@ -1,6 +1,8 @@
 package demo;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -11,7 +13,7 @@ import java.util.concurrent.StructuredTaskScope;
  * A failing subtask cancels a sibling that is busy spinning, possibly on the other carrier at that moment. Its task
  * cannot be deleted while it runs there, so it has to stop itself; the scope must still close and the program go on.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class})
 public final class DualCarrierCancelSpinner {
     private static volatile boolean stop;
     private static volatile int progress;

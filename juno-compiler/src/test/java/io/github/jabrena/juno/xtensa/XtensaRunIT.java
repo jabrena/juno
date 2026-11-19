@@ -38,15 +38,15 @@ import static org.assertj.core.api.Assertions.fail;
 
 /**
  * The Xtensa counterpart of {@code QemuRunIT} for the primitive semantic-conformance slice: each catalogued program is
- * compiled by Juno for the Nano ESP32, built by the pinned {@code arduino:esp32} core into a bootable ESP32-S3 flash
- * image, booted under Espressif's QEMU, and its UART transcript compared with what the same source prints on OpenJDK.
+ * compiled by Juno for one ESP32 board (Nano ESP32, M5Stack Cardputer or AI Thinker ESP32-CAM), built by its pinned Arduino
+ * core into a bootable flash image, booted under Espressif's QEMU, and its UART transcript compared with what the same source prints on OpenJDK.
  *
  * <p>The harness (Dockerfile, {@code run.sh}, {@code merge_flash.sh} and the emulator {@code variant.cpp}) lives in
  * {@code src/test/docker/xtensa}. Unlike the bare-metal Thumb-2 and AVR harnesses it runs the real core and its boot chain;
  * the emulator variant only drops the board's double-tap recovery, which drives an LED peripheral QEMU does not model.
  * The sketch wrapper brackets the program with {@code [juno-begin]} and {@code [juno-exit]}, so the boot log before
  * it is not part of the transcript, and the core's {@code \r\n} line ends are compared as {@code \n}. The pilot covers
- * the Nano ESP32 only: Cardputer-specific behavior is out of scope. Opt-in:
+ * the board's core behavior only: display, keyboard, camera and other board-specific peripherals stay out of scope. Opt-in:
  * {@code ./mvnw -pl juno-compiler -am -Pxtensa verify -Djuno.Xmx=24k} (the arena size CI uses). Skipped when Docker is not available.
  */
 @Tag("xtensa")
@@ -57,8 +57,11 @@ class XtensaRunIT {
     private static final Path XTENSA = BASEDIR.resolve("src/test/docker/xtensa");
     private static final ConformanceWorkspace WORKSPACE = new ConformanceWorkspace(BASEDIR, "xtensa",
             CompilerTestSupport.JUNO_API_CLASSES);
-    /** The one ESP32-S3 board/core path this pilot claims. */
-    private static final Board BOARD = Board.NANO_ESP32;
+    /**
+     * The ESP32 board this run claims: the Nano ESP32 (ESP32-S3), the M5Stack Cardputer (ESP32-S3) or the AI Thinker
+     * ESP32-CAM (ESP32, LX6). CI runs one board per job with {@code -Djuno.xtensaBoard=<id>}.
+     */
+    private static final Board BOARD = Board.fromId(System.getProperty("juno.xtensaBoard", "arduino-nano-esp32"));
     /** The runtime programs QemuRunIT runs on Thumb-2; the ones that declare the Nano ESP32 run here too. */
     private static final ProgramDirectory QEMU_PROGRAMS =
             new ProgramDirectory(BASEDIR.resolve("src/test/qemu/programs"));
@@ -66,9 +69,9 @@ class XtensaRunIT {
     private static final String EXIT_MARKER = ConformanceWorkspace.EXIT_MARKER;
     private static final String PUBLISHED_IMAGE = System.getProperty("juno.xtensaImage", "").trim();
     /**
-     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and runs the suite
-     * twice, with {@code -Djuno.carriers=1} and {@code 2}; the {@code DualCarrier*} programs only exercise the
-     * cross-core runtime on the second run.
+     * The runtime configuration, read exactly as the Maven plugin reads it. CI enlarges the arena and runs each board
+     * with {@code -Djuno.carriers=1} and {@code 2} in parallel jobs; the {@code DualCarrier*} programs only exercise
+     * the cross-core runtime on the two-carrier run.
      */
     private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(
             Optional.ofNullable(System.getProperty("juno.Xmx")), Optional.ofNullable(System.getProperty("juno.Xss")),
@@ -115,7 +118,7 @@ class XtensaRunIT {
         String expected = WORKSPACE.baseline(mainClass);
         String actual = runUnderQemu(mainClass, board);
         WORKSPACE.assertTranscript(board, mainClass, expected, actual,
-                "%s on %s under QEMU (ESP32-S3)".formatted(mainClass, board.displayName()));
+                "%s on %s under QEMU".formatted(mainClass, board.displayName()));
     }
 
     /** Primitive semantic-conformance fixtures from the XML catalog that declare the Nano ESP32. */
@@ -132,7 +135,7 @@ class XtensaRunIT {
     void primitiveConformanceMatchesTheJvmUnderQemu(String mainClass, Board board, String programId) throws Exception {
         String expected = WORKSPACE.baseline(mainClass);
         String actual = runUnderQemu(mainClass, board);
-        WORKSPACE.assertTranscript(board, mainClass, expected, actual, "conformance %s (%s) on %s under QEMU (ESP32-S3)"
+        WORKSPACE.assertTranscript(board, mainClass, expected, actual, "conformance %s (%s) on %s under QEMU"
                 .formatted(programId, mainClass, board.displayName()));
     }
 
@@ -173,7 +176,7 @@ class XtensaRunIT {
     private static ExecResult runOnce(String work) throws IOException, InterruptedException {
         // GNU timeout signals run.sh's whole process group, so a stalled arduino-cli or QEMU child stops too.
         return XTENSA_RUNNER.execInContainer("timeout", "-k", "10", String.valueOf(RUN_TIMEOUT_SECONDS),
-                "/harness/run.sh", work);
+                "/harness/run.sh", work, BOARD.id());
     }
 
     /** The program's output between the markers, inclusive of the exit marker, with {@code \r\n} as {@code \n}. */

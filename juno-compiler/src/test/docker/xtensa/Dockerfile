@@ -1,4 +1,4 @@
-# Runs Juno-generated Xtensa code (Nano ESP32, ESP32-S3) under Espressif's QEMU for XtensaRunIT
+# Runs Juno-generated Xtensa code (Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM) under Espressif's QEMU for XtensaRunIT
 # (./mvnw -pl juno-compiler -am -Pxtensa verify). The image carries the pinned arduino:esp32 core, which builds the
 # sketch, and the pinned Espressif QEMU build, which boots the merged flash image: see run.sh, merge_flash.sh and
 # variant.cpp.
@@ -38,6 +38,16 @@ RUN case "$(dpkg --print-architecture)" in \
         | tar -xz -C /usr/local/bin arduino-cli \
     && arduino-cli core update-index \
     && arduino-cli core install "${ESP32_CORE}"
+
+# The cores for the other two boards, pinned to the versions the core-drift baselines record, and their board-manager indexes.
+ARG M5STACK_PACKAGE_INDEX_URL=https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json
+ARG ESPRESSIF_PACKAGE_INDEX_URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
+ARG M5STACK_CORE=m5stack:esp32@3.3.10
+ARG ESPRESSIF_CORE=esp32:esp32@3.3.12
+RUN arduino-cli config add board_manager.additional_urls "${M5STACK_PACKAGE_INDEX_URL}" \
+    && arduino-cli config add board_manager.additional_urls "${ESPRESSIF_PACKAGE_INDEX_URL}" \
+    && arduino-cli core update-index \
+    && arduino-cli core install "${M5STACK_CORE}" "${ESPRESSIF_CORE}"
 
 # The emulator variant: the core's Nano ESP32 variant with variant.cpp replaced (see that file).
 COPY variant.cpp /harness/

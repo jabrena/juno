@@ -1,16 +1,56 @@
 #!/bin/sh
-# Usage: run.sh <sketch directory>
+# Usage: run.sh <sketch directory> [board id]
 # The directory is an Arduino sketch named after its program: <Name>.ino, program.S and shim.cpp. arduino-cli builds
-# it for the Nano ESP32 with USB CDC disabled, so Serial is UART0; the merged flash image then boots under Espressif's
-# QEMU (ESP32-S3). Stdout is the UART capture: boot log, [juno-begin], the program's output and [juno-exit], at
-# which QEMU stops.
+# it for the board with USB CDC disabled, so Serial is UART0; the merged flash image then boots under Espressif's QEMU.
+# The board id selects the core, the QEMU machine and its memory settings: arduino-nano-esp32 (default), m5stack-cardputer
+# (both ESP32-S3) or ai-thinker-esp32-cam (classic ESP32, LX6). Stdout is the UART capture: boot log, [juno-begin], the
+# program's output and [juno-exit], at which QEMU stops.
 set -eu
 sketch="$1"
+board="${2:-arduino-nano-esp32}"
 name="$(basename "$sketch")"
+case "$board" in
+    arduino-nano-esp32)
+        fqbn="arduino:esp32:nano_nora"
+        # build.variant.path swaps in the emulator variant (/harness/variant), which skips the board's double-tap recovery.
+        variant_option="--build-property build.variant.path=/harness/variant"
+        machine=esp32s3
+        memory="-m 8M"
+        # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes.
+        psram_options="-global driver=ssi_psram,property=is_octal,value=true"
+        timer_driver=timer.esp32s3.timg
+        flash_mib=16
+        ;;
+    m5stack-cardputer)
+        fqbn="m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc"
+        variant_option=""
+        machine=esp32s3
+        memory="-m 8M"
+        # The Cardputer has no PSRAM, so the PSRAM model stays off.
+        psram_options=""
+        timer_driver=timer.esp32s3.timg
+        flash_mib=8
+        ;;
+    ai-thinker-esp32-cam)
+        fqbn="esp32:esp32:esp32cam"
+        variant_option=""
+        machine=esp32
+        memory=""
+        psram_options=""
+        timer_driver=timer.esp32.timg
+        flash_mib=4
+        ;;
+    *)
+        echo "run.sh: unsupported board '$board'" >&2
+        exit 2
+        ;;
+esac
 # build.variant.path swaps in the emulator variant (/harness/variant), which skips the board's double-tap recovery.
-arduino-cli compile --fqbn arduino:esp32:nano_nora --build-property build.cdc_on_boot=0 \
-    --build-property build.variant.path=/harness/variant --build-path "$sketch-build" "$sketch" >&2
-/harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin"
+# variant_option is unquoted on purpose: empty, it adds no argument; set, it splits into the property and its value.
+# shellcheck disable=SC2086
+arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
+    --build-path "$sketch-build" "$sketch" >&2
+/harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin" "$flash_mib"
 # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes, so QEMU emulates one (its
 # default PSRAM is quad SPI). The timer-group watchdog is disabled: the harness never feeds it.
 # The guest never powers off. Keep the output stream live, but terminate QEMU explicitly as soon as the completion
@@ -62,9 +102,11 @@ while :; do
     fi
     # accel_option is unquoted on purpose: empty, it adds no argument; set, it splits into the option and its value.
     # shellcheck disable=SC2086
-    qemu-system-xtensa -nographic -machine esp32s3 -m 8M $accel_option \
-        -global driver=ssi_psram,property=is_octal,value=true \
-        -global driver=timer.esp32s3.timg,property=wdt_disable,value=true \
+    # memory, psram_options and accel_option are unquoted on purpose: each splits into its own arguments, or none.
+    # shellcheck disable=SC2086
+    qemu-system-xtensa -nographic -machine "$machine" $memory $accel_option \
+        $psram_options \
+        -global driver=$timer_driver,property=wdt_disable,value=true \
         -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
     qemu_pid=$!
 
