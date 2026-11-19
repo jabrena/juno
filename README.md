@@ -44,6 +44,25 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
   </tbody>
 </table>
 
+#### Portenta HATs supported
+
+<table>
+  <thead>
+    <tr>
+      <th>HAT</th>
+      <th>Image</th>
+      <th>Supported features</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><strong>MHS-3.5 TFT touch HAT</strong></td>
+    <td align="center">—</td>
+    <td>480x320 ILI9486 display with resistive XPT2046 touch, driven through <code>Mhs35TftDisplay</code> on the Hat Carrier's header.</td>
+  </tr>
+  </tbody>
+</table>
+
 ### Arduino Nano Family
 
 <table>
@@ -180,6 +199,11 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
     <td><strong>AZDelivery Data Logger Shield</strong></td>
     <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="220"></td>
     <td>SPI SD-card access. The shield's real-time clock is not currently exposed.</td>
+  </tr>
+  <tr>
+    <td><strong>Arduino USB Host Shield</strong></td>
+    <td align="center"><img src="./juno-site/src/main/resources/public/images/shields/shield-usb-host.png" alt="Arduino USB Host Shield" width="220"></td>
+    <td>MAX3421E USB host over SPI: one full- or low-speed device on the USB-A socket (no hubs), with control and bulk transfers.</td>
   </tr>
   <tr>
     <td><strong>Grove Base Shield</strong></td>
