@@ -3,8 +3,7 @@ title: "Gladiator: a network arena game"
 description: "A Roman arena game for the ELEGOO TFT touch shield, with solo and networked battles."
 date: 2026-11-14
 layout: post
-link: /blog/gladiator/
-image: showcase/gladiator-solo.gif
+link: /blog/2026-11-14-gladiator/
 tags: [games, wifi, udp]
 ---
 
@@ -17,5 +16,5 @@ network needed.
 | Field | Value |
 |---|---|
 | Sources | [`games/gladiator`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/games/gladiator) |
-| Board supported | [`UNO R4 WiFi`](../../arduino-uno-r4-wifi) |
+| Board supported | [`UNO R4 WiFi`](../../boards/arduino-uno-r4-wifi) |
 | Features used | Wi-Fi, UDP, SD card, TFT touch screen, rotating 3D wireframe view, CPU opponent AI, lion, javelins, smoke, stamina, random numbers, clock |

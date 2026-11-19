@@ -1,0 +1,23 @@
+---
+layout: page
+---
+{@io.quarkiverse.roq.frontmatter.runtime.model.NormalPage page}
+
+{#insert /}
+
+{#if site.collections.get('posts')}
+{#let posts=site.collections.get('posts').paginated(page.paginator)}
+
+<ul class="blog-simple-list">
+  {#for post in posts}
+  <li>
+    <a href="{post.url}">{post.title}</a>
+    {#if post.date}<time class="blog-simple-date">{post.date.format('MMM d, yyyy')}</time>{/if}
+  </li>
+  {/for}
+</ul>
+
+{/let}
+
+{#include partials/roq-default/pagination.html/}
+{/if}
