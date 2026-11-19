@@ -258,6 +258,7 @@ jobs:
           set -euo pipefail
           digest="$(git ls-files -z -- \
             juno-compiler/src/test/docker/xtensa/Dockerfile \
+            juno-compiler/src/test/docker/xtensa/emulator_adc.cpp \
             juno-compiler/src/test/docker/xtensa/merge_flash.sh \
             juno-compiler/src/test/docker/xtensa/run.sh \
             juno-compiler/src/test/docker/xtensa/variant.cpp \

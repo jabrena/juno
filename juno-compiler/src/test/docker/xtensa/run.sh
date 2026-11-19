@@ -25,6 +25,7 @@ case "$board" in
         flash_mib=16
         bootloader_offset=0x0
         core_package=arduino
+        emulator_shim=""
         ;;
     m5stack-cardputer)
         # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU.
@@ -40,6 +41,9 @@ case "$board" in
         flash_mib=8
         bootloader_offset=0x0
         core_package=m5stack
+        # ESP-IDF 5 calibrates the ADC at start-up and waits for an event QEMU never raises: see emulator_adc.cpp.
+        emulator_shim=emulator_adc.cpp
+        emulator_link_flags="-Wl,--wrap=adc_hal_self_calibration"
         ;;
     ai-thinker-esp32-cam)
         # DIO flash: the core's default QIO boot fails to set the flash's QIE bit under QEMU, which the ESP-IDF 5 app
@@ -54,6 +58,7 @@ case "$board" in
         # The classic ESP32's boot ROM loads the second-stage bootloader from 0x1000, not 0x0.
         bootloader_offset=0x1000
         core_package=esp32
+        emulator_shim=""
         ;;
     *)
         echo "run.sh: unsupported board '$board'" >&2
@@ -61,10 +66,20 @@ case "$board" in
         ;;
 esac
 # build.variant.path swaps in the emulator variant (/harness/variant), which skips the board's double-tap recovery.
+if [ -n "$emulator_shim" ]; then
+    cp "/harness/$emulator_shim" "$sketch/"
+fi
 # variant_option is unquoted on purpose: empty, it adds no argument; set, it splits into the property and its value.
-# shellcheck disable=SC2086
-arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
-    --build-path "$sketch-build" "$sketch" >&2
+if [ -n "$emulator_shim" ]; then
+    # shellcheck disable=SC2086
+    arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
+        --build-property "compiler.c.elf.extra_flags=$emulator_link_flags" \
+        --build-path "$sketch-build" "$sketch" >&2
+else
+    # shellcheck disable=SC2086
+    arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
+        --build-path "$sketch-build" "$sketch" >&2
+fi
 echo "run.sh timing: build $(( $(now_ms) - started_ms )) ms" >&2
 /harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin" "$flash_mib" "$bootloader_offset"
 # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes, so QEMU emulates one (its

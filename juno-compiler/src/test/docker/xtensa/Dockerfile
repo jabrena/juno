@@ -54,7 +54,7 @@ COPY variant.cpp /harness/
 RUN cp -r /root/.arduino15/packages/arduino/hardware/esp32/*/variants/arduino_nano_nora /harness/variant \
     && cp /harness/variant.cpp /harness/variant/variant.cpp
 
-COPY run.sh merge_flash.sh /harness/
+COPY run.sh merge_flash.sh emulator_adc.cpp /harness/
 RUN chmod +x /harness/run.sh /harness/merge_flash.sh
 
 WORKDIR /work
