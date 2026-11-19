@@ -13,6 +13,8 @@
     <description>Documentation website for Juno, generated as a static site with Quarkus Roq and published to GitHub Pages</description>
 
     <properties>
+        <!-- Not a library: never published to Maven Central (the deploy step skips this module). -->
+        <maven.deploy.skip>true</maven.deploy.skip>
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.40.1.2</quarkus.platform.version>
