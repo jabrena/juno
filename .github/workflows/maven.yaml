@@ -382,14 +382,17 @@ jobs:
         run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
 
   xtensa:
-    name: Run Xtensa programs under QEMU (ESP32-S3, ${{ matrix.carriers }} carrier)
+    name: Run Xtensa programs under QEMU (${{ matrix.board }}, ${{ matrix.carriers }} carrier)
     needs: [changes, xtensa-image]
     if: needs.changes.outputs.full == 'true'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        # 1: the single-carrier runtime. 2: one carrier per ESP32-S3 core, the runtime a Nano ESP32 runs by default;
+        # Every board runs in its own parallel job. The ESP32-S3 boards (Nano ESP32, M5Stack Cardputer) and the classic
+        # ESP32 of the AI Thinker ESP32-CAM share the same Juno backend; the emulator boots each board's own core.
+        board: [arduino-nano-esp32, m5stack-cardputer, ai-thinker-esp32-cam]
+        # 1: the single-carrier runtime. 2: one carrier per core, the runtime the dual-core boards run by default;
         # the DualCarrier* programs exercise hand-over, stop-the-world collection and cancellation across the cores.
         carriers: [1, 2]
     permissions:
@@ -407,20 +410,21 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Xtensa image
         run: docker pull ${{ needs.xtensa-image.outputs.ref }}
-      - name: Run Xtensa programs under QEMU (ESP32-S3)
-        # About 25 min for 21 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
+      - name: Run Xtensa programs under QEMU (${{ matrix.board }})
+        # About 40 min for 32 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
         # backstop, and as a step timeout (not a job timeout) it still lets the failure-evidence upload below run.
-        timeout-minutes: 45
+        timeout-minutes: 60
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pxtensa
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=XtensaRunIT
           -Djuno.xtensaImage=${{ needs.xtensa-image.outputs.ref }} -Djuno.Xmx=24k -Djuno.carriers=${{ matrix.carriers }}
+          -Djuno.xtensaBoard=${{ matrix.board }}
           -b turbo -T1C
       - name: Publish Xtensa conformance report
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.carriers == 1 && 'xtensa-conformance-junit' || 'xtensa-conformance-junit-2-carriers' }}
+          name: xtensa-conformance-junit-${{ matrix.board }}-${{ matrix.carriers }}
           path: juno-compiler/target/failsafe-reports/**
           if-no-files-found: warn
           retention-days: 7
@@ -428,13 +432,78 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.carriers == 1 && 'xtensa-conformance-failure' || 'xtensa-conformance-failure-2-carriers' }}
+          name: xtensa-conformance-failure-${{ matrix.board }}-${{ matrix.carriers }}
           path: juno-compiler/target/xtensa/generated/**
           if-no-files-found: warn
           retention-days: 7
       - name: Check Xtensa conformance report entries
         if: always()
         run: java .github/scripts/ConformanceReportCheck.java juno-compiler/target/failsafe-reports
+
+  pico2:
+    name: Compile Raspberry Pi Pico 2 W programs (${{ matrix.carriers }} carrier)
+    needs: [changes, arduino-cli-image, integration-build]
+    if: needs.changes.outputs.full == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix:
+        # The RP2350 has no QEMU model in this pipeline, so this job compiles for the Pico 2 W rather than running it:
+        # the carrier count changes the runtime Juno links into the sketch (one carrier per core, or one for both).
+        carriers: [1, 2]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - uses: ./.github/actions/setup-maven
+        with:
+          cache-scope: ${{ github.job }}-${{ matrix.carriers }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Pull Arduino CLI image
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+              exit 0
+            fi
+            echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
+            sleep $((attempt * 10))
+          done
+          exit 1
+      - uses: actions/download-artifact@v8
+        with:
+          name: integration-build-${{ github.sha }}
+      - name: Restore integration build outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .ci
+          tar -xzf integration-build.tar.gz -C .ci
+          cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
+          cp -a ".ci/integration-build/juno-compiler/target" "juno-compiler/"
+      - name: Compile Pico 2 W programs with arduino-cli
+        run: >-
+          ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -Parduino-cli
+          failsafe:integration-test failsafe:verify -Dit.test=ArduinoCliCompileIT
+          -Dfailsafe.failIfNoSpecifiedTests=false
+          -Djuno.arduinoCliBoard=raspberry-pi-pico-2-w -Djuno.carriers=${{ matrix.carriers }}
+          -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
+      - name: Publish Pico 2 W compile reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pico2-compile-junit-${{ matrix.carriers }}
+          path: juno-compiler/target/failsafe-reports/**
+          if-no-files-found: warn
+          retention-days: 7
 
   conformance-reports:
     name: Publish conformance reports
@@ -452,20 +521,13 @@ jobs:
         with:
           name: thumb2-conformance-junit
           path: reports/qemu
-      - name: Download Xtensa conformance report
+      - name: Download Xtensa conformance reports
         if: needs.xtensa.result != 'skipped'
         continue-on-error: true
         uses: actions/download-artifact@v8
         with:
-          name: xtensa-conformance-junit
+          pattern: xtensa-conformance-junit-*
           path: reports/xtensa
-      - name: Download two-carrier Xtensa conformance report
-        if: needs.xtensa.result != 'skipped'
-        continue-on-error: true
-        uses: actions/download-artifact@v8
-        with:
-          name: xtensa-conformance-junit-2-carriers
-          path: reports/xtensa-2-carriers
       - name: Summarize conformance reports
         shell: bash
         run: |
@@ -475,16 +537,22 @@ jobs:
           {
             echo "## Conformance reports"
             echo
-            for backend in qemu xtensa xtensa-2-carriers; do
-              files=(reports/$backend/failsafe-reports/TEST-*.xml)
-              if [[ -e "${files[0]}" ]]; then
+            shopt -s nullglob
+            for backend in qemu xtensa; do
+              if [[ "$backend" == qemu ]]; then
+                files=(reports/qemu/failsafe-reports/TEST-*.xml)
+              else
+                files=(reports/xtensa/*/failsafe-reports/TEST-*.xml)
+              fi
+              if (( ${#files[@]} > 0 )); then
                 for report in "${files[@]}"; do
                   report_count=$((report_count + 1))
+                  label=$(basename "$(dirname "$(dirname "$report")")")
                   suite=$(sed -n 's/.*<testsuite[^>]*name="\([^"]*\)".*/\1/p' "$report" | head -1)
                   tests=$(sed -n 's/.*<testsuite[^>]*tests="\([0-9]*\)".*/\1/p' "$report" | head -1)
                   failures=$(sed -n 's/.*<testsuite[^>]*failures="\([0-9]*\)".*/\1/p' "$report" | head -1)
                   errors=$(sed -n 's/.*<testsuite[^>]*errors="\([0-9]*\)".*/\1/p' "$report" | head -1)
-                  echo "- **$backend**: $suite — tests=$tests, failures=$failures, errors=$errors"
+                  echo "- **$backend** ($label): $suite — tests=$tests, failures=$failures, errors=$errors"
                 done
               else
                 echo "- **$backend**: no JUnit XML artifact was available"
