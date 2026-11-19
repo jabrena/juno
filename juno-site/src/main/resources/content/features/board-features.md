@@ -49,7 +49,7 @@ on every physical board; each board's page notes what is confirmed on hardware.
 
 ## Secret storage
 
-Juno's [`SecretStore`](../secure-element) API reads named Wi-Fi, API and email credentials from whatever store the
+Juno's [`SecretStore`](../../api/storage/secure-element) API reads named Wi-Fi, API and email credentials from whatever store the
 board has: the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which is weaker than a chip — a
 flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware image and the SD card either
 way, so provisioning does not put them in source code, build output or removable storage. The other boards have no
@@ -62,7 +62,7 @@ secret store: their examples read `application.properties` from the SD card, in 
 | Built in, in EEPROM | UNO R3 | No crypto chip: `MCU.getSecretStore()` uses the microcontroller's EEPROM, plain text that any flashed program or a programmer can read. |
 
 The chip must be provisioned with `juno:secret` before the application reads its secrets by name. The [secure-element
-guide](../secure-element) covers provisioning, wiring, missing-secret handling and the current hardware-validation
+guide](../../api/storage/secure-element) covers provisioning, wiring, missing-secret handling and the current hardware-validation
 status.
 
 ## Physical expansions
@@ -82,9 +82,9 @@ Notes:
 
 - **Shield** means the feature comes from an Arduino or ELEGOO shield on the board's headers: the Data Logger, TFT or
   LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shields for sensors. See
-  [Arduino Shields](../arduino-shields).
+  [Arduino Shields](../../third-parties/arduino-shields).
 - **Carrier** means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
-  [Nano ESP32](../arduino-nano-esp32#shields) page.
+  [Nano ESP32](../../boards/arduino-nano-esp32#shields) page.
 - **Structured concurrency** is available on every board except the UNO R3. The UNO R4 WiFi and Portenta H7 run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
   carriers concurrently. See [Concurrency behaviour](../java-subset#concurrency-behaviour) for scheduling and memory
   limits.
@@ -95,7 +95,7 @@ Notes:
   onboard SE050C2 is read through the ordinary `SecretStore` API; credentials stay in the chip rather than in
   the generated sketch. Hardware verification remains pending for the connected-board run.
 - **Infrared** drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
-  [LEGO ecosystem](../lego-ecosystem) page.
+  [LEGO ecosystem](../../third-parties/lego-ecosystem) page.
 
 ## Reading the board services through `MCU`
 

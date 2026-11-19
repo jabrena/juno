@@ -9,7 +9,7 @@ Renesas RA4M1, and adds an ESP32-S3 module for Wi-Fi and Bluetooth, a 12 × 8 LE
 compiles for the RA4M1 with its Thumb-2 backend; the `MCU` facade is the entry point for the board's
 peripherals. The UNO R4 Minima is not a Juno target.
 
-<img src="../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
+<img src="../../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
 
 ## Core specification
 
@@ -42,7 +42,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |
 | `UUID.randomUUID()` | ✓ | The RA4M1's Secure Crypto Engine true-random-number generator. | |
 | `@Watchdog` | ✓ | The RA4M1 hardware watchdog. | |
-| `SecretStore` | ✓ | `Esp32Nvs` in the ESP32-S3's NVS, through the core's `Preferences` library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see [Secrets in a Secure Element](../secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
+| `SecretStore` | ✓ | `Esp32Nvs` in the ESP32-S3's NVS, through the core's `Preferences` library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see [Secrets in a Secure Element](../../api/storage/secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
 | Onboard LED matrix | ✓ | 12 × 8 through `MCU.getDisplay()`, a monochrome `Display`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
 | USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
@@ -51,7 +51,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `Json`, `JsonValue`, `JsonWriter` | ✓ | The smallest board with JSON support: read responses and request bodies with `Json.parse`, write bodies with `JsonWriter`. | [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java) |
 | `HttpServer` | ✓ | | [`HttpServerBacklight`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java) |
 | `Smtp`, `Pop3Client` | ✓ | Implicit TLS and STARTTLS (STARTTLS needs the `ESP_SSLClient` library). | [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java) |
-| Bluetooth LE (LEGO Powered Up) | ✓ | Through `ArduinoBLE`; see [LEGO](../lego-ecosystem). | |
+| Bluetooth LE (LEGO Powered Up) | ✓ | Through `ArduinoBLE`; see [LEGO](../../third-parties/lego-ecosystem). | |
 | `SdCard` | ✓ | On a shield's microSD slot; see [Shields](#shields). | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |
 
 ## Features
@@ -125,12 +125,12 @@ Shield's backlight and the Data Logger Shield's SD chip select are both D10.
 
 ### TFT Touch Shield
 
-<img src="../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
+<img src="../../images/shields/shield-tft.png" alt="ELEGOO 2.8-inch TFT Touch Shield" width="280">
 
 The ELEGOO 2.8" TFT touch shield is a 240 × 320 ILI9341 color display on an 8-bit parallel bus, with a resistive
 touch panel and a microSD socket; it needs no extra Arduino library. `TftTouchShield` draws through `ParallelBus`, a
 compiler intrinsic that writes a whole GPIO port per store through the RA4M1's port set/reset registers. The TFT Touch Shield
-API, wiring and touch calibration are on the [Arduino Shields](../arduino-shields) page.
+API, wiring and touch calibration are on the [Arduino Shields](../../third-parties/arduino-shields) page.
 
 ```java
 TftTouchShield tft = new TftTouchShield();
@@ -154,7 +154,7 @@ shield's microSD card (`TftTouchShield.getSdCard()` on the shield instance, chip
 
 ### Grove Base Shield
 
-<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
+<img src="../../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
 
 The Grove Base Shield is passive: every socket is an ordinary UNO pin, and `GroveBaseShield` names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
@@ -173,11 +173,11 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 ```
 
 [`SupabaseGroveTemperatures`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/supabase/publisher/SupabaseGroveTemperatures.java) reads three Grove temperature sensors on this shield
-once a minute and publishes them to Supabase. See [Grove](../grove-system) for the sensor drivers.
+once a minute and publishes them to Supabase. See [Grove](../../third-parties/grove-system) for the sensor drivers.
 
 ### Arduino 9 Axis Motion Shield
 
-<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+<img src="../../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
 
 The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 `NineAxisMotionShield` reads it over I2C as plain Java, with no Arduino library. The heading is relative to the direction
@@ -197,7 +197,7 @@ while (true) {
 
 ### LCD Keypad Shield
 
-<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+<img src="../../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
 
 A 16 × 2 character LCD with five buttons read through one analog pin (A0). `LcdKeypadShield` needs no extra library:
 the LCD uses D4-D9 and its backlight D10.
@@ -220,7 +220,7 @@ is a Pomodoro timer.
 
 ### AZDelivery Data Logger Shield
 
-<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+<img src="../../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
 
 A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
 that Juno does not drive. Format the card as FAT16 or FAT32. Keep the network's credentials on the card rather than

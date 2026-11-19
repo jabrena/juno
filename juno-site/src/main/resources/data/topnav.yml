@@ -7,96 +7,94 @@ items:
       - title: "Getting Started"
         path: "/getting-started"
       - title: "Create your first project"
-        path: "/create-your-first-project"
-      - title: "Maven Plugin"
-        path: "/juno-maven-plugin"
+        path: "/getting-started/create-your-first-project"
   - title: "Features"
     path: "/features"
     children:
       - title: "Overview"
         path: "/features"
       - title: "Java subset"
-        path: "/java-subset"
+        path: "/features/java-subset"
       - title: "Board features"
-        path: "/board-features"
+        path: "/features/board-features"
       - title: "Memory Model"
-        path: "/memory-model"
+        path: "/features/memory-model"
       - title: "JLS 17 Conformance"
-        path: "/jls-17-conformance"
+        path: "/features/jls-17-conformance"
+      - title: "Maven Plugin"
+        path: "/features/juno-maven-plugin"
   - title: "Boards"
     path: "/boards"
     children:
       - title: "Overview"
         path: "/boards"
       - title: "Portenta H7"
-        path: "/arduino-portenta-h7"
+        path: "/boards/arduino-portenta-h7"
       - title: "Nano ESP32"
-        path: "/arduino-nano-esp32"
+        path: "/boards/arduino-nano-esp32"
       - title: "M5Stack Cardputer"
-        path: "/m5stack-cardputer"
+        path: "/boards/m5stack-cardputer"
       - title: "ESP32-CAM"
-        path: "/ai-thinker-esp32-cam"
+        path: "/boards/ai-thinker-esp32-cam"
       - title: "Pico 2 W"
-        path: "/raspberry-pi-pico-2-w"
+        path: "/boards/raspberry-pi-pico-2-w"
       - title: "UNO R4 WiFi"
-        path: "/arduino-uno-r4-wifi"
+        path: "/boards/arduino-uno-r4-wifi"
       - title: "UNO R3"
-        path: "/arduino-uno-r3"
+        path: "/boards/arduino-uno-r3"
   - title: "APIs"
-    path: "/hardware-apis"
+    path: "/api"
     children:
       - title: "Overview"
-        path: "/hardware-apis"
-      - title: "Telemetry"
-        path: "/hardware-apis"
-        fragment: "telemetry"
+        path: "/api"
+      - title: "Observability"
+        path: "/api/observability"
       - title: "Storage"
-        path: "/hardware-apis"
-        fragment: "storage"
+        path: "/api/storage"
       - title: "Internet"
-        path: "/hardware-apis"
-        fragment: "internet"
+        path: "/api/internet"
       - title: "Utils"
-        path: "/hardware-apis"
-        fragment: "utils"
+        path: "/api/utils"
       - title: "Hardware"
-        path: "/hardware-apis"
-        fragment: "hardware"
+        path: "/api/hardware"
       - title: "Delay"
-        path: "/delay"
+        path: "/api/hardware/delay"
+        hidden: true
+      - title: "Clock"
+        path: "/api/hardware/clock"
         hidden: true
       - title: "Serial"
-        path: "/serial"
+        path: "/api/observability/serial"
         hidden: true
       - title: "Syslog"
-        path: "/syslog"
+        path: "/api/observability/syslog"
         hidden: true
       - title: "Gpio"
-        path: "/gpio"
+        path: "/api/hardware/gpio"
         hidden: true
       - title: "SecretStore"
-        path: "/secure-element"
+        path: "/api/storage/secure-element"
         hidden: true
       - title: "SD Card"
-        path: "/sdcard"
+        path: "/api/storage/sdcard"
         hidden: true
       - title: "Wifi"
-        path: "/wifi"
+        path: "/api/internet/wifi"
         hidden: true
       - title: "Time"
-        path: "/time"
+        path: "/api/internet/time"
         hidden: true
       - title: "HTTP client"
-        path: "/httpclient"
+        path: "/api/internet/httpclient"
         hidden: true
       - title: "HTTP server"
-        path: "/httpserver"
+        path: "/api/internet/httpserver"
         hidden: true
       - title: "Email"
-        path: "/email"
+        path: "/api/internet/email"
         hidden: true
       - title: "MVC"
-        path: "/mvc"
+        path: "/api/utils/mvc"
         hidden: true
   - title: "Third parties"
     path: "/third-parties"
@@ -104,11 +102,92 @@ items:
       - title: "Overview"
         path: "/third-parties"
       - title: "Arduino Shields"
-        path: "/arduino-shields"
+        path: "/third-parties/arduino-shields"
       - title: "Grove system"
-        path: "/grove-system"
+        path: "/third-parties/grove-system"
       - title: "LEGO ecosystem"
-        path: "/lego-ecosystem"
+        path: "/third-parties/lego-ecosystem"
+      - title: "LEGO Powered Up"
+        path: "/third-parties/lego-ecosystem/lego-powered-up"
+        hidden: true
+      - title: "LEGO Power Functions"
+        path: "/third-parties/lego-ecosystem/lego-power-functions"
+        hidden: true
+      - title: "LEGO Mindstorms RCX"
+        path: "/third-parties/lego-ecosystem/lego-mindstorms-rcx"
+        hidden: true
+      - title: "LEGO Mindstorms RCX remote control"
+        path: "/third-parties/lego-ecosystem/lego-mindstorms-rcx-remote-control"
+        hidden: true
+      - title: "TFT Touch Shield"
+        path: "/third-parties/arduino-shields/tft-touch-shield"
+        hidden: true
+      - title: "Grove Base Shield"
+        path: "/third-parties/grove-system/grove-base-shield"
+        hidden: true
+      - title: "Arduino 9 Axis Motion Shield"
+        path: "/third-parties/arduino-shields/arduino-9-axis-motion-shield"
+        hidden: true
+      - title: "LCD Keypad Shield"
+        path: "/third-parties/arduino-shields/lcd-keypad-shield"
+        hidden: true
+      - title: "AZDelivery Data Logger Shield"
+        path: "/third-parties/arduino-shields/azdelivery-data-logger-shield"
+        hidden: true
+      - title: "Arduino USB Host Shield"
+        path: "/third-parties/arduino-shields/arduino-usb-host-shield"
+        hidden: true
+      - title: "Nano Connector Carrier"
+        path: "/third-parties/grove-system/nano-connector-carrier"
+        hidden: true
+      - title: "PCA9685 PWM and Servo Shield"
+        path: "/third-parties/arduino-shields/pca9685-pwm-and-servo-shield"
+        hidden: true
+      - title: "Grove Shield for Pi Pico"
+        path: "/third-parties/grove-system/grove-shield-for-pi-pico"
+        hidden: true
+      - title: "Portenta Hat Carrier"
+        path: "/third-parties/arduino-shields/portenta-hat-carrier"
+        hidden: true
+      - title: "GPS Air530"
+        path: "/third-parties/grove-system/gps-air530"
+        hidden: true
+      - title: "Temperature and Humidity Sensor Pro (DHT22)"
+        path: "/third-parties/grove-system/temperature-and-humidity-sensor-pro-dht22"
+        hidden: true
+      - title: "Temperature and Humidity Sensor (DHT11)"
+        path: "/third-parties/grove-system/temperature-and-humidity-sensor-dht11"
+        hidden: true
+      - title: "Temperature Sensor v1.2"
+        path: "/third-parties/grove-system/temperature-sensor-v12"
+        hidden: true
+      - title: "Light Sensor v1.2"
+        path: "/third-parties/grove-system/light-sensor-v12"
+        hidden: true
+      - title: "Sound Sensor v1.6"
+        path: "/third-parties/grove-system/sound-sensor-v16"
+        hidden: true
+      - title: "Gas sensor"
+        path: "/third-parties/grove-system/gas-sensor"
+        hidden: true
+      - title: "PIR Motion Sensor"
+        path: "/third-parties/grove-system/pir-motion-sensor"
+        hidden: true
+      - title: "BMI088 accelerometer and gyroscope"
+        path: "/third-parties/grove-system/bmi088-accelerometer-and-gyroscope"
+        hidden: true
+      - title: "Ultrasonic Ranger"
+        path: "/third-parties/grove-system/ultrasonic-ranger"
+        hidden: true
+      - title: "Infrared emitter and receiver"
+        path: "/third-parties/grove-system/infrared-emitter-and-receiver"
+        hidden: true
+      - title: "OLED 0.96-inch (SSD1315)"
+        path: "/third-parties/grove-system/oled-ssd1315"
+        hidden: true
+      - title: "I2C Motor Driver (TB6612FNG)"
+        path: "/third-parties/grove-system/i2c-motor-driver-tb6612fng"
+        hidden: true
   - title: "Blog"
     path: "/blog"
     children:

@@ -3,11 +3,11 @@ title: "Maven Plugin"
 description: "The juno-maven-plugin goals: compile, verify, flash and monitor."
 layout: page
 ---
-
+{|
 [`juno-maven-plugin`](https://github.com/jabrena/juno/tree/main/juno-maven-plugin) is the Maven integration for Juno. It turns compiling
 a Java entry point into a sketch, verifying it with `arduino-cli`, uploading it, and opening the
 serial monitor into ordinary Maven goals, so a full edit/flash/observe cycle needs no hand-written
-`arduino-cli` invocations. See [Getting Started](../getting-started) for installing `arduino-cli` itself.
+`arduino-cli` invocations. See [Getting Started](../../getting-started) for installing `arduino-cli` itself.
 
 ## Goals
 
@@ -47,14 +47,14 @@ many programs, so every `compile`, `verify` or `flash` names one, for example
 | Property | Goals | Default | Purpose |
 |---|---|---|---|
 | `juno.main` | `compile`, `verify`, `flash` | *(required)* | Fully qualified entry-point class. |
-| `juno.outputDirectory` | `compile`, `verify`, `flash` | `${project.build.directory}/juno` | Where generated sketch directories are written. |
-| `juno.gcLog` | `compile`, `verify`, `flash` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../features)). |
+| `juno.outputDirectory` | `compile`, `verify`, `flash` | `${project.build.directory}/juno` | Where generated sketch directories are written.
+| `juno.gcLog` | `compile`, `verify`, `flash` | `false` | Emit one `Serial` line per garbage collection (see [docs/FEATURES.md](../)). |
 | `juno.board` | `compile`, `verify`, `flash`, `monitor` | *(required without a single-board `@Board` declaration)* | Which board to build for (`arduino-uno-r4-wifi`, `arduino-uno-r3`, `arduino-nano-esp32`, `m5stack-cardputer`). |
 | `juno.arduinoCli` | `verify`, `flash`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `flash`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `flash`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
-| `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../serial)). |
-| `juno.syslog` | `monitor` | *(unset: serial)* | UDP port to receive RFC 5424 syslog on, e.g. `5514`; no board or serial port is needed (see [Remote logging with syslog](../wifi#remote-logging-with-syslog)). |
+| `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../../api/observability/serial)). |
+| `juno.syslog` | `monitor` | *(unset: serial)* | UDP port to receive RFC 5424 syslog on, e.g. `5514`; no board or serial port is needed (see [Remote logging with syslog](../../api/internet/wifi#remote-logging-with-syslog)). |
 
 Every property can be set in `<configuration>` or passed with `-D` on the command line; `-D`
 always wins for a given run.
@@ -121,7 +121,7 @@ Opens the serial monitor at 115200 baud (`-Djuno.baudRate` to change it). Always
 
 ### Watch a board over the network
 
-A program that logs with [`Syslog`](../wifi#remote-logging-with-syslog) can be followed without a USB cable, for
+A program that logs with [`Syslog`](../../api/internet/wifi#remote-logging-with-syslog) can be followed without a USB cable, for
 example a robot driving across the floor:
 
 ```bash
@@ -219,3 +219,4 @@ Two board examples make the distinction observable:
 - **"@Board declares multiple boards ...; pass the target board explicitly":** the entry point's
   `@Board` lists more than one board (e.g. `@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})`);
   add `-Djuno.board=<id>` naming one of them, as printed in the error.
+|}

@@ -78,7 +78,7 @@ SntpClock.configure(properties);   // call once, before the first now()
 
 A missing key keeps the build-time value. The host must be at most 63 characters of letters, digits, dots and hyphens,
 and the port must be between 1 and 65535; otherwise `configure` returns `false` and leaves the settings unchanged. The
-loaded `Properties` is typically read from the SD card as shown in [SD Card](../sdcard).
+loaded `Properties` is typically read from the SD card as shown in [SD Card](../../storage/sdcard).
 
 ## Measuring elapsed time with Clock
 
@@ -96,7 +96,7 @@ int elapsed = clock.millis() - start;    // correct across one wrap of the count
 ```
 
 Subtracting two `millis()` readings gives the right answer even after the counter wraps, as long as the interval itself is
-shorter than the wrap period. Use `micros()` for short intervals, and `Delay` ([Delay](../delay)) when you only need to pause.
+shorter than the wrap period. Use `micros()` for short intervals, and `Delay` ([Delay](../../hardware/delay)) when you only need to pause.
 A unit test passes `mock(Clock.class)` instead of the board's clock.
 
 ## A minimal example
@@ -119,7 +119,7 @@ The same program reads its Wi-Fi credentials and SNTP server from the SD card in
 and [`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java)
 does the same on a Nano ESP32 in a Nano Connector Carrier.
 
-Build and watch the output with the Maven plugin, as described in [Serial](../serial):
+Build and watch the output with the Maven plugin, as described in [Serial](../../observability/serial):
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash \

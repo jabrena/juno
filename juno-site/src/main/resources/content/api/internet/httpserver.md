@@ -6,7 +6,7 @@ layout: page
 
 `HttpServer` lets a Juno program answer HTTP requests from other devices on the same network. It is a minimal server:
 it listens on a port, reads one request at a time and replies to it. Connect to Wi-Fi first, since the server listens on
-the board's network address. The [Board features](../board-features) page lists which boards serve plain HTTP and which
+the board's network address. The [Board features](../../../features/board-features) page lists which boards serve plain HTTP and which
 serve HTTPS.
 
 ## Methods
@@ -53,7 +53,7 @@ might be larger than the buffer, because `accept` truncates it silently.
 
 `HttpServer.beginTls` serves HTTPS with a certificate and a private key, both in PEM form. A self-signed pair is enough
 for a server on your own network. Clients must trust that certificate themselves, so the usual test is
-`curl --cacert server.crt`. Use it on the boards whose TLS support is listed on the [Board features](../board-features)
+`curl --cacert server.crt`. Use it on the boards whose TLS support is listed on the [Board features](../../../features/board-features)
 page.
 
 ### Creating the certificate

@@ -20,7 +20,7 @@ boards have the `SMTP_STARTTLS` capability. The compiler rejects a call the boar
 
 Keep the mailbox settings and the password on the microSD card, not in the Java source. Put them in
 `application.properties` next to the Wi-Fi settings, and read the file once at startup, as the Nano ESP32 examples do
-(see [SD Card](../sdcard#reading-application-properties)):
+(see [SD Card](../../storage/sdcard#reading-application-properties)):
 
 ```text
 wifi.ssid=my-network

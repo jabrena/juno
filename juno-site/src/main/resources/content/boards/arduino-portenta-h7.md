@@ -9,7 +9,7 @@ Portenta core; the Cortex-M4 is a separate core and is not a Juno target. The M7
 double-precision floating-point unit, while the board provides 2 MB of internal flash, 1 MB of internal RAM, external
 flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 
-<img src="../images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7" width="280">
+<img src="../../images/boards/arduino-portenta-h7.png" alt="Arduino Portenta H7" width="280">
 
 ## Core specification
 
@@ -58,7 +58,7 @@ are selected by reachability, so a GPIO-only sketch does not pull them into the 
 ## Wi-Fi with SecretStore
 
 Provision the SE050C2 with `wifi.ssid` and `wifi.password` (see [Secrets in a Secure
-Element](../secure-element)), then compile the example for Portenta:
+Element](../../api/storage/secure-element)), then compile the example for Portenta:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:verify \
@@ -114,3 +114,71 @@ Flash over USB serial by passing the Portenta's `/dev/cu.*` device to `juno:flas
 
 The Portenta H7 Blink path has been uploaded successfully to the M7 core. `Blink` does not print serial output; use
 `juno:monitor` after upload when testing an example that calls `Serial.begin(...)`.
+
+## Shields
+
+### Portenta Hat Carrier
+
+<img src="../../images/shields/portenta-hat-carrier.png" alt="Arduino Portenta Hat Carrier" width="280">
+
+The Arduino Portenta Hat Carrier (ASX00049) takes a Portenta H7 and adds a 40-pin Raspberry Pi header for HATs and a
+microSD slot of its own. `PortentaHatCarrier` names the header pins and the slot, so a HAT's driver needs no hard-coded
+numbers:
+
+| Carrier part | Juno name | `PortentaHatCarrier` |
+|---|---|---|
+| Header pins 19, 21 and 23: SPI MOSI, MISO and SCLK | D8, D10 and D9 | The SPI bus, `MCU.getSpi()` |
+| Header pin 24: SPI CE0 | D7 | `getLcdChipSelect()` |
+| Header pin 18: data/command line | PI7 (raw index 161) | `getLcdDataCommand()` |
+| Header pin 22: reset | D5 | `getLcdReset()` |
+| Header pin 26: touch chip select | D4 | `getTouchChipSelect()` |
+| microSD slot (J7) | SDMMC2 bus, no pin | `getSdCard()` |
+
+The microSD slot is on the H7's SDMMC2 bus, not on SPI, so it does not share the header's SPI bus with a HAT display.
+The [ASX00049 datasheet](https://docs.arduino.cc/resources/datasheets/ASX00049-datasheet.pdf) has the full pinout.
+
+#### Features
+
+##### Draw on the MHS-3.5 display
+
+The MHS-3.5-inch display is a 480 × 320 TFT with an ILI9486 controller and a resistive XPT2046 touch panel. It is a HAT,
+so it plugs onto the carrier's header. `Mhs35TftDisplay` takes the carrier and draws in RGB565 colors:
+
+```java
+Mhs35TftDisplay tft = new Mhs35TftDisplay(new PortentaHatCarrier());
+tft.setRotation(Mhs35TftDisplay.LANDSCAPE);
+tft.fillScreen(Display.BLACK);
+tft.setCursor(10, 10);
+tft.setTextColor(Display.WHITE, Display.BLACK);
+tft.print("Hello, Juno");
+
+while (true) {
+    if (tft.readTouch()) {
+        tft.fillCircle(tft.touchX(), tft.touchY(), 3, Display.WHITE);
+    }
+}
+```
+
+The display is write-only: it cannot be read back, and its backlight stays on whenever the board has power. Create one
+instance at startup and reuse it.
+
+[`BouncingTrianglesTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/BouncingTrianglesTFT.java)
+is the first demo for a new screen: three triangles bounce off the edges of the display. Build it with:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.device.tft.BouncingTrianglesTFT \
+  -Djuno.board=arduino-portenta-h7
+```
+
+##### Read and write the carrier's microSD card
+
+`getSdCard()` returns the card in the carrier's slot. Call its `begin()` to mount the card, then read files with
+`java.io.RandomAccessFile`. The [HTTP server](../../api/internet/httpserver) reads its certificate and key from the card's root, so
+neither file is built into the program.
+
+##### Run the Mailbox server
+
+The [`Mailbox`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java)
+example combines the carrier and the MHS-3.5 display: an HTTPS API with an API key, a screen with a touch interface, and
+messages kept on the carrier's SD card.

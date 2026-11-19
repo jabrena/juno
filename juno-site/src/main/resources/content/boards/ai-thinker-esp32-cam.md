@@ -12,7 +12,7 @@ The board has 4 MB of PSRAM. `Camera.begin()` leaves frame-buffer ownership insi
 receives copied bytes through `Camera.capture()`. For other large, caller-owned byte payloads use the static `Psram` API.
 PSRAM is not part of the Java arena and is not managed by the garbage collector.
 
-<img src="../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
+<img src="../../images/boards/ai-thinker-esp32-cam.jpg" alt="AI Thinker ESP32-CAM" width="280">
 
 ## What Juno supports
 

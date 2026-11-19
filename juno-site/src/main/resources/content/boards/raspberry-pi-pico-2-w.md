@@ -8,7 +8,7 @@ The Raspberry Pi Pico 2 W pairs the RP2350's Cortex-M33 with an Infineon CYW4343
 for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle Philhower's
 [arduino-pico](https://github.com/earlephilhower/arduino-pico) core (`rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble`).
 
-<img src="../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">
+<img src="../../images/boards/raspberry-pico2-wifi.png" alt="Raspberry Pi Pico 2 W" width="280">
 
 ## Core specification
 
@@ -38,8 +38,8 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the board's fixed arena with the JDK's rounding and text rules. | |
 | Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Uses Juno's non-FreeRTOS Thumb-2 scheduler. The arduino-pico BLE library is not compatible with its FreeRTOS menu. | |
 | `@Watchdog` | ✓ | Uses the RP2350 watchdog runtime. | |
-| `SecretStore` / TrustZone | ✓ | `Pico2WTrustZoneStore`: 16 slots fenced off by Juno's TrustZone secure firmware, which `juno:flash` installs in the boot slot; one carrier, Wi-Fi and BLE keep working. Not locked or encrypted — see [Secrets in a Secure Element](../secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
-| `UUID.randomUUID()` | — | No cryptographic random source is exposed for this board. | |
+| `SecretStore` / TrustZone | ✓ | `Pico2WTrustZoneStore`: 16 slots fenced off by Juno's TrustZone secure firmware, which `juno:flash` installs in the boot slot; one carrier, Wi-Fi and BLE keep working. Not locked or encrypted — see [Secrets in a Secure Element](../../api/storage/secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
+| `UUID.randomUUID()` | ✓ | Uses the RP2350's hardware TRNG through the Pico SDK's `pico_rand` generator, which mixes fresh TRNG samples into every 128-bit value. The SDK describes it as a software PRNG seeded from hardware entropy rather than a cryptographic DRBG, so the board is not listed among the cryptographic-entropy boards on [Board features](../../features/board-features). Compiles with `SerialUuids`; not yet flashed to hardware. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
 | Wi-Fi station | ✓ | `MCU.getWifi()` provides station mode, status, addresses and TCP/UDP networking. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | |
 | `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Uses the CYW43439 Wi-Fi radio and the core's UDP support. | |
@@ -69,10 +69,10 @@ watchdog, math and HID paths have compiler/toolchain coverage but have not been 
 
 ## Grove Shield for Pi Pico
 
-<img src="../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
+<img src="../../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
 
 Seeed Studio's [Grove Shield for Pi Pico v1.0](https://www.seeedstudio.com/Grove-Shield-for-Pi-Pico-v1-0-p-4846.html)
-does for the Pico what the [Grove Base Shield](../arduino-shields#grove-base-shield) does for the UNO: it is
+does for the Pico what the [Grove Base Shield](../../third-parties/grove-system/grove-base-shield) does for the UNO: it is
 passive, and `GrovePicoShield` names its sockets. The digital sockets carry their GPIO number in the label (`D16` is
 GP16), the analog sockets `A0`–`A2` are the Pico's ADC pins GP26–GP28, and the I2C0 (GP8/GP9) and I2C1 (GP6/GP7)
 socket pins are exposed. Plug I2C modules into the I2C0 socket and pass `shield.getI2c0()`, the bus on its GP8/GP9, to
@@ -88,12 +88,12 @@ wire its getter returns. The analog sockets always take 3.3 V; the others take `
 |       3V3 o o TX                                           3V3 |
 |       CS  o o RX                                               |
 |                                                                |
-| UART0  RX=GP1 TX=GP0                   I2C0  SCL=GP9  SDA=GP8 |
+| UART0  RX=GP1 TX=GP0                   I2C0  SCL=GP9  SDA=GP8  |
 | [RX |TX |VCC|GND]                            [SCL|SDA|VCC|GND] |
-| UART1  RX=GP5 TX=GP4                   I2C1  SCL=GP7  SDA=GP6 |
+| UART1  RX=GP5 TX=GP4                   I2C1  SCL=GP7  SDA=GP6  |
 | [RX |TX |VCC|GND]        Raspberry Pi        [SCL|SDA|VCC|GND] |
 | D16  SIG=GP16              Pico 2 W               A0  SIG=GP26 |
-| [D16|D17|VCC|GND]        (sits here)         [A0 |NC |3V3|GND] |
+| [D16|D17|VCC|GND]                            [A0 |NC |3V3|GND] |
 | D18  SIG=GP18                                     A1  SIG=GP27 |
 | [D18|D19|VCC|GND]                            [A1 |A0 |3V3|GND] |
 | D20  SIG=GP20                                     A2  SIG=GP28 |

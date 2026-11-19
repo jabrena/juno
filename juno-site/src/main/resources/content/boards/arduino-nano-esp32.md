@@ -8,7 +8,7 @@ The Nano ESP32 puts an Espressif ESP32-S3 (in a u-blox NORA-W106 module) on the 
 Unlike the UNO boards, its CPU is an Xtensa LX7, so Juno generates Xtensa assembly for it with its
 own backend instead of the Thumb-2 or AVR one.
 
-<img src="../images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" width="280">
+<img src="../../images/boards/arduino-nano-esp32.png" alt="Arduino Nano ESP32" width="280">
 
 ## Core specification
 
@@ -43,7 +43,7 @@ The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and ga
 | Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Each thread is a FreeRTOS task with an 8 KiB stack (`-Djuno.Xss`); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including `main`. | [`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java) |
 | `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
 | `UUID.randomUUID()` | ✓ | Hardware RNG through `esp_fill_random`; may be weaker before Wi-Fi or Bluetooth start. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
-| Wi-Fi station | ✓ | `begin`, `status`, `localIP`, `gatewayIP`, `macAddress`; credentials from the microSD card (see [SD Card](../sdcard)). | [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java) |
+| Wi-Fi station | ✓ | `begin`, `status`, `localIP`, `gatewayIP`, `macAddress`; credentials from the microSD card (see [SD Card](../../api/storage/sdcard)). | [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java) |
 | `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Through the core's `WiFiUDP`; optional `sntp.host`/`sntp.port` from the card. | [`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java) |
 | `java.net.http` (HTTP) | ✓ | The URI can be built from the card's settings. | [`NanoHttpGetSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpGetSD.java) |
@@ -105,7 +105,7 @@ Once uploaded, the program keeps moving the pointer; disconnect the board or upl
 
 ### Nano Connector Carrier
 
-<img src="../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="280">
+<img src="../../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="280">
 
 The Arduino Nano Connector Carrier (ASX00061) is passive: every connector is a Nano header pin, and
 `NanoConnectorCarrier` names them so programs don't hard-code numbers:
@@ -225,7 +225,7 @@ Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a seco
 
 With a Grove infrared emitter in the A0/A1 socket and a Grove infrared receiver on the I2C socket's
 SCL line, the Nano talks to a LEGO Mindstorms RCX brick through `RemoteRcx` (see
-[LEGO](../lego-ecosystem)). Download Juno's RCX firmware to the brick once with
+[LEGO](../../third-parties/lego-ecosystem)). Download Juno's RCX firmware to the brick once with
 [`NanoCarrierRcxFirmwareDownload`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/rcx/NanoCarrierRcxFirmwareDownload.java): keep the brick 10 to 50 cm away and still for about ten
 minutes. The brick then answers on channel 1:
 

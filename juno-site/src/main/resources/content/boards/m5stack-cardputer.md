@@ -9,7 +9,7 @@ color display, speaker, microSD slot and battery. Its CPU is an Xtensa LX7, so J
 with the same Xtensa backend as the Nano ESP32. The `MCU` facade is the entry
 point for its peripherals.
 
-<img src="../images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" width="280">
+<img src="../../images/boards/m5stack-cardputer.png" alt="M5Stack Cardputer" width="280">
 
 ## Core specification
 

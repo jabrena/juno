@@ -191,4 +191,4 @@ verify(navigator).show(MESSAGE_VIEW);
 - **The display flickers:** `render` redraws everything every frame. Compare the model's revision first, as in the
   inbox example above.
 - **The build runs out of arena memory:** the startup objects of a larger app can outgrow the default arena. Build with a
-  larger `-Djuno.Xmx`, as the mailbox client does; see [Memory model](../memory-model).
+  larger `-Djuno.Xmx`, as the mailbox client does; see [Memory model](../../../features/memory-model).

@@ -3,11 +3,11 @@ title: "Create your first project"
 description: "Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi."
 layout: page
 ---
-
+{|
 This page creates a new Git repository called `testing-juno`. It adds Juno as a git submodule, configures the Maven
 plugin, and uploads a first program to an Arduino UNO R4 WiFi.
 
-You need the tools from [Getting Started](../getting-started#1-prerequisites): JDK 27, Maven, Arduino CLI and Git.
+You need the tools from [Getting Started](../#1-prerequisites): JDK 27, Maven, Arduino CLI and Git.
 
 ## 1. Create the repository
 
@@ -245,4 +245,5 @@ Others can then clone it with `git clone --recursive` and build it the same way.
 - **The upload cannot find the port:** run `./mvnw juno:boards` and pass `-Djuno.port=<PORT>`.
 - **Several boards match:** pass `-Djuno.board=<id>` when the entry point's `@Board` lists more than one board.
 
-For every goal and option, see the [Maven Plugin](../juno-maven-plugin) page.
+For every goal and option, see the [Maven Plugin](../../features/juno-maven-plugin) page.
+|}

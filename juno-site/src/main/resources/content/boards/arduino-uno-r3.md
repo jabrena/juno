@@ -9,7 +9,7 @@ backend** and links against the `arduino:avr` core; the `MCU` facade is the entr
 peripherals. With 2 KB of SRAM it is Juno's smallest target: the arena is 1 KB, and programs should allocate once at
 startup and stay small.
 
-<img src="../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
+<img src="../../images/boards/arduino-uno-r3.png" alt="Arduino UNO R3" width="280">
 
 ## Core specification
 
@@ -73,7 +73,7 @@ program whose shields share a pin, and the 9 Axis Motion Shield's sensor reset u
 
 ### Grove Base Shield
 
-<img src="../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
+<img src="../../images/shields/shield-grove.png" alt="Grove Base Shield" width="280">
 
 The Grove Base Shield is passive: every socket is an ordinary UNO pin, and `GroveBaseShield` names them so programs
 don't hard-code numbers. Plug a Grove module in and pass the socket's getter to its driver; the socket supplies the
@@ -92,12 +92,12 @@ if (dht.read(shield.getD4(), reading, reading.length, frame, frame.length)) {
 ```
 
 [`GroveDht22Monitor`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/GroveDht22Monitor.java) prints a DHT22's readings; it runs on the UNO R3,
-UNO R4 WiFi, and the snippet above is the same read for the R3. See [Grove](../grove-system) for the
+UNO R4 WiFi, and the snippet above is the same read for the R3. See [Grove](../../third-parties/grove-system) for the
 sensor drivers.
 
 ### Arduino 9 Axis Motion Shield
 
-<img src="../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
+<img src="../../images/shields/shield-nine-axis.png" alt="Arduino 9 Axis Motion Shield" width="280">
 
 The shield's Bosch BNO055 fuses its accelerometer and gyroscope itself and reports the heading in degrees.
 `NineAxisMotionShield` reads it over I2C (A4/A5) as plain Java, with no Arduino library. The heading is relative to the
@@ -118,7 +118,7 @@ and acceleration readings.
 
 ### LCD Keypad Shield
 
-<img src="../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
+<img src="../../images/shields/shield-lcd.png" alt="LCD Keypad Shield" width="280">
 
 A 16 × 2 character LCD with five buttons read through one analog pin (A0). `LcdKeypadShield` needs no extra library:
 the LCD uses D4-D9 and its backlight D10.
@@ -140,7 +140,7 @@ while (true) {
 
 ### AZDelivery Data Logger Shield
 
-<img src="../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
+<img src="../../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">
 
 A microSD socket on the UNO's SPI pins (chip select D10, MOSI D11, MISO D12, SCK D13), plus a DS1307 real-time clock
 that Juno does not drive. Format the card as FAT16 or FAT32.

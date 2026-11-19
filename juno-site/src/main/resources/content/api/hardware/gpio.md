@@ -80,7 +80,7 @@ without touching the board:
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
-Blink prints nothing over [Serial](../serial), so there is no output to read with `juno:monitor`. The LED is the result.
+Blink prints nothing over [Serial](../../observability/serial), so there is no output to read with `juno:monitor`. The LED is the result.
 
 ## Reading an input
 
