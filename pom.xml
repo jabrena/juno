@@ -1,12 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!-- child.project.url.inherit.append.path="false" keeps every module's inherited <url> (and the <scm> URLs below)
+     pointing at the project instead of appending the module's artifactId, which would give dead links on Central. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jabrena</groupId>
     <artifactId>java-for-arduino</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>Java for Arduino UNO</name>
-    <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
+    <name>Juno</name>
+    <description>Juno: an ahead-of-time Java compiler, hardware API and Maven plugin for Arduino and other microcontroller boards</description>
+    <!-- Project metadata required by Maven Central (name, description, url, licenses, developers, scm); every module
+         inherits it from here. -->
+    <url>https://jabrena.github.io/juno/</url>
+    <inceptionYear>2026</inceptionYear>
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>jabrena</id>
+            <name>Juan Antonio Breña Moral</name>
+            <url>https://github.com/jabrena</url>
+        </developer>
+    </developers>
 
     <modules>
         <module>juno-api</module>
@@ -17,6 +37,21 @@
         <module>juno-third-parties</module>
         <module>coverage-aggregator</module>
     </modules>
+
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/jabrena/juno.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jabrena/juno.git</developerConnection>
+        <url>https://github.com/jabrena/juno</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/jabrena/juno/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/jabrena/juno/actions</url>
+    </ciManagement>
 
     <properties>
         <maven.compiler.release>27</maven.compiler.release>
