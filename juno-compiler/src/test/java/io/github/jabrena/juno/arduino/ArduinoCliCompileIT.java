@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.arduino;
 
+import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.CompilerTestSupport;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.board.Board;
 import io.github.jabrena.juno.classfile.ClassFileReader;
 import io.github.jabrena.juno.classfile.JavaClass;
@@ -65,6 +67,9 @@ class ArduinoCliCompileIT {
     private static final Path PROGRAMS = BASEDIR.resolve("src/test/arduino/programs");
     private static final Path PROGRAM_CLASSES = BASEDIR.resolve("target/arduino-cli/program-classes");
 
+    /** The runtime carrier count, read as the Maven plugin reads it: CI compiles with {@code juno.carriers} 1 and 2. */
+    private static final RuntimeConfig RUNTIME_CONFIG = RuntimeConfig.of(Optional.empty(), Optional.empty(),
+            Optional.ofNullable(System.getProperty("juno.carriers")));
     private static final Map<String, Object> CORE_LOCKS = new ConcurrentHashMap<>();
     private static final Set<String> CORE_CACHED = ConcurrentHashMap.newKeySet();
 
@@ -84,9 +89,14 @@ class ArduinoCliCompileIT {
 
     /** Every program under src/test/arduino/programs, once per board its {@code @Board} declares, or on every board when it declares none (a generic feature). */
     static Stream<Arguments> programs() throws IOException {
+        // -Djuno.arduinoCliBoard=<id> compiles only that board, so one CI job can own one core.
+        Optional<Board> only = Optional.ofNullable(System.getProperty("juno.arduinoCliBoard")).filter(id -> !id.isBlank())
+                .map(Board::fromId);
         return sources().stream()
                 .map(source -> source.getFileName().toString().replace(".java", ""))
-                .flatMap(name -> declaredBoards("demo." + name).stream().map(board -> Arguments.of(name, board)));
+                .flatMap(name -> declaredBoards("demo." + name).stream()
+                        .filter(board -> only.map(board::equals).orElse(true))
+                        .map(board -> Arguments.of(name, board)));
     }
 
     private static List<Path> sources() throws IOException {
@@ -148,9 +158,9 @@ class ArduinoCliCompileIT {
         Path directory = BASEDIR.resolve("target/arduino-cli/sketches").resolve(board.id()).resolve(sketchName);
         Files.createDirectories(directory);
         CompilationResult result = new JunoCompiler().compileTo(
-                List.of(PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES), "demo." + program,
-                directory.resolve(program + ".S"), directory.resolve(program + "Shim.cpp"), false,
-                Optional.of(board.id()));
+                new CompilationRequest(List.of(PROGRAM_CLASSES, CompilerTestSupport.JUNO_API_CLASSES), "demo." + program,
+                        false, Optional.of(board.id()), RUNTIME_CONFIG),
+                directory.resolve(program + ".S"), directory.resolve(program + "Shim.cpp"));
         // The same .ino wrapper juno-maven-plugin writes.
         result.sketchWrapper().writeTo(directory.resolve(sketchName + ".ino"));
         return new GeneratedSketch(directory, result.fqbn());

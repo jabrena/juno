@@ -32,7 +32,7 @@ ARG M5STACK_PACKAGE_INDEX_URL=https://static-cdn.m5stack.com/resource/arduino/pa
 ARG ESPRESSIF_CORE=esp32:esp32
 ARG ESPRESSIF_PACKAGE_INDEX_URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
 # The Raspberry Pi Pico 2 W targets Earle Philhower's arduino-pico rp2040:rp2040 core, published on its own index.
-ARG PICO_CORE=rp2040:rp2040
+ARG PICO_CORE=rp2040:rp2040@6.3.2
 ARG PICO_PACKAGE_INDEX_URL=https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
 ARG PORTENTA_CORE=arduino:mbed_portenta
 RUN arduino-cli core update-index \

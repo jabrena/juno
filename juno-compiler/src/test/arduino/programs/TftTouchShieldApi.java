@@ -1,8 +1,11 @@
 package demo;
 
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 
-/** The 2.8" TFT touch shield: setup, geometry and the drawing primitives. */
+/** The 2.8" TFT touch shield (on the UNO R4 WiFi, which drives its parallel bus): setup, geometry and the drawing primitives. */
+@Board(ArduinoUnoR4WiFiBoard.class)
 public final class TftTouchShieldApi {
     public static void main(String[] args) {
         TftTouchShield tft = new TftTouchShield();
