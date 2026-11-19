@@ -106,7 +106,7 @@ class XtensaRunIT {
         WORKSPACE.compileBaseline();
     }
 
-    /** Runtime programs from src/test/qemu/programs that declare the Nano ESP32 (threads and continuations). */
+    /** Runtime programs from src/test/qemu/programs that declare the board (threads, continuations, two carriers). */
     static Stream<Arguments> programs() {
         return QEMU_PROGRAMS.programs().stream().filter(program -> program.declares(BOARD))
                 .map(program -> Arguments.of(program.mainClass(), BOARD));
@@ -121,7 +121,11 @@ class XtensaRunIT {
                 "%s on %s under QEMU".formatted(mainClass, board.displayName()));
     }
 
-    /** Primitive semantic-conformance fixtures from the XML catalog that declare the Nano ESP32. */
+    /**
+     * Primitive semantic-conformance fixtures from the XML catalog that declare the board. They test Java semantics in
+     * the shared Xtensa backend, so they declare the Nano ESP32 only, and the other boards run none of them: those runs
+     * keep to the runtime programs above, which exercise each board's own core.
+     */
     static Stream<Arguments> conformancePrograms() {
         return WORKSPACE.catalog().programs().stream().flatMap(program -> {
             ProgramSource source = WORKSPACE.source(program);
@@ -130,7 +134,7 @@ class XtensaRunIT {
         });
     }
 
-    @ParameterizedTest(name = "conformance {0} ({1}) [{2}]")
+    @ParameterizedTest(name = "conformance {0} ({1}) [{2}]", allowZeroInvocations = true)
     @MethodSource("conformancePrograms")
     void primitiveConformanceMatchesTheJvmUnderQemu(String mainClass, Board board, String programId) throws Exception {
         String expected = WORKSPACE.baseline(mainClass);
@@ -162,6 +166,9 @@ class XtensaRunIT {
         start = System.nanoTime();
         ExecResult run = runOnce(work);
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
+        // run.sh reports where its time went (build, boot to [juno-begin], program) on stderr.
+        run.getStderr().lines().filter(line -> line.startsWith("run.sh timing:"))
+                .forEach(line -> LOG.info("[{} / {}] {}", mainClass, board.id(), line));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         if (run.getExitCode() == TIMED_OUT || run.getExitCode() == KILLED) {
             fail("%s on %s: /harness/run.sh did not finish within %d s (raise -Djuno.xtensaRunTimeoutSeconds);"

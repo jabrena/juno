@@ -6,6 +6,9 @@
 # (both ESP32-S3) or ai-thinker-esp32-cam (classic ESP32, LX6). Stdout is the UART capture: boot log, [juno-begin], the
 # program's output and [juno-exit], at which QEMU stops.
 set -eu
+# Milliseconds since the epoch, for the "run.sh timing:" lines XtensaRunIT logs.
+now_ms() { date +%s%3N; }
+started_ms=$(now_ms)
 sketch="$1"
 board="${2:-arduino-nano-esp32}"
 name="$(basename "$sketch")"
@@ -50,6 +53,7 @@ esac
 # shellcheck disable=SC2086
 arduino-cli compile --fqbn "$fqbn" --build-property build.cdc_on_boot=0 $variant_option \
     --build-path "$sketch-build" "$sketch" >&2
+echo "run.sh timing: build $(( $(now_ms) - started_ms )) ms" >&2
 /harness/merge_flash.sh "$sketch-build" "$name" "$sketch/flash.bin" "$flash_mib"
 # The Nano ESP32's core is built for its 8 MiB octal PSRAM, which the boot code probes, so QEMU emulates one (its
 # default PSRAM is quad SPI). The timer-group watchdog is disabled: the harness never feeds it.
@@ -109,6 +113,7 @@ while :; do
         -global driver=$timer_driver,property=wdt_disable,value=true \
         -drive file="$attempt_flash",if=mtd,format=raw >"$fifo" 2>&1 &
     qemu_pid=$!
+    qemu_started_ms=$(now_ms)
 
     # Keep a real hang guard without making normal marker-terminated runs wait for it. Its sleep outlives the kill of
     # the guard, so it must not hold the script's output open, or a caller reading to the end would wait for it.
@@ -123,8 +128,11 @@ while :; do
         case "$line" in
             *'[juno-begin]'*)
                 begun=1
+                begun_ms=$(now_ms)
+                echo "run.sh timing: boot to [juno-begin] $(( begun_ms - qemu_started_ms )) ms (attempt $attempt)" >&2
                 ;;
             *'[juno-exit]'*)
+                echo "run.sh timing: program to [juno-exit] $(( $(now_ms) - ${begun_ms:-$qemu_started_ms} )) ms" >&2
                 kill "$qemu_pid" 2>/dev/null || true
                 wait "$qemu_pid" 2>/dev/null || true
                 qemu_pid=

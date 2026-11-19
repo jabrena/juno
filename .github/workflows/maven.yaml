@@ -187,8 +187,6 @@ jobs:
           push: true
           tags: ${{ steps.reference.outputs.ref }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          cache-from: type=gha,scope=arduino-cli-image
-          cache-to: type=gha,mode=max,scope=arduino-cli-image
 
   qemu-image:
     name: Publish QEMU image
@@ -289,8 +287,6 @@ jobs:
           push: true
           tags: ${{ steps.reference.outputs.ref }}
           labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          cache-from: type=gha,scope=xtensa-image
-          cache-to: type=gha,mode=max,scope=xtensa-image
 
   build:
     name: Build
@@ -411,7 +407,8 @@ jobs:
       - name: Pull Xtensa image
         run: docker pull ${{ needs.xtensa-image.outputs.ref }}
       - name: Run Xtensa programs under QEMU (${{ matrix.board }})
-        # About 40 min for 32 programs (~70 s each). XtensaRunIT bounds each program at 600 s; this step limit is the
+        # Nano ESP32: 32 programs at ~10 s each (~6 min). Cardputer and ESP32-CAM: the 10 runtime programs at ~70 s each
+        # (~13 min). XtensaRunIT bounds each program at 600 s; this step limit is the
         # backstop, and as a step timeout (not a job timeout) it still lets the failure-evidence upload below run.
         timeout-minutes: 60
         run: >-
