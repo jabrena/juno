@@ -510,6 +510,15 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return false;
     }
 
+    /**
+     * Four requests in flight at once: each owns its own client and lwIP socket, and the ESP32 core's stack has sockets
+     * and heap to spare for them; a fifth waits for a lease.
+     */
+    @Override
+    public int maxConcurrentHttpRequests() {
+        return 4;
+    }
+
     /** The port answers whether a slice is over, per carrier and without the runtime lock. */
     @Override
     public boolean asksPortForSlices() {
