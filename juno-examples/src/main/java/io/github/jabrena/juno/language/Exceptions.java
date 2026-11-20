@@ -1,7 +1,12 @@
 package io.github.jabrena.juno.language;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.language.Exceptions.SensorException;
@@ -16,7 +21,7 @@ import io.github.jabrena.juno.language.Exceptions.SensorException;
  * {@code ArithmeticException("/ by zero")}. An exception that no handler catches prints
  * {@code Exception in thread "main" <class>: <message>} and halts the board.
  */
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class})
 public class Exceptions {
 
     public static void main(String[] args) {
