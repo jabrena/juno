@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -10,7 +11,7 @@ import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /** JLS 17.7: volatile 64-bit reads and writes are atomic and therefore cannot expose one half of each value. */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class VolatileLongAtomicity {
     private static final int READS = 50_000;
 
